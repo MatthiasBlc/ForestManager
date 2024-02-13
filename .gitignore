@@ -2,3 +2,5 @@
 docker-compose.yml
 
 postgresql/data/
+
+.deepsource.toml

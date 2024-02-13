@@ -1,4 +1,4 @@
-# Boiler Plate JS frontend
+# Forest Manager frontend
 
 ## Table of contents
 
@@ -10,7 +10,7 @@
 
 ## General info
 
-This is the front part of a boilerplate project for a fullstack JS app.
+This is the front part of the Forest Manager app.
 
 ## Technologies
 
