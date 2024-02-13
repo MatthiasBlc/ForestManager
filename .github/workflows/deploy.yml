@@ -1,0 +1,71 @@
+name: Create and publish a Docker image
+
+on:
+  push:
+    branches:
+      - master
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    # strategy:
+    #   fail-fast: false
+    #   matrix:
+    #     include:
+    #       - dockerfile: ./backend/Dockerfile
+    #         image: ghcr.io/MatthiasBlc/image1
+    #       - dockerfile: ./frontend/Dockerfile
+    #         image: ghcr.io/MatthiasBlc/image2
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Login to GitHub Packages
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Prepare metadata
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=ref,event=tag
+            type=sha
+
+      # - name: Build and push
+      #   uses: docker/build-push-action@v4
+      #   with:
+      #     file: ${{ matrix.dockerfile }}
+      #     build-args: |
+      #       APP_RELEASE=${{ github.sha }}
+      #     push: ${{ github.event_name != 'pull_request' }}
+      #     tags: ${{ steps.meta.outputs.tags }}
+      #     labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Deploy the new image
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd ${{ secrets.FOLDER }}/202310_boiler_plate_JS/
+            git pull origin master
+            npm run docker:build
+            npm run docker:down
+            npm run docker:upd
