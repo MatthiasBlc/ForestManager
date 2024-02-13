@@ -64,7 +64,7 @@ jobs:
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            cd ${{ secrets.FOLDER }}/202310_boiler_plate_JS/
+            cd ${{ secrets.FOLDER }}/ForestManager/
             git pull origin master
             npm run docker:build
             npm run docker:down
