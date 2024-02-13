@@ -1,9 +1,10 @@
-# Boiler Plate JS
+# Forest Manager
 
 ## Table of contents
 
 - [General info](#general-info)
 - [Technologies](#technologies)
+- [Project management](#project-management)
 - [Prerequisites](#Prerequisites)
 - [How to install](#How-to-install)
 - [How to use](#How-to-use)
@@ -12,7 +13,7 @@
 
 ## General info
 
-This project is a complete boiler plate for a fullstack JS app.
+This application allows users to come together as a community and share information (recipes etc.).
 
 ## Technologies
 
@@ -25,6 +26,14 @@ This project is a complete boiler plate for a fullstack JS app.
 ![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Github-Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
+
+## Project management
+
+https://trello.com/b/hTrvLdtQ/0-workflow
+
+Live démo in production :
+
+https://forest-manager.matthias-bouloc.fr
 
 ## Prerequisites
 
@@ -129,8 +138,6 @@ You can:
 - Create an account
 - Login
 - Logout
-- See a complete display of your personnals notes
-- Create/edit/delete a note
 
 ## Sources
 

@@ -1,13 +1,13 @@
 {
-  "name": "202310_boiler_plate_js",
+  "name": "forest_manager",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "docker:build": "docker-compose -p boilerjs build",
-    "docker:down": "docker-compose -p boilerjs down",
-    "docker:up": "docker-compose -p boilerjs up",
-    "docker:upd": "docker-compose -p boilerjs up -d",
+    "docker:build": "docker-compose -p forest_manager build",
+    "docker:down": "docker-compose -p forest_manager down",
+    "docker:up": "docker-compose -p forest_manager up",
+    "docker:upd": "docker-compose -p forest_manager up -d",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
     "repository": {
