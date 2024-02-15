@@ -18,19 +18,80 @@ model Session {
 }
 
 model User {
-  id       String @id @default(uuid())
-  username String @unique
-  email    String @unique
-  password String
-  notes    Note[]
+  id               String            @id @default(uuid())
+  username         String            @unique
+  email            String            @unique
+  password         String
+  communityToUsers CommunityToUser[]
+  recipies         Recipe[]
 }
 
-model Note {
-  id        String   @id @default(uuid())
-  title     String
-  text      String
-  createdAt DateTime @default(now())
-  updatedAT DateTime @updatedAt
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  String?  @map("userId")
+model Community {
+  id                String              @id @default(uuid())
+  title             String
+  createdAt         DateTime            @default(now())
+  updatedAT         DateTime            @updatedAt
+  communityToUsers  CommunityToUser[]
+  communityToRecipe CommunityToRecipe[]
+}
+
+model CommunityToUser {
+  id          String    @id @default(uuid())
+  title       String
+  createdAt   DateTime  @default(now())
+  updatedAT   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String    @map("userId")
+  community   Community @relation(fields: [communityId], references: [id])
+  communityId String    @map("communityId")
+  role        Role      @default(USER)
+}
+
+model Recipe {
+  id                String              @id @default(uuid())
+  title             String
+  content           String //??? to change ?
+  ingredients       Ingredient[]
+  tags              Tag[]
+  createdAt         DateTime            @default(now())
+  updatedAT         DateTime            @updatedAt
+  author            User?               @relation(fields: [authorId], references: [id])
+  authorId          String?             @map("userId")
+  communityToRecipe CommunityToRecipe[]
+  ChildToRecipe     RecipeLink?         @relation("RecipeLink_childToRecipe")
+  ParentToRecipe    RecipeLink[]        @relation("RecipeLink_parentToRecipe")
+}
+
+model CommunityToRecipe {
+  id          String    @id @default(uuid())
+  title       String
+  createdAt   DateTime  @default(now())
+  updatedAT   DateTime  @updatedAt
+  community   Community @relation(fields: [communityId], references: [id])
+  communityId String    @map("communityId")
+  recipe      Recipe    @relation(fields: [recipeId], references: [id])
+  recipeId    String    @map("recipeId")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model RecipeLink {
+  id                               String  @id
+  parent                           String?
+  child                            String? @unique
+  Recipe_RecipeLink_childToRecipe  Recipe? @relation("RecipeLink_childToRecipe", fields: [child], references: [id])
+  Recipe_RecipeLink_parentToRecipe Recipe? @relation("RecipeLink_parentToRecipe", fields: [parent], references: [id])
+}
+
+model Ingredient {
+  id      String   @id
+  recipes Recipe[]
+}
+
+model Tag {
+  id      String   @id
+  recipes Recipe[]
 }
