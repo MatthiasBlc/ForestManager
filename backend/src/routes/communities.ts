@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.get("/", CommunitiesController.getCommunities);
 
-// router.get("/:recipeId", CommunitiesController.getRecipe);
+router.get("/:communityId", CommunitiesController.getCommunity);
 
 // router.post("/", CommunitiesController.createRecipe);
 
