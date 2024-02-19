@@ -1,40 +1,40 @@
 import { useForm } from "react-hook-form";
 import Modal from "./Modal";
-import { Note } from "../models/note";
-import APIManager, { NoteInput } from "../network/api";
+import { Recipe } from "../models/recipe";
+import APIManager, { RecipeInput } from "../network/api";
 import TextInputField from "./form/TextInputField";
 
-interface AddEditNoteDialogProps {
-  noteToEdit?: Note;
+interface AddEditRecipeDialogProps {
+  recipeToEdit?: Recipe;
   onDismiss: () => void;
-  onNoteSaved: (note: Note) => void;
+  onRecipeSaved: (recipe: Recipe) => void;
 }
 
-const AddEditNoteDialog = ({
-  noteToEdit,
+const AddEditRecipeDialog = ({
+  recipeToEdit,
   onDismiss,
-  onNoteSaved,
-}: AddEditNoteDialogProps) => {
+  onRecipeSaved,
+}: AddEditRecipeDialogProps) => {
   const {
     register,
     handleSubmit,
     formState: { isSubmitting },
-  } = useForm<NoteInput>({
+  } = useForm<RecipeInput>({
     defaultValues: {
-      title: noteToEdit?.title ?? "",
-      text: noteToEdit?.text ?? "",
+      title: recipeToEdit?.title ?? "",
+      text: recipeToEdit?.text ?? "",
     },
   });
 
-  async function onSubmit(input: NoteInput) {
+  async function onSubmit(input: RecipeInput) {
     try {
-      let noteResponse: Note;
-      if (noteToEdit) {
-        noteResponse = await APIManager.updateNote(noteToEdit.id, input);
+      let recipeResponse: Recipe;
+      if (recipeToEdit) {
+        recipeResponse = await APIManager.updateRecipe(recipeToEdit.id, input);
       } else {
-        noteResponse = await APIManager.createNote(input);
+        recipeResponse = await APIManager.createRecipe(input);
       }
-      onNoteSaved(noteResponse);
+      onRecipeSaved(recipeResponse);
     } catch (error) {
       console.log(error);
       alert(error);
@@ -45,9 +45,9 @@ const AddEditNoteDialog = ({
     <div className="container">
       <Modal onClose={onDismiss}>
         <h3 className="font-bold text-lg">
-          {noteToEdit ? "Edit note" : "Add note"}{" "}
+          {recipeToEdit ? "Edit recipe" : "Add recipe"}{" "}
         </h3>
-        <form id="addEditNoteForm" onSubmit={handleSubmit(onSubmit)}>
+        <form id="addEditRecipeForm" onSubmit={handleSubmit(onSubmit)}>
           <TextInputField
             name="title"
             label="Title"
@@ -74,7 +74,7 @@ const AddEditNoteDialog = ({
         <div className="modal-action">
           <button
             type="submit"
-            form="addEditNoteForm"
+            form="addEditRecipeForm"
             className="btn btn-primary"
             disabled={isSubmitting}
           >
@@ -89,4 +89,4 @@ const AddEditNoteDialog = ({
   );
 };
 
-export default AddEditNoteDialog;
+export default AddEditRecipeDialog;

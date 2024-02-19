@@ -5,7 +5,7 @@ import SignUpModal from "./components/SignUpModal";
 import { User } from "./models/user";
 import APIManager from "./network/api";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import NotesPage from "./pages/NotesPage";
+import RecipesPage from "./pages/RecipesPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import styles from "./styles/App.module.css";
@@ -41,7 +41,7 @@ function App() {
           <Routes>
             <Route
               path="/"
-              element={<NotesPage loggedInUser={loggedInUser} />}
+              element={<RecipesPage loggedInUser={loggedInUser} />}
             />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/*" element={<NotFoundPage />} />

@@ -1,4 +1,4 @@
-export interface Note {
+export interface Recipe {
   id: string,
   title: string,
   text: string,

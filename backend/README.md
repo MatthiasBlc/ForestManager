@@ -29,7 +29,7 @@ This is the back part of the Forest Manager app.
 
 Api manager error manager
 
-UpdateNote need to be change for check if the ID exist and response with the appropriate error
+UpdateRecipe need to be change for check if the ID exist and response with the appropriate error
 -> same for delete
 
 ## Sources

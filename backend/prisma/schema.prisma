@@ -93,5 +93,6 @@ model Ingredient {
 
 model Tag {
   id      String   @id
+  label   String
   recipes Recipe[]
 }
