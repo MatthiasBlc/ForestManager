@@ -28,7 +28,7 @@ model User {
 
 model Community {
   id                String              @id @default(uuid())
-  title             String
+  name              String
   createdAt         DateTime            @default(now())
   updatedAT         DateTime            @updatedAt
   communityToUsers  CommunityToUser[]
