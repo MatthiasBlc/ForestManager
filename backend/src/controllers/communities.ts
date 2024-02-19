@@ -44,15 +44,6 @@ export const getCommunity: RequestHandler = async (req, res, next) => {
     const community = await prisma.community.findUnique({
       where: {
         id: communityId,
-        // communityToUsers: {
-        //   some: {
-        //     user: {
-        //       is: {
-        //         id: authenticatedUserId
-        //       }
-        //     },
-        //   }
-        // },
       },
       select: {
         id: true,
