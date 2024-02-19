@@ -1,23 +1,23 @@
-import styles from "../styles/Note.module.css";
+import styles from "../styles/Recipe.module.css";
 import styleUtils from "../styles/utils.module.css";
-import { Note as NoteModel } from "../models/note";
+import { Recipe as RecipeModel } from "../models/recipe";
 import { formatDate } from "../utils/format.Date";
 import { MdDelete } from "react-icons/md";
 
-interface NoteProps {
-  note: NoteModel;
-  onNoteClicked: (note: NoteModel) => void;
-  onDeleteNoteClicked: (note: NoteModel) => void;
+interface RecipeProps {
+  recipe: RecipeModel;
+  onRecipeClicked: (recipe: RecipeModel) => void;
+  onDeleteRecipeClicked: (recipe: RecipeModel) => void;
   className?: string;
 }
 
-const Note = ({
-  note,
-  onNoteClicked,
-  onDeleteNoteClicked,
+const Recipe = ({
+  recipe,
+  onRecipeClicked,
+  onDeleteRecipeClicked,
   className,
-}: NoteProps) => {
-  const { title, text, createdAt, updatedAT } = note;
+}: RecipeProps) => {
+  const { title, text, createdAt, updatedAT } = recipe;
 
   let createdUpdatedText: string;
   if (updatedAT > createdAt) {
@@ -28,8 +28,8 @@ const Note = ({
 
   return (
     <div
-      className={`card w-96 bg-base-100 shadow-xl ${styles.noteCard} ${className}`}
-      onClick={() => onNoteClicked(note)}
+      className={`card w-96 bg-base-100 shadow-xl ${styles.recipeCard} ${className}`}
+      onClick={() => onRecipeClicked(recipe)}
     >
       <div className={`card-body ${styles.cardBody} `}>
         <h2 className={`card-title ${styleUtils.flexCenter}`}>
@@ -37,7 +37,7 @@ const Note = ({
           <MdDelete
             className="text-secondary ms-auto"
             onClick={(e: { stopPropagation: () => void }) => {
-              onDeleteNoteClicked(note);
+              onDeleteRecipeClicked(recipe);
               e.stopPropagation();
             }}
           />
@@ -51,4 +51,4 @@ const Note = ({
     </div>
   );
 };
-export default Note;
+export default Recipe;

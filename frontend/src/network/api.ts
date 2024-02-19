@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Note } from "../models/note";
+import { Recipe } from "../models/recipe";
 import { User } from "../models/user";
 import { ConflictError, UnauthorizedError } from "../errors/http_errors";
 
@@ -16,7 +16,7 @@ API.interceptors.request.use(({ headers, ...config }) => ({
 }));
 
 
-export interface NoteInput {
+export interface RecipeInput {
   title: string,
   text: string,
 }
@@ -38,10 +38,10 @@ export default class APIManager {
 
 
 
-  // --------------- Notes ---------------
+  // --------------- Recipes ---------------
 
-  static async loadNotes() {
-    const response = await API.get("/api/notes")
+  static async loadRecipes() {
+    const response = await API.get("/api/recipes")
       .catch(error => {
         console.log(error)
         if (error.response.status === 401) {
@@ -55,8 +55,8 @@ export default class APIManager {
     return response.data;
   }
 
-  static async createNote(note: NoteInput): Promise<Note> {
-    const response = await API.post("/api/notes", JSON.stringify(note))
+  static async createRecipe(recipe: RecipeInput): Promise<Recipe> {
+    const response = await API.post("/api/recipes", JSON.stringify(recipe))
       .catch(error => {
         console.log(error)
         if (error.response.status === 401) {
@@ -70,8 +70,8 @@ export default class APIManager {
     return response.data;
   }
 
-  static async updateNote(noteId: string, note: NoteInput): Promise<Note> {
-    const response = await API.patch("/api/notes/" + noteId, JSON.stringify(note))
+  static async updateRecipe(recipeId: string, recipe: RecipeInput): Promise<Recipe> {
+    const response = await API.patch("/api/recipes/" + recipeId, JSON.stringify(recipe))
       .catch(error => {
         console.log(error)
         if (error.response.status === 401) {
@@ -85,8 +85,8 @@ export default class APIManager {
     return response.data;
   }
 
-  static async deleteNote(noteId: string) {
-    const response = await API.delete("/api/notes/" + noteId)
+  static async deleteRecipe(recipeId: string) {
+    const response = await API.delete("/api/recipes/" + recipeId)
       .catch(error => {
         console.log(error)
         if (error.response.status === 401) {
