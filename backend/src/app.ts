@@ -2,6 +2,7 @@ import "dotenv/config"
 import express, { NextFunction, Request, Response } from "express";
 import recipesRoutes from "./routes/recipes";
 import userRoutes from "./routes/users";
+import communitiesRoutes from "./routes/communities";
 import morgan from "morgan";
 import createHttpError, { isHttpError } from "http-errors";
 import cors from "cors";
@@ -42,6 +43,7 @@ app.use(session({
 
 app.use("/api/users", userRoutes);
 app.use("/api/recipes", requireAuth, recipesRoutes);
+app.use("/api/communities", requireAuth, communitiesRoutes);
 
 app.use((req, res, next) => {
   next(createHttpError(404, "Endpoint not found"));
