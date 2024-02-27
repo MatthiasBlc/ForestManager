@@ -7,7 +7,7 @@ router.get("/", CommunitiesController.getCommunities);
 
 router.get("/:communityId", CommunitiesController.getCommunity);
 
-// router.post("/", CommunitiesController.createRecipe);
+router.post("/", CommunitiesController.createCommunity);
 
 // router.patch("/:recipeId", CommunitiesController.updateRecipe);
 

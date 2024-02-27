@@ -68,3 +68,42 @@ export const getCommunity: RequestHandler = async (req, res, next) => {
     next(error);
   }
 }
+
+interface CreateCommunityBody {
+  name?: string,
+}
+
+export const createCommunity: RequestHandler<unknown, unknown, CreateCommunityBody, unknown> = async (req, res, next) => {
+  const name = req.body.name;
+  const authenticatedUserId = req.session.userId;
+
+
+  try {
+    assertIsDefine(authenticatedUserId);
+
+    if (!name) {
+      throw createHttpError(400, "Community must have a name");
+    }
+    const newCommunity = await prisma.community.create({
+      data: {
+        name: name,
+        communityToUsers: {
+          create: {
+            userId: authenticatedUserId,
+            role: "ADMIN",
+          }
+        },
+      },
+      include: {
+        communityToUsers: true,
+      },
+    });
+    res.status(201).json(newCommunity);
+
+  } catch (error) {
+    next(error);
+  }
+
+};
+
+
