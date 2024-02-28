@@ -107,3 +107,48 @@ export const createCommunity: RequestHandler<unknown, unknown, CreateCommunityBo
 };
 
 
+interface UpdateCommunityParams {
+  communityId: string;
+}
+
+interface UpdateCommunityBody {
+  name?: string,
+}
+
+export const updateCommunity: RequestHandler<UpdateCommunityParams, unknown, UpdateCommunityBody, unknown> = async (req, res, next) => {
+  const communityId = req.params.communityId;
+  const newName = req.body.name;
+  const authenticatedUserId = req.session.userId;
+
+
+  try {
+    assertIsDefine(authenticatedUserId);
+
+    if (!newName) {
+      throw createHttpError(400, "Community must have a title");
+    }
+
+    const updatedCommunity = await prisma.community.update({
+      where: { id: communityId },
+      data: {
+        name: newName,
+      },
+      include: {
+        communityToUsers: true,
+      }
+    })
+
+    if (!updatedCommunity) {
+      throw createHttpError(404, "Community not found");
+    }
+
+    if (!updatedCommunity.communityToUsers.filter((communityToUser) => communityToUser.userId === authenticatedUserId)) {
+      throw createHttpError(401, "You cannot access this community");
+    }
+
+    res.status(200).json(updatedCommunity);
+  } catch (error) {
+    next(error);
+  }
+
+};
