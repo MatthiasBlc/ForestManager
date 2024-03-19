@@ -156,7 +156,6 @@ export const updateCommunity: RequestHandler<UpdateCommunityParams, unknown, Upd
       }
 
       res.status(200).json(updatedCommunity);
-
     } catch (e) {
       if (e instanceof PrismaClientKnownRequestError) {
         if (e.code === 'P2025') {
@@ -165,11 +164,8 @@ export const updateCommunity: RequestHandler<UpdateCommunityParams, unknown, Upd
       }
     }
 
-
   } catch (error) {
     next(error);
-
-
   }
 
 };
