@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 
 export const getCommunities: RequestHandler = async (req, res, next) => {
@@ -128,27 +129,47 @@ export const updateCommunity: RequestHandler<UpdateCommunityParams, unknown, Upd
       throw createHttpError(400, "Community must have a title");
     }
 
-    const updatedCommunity = await prisma.community.update({
-      where: { id: communityId },
-      data: {
-        name: newName,
-      },
-      include: {
-        communityToUsers: true,
+    try {
+      const updatedCommunity = await prisma.community.update({
+        where: {
+          id: communityId,
+          communityToUsers: {
+            some: {
+              userId: authenticatedUserId,
+              role: 'ADMIN'
+            }
+          }
+        },
+        data: {
+          name: newName,
+        },
+        include: {
+          communityToUsers: true,
+        }
+      })
+      if (!updatedCommunity) {
+        throw createHttpError(404, "Community not found");
       }
-    })
 
-    if (!updatedCommunity) {
-      throw createHttpError(404, "Community not found");
+      if (!updatedCommunity.communityToUsers.filter((communityToUser) => communityToUser.userId === authenticatedUserId).length) {
+        throw createHttpError(401, "You cannot access this community");
+      }
+
+      res.status(200).json(updatedCommunity);
+
+    } catch (e) {
+      if (e instanceof PrismaClientKnownRequestError) {
+        if (e.code === 'P2025') {
+          throw createHttpError(401, "You cannot access this community");
+        }
+      }
     }
 
-    if (!updatedCommunity.communityToUsers.filter((communityToUser) => communityToUser.userId === authenticatedUserId)) {
-      throw createHttpError(401, "You cannot access this community");
-    }
 
-    res.status(200).json(updatedCommunity);
   } catch (error) {
     next(error);
+
+
   }
 
 };
