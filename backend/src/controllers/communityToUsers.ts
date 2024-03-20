@@ -11,7 +11,7 @@ interface CreateRecipeBody {
 }
 
 
-const test: RequestHandler<unknown, unknown, CreateRecipeBody, unknown> = async (req, res, next) => {
+const getUserAdded: RequestHandler<unknown, unknown, CreateRecipeBody, unknown> = async (req, res, next) => {
   const userAdded = req.body.userAdded;
 
   try {
@@ -29,7 +29,7 @@ const test: RequestHandler<unknown, unknown, CreateRecipeBody, unknown> = async 
   }
 };
 
-const test2: RequestHandler<unknown, unknown, CreateRecipeBody, unknown> = async (req, res, next) => {
+const getCommunityLinkedId: RequestHandler<unknown, unknown, CreateRecipeBody, unknown> = async (req, res, next) => {
   const communityLinked = req.body.communityLinked;
   const authenticatedUserId = req.session.userId;
 
@@ -61,8 +61,8 @@ const test2: RequestHandler<unknown, unknown, CreateRecipeBody, unknown> = async
 
 export const joinCommunity: RequestHandler<unknown, unknown, CreateRecipeBody, unknown> = async (req, res, next) => {
 
-  const communityLinkedId = await test(req, res, next)
-  const userAddedId = await test2(req, res, next)
+  const userAddedId = await getUserAdded(req, res, next)
+  const communityLinkedId = await getCommunityLinkedId(req, res, next)
   const authenticatedUserId = req.session.userId;
 
   try {
@@ -74,7 +74,6 @@ export const joinCommunity: RequestHandler<unknown, unknown, CreateRecipeBody, u
     if (!communityLinkedId || !userAddedId) {
       throw createHttpError(400, "The user and the community must exist");
     }
-
 
     const newCommunityToUser = await prisma.communityToUser.create({
       data: {
