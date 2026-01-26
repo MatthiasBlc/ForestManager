@@ -1,8 +1,8 @@
 // =============================================================================
 // Forest Manager - Prisma Schema
 // =============================================================================
-// Ce fichier est une RÉFÉRENCE pour le schéma à implémenter.
-// Copier dans backend/prisma/schema.prisma après validation.
+// Ce fichier est une REFERENCE pour le schema a implementer.
+// Copier dans backend/prisma/schema.prisma apres validation.
 // =============================================================================
 
 generator client {
@@ -15,7 +15,7 @@ datasource db {
 }
 
 // =============================================================================
-// SESSION (pour express-session)
+// SESSION (pour express-session avec @quixo3/prisma-session-store)
 // =============================================================================
 
 model Session {
@@ -23,6 +23,131 @@ model Session {
   sid       String   @unique
   data      String
   expiresAt DateTime
+}
+
+// =============================================================================
+// ADMIN SESSION (isolee pour SuperAdmin - securite renforcee)
+// =============================================================================
+
+model AdminSession {
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt DateTime
+}
+
+// =============================================================================
+// ADMIN USER (SuperAdmin - completement isole de User)
+// Authentification 2FA TOTP obligatoire
+// =============================================================================
+
+model AdminUser {
+  id          String    @id @default(uuid())
+  email       String    @unique
+  username    String    @unique
+  password    String    // bcrypt hash
+  totpSecret  String    // Secret TOTP pour 2FA (Google Authenticator)
+  totpEnabled Boolean   @default(false) // Active apres premiere config
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lastLoginAt DateTime?
+
+  // Relations
+  featuresGranted CommunityFeature[] @relation("FeatureGrantedBy")
+  activities      AdminActivityLog[]
+
+  @@index([email])
+  @@index([username])
+}
+
+// =============================================================================
+// FEATURE (Briques/Modules attribuables aux communautes)
+// =============================================================================
+
+model Feature {
+  id          String   @id @default(uuid())
+  code        String   @unique  // "MVP", "MEAL_PLANNER", etc.
+  name        String            // "Fonctionnalites de base"
+  description String?
+  isDefault   Boolean  @default(false) // Attribue auto a la creation communaute
+  createdAt   DateTime @default(now())
+
+  // Relations
+  communities CommunityFeature[]
+
+  @@index([code])
+}
+
+// =============================================================================
+// COMMUNITY-FEATURE (Pivot - attribution des briques aux communautes)
+// =============================================================================
+
+model CommunityFeature {
+  id          String    @id @default(uuid())
+  communityId String
+  featureId   String
+  grantedAt   DateTime  @default(now())
+  grantedById String?   // AdminUser qui a attribue (null si auto/default)
+  revokedAt   DateTime? // Soft revoke (garder historique)
+
+  // Relations
+  community Community  @relation(fields: [communityId], references: [id])
+  feature   Feature    @relation(fields: [featureId], references: [id])
+  grantedBy AdminUser? @relation("FeatureGrantedBy", fields: [grantedById], references: [id])
+
+  @@unique([communityId, featureId])
+  @@index([communityId])
+  @@index([featureId])
+}
+
+// =============================================================================
+// ADMIN ACTIVITY LOG (Audit des actions SuperAdmin)
+// =============================================================================
+
+model AdminActivityLog {
+  id         String          @id @default(uuid())
+  type       AdminActionType
+  targetType String?         // "Community", "Tag", "Ingredient", "Feature"
+  targetId   String?
+  metadata   Json?           // Donnees additionnelles (ancien nom, nouveau nom, etc.)
+  createdAt  DateTime        @default(now())
+
+  // Relations
+  adminId String
+  admin   AdminUser @relation(fields: [adminId], references: [id])
+
+  @@index([adminId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+enum AdminActionType {
+  // Tags
+  TAG_CREATED
+  TAG_UPDATED
+  TAG_DELETED
+  TAG_MERGED
+
+  // Ingredients
+  INGREDIENT_CREATED
+  INGREDIENT_UPDATED
+  INGREDIENT_DELETED
+  INGREDIENT_MERGED
+
+  // Communities
+  COMMUNITY_RENAMED
+  COMMUNITY_DELETED
+
+  // Features
+  FEATURE_CREATED
+  FEATURE_UPDATED
+  FEATURE_GRANTED
+  FEATURE_REVOKED
+
+  // Admin auth
+  ADMIN_LOGIN
+  ADMIN_LOGOUT
+  ADMIN_TOTP_SETUP
 }
 
 // =============================================================================
@@ -40,10 +165,12 @@ model User {
 
   // Relations
   communities       UserCommunity[]
-  recipes           Recipe[]           @relation("RecipeCreator")
+  recipes           Recipe[]               @relation("RecipeCreator")
   proposals         RecipeUpdateProposal[] @relation("ProposalProposer")
   activities        ActivityLog[]
   recipeViews       RecipeView[]
+  invitesSent       CommunityInvite[]      @relation("InviteSender")
+  invitesReceived   CommunityInvite[]      @relation("InviteReceiver")
 
   @@index([email])
   @@index([username])
@@ -65,9 +192,11 @@ model Community {
 
   // Relations
   members         UserCommunity[]
-  recipes         Recipe[]        @relation("CommunityRecipes")
-  sharedRecipes   Recipe[]        @relation("SharedFromCommunity")
+  recipes         Recipe[]          @relation("CommunityRecipes")
+  sharedRecipes   Recipe[]          @relation("SharedFromCommunity")
   activities      ActivityLog[]
+  invites         CommunityInvite[]
+  features        CommunityFeature[] // Briques attribuees a cette communaute
 
   @@index([deletedAt])
 }
@@ -77,7 +206,8 @@ enum Visibility {
 }
 
 // =============================================================================
-// USER-COMMUNITY (Pivot table avec rôle)
+// USER-COMMUNITY (Pivot table avec role)
+// Note: Soft delete gere cote applicatif - pas de onDelete Cascade
 // =============================================================================
 
 model UserCommunity {
@@ -88,9 +218,9 @@ model UserCommunity {
   joinedAt    DateTime @default(now())
   deletedAt   DateTime?
 
-  // Relations
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  // Relations (pas de Cascade - soft delete applicatif)
+  user      User      @relation(fields: [userId], references: [id])
+  community Community @relation(fields: [communityId], references: [id])
 
   @@unique([userId, communityId])
   @@index([userId])
@@ -104,14 +234,51 @@ enum Role {
 }
 
 // =============================================================================
+// COMMUNITY INVITE (Systeme d'invitation avec acceptation explicite)
+// =============================================================================
+
+model CommunityInvite {
+  id          String       @id @default(uuid())
+  communityId String
+  inviterId   String       // Admin qui envoie l'invitation
+  inviteeId   String       // Utilisateur invite
+  status      InviteStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  respondedAt DateTime?    // Date de reponse (accept/reject)
+  deletedAt   DateTime?
+
+  // Relations
+  community Community @relation(fields: [communityId], references: [id])
+  inviter   User      @relation("InviteSender", fields: [inviterId], references: [id])
+  invitee   User      @relation("InviteReceiver", fields: [inviteeId], references: [id])
+
+  // Note: Pas de @@unique car on garde l'historique des invitations
+  // La contrainte "une seule PENDING par user/community" est geree cote applicatif
+  // Avant de creer une invitation: verifier qu'il n'existe pas de PENDING pour ce couple
+  @@index([communityId])
+  @@index([inviteeId])
+  @@index([status])
+  @@index([deletedAt])
+  @@index([communityId, inviteeId, status]) // Index composite pour la verification
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED // Si l'admin annule l'invitation
+}
+
+// =============================================================================
 // RECIPE
+// Note: Soft delete gere cote applicatif
 // =============================================================================
 
 model Recipe {
   id                    String    @id @default(uuid())
   title                 String
   content               String    // Markdown ou rich text
-  imageUrl              String?
+  imageUrl              String?   // Optionnel - stockage differe a V1
   isVariant             Boolean   @default(false)
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
@@ -123,16 +290,19 @@ model Recipe {
 
   // Relations - Community (null = catalogue personnel)
   communityId           String?
-  community             Community? @relation("CommunityRecipes", fields: [communityId], references: [id], onDelete: SetNull)
+  community             Community? @relation("CommunityRecipes", fields: [communityId], references: [id])
 
-  // Relations - Origin (pour forks et variantes)
+  // Relations - Origin (pour forks, variantes, et lien perso/communautaire)
+  // Si originRecipe.communityId == null -> c'est la recette personnelle liee
+  // Si isVariant == true -> c'est une variante
+  // Si sharedFromCommunityId != null -> c'est un fork inter-communautes
   originRecipeId        String?
-  originRecipe          Recipe?   @relation("RecipeVariants", fields: [originRecipeId], references: [id], onDelete: SetNull)
+  originRecipe          Recipe?   @relation("RecipeVariants", fields: [originRecipeId], references: [id])
   variants              Recipe[]  @relation("RecipeVariants")
 
-  // Relations - Shared from (pour traçabilité des forks)
+  // Relations - Shared from (pour tracabilite des forks)
   sharedFromCommunityId String?
-  sharedFromCommunity   Community? @relation("SharedFromCommunity", fields: [sharedFromCommunityId], references: [id], onDelete: SetNull)
+  sharedFromCommunity   Community? @relation("SharedFromCommunity", fields: [sharedFromCommunityId], references: [id])
 
   // Relations - Other
   tags                  RecipeTag[]
@@ -150,6 +320,7 @@ model Recipe {
 
 // =============================================================================
 // RECIPE UPDATE PROPOSAL
+// Note: Soft delete gere cote applicatif
 // =============================================================================
 
 model RecipeUpdateProposal {
@@ -161,9 +332,9 @@ model RecipeUpdateProposal {
   decidedAt       DateTime?
   deletedAt       DateTime?
 
-  // Relations
+  // Relations (pas de Cascade - soft delete applicatif)
   recipeId        String
-  recipe          Recipe         @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  recipe          Recipe         @relation(fields: [recipeId], references: [id])
 
   proposerId      String
   proposer        User           @relation("ProposalProposer", fields: [proposerId], references: [id])
@@ -182,6 +353,7 @@ enum ProposalStatus {
 
 // =============================================================================
 // TAG & RECIPE-TAG
+// Note: Tables pivot - Cascade OK (hard delete quand recette supprimee)
 // =============================================================================
 
 model Tag {
@@ -207,6 +379,8 @@ model RecipeTag {
 
 // =============================================================================
 // INGREDIENT & RECIPE-INGREDIENT
+// Note: Ingredients crees a la volee (comme les tags)
+// Tables pivot - Cascade OK
 // =============================================================================
 
 model Ingredient {
@@ -240,7 +414,7 @@ model RecipeIngredient {
 model ActivityLog {
   id          String       @id @default(uuid())
   type        ActivityType
-  metadata    Json?        // Données additionnelles
+  metadata    Json?        // Donnees additionnelles
   createdAt   DateTime     @default(now())
 
   // Relations
@@ -248,10 +422,10 @@ model ActivityLog {
   user        User         @relation(fields: [userId], references: [id])
 
   communityId String?
-  community   Community?   @relation(fields: [communityId], references: [id], onDelete: SetNull)
+  community   Community?   @relation(fields: [communityId], references: [id])
 
   recipeId    String?
-  recipe      Recipe?      @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+  recipe      Recipe?      @relation(fields: [recipeId], references: [id])
 
   @@index([communityId])
   @@index([userId])
@@ -260,19 +434,34 @@ model ActivityLog {
 }
 
 enum ActivityType {
+  // Recettes
   RECIPE_CREATED
+  RECIPE_UPDATED
+  RECIPE_DELETED
   RECIPE_SHARED
+
+  // Variantes et propositions
   VARIANT_PROPOSED
   VARIANT_CREATED
   PROPOSAL_ACCEPTED
   PROPOSAL_REJECTED
+
+  // Membres
   USER_JOINED
   USER_LEFT
+  USER_KICKED
   USER_PROMOTED
+
+  // Invitations
+  INVITE_SENT        // Invitation envoyee
+  INVITE_ACCEPTED    // Invitation acceptee
+  INVITE_REJECTED    // Invitation refusee
+  INVITE_CANCELLED   // Invitation annulee par admin
 }
 
 // =============================================================================
-// ANALYTICS (Optionnel - préparé pour le futur)
+// ANALYTICS (Optionnel - prepare pour le futur)
+// Tables techniques - Cascade OK
 // =============================================================================
 
 model RecipeAnalytics {
@@ -296,7 +485,7 @@ model RecipeView {
   recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 
   userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user      User?    @relation(fields: [userId], references: [id])
 
   @@index([recipeId])
   @@index([viewedAt])
