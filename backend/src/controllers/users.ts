@@ -4,8 +4,11 @@ import prisma from "../util/db";
 import bcrypt from "bcrypt";
 
 export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
-
   try {
+    if (!req.session.userId) {
+      return res.status(200).json(null);
+    }
+
     const user = await prisma.user.findUnique({
       where: {
         id: req.session.userId,
@@ -14,12 +17,11 @@ export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
         username: true,
         email: true,
       },
-    })
+    });
     res.status(200).json(user);
   } catch (error) {
     next(error);
   }
-
 };
 
 interface SignUpBody {
