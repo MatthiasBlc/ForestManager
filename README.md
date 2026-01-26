@@ -1,144 +1,147 @@
-# Forest Manager
+# ForestManager Boilerplate
 
-## Table of contents
-
-- [General info](#general-info)
-- [Technologies](#technologies)
-- [Project management](#project-management)
-- [Prerequisites](#Prerequisites)
-- [How to install](#How-to-install)
-- [How to use](#How-to-use)
-- [Features](#features)
-- [Sources](#sources)
-
-## General info
-
-This application allows users to come together as a community and share information (recipes etc.).
+Full-stack boilerplate with React + Express + PostgreSQL + Docker, ready for CI/CD deployment.
 
 ## Technologies
 
-![Javascript](https://img.shields.io/badge/JavaScript-323330?style=for-the-badge&logo=javascript&logoColor=F7DF1E)
-![Typescript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![NodeJS](https://img.shields.io/badge/Node%20js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
-![ExpressJS](https://img.shields.io/badge/Express%20js-000000?style=for-the-badge&logo=express&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![Vite](https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)
-![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![NodeJS](https://img.shields.io/badge/Node%20js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express%20js-000000?style=for-the-badge&logo=express&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
-![Github-Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
 
-## Project management
+## Quick Start
 
-https://trello.com/b/hTrvLdtQ/0-workflow
+### Prerequisites
 
-Live démo in production :
+- Docker & Docker Compose
 
-https://forest-manager.matthias-bouloc.fr
+### Development
 
-## Prerequisites
-
-You need to add a docker-compose.yml for dev env:
-
-```
-services:
-  postgres:
-    image: postgres:13
-    restart: always
-    container_name: postgres
-    hostname: postgres
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-    volumes:
-      - ./postgresql/data:/var/lib/postgresql/data
-    networks:
-      - proxy
-    ports:
-      - '5432:5432'
-  backenddev:
-    extends:
-      file: common.yml
-      service: backend
-    ports:
-      - "3000:3000"
-  frontenddev:
-    extends:
-      file: common.yml
-      service: frontend
-    ports:
-      - "8080:8080"
-networks:
-  proxy:
-    external: true
-```
-
-You need to add an .env file:
-
-```
-# Postgres
-POSTGRES_USER=
-POSTGRES_PASSWORD=
-POSTGRES_DB=
-
-# Backend
-PORT=
-DATABASE_URL=postgresql://POSTGRES_USER:POSTGRES_PASSWORD@postgres:5432/POSTGRES_DB?schema=backend
-SESSION_SECRET=
-CORS_ORIGIN=
-
-# Frontend
-VITE_BACKEND_URL=
-```
-
-The postgresDB must exist in Postgres.
-
-The docker network "proxy" must exist.
-
-## How to install
-
-1 - Clone this repo on your machine
-2 - Open it in a Terminal
-3 - Run this command to initialize the project :
-
-```
-npm run docker:build
-```
-
-## How to use
-
-1 - Just run the following commands in your Terminal (inside the project's directory):
-for detached version :
-
-```
-npm run docker:upd
-```
-
-Or for non-detached version:
-
-```
+```bash
+# Start all services
 npm run docker:up
+
+# Or rebuild and start (cleans old images automatically)
+npm run docker:up:build
 ```
 
-And for stop the docker:
+**URLs:**
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:3000 |
+| Backend API | http://localhost:3001 |
+| Prisma Studio | http://localhost:5555 (via `npm run prisma:studio`) |
+
+### Test Accounts
+
+| Username | Password |
+|----------|----------|
+| pizza_lover | password123 |
+| pie_fan | password123 |
+
+## Scripts
+
+```bash
+npm run docker:up          # Start containers
+npm run docker:up:d        # Start in background
+npm run docker:up:build    # Rebuild + start + cleanup old images
+npm run docker:down        # Stop containers
+npm run docker:clean       # Stop and remove volumes
+npm run docker:logs        # View all logs
+npm run prisma:studio      # Open Prisma Studio
+npm run prisma:migrate     # Run migrations
+```
+
+## Project Structure
 
 ```
-npm run docker:down
+├── backend/
+│   ├── src/
+│   │   ├── controllers/    # Route handlers
+│   │   ├── middleware/     # Express middleware (auth)
+│   │   ├── routes/         # API routes
+│   │   └── util/           # Utilities (db, env validation)
+│   ├── prisma/
+│   │   ├── schema.prisma   # Database schema
+│   │   └── seed.js         # Seed data (auto-skips if DB not empty)
+│   └── Dockerfile
+├── frontend/
+│   ├── src/
+│   │   ├── components/     # React components
+│   │   ├── pages/          # Page components
+│   │   ├── network/        # API client (axios)
+│   │   └── models/         # TypeScript types
+│   └── Dockerfile
+├── docker-compose.yml      # Development config
+├── docker-compose.prod.yml # Production config
+└── .github/workflows/      # CI/CD pipeline
 ```
 
-2 - You can access the project on the url : [http://localhost:8000/](http://localhost:8000/)
+## Deployment
 
-That's it!  
-You have now access to this boiler plate! You can modify it as you wish for your projects.
+### GitHub Secrets Required
+
+| Secret | Description |
+|--------|-------------|
+| `REGISTRY_URL` | Docker registry URL |
+| `REGISTRY_USERNAME` | Registry username |
+| `REGISTRY_PASSWORD` | Registry password |
+| `IMAGE_NAME` | Image name prefix |
+| `PORTAINER_URL` | Portainer URL |
+| `PORTAINER_API` | Portainer API key |
+| `STACK_ID` | Portainer stack ID |
+| `ENDPOINT_ID` | Portainer endpoint ID |
+| `POSTGRES_USER` | Database user |
+| `POSTGRES_PASSWORD` | Database password |
+| `POSTGRES_DB` | Database name |
+| `SESSION_SECRET` | Express session secret (min 32 chars) |
+| `CORS_ORIGIN` | Allowed CORS origin |
+| `API_URL` | Public API URL |
+
+### CI/CD Pipeline
+
+On push to `master`:
+1. Build Docker images (backend + frontend)
+2. Push to registry
+3. Deploy via Portainer
+4. Cleanup old images from registry
+
+### Registry Garbage Collection
+
+Add this cron job on your server to reclaim disk space:
+
+```bash
+# Runs daily at 3am
+0 3 * * * docker exec registry bin/registry garbage-collect /etc/docker/registry/config.yml --delete-untagged
+```
+
+## Creating a New Project
+
+1. Clone this repository
+2. Find and replace `forestmanager` / `ForestManager` with your project name in:
+   - `package.json` (root, backend, frontend)
+   - `docker-compose.yml` / `docker-compose.prod.yml`
+   - `.env.example`
+3. Update `backend/prisma/schema.prisma` with your data models
+4. Update `backend/prisma/seed.js` with your seed data
+5. Configure GitHub Secrets for deployment
 
 ## Features
 
-You can:
+- User authentication (signup, login, logout, sessions)
+- Session persistence with PostgreSQL
+- Protected API routes
+- Responsive UI with TailwindCSS + daisyUI
+- Hot reload in development
+- Automatic database migrations
+- Auto-seeding on first deployment
 
-- Create an account
-- Login
-- Logout
+## Author
 
-## Sources
-
-This app is created and made by [MatthiasBlc](https://github.com/MatthiasBlc).
+Created by [MatthiasBlc](https://github.com/MatthiasBlc)

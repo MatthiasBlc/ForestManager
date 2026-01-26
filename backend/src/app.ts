@@ -1,4 +1,3 @@
-import "dotenv/config"
 import express, { NextFunction, Request, Response } from "express";
 import recipesRoutes from "./routes/recipes";
 import userRoutes from "./routes/users";
@@ -40,6 +39,11 @@ app.use(session({
     }
   )
 }));
+
+// Health check endpoint (before auth, no logging)
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 app.use("/api/users", userRoutes);
 app.use("/api/recipes", requireAuth, recipesRoutes);

@@ -4,11 +4,12 @@
   "description": "",
   "main": "dist/index.js",
   "scripts": {
-    "devstart": "nodemon script.ts",
-    "start": "nodemon src/server.ts",
+    "dev": "nodemon src/server.ts",
+    "start": "node dist/server.js",
+    "build": "tsc",
     "lint": "eslint . --ext .ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:migrate:prod": "prisma migrate deploy && npm run start"
+    "start:migrate:prod": "prisma migrate deploy && prisma db seed && npm run start"
   },
   "keywords": [],
   "author": "",
@@ -28,19 +29,18 @@
     "@typescript-eslint/parser": "^6.8.0",
     "eslint": "^8.51.0",
     "nodemon": "^3.0.1",
-    "prisma": "^5.5.0",
+    "prisma": "^6.2.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@prisma/client": "^5.5.0",
+    "@prisma/client": "^6.2.0",
     "@quixo3/prisma-session-store": "^3.1.13",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
     "envalid": "^8.0.0",
-    "express": "^4.18.2",
-    "express-session": "^1.17.3",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
     "http-errors": "^2.0.0",
     "morgan": "^1.10.0"
   }

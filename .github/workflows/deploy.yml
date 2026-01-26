@@ -1,71 +1,157 @@
-name: Create and publish a Docker image
+name: Build and Deploy
 
 on:
   push:
     branches:
       - master
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+      # - main  # Uncomment if using main branch
 
 jobs:
-  build-and-push-image:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    # strategy:
-    #   fail-fast: false
-    #   matrix:
-    #     include:
-    #       - dockerfile: ./backend/Dockerfile
-    #         image: ghcr.io/MatthiasBlc/image1
-    #       - dockerfile: ./frontend/Dockerfile
-    #         image: ghcr.io/MatthiasBlc/image2
-    permissions:
-      contents: read
-      packages: write
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Login to GitHub Packages
-        uses: docker/login-action@v1
+      - name: Install CA certificates
+        run: sudo apt-get update && sudo apt-get install -y ca-certificates
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
 
-      - name: Prepare metadata
-        id: meta
-        uses: docker/metadata-action@v3
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: |
+          npm ci
+          npx prisma generate
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Registry
+        uses: docker/login-action@v3
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=ref,event=tag
-            type=sha
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      # - name: Build and push
-      #   uses: docker/build-push-action@v4
-      #   with:
-      #     file: ${{ matrix.dockerfile }}
-      #     build-args: |
-      #       APP_RELEASE=${{ github.sha }}
-      #     push: ${{ github.event_name != 'pull_request' }}
-      #     tags: ${{ steps.meta.outputs.tags }}
-      #     labels: ${{ steps.meta.outputs.labels }}
+      - name: Install regctl and save current image digests
+        id: save-digests
+        run: |
+          # Install regctl for registry management
+          curl -sL https://github.com/regclient/regclient/releases/latest/download/regctl-linux-amd64 > /tmp/regctl
+          chmod +x /tmp/regctl
 
-      - name: Deploy the new image
-        uses: appleboy/ssh-action@master
+          # Configure registry credentials
+          /tmp/regctl registry login ${{ secrets.REGISTRY_URL }} -u ${{ secrets.REGISTRY_USERNAME }} -p ${{ secrets.REGISTRY_PASSWORD }}
+
+          # Save current digests before pushing new images
+          BACKEND_REPO="${{ secrets.REGISTRY_URL }}/${{ secrets.IMAGE_NAME }}/backend"
+          FRONTEND_REPO="${{ secrets.REGISTRY_URL }}/${{ secrets.IMAGE_NAME }}/frontend"
+
+          OLD_BACKEND_DIGEST=$(/tmp/regctl image digest "$BACKEND_REPO:latest" 2>/dev/null || echo "")
+          OLD_FRONTEND_DIGEST=$(/tmp/regctl image digest "$FRONTEND_REPO:latest" 2>/dev/null || echo "")
+
+          echo "old_backend_digest=$OLD_BACKEND_DIGEST" >> $GITHUB_OUTPUT
+          echo "old_frontend_digest=$OLD_FRONTEND_DIGEST" >> $GITHUB_OUTPUT
+
+          echo "Saved old backend digest: $OLD_BACKEND_DIGEST"
+          echo "Saved old frontend digest: $OLD_FRONTEND_DIGEST"
+
+      - name: Build and push Backend image
+        uses: docker/build-push-action@v5
         with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.KEY }}
-          port: ${{ secrets.PORT }}
-          script: |
-            cd ${{ secrets.FOLDER }}/ForestManager/
-            git pull origin master
-            npm run docker:build
-            npm run docker:down
-            npm run docker:upd
+          context: .
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ secrets.REGISTRY_URL }}/${{ secrets.IMAGE_NAME }}/backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          target: production
+          push: true
+          tags: ${{ secrets.REGISTRY_URL }}/${{ secrets.IMAGE_NAME }}/frontend:latest
+          build-args: |
+            VITE_BACKEND_URL=${{ secrets.API_URL }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Install deployment dependencies
+        run: sudo apt-get install -y jq curl
+
+      - name: Deploy to Portainer
+        run: |
+          chmod +x ./deploy_prod.sh
+          ./deploy_prod.sh
+        env:
+          PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
+          PORTAINER_API: ${{ secrets.PORTAINER_API }}
+          STACK_ID: ${{ secrets.STACK_ID }}
+          ENDPOINT_ID: ${{ secrets.ENDPOINT_ID }}
+          REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
+          IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          CORS_ORIGIN: ${{ secrets.CORS_ORIGIN }}
+          API_URL: ${{ secrets.API_URL }}
+
+      - name: Cleanup old images from registry
+        run: |
+          # For registry:2, delete the old manifests by their digest
+          # This requires REGISTRY_STORAGE_DELETE_ENABLED=true on the registry server
+
+          BACKEND_REPO="${{ secrets.REGISTRY_URL }}/${{ secrets.IMAGE_NAME }}/backend"
+          FRONTEND_REPO="${{ secrets.REGISTRY_URL }}/${{ secrets.IMAGE_NAME }}/frontend"
+
+          OLD_BACKEND_DIGEST="${{ steps.save-digests.outputs.old_backend_digest }}"
+          OLD_FRONTEND_DIGEST="${{ steps.save-digests.outputs.old_frontend_digest }}"
+
+          NEW_BACKEND_DIGEST=$(/tmp/regctl image digest "$BACKEND_REPO:latest" 2>/dev/null || echo "")
+          NEW_FRONTEND_DIGEST=$(/tmp/regctl image digest "$FRONTEND_REPO:latest" 2>/dev/null || echo "")
+
+          echo "=== Cleaning up old images ==="
+
+          # Delete old backend image if different from new one
+          if [ -n "$OLD_BACKEND_DIGEST" ] && [ "$OLD_BACKEND_DIGEST" != "$NEW_BACKEND_DIGEST" ]; then
+            echo "Deleting old backend image: $OLD_BACKEND_DIGEST"
+            /tmp/regctl manifest delete "$BACKEND_REPO@$OLD_BACKEND_DIGEST" 2>/dev/null && \
+              echo "Successfully deleted old backend manifest" || \
+              echo "Could not delete old backend manifest (ensure REGISTRY_STORAGE_DELETE_ENABLED=true)"
+          else
+            echo "No old backend image to delete (same digest or first deploy)"
+          fi
+
+          # Delete old frontend image if different from new one
+          if [ -n "$OLD_FRONTEND_DIGEST" ] && [ "$OLD_FRONTEND_DIGEST" != "$NEW_FRONTEND_DIGEST" ]; then
+            echo "Deleting old frontend image: $OLD_FRONTEND_DIGEST"
+            /tmp/regctl manifest delete "$FRONTEND_REPO@$OLD_FRONTEND_DIGEST" 2>/dev/null && \
+              echo "Successfully deleted old frontend manifest" || \
+              echo "Could not delete old frontend manifest (ensure REGISTRY_STORAGE_DELETE_ENABLED=true)"
+          else
+            echo "No old frontend image to delete (same digest or first deploy)"
+          fi
+
+          echo "=== Cleanup complete ==="
+          echo ""
+          echo "NOTE: For registry:2, you must run garbage collection on the server to reclaim disk space:"
+          echo "  docker exec <registry-container> bin/registry garbage-collect /etc/docker/registry/config.yml"
+
+      - name: Deployment complete
+        run: |
+          echo "Deployment complete!"
+          echo "Backend: ${{ secrets.REGISTRY_URL }}/${{ secrets.IMAGE_NAME }}/backend:latest"
+          echo "Frontend: ${{ secrets.REGISTRY_URL }}/${{ secrets.IMAGE_NAME }}/frontend:latest"

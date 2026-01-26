@@ -1,20 +1,27 @@
 {
-  "name": "forest_manager",
+  "name": "forestmanager",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "ForestManager - Full-stack web application",
   "scripts": {
-    "docker:build": "docker-compose -p forest_manager build",
-    "docker:down": "docker-compose -p forest_manager down",
-    "docker:up": "docker-compose -p forest_manager up",
-    "docker:upd": "docker-compose -p forest_manager up -d",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "docker:up": "docker compose up",
+    "docker:up:d": "docker compose up -d",
+    "docker:up:build": "docker compose up -d --build && docker image prune -f",
+    "docker:down": "docker compose down",
+    "docker:build": "docker compose build && docker image prune -f",
+    "docker:logs": "docker compose logs -f",
+    "docker:logs:backend": "docker compose logs -f backend",
+    "docker:logs:frontend": "docker compose logs -f frontend",
+    "docker:restart": "docker compose restart",
+    "docker:clean": "docker compose down -v --remove-orphans",
+    "prisma:studio": "docker compose exec backend npx prisma studio",
+    "prisma:migrate": "docker compose exec backend npx prisma migrate dev",
+    "prisma:generate": "docker compose exec backend npx prisma generate"
   },
-    "repository": {
+  "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/MatthiasBlc/ForestManager"
   },
   "keywords": [],
-  "author": "",
+  "author": "Matthias Bouloc",
   "license": "ISC"
 }
