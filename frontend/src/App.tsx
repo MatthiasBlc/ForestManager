@@ -8,6 +8,10 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import RecipesPage from "./pages/RecipesPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import AdminLoginPage from "./pages/admin/AdminLoginPage";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
+import AdminLayout from "./components/admin/AdminLayout";
 import styles from "./styles/App.module.css";
 
 function App() {
@@ -44,6 +48,20 @@ function App() {
               element={<RecipesPage loggedInUser={loggedInUser} />}
             />
             <Route path="/privacy" element={<PrivacyPage />} />
+
+            {/* Admin routes - isolated auth context */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route path="login" element={<AdminLoginPage />} />
+              <Route
+                path="dashboard"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminDashboardPage />
+                  </AdminProtectedRoute>
+                }
+              />
+            </Route>
+
             <Route path="/*" element={<NotFoundPage />} />
           </Routes>
         </div>

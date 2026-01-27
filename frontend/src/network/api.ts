@@ -1,6 +1,7 @@
 import axios from "axios";
 import { Recipe } from "../models/recipe";
 import { User } from "../models/user";
+import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats } from "../models/admin";
 import { ConflictError, UnauthorizedError } from "../errors/http_errors";
 
 const apiUrl = import.meta.env.VITE_BACKEND_URL;
@@ -162,5 +163,74 @@ export default class APIManager {
     return response.data;
   }
 
+
+  // --------------- Admin Auth ---------------
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static async adminLogin(email: string, password: string): Promise<AdminLoginResponse> {
+    const response = await API.post("/api/admin/auth/login", JSON.stringify({ email, password }))
+      .catch((error: any) => {
+        if (error.response?.status === 401) {
+          throw new UnauthorizedError(error.response.data.error);
+        } else if (error.response?.status === 429) {
+          throw new Error(error.response.data.error || "Too many login attempts");
+        } else {
+          throw new Error(error.response?.data?.error || "Login failed");
+        }
+      });
+    return response.data;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static async adminVerifyTotp(code: string): Promise<AdminTotpResponse> {
+    const response = await API.post("/api/admin/auth/totp/verify", JSON.stringify({ code }))
+      .catch((error: any) => {
+        if (error.response?.status === 401) {
+          throw new UnauthorizedError(error.response.data.error);
+        } else if (error.response?.status === 429) {
+          throw new Error(error.response.data.error || "Too many attempts");
+        } else {
+          throw new Error(error.response?.data?.error || "TOTP verification failed");
+        }
+      });
+    return response.data;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static async adminLogout(): Promise<void> {
+    await API.post("/api/admin/auth/logout")
+      .catch((error: any) => {
+        throw new Error(error.response?.data?.error || "Logout failed");
+      });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static async getLoggedInAdmin(): Promise<AdminUser> {
+    const response = await API.get("/api/admin/auth/me")
+      .catch((error: any) => {
+        if (error.response?.status === 401) {
+          throw new UnauthorizedError(error.response.data.error);
+        } else {
+          throw new Error(error.response?.data?.error || "Failed to get admin info");
+        }
+      });
+    return response.data.admin;
+  }
+
+
+  // --------------- Admin Dashboard ---------------
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  static async getAdminDashboardStats(): Promise<DashboardStats> {
+    const response = await API.get("/api/admin/dashboard/stats")
+      .catch((error: any) => {
+        if (error.response?.status === 401) {
+          throw new UnauthorizedError(error.response.data.error);
+        } else {
+          throw new Error(error.response?.data?.error || "Failed to load dashboard");
+        }
+      });
+    return response.data;
+  }
 
 }

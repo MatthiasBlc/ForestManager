@@ -92,19 +92,19 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Attribution auto features par defaut
 
 ### 0.5.5 Frontend Admin (NOUVEAU)
-- [ ] Route React /admin/login
+- [x] Route React /admin/login
   - Etape 1: Formulaire email + password
   - Etape 2: Affichage QR code si !totpEnabled (setup initial)
   - Etape 3: Champ code TOTP (6 chiffres)
   - **Securite**: Pas de stockage token/secret cote client
   - **Securite**: Redirect si deja authentifie
-- [ ] Route React /admin/dashboard (protegee)
+- [x] Route React /admin/dashboard (protegee)
   - Layout admin separe du frontend user
   - Affichage stats basiques
-- [ ] Composant AdminProtectedRoute
+- [x] Composant AdminProtectedRoute
   - Verifie session admin via /api/admin/auth/me
   - Redirect vers /admin/login si non authentifie
-- [ ] Context AdminAuthProvider (isole de AuthProvider user)
+- [x] Context AdminAuthProvider (isole de AuthProvider user)
 
 ### 0.5.6 Securite Admin (transversal)
 - [x] Rate limiting sur /api/admin/auth/* (express-rate-limit, 5/15min)
