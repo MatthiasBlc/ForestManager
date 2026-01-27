@@ -12,14 +12,15 @@ export const getRecipes: RequestHandler = async (req, res, next) => {
     assertIsDefine(authenticatedUserId);
     const recipes = await prisma.recipe.findMany({
       where: {
-        authorId: authenticatedUserId,
+        creatorId: authenticatedUserId,
+        deletedAt: null,
       },
       select: {
         id: true,
         title: true,
         content: true,
         createdAt: true,
-        updatedAT: true,
+        updatedAt: true,
       },
     })
     res.status(200).json(recipes);
@@ -38,15 +39,16 @@ export const getRecipe: RequestHandler = async (req, res, next) => {
     const recipe = await prisma.recipe.findUnique({
       where: {
         id: recipeId,
+        deletedAt: null,
       },
       select: {
         id: true,
         title: true,
         content: true,
         createdAt: true,
-        updatedAT: true,
-        author: true,
-        authorId: true
+        updatedAt: true,
+        creator: true,
+        creatorId: true
       },
     })
 
@@ -54,7 +56,7 @@ export const getRecipe: RequestHandler = async (req, res, next) => {
       throw createHttpError(404, "Recipe not found");
     }
 
-    if (!recipe.authorId === authenticatedUserId) {
+    if (recipe.creatorId !== authenticatedUserId) {
       throw createHttpError(401, "You cannot access this recipe");
     }
 
@@ -86,7 +88,7 @@ export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeBody, un
       data: {
         title: title,
         content: text,
-        authorId: authenticatedUserId
+        creatorId: authenticatedUserId
       },
     });
     res.status(201).json(newRecipe);
@@ -119,6 +121,18 @@ export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRec
       throw createHttpError(400, "Recipe must have a title and a text");
     }
 
+    const recipe = await prisma.recipe.findUnique({
+      where: { id: recipeId, deletedAt: null },
+    });
+
+    if (!recipe) {
+      throw createHttpError(404, "Recipe not found");
+    }
+
+    if (recipe.creatorId !== authenticatedUserId) {
+      throw createHttpError(401, "You cannot access this recipe");
+    }
+
     const updatedRecipe = await prisma.recipe.update({
       where: { id: recipeId },
       data: {
@@ -126,14 +140,6 @@ export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRec
         content: newText,
       }
     })
-
-    if (!updatedRecipe) {
-      throw createHttpError(404, "Recipe not found");
-    }
-
-    if (!updatedRecipe.authorId === authenticatedUserId) {
-      throw createHttpError(401, "You cannot access this recipe");
-    }
 
     res.status(200).json(updatedRecipe);
   } catch (error) {
@@ -149,17 +155,23 @@ export const deleteRecipe: RequestHandler = async (req, res, next) => {
   try {
     assertIsDefine(authenticatedUserId);
 
-    const recipe = await prisma.recipe.delete({
-      where: { id: recipeId },
-    })
+    const recipe = await prisma.recipe.findUnique({
+      where: { id: recipeId, deletedAt: null },
+    });
 
     if (!recipe) {
       throw createHttpError(404, "Recipe not found");
     }
 
-    if (!recipe.authorId === authenticatedUserId) {
+    if (recipe.creatorId !== authenticatedUserId) {
       throw createHttpError(401, "You cannot access this recipe");
     }
+
+    // Soft delete
+    await prisma.recipe.update({
+      where: { id: recipeId },
+      data: { deletedAt: new Date() },
+    });
 
     res.sendStatus(204);
   } catch (error) {

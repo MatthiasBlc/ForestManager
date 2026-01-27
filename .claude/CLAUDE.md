@@ -42,11 +42,12 @@ frontend/src/
 
 ## Conventions
 
+- **Langue**: Code en anglais uniquement (variables, fonctions, modeles DB, etc.). Commentaires en francais autorises.
 - **Soft delete**: `deletedAt` sur entites principales (User, Community, Recipe, etc.)
 - **Hard delete**: Tables pivot (RecipeTag, RecipeIngredient) via Cascade
 - **IDs**: UUID v4 partout
 - **Accents**: Aucun dans le code/docs (ASCII only)
-- **Roles**: MEMBER | ADMIN (communaute), SuperAdmin (plateforme)
+- **Roles**: MEMBER | MODERATOR (communaute), AdminUser (SuperAdmin plateforme, isole)
 
 ## Modeles cles
 
@@ -103,5 +104,4 @@ npx prisma db seed         # Seed data
 ## Git
 
 - **Branch principale**: master
-- **Branch actuelle**: RebaseNewBoilerPlate
-- Commits avec `Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>`
+- **Branch actuelle**: Developement

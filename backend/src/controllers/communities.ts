@@ -12,21 +12,19 @@ export const getCommunities: RequestHandler = async (req, res, next) => {
     assertIsDefine(authenticatedUserId);
     const community = await prisma.community.findMany({
       where: {
-        communityToUsers: {
+        members: {
           some: {
-            user: {
-              is: {
-                id: authenticatedUserId
-              }
-            },
+            userId: authenticatedUserId,
+            deletedAt: null,
           }
         },
+        deletedAt: null,
       },
       select: {
         id: true,
         name: true,
         createdAt: true,
-        updatedAT: true,
+        updatedAt: true,
       },
     })
     res.status(200).json(community);
@@ -45,13 +43,16 @@ export const getCommunity: RequestHandler = async (req, res, next) => {
     const community = await prisma.community.findUnique({
       where: {
         id: communityId,
+        deletedAt: null,
       },
       select: {
         id: true,
         name: true,
         createdAt: true,
-        updatedAT: true,
-        communityToUsers: true,
+        updatedAt: true,
+        members: {
+          where: { deletedAt: null },
+        },
       },
     })
 
@@ -59,7 +60,7 @@ export const getCommunity: RequestHandler = async (req, res, next) => {
       throw createHttpError(404, "Community not found");
     }
 
-    if (!community.communityToUsers.filter((x) => x.userId === authenticatedUserId).length) {
+    if (!community.members.filter((x) => x.userId === authenticatedUserId).length) {
       throw createHttpError(401, "You cannot access this community");
     }
 
@@ -88,15 +89,15 @@ export const createCommunity: RequestHandler<unknown, unknown, CreateCommunityBo
     const newCommunity = await prisma.community.create({
       data: {
         name: name,
-        communityToUsers: {
+        members: {
           create: {
             userId: authenticatedUserId,
-            role: "ADMIN",
+            role: "MODERATOR",
           }
         },
       },
       include: {
-        communityToUsers: true,
+        members: true,
       },
     });
     res.status(201).json(newCommunity);
@@ -133,10 +134,12 @@ export const updateCommunity: RequestHandler<UpdateCommunityParams, unknown, Upd
       const updatedCommunity = await prisma.community.update({
         where: {
           id: communityId,
-          communityToUsers: {
+          deletedAt: null,
+          members: {
             some: {
               userId: authenticatedUserId,
-              role: 'ADMIN'
+              role: 'MODERATOR',
+              deletedAt: null,
             }
           }
         },
@@ -144,14 +147,16 @@ export const updateCommunity: RequestHandler<UpdateCommunityParams, unknown, Upd
           name: newName,
         },
         include: {
-          communityToUsers: true,
+          members: {
+            where: { deletedAt: null },
+          },
         }
       })
       if (!updatedCommunity) {
         throw createHttpError(404, "Community not found");
       }
 
-      if (!updatedCommunity.communityToUsers.filter((communityToUser) => communityToUser.userId === authenticatedUserId).length) {
+      if (!updatedCommunity.members.filter((member) => member.userId === authenticatedUserId).length) {
         throw createHttpError(401, "You cannot access this community");
       }
 
@@ -162,6 +167,7 @@ export const updateCommunity: RequestHandler<UpdateCommunityParams, unknown, Upd
           throw createHttpError(401, "You cannot access this community");
         }
       }
+      throw e;
     }
 
   } catch (error) {

@@ -228,9 +228,10 @@ model UserCommunity {
   @@index([deletedAt])
 }
 
+// Roles pour les membres d'une communaute (distinct de AdminUser/SuperAdmin)
 enum Role {
   MEMBER
-  ADMIN
+  MODERATOR
 }
 
 // =============================================================================

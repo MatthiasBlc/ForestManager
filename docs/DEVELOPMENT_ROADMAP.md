@@ -12,12 +12,13 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] Setup boilerplate (React + Express + PostgreSQL + Docker)
 - [x] Configuration Docker Compose
 - [x] CI/CD GitHub Actions
-- [ ] Mise a jour du schema Prisma selon PRISMA_SCHEMA.prisma
-- [ ] Configuration des variables d'environnement
-- [ ] Installation @quixo3/prisma-session-store
+- [x] Mise a jour du schema Prisma selon PRISMA_SCHEMA.prisma
+- [x] Configuration des variables d'environnement (SESSION_SECRET, ADMIN_SESSION_SECRET)
+- [x] Installation @quixo3/prisma-session-store
+- [x] Migration initiale creee et appliquee
 
 ### 0.2 Structure du code
-- [ ] Creation de l'arborescence backend (services/, middleware/, utils/)
+- [x] Creation de l'arborescence backend (services/, middleware/, admin/)
 - [ ] Creation de l'arborescence frontend (pages/, components/, hooks/, contexts/)
 - [ ] Configuration ESLint/Prettier uniformes
 - [ ] Setup des types TypeScript partages
@@ -32,17 +33,16 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ## Phase 0.5: SuperAdmin & Briques (NOUVEAU)
 
 ### 0.5.1 Backend Admin
-- [ ] Installation dependances (otplib, qrcode)
-- [ ] Creation module admin/ isole
+- [x] Installation dependances (otplib, qrcode)
+- [x] Creation module admin/ isole
   - admin/controllers/
   - admin/routes/
   - admin/middleware/
-  - admin/services/
-- [ ] Model AdminUser (Prisma schema)
-- [ ] Model AdminSession (Prisma session separee)
-- [ ] Model Feature (briques)
-- [ ] Model CommunityFeature (attribution)
-- [ ] Model AdminActivityLog (audit)
+- [x] Model AdminUser (Prisma schema)
+- [x] Model AdminSession (Prisma session separee)
+- [x] Model Feature (briques)
+- [x] Model CommunityFeature (attribution)
+- [x] Model AdminActivityLog (audit)
 - [ ] Script CLI `npm run admin:create`
   - Prompt username, email, password
   - Hash password bcrypt
@@ -78,7 +78,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [ ] AdminActivityLog sur toutes les actions
 
 ### 0.5.4 Seed Feature MVP
-- [ ] Ajouter feature MVP dans seed
+- [x] Ajouter feature MVP dans seed
   - code: "MVP", isDefault: true
 - [ ] Modifier creation communaute
   - Attribution auto features par defaut
