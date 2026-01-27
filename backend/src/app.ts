@@ -2,16 +2,15 @@ import express, { NextFunction, Request, Response } from "express";
 import recipesRoutes from "./routes/recipes";
 import userRoutes from "./routes/users";
 import communitiesRoutes from "./routes/communities";
+import adminAuthRoutes from "./admin/routes/authRoutes";
 import morgan from "morgan";
 import createHttpError, { isHttpError } from "http-errors";
 import cors from "cors";
 import session from "express-session";
 import env from "./util/validateEnv";
 import { PrismaSessionStore } from '@quixo3/prisma-session-store';
-import { PrismaClient } from "@prisma/client";
 import { requireAuth } from "./middleware/auth";
-// is it ok to have a new prisma client here ?
-
+import prisma from "./util/db";
 
 const app = express();
 
@@ -22,32 +21,59 @@ app.use(morgan("dev"));
 
 app.use(express.json());
 
-app.use(session({
+// User session middleware (cookie: connect.sid, duree: 1h)
+const userSession = session({
+  name: "connect.sid",
   secret: env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    maxAge: 60 * 60 * 1000,
+    maxAge: 60 * 60 * 1000, // 1 hour
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+    sameSite: "lax",
   },
   rolling: true,
-  store: new PrismaSessionStore(
-    new PrismaClient(),
-    {
-      checkPeriod: 2 * 60 * 1000,  //ms
-      dbRecordIdIsSessionId: true,
-      dbRecordIdFunction: undefined,
-    }
-  )
-}));
+  store: new PrismaSessionStore(prisma as any, {
+    checkPeriod: 2 * 60 * 1000,
+    dbRecordIdIsSessionId: true,
+    dbRecordIdFunction: undefined,
+  }),
+});
+
+// Admin session middleware (cookie: admin.sid, duree: 30min)
+const adminSession = session({
+  name: "admin.sid",
+  secret: env.ADMIN_SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    maxAge: 30 * 60 * 1000, // 30 minutes
+    httpOnly: true,
+    secure: env.NODE_ENV === "production",
+    sameSite: "strict",
+  },
+  rolling: false, // Pas de renouvellement automatique pour admin
+  store: new PrismaSessionStore(prisma as any, {
+    checkPeriod: 2 * 60 * 1000,
+    dbRecordIdIsSessionId: true,
+    dbRecordIdFunction: undefined,
+    sessionModelName: "AdminSession",
+  }),
+});
 
 // Health check endpoint (before auth, no logging)
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
-app.use("/api/users", userRoutes);
-app.use("/api/recipes", requireAuth, recipesRoutes);
-app.use("/api/communities", requireAuth, communitiesRoutes);
+// User routes (avec user session)
+app.use("/api/users", userSession, userRoutes);
+app.use("/api/recipes", userSession, requireAuth, recipesRoutes);
+app.use("/api/communities", userSession, requireAuth, communitiesRoutes);
+
+// Admin routes (avec admin session isolee)
+app.use("/api/admin/auth", adminSession, adminAuthRoutes);
 
 app.use((req, res, next) => {
   next(createHttpError(404, "Endpoint not found"));

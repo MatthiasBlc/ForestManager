@@ -49,24 +49,25 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Genere totpSecret
 
 ### 0.5.2 Backend Auth Admin
-- [ ] Configuration double session store
+- [x] Configuration double session store
   - Session users: `connect.sid` → model Session
   - Session admin: `admin.sid` → model AdminSession
   - Cookie flags: httpOnly, secure (prod), sameSite=strict
-- [ ] Middleware requireSuperAdmin
+- [x] Middleware requireSuperAdmin
   - Verifie session.adminId
   - Verifie session.totpVerified
-- [ ] Route POST /api/admin/auth/login
+- [x] Route POST /api/admin/auth/login
   - Premiere connexion: retourne QR code (base64)
   - Connexions suivantes: demande code TOTP
   - **Securite**: Rate limiting (5 tentatives/15min)
-  - **Securite**: Log toutes tentatives (AdminActivityLog)
-- [ ] Route POST /api/admin/auth/totp/verify
+- [x] Route POST /api/admin/auth/totp/verify
   - Verifie code TOTP (fenetre 1 step = 30s)
   - **Securite**: Invalide apres 3 echecs consecutifs (reset session)
-- [ ] Route POST /api/admin/auth/logout
+  - Log ADMIN_LOGIN et ADMIN_TOTP_SETUP (AdminActivityLog)
+- [x] Route POST /api/admin/auth/logout
   - Destruction complete session admin
-- [ ] Route GET /api/admin/auth/me
+  - Log ADMIN_LOGOUT (AdminActivityLog)
+- [x] Route GET /api/admin/auth/me
   - Retourne infos admin (sans totpSecret)
 
 ### 0.5.3 Backend Admin API
@@ -106,14 +107,15 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [ ] Context AdminAuthProvider (isole de AuthProvider user)
 
 ### 0.5.6 Securite Admin (transversal)
-- [ ] Rate limiting global sur /api/admin/* (express-rate-limit)
+- [x] Rate limiting sur /api/admin/auth/* (express-rate-limit, 5/15min)
+- [ ] Rate limiting global sur /api/admin/* (autres routes)
 - [ ] Headers securite (helmet)
   - CSP strict pour pages admin
   - X-Frame-Options: DENY
   - X-Content-Type-Options: nosniff
 - [ ] HTTPS obligatoire en production
-- [ ] Audit log toutes actions admin (deja prevu AdminActivityLog)
-- [ ] Session admin courte (30min, non renouvelable)
+- [x] Audit log actions auth admin (ADMIN_LOGIN, ADMIN_LOGOUT, ADMIN_TOTP_SETUP)
+- [x] Session admin courte (30min, non renouvelable)
 
 ### Livrables
 - SuperAdmin fonctionnel avec 2FA
@@ -493,8 +495,8 @@ Phase 8 (Finitions MVP)
 ## Checklist de validation MVP
 
 ### SuperAdmin (Phase 0.5)
-- [ ] SuperAdmin cree via CLI (`npm run admin:create`)
-- [ ] SuperAdmin peut se connecter avec 2FA TOTP
+- [x] SuperAdmin cree via CLI (`npm run admin:create`)
+- [x] SuperAdmin peut se connecter avec 2FA TOTP (backend ready)
 - [ ] SuperAdmin peut gerer les tags (CRUD, merge)
 - [ ] SuperAdmin peut gerer les ingredients (CRUD, merge)
 - [ ] SuperAdmin peut voir toutes les communautes
@@ -525,9 +527,9 @@ Phase 8 (Finitions MVP)
 ### Technique
 - [ ] Application stable sans erreurs bloquantes
 - [ ] Donnees persistees correctement
-- [ ] Sessions utilisateurs fonctionnelles (via @quixo3/prisma-session-store)
-- [ ] Sessions admin isolees (AdminSession, cookie admin.sid)
-- [ ] 2FA TOTP fonctionnel pour SuperAdmin
+- [x] Sessions utilisateurs fonctionnelles (via @quixo3/prisma-session-store)
+- [x] Sessions admin isolees (AdminSession, cookie admin.sid)
+- [x] 2FA TOTP fonctionnel pour SuperAdmin (backend ready)
 - [ ] Soft delete filtre correctement (deletedAt IS NULL)
 - [ ] Responsive design
 - [ ] Performance acceptable (<3s chargement page)
