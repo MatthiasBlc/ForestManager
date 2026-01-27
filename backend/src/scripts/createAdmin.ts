@@ -1,7 +1,7 @@
 /**
  * CLI Script: Create SuperAdmin
  * Usage: npm run admin:create
- * 
+ *
  * Cree un AdminUser avec:
  * - Prompt interactif pour username, email, password
  * - Hash bcrypt du password
@@ -11,62 +11,18 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { authenticator } from "otplib";
-import * as readline from "readline";
+import { read } from "read";
 
 const prisma = new PrismaClient();
 
-// Interface pour les prompts
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-
-function prompt(question: string): Promise<string> {
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
-      resolve(answer.trim());
-    });
-  });
+async function prompt(question: string): Promise<string> {
+  const result = await read({ prompt: question });
+  return result.trim();
 }
 
-function promptHidden(question: string): Promise<string> {
-  return new Promise((resolve) => {
-    process.stdout.write(question);
-    const stdin = process.stdin;
-    stdin.setRawMode(true);
-    stdin.resume();
-    stdin.setEncoding("utf8");
-
-    let password = "";
-    stdin.on("data", function handler(char: string) {
-      const c = char.toString();
-      switch (c) {
-        case "\n":
-        case "\r":
-        case "\u0004": // Ctrl+D
-          stdin.setRawMode(false);
-          stdin.removeListener("data", handler);
-          process.stdout.write("\n");
-          resolve(password);
-          break;
-        case "\u0003": // Ctrl+C
-          process.exit();
-          break; // unreachable mais requis par eslint
-        case "\u007F": // Backspace
-          if (password.length > 0) {
-            password = password.slice(0, -1);
-            process.stdout.clearLine(0);
-            process.stdout.cursorTo(0);
-            process.stdout.write(question + "*".repeat(password.length));
-          }
-          break;
-        default:
-          password += c;
-          process.stdout.write("*");
-          break;
-      }
-    });
-  });
+async function promptHidden(question: string): Promise<string> {
+  const result = await read({ prompt: question, silent: true });
+  return result.trim();
 }
 
 async function validateEmail(email: string): Promise<boolean> {
@@ -168,7 +124,6 @@ async function main() {
     console.error("\n❌ Erreur lors de la creation:", error);
     process.exit(1);
   } finally {
-    rl.close();
     await prisma.$disconnect();
   }
 }
