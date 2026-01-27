@@ -119,8 +119,8 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 
 ### Livrables
 - SuperAdmin fonctionnel avec 2FA
-- Interface admin minimale et securisee
-- Gestion globale tags/ingredients/communautes
+- Interface admin minimale et securisee (login + dashboard)
+- API admin complete (tags, ingredients, features, communities)
 - Systeme de briques operationnel
 - Feature MVP attribuee auto
 
@@ -436,6 +436,32 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [ ] Tests E2E
 - [ ] Documentation API (Swagger)
 - [ ] Monitoring / Logging
+
+### 9.4 Frontend Admin - Pages de gestion
+- [ ] Layout admin avec sidebar navigation
+  - Dashboard, Tags, Ingredients, Features, Communities, Activity
+- [ ] Page /admin/tags
+  - Liste paginee avec recherche
+  - Modal creation/edition tag
+  - Bouton suppression avec confirmation
+  - Fonctionnalite merge (selectionner 2+ tags)
+- [ ] Page /admin/ingredients
+  - Liste paginee avec recherche
+  - Modal creation/edition ingredient
+  - Bouton suppression avec confirmation
+  - Fonctionnalite merge (selectionner 2+ ingredients)
+- [ ] Page /admin/features
+  - Liste des features avec statut (actif/inactif)
+  - Modal creation/edition feature
+  - Toggle actif/inactif
+- [ ] Page /admin/communities
+  - Liste paginee avec recherche
+  - Detail communaute (membres, recettes, features)
+  - Attribution/revocation features
+  - Bouton suppression avec confirmation
+- [ ] Page /admin/activity
+  - Liste paginee des logs d'activite admin
+  - Filtres par type d'action, date
 
 ---
 
