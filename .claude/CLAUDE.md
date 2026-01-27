@@ -128,3 +128,4 @@ npx prisma db seed         # Seed data
 
 - **Branch principale**: master
 - **Branch actuelle**: Developement
+- **Commits**: Ne JAMAIS ajouter de Co-Authored-By pour Claude
