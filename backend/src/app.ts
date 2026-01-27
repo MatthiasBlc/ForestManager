@@ -17,9 +17,19 @@ import env from "./util/validateEnv";
 import { PrismaSessionStore } from '@quixo3/prisma-session-store';
 import { requireAuth } from "./middleware/auth";
 import { requireSuperAdmin } from "./admin/middleware/requireSuperAdmin";
+import { helmetMiddleware, adminRateLimiter, requireHttps } from "./middleware/security";
 import prisma from "./util/db";
 
 const app = express();
+
+// Security middlewares
+app.use(requireHttps); // Force HTTPS en production
+app.use(helmetMiddleware); // Headers de securite (CSP, X-Frame-Options, etc.)
+
+// Trust proxy for production (behind Traefik)
+if (env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 
 // cors needed for dev environment
 app.use(cors({ credentials: true, origin: env.CORS_ORIGIN }));
@@ -79,7 +89,8 @@ app.use("/api/users", userSession, userRoutes);
 app.use("/api/recipes", userSession, requireAuth, recipesRoutes);
 app.use("/api/communities", userSession, requireAuth, communitiesRoutes);
 
-// Admin routes (avec admin session isolee)
+// Admin routes (avec admin session isolee + rate limiting global)
+app.use("/api/admin", adminRateLimiter); // Rate limit global admin (30 req/min)
 app.use("/api/admin/auth", adminSession, adminAuthRoutes);
 app.use("/api/admin/tags", adminSession, requireSuperAdmin, adminTagsRoutes);
 app.use("/api/admin/ingredients", adminSession, requireSuperAdmin, adminIngredientsRoutes);

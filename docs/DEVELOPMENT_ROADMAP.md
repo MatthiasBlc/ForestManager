@@ -108,12 +108,12 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 
 ### 0.5.6 Securite Admin (transversal)
 - [x] Rate limiting sur /api/admin/auth/* (express-rate-limit, 5/15min)
-- [ ] Rate limiting global sur /api/admin/* (autres routes)
-- [ ] Headers securite (helmet)
+- [x] Rate limiting global sur /api/admin/* (30 req/min)
+- [x] Headers securite (helmet)
   - CSP strict pour pages admin
   - X-Frame-Options: DENY
   - X-Content-Type-Options: nosniff
-- [ ] HTTPS obligatoire en production
+- [x] HTTPS obligatoire en production (middleware requireHttps + HSTS)
 - [x] Audit log actions auth admin (ADMIN_LOGIN, ADMIN_LOGOUT, ADMIN_TOTP_SETUP)
 - [x] Session admin courte (30min, non renouvelable)
 
