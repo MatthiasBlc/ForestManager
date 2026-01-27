@@ -43,7 +43,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] Model Feature (briques)
 - [x] Model CommunityFeature (attribution)
 - [x] Model AdminActivityLog (audit)
-- [ ] Script CLI `npm run admin:create`
+- [x] Script CLI `npm run admin:create`
   - Prompt username, email, password
   - Hash password bcrypt
   - Genere totpSecret

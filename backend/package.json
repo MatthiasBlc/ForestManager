@@ -9,7 +9,8 @@
     "build": "tsc",
     "lint": "eslint . --ext .ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start:migrate:prod": "prisma migrate deploy && prisma db seed && npm run start"
+    "start:migrate:prod": "prisma migrate deploy && prisma db seed && npm run start",
+    "admin:create": "ts-node src/scripts/createAdmin.ts"
   },
   "keywords": [],
   "author": "",
