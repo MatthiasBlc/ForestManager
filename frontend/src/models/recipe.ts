@@ -1,7 +1,9 @@
 export interface Recipe {
-  id: string,
-  title: string,
-  text: string,
-  createdAt: string,
-  updatedAT: string,
+  id: string;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  creatorId: string;
+  communityId?: string | null;
 }

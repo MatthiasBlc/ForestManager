@@ -19,9 +19,9 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 
 ### 0.2 Structure du code
 - [x] Creation de l'arborescence backend (services/, middleware/, admin/)
-- [ ] Creation de l'arborescence frontend (pages/, components/, hooks/, contexts/)
-- [ ] Configuration ESLint/Prettier uniformes
-- [ ] Setup des types TypeScript partages
+- [x] Creation de l'arborescence frontend (pages/, components/, hooks/, contexts/)
+- [x] Configuration ESLint/Prettier uniformes
+- [x] Setup des types TypeScript partages (frontend/src/models/)
 
 ### Livrables
 - Projet demarrable en local via `docker-compose up`
