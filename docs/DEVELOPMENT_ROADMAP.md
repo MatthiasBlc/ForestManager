@@ -71,24 +71,24 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Retourne infos admin (sans totpSecret)
 
 ### 0.5.3 Backend Admin API
-- [ ] Routes Tags CRUD (/api/admin/tags)
+- [x] Routes Tags CRUD (/api/admin/tags)
   - GET, POST, PATCH, DELETE, POST merge
-- [ ] Routes Ingredients CRUD (/api/admin/ingredients)
+- [x] Routes Ingredients CRUD (/api/admin/ingredients)
   - GET, POST, PATCH, DELETE, POST merge
-- [ ] Routes Communities (/api/admin/communities)
+- [x] Routes Communities (/api/admin/communities)
   - GET list, GET detail, PATCH, DELETE
-- [ ] Routes Features (/api/admin/features)
+- [x] Routes Features (/api/admin/features)
   - GET, POST, PATCH
   - POST /communities/:id/features/:featureId (grant)
   - DELETE /communities/:id/features/:featureId (revoke)
-- [ ] Route Dashboard (/api/admin/dashboard/stats)
-- [ ] Route Activity (/api/admin/activity)
-- [ ] AdminActivityLog sur toutes les actions
+- [x] Route Dashboard (/api/admin/dashboard/stats)
+- [x] Route Activity (/api/admin/activity)
+- [x] AdminActivityLog sur toutes les actions
 
 ### 0.5.4 Seed Feature MVP
 - [x] Ajouter feature MVP dans seed
   - code: "MVP", isDefault: true
-- [ ] Modifier creation communaute
+- [x] Modifier creation communaute
   - Attribution auto features par defaut
 
 ### 0.5.5 Frontend Admin (NOUVEAU)
@@ -497,13 +497,13 @@ Phase 8 (Finitions MVP)
 ### SuperAdmin (Phase 0.5)
 - [x] SuperAdmin cree via CLI (`npm run admin:create`)
 - [x] SuperAdmin peut se connecter avec 2FA TOTP (backend ready)
-- [ ] SuperAdmin peut gerer les tags (CRUD, merge)
-- [ ] SuperAdmin peut gerer les ingredients (CRUD, merge)
-- [ ] SuperAdmin peut voir toutes les communautes
-- [ ] SuperAdmin peut supprimer une communaute
-- [ ] SuperAdmin peut attribuer/revoquer des features
-- [ ] Feature MVP attribuee auto a la creation communaute
-- [ ] Toutes les actions admin sont loguees
+- [x] SuperAdmin peut gerer les tags (CRUD, merge) (backend ready)
+- [x] SuperAdmin peut gerer les ingredients (CRUD, merge) (backend ready)
+- [x] SuperAdmin peut voir toutes les communautes (backend ready)
+- [x] SuperAdmin peut supprimer une communaute (backend ready)
+- [x] SuperAdmin peut attribuer/revoquer des features (backend ready)
+- [x] Feature MVP attribuee auto a la creation communaute
+- [x] Toutes les actions admin sont loguees
 
 ### Fonctionnel
 - [ ] Un utilisateur peut s'inscrire et se connecter

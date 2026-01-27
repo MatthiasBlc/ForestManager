@@ -79,13 +79,18 @@ export const createCommunity: RequestHandler<unknown, unknown, CreateCommunityBo
   const name = req.body.name;
   const authenticatedUserId = req.session.userId;
 
-
   try {
     assertIsDefine(authenticatedUserId);
 
     if (!name) {
       throw createHttpError(400, "Community must have a name");
     }
+
+    // Recuperer les features par defaut
+    const defaultFeatures = await prisma.feature.findMany({
+      where: { isDefault: true },
+    });
+
     const newCommunity = await prisma.community.create({
       data: {
         name: name,
@@ -93,11 +98,21 @@ export const createCommunity: RequestHandler<unknown, unknown, CreateCommunityBo
           create: {
             userId: authenticatedUserId,
             role: "MODERATOR",
-          }
+          },
+        },
+        // Attribution auto des features par defaut
+        features: {
+          create: defaultFeatures.map((f) => ({
+            featureId: f.id,
+            // grantedById: null = attribution automatique
+          })),
         },
       },
       include: {
         members: true,
+        features: {
+          include: { feature: true },
+        },
       },
     });
     res.status(201).json(newCommunity);
@@ -105,7 +120,6 @@ export const createCommunity: RequestHandler<unknown, unknown, CreateCommunityBo
   } catch (error) {
     next(error);
   }
-
 };
 
 

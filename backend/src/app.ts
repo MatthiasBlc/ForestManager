@@ -3,6 +3,12 @@ import recipesRoutes from "./routes/recipes";
 import userRoutes from "./routes/users";
 import communitiesRoutes from "./routes/communities";
 import adminAuthRoutes from "./admin/routes/authRoutes";
+import adminTagsRoutes from "./admin/routes/tagsRoutes";
+import adminIngredientsRoutes from "./admin/routes/ingredientsRoutes";
+import adminCommunitiesRoutes from "./admin/routes/communitiesRoutes";
+import adminFeaturesRoutes from "./admin/routes/featuresRoutes";
+import adminDashboardRoutes from "./admin/routes/dashboardRoutes";
+import adminActivityRoutes from "./admin/routes/activityRoutes";
 import morgan from "morgan";
 import createHttpError, { isHttpError } from "http-errors";
 import cors from "cors";
@@ -10,6 +16,7 @@ import session from "express-session";
 import env from "./util/validateEnv";
 import { PrismaSessionStore } from '@quixo3/prisma-session-store';
 import { requireAuth } from "./middleware/auth";
+import { requireSuperAdmin } from "./admin/middleware/requireSuperAdmin";
 import prisma from "./util/db";
 
 const app = express();
@@ -74,6 +81,12 @@ app.use("/api/communities", userSession, requireAuth, communitiesRoutes);
 
 // Admin routes (avec admin session isolee)
 app.use("/api/admin/auth", adminSession, adminAuthRoutes);
+app.use("/api/admin/tags", adminSession, requireSuperAdmin, adminTagsRoutes);
+app.use("/api/admin/ingredients", adminSession, requireSuperAdmin, adminIngredientsRoutes);
+app.use("/api/admin/communities", adminSession, requireSuperAdmin, adminCommunitiesRoutes);
+app.use("/api/admin/features", adminSession, requireSuperAdmin, adminFeaturesRoutes);
+app.use("/api/admin/dashboard", adminSession, requireSuperAdmin, adminDashboardRoutes);
+app.use("/api/admin/activity", adminSession, requireSuperAdmin, adminActivityRoutes);
 
 app.use((req, res, next) => {
   next(createHttpError(404, "Endpoint not found"));
