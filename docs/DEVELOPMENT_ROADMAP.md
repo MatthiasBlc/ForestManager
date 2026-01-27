@@ -52,15 +52,22 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [ ] Configuration double session store
   - Session users: `connect.sid` → model Session
   - Session admin: `admin.sid` → model AdminSession
+  - Cookie flags: httpOnly, secure (prod), sameSite=strict
 - [ ] Middleware requireSuperAdmin
   - Verifie session.adminId
   - Verifie session.totpVerified
 - [ ] Route POST /api/admin/auth/login
-  - Premiere connexion: retourne QR code
-  - Connexions suivantes: verifie TOTP
+  - Premiere connexion: retourne QR code (base64)
+  - Connexions suivantes: demande code TOTP
+  - **Securite**: Rate limiting (5 tentatives/15min)
+  - **Securite**: Log toutes tentatives (AdminActivityLog)
 - [ ] Route POST /api/admin/auth/totp/verify
+  - Verifie code TOTP (fenetre 1 step = 30s)
+  - **Securite**: Invalide apres 3 echecs consecutifs (reset session)
 - [ ] Route POST /api/admin/auth/logout
+  - Destruction complete session admin
 - [ ] Route GET /api/admin/auth/me
+  - Retourne infos admin (sans totpSecret)
 
 ### 0.5.3 Backend Admin API
 - [ ] Routes Tags CRUD (/api/admin/tags)
@@ -83,8 +90,34 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [ ] Modifier creation communaute
   - Attribution auto features par defaut
 
+### 0.5.5 Frontend Admin (NOUVEAU)
+- [ ] Route React /admin/login
+  - Etape 1: Formulaire email + password
+  - Etape 2: Affichage QR code si !totpEnabled (setup initial)
+  - Etape 3: Champ code TOTP (6 chiffres)
+  - **Securite**: Pas de stockage token/secret cote client
+  - **Securite**: Redirect si deja authentifie
+- [ ] Route React /admin/dashboard (protegee)
+  - Layout admin separe du frontend user
+  - Affichage stats basiques
+- [ ] Composant AdminProtectedRoute
+  - Verifie session admin via /api/admin/auth/me
+  - Redirect vers /admin/login si non authentifie
+- [ ] Context AdminAuthProvider (isole de AuthProvider user)
+
+### 0.5.6 Securite Admin (transversal)
+- [ ] Rate limiting global sur /api/admin/* (express-rate-limit)
+- [ ] Headers securite (helmet)
+  - CSP strict pour pages admin
+  - X-Frame-Options: DENY
+  - X-Content-Type-Options: nosniff
+- [ ] HTTPS obligatoire en production
+- [ ] Audit log toutes actions admin (deja prevu AdminActivityLog)
+- [ ] Session admin courte (30min, non renouvelable)
+
 ### Livrables
 - SuperAdmin fonctionnel avec 2FA
+- Interface admin minimale et securisee
 - Gestion globale tags/ingredients/communautes
 - Systeme de briques operationnel
 - Feature MVP attribuee auto

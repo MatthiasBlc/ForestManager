@@ -57,12 +57,35 @@ frontend/src/
 - **Feature**: Briques attribuables aux communautes (MVP par defaut)
 - **CommunityInvite**: Workflow PENDING → ACCEPTED/REJECTED/CANCELLED
 
+## Securite Admin (CRITIQUE)
+
+L'authentification SuperAdmin est un point ultra-sensible. Mesures obligatoires:
+
+### Backend
+- **Sessions isolees**: Cookie `admin.sid` separe, model `AdminSession` distinct
+- **2FA obligatoire**: TOTP via otplib (Google Authenticator, Authy)
+- **Rate limiting**: 5 tentatives / 15min sur `/api/admin/auth/*`
+- **Session courte**: 30min, non renouvelable automatiquement
+- **Cookie flags**: `httpOnly`, `secure` (prod), `sameSite=strict`
+- **Audit**: Toutes les actions loguees dans `AdminActivityLog`
+
+### Frontend
+- **Pas de stockage sensible**: Aucun token/secret en localStorage/sessionStorage
+- **Context isole**: `AdminAuthProvider` separe de `AuthProvider` user
+- **Routes protegees**: Verification session via API avant affichage
+
+### Production
+- **HTTPS obligatoire**: Certificat SSL/TLS
+- **Headers securite**: CSP, X-Frame-Options, X-Content-Type-Options (helmet)
+- **Secrets**: Variables d'environnement, jamais dans le code
+
 ## Phase actuelle
 
-**Phase 0.5**: SuperAdmin & Briques (en cours de conception)
+**Phase 0.5**: SuperAdmin & Briques (en cours)
 - AdminUser + 2FA TOTP
 - Feature system
 - CLI admin:create
+- Frontend admin minimal (/admin/login, /admin/dashboard)
 
 ## Documentation detaillee
 
