@@ -2,9 +2,9 @@ name: Build and Deploy
 
 on:
   push:
-    branches:
-      - master
-      # - main  # Uncomment if using main branch
+    branches: [master]
+  pull_request:
+    branches: [master]
 
 jobs:
   build-and-deploy:
@@ -20,8 +20,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
           cache-dependency-path: |
             backend/package-lock.json
             frontend/package-lock.json
