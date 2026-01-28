@@ -51,20 +51,12 @@ services:
       - backend-logs:/app/logs
     networks:
       - internal
-      - proxy
     depends_on:
       forestmanager-postgres:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/health"]
       <<: *health_http
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.forestmanager-api.rule=Host(`api.forestmanager.matthias-bouloc.fr`)"
-      - "traefik.http.routers.forestmanager-api.entrypoints=websecure"
-      - "traefik.http.routers.forestmanager-api.tls.certresolver=letsencrypt"
-      - "traefik.http.services.forestmanager-api.loadbalancer.server.port=3001"
-      - "traefik.docker.network=proxy"
     logging: *default-logging
 
   forestmanager-frontend:
@@ -86,7 +78,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.forestmanager-web.rule=Host(`forestmanager.matthias-bouloc.fr`)"
-      - "traefik.http.routers.forestmanager-web.entrypoints=websecure"
+      - "traefik.http.routers.forestmanager-web.entrypoints=https"
       - "traefik.http.routers.forestmanager-web.tls.certresolver=letsencrypt"
       - "traefik.http.services.forestmanager-web.loadbalancer.server.port=80"
       - "traefik.docker.network=proxy"
@@ -98,6 +90,7 @@ networks:
     name: forestmanager_internal
   proxy:
     external: true
+    name: proxy
 
 volumes:
   postgres_data:

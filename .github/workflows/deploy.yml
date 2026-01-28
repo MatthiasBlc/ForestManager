@@ -83,8 +83,6 @@ jobs:
           target: production
           push: true
           tags: ${{ secrets.REGISTRY_URL }}/${{ secrets.IMAGE_NAME }}/frontend:latest
-          build-args: |
-            VITE_BACKEND_URL=${{ secrets.API_URL }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
