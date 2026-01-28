@@ -143,12 +143,12 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] Middleware requireAuth
 
 ### 1.2 Frontend Auth
-- [ ] Page Login
-- [ ] Page Signup
-- [ ] Context AuthProvider
-- [ ] Hook useAuth
-- [ ] Protected routes
-- [ ] Redirection automatique
+- [x] Page Login (Modal - pattern UX hybride)
+- [x] Page Signup (Page dediee - meilleur onboarding)
+- [x] Context AuthProvider
+- [x] Hook useAuth
+- [x] Protected routes (ProtectedRoute component)
+- [x] Redirection automatique
 
 ### 1.3 Layout de base
 - [ ] Header avec navigation
@@ -532,7 +532,7 @@ Phase 8 (Finitions MVP)
 - [x] Toutes les actions admin sont loguees
 
 ### Fonctionnel
-- [ ] Un utilisateur peut s'inscrire et se connecter
+- [x] Un utilisateur peut s'inscrire et se connecter
 - [ ] Un utilisateur peut creer des recettes personnelles
 - [ ] Un utilisateur peut creer une communaute
 - [ ] Un admin peut inviter des utilisateurs

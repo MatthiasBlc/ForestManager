@@ -1,15 +1,13 @@
 import RecipesPageLoggedInView from "../components/RecipesPageLoggedInView";
 import RecipesPageLoggedOutView from "../components/RecipesPageLoggedOutView";
-import { User } from "../models/user";
+import { useAuth } from "../contexts/AuthContext";
 
-interface RecipesPageProps {
-  loggedInUser: User | null;
-}
+const RecipesPage = () => {
+  const { user } = useAuth();
 
-const RecipesPage = ({ loggedInUser }: RecipesPageProps) => {
   return (
     <div>
-      {loggedInUser ? (
+      {user ? (
         <RecipesPageLoggedInView />
       ) : (
         <RecipesPageLoggedOutView />

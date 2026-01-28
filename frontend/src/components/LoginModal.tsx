@@ -1,51 +1,73 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { UnauthorizedError } from "../errors/http_errors";
-import { User } from "../models/user";
-import APIManager, { LoginCredentials } from "../network/api";
-import styleUtils from "../styles/utils.module.css";
+import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { LoginCredentials } from "../network/api";
 import Modal from "./Modal";
 import TextInputField from "./form/TextInputField";
 
-interface LoginModalProps {
-  onDismiss: () => void;
-  onLoginSuccessful: (user: User) => void;
-}
-
-const LoginModal = ({ onDismiss, onLoginSuccessful }: LoginModalProps) => {
-  const [errorText, setErrorText] = useState<string | null>(null);
+const LoginModal = () => {
+  const { showLoginModal, closeLoginModal, login, error, clearError } = useAuth();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    reset,
+    formState: { errors },
   } = useForm<LoginCredentials>();
 
+  if (!showLoginModal) {
+    return null;
+  }
+
   async function onSubmit(credentials: LoginCredentials) {
+    setLocalError(null);
+    setIsSubmitting(true);
     try {
-      const user = await APIManager.login(credentials);
-      onLoginSuccessful(user);
-    } catch (error) {
-      if (error instanceof UnauthorizedError) {
-        setErrorText(error.message);
+      await login(credentials.username, credentials.password);
+      reset();
+    } catch (err) {
+      if (err instanceof Error) {
+        setLocalError(err.message);
       } else {
-        alert(error);
+        setLocalError("Login failed");
       }
-      console.error(error);
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
+  function handleClose() {
+    setLocalError(null);
+    clearError();
+    reset();
+    closeLoginModal();
+  }
+
+  function handleSignUpClick() {
+    handleClose();
+  }
+
+  const displayError = localError || error;
+
   return (
     <div className="container">
-      <Modal onClose={onDismiss}>
-        <h3 className="font-bold text-lg">
-          Log In
-          <button className="btn btn-primary" onClick={onDismiss}>
-            close
+      <Modal onClose={handleClose}>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-bold text-lg">Log In</h3>
+          <button
+            type="button"
+            className="btn btn-sm btn-circle btn-ghost"
+            onClick={handleClose}
+          >
+            X
           </button>
-        </h3>
-        {errorText && (
-          <div className="alert alert-error">
+        </div>
+
+        {displayError && (
+          <div className="alert alert-error mb-4">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="stroke-current shrink-0 h-6 w-6"
@@ -59,16 +81,17 @@ const LoginModal = ({ onDismiss, onLoginSuccessful }: LoginModalProps) => {
                 d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <span>{errorText}</span>
+            <span>{displayError}</span>
           </div>
         )}
+
         <form id="logInForm" onSubmit={handleSubmit(onSubmit)}>
           <TextInputField
             name="username"
             label="Username"
             type="text"
             placeholder="Username"
-            className="input input-bordered w-full max-w-xs"
+            className="input input-bordered w-full"
             required
             register={register}
             registerOptions={{ required: "Required" }}
@@ -79,20 +102,34 @@ const LoginModal = ({ onDismiss, onLoginSuccessful }: LoginModalProps) => {
             label="Password"
             type="password"
             placeholder="Password"
-            className="input input-bordered w-full max-w-xs"
+            className="input input-bordered w-full"
             required
             register={register}
             registerOptions={{ required: "Required" }}
             error={errors.password}
           />
-          <div className="modal-action">
+          <div className="modal-action flex-col gap-2">
             <button
               type="submit"
-              className={`btn btn-primary ${styleUtils.width100}`}
+              className="btn btn-primary w-full"
               disabled={isSubmitting}
             >
-              Log In
+              {isSubmitting ? (
+                <span className="loading loading-spinner loading-sm"></span>
+              ) : (
+                "Log In"
+              )}
             </button>
+            <p className="text-center text-sm text-base-content/70 mt-2">
+              Don't have an account?{" "}
+              <Link
+                to="/signup"
+                className="link link-primary"
+                onClick={handleSignUpClick}
+              >
+                Create one
+              </Link>
+            </p>
           </div>
         </form>
       </Modal>

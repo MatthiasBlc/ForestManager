@@ -99,10 +99,10 @@ export default class APIManager {
   }
 
 
-  // --------------- Users ---------------
+  // --------------- Users Auth ---------------
   // Need credentials in the header if front and back are on differents domain / sub-domains
   static async getLoggedInUser(): Promise<User> {
-    const response = await API.get("/api/users")
+    const response = await API.get("/api/auth/me")
       .catch(error => {
         console.log(error)
         if (error.response.status === 401) {
@@ -113,11 +113,11 @@ export default class APIManager {
           throw Error(`Request failed with status: ${error.response.status} message ${error.response.data.error}`);
         }
       })
-    return response.data;
+    return response.data.user;
   }
 
   static async signUp(credentials: SignUpCredentials): Promise<User> {
-    const response = await API.post("/api/users/signup", JSON.stringify(credentials))
+    const response = await API.post("/api/auth/signup", JSON.stringify(credentials))
       .catch(error => {
         console.log(error)
         if (error.response.status === 401) {
@@ -128,11 +128,11 @@ export default class APIManager {
           throw Error(`Request failed with status: ${error.response.status} message ${error.response.data.error}`);
         }
       });
-    return response.data;
+    return response.data.user;
   }
 
   static async login(credentials: LoginCredentials): Promise<User> {
-    const response = await API.post("/api/users/login", JSON.stringify(credentials))
+    const response = await API.post("/api/auth/login", JSON.stringify(credentials))
       .catch(error => {
         if (error.response.status === 401) {
           throw new UnauthorizedError(error.response.data.error);
@@ -142,11 +142,11 @@ export default class APIManager {
           throw Error(`Request failed with status: ${error.response.status} message ${error.response.data.error}`);
         }
       });
-    return response.data;
+    return response.data.user;
   }
 
   static async logout() {
-    const response = await API.post("/api/users/logout")
+    const response = await API.post("/api/auth/logout")
       .catch(error => {
         console.log(error)
         if (error.response.status === 401) {

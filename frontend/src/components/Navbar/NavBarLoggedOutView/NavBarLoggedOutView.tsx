@@ -1,23 +1,21 @@
-interface NavBarLoggedOutViewProps {
-  onSignUpClicked: () => void,
-  onLoginClicked: () => void,
+import { Link } from "react-router-dom";
+import { useAuth } from "../../../contexts/AuthContext";
 
-}
-
-const NavBarLoggedOutView = ({ onSignUpClicked, onLoginClicked }: NavBarLoggedOutViewProps) => {
+const NavBarLoggedOutView = () => {
+  const { openLoginModal } = useAuth();
 
   return (
     <>
       <div className="flex-none">
-        <button className="btn btn-square btn-ghost" onClick={onSignUpClicked}>
+        <Link to="/signup" className="btn btn-ghost">
           Sign Up
-        </button>
+        </Link>
       </div>
-      <button className="btn btn-square btn-ghost" onClick={onLoginClicked}>
+      <button className="btn btn-ghost" onClick={openLoginModal}>
         Log In
       </button>
     </>
   );
-}
+};
 
 export default NavBarLoggedOutView;
