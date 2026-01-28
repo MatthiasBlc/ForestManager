@@ -129,18 +129,18 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ## Phase 1: Authentification & Base
 
 ### 1.1 Backend Auth
-- [ ] Route POST /api/auth/signup
+- [x] Route POST /api/auth/signup
   - Validation email, username, password
   - Hash password (bcrypt)
   - Creation session
-- [ ] Route POST /api/auth/login
+- [x] Route POST /api/auth/login
   - Verification credentials
   - Creation session
-- [ ] Route POST /api/auth/logout
+- [x] Route POST /api/auth/logout
   - Destruction session
-- [ ] Route GET /api/auth/me
+- [x] Route GET /api/auth/me
   - Recuperation user courant
-- [ ] Middleware requireAuth
+- [x] Middleware requireAuth
 
 ### 1.2 Frontend Auth
 - [ ] Page Login

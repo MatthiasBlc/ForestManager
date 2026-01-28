@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response } from "express";
+import authRoutes from "./routes/auth";
 import recipesRoutes from "./routes/recipes";
-import userRoutes from "./routes/users";
 import communitiesRoutes from "./routes/communities";
 import adminAuthRoutes from "./admin/routes/authRoutes";
 import adminTagsRoutes from "./admin/routes/tagsRoutes";
@@ -87,7 +87,7 @@ app.get("/health", (req, res) => {
 });
 
 // User routes (avec user session)
-app.use("/api/users", userSession, userRoutes);
+app.use("/api/auth", userSession, authRoutes);
 app.use("/api/recipes", userSession, requireAuth, recipesRoutes);
 app.use("/api/communities", userSession, requireAuth, communitiesRoutes);
 
