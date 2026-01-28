@@ -5,6 +5,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import RecipesPage from "./pages/RecipesPage";
+import RecipeDetailPage from "./pages/RecipeDetailPage";
+import RecipeFormPage from "./pages/RecipeFormPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import SignUpPage from "./pages/SignUpPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -42,6 +44,36 @@ function App() {
                   <ProtectedRoute>
                     <MainLayout>
                       <RecipesPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/recipes/new"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <RecipeFormPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/recipes/:id"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <RecipeDetailPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/recipes/:id/edit"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <RecipeFormPage />
                     </MainLayout>
                   </ProtectedRoute>
                 }

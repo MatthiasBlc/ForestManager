@@ -1,6 +1,8 @@
 import express, { NextFunction, Request, Response } from "express";
 import authRoutes from "./routes/auth";
 import recipesRoutes from "./routes/recipes";
+import tagsRoutes from "./routes/tags";
+import ingredientsRoutes from "./routes/ingredients";
 import communitiesRoutes from "./routes/communities";
 import adminAuthRoutes from "./admin/routes/authRoutes";
 import adminTagsRoutes from "./admin/routes/tagsRoutes";
@@ -89,6 +91,8 @@ app.get("/health", (req, res) => {
 // User routes (avec user session)
 app.use("/api/auth", userSession, authRoutes);
 app.use("/api/recipes", userSession, requireAuth, recipesRoutes);
+app.use("/api/tags", userSession, requireAuth, tagsRoutes);
+app.use("/api/ingredients", userSession, requireAuth, ingredientsRoutes);
 app.use("/api/communities", userSession, requireAuth, communitiesRoutes);
 
 // Admin routes (avec admin session isolee + rate limiting global)

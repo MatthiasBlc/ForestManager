@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Recipe } from "../models/recipe";
+import { RecipeDetail, RecipesResponse, TagSearchResult, IngredientSearchResult } from "../models/recipe";
 import { User } from "../models/user";
 import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats } from "../models/admin";
 import { ConflictError, UnauthorizedError } from "../errors/http_errors";
@@ -15,8 +15,18 @@ API.interceptors.request.use((config) => {
 
 
 export interface RecipeInput {
-  title: string,
-  content: string,
+  title: string;
+  content: string;
+  imageUrl?: string;
+  tags?: string[];
+  ingredients?: { name: string; quantity?: string }[];
+}
+
+export interface GetRecipesParams {
+  limit?: number;
+  offset?: number;
+  tags?: string[];
+  search?: string;
 }
 
 export interface SignUpCredentials {
@@ -35,11 +45,19 @@ export default class APIManager {
 
 
 
-
   // --------------- Recipes ---------------
 
-  static async loadRecipes() {
-    const response = await API.get("/api/recipes")
+  static async getRecipes(params: GetRecipesParams = {}): Promise<RecipesResponse> {
+    const queryParams = new URLSearchParams();
+    if (params.limit) queryParams.set("limit", params.limit.toString());
+    if (params.offset) queryParams.set("offset", params.offset.toString());
+    if (params.tags && params.tags.length > 0) queryParams.set("tags", params.tags.join(","));
+    if (params.search) queryParams.set("search", params.search);
+
+    const queryString = queryParams.toString();
+    const url = `/api/recipes${queryString ? `?${queryString}` : ""}`;
+
+    const response = await API.get(url)
       .catch(error => {
         console.log(error)
         if (error.response.status === 401) {
@@ -53,7 +71,30 @@ export default class APIManager {
     return response.data;
   }
 
-  static async createRecipe(recipe: RecipeInput): Promise<Recipe> {
+  // Legacy method for backwards compatibility
+  static async loadRecipes() {
+    const response = await this.getRecipes();
+    return response.data;
+  }
+
+  static async getRecipe(recipeId: string): Promise<RecipeDetail> {
+    const response = await API.get(`/api/recipes/${recipeId}`)
+      .catch(error => {
+        console.log(error)
+        if (error.response.status === 401) {
+          throw new UnauthorizedError(error.response.data.error);
+        } else if (error.response.status === 404) {
+          throw new Error("Recipe not found");
+        } else if (error.response.status === 403) {
+          throw new Error("Cannot access this recipe");
+        } else {
+          throw Error(`Request failed with status: ${error.response.status} message ${error.response.data.error}`);
+        }
+      });
+    return response.data;
+  }
+
+  static async createRecipe(recipe: RecipeInput): Promise<RecipeDetail> {
     const response = await API.post("/api/recipes", JSON.stringify(recipe))
       .catch(error => {
         console.log(error)
@@ -68,7 +109,7 @@ export default class APIManager {
     return response.data;
   }
 
-  static async updateRecipe(recipeId: string, recipe: RecipeInput): Promise<Recipe> {
+  static async updateRecipe(recipeId: string, recipe: Partial<RecipeInput>): Promise<RecipeDetail> {
     const response = await API.patch("/api/recipes/" + recipeId, JSON.stringify(recipe))
       .catch(error => {
         console.log(error)
@@ -96,6 +137,52 @@ export default class APIManager {
         }
       })
     return response.data;
+  }
+
+
+  // --------------- Tags ---------------
+
+  static async searchTags(search: string = "", limit: number = 20): Promise<TagSearchResult[]> {
+    const queryParams = new URLSearchParams();
+    if (search) queryParams.set("search", search);
+    if (limit) queryParams.set("limit", limit.toString());
+
+    const queryString = queryParams.toString();
+    const url = `/api/tags${queryString ? `?${queryString}` : ""}`;
+
+    const response = await API.get(url)
+      .catch(error => {
+        console.log(error)
+        if (error.response.status === 401) {
+          throw new UnauthorizedError(error.response.data.error);
+        } else {
+          throw Error(`Request failed with status: ${error.response.status} message ${error.response.data.error}`);
+        }
+      });
+    return response.data.data;
+  }
+
+
+  // --------------- Ingredients ---------------
+
+  static async searchIngredients(search: string = "", limit: number = 20): Promise<IngredientSearchResult[]> {
+    const queryParams = new URLSearchParams();
+    if (search) queryParams.set("search", search);
+    if (limit) queryParams.set("limit", limit.toString());
+
+    const queryString = queryParams.toString();
+    const url = `/api/ingredients${queryString ? `?${queryString}` : ""}`;
+
+    const response = await API.get(url)
+      .catch(error => {
+        console.log(error)
+        if (error.response.status === 401) {
+          throw new UnauthorizedError(error.response.data.error);
+        } else {
+          throw Error(`Request failed with status: ${error.response.status} message ${error.response.data.error}`);
+        }
+      });
+    return response.data.data;
   }
 
 

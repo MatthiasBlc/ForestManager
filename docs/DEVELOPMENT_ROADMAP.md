@@ -164,38 +164,62 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ## Phase 2: Catalogue Personnel
 
 ### 2.1 Backend Recipes (personnel)
-- [ ] Route POST /api/recipes
+- [x] Route POST /api/recipes
   - Creation recette personnelle
   - Gestion tags (creation a la volee si inexistant)
   - Gestion ingredients (creation a la volee si inexistant)
-- [ ] Route GET /api/recipes
-  - Liste paginee
-  - Filtre par tags
-  - Recherche par titre
-- [ ] Route GET /api/recipes/:id
-  - Detail recette
-  - Verification acces (own or community member)
-- [ ] Route PATCH /api/recipes/:id
+- [x] Route GET /api/recipes
+  - Liste paginee (limit, offset, hasMore)
+  - Filtre par tags (logique AND)
+  - Recherche par titre (case-insensitive)
+- [x] Route GET /api/recipes/:id
+  - Detail recette avec tags et ingredients
+  - Verification acces (owner only pour recettes perso)
+- [x] Route PATCH /api/recipes/:id
   - Modification (owner only)
-- [ ] Route DELETE /api/recipes/:id
+  - Mise a jour tags/ingredients (remplacement complet)
+- [x] Route DELETE /api/recipes/:id
   - Soft delete (owner only)
 
-### 2.2 Frontend Catalogue
-- [ ] Page liste recettes personnelles
-- [ ] Page creation recette
-  - Form: titre, contenu (editeur markdown)
-  - Gestion tags (multi-select + creation a la volee)
-  - Gestion ingredients (liste dynamique)
-  - Upload image (optionnel)
-- [ ] Page detail recette
-- [ ] Page edition recette
-- [ ] Composant RecipeCard
-- [ ] Composant TagSelector
-- [ ] Composant IngredientList
+### 2.2 Backend Autocomplete (NOUVEAU)
+- [x] Route GET /api/tags
+  - Recherche tags avec recipeCount
+  - Limite configurable (max 100)
+- [x] Route GET /api/ingredients
+  - Recherche ingredients avec recipeCount
+  - Limite configurable (max 100)
+
+### 2.3 Frontend Catalogue
+- [x] Page liste recettes personnelles
+  - Grille responsive (1-4 colonnes)
+  - Pagination "Load more"
+  - Filtres persistés dans URL (search, tags)
+- [x] Page creation recette (/recipes/new)
+  - Form: titre, contenu (textarea), imageUrl (optionnel)
+  - Gestion tags (TagSelector avec creation a la volee)
+  - Gestion ingredients (IngredientList dynamique)
+- [x] Page detail recette (/recipes/:id)
+  - Affichage complet avec ingredients et instructions
+  - Navigation vers filtres par tag
+- [x] Page edition recette (/recipes/:id/edit)
+  - Meme formulaire que creation, pre-rempli
+- [x] Composant RecipeCard
+  - Image, titre, tags (max 3), date, actions edit/delete
+- [x] Composant TagSelector
+  - Multi-select avec debounce 300ms
+  - Creation on-the-fly
+  - Mode filtre (sans creation)
+- [x] Composant IngredientList
+  - Liste dynamique avec autocomplete
+  - Champs: nom, quantite (optionnel)
+- [x] Composant RecipeFilters
+  - Recherche titre + filtre tags
+  - Bouton reset
 
 ### Livrables
-- CRUD complet sur les recettes personnelles
-- Interface de creation/edition fonctionnelle
+- [x] CRUD complet sur les recettes personnelles
+- [x] Interface de creation/edition fonctionnelle
+- [x] Pagination et filtres fonctionnels
 
 ---
 
@@ -533,7 +557,7 @@ Phase 8 (Finitions MVP)
 
 ### Fonctionnel
 - [x] Un utilisateur peut s'inscrire et se connecter
-- [ ] Un utilisateur peut creer des recettes personnelles
+- [x] Un utilisateur peut creer des recettes personnelles
 - [ ] Un utilisateur peut creer une communaute
 - [ ] Un admin peut inviter des utilisateurs
 - [ ] Un utilisateur voit ses invitations recues
@@ -556,7 +580,7 @@ Phase 8 (Finitions MVP)
 - [x] Sessions utilisateurs fonctionnelles (via @quixo3/prisma-session-store)
 - [x] Sessions admin isolees (AdminSession, cookie admin.sid)
 - [x] 2FA TOTP fonctionnel pour SuperAdmin (backend ready)
-- [ ] Soft delete filtre correctement (deletedAt IS NULL)
+- [x] Soft delete filtre correctement (deletedAt IS NULL)
 - [ ] Responsive design
 - [ ] Performance acceptable (<3s chargement page)
 
