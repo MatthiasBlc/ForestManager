@@ -7,18 +7,28 @@ const NavBar = () => {
   const { user } = useAuth();
 
   return (
-    <div className="navbar bg-base-100">
+    <div className="navbar bg-base-100 border-b border-base-300 sticky top-0 z-50">
       <div className="flex-1">
-        <Link to="/" className="btn btn-ghost normal-case text-xl">
-          Boiler Plate App
+        <Link to="/" className="btn btn-ghost text-xl">
+          Forest Manager
         </Link>
-        <ul className="menu menu-horizontal px-1">
-          <li>
-            <Link to="/privacy">Privacy</Link>
-          </li>
-        </ul>
+        {/* Desktop navigation links - hidden on mobile (sidebar handles it) */}
+        {user && (
+          <ul className="menu menu-horizontal px-1 hidden lg:flex">
+            <li>
+              <Link to="/privacy">Privacy</Link>
+            </li>
+          </ul>
+        )}
+        {!user && (
+          <ul className="menu menu-horizontal px-1 hidden sm:flex">
+            <li>
+              <Link to="/privacy">Privacy</Link>
+            </li>
+          </ul>
+        )}
       </div>
-      <div className="flex-none">
+      <div className="flex-none gap-2">
         {user ? <NavBarLoggedInView /> : <NavBarLoggedOutView />}
       </div>
     </div>

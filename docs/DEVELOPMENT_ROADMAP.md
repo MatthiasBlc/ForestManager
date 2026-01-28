@@ -151,9 +151,9 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] Redirection automatique
 
 ### 1.3 Layout de base
-- [ ] Header avec navigation
-- [ ] Sidebar (communautes)
-- [ ] Layout responsive
+- [x] Header avec navigation (NavBar sticky)
+- [x] Sidebar (communautes) - placeholder, ready for Phase 3
+- [x] Layout responsive (DaisyUI drawer pattern)
 
 ### Livrables
 - Utilisateurs peuvent s'inscrire, se connecter, se deconnecter

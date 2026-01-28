@@ -1,5 +1,6 @@
 import LoginModal from "./components/LoginModal";
 import NavBar from "./components/Navbar/NavBar";
+import MainLayout from "./components/Layout/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
@@ -11,26 +12,37 @@ import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 import AdminLayout from "./components/admin/AdminLayout";
-import styles from "./styles/App.module.css";
 
 function App() {
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
-        <div>
+        <div className="min-h-screen flex flex-col">
           <NavBar />
-          <div className={styles.pageContainer}>
+          <div className="flex-1">
             <Routes>
-              {/* Public routes */}
+              {/* Public routes - no sidebar */}
               <Route path="/signup" element={<SignUpPage />} />
               <Route path="/privacy" element={<PrivacyPage />} />
 
-              {/* Protected user routes */}
+              {/* Protected user routes - with sidebar layout */}
               <Route
                 path="/"
                 element={
                   <ProtectedRoute>
-                    <RecipesPage />
+                    <MainLayout>
+                      <RecipesPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/recipes"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <RecipesPage />
+                    </MainLayout>
                   </ProtectedRoute>
                 }
               />
