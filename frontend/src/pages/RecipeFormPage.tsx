@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { FaArrowLeft, FaSave } from "react-icons/fa";
 import APIManager, { RecipeInput } from "../network/api";
-import { RecipeDetail } from "../models/recipe";
 import TagSelector from "../components/form/TagSelector";
 import IngredientList, { IngredientInput } from "../components/form/IngredientList";
 
@@ -109,10 +108,7 @@ const RecipeFormPage = () => {
         <div className="alert alert-error">
           <span>{error}</span>
         </div>
-        <button
-          className="btn btn-ghost mt-4 gap-2"
-          onClick={() => navigate("/recipes")}
-        >
+        <button className="btn btn-ghost mt-4 gap-2" onClick={() => navigate("/recipes")}>
           <FaArrowLeft />
           Back to recipes
         </button>
@@ -133,9 +129,7 @@ const RecipeFormPage = () => {
       </div>
 
       <div className="bg-base-100 rounded-lg shadow-xl p-6 md:p-8">
-        <h1 className="text-2xl font-bold mb-6">
-          {isEditing ? "Edit Recipe" : "New Recipe"}
-        </h1>
+        <h1 className="text-2xl font-bold mb-6">{isEditing ? "Edit Recipe" : "New Recipe"}</h1>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="form-control">
@@ -146,15 +140,11 @@ const RecipeFormPage = () => {
               type="text"
               {...register("title", { required: "Title is required" })}
               placeholder="Recipe title"
-              className={`input input-bordered w-full ${
-                errors.title ? "input-error" : ""
-              }`}
+              className={`input input-bordered w-full ${errors.title ? "input-error" : ""}`}
             />
             {errors.title && (
               <label className="label">
-                <span className="label-text-alt text-error">
-                  {errors.title.message}
-                </span>
+                <span className="label-text-alt text-error">{errors.title.message}</span>
               </label>
             )}
           </div>
@@ -199,9 +189,7 @@ const RecipeFormPage = () => {
             />
             {errors.content && (
               <label className="label">
-                <span className="label-text-alt text-error">
-                  {errors.content.message}
-                </span>
+                <span className="label-text-alt text-error">{errors.content.message}</span>
               </label>
             )}
           </div>
@@ -210,22 +198,12 @@ const RecipeFormPage = () => {
             <button
               type="button"
               className="btn btn-ghost"
-              onClick={() =>
-                navigate(isEditing && id ? `/recipes/${id}` : "/recipes")
-              }
+              onClick={() => navigate(isEditing && id ? `/recipes/${id}` : "/recipes")}
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              className="btn btn-primary gap-2"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <span className="loading loading-spinner loading-sm" />
-              ) : (
-                <FaSave />
-              )}
+            <button type="submit" className="btn btn-primary gap-2" disabled={isSubmitting}>
+              {isSubmitting ? <span className="loading loading-spinner loading-sm" /> : <FaSave />}
               {isEditing ? "Save changes" : "Create recipe"}
             </button>
           </div>
