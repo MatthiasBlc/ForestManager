@@ -8,18 +8,15 @@ const apiUrl = import.meta.env.VITE_BACKEND_URL;
 // eslint-disable-next-line react-refresh/only-export-components
 const API = axios.create({ withCredentials: true, baseURL: apiUrl });
 
-API.interceptors.request.use(({ headers, ...config }) => ({
-  ...config,
-  headers: {
-    ...headers,
-    "Content-Type": "application/json",
-  },
-}));
+API.interceptors.request.use((config) => {
+  config.headers["Content-Type"] = "application/json";
+  return config;
+});
 
 
 export interface RecipeInput {
   title: string,
-  text: string,
+  content: string,
 }
 
 export interface SignUpCredentials {

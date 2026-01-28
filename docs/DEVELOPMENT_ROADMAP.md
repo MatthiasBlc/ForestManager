@@ -582,3 +582,14 @@ Phase 8 (Finitions MVP)
    - Session admin: admin.sid → AdminSession (isole)
 
 5. **Checklist mise a jour** - Avec criteres SuperAdmin et 2FA
+
+---
+
+## Maintenance technique (CI/CD)
+
+### Dependances a mettre a jour
+- [ ] Corriger les 3 vulnerabilites "high severity" (`npm audit fix`)
+- [ ] Migrer otplib de v12 vers v13
+- [ ] Mettre a jour ESLint vers une version supportee (v8.57.1 deprecie)
+- [ ] Migrer config Prisma de `package.json#prisma` vers `prisma.config.ts` (deprecie Prisma 7)
+- [ ] Remplacer `npm prune --production` par `--omit=dev` dans Dockerfile
