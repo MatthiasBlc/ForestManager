@@ -7,6 +7,7 @@ echo "=== ForestManager Production Deployment ==="
 # Validate required environment variables
 # ========================================
 required_vars=(
+    "PORTAINER_URL"
     "PORTAINER_API"
     "STACK_ID"
     "ENDPOINT_ID"
@@ -14,6 +15,7 @@ required_vars=(
     "POSTGRES_PASSWORD"
     "POSTGRES_DB"
     "SESSION_SECRET"
+    "ADMIN_SESSION_SECRET"
     "REGISTRY_URL"
     "IMAGE_NAME"
 )
@@ -30,6 +32,7 @@ echo "All required variables are set."
 # ========================================
 # Export variables for envsubst
 # ========================================
+export PORTAINER_URL
 export PORTAINER_API
 export STACK_ID
 export ENDPOINT_ID
@@ -37,7 +40,7 @@ export POSTGRES_USER
 export POSTGRES_PASSWORD
 export POSTGRES_DB
 export SESSION_SECRET
-export CORS_ORIGIN
+export ADMIN_SESSION_SECRET
 export REGISTRY_URL
 export IMAGE_NAME
 export TAG=${TAG:-latest}

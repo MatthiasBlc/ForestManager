@@ -104,8 +104,7 @@ jobs:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
-          CORS_ORIGIN: ${{ secrets.CORS_ORIGIN }}
-          API_URL: ${{ secrets.API_URL }}
+          ADMIN_SESSION_SECRET: ${{ secrets.ADMIN_SESSION_SECRET }}
 
       - name: Cleanup old images from registry
         run: |
