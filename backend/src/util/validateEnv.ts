@@ -6,6 +6,6 @@ export default cleanEnv(process.env, {
   PORT: port(),
   SESSION_SECRET: str(),
   ADMIN_SESSION_SECRET: str(),
-  CORS_ORIGIN: str(),
+  CORS_ORIGIN: str({ default: "" }),
   NODE_ENV: str({ choices: ["development", "production"], default: "development" }),
 });

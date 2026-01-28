@@ -31,8 +31,10 @@ if (env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
 
-// cors needed for dev environment
-app.use(cors({ credentials: true, origin: env.CORS_ORIGIN }));
+// CORS needed for dev environment (in prod, nginx proxy handles same-origin)
+if (env.CORS_ORIGIN) {
+  app.use(cors({ credentials: true, origin: env.CORS_ORIGIN }));
+}
 
 app.use(morgan("dev"));
 
