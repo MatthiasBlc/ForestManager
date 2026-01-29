@@ -1,5 +1,5 @@
 import { ReactNode, useState } from "react";
-import { FaBars, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaBars } from "react-icons/fa";
 import Sidebar from "./Sidebar";
 
 interface MainLayoutProps {
@@ -27,15 +27,24 @@ const MainLayout = ({ children }: MainLayoutProps) => {
 
       {/* Main content */}
       <div className="drawer-content flex flex-col">
-        {/* Mobile menu button - only shows on small screens */}
-        <div className="lg:hidden p-2 border-b border-base-300">
+        {/* Menu button bar */}
+        <div className="p-2 border-b border-base-300 flex items-center">
+          {/* Mobile: opens drawer overlay */}
           <label
             htmlFor="main-drawer"
-            className="btn btn-ghost btn-sm drawer-button"
+            className="btn btn-ghost btn-sm drawer-button lg:hidden"
           >
             <FaBars className="w-4 h-4" />
             <span className="ml-2">Menu</span>
           </label>
+          {/* Desktop: toggles compact/expanded sidebar */}
+          <button
+            onClick={toggleCompact}
+            className="btn btn-ghost btn-sm hidden lg:flex"
+            aria-label={isCompact ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <FaBars className="w-4 h-4" />
+          </button>
         </div>
 
         {/* Page content */}
@@ -57,18 +66,6 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           }`}
         >
           <Sidebar onNavigate={closeSidebar} isCompact={isCompact} />
-          {/* Toggle button for desktop - positioned at sidebar edge */}
-          <button
-            onClick={toggleCompact}
-            className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-base-300 hover:bg-base-content/20 rounded-full items-center justify-center shadow-md transition-colors"
-            aria-label={isCompact ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {isCompact ? (
-              <FaChevronRight className="w-3 h-3" />
-            ) : (
-              <FaChevronLeft className="w-3 h-3" />
-            )}
-          </button>
         </aside>
       </div>
     </div>
