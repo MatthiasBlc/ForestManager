@@ -5,6 +5,10 @@ import { useAuth } from "../contexts/AuthContext";
 import { SignUpCredentials } from "../network/api";
 import TextInputField from "../components/form/TextInputField";
 
+interface SignUpFormData extends SignUpCredentials {
+  confirmPassword: string;
+}
+
 // Password strength calculation
 function calculatePasswordStrength(password: string): { score: number; label: string; color: string } {
   let score = 0;
@@ -32,7 +36,7 @@ const SignUpPage = () => {
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<SignUpCredentials>();
+  } = useForm<SignUpFormData>();
 
   const password = watch("password", "");
   const passwordStrength = useMemo(() => calculatePasswordStrength(password || ""), [password]);
@@ -51,7 +55,7 @@ const SignUpPage = () => {
     );
   }
 
-  async function onSubmit(credentials: SignUpCredentials) {
+  async function onSubmit(credentials: SignUpFormData) {
     setErrorText(null);
     setIsSubmitting(true);
     try {
@@ -174,6 +178,22 @@ const SignUpPage = () => {
                 </div>
               )}
             </div>
+
+            <TextInputField
+              name="confirmPassword"
+              label="Confirm Password"
+              type="password"
+              placeholder="Confirm your password"
+              className="input input-bordered w-full"
+              required
+              register={register}
+              registerOptions={{
+                required: "Please confirm your password",
+                validate: (value: string) =>
+                  value === password || "Passwords do not match",
+              }}
+              error={errors.confirmPassword}
+            />
 
             <button
               type="submit"
