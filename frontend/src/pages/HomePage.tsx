@@ -19,19 +19,28 @@ const HomePage = () => {
   }
 
   return (
-    <div className="flex-1 flex items-center justify-center bg-base-200">
-      <div className="text-center max-w-2xl px-4">
-        <h1 className="text-5xl font-bold mb-6">Forest Manager</h1>
-        <p className="text-xl text-base-content/70 mb-8">
-          Partagez vos recettes avec votre communaute
-        </p>
+    <div className="flex-1 flex flex-col bg-base-200">
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center max-w-2xl px-4">
+          <h1 className="text-5xl font-bold mb-6">Forest Manager</h1>
+          <p className="text-xl text-base-content/70 mb-8">
+            Partagez vos recettes avec votre communaute
+          </p>
 
-        <div className="flex gap-4 justify-center">
-          <Link to="/signup" className="btn btn-primary btn-lg">
-            Commencer
-          </Link>
+          <div className="flex gap-4 justify-center">
+            <Link to="/signup" className="btn btn-primary btn-lg">
+              Commencer
+            </Link>
+          </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="p-4 text-center border-t border-base-300">
+        <Link to="/privacy" className="link link-hover text-sm text-base-content/70">
+          Privacy Policy
+        </Link>
+      </footer>
     </div>
   );
 };

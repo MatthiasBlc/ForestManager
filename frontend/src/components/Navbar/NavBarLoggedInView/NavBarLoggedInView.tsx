@@ -15,9 +15,7 @@ const NavBarLoggedInView = () => {
   return (
     <>
       <div className="flex-none">
-        <span className="btn btn-ghost normal-case text-xl">
-          Signed in as: {user?.username}
-        </span>
+        <span className="btn btn-ghost normal-case text-xl">{user?.username}</span>
       </div>
       <button className="btn btn-square btn-ghost" onClick={handleLogout}>
         Log out

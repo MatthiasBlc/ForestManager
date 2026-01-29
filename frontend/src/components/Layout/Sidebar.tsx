@@ -1,12 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
-import { FaBook, FaUsers, FaPlus } from "react-icons/fa";
+import { FaBook, FaUsers, FaPlus, FaBars } from "react-icons/fa";
 
 interface SidebarProps {
   onNavigate?: () => void;
   isCompact?: boolean;
+  onToggleCompact?: () => void;
 }
 
-const Sidebar = ({ onNavigate, isCompact = false }: SidebarProps) => {
+const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProps) => {
   const location = useLocation();
 
   const menuItems = [
@@ -20,8 +21,22 @@ const Sidebar = ({ onNavigate, isCompact = false }: SidebarProps) => {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Logo/Brand for mobile drawer */}
-      <div className={`p-4 border-b border-base-300 lg:hidden ${isCompact ? "text-center" : ""}`}>
+      {/* Header with toggle button - Desktop only (pointer device) */}
+      <div className={`hidden pointer-fine:flex p-4 border-b border-base-300 ${isCompact ? "justify-center" : "justify-between items-center"}`}>
+        {!isCompact && <span className="text-lg font-bold">Menu</span>}
+        <div className={isCompact ? "tooltip tooltip-right" : ""} data-tip={isCompact ? "Expand menu" : undefined}>
+          <button
+            onClick={onToggleCompact}
+            className="btn btn-ghost btn-sm"
+            aria-label={isCompact ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            <FaBars className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Logo/Brand for mobile drawer (touch devices) */}
+      <div className={`p-4 border-b border-base-300 pointer-fine:hidden ${isCompact ? "text-center" : ""}`}>
         <span className="text-xl font-bold">{isCompact ? "FM" : "Forest Manager"}</span>
       </div>
 
@@ -33,12 +48,11 @@ const Sidebar = ({ onNavigate, isCompact = false }: SidebarProps) => {
           </li>
         )}
         {menuItems.map((item) => (
-          <li key={item.path}>
+          <li key={item.path} className={isCompact ? "tooltip tooltip-right" : ""} data-tip={isCompact ? item.label : undefined}>
             <Link
               to={item.path}
               onClick={onNavigate}
-              className={`${isActive(item.path) ? "active" : ""} ${isCompact ? "justify-center tooltip tooltip-right" : ""}`}
-              data-tip={isCompact ? item.label : undefined}
+              className={`${isActive(item.path) ? "active" : ""} ${isCompact ? "justify-center" : ""}`}
             >
               <item.icon className={isCompact ? "w-5 h-5" : "w-4 h-4"} />
               {!isCompact && item.label}
@@ -59,12 +73,11 @@ const Sidebar = ({ onNavigate, isCompact = false }: SidebarProps) => {
             </li>
           </>
         )}
-        <li>
+        <li className={isCompact ? "tooltip tooltip-right" : ""} data-tip={isCompact ? "Create Community" : undefined}>
           <Link
             to="/communities/create"
             onClick={onNavigate}
-            className={`text-primary ${isCompact ? "justify-center tooltip tooltip-right" : ""}`}
-            data-tip={isCompact ? "Create Community" : undefined}
+            className={`text-primary ${isCompact ? "justify-center" : ""}`}
           >
             <FaPlus className={isCompact ? "w-5 h-5" : "w-4 h-4"} />
             {!isCompact && "Create Community"}
@@ -73,13 +86,11 @@ const Sidebar = ({ onNavigate, isCompact = false }: SidebarProps) => {
       </ul>
 
       {/* Footer */}
-      {!isCompact && (
-        <div className="p-4 border-t border-base-300">
-          <p className="text-xs text-base-content/50 text-center">
-            Forest Manager v0.1
-          </p>
-        </div>
-      )}
+      <div className={`border-t border-base-300 ${isCompact ? "p-2" : "p-4"}`}>
+        <p className={`text-xs text-base-content/50 text-center ${isCompact ? "writing-mode-vertical" : ""}`}>
+          {isCompact ? "v0.1" : "Forest Manager v0.1"}
+        </p>
+      </div>
     </div>
   );
 };
