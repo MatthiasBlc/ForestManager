@@ -78,9 +78,9 @@ services:
       <<: *health_http
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.forestmanager-dev-web.rule=Host(`preprod.forestmanager.matthias-bouloc.fr`)"
+      - "traefik.http.routers.forestmanager-dev-web.rule=Host(`preprod-forestmanager.matthias-bouloc.fr`)"
       - "traefik.http.routers.forestmanager-dev-web.entrypoints=https"
-      - "traefik.http.routers.forestmanager-dev-web.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.forestmanager-dev-web.tls.certresolver=cloudflare"
       - "traefik.http.services.forestmanager-dev-web.loadbalancer.server.port=80"
       - "traefik.docker.network=proxy"
     logging: *default-logging
