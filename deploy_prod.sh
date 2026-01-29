@@ -1,7 +1,14 @@
 #!/bin/bash
 set -e
 
-echo "=== ForestManager Production Deployment ==="
+# ========================================
+# Configuration
+# ========================================
+COMPOSE_FILE=${COMPOSE_FILE:-docker-compose.prod.yml}
+DEPLOY_ENV=${DEPLOY_ENV:-production}
+
+echo "=== ForestManager Deployment (${DEPLOY_ENV}) ==="
+echo "Using compose file: ${COMPOSE_FILE}"
 
 # ========================================
 # Validate required environment variables
@@ -46,17 +53,17 @@ export IMAGE_NAME
 export TAG=${TAG:-latest}
 
 # ========================================
-# Process docker-compose.prod.yml
+# Process docker-compose file
 # ========================================
-echo "Processing docker-compose.prod.yml..."
+echo "Processing ${COMPOSE_FILE}..."
 
-if [ ! -f "docker-compose.prod.yml" ]; then
-    echo "ERROR: docker-compose.prod.yml not found"
+if [ ! -f "${COMPOSE_FILE}" ]; then
+    echo "ERROR: ${COMPOSE_FILE} not found"
     exit 1
 fi
 
 # Substitute environment variables
-envsubst < docker-compose.prod.yml > stack_substituted.yml
+envsubst < "${COMPOSE_FILE}" > stack_substituted.yml
 
 # ========================================
 # Build Portainer API payload
