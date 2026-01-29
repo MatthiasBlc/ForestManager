@@ -36,7 +36,7 @@ services:
   forestmanager-dev-backend:
     image: ${REGISTRY_URL:-registry.matthias-bouloc.fr}/${IMAGE_NAME:-forestmanager}/backend:${TAG:-latest}
     container_name: forestmanager-dev-backend
-    hostname: forestmanager-dev-backend
+    hostname: forestmanager-backend
     restart: unless-stopped
     environment:
       - NODE_ENV=production
@@ -49,7 +49,9 @@ services:
     volumes:
       - backend-logs-dev:/app/logs
     networks:
-      - internal-dev
+      internal-dev:
+        aliases:
+          - forestmanager-backend
     depends_on:
       forestmanager-dev-postgres:
         condition: service_healthy
