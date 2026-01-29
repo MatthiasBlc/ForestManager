@@ -51,14 +51,15 @@ export const adminRateLimiter = rateLimit({
 
 /**
  * Middleware pour forcer HTTPS en production
- * Redirige les requetes HTTP vers HTTPS
+ * Redirige les requetes HTTP vers HTTPS uniquement pour les requetes directes
+ * Note: Derriere un reverse proxy (Traefik), le header x-forwarded-proto
+ * doit etre passe par les proxies intermediaires pour indiquer le protocole client.
  */
 export const requireHttps: RequestHandler = (req, res, next) => {
   if (env.NODE_ENV === "production") {
-    // Verifier le header x-forwarded-proto (derriere un proxy comme Traefik)
     const proto = req.headers["x-forwarded-proto"];
-    if (proto && proto !== "https") {
-      // Rediriger vers HTTPS
+    // Rediriger seulement si explicitement HTTP (pas si header absent ou https)
+    if (proto === "http") {
       return res.redirect(301, `https://${req.headers.host}${req.url}`);
     }
   }

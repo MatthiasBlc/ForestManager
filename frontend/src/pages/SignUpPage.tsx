@@ -45,7 +45,7 @@ const SignUpPage = () => {
   // Show loading while checking auth status
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-base-200">
+      <div className="flex-1 flex items-center justify-center bg-base-200">
         <span className="loading loading-spinner loading-lg"></span>
       </div>
     );
@@ -73,7 +73,7 @@ const SignUpPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-base-200 px-4">
+    <div className="flex-1 flex items-center justify-center bg-base-200 px-4">
       <div className="card w-full max-w-md bg-base-100 shadow-xl">
         <div className="card-body">
           <h2 className="card-title text-2xl font-bold justify-center mb-4">

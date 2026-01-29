@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import { RecipeDetail, RecipesResponse, TagSearchResult, IngredientSearchResult } from "../models/recipe";
 import { User } from "../models/user";
 import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats } from "../models/admin";
@@ -12,6 +12,24 @@ API.interceptors.request.use((config) => {
   config.headers["Content-Type"] = "application/json";
   return config;
 });
+
+// Utility function to handle API errors safely
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function handleApiError(error: AxiosError<any>): never {
+  console.log(error);
+  if (!error.response) {
+    throw new Error("Network error - please check your connection");
+  }
+  if (error.response.status === 401) {
+    throw new UnauthorizedError(error.response.data?.error || "Unauthorized");
+  }
+  if (error.response.status === 409) {
+    throw new ConflictError(error.response.data?.error || "Conflict");
+  }
+  throw new Error(
+    `Request failed with status: ${error.response.status} message ${error.response.data?.error || "Unknown error"}`
+  );
+}
 
 
 export interface RecipeInput {
@@ -57,17 +75,7 @@ export default class APIManager {
     const queryString = queryParams.toString();
     const url = `/api/recipes${queryString ? `?${queryString}` : ""}`;
 
-    const response = await API.get(url)
-      .catch(error => {
-        console.log(error)
-        if (error.response.status === 401) {
-          throw new UnauthorizedError(error.response.data.error);
-        } else if (error.response.status === 409) {
-          throw new ConflictError(error.response.data.error)
-        } else {
-          throw Error(`Request failed with status: ${error.response.status} message ${error.response.data.error}`);
-        }
-      });
+    const response = await API.get(url).catch(handleApiError);
     return response.data;
   }
 
@@ -80,62 +88,32 @@ export default class APIManager {
   static async getRecipe(recipeId: string): Promise<RecipeDetail> {
     const response = await API.get(`/api/recipes/${recipeId}`)
       .catch(error => {
-        console.log(error)
-        if (error.response.status === 401) {
-          throw new UnauthorizedError(error.response.data.error);
-        } else if (error.response.status === 404) {
-          throw new Error("Recipe not found");
-        } else if (error.response.status === 403) {
-          throw new Error("Cannot access this recipe");
-        } else {
-          throw Error(`Request failed with status: ${error.response.status} message ${error.response.data.error}`);
+        if (!error.response) {
+          throw new Error("Network error - please check your connection");
         }
+        if (error.response.status === 404) {
+          throw new Error("Recipe not found");
+        }
+        if (error.response.status === 403) {
+          throw new Error("Cannot access this recipe");
+        }
+        return handleApiError(error);
       });
     return response.data;
   }
 
   static async createRecipe(recipe: RecipeInput): Promise<RecipeDetail> {
-    const response = await API.post("/api/recipes", JSON.stringify(recipe))
-      .catch(error => {
-        console.log(error)
-        if (error.response.status === 401) {
-          throw new UnauthorizedError(error.response.data.error);
-        } else if (error.response.status === 409) {
-          throw new ConflictError(error.response.data.error)
-        } else {
-          throw Error(`Request failed with status: ${error.response.status} message ${error.response.data.error}`);
-        }
-      });
+    const response = await API.post("/api/recipes", JSON.stringify(recipe)).catch(handleApiError);
     return response.data;
   }
 
   static async updateRecipe(recipeId: string, recipe: Partial<RecipeInput>): Promise<RecipeDetail> {
-    const response = await API.patch("/api/recipes/" + recipeId, JSON.stringify(recipe))
-      .catch(error => {
-        console.log(error)
-        if (error.response.status === 401) {
-          throw new UnauthorizedError(error.response.data.error);
-        } else if (error.response.status === 409) {
-          throw new ConflictError(error.response.data.error)
-        } else {
-          throw Error(`Request failed with status: ${error.response.status} message ${error.response.data.error}`);
-        }
-      });
+    const response = await API.patch("/api/recipes/" + recipeId, JSON.stringify(recipe)).catch(handleApiError);
     return response.data;
   }
 
   static async deleteRecipe(recipeId: string) {
-    const response = await API.delete("/api/recipes/" + recipeId)
-      .catch(error => {
-        console.log(error)
-        if (error.response.status === 401) {
-          throw new UnauthorizedError(error.response.data.error);
-        } else if (error.response.status === 409) {
-          throw new ConflictError(error.response.data.error)
-        } else {
-          throw Error(`Request failed with status: ${error.response.status} message ${error.response.data.error}`);
-        }
-      })
+    const response = await API.delete("/api/recipes/" + recipeId).catch(handleApiError);
     return response.data;
   }
 
@@ -150,15 +128,7 @@ export default class APIManager {
     const queryString = queryParams.toString();
     const url = `/api/tags${queryString ? `?${queryString}` : ""}`;
 
-    const response = await API.get(url)
-      .catch(error => {
-        console.log(error)
-        if (error.response.status === 401) {
-          throw new UnauthorizedError(error.response.data.error);
-        } else {
-          throw Error(`Request failed with status: ${error.response.status} message ${error.response.data.error}`);
-        }
-      });
+    const response = await API.get(url).catch(handleApiError);
     return response.data.data;
   }
 
@@ -173,15 +143,7 @@ export default class APIManager {
     const queryString = queryParams.toString();
     const url = `/api/ingredients${queryString ? `?${queryString}` : ""}`;
 
-    const response = await API.get(url)
-      .catch(error => {
-        console.log(error)
-        if (error.response.status === 401) {
-          throw new UnauthorizedError(error.response.data.error);
-        } else {
-          throw Error(`Request failed with status: ${error.response.status} message ${error.response.data.error}`);
-        }
-      });
+    const response = await API.get(url).catch(handleApiError);
     return response.data.data;
   }
 
@@ -189,61 +151,22 @@ export default class APIManager {
   // --------------- Users Auth ---------------
   // Need credentials in the header if front and back are on differents domain / sub-domains
   static async getLoggedInUser(): Promise<User> {
-    const response = await API.get("/api/auth/me")
-      .catch(error => {
-        console.log(error)
-        if (error.response.status === 401) {
-          throw new UnauthorizedError(error.response.data.error);
-        } else if (error.response.status === 409) {
-          throw new ConflictError(error.response.data.error)
-        } else {
-          throw Error(`Request failed with status: ${error.response.status} message ${error.response.data.error}`);
-        }
-      })
+    const response = await API.get("/api/auth/me").catch(handleApiError);
     return response.data.user;
   }
 
   static async signUp(credentials: SignUpCredentials): Promise<User> {
-    const response = await API.post("/api/auth/signup", JSON.stringify(credentials))
-      .catch(error => {
-        console.log(error)
-        if (error.response.status === 401) {
-          throw new UnauthorizedError(error.response.data.error);
-        } else if (error.response.status === 409) {
-          throw new ConflictError(error.response.data.error)
-        } else {
-          throw Error(`Request failed with status: ${error.response.status} message ${error.response.data.error}`);
-        }
-      });
+    const response = await API.post("/api/auth/signup", JSON.stringify(credentials)).catch(handleApiError);
     return response.data.user;
   }
 
   static async login(credentials: LoginCredentials): Promise<User> {
-    const response = await API.post("/api/auth/login", JSON.stringify(credentials))
-      .catch(error => {
-        if (error.response.status === 401) {
-          throw new UnauthorizedError(error.response.data.error);
-        } else if (error.response.status === 409) {
-          throw new ConflictError(error.response.data.error)
-        } else {
-          throw Error(`Request failed with status: ${error.response.status} message ${error.response.data.error}`);
-        }
-      });
+    const response = await API.post("/api/auth/login", JSON.stringify(credentials)).catch(handleApiError);
     return response.data.user;
   }
 
   static async logout() {
-    const response = await API.post("/api/auth/logout")
-      .catch(error => {
-        console.log(error)
-        if (error.response.status === 401) {
-          throw new UnauthorizedError(error.response.data.error);
-        } else if (error.response.status === 409) {
-          throw new ConflictError(error.response.data.error)
-        } else {
-          throw Error(`Request failed with status: ${error.response.status} message ${error.response.data.error}`);
-        }
-      });
+    const response = await API.post("/api/auth/logout").catch(handleApiError);
     return response.data;
   }
 

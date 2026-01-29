@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FaPlus } from "react-icons/fa";
 import { RecipeListItem, RecipesResponse } from "../models/recipe";
@@ -19,7 +19,11 @@ const RecipesPageLoggedInView = () => {
   const [showRecipesLoadingError, setShowRecipesLoadingError] = useState(false);
 
   const searchFilter = searchParams.get("search") || "";
-  const tagsFilter = searchParams.get("tags")?.split(",").filter(Boolean) || [];
+  const tagsParam = searchParams.get("tags") || "";
+  const tagsFilter = useMemo(
+    () => tagsParam.split(",").filter(Boolean),
+    [tagsParam]
+  );
 
   const loadRecipes = useCallback(async (offset: number = 0, append: boolean = false) => {
     try {

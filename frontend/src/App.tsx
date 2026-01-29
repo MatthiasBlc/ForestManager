@@ -4,6 +4,7 @@ import MainLayout from "./components/Layout/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import HomePage from "./pages/HomePage";
 import RecipesPage from "./pages/RecipesPage";
 import RecipeDetailPage from "./pages/RecipeDetailPage";
 import RecipeFormPage from "./pages/RecipeFormPage";
@@ -21,23 +22,14 @@ function App() {
       <AuthProvider>
         <div className="min-h-screen flex flex-col">
           <NavBar />
-          <div className="flex-1">
+          <div className="flex-1 flex flex-col">
             <Routes>
               {/* Public routes - no sidebar */}
+              <Route path="/" element={<HomePage />} />
               <Route path="/signup" element={<SignUpPage />} />
               <Route path="/privacy" element={<PrivacyPage />} />
 
               {/* Protected user routes - with sidebar layout */}
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <RecipesPage />
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
               <Route
                 path="/recipes"
                 element={

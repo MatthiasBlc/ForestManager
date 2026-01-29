@@ -1,5 +1,5 @@
 import { ReactNode, useState } from "react";
-import { FaBars } from "react-icons/fa";
+import { FaBars, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import Sidebar from "./Sidebar";
 
 interface MainLayoutProps {
@@ -8,9 +8,11 @@ interface MainLayoutProps {
 
 const MainLayout = ({ children }: MainLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isCompact, setIsCompact] = useState(false);
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const closeSidebar = () => setSidebarOpen(false);
+  const toggleCompact = () => setIsCompact(!isCompact);
 
   return (
     <div className="drawer lg:drawer-open h-full">
@@ -49,8 +51,24 @@ const MainLayout = ({ children }: MainLayoutProps) => {
           aria-label="close sidebar"
           className="drawer-overlay"
         />
-        <aside className="bg-base-200 w-64 min-h-full border-r border-base-300">
-          <Sidebar onNavigate={closeSidebar} />
+        <aside
+          className={`bg-base-200 min-h-full border-r border-base-300 transition-all duration-300 ${
+            isCompact ? "w-16" : "w-64"
+          }`}
+        >
+          <Sidebar onNavigate={closeSidebar} isCompact={isCompact} />
+          {/* Toggle button for desktop - positioned at sidebar edge */}
+          <button
+            onClick={toggleCompact}
+            className="hidden lg:flex absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-base-300 hover:bg-base-content/20 rounded-full items-center justify-center shadow-md transition-colors"
+            aria-label={isCompact ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {isCompact ? (
+              <FaChevronRight className="w-3 h-3" />
+            ) : (
+              <FaChevronLeft className="w-3 h-3" />
+            )}
+          </button>
         </aside>
       </div>
     </div>

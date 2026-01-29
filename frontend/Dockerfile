@@ -52,6 +52,7 @@ FROM nginx:alpine AS production
 COPY --from=build /app/dist /usr/share/nginx/html
 
 # Create nginx config for SPA with API proxy
+# Note: X-Forwarded-Proto is passed from Traefik, not redefined here
 RUN echo 'server { \
     listen 80; \
     location / { \
@@ -65,7 +66,8 @@ RUN echo 'server { \
         proxy_set_header Host $host; \
         proxy_set_header X-Real-IP $remote_addr; \
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; \
-        proxy_set_header X-Forwarded-Proto $scheme; \
+        proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto; \
+        proxy_set_header X-Forwarded-Host $host; \
     } \
 }' > /etc/nginx/conf.d/default.conf
 
