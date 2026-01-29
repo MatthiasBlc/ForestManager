@@ -44,6 +44,7 @@ export interface GetRecipesParams {
   limit?: number;
   offset?: number;
   tags?: string[];
+  ingredients?: string[];
   search?: string;
 }
 
@@ -70,6 +71,7 @@ export default class APIManager {
     if (params.limit) queryParams.set("limit", params.limit.toString());
     if (params.offset) queryParams.set("offset", params.offset.toString());
     if (params.tags && params.tags.length > 0) queryParams.set("tags", params.tags.join(","));
+    if (params.ingredients && params.ingredients.length > 0) queryParams.set("ingredients", params.ingredients.join(","));
     if (params.search) queryParams.set("search", params.search);
 
     const queryString = queryParams.toString();

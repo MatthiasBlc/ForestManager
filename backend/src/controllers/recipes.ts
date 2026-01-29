@@ -7,6 +7,7 @@ interface GetRecipesQuery {
   limit?: string;
   offset?: string;
   tags?: string;
+  ingredients?: string;
   search?: string;
 }
 
@@ -15,6 +16,7 @@ export const getRecipes: RequestHandler<unknown, unknown, unknown, GetRecipesQue
   const limit = Math.min(Math.max(parseInt(req.query.limit || "20", 10), 1), 100);
   const offset = Math.max(parseInt(req.query.offset || "0", 10), 0);
   const tagsFilter = req.query.tags?.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean) || [];
+  const ingredientsFilter = req.query.ingredients?.split(",").map((i) => i.trim().toLowerCase()).filter(Boolean) || [];
   const searchFilter = req.query.search?.trim() || "";
 
   try {
@@ -34,8 +36,10 @@ export const getRecipes: RequestHandler<unknown, unknown, unknown, GetRecipesQue
       };
     }
 
+    const andConditions = [];
+
     if (tagsFilter.length > 0) {
-      whereClause.AND = tagsFilter.map((tagName) => ({
+      andConditions.push(...tagsFilter.map((tagName) => ({
         tags: {
           some: {
             tag: {
@@ -43,7 +47,23 @@ export const getRecipes: RequestHandler<unknown, unknown, unknown, GetRecipesQue
             },
           },
         },
-      }));
+      })));
+    }
+
+    if (ingredientsFilter.length > 0) {
+      andConditions.push(...ingredientsFilter.map((ingredientName) => ({
+        ingredients: {
+          some: {
+            ingredient: {
+              name: ingredientName,
+            },
+          },
+        },
+      })));
+    }
+
+    if (andConditions.length > 0) {
+      whereClause.AND = andConditions;
     }
 
     const [recipes, total] = await Promise.all([

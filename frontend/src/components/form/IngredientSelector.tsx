@@ -1,35 +1,33 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { FaTimes, FaPlus } from "react-icons/fa";
+import { FaTimes } from "react-icons/fa";
 import APIManager from "../../network/api";
-import { TagSearchResult } from "../../models/recipe";
+import { IngredientSearchResult } from "../../models/recipe";
 
-interface TagSelectorProps {
+interface IngredientSelectorProps {
   value: string[];
-  onChange: (tags: string[]) => void;
+  onChange: (ingredients: string[]) => void;
   placeholder?: string;
-  allowCreate?: boolean;
 }
 
-const TagSelector = ({
+const IngredientSelector = ({
   value,
   onChange,
-  placeholder = "Search tags...",
-  allowCreate = true,
-}: TagSelectorProps) => {
+  placeholder = "Search ingredients...",
+}: IngredientSelectorProps) => {
   const [inputValue, setInputValue] = useState("");
-  const [suggestions, setSuggestions] = useState<TagSearchResult[]>([]);
+  const [suggestions, setSuggestions] = useState<IngredientSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const searchTags = useCallback(async (search: string) => {
+  const searchIngredients = useCallback(async (search: string) => {
     setIsLoading(true);
     try {
-      const results = await APIManager.searchTags(search.trim(), 10);
-      setSuggestions(results.filter((tag) => !value.includes(tag.name)));
+      const results = await APIManager.searchIngredients(search.trim(), 10);
+      setSuggestions(results.filter((ingredient) => !value.includes(ingredient.name)));
     } catch (error) {
-      console.error("Error searching tags:", error);
+      console.error("Error searching ingredients:", error);
       setSuggestions([]);
     } finally {
       setIsLoading(false);
@@ -44,7 +42,7 @@ const TagSelector = ({
     }
 
     debounceRef.current = setTimeout(() => {
-      searchTags(inputValue);
+      searchIngredients(inputValue);
     }, inputValue ? 300 : 0);
 
     return () => {
@@ -52,7 +50,7 @@ const TagSelector = ({
         clearTimeout(debounceRef.current);
       }
     };
-  }, [inputValue, searchTags, showDropdown]);
+  }, [inputValue, searchIngredients, showDropdown]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -65,53 +63,44 @@ const TagSelector = ({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const addTag = (tagName: string) => {
-    const normalizedTag = tagName.trim().toLowerCase();
-    if (normalizedTag && !value.includes(normalizedTag)) {
-      onChange([...value, normalizedTag]);
+  const addIngredient = (ingredientName: string) => {
+    const normalizedIngredient = ingredientName.trim().toLowerCase();
+    if (normalizedIngredient && !value.includes(normalizedIngredient)) {
+      onChange([...value, normalizedIngredient]);
     }
     setInputValue("");
     setShowDropdown(false);
   };
 
-  const removeTag = (tagToRemove: string) => {
-    onChange(value.filter((tag) => tag !== tagToRemove));
+  const removeIngredient = (ingredientToRemove: string) => {
+    onChange(value.filter((ingredient) => ingredient !== ingredientToRemove));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      const trimmedValue = inputValue.trim().toLowerCase();
-      if (trimmedValue && allowCreate) {
-        addTag(trimmedValue);
-      } else if (suggestions.length > 0) {
-        addTag(suggestions[0].name);
+      if (suggestions.length > 0) {
+        addIngredient(suggestions[0].name);
       }
     } else if (e.key === "Backspace" && !inputValue && value.length > 0) {
-      removeTag(value[value.length - 1]);
+      removeIngredient(value[value.length - 1]);
     } else if (e.key === "Escape") {
       setShowDropdown(false);
     }
   };
 
-  const showCreateOption =
-    allowCreate &&
-    inputValue.trim() &&
-    !value.includes(inputValue.trim().toLowerCase()) &&
-    !suggestions.some((s) => s.name === inputValue.trim().toLowerCase());
-
   return (
     <div ref={containerRef} className="relative w-full">
       <div className="flex flex-wrap gap-2 p-2 border rounded-lg bg-base-100 min-h-[42px]">
-        {value.map((tag) => (
+        {value.map((ingredient) => (
           <span
-            key={tag}
-            className="inline-flex items-center gap-1 px-2 py-1 text-sm bg-primary text-primary-content rounded-lg"
+            key={ingredient}
+            className="inline-flex items-center gap-1 px-2 py-1 text-sm bg-secondary text-secondary-content rounded-lg"
           >
-            {tag}
+            {ingredient}
             <button
               type="button"
-              onClick={() => removeTag(tag)}
+              onClick={() => removeIngredient(ingredient)}
               className="hover:opacity-70"
             >
               <FaTimes size={12} />
@@ -144,7 +133,7 @@ const TagSelector = ({
                 <button
                   key={suggestion.id}
                   type="button"
-                  onClick={() => addTag(suggestion.name)}
+                  onClick={() => addIngredient(suggestion.name)}
                   className="w-full px-3 py-2 text-left hover:bg-base-200 flex justify-between items-center"
                 >
                   <span>{suggestion.name}</span>
@@ -153,19 +142,9 @@ const TagSelector = ({
                   </span>
                 </button>
               ))}
-              {showCreateOption && (
-                <button
-                  type="button"
-                  onClick={() => addTag(inputValue.trim())}
-                  className="w-full px-3 py-2 text-left hover:bg-base-200 flex items-center gap-2 border-t"
-                >
-                  <FaPlus size={12} />
-                  <span>Create "{inputValue.trim().toLowerCase()}"</span>
-                </button>
-              )}
-              {suggestions.length === 0 && !showCreateOption && !isLoading && (
+              {suggestions.length === 0 && !isLoading && (
                 <div className="px-3 py-2 text-base-content/60">
-                  {inputValue.trim() ? "No tags found" : "No tags available"}
+                  {inputValue.trim() ? "No ingredients found" : "No ingredients available"}
                 </div>
               )}
             </>
@@ -176,4 +155,4 @@ const TagSelector = ({
   );
 };
 
-export default TagSelector;
+export default IngredientSelector;

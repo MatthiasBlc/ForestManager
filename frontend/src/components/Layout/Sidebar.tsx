@@ -24,15 +24,14 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
       {/* Header with toggle button - Desktop only (pointer device) */}
       <div className={`hidden pointer-fine:flex p-4 border-b border-base-300 ${isCompact ? "justify-center" : "justify-between items-center"}`}>
         {!isCompact && <span className="text-lg font-bold">Menu</span>}
-        <div className={isCompact ? "tooltip tooltip-right" : ""} data-tip={isCompact ? "Expand menu" : undefined}>
-          <button
-            onClick={onToggleCompact}
-            className="btn btn-ghost btn-sm"
-            aria-label={isCompact ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            <FaBars className="w-4 h-4" />
-          </button>
-        </div>
+        <button
+          onClick={onToggleCompact}
+          className={`btn btn-ghost btn-sm ${isCompact ? "tooltip tooltip-right" : ""}`}
+          data-tip={isCompact ? "Expand menu" : undefined}
+          aria-label={isCompact ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <FaBars className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Logo/Brand for mobile drawer (touch devices) */}
@@ -48,11 +47,12 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
           </li>
         )}
         {menuItems.map((item) => (
-          <li key={item.path} className={isCompact ? "tooltip tooltip-right" : ""} data-tip={isCompact ? item.label : undefined}>
+          <li key={item.path}>
             <Link
               to={item.path}
               onClick={onNavigate}
-              className={`${isActive(item.path) ? "active" : ""} ${isCompact ? "justify-center" : ""}`}
+              className={`${isActive(item.path) ? "active" : ""} ${isCompact ? "justify-center tooltip tooltip-right" : ""}`}
+              data-tip={isCompact ? item.label : undefined}
             >
               <item.icon className={isCompact ? "w-5 h-5" : "w-4 h-4"} />
               {!isCompact && item.label}
@@ -73,11 +73,12 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
             </li>
           </>
         )}
-        <li className={isCompact ? "tooltip tooltip-right" : ""} data-tip={isCompact ? "Create Community" : undefined}>
+        <li>
           <Link
             to="/communities/create"
             onClick={onNavigate}
-            className={`text-primary ${isCompact ? "justify-center" : ""}`}
+            className={`text-primary ${isCompact ? "justify-center tooltip tooltip-right" : ""}`}
+            data-tip={isCompact ? "Create Community" : undefined}
           >
             <FaPlus className={isCompact ? "w-5 h-5" : "w-4 h-4"} />
             {!isCompact && "Create Community"}

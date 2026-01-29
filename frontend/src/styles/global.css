@@ -38,7 +38,15 @@ body {
   min-height: 100vh;
 }
 
-/* Sidebar tooltips: force high z-index to appear above page content */
+/* Sidebar tooltips: fix overflow clipping issue with DaisyUI drawer */
+.drawer-side,
+.drawer-side aside,
+.drawer-side .menu,
+.drawer-side .menu li,
+.drawer-side .menu li a {
+  overflow: visible !important;
+}
+
 .drawer-side .tooltip::before,
 .drawer-side .tooltip::after {
   z-index: 100;

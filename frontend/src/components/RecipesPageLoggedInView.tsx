@@ -1,10 +1,13 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaTh, FaList } from "react-icons/fa";
 import { RecipeListItem, RecipesResponse } from "../models/recipe";
 import APIManager from "../network/api";
 import RecipeCard from "./recipes/RecipeCard";
+import RecipeListRow from "./recipes/RecipeListRow";
 import RecipeFilters from "./recipes/RecipeFilters";
+
+type ViewMode = "card" | "list";
 
 const RECIPES_PER_PAGE = 12;
 
@@ -17,12 +20,27 @@ const RecipesPageLoggedInView = () => {
   const [recipesLoading, setRecipesLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [showRecipesLoadingError, setShowRecipesLoadingError] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const saved = localStorage.getItem("recipesViewMode");
+    return (saved === "list" || saved === "card") ? saved : "card";
+  });
+
+  const toggleViewMode = () => {
+    const newMode = viewMode === "card" ? "list" : "card";
+    setViewMode(newMode);
+    localStorage.setItem("recipesViewMode", newMode);
+  };
 
   const searchFilter = searchParams.get("search") || "";
   const tagsParam = searchParams.get("tags") || "";
   const tagsFilter = useMemo(
     () => tagsParam.split(",").filter(Boolean),
     [tagsParam]
+  );
+  const ingredientsParam = searchParams.get("ingredients") || "";
+  const ingredientsFilter = useMemo(
+    () => ingredientsParam.split(",").filter(Boolean),
+    [ingredientsParam]
   );
 
   const loadRecipes = useCallback(async (offset: number = 0, append: boolean = false) => {
@@ -39,6 +57,7 @@ const RecipesPageLoggedInView = () => {
         offset,
         search: searchFilter || undefined,
         tags: tagsFilter.length > 0 ? tagsFilter : undefined,
+        ingredients: ingredientsFilter.length > 0 ? ingredientsFilter : undefined,
       });
 
       if (append) {
@@ -54,7 +73,7 @@ const RecipesPageLoggedInView = () => {
       setRecipesLoading(false);
       setLoadingMore(false);
     }
-  }, [searchFilter, tagsFilter]);
+  }, [searchFilter, tagsFilter, ingredientsFilter]);
 
   useEffect(() => {
     loadRecipes(0, false);
@@ -76,6 +95,16 @@ const RecipesPageLoggedInView = () => {
       params.set("tags", tags.join(","));
     } else {
       params.delete("tags");
+    }
+    setSearchParams(params);
+  };
+
+  const handleIngredientsChange = (ingredients: string[]) => {
+    const params = new URLSearchParams(searchParams);
+    if (ingredients.length > 0) {
+      params.set("ingredients", ingredients.join(","));
+    } else {
+      params.delete("ingredients");
     }
     setSearchParams(params);
   };
@@ -113,21 +142,41 @@ const RecipesPageLoggedInView = () => {
     <div className="container mx-auto px-4 py-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">My Recipes</h1>
-        <button
-          className="btn btn-primary gap-2"
-          onClick={() => navigate("/recipes/new")}
-        >
-          <FaPlus />
-          New Recipe
-        </button>
+        <div className="flex gap-2">
+          <div className="join">
+            <button
+              className={`btn btn-sm join-item ${viewMode === "card" ? "btn-active" : ""}`}
+              onClick={() => viewMode !== "card" && toggleViewMode()}
+              aria-label="Card view"
+            >
+              <FaTh />
+            </button>
+            <button
+              className={`btn btn-sm join-item ${viewMode === "list" ? "btn-active" : ""}`}
+              onClick={() => viewMode !== "list" && toggleViewMode()}
+              aria-label="List view"
+            >
+              <FaList />
+            </button>
+          </div>
+          <button
+            className="btn btn-primary gap-2"
+            onClick={() => navigate("/recipes/new")}
+          >
+            <FaPlus />
+            New Recipe
+          </button>
+        </div>
       </div>
 
       <div className="mb-6">
         <RecipeFilters
           search={searchFilter}
           tags={tagsFilter}
+          ingredients={ingredientsFilter}
           onSearchChange={handleSearchChange}
           onTagsChange={handleTagsChange}
+          onIngredientsChange={handleIngredientsChange}
           onReset={handleResetFilters}
         />
       </div>
@@ -148,16 +197,29 @@ const RecipesPageLoggedInView = () => {
         <>
           {recipes.length > 0 ? (
             <>
-              <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {recipes.map((recipe) => (
-                  <RecipeCard
-                    key={recipe.id}
-                    recipe={recipe}
-                    onDelete={deleteRecipe}
-                    onTagClick={handleTagClick}
-                  />
-                ))}
-              </div>
+              {viewMode === "card" ? (
+                <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {recipes.map((recipe) => (
+                    <RecipeCard
+                      key={recipe.id}
+                      recipe={recipe}
+                      onDelete={deleteRecipe}
+                      onTagClick={handleTagClick}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3">
+                  {recipes.map((recipe) => (
+                    <RecipeListRow
+                      key={recipe.id}
+                      recipe={recipe}
+                      onDelete={deleteRecipe}
+                      onTagClick={handleTagClick}
+                    />
+                  ))}
+                </div>
+              )}
 
               {pagination?.hasMore && (
                 <div className="flex justify-center mt-8">
@@ -184,11 +246,11 @@ const RecipesPageLoggedInView = () => {
           ) : (
             <div className="text-center py-12">
               <p className="text-lg text-base-content/60 mb-4">
-                {searchFilter || tagsFilter.length > 0
+                {searchFilter || tagsFilter.length > 0 || ingredientsFilter.length > 0
                   ? "No recipes match your filters"
                   : "You don't have any recipes yet"}
               </p>
-              {(searchFilter || tagsFilter.length > 0) && (
+              {(searchFilter || tagsFilter.length > 0 || ingredientsFilter.length > 0) && (
                 <button className="btn btn-ghost" onClick={handleResetFilters}>
                   Clear filters
                 </button>

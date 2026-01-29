@@ -1,20 +1,25 @@
 import { useState, useEffect, useRef } from "react";
 import { FaSearch, FaTimes } from "react-icons/fa";
 import TagSelector from "../form/TagSelector";
+import IngredientSelector from "../form/IngredientSelector";
 
 interface RecipeFiltersProps {
   search: string;
   tags: string[];
+  ingredients: string[];
   onSearchChange: (search: string) => void;
   onTagsChange: (tags: string[]) => void;
+  onIngredientsChange: (ingredients: string[]) => void;
   onReset: () => void;
 }
 
 const RecipeFilters = ({
   search,
   tags,
+  ingredients,
   onSearchChange,
   onTagsChange,
+  onIngredientsChange,
   onReset,
 }: RecipeFiltersProps) => {
   const [localSearch, setLocalSearch] = useState(search);
@@ -42,7 +47,7 @@ const RecipeFilters = ({
     };
   }, [localSearch, search, onSearchChange]);
 
-  const hasFilters = search || tags.length > 0;
+  const hasFilters = search || tags.length > 0 || ingredients.length > 0;
 
   return (
     <div className="space-y-4 p-4 bg-base-200 rounded-lg">
@@ -72,6 +77,17 @@ const RecipeFilters = ({
             onChange={onTagsChange}
             placeholder="Select tags..."
             allowCreate={false}
+          />
+        </div>
+
+        <div className="flex-1 min-w-[200px]">
+          <label className="label">
+            <span className="label-text">Filter by ingredients</span>
+          </label>
+          <IngredientSelector
+            value={ingredients}
+            onChange={onIngredientsChange}
+            placeholder="Select ingredients..."
           />
         </div>
       </div>

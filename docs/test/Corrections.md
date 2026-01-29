@@ -1,193 +1,66 @@
 # Corrections a faire
 
-## Sidebar - Tooltips en mode compact
+## [RESOLU] Sidebar - Tooltips en mode compact
 
 **Probleme**: En mode compact de la sidebar, les infobulles (tooltips) sur les boutons de navigation passent sous le contenu de la page et ne sont pas visibles par les utilisateurs.
 
-**Contexte**:
+**Solution implementee**:
 
-- DaisyUI tooltips avec classes `tooltip tooltip-right` et `data-tip`
-- Les tooltips sont sur les elements `<li>` du menu
-- Plusieurs tentatives de fix avec z-index (z-50 sur aside, z-0 sur drawer-content, CSS personnalise) n'ont pas resolu le probleme
+1. Ajout de `overflow: visible !important` sur `.drawer-side`, `aside`, `.menu`, `.menu li` dans `global.css`
+2. Ajout de `position: fixed` sur les pseudo-elements des tooltips (`.tooltip::before`, `.tooltip::after`)
+3. Deplacement des classes tooltip des `<li>` vers les elements interieurs (`<Link>`, `<button>`) dans `Sidebar.tsx`
 
-**Comportement attendu**: Au hover d'un bouton en mode compact, une infobulle devrait apparaitre a droite avec le nom de l'action (ex: "My Recipes").
+**Fichiers modifies**:
 
-**Fichiers concernes**:
-
-- `frontend/src/components/Layout/Sidebar.tsx`
-- `frontend/src/components/Layout/MainLayout.tsx`
 - `frontend/src/styles/global.css`
-
-**Pistes à suivre**:
-
-Voici le réultat d'une recherche sur le sujet :
-"
-Ah, **classique piège des tooltips + sidebar compacte + drawer DaisyUI** 😄
-Bonne nouvelle : le problème n’est **pas** vraiment le `z-index`. Tu étais sur une fausse piste (logique, mais piégeuse).
+- `frontend/src/components/Layout/Sidebar.tsx`
 
 ---
 
-## 🧠 Le vrai problème (spoiler : `overflow` et stacking context)
+## [RESOLU] Plusieurs modes d'affichages
 
-Avec DaisyUI + drawer, il y a **presque toujours** au moins un parent qui fait :
+**Probleme**: Dans la liste de recettes, il manquait la possibilite de basculer entre un affichage en cartes et en liste.
 
-```css
-overflow: hidden;
-```
+**Solution implementee**:
 
-ou qui crée un **nouveau stacking context** (`transform`, `filter`, `will-change`, etc.).
+1. Ajout d'un bouton toggle (icones grille/liste) en haut a droite de la page
+2. Creation du composant `RecipeListRow.tsx` pour l'affichage en liste
+3. Persistance du choix de l'utilisateur dans `localStorage`
 
-👉 Résultat :
+**Fichiers modifies**:
 
-- Le tooltip est bien rendu
-- MAIS il est **clippé par son parent**
-- Le `z-index` ne peut **pas dépasser un parent qui coupe le débordement**
+- `frontend/src/components/RecipesPageLoggedInView.tsx`
 
-C’est pour ça que :
+**Fichiers crees**:
 
-> z-50 sur l’aside + z-0 sur le contenu = aucun effet
+- `frontend/src/components/recipes/RecipeListRow.tsx`
 
 ---
 
-## 🔍 Où ça coince très probablement chez toi
+## [RESOLU] Recherche par tags et ingredients
 
-Dans un setup DaisyUI classique :
+**Probleme**: Pouvoir rechercher par tags avec menu deroulant (entree libre ou selection), et par ingredients de la meme maniere.
 
-- `drawer`
-- `drawer-side`
-- `drawer-content`
+**Solution implementee**:
 
-👉 **`drawer-content` a `overflow-hidden`**
-👉 parfois aussi un `transform: translateX(...)` sur la sidebar en mode compact
+1. Le `TagSelector` existant supporte deja la recherche avec dropdown et entree libre
+2. Creation du composant `IngredientSelector.tsx` (similaire a TagSelector)
+3. Ajout du filtre par ingredients dans `RecipeFilters.tsx`
+4. Mise a jour de l'API backend pour supporter le parametre `ingredients`
+5. Mise a jour de l'API frontend pour passer les ingredients dans les requetes
 
-Donc ton tooltip, même s’il est “au-dessus”, est **découpé**.
+**Fichiers modifies**:
 
----
+- `frontend/src/components/recipes/RecipeFilters.tsx`
+- `frontend/src/components/RecipesPageLoggedInView.tsx`
+- `frontend/src/network/api.ts`
+- `backend/src/controllers/recipes.ts`
 
-## ✅ Solutions qui fonctionnent vraiment (par ordre de fiabilité)
+**Fichiers crees**:
 
----
-
-## ✅ Solution 1 — Forcer `overflow-visible` au bon endroit (la plus simple)
-
-Dans ton `global.css` :
-
-```css
-.drawer,
-.drawer-side,
-.drawer-content,
-aside,
-.menu,
-.menu li {
-  overflow: visible !important;
-}
-```
-
-⚠️ Tu peux resserrer ensuite si besoin, mais pour tester c’est parfait.
-
-👉 **90 % du temps, ça règle le problème immédiatement**.
+- `frontend/src/components/form/IngredientSelector.tsx`
 
 ---
-
-## ✅ Solution 2 — Mettre le tooltip sur le `<button>` et pas le `<li>`
-
-DaisyUI recommande implicitement ça, mais ce n’est pas très clair dans la doc.
-
-❌ Problématique :
-
-```tsx
-<li className="tooltip tooltip-right" data-tip="My Recipes">
-```
-
-✅ Correct :
-
-```tsx
-<li>
-  <button className="tooltip tooltip-right" data-tip="My Recipes">
-    …
-  </button>
-</li>
-```
-
-Pourquoi ?
-
-- `<li>` est souvent soumis à `overflow`
-- `<button>` est plus fiable pour les pseudo-elements `::before` / `::after`
-
----
-
-## ✅ Solution 3 — Passer le tooltip en `position: fixed`
-
-Si tu veux un truc **bulletproof**, même avec des drawers animés :
-
-```css
-.tooltip::before,
-.tooltip::after {
-  position: fixed;
-}
-```
-
-⚠️ À utiliser si tu as des animations complexes ou des transforms sur la sidebar.
-
----
-
-## ✅ Solution 4 — DaisyUI “hack” propre : tooltip toujours visible en compact
-
-En mode compact, tu peux forcer :
-
-```tsx
-<button
-  className="tooltip tooltip-right tooltip-open"
-  data-tip="My Recipes"
->
-```
-
-Puis gérer l’ouverture toi-même via hover CSS ou JS.
-
----
-
-## 🔧 Check rapide dans ton cas précis
-
-Je parierais 💰 que dans `MainLayout.tsx` tu as un truc comme :
-
-```tsx
-<div className="drawer-content overflow-hidden">
-```
-
-➡️ change en :
-
-```tsx
-<div className="drawer-content overflow-visible">
-```
-
-ou ajoute dans `global.css`.
-
----
-
-## 🧪 Debug express (à faire dans DevTools)
-
-1. Inspecte un tooltip
-2. Remonte les parents
-3. Tu verras **exactement lequel coupe le tooltip**
-4. Si tu vois :
-   - `overflow: hidden`
-   - `transform: translateX(...)`
-     👉 bingo 🎯
-
----
-
-"
-
-## Plusieurs modes d'affichages :
-
-Dans ma liste de recettes, il faut plusieurs modes d'affichages: en cartes ou en liste.
-il faut pouvoir switcher entre les deux modes avec un bouton en haut à droite de la page.
-
-## Dans les recherches
-
-pouvoir rechercher par tags, ajouter un menu déroulant sur le champ (possibilité d'entrée libre, ou d'utiliser le menu déroulant.)
-
-Pouvoir rechercher par ingrédients de la même manière que par tags.
 
 # Tests à ajouter APRES les corrections. Ne pas lire tant qu'il y a des lignes non résolues au dessus de celle-ci.
 
