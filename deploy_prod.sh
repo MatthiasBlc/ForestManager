@@ -1,12 +1,20 @@
 #!/bin/bash
 set -e
 
-echo "=== ForestManager Production Deployment ==="
+# ========================================
+# Configuration
+# ========================================
+COMPOSE_FILE=${COMPOSE_FILE:-docker-compose.prod.yml}
+DEPLOY_ENV=${DEPLOY_ENV:-production}
+
+echo "=== ForestManager Deployment (${DEPLOY_ENV}) ==="
+echo "Using compose file: ${COMPOSE_FILE}"
 
 # ========================================
 # Validate required environment variables
 # ========================================
 required_vars=(
+    "PORTAINER_URL"
     "PORTAINER_API"
     "STACK_ID"
     "ENDPOINT_ID"
@@ -14,6 +22,7 @@ required_vars=(
     "POSTGRES_PASSWORD"
     "POSTGRES_DB"
     "SESSION_SECRET"
+    "ADMIN_SESSION_SECRET"
     "REGISTRY_URL"
     "IMAGE_NAME"
 )
@@ -30,6 +39,7 @@ echo "All required variables are set."
 # ========================================
 # Export variables for envsubst
 # ========================================
+export PORTAINER_URL
 export PORTAINER_API
 export STACK_ID
 export ENDPOINT_ID
@@ -37,23 +47,23 @@ export POSTGRES_USER
 export POSTGRES_PASSWORD
 export POSTGRES_DB
 export SESSION_SECRET
-export CORS_ORIGIN
+export ADMIN_SESSION_SECRET
 export REGISTRY_URL
 export IMAGE_NAME
 export TAG=${TAG:-latest}
 
 # ========================================
-# Process docker-compose.prod.yml
+# Process docker-compose file
 # ========================================
-echo "Processing docker-compose.prod.yml..."
+echo "Processing ${COMPOSE_FILE}..."
 
-if [ ! -f "docker-compose.prod.yml" ]; then
-    echo "ERROR: docker-compose.prod.yml not found"
+if [ ! -f "${COMPOSE_FILE}" ]; then
+    echo "ERROR: ${COMPOSE_FILE} not found"
     exit 1
 fi
 
 # Substitute environment variables
-envsubst < docker-compose.prod.yml > stack_substituted.yml
+envsubst < "${COMPOSE_FILE}" > stack_substituted.yml
 
 # ========================================
 # Build Portainer API payload

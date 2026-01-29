@@ -1,8 +1,159 @@
 # User Stories - Forest Manager
 
-## Vue d'ensemble
+## Priorites
 
-Ce document liste toutes les user stories pour le développement du MVP de Forest Manager, organisées par epic et priorité.
+- **P0** - Critique (MVP bloquant)
+- **P1** - Important (MVP)
+- **P2** - Souhaite (post-MVP)
+- **P3** - Bonus (futur)
+
+---
+
+## Epic 0: SuperAdmin & Briques (NOUVEAU - Plateforme)
+
+### US-0.1 Creation compte SuperAdmin via CLI [P0 - Critique]
+**En tant que** administrateur systeme
+**Je veux** creer un compte SuperAdmin via CLI
+**Afin de** securiser la creation de comptes privilegies
+
+**Criteres d'acceptation:**
+- [ ] Commande `npm run admin:create` disponible
+- [ ] Prompt pour username, email, password
+- [ ] Password hashe avec bcrypt
+- [ ] Secret TOTP genere automatiquement
+- [ ] Compte cree avec totpEnabled = false
+- [ ] Aucune API publique pour creer un admin
+
+---
+
+### US-0.2 Connexion SuperAdmin avec 2FA [P0 - Critique]
+**En tant que** SuperAdmin
+**Je veux** me connecter avec 2FA TOTP
+**Afin de** securiser l'acces administration
+
+**Premiere connexion:**
+- [ ] Saisie username + password
+- [ ] Affichage QR code + secret TOTP
+- [ ] Scan avec Google Authenticator
+- [ ] Verification du token TOTP
+- [ ] Activation 2FA (totpEnabled = true)
+- [ ] Session admin creee
+
+**Connexions suivantes:**
+- [ ] Saisie username + password + token TOTP
+- [ ] Verification des trois elements
+- [ ] Session admin creee
+- [ ] Cookie admin.sid (isole de connect.sid)
+
+---
+
+### US-0.3 Gestion globale des Tags [P0 - Critique]
+**En tant que** SuperAdmin
+**Je veux** gerer les tags globalement
+**Afin de** maintenir une taxonomie propre
+
+**Criteres d'acceptation:**
+- [ ] Liste de tous les tags avec nombre de recettes
+- [ ] Creer un nouveau tag
+- [ ] Renommer un tag
+- [ ] Supprimer un tag (hard delete)
+- [ ] Fusionner deux tags (merge source → target)
+- [ ] Actions loguees dans AdminActivityLog
+
+---
+
+### US-0.4 Gestion globale des Ingredients [P0 - Critique]
+**En tant que** SuperAdmin
+**Je veux** gerer les ingredients globalement
+**Afin de** maintenir une base propre
+
+**Criteres d'acceptation:**
+- [ ] Liste de tous les ingredients avec nombre de recettes
+- [ ] Creer un nouvel ingredient
+- [ ] Renommer un ingredient
+- [ ] Supprimer un ingredient
+- [ ] Fusionner deux ingredients
+- [ ] Actions loguees dans AdminActivityLog
+
+---
+
+### US-0.5 Gestion des communautes (Admin global) [P1 - Important]
+**En tant que** SuperAdmin
+**Je veux** gerer toutes les communautes
+**Afin de** administrer la plateforme
+
+**Criteres d'acceptation:**
+- [ ] Liste de toutes les communautes avec stats
+- [ ] Detail complet d'une communaute (membres, features, activite)
+- [ ] Renommer une communaute
+- [ ] Supprimer une communaute (soft delete avec cascade)
+- [ ] Actions loguees dans AdminActivityLog
+
+---
+
+### US-0.6 Gestion des Features (Briques) [P0 - Critique]
+**En tant que** SuperAdmin
+**Je veux** gerer les features disponibles
+**Afin de** controler les fonctionnalites de la plateforme
+
+**Criteres d'acceptation:**
+- [ ] Liste des features avec nombre de communautes
+- [ ] Creer une nouvelle feature (code, nom, description)
+- [ ] Modifier nom/description d'une feature
+- [ ] Feature MVP avec isDefault = true
+
+---
+
+### US-0.7 Attribuer/Revoquer une Feature [P0 - Critique]
+**En tant que** SuperAdmin
+**Je veux** attribuer ou revoquer une feature a une communaute
+**Afin de** controler l'acces aux fonctionnalites
+
+**Criteres d'acceptation:**
+- [ ] Voir les features d'une communaute
+- [ ] Voir les features disponibles (non attribuees)
+- [ ] Attribuer une feature
+- [ ] Revoquer une feature (sauf MVP/default)
+- [ ] Actions loguees dans AdminActivityLog
+
+---
+
+### US-0.8 Attribution automatique Feature MVP [P0 - Critique]
+**En tant que** utilisateur creant une communaute
+**Je veux** que la feature MVP soit automatiquement attribuee
+**Afin d'** avoir les fonctionnalites de base
+
+**Criteres d'acceptation:**
+- [ ] A la creation d'une communaute
+- [ ] Toutes les features avec isDefault = true sont attribuees
+- [ ] grantedById = null (auto-attribue)
+
+---
+
+### US-0.9 Dashboard SuperAdmin [P1 - Important]
+**En tant que** SuperAdmin
+**Je veux** voir des statistiques globales
+**Afin de** monitorer la plateforme
+
+**Criteres d'acceptation:**
+- [ ] Nombre total d'utilisateurs (+ actifs 30j, + nouveaux 7j)
+- [ ] Nombre total de communautes (+ actives 30j)
+- [ ] Nombre total de recettes (+ nouvelles 7j)
+- [ ] Propositions en attente
+- [ ] Repartition des features attribuees
+
+---
+
+### US-0.10 Journal d'activite admin [P1 - Important]
+**En tant que** SuperAdmin
+**Je veux** voir l'historique des actions admin
+**Afin de** auditer les operations
+
+**Criteres d'acceptation:**
+- [ ] Liste chronologique des actions admin
+- [ ] Filtre par type d'action
+- [ ] Filtre par admin (si plusieurs)
+- [ ] Detail: qui, quoi, quand, cible
 
 ---
 
@@ -10,78 +161,78 @@ Ce document liste toutes les user stories pour le développement du MVP de Fores
 
 ### US-1.1 Inscription [P0 - Critique]
 **En tant que** visiteur
-**Je veux** créer un compte
+**Je veux** creer un compte
 **Afin de** pouvoir utiliser l'application
 
-**Critères d'acceptation:**
+**Criteres d'acceptation:**
 - [ ] Formulaire avec email, username, password
-- [ ] Validation des champs (format email, username unique, password min 8 chars)
-- [ ] Message d'erreur si email/username déjà utilisé
-- [ ] Connexion automatique après inscription
-- [ ] Redirection vers le dashboard
+- [ ] Validation des champs (format email, longueur password)
+- [ ] Message d'erreur si email/username deja utilise
+- [ ] Redirection vers page d'accueil apres inscription
+- [ ] Session automatiquement creee
 
 ---
 
 ### US-1.2 Connexion [P0 - Critique]
 **En tant que** utilisateur inscrit
-**Je veux** me connecter
-**Afin d'** accéder à mon espace personnel
+**Je veux** me connecter a mon compte
+**Afin de** acceder a mes recettes et communautes
 
-**Critères d'acceptation:**
-- [ ] Formulaire email + password
+**Criteres d'acceptation:**
+- [ ] Formulaire avec email et password
 - [ ] Message d'erreur si identifiants incorrects
-- [ ] Session persistante (cookie)
-- [ ] Redirection vers le dashboard
+- [ ] Redirection vers dashboard apres connexion
+- [ ] Session persistee (cookie)
 
 ---
 
-### US-1.3 Déconnexion [P0 - Critique]
-**En tant que** utilisateur connecté
-**Je veux** me déconnecter
-**Afin de** sécuriser mon compte
+### US-1.3 Deconnexion [P0 - Critique]
+**En tant que** utilisateur connecte
+**Je veux** me deconnecter
+**Afin de** securiser mon compte
 
-**Critères d'acceptation:**
-- [ ] Bouton de déconnexion visible
-- [ ] Destruction de la session
-- [ ] Redirection vers la page de connexion
+**Criteres d'acceptation:**
+- [ ] Bouton de deconnexion visible
+- [ ] Session detruite
+- [ ] Redirection vers page d'accueil
 
 ---
 
 ### US-1.4 Voir mon profil [P1 - Important]
-**En tant que** utilisateur connecté
+**En tant que** utilisateur connecte
 **Je veux** voir mon profil
 **Afin de** consulter mes informations
 
-**Critères d'acceptation:**
+**Criteres d'acceptation:**
 - [ ] Affichage username, email, date d'inscription
 - [ ] Nombre de recettes personnelles
-- [ ] Liste des communautés rejointes
+- [ ] Liste des communautes rejointes
 
 ---
 
 ## Epic 2: Catalogue Personnel
 
-### US-2.1 Créer une recette personnelle [P0 - Critique]
-**En tant que** utilisateur connecté
-**Je veux** créer une recette dans mon catalogue
+### US-2.1 Creer une recette personnelle [P0 - Critique]
+**En tant que** utilisateur connecte
+**Je veux** creer une recette dans mon catalogue
 **Afin de** sauvegarder mes recettes
 
-**Critères d'acceptation:**
+**Criteres d'acceptation:**
 - [ ] Formulaire: titre, contenu, tags (multi-select), image (optionnel)
-- [ ] Éditeur de contenu (markdown ou rich text)
-- [ ] Gestion des ingrédients (ajout/suppression dynamique)
+- [ ] Editeur de contenu (markdown ou rich text)
+- [ ] Gestion des ingredients (ajout/suppression dynamique)
 - [ ] Validation des champs
-- [ ] Confirmation de création
+- [ ] Confirmation de creation
 
 ---
 
 ### US-2.2 Voir mes recettes personnelles [P0 - Critique]
-**En tant que** utilisateur connecté
+**En tant que** utilisateur connecte
 **Je veux** voir la liste de mes recettes
-**Afin de** retrouver mes créations
+**Afin de** retrouver mes creations
 
-**Critères d'acceptation:**
-- [ ] Liste paginée de mes recettes
+**Criteres d'acceptation:**
+- [ ] Liste paginee de mes recettes
 - [ ] Affichage: titre, image, tags, date
 - [ ] Filtre par tags
 - [ ] Recherche par titre
@@ -89,316 +240,461 @@ Ce document liste toutes les user stories pour le développement du MVP de Fores
 ---
 
 ### US-2.3 Modifier ma recette [P1 - Important]
-**En tant que** créateur d'une recette
+**En tant que** createur d'une recette
 **Je veux** modifier ma recette
-**Afin de** corriger ou améliorer
+**Afin de** corriger ou ameliorer
 
-**Critères d'acceptation:**
-- [ ] Accès au formulaire d'édition
-- [ ] Pré-remplissage des champs
+**Criteres d'acceptation:**
+- [ ] Acces au formulaire d'edition
+- [ ] Pre-remplissage des champs
 - [ ] Sauvegarde des modifications
 
 ---
 
 ### US-2.4 Supprimer ma recette [P1 - Important]
-**En tant que** créateur d'une recette
+**En tant que** createur d'une recette
 **Je veux** supprimer ma recette
 **Afin de** nettoyer mon catalogue
 
-**Critères d'acceptation:**
+**Criteres d'acceptation:**
 - [ ] Confirmation avant suppression
-- [ ] Soft delete (pas de suppression définitive)
+- [ ] Soft delete (pas de suppression definitive)
 - [ ] Message de confirmation
 
 ---
 
-## Epic 3: Communautés
+## Epic 3: Communautes
 
-### US-3.1 Créer une communauté [P0 - Critique]
-**En tant que** utilisateur connecté
-**Je veux** créer une communauté
+### US-3.1 Creer une communaute [P0 - Critique]
+**En tant que** utilisateur connecte
+**Je veux** creer une communaute
 **Afin de** partager des recettes avec un groupe
 
-**Critères d'acceptation:**
+**Criteres d'acceptation:**
 - [ ] Formulaire: nom, description
 - [ ] Je deviens admin automatiquement
-- [ ] Redirection vers la page de la communauté
+- [ ] Redirection vers la page de la communaute
 
 ---
 
-### US-3.2 Voir mes communautés [P0 - Critique]
-**En tant que** utilisateur connecté
-**Je veux** voir mes communautés
-**Afin de** y accéder rapidement
+### US-3.2 Voir mes communautes [P0 - Critique]
+**En tant que** utilisateur connecte
+**Je veux** voir mes communautes
+**Afin de** y acceder rapidement
 
-**Critères d'acceptation:**
-- [ ] Liste de mes communautés avec mon rôle
+**Criteres d'acceptation:**
+- [ ] Liste de mes communautes avec mon role
 - [ ] Indicateur: nombre de membres, nombre de recettes
-- [ ] Accès direct à chaque communauté
+- [ ] Acces direct a chaque communaute
 
 ---
 
-### US-3.3 Voir une communauté [P0 - Critique]
-**En tant que** membre d'une communauté
-**Je veux** voir la page de la communauté
+### US-3.3 Voir une communaute [P0 - Critique]
+**En tant que** membre d'une communaute
+**Je veux** voir la page de la communaute
 **Afin de** consulter son contenu
 
-**Critères d'acceptation:**
+**Criteres d'acceptation:**
 - [ ] Nom, description
-- [ ] Liste des membres (avec rôles)
+- [ ] Liste des membres (avec roles)
 - [ ] Liste des recettes
-- [ ] Mon rôle affiché
-- [ ] Accès refusé si non-membre
+- [ ] Mon role affiche
+- [ ] Acces refuse si non-membre
 
 ---
 
-### US-3.4 Inviter un membre (Admin) [P0 - Critique]
-**En tant qu'** admin d'une communauté
-**Je veux** inviter un utilisateur
-**Afin d'** agrandir la communauté
-
-**Critères d'acceptation:**
-- [ ] Recherche par email ou username
-- [ ] Confirmation d'invitation
-- [ ] L'utilisateur rejoint comme MEMBER
-- [ ] Erreur si déjà membre
-
----
-
-### US-3.5 Promouvoir un membre (Admin) [P1 - Important]
-**En tant qu'** admin d'une communauté
-**Je veux** promouvoir un membre en admin
-**Afin de** déléguer la gestion
-
-**Critères d'acceptation:**
-- [ ] Bouton "Promouvoir" sur chaque membre
-- [ ] Confirmation
-- [ ] Le membre devient ADMIN
-- [ ] Pas de rétrogradation possible
-
----
-
-### US-3.6 Quitter une communauté [P1 - Important]
-**En tant que** membre d'une communauté
-**Je veux** quitter la communauté
+### US-3.4 Quitter une communaute [P1 - Important]
+**En tant que** membre d'une communaute
+**Je veux** quitter la communaute
 **Afin de** ne plus y participer
 
-**Critères d'acceptation:**
-- [ ] Confirmation avant départ
+**Criteres d'acceptation:**
+- [ ] Confirmation avant depart
 - [ ] Si dernier admin avec d'autres membres: blocage + message
-- [ ] Si seul membre: suppression de la communauté
-- [ ] Perte d'accès immédiate
+- [ ] Si seul membre: suppression de la communaute
+- [ ] Perte d'acces immediate
 
 ---
 
-### US-3.7 Modifier la communauté (Admin) [P2 - Normal]
-**En tant qu'** admin d'une communauté
+### US-3.5 Modifier la communaute (Admin) [P1 - Important]
+**En tant qu'** admin d'une communaute
 **Je veux** modifier nom et description
-**Afin de** tenir à jour les informations
+**Afin de** tenir a jour les informations
 
-**Critères d'acceptation:**
-- [ ] Formulaire d'édition
+**Criteres d'acceptation:**
+- [ ] Formulaire d'edition
+- [ ] Seuls les admins peuvent modifier
 - [ ] Sauvegarde des modifications
 
 ---
 
-## Epic 4: Recettes Communautaires
+## Epic 4: Systeme d'invitation (NOUVEAU)
 
-### US-4.1 Créer une recette dans une communauté [P0 - Critique]
-**En tant que** membre d'une communauté
-**Je veux** créer une recette dans la communauté
-**Afin de** la partager avec les membres
+### US-4.1 Inviter un utilisateur [P0 - Critique]
+**En tant qu'** admin d'une communaute
+**Je veux** inviter un utilisateur a rejoindre
+**Afin d'** agrandir la communaute
 
-**Critères d'acceptation:**
-- [ ] Même formulaire que recette personnelle
-- [ ] Création automatique d'une copie dans mon catalogue
-- [ ] Activité loggée dans le feed
-- [ ] La recette apparaît dans la liste communauté
+**Criteres d'acceptation:**
+- [ ] Recherche par username ou email
+- [ ] Autocomplete des utilisateurs existants
+- [ ] Erreur si utilisateur deja membre
+- [ ] Erreur si invitation deja en attente
+- [ ] Invitation creee avec status PENDING
+- [ ] Activite loggee (INVITE_SENT)
 
 ---
 
-### US-4.2 Voir les recettes d'une communauté [P0 - Critique]
-**En tant que** membre d'une communauté
-**Je veux** voir les recettes partagées
-**Afin de** découvrir des idées
+### US-4.2 Voir mes invitations recues [P0 - Critique]
+**En tant que** utilisateur connecte
+**Je veux** voir les invitations que j'ai recues
+**Afin de** decider si je veux rejoindre ces communautes
 
-**Critères d'acceptation:**
-- [ ] Liste paginée
+**Criteres d'acceptation:**
+- [ ] Liste des invitations PENDING
+- [ ] Informations: nom communaute, description, inviteur
+- [ ] Boutons accepter/refuser
+- [ ] Badge de notification si nouvelles invitations
+
+---
+
+### US-4.3 Accepter une invitation [P0 - Critique]
+**En tant que** utilisateur invite
+**Je veux** accepter une invitation
+**Afin de** rejoindre la communaute
+
+**Criteres d'acceptation:**
+- [ ] Clic sur bouton "Accepter"
+- [ ] Je deviens MEMBER de la communaute
+- [ ] Invitation marquee ACCEPTED
+- [ ] Activite loggee (INVITE_ACCEPTED, USER_JOINED)
+- [ ] Redirection vers la communaute
+
+---
+
+### US-4.4 Refuser une invitation [P1 - Important]
+**En tant que** utilisateur invite
+**Je veux** refuser une invitation
+**Afin de** decliner la proposition
+
+**Criteres d'acceptation:**
+- [ ] Clic sur bouton "Refuser"
+- [ ] Invitation marquee REJECTED
+- [ ] Activite loggee (INVITE_REJECTED)
+- [ ] L'invitation disparait de ma liste
+
+---
+
+### US-4.5 Voir les invitations envoyees (Admin) [P1 - Important]
+**En tant qu'** admin d'une communaute
+**Je veux** voir les invitations en cours
+**Afin de** suivre les invitations envoyees
+
+**Criteres d'acceptation:**
+- [ ] Liste des invitations avec status
+- [ ] Filtrer par status (PENDING, ACCEPTED, REJECTED, CANCELLED)
+- [ ] Informations: invitee, inviter, date
+
+---
+
+### US-4.6 Annuler une invitation (Admin) [P1 - Important]
+**En tant qu'** admin d'une communaute
+**Je veux** annuler une invitation en attente
+**Afin de** retirer une invitation erronee
+
+**Criteres d'acceptation:**
+- [ ] Bouton annuler sur invitations PENDING uniquement
+- [ ] Invitation marquee CANCELLED
+- [ ] Activite loggee (INVITE_CANCELLED)
+- [ ] L'invitation disparait de la liste de l'invite
+
+---
+
+## Epic 5: Gestion des membres
+
+### US-5.1 Promouvoir un membre (Admin) [P1 - Important]
+**En tant qu'** admin d'une communaute
+**Je veux** promouvoir un membre en admin
+**Afin de** deleguer la gestion
+
+**Criteres d'acceptation:**
+- [ ] Bouton "Promouvoir" sur chaque MEMBER
+- [ ] Confirmation avant promotion
+- [ ] Le membre devient ADMIN
+- [ ] Pas de retrogradation possible
+- [ ] Activite loggee (USER_PROMOTED)
+
+---
+
+### US-5.2 Retirer un membre (Admin) [P1 - Important] (NOUVEAU)
+**En tant qu'** admin d'une communaute
+**Je veux** retirer un membre
+**Afin de** gerer la composition du groupe
+
+**Criteres d'acceptation:**
+- [ ] Bouton "Retirer" visible uniquement sur les MEMBER (pas sur les ADMIN)
+- [ ] Confirmation avant retrait
+- [ ] Le membre perd immediatement l'acces
+- [ ] Activite loggee (USER_KICKED)
+- [ ] Message clair que les ADMIN ne peuvent pas etre retires
+
+---
+
+## Epic 6: Recettes Communautaires
+
+### US-6.1 Creer une recette dans une communaute [P0 - Critique]
+**En tant que** membre d'une communaute
+**Je veux** creer une recette dans la communaute
+**Afin de** la partager avec les membres
+
+**Criteres d'acceptation:**
+- [ ] Meme formulaire que recette personnelle
+- [ ] Creation automatique d'une copie dans mon catalogue
+- [ ] Activite loggee dans le feed (RECIPE_CREATED)
+- [ ] La recette apparait dans la liste communaute
+
+---
+
+### US-6.2 Voir les recettes d'une communaute [P0 - Critique]
+**En tant que** membre d'une communaute
+**Je veux** voir les recettes partagees
+**Afin de** decouvrir des idees
+
+**Criteres d'acceptation:**
+- [ ] Liste paginee
 - [ ] Filtre par tags
-- [ ] Affichage du créateur
+- [ ] Affichage du createur
 - [ ] Recherche par titre
 
 ---
 
-### US-4.3 Voir les détails d'une recette communautaire [P0 - Critique]
-**En tant que** membre d'une communauté
-**Je veux** voir le détail d'une recette
+### US-6.3 Voir les details d'une recette communautaire [P0 - Critique]
+**En tant que** membre d'une communaute
+**Je veux** voir le detail d'une recette
 **Afin de** la cuisiner
 
-**Critères d'acceptation:**
-- [ ] Titre, contenu, ingrédients
-- [ ] Créateur, date
+**Criteres d'acceptation:**
+- [ ] Titre, contenu, ingredients
+- [ ] Createur, date
 - [ ] Tags
-- [ ] Liste déroulante des variantes (si existantes)
+- [ ] Liste deroulante des variantes (si existantes)
+- [ ] Badge si c'est un fork (origine affichee)
 
 ---
 
-## Epic 5: Propositions & Variantes
+### US-6.4 Modifier ma recette communautaire [P1 - Important]
+**En tant que** createur d'une recette communautaire
+**Je veux** modifier ma recette
+**Afin de** corriger ou ameliorer
 
-### US-5.1 Proposer une mise à jour [P1 - Important]
-**En tant que** membre d'une communauté
+**Criteres d'acceptation:**
+- [ ] Seul le createur peut modifier directement
+- [ ] Les autres membres doivent proposer une modification
+
+---
+
+## Epic 7: Propositions & Variantes
+
+### US-7.1 Proposer une mise a jour [P1 - Important]
+**En tant que** membre d'une communaute
 **Je veux** proposer une modification sur une recette
-**Afin d'** améliorer la recette
+**Afin d'** ameliorer la recette
 
-**Critères d'acceptation:**
+**Criteres d'acceptation:**
 - [ ] Bouton "Proposer une modification" (pas sur mes propres recettes)
-- [ ] Formulaire pré-rempli avec contenu actuel
+- [ ] Formulaire pre-rempli avec contenu actuel
 - [ ] Modification du titre et/ou contenu
 - [ ] Soumission de la proposition
-- [ ] Activité loggée
+- [ ] Activite loggee (VARIANT_PROPOSED)
 
 ---
 
-### US-5.2 Voir les propositions sur ma recette [P1 - Important]
-**En tant que** créateur d'une recette
-**Je veux** voir les propositions reçues
-**Afin de** les évaluer
+### US-7.2 Voir les propositions sur mes recettes [P1 - Important] (UPGRADE de P3)
+**En tant que** createur de recettes
+**Je veux** voir les propositions recues sur mes recettes
+**Afin de** les evaluer et y repondre
 
-**Critères d'acceptation:**
-- [ ] Liste des propositions PENDING
-- [ ] Détail de chaque proposition (proposeur, contenu)
+**Criteres d'acceptation:**
+- [ ] Feed personnel avec propositions recues
+- [ ] Filtrer par status (PENDING, ACCEPTED, REJECTED)
+- [ ] Detail de chaque proposition (proposeur, contenu)
 - [ ] Actions: Accepter / Refuser
+- [ ] Notification visuelle des nouvelles propositions
 
 ---
 
-### US-5.3 Accepter une proposition [P1 - Important]
-**En tant que** créateur d'une recette
+### US-7.3 Accepter une proposition [P1 - Important]
+**En tant que** createur d'une recette
 **Je veux** accepter une proposition
-**Afin de** mettre à jour ma recette
+**Afin de** mettre a jour ma recette
 
-**Critères d'acceptation:**
-- [ ] Confirmation
-- [ ] Mise à jour de la recette communautaire
-- [ ] Mise à jour de la recette personnelle liée
-- [ ] Proposition marquée ACCEPTED
-- [ ] Activité loggée
+**Criteres d'acceptation:**
+- [ ] Comparaison avant/apres
+- [ ] Confirmation avant acceptation
+- [ ] Mise a jour de la recette communautaire
+- [ ] Mise a jour de la recette personnelle liee
+- [ ] Proposition marquee ACCEPTED
+- [ ] Activite loggee (PROPOSAL_ACCEPTED)
 
 ---
 
-### US-5.4 Refuser une proposition [P1 - Important]
-**En tant que** créateur d'une recette
+### US-7.4 Refuser une proposition [P1 - Important]
+**En tant que** createur d'une recette
 **Je veux** refuser une proposition
 **Afin de** garder ma version originale
 
-**Critères d'acceptation:**
-- [ ] Confirmation
-- [ ] Création automatique d'une variante (nouvelle recette)
-- [ ] Variante attribuée au proposeur
-- [ ] Variante liée à l'originale (originRecipeId)
-- [ ] Proposition marquée REJECTED
-- [ ] Activité loggée
+**Criteres d'acceptation:**
+- [ ] Confirmation avant refus
+- [ ] Creation automatique d'une variante (nouvelle recette)
+- [ ] Variante attribuee au proposeur
+- [ ] Variante liee a l'originale (originRecipeId, isVariant=true)
+- [ ] Proposition marquee REJECTED
+- [ ] Activite loggee (VARIANT_CREATED)
 
 ---
 
-### US-5.5 Voir les variantes d'une recette [P1 - Important]
-**En tant que** membre d'une communauté
+### US-7.5 Voir les variantes d'une recette [P1 - Important]
+**En tant que** membre d'une communaute
 **Je veux** voir les variantes d'une recette
-**Afin de** découvrir des alternatives
+**Afin de** decouvrir des alternatives
 
-**Critères d'acceptation:**
-- [ ] Liste déroulante sur la page recette
+**Criteres d'acceptation:**
+- [ ] Liste deroulante sur la page recette
 - [ ] Clic → navigation vers la variante
-- [ ] Indication du créateur de chaque variante
+- [ ] Indication du createur de chaque variante
+- [ ] Tri par date de creation
 
 ---
 
-## Epic 6: Partage Inter-Communautés
+## Epic 8: Partage Inter-Communautes
 
-### US-6.1 Fork une recette vers une autre communauté [P2 - Normal]
-**En tant que** membre de plusieurs communautés
-**Je veux** partager une recette d'une communauté à une autre
+### US-8.1 Fork une recette vers une autre communaute [P2 - Normal]
+**En tant que** membre de plusieurs communautes
+**Je veux** partager une recette d'une communaute a une autre
 **Afin de** diffuser une bonne recette
 
-**Critères d'acceptation:**
-- [ ] Bouton "Partager dans une autre communauté"
-- [ ] Sélection de la communauté cible (parmi celles où je suis membre)
-- [ ] Vérification: admin source OU admin cible OU créateur
-- [ ] Création d'une copie indépendante
-- [ ] Traçabilité: originRecipeId, sharedFromCommunityId
-- [ ] Je deviens créateur de la copie
-- [ ] Activité loggée dans les deux communautés
+**Criteres d'acceptation:**
+- [ ] Bouton "Partager dans une autre communaute"
+- [ ] Selection de la communaute cible (parmi celles ou je suis membre)
+- [ ] Verification: admin source OU admin cible OU createur
+- [ ] Creation d'une copie independante
+- [ ] Tracabilite: originRecipeId, sharedFromCommunityId
+- [ ] Je deviens createur de la copie
+- [ ] Activite loggee dans les deux communautes (RECIPE_SHARED)
 
 ---
 
-### US-6.2 Voir l'origine d'une recette forkée [P2 - Normal]
-**En tant que** membre d'une communauté
-**Je veux** voir d'où vient une recette forkée
-**Afin de** connaître son origine
+### US-8.2 Voir l'origine d'une recette forkee [P2 - Normal]
+**En tant que** membre d'une communaute
+**Je veux** voir d'ou vient une recette forkee
+**Afin de** connaitre son origine
 
-**Critères d'acceptation:**
-- [ ] Badge "Partagé depuis [Communauté X]" si applicable
-- [ ] Lien vers la communauté d'origine (si j'y ai accès)
+**Criteres d'acceptation:**
+- [ ] Badge "Partage depuis [Communaute X]" si applicable
+- [ ] Lien vers la communaute d'origine (si j'y ai acces)
 
 ---
 
-## Epic 7: Activity Feed
+## Epic 9: Activity Feed
 
-### US-7.1 Voir le feed d'une communauté [P2 - Normal]
-**En tant que** membre d'une communauté
-**Je veux** voir l'activité récente
+### US-9.1 Voir le feed d'une communaute [P1 - Important]
+**En tant que** membre d'une communaute
+**Je veux** voir l'activite recente
 **Afin de** suivre ce qui se passe
 
-**Critères d'acceptation:**
-- [ ] Liste chronologique des événements
-- [ ] Types: nouvelle recette, proposition, variante créée, nouveau membre
+**Criteres d'acceptation:**
+- [ ] Liste chronologique des evenements
+- [ ] Types: nouvelle recette, proposition, variante creee, nouveau membre, depart
+- [ ] Pagination ou infinite scroll
+- [ ] Lien vers l'element concerne
+
+---
+
+### US-9.2 Voir mon feed personnel [P1 - Important] (UPGRADE de P3)
+**En tant que** utilisateur connecte
+**Je veux** voir l'activite sur mes recettes et mes invitations
+**Afin de** etre informe des interactions
+
+**Criteres d'acceptation:**
+- [ ] Propositions recues sur mes recettes
+- [ ] Variantes creees a partir de mes recettes
+- [ ] Invitations recues
+- [ ] Decisions sur mes propositions
 - [ ] Pagination
-- [ ] Lien vers l'élément concerné
 
 ---
 
-### US-7.2 Voir mon feed personnel [P3 - Bonus]
-**En tant que** utilisateur connecté
-**Je veux** voir l'activité sur mes recettes
-**Afin de** être informé des interactions
+## Epic 10: Tags & Recherche
 
-**Critères d'acceptation:**
-- [ ] Propositions reçues sur mes recettes
-- [ ] Variantes créées à partir de mes recettes
-- [ ] Forks de mes recettes
-
----
-
-## Epic 8: Tags
-
-### US-8.1 Ajouter des tags à une recette [P1 - Important]
-**En tant que** créateur d'une recette
+### US-10.1 Ajouter des tags a une recette [P1 - Important]
+**En tant que** createur d'une recette
 **Je veux** ajouter des tags
-**Afin de** catégoriser ma recette
+**Afin de** categoriser ma recette
 
-**Critères d'acceptation:**
-- [ ] Sélection parmi tags existants
-- [ ] Création de nouveau tag à la volée
+**Criteres d'acceptation:**
+- [ ] Selection parmi tags existants (autocomplete)
+- [ ] Creation de nouveau tag a la volee
 - [ ] Maximum 10 tags par recette
 
 ---
 
-### US-8.2 Filtrer par tags [P1 - Important]
+### US-10.2 Filtrer par tags [P1 - Important]
 **En tant que** utilisateur
 **Je veux** filtrer les recettes par tags
 **Afin de** trouver ce que je cherche
 
-**Critères d'acceptation:**
+**Criteres d'acceptation:**
 - [ ] Liste des tags disponibles (avec compteur)
-- [ ] Sélection multiple
-- [ ] Résultats filtrés en temps réel
+- [ ] Selection multiple
+- [ ] Resultats filtres en temps reel
 
 ---
 
-## Priorités
+### US-10.3 Rechercher par titre [P1 - Important]
+**En tant que** utilisateur
+**Je veux** rechercher des recettes par titre
+**Afin de** retrouver une recette specifique
 
-| Priorité | Description | User Stories |
+**Criteres d'acceptation:**
+- [ ] Champ de recherche avec debounce
+- [ ] Resultats filtres en temps reel
+
+---
+
+## Resume des priorites
+
+| Priorite | Description | User Stories |
 |----------|-------------|--------------|
-| **P0 - Critique** | Indispensable au MVP | US-1.1 à US-1.3, US-2.1 à US-2.2, US-3.1 à US-3.4, US-4.1 à US-4.3 |
-| **P1 - Important** | Important pour l'expérience | US-1.4, US-2.3 à US-2.4, US-3.5 à US-3.6, US-5.1 à US-5.5, US-8.1 à US-8.2 |
-| **P2 - Normal** | Ajout de valeur | US-3.7, US-6.1 à US-6.2, US-7.1 |
-| **P3 - Bonus** | Nice to have | US-7.2 |
+| **P0 - Critique** | Indispensable au MVP | US-0.1 a US-0.4, US-0.6 a US-0.8, US-1.1 a US-1.3, US-2.1 a US-2.2, US-3.1 a US-3.3, US-4.1 a US-4.3, US-6.1 a US-6.3 |
+| **P1 - Important** | Important pour l'experience | US-0.5, US-0.9, US-0.10, US-1.4, US-2.3 a US-2.4, US-3.4 a US-3.5, US-4.4 a US-4.6, US-5.1 a US-5.2, US-6.4, US-7.1 a US-7.5, US-9.1 a US-9.2, US-10.1 a US-10.3 |
+| **P2 - Normal** | Ajout de valeur | US-8.1 a US-8.2 |
+| **P3 - Bonus** | Futur | Analytics visibles, Notifications push, Export recettes, Nouvelles briques |
+
+---
+
+## Changements par rapport a la version precedente
+
+1. **Epic 0 - SuperAdmin & Briques** - Nouveau (P0)
+   - Comptes SuperAdmin isoles avec 2FA TOTP
+   - Creation via CLI uniquement (`npm run admin:create`)
+   - Gestion globale tags/ingredients/communautes
+   - Systeme de briques (Features) attribuables aux communautes
+   - Feature MVP attribuee automatiquement
+   - Dashboard et audit log admin
+
+2. **Systeme d'invitation** (Epic 4) - Nouveau
+   - Invitations avec acceptation explicite
+   - Workflow complet: envoyer, accepter, refuser, annuler
+
+3. **Retirer un membre** (US-5.2) - Nouveau
+   - Admin peut kick un MEMBER (mais pas un ADMIN)
+
+4. **Feed personnel** (US-9.2) - Upgrade de P3 a P1
+   - Inclus dans le MVP pour voir les propositions sur ses recettes
+
+5. **Reorganisation des epics**
+   - Epic 0 = SuperAdmin & Briques (nouveau)
+   - Epic 1-3 = Auth, Catalogue, Communautes
+   - Epic 4 = Invitations (nouveau)
+   - Epic 5 = Gestion des membres
+   - Epic 6-10 = Recettes, Propositions, Partage, Feed, Tags

@@ -1,19 +1,11 @@
-import { User } from "../../../models/user";
-import APIManager from "../../../network/api";
+import { useAuth } from "../../../contexts/AuthContext";
 
-interface NavBarLoggedInViewProps {
-  user: User;
-  onLogoutSuccessful: () => void;
-}
+const NavBarLoggedInView = () => {
+  const { user, logout } = useAuth();
 
-const NavBarLoggedInView = ({
-  user,
-  onLogoutSuccessful,
-}: NavBarLoggedInViewProps) => {
-  async function logout() {
+  async function handleLogout() {
     try {
-      await APIManager.logout();
-      onLogoutSuccessful();
+      await logout();
     } catch (error) {
       alert(error);
       console.error(error);
@@ -23,11 +15,9 @@ const NavBarLoggedInView = ({
   return (
     <>
       <div className="flex-none">
-        <a className="btn btn-ghost normal-case text-xl">
-          Signed in as: {user.username}
-        </a>
+        <span className="btn btn-ghost normal-case text-xl">{user?.username}</span>
       </div>
-      <button className="btn btn-square btn-ghost" onClick={logout}>
+      <button className="btn btn-square btn-ghost" onClick={handleLogout}>
         Log out
       </button>
     </>

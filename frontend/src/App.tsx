@@ -1,72 +1,95 @@
-import { useEffect, useState } from "react";
 import LoginModal from "./components/LoginModal";
 import NavBar from "./components/Navbar/NavBar";
-import SignUpModal from "./components/SignUpModal";
-import { User } from "./models/user";
-import APIManager from "./network/api";
+import MainLayout from "./components/Layout/MainLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthProvider } from "./contexts/AuthContext";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import HomePage from "./pages/HomePage";
 import RecipesPage from "./pages/RecipesPage";
+import RecipeDetailPage from "./pages/RecipeDetailPage";
+import RecipeFormPage from "./pages/RecipeFormPage";
 import PrivacyPage from "./pages/PrivacyPage";
+import SignUpPage from "./pages/SignUpPage";
 import NotFoundPage from "./pages/NotFoundPage";
-import styles from "./styles/App.module.css";
+import AdminLoginPage from "./pages/admin/AdminLoginPage";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
+import AdminLayout from "./components/admin/AdminLayout";
 
 function App() {
-  const [loggedInUser, setLoggedInUser] = useState<User | null>(null);
-
-  const [showSignUpModal, setShowSignUpModal] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-
-  useEffect(() => {
-    async function fetchLoggedInUser() {
-      try {
-        const user = await APIManager.getLoggedInUser();
-        setLoggedInUser(user);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    fetchLoggedInUser();
-  }, []);
-
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <div>
-        <NavBar
-          loggedInUser={loggedInUser}
-          onLoginClicked={() => setShowLoginModal(true)}
-          onSignUpClicked={() => setShowSignUpModal(true)}
-          onLogoutSuccessful={() => setLoggedInUser(null)}
-        />
-        <div className={styles.pageContainer}>
-          <Routes>
-            <Route
-              path="/"
-              element={<RecipesPage loggedInUser={loggedInUser} />}
-            />
-            <Route path="/privacy" element={<PrivacyPage />} />
-            <Route path="/*" element={<NotFoundPage />} />
-          </Routes>
-        </div>
-        {showSignUpModal && (
-          <SignUpModal
-            onDismiss={() => setShowSignUpModal(false)}
-            onSignUpSuccessful={(user) => {
-              setLoggedInUser(user);
-              setShowSignUpModal(false);
-            }}
-          />
-        )}
+      <AuthProvider>
+        <div className="min-h-screen flex flex-col">
+          <NavBar />
+          <div className="flex-1 flex flex-col">
+            <Routes>
+              {/* Public routes - no sidebar */}
+              <Route path="/" element={<HomePage />} />
+              <Route path="/signup" element={<SignUpPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
 
-        {showLoginModal && (
-          <LoginModal
-            onDismiss={() => setShowLoginModal(false)}
-            onLoginSuccessful={(user) => {
-              setLoggedInUser(user);
-              setShowLoginModal(false);
-            }}
-          />
-        )}
-      </div>
+              {/* Protected user routes - with sidebar layout */}
+              <Route
+                path="/recipes"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <RecipesPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/recipes/new"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <RecipeFormPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/recipes/:id"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <RecipeDetailPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/recipes/:id/edit"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <RecipeFormPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Admin routes - isolated auth context */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route path="login" element={<AdminLoginPage />} />
+                <Route
+                  path="dashboard"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminDashboardPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+              </Route>
+
+              <Route path="/*" element={<NotFoundPage />} />
+            </Routes>
+          </div>
+          <LoginModal />
+        </div>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

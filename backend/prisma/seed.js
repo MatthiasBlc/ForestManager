@@ -14,6 +14,24 @@ async function seed() {
 
   console.log("Database is empty, seeding...");
 
+  // ===========================================
+  // Seed Feature MVP (required for communities)
+  // ===========================================
+  const featureMvp = await prisma.feature.upsert({
+    where: { code: "MVP" },
+    update: {},
+    create: {
+      code: "MVP",
+      name: "Fonctionnalites de base",
+      description: "Recettes, ingredients, tags, partage communautaire",
+      isDefault: true,
+    },
+  });
+  console.log("Feature MVP created:", featureMvp.code);
+
+  // ===========================================
+  // Seed test users
+  // ===========================================
   const hashedPassword = await bcrypt.hash("password123", 10);
 
   const user1 = await prisma.user.create({
@@ -30,25 +48,35 @@ async function seed() {
       password: hashedPassword,
     },
   });
+  console.log("Test users created:", user1.username, user2.username);
 
+  // ===========================================
+  // Seed test recipes (personal catalog)
+  // ===========================================
   await prisma.recipe.create({
     data: {
-      content:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer placerat urna vel ante volutpat, ut elementum mi placerat. Phasellus varius nisi a nisl interdum, at ultrices ex tincidunt. Duis nec nunc vel urna ullamcorper eleifend ac id dolor. Phasellus vitae tortor ac metus laoreet rutrum. Aenean condimentum consequat elit, ut placerat massa mattis vitae. Vivamus dictum faucibus massa, eget euismod turpis pretium a. Aliquam rutrum rhoncus mi, eu tincidunt mauris placerat nec. Nunc sagittis libero sed facilisis suscipit. Curabitur nisi lacus, ullamcorper eu maximus quis, malesuada sit amet nisi. Proin dignissim, lacus vitae mattis fermentum, dui dolor feugiat turpis, ut euismod libero purus eget dui.",
-      title: "Recipe 1",
-      authorId: user1.id,
+      title: "Pizza Margherita",
+      content: "# Pizza Margherita\n\n## Ingredients\n- Pate a pizza\n- Sauce tomate\n- Mozzarella\n- Basilic frais\n\n## Instructions\n1. Etaler la pate\n2. Ajouter la sauce tomate\n3. Disposer la mozzarella\n4. Cuire 15min a 220C\n5. Ajouter le basilic frais",
+      creatorId: user1.id,
     },
   });
   await prisma.recipe.create({
     data: {
-      content:
-        "Proin ut sollicitudin lacus. Mauris blandit, turpis in efficitur lobortis, lectus lacus dictum ipsum, vel pretium ex lacus id mauris. Aenean id nisi eget tortor viverra volutpat sagittis sit amet risus. Sed malesuada lectus eget metus sollicitudin porttitor. Fusce at sagittis ligula. Pellentesque vel sapien nulla. Morbi at purus sed nibh mollis ornare sed non magna. Nunc euismod ex purus, nec laoreet magna iaculis quis. Mauris non venenatis elit. Curabitur varius lectus nisl, vitae tempus felis tristique sit amet.",
-      title: "Recipe 2",
-      authorId: user2.id,
+      title: "Tarte aux pommes",
+      content: "# Tarte aux pommes\n\n## Ingredients\n- Pate brisee\n- 4 pommes\n- 50g sucre\n- Cannelle\n\n## Instructions\n1. Etaler la pate dans un moule\n2. Eplucher et couper les pommes\n3. Disposer les pommes en rosace\n4. Saupoudrer de sucre et cannelle\n5. Cuire 35min a 180C",
+      creatorId: user2.id,
     },
   });
+  console.log("Test recipes created");
 
   console.log("Seeding complete!");
 }
 
-seed();
+seed()
+  .catch((e) => {
+    console.error("Seed error:", e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

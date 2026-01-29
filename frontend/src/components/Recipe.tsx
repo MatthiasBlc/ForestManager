@@ -17,11 +17,11 @@ const Recipe = ({
   onDeleteRecipeClicked,
   className,
 }: RecipeProps) => {
-  const { title, text, createdAt, updatedAT } = recipe;
+  const { title, content, createdAt, updatedAt } = recipe;
 
   let createdUpdatedText: string;
-  if (updatedAT > createdAt) {
-    createdUpdatedText = `Updated: ${formatDate(updatedAT)}`;
+  if (updatedAt > createdAt) {
+    createdUpdatedText = `Updated: ${formatDate(updatedAt)}`;
   } else {
     createdUpdatedText = `Created: ${formatDate(createdAt)}`;
   }
@@ -42,7 +42,7 @@ const Recipe = ({
             }}
           />
         </h2>
-        <p className={`${styles.cardText} `}>{text}</p>
+        <p className={`${styles.cardText} `}>{content}</p>
         <div className="text-secondary">{createdUpdatedText}</div>
         <div className="card-actions justify-end">
           <button className="btn btn-primary">button</button>

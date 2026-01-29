@@ -22,7 +22,7 @@ const AddEditRecipeDialog = ({
   } = useForm<RecipeInput>({
     defaultValues: {
       title: recipeToEdit?.title ?? "",
-      text: recipeToEdit?.text ?? "",
+      content: recipeToEdit?.content ?? "",
     },
   });
 
@@ -59,10 +59,10 @@ const AddEditRecipeDialog = ({
             registerOptions={{ required: "Required" }}
           />
           <TextInputField
-            name="text"
-            label="Text"
+            name="content"
+            label="Content"
             type="textarea"
-            placeholder="Text"
+            placeholder="Content"
             textAreaField
             className="textarea textarea-bordered h-24"
             required

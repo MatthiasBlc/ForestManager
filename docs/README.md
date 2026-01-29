@@ -2,7 +2,7 @@
 
 ## Vue d'ensemble du projet
 
-Forest Manager est une application de gestion de communautés autour du partage de recettes de cuisine. Elle permet aux utilisateurs de créer et rejoindre des communautés privées, de partager des recettes, de proposer des améliorations collaboratives et de gérer des variantes de recettes.
+Forest Manager est une application de gestion de communautes autour du partage de recettes de cuisine. Elle permet aux utilisateurs de creer et rejoindre des communautes privees, de partager des recettes, de proposer des ameliorations collaboratives et de gerer des variantes de recettes.
 
 ## Stack Technique
 
@@ -10,7 +10,7 @@ Forest Manager est une application de gestion de communautés autour du partage 
 |--------|-------------|
 | Frontend | React + TypeScript + Vite + TailwindCSS |
 | Backend | Node.js + Express + TypeScript |
-| Base de données | PostgreSQL |
+| Base de donnees | PostgreSQL |
 | ORM | Prisma |
 | Authentification | Sessions (express-session) |
 | Containerisation | Docker + Docker Compose |
@@ -20,53 +20,53 @@ Forest Manager est une application de gestion de communautés autour du partage 
 
 | Document | Description |
 |----------|-------------|
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | Architecture technique et patterns utilisés |
-| [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md) | Schéma complet de la base de données |
-| [BUSINESS_RULES.md](./BUSINESS_RULES.md) | Règles métier et logique applicative |
-| [API_SPECIFICATION.md](./API_SPECIFICATION.md) | Spécification des endpoints API |
-| [USER_STORIES.md](./USER_STORIES.md) | User stories pour le développement |
-| [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) | Phases de développement et planning |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | Architecture technique et patterns utilises |
+| [DATABASE_SCHEMA.md](./DATABASE_SCHEMA.md) | Schema complet de la base de donnees |
+| [BUSINESS_RULES.md](./BUSINESS_RULES.md) | Regles metier et logique applicative |
+| [API_SPECIFICATION.md](./API_SPECIFICATION.md) | Specification des endpoints API |
+| [USER_STORIES.md](./USER_STORIES.md) | User stories pour le developpement |
+| [DEVELOPMENT_ROADMAP.md](./DEVELOPMENT_ROADMAP.md) | Phases de developpement et planning |
 
-## Fonctionnalités principales (MVP)
+## Fonctionnalites principales (MVP)
 
 ### Gestion des utilisateurs
 - Inscription et authentification
 - Profil utilisateur avec catalogue personnel de recettes
-- Gestion multi-communautés
+- Gestion multi-communautes
 
-### Gestion des communautés
-- Création de communautés privées (invite-only)
-- Système de rôles : Membre / Administrateur
+### Gestion des communautes
+- Creation de communautes privees (invite-only)
+- Systeme de roles : Membre / Administrateur
 - Invitation de nouveaux membres (admin uniquement)
 - Promotion de membres en administrateurs
 - Logique de suppression automatique (dernier utilisateur)
 
 ### Gestion des recettes
-- Création de recettes personnelles
-- Partage dans les communautés (forked copy)
-- Système de tags multi-valués
+- Creation de recettes personnelles
+- Partage dans les communautes (forked copy)
+- Systeme de tags multi-values
 - Support d'images (optionnel, V1)
 - Soft delete
 
-### Système collaboratif
-- Propositions de mises à jour sur les recettes
-- Workflow d'approbation par le créateur
-- Création automatique de variantes (si refus)
+### Systeme collaboratif
+- Propositions de mises a jour sur les recettes
+- Workflow d'approbation par le createur
+- Creation automatique de variantes (si refus)
 - Visualisation des variantes (dropdown)
 
-### Partage inter-communautés
-- Fork de recettes entre communautés
-- Traçabilité de l'origine
-- Indépendance des copies forkées
+### Partage inter-communautes
+- Fork de recettes entre communautes
+- Tracabilite de l'origine
+- Independance des copies forkees
 
-### Activité et notifications
-- Activity feed par communauté
-- Notifications légères (non bloquantes)
+### Activite et notifications
+- Activity feed par communaute
+- Notifications legeres (non bloquantes)
 
-## Démarrage rapide
+## Demarrage rapide
 
 ```bash
-# Cloner et démarrer
+# Cloner et demarrer
 npm run docker:up:build
 
 # URLs
@@ -81,13 +81,13 @@ npm run docker:up:build
 ForestManager/
 ├── backend/
 │   ├── src/
-│   │   ├── controllers/    # Logique métier
+│   │   ├── controllers/    # Logique metier
 │   │   ├── middleware/     # Auth, validation
-│   │   ├── routes/         # Définition des routes
+│   │   ├── routes/         # Definition des routes
 │   │   └── util/           # Utilitaires
 │   └── prisma/
-│       ├── schema.prisma   # Schéma BDD
-│       └── seed.js         # Données initiales
+│       ├── schema.prisma   # Schema BDD
+│       └── seed.js         # Donnees initiales
 ├── frontend/
 │   ├── src/
 │   │   ├── components/     # Composants React

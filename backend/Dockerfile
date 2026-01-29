@@ -42,8 +42,7 @@ COPY --from=builder /app/node_modules ./node_modules/
 COPY --from=builder /app/dist ./dist/
 COPY --from=builder /app/prisma ./prisma/
 
-# Install Prisma CLI globally for migrations
-RUN npm install -g prisma
+# Prisma CLI is available via npx from node_modules
 
 # Create logs directory
 RUN mkdir -p /app/logs
@@ -56,4 +55,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=20s --retries=3 \
   CMD wget --spider -q http://localhost:3001/health || exit 1
 
 # Start command (seed auto-skips if DB already has data)
-CMD ["sh", "-c", "prisma migrate deploy && prisma db seed && node dist/server.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed && node dist/server.js"]
