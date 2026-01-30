@@ -91,21 +91,25 @@ export async function createTestAdmin(data?: Partial<{
 
 /**
  * Creer un admin sans TOTP configure (premiere connexion)
+ * Note: totpSecret est requis par le schema, on met une valeur placeholder
+ * mais totpEnabled=false indique qu'il n'est pas encore configure
  */
 export async function createTestAdminWithoutTotp(data?: Partial<{
   username: string;
   email: string;
   password: string;
-}>): Promise<Omit<TestAdmin, 'totpSecret'> & { totpSecret: null }> {
+}>): Promise<Omit<TestAdmin, 'totpSecret'> & { totpSecret: string }> {
   const password = data?.password ?? 'AdminTest123!';
   const hashedPassword = await bcrypt.hash(password, 10);
+  // Le secret sera regenere lors de la premiere connexion
+  const placeholderSecret = authenticator.generateSecret();
 
   const admin = await testPrisma.adminUser.create({
     data: {
       username: data?.username ?? `testadmin_${Date.now()}`,
       email: data?.email ?? `admin_${Date.now()}@example.com`,
       password: hashedPassword,
-      totpSecret: null,
+      totpSecret: placeholderSecret,
       totpEnabled: false,
     },
   });
@@ -115,7 +119,7 @@ export async function createTestAdminWithoutTotp(data?: Partial<{
     username: admin.username,
     email: admin.email,
     password,
-    totpSecret: null,
+    totpSecret: placeholderSecret,
   };
 }
 
@@ -233,4 +237,119 @@ export function withCookie(request: Request, cookie: string | null): Request {
     return request.set('Cookie', cookie);
   }
   return request;
+}
+
+// =====================================
+// Community & Feature Factories
+// =====================================
+
+interface TestCommunity {
+  id: string;
+  name: string;
+  description: string | null;
+  visibility: string;
+}
+
+interface TestFeature {
+  id: string;
+  code: string;
+  name: string;
+  description: string | null;
+  isDefault: boolean;
+}
+
+/**
+ * Creer une communaute de test avec un createur comme admin
+ */
+export async function createTestCommunity(
+  creatorId: string,
+  data?: Partial<{
+    name: string;
+    description: string;
+  }>
+): Promise<TestCommunity> {
+  const community = await testPrisma.community.create({
+    data: {
+      name: data?.name ?? `Test Community ${Date.now()}`,
+      description: data?.description ?? 'Test community description',
+      // visibility uses default INVITE_ONLY from schema
+      members: {
+        create: {
+          userId: creatorId,
+          role: 'MODERATOR',
+        },
+      },
+    },
+  });
+
+  return {
+    id: community.id,
+    name: community.name,
+    description: community.description,
+    visibility: community.visibility,
+  };
+}
+
+/**
+ * Creer une feature de test
+ */
+export async function createTestFeature(data?: Partial<{
+  code: string;
+  name: string;
+  description: string;
+  isDefault: boolean;
+}>): Promise<TestFeature> {
+  const randomSuffix = Math.random().toString(36).substring(2, 8);
+  const code = data?.code ?? `FEATURE_${Date.now()}_${randomSuffix}`;
+
+  const feature = await testPrisma.feature.create({
+    data: {
+      code,
+      name: data?.name ?? `Feature ${code}`,
+      description: data?.description ?? null,
+      isDefault: data?.isDefault ?? false,
+    },
+  });
+
+  return {
+    id: feature.id,
+    code: feature.code,
+    name: feature.name,
+    description: feature.description,
+    isDefault: feature.isDefault,
+  };
+}
+
+// =====================================
+// Admin Login Helper
+// =====================================
+
+import supertest from 'supertest';
+import app from '../../app';
+
+/**
+ * Effectuer un login complet admin (password + TOTP) et retourner le cookie de session
+ */
+export async function loginAsAdmin(admin: TestAdmin): Promise<string> {
+  // Step 1: Login avec password
+  const loginRes = await supertest(app)
+    .post('/api/admin/auth/login')
+    .send({
+      email: admin.email,
+      password: admin.password,
+    });
+
+  const sessionCookie = extractSessionCookie(loginRes, 'admin.sid');
+  if (!sessionCookie) {
+    throw new Error('Failed to get admin session cookie from login');
+  }
+
+  // Step 2: Verifier TOTP
+  const totpCode = generateTotpCode(admin.totpSecret);
+  await supertest(app)
+    .post('/api/admin/auth/totp/verify')
+    .set('Cookie', sessionCookie)
+    .send({ code: totpCode });
+
+  return sessionCookie;
 }

@@ -30,6 +30,50 @@ export const mockRecipe = {
 
 export const mockRecipes = [mockRecipe];
 
+// Mock admin data
+export const mockTags = [
+  { id: 'tag-1', name: 'dessert', recipeCount: 5 },
+  { id: 'tag-2', name: 'dinner', recipeCount: 3 },
+  { id: 'tag-3', name: 'breakfast', recipeCount: 2 },
+];
+
+export const mockIngredients = [
+  { id: 'ing-1', name: 'sugar', recipeCount: 10 },
+  { id: 'ing-2', name: 'flour', recipeCount: 8 },
+  { id: 'ing-3', name: 'butter', recipeCount: 5 },
+];
+
+export const mockFeatures = [
+  { id: 'feat-1', code: 'MVP', name: 'MVP Feature', description: 'Default feature', isDefault: true, communityCount: 3 },
+  { id: 'feat-2', code: 'PREMIUM', name: 'Premium Feature', description: 'Premium only', isDefault: false, communityCount: 1 },
+];
+
+export const mockCommunities = [
+  {
+    id: 'com-1',
+    name: 'Test Community',
+    description: 'A test community',
+    visibility: 'PRIVATE',
+    memberCount: 5,
+    recipeCount: 10,
+    features: ['MVP'],
+    createdAt: new Date().toISOString(),
+    deletedAt: null,
+  },
+];
+
+export const mockActivities = [
+  {
+    id: 'act-1',
+    type: 'TAG_CREATED',
+    targetType: 'Tag',
+    targetId: 'tag-1',
+    metadata: { name: 'dessert' },
+    createdAt: new Date().toISOString(),
+    admin: mockAdmin,
+  },
+];
+
 // Etat mock pour simuler l'authentification
 let isUserAuthenticated = false;
 let isAdminAuthenticated = false;
@@ -140,8 +184,8 @@ export const handlers = [
       isAdminTotpPending = true;
       return HttpResponse.json({
         message: 'TOTP verification required',
-        requireTotp: true,
-        qrCodeUrl: null, // TOTP deja configure
+        requiresTotpSetup: false,
+        // Pas de qrCode car TOTP deja configure
       });
     }
 
@@ -149,8 +193,8 @@ export const handlers = [
       isAdminTotpPending = true;
       return HttpResponse.json({
         message: 'TOTP setup required',
-        requireTotp: true,
-        qrCodeUrl: 'data:image/png;base64,mockQrCode',
+        requiresTotpSetup: true,
+        qrCode: 'data:image/png;base64,mockQrCode',
       });
     }
 
@@ -394,12 +438,296 @@ export const handlers = [
         ingredients: 200,
         features: 5,
       },
-      last7Days: {
-        users: 5,
-        communities: 1,
-        recipes: 20,
+      lastWeek: {
+        newUsers: 5,
+        newCommunities: 1,
+        newRecipes: 20,
       },
-      topCommunities: [],
+      topCommunities: [
+        { id: 'com-1', name: 'Test Community', memberCount: 5, recipeCount: 10 },
+      ],
+    });
+  }),
+
+  // =====================================
+  // Admin Tags
+  // =====================================
+
+  http.get(`${API_URL}/api/admin/tags`, ({ request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const url = new URL(request.url);
+    const search = url.searchParams.get('search');
+
+    let filteredTags = [...mockTags];
+    if (search) {
+      filteredTags = filteredTags.filter(t =>
+        t.name.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    return HttpResponse.json({ tags: filteredTags });
+  }),
+
+  http.post(`${API_URL}/api/admin/tags`, async ({ request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, string>;
+
+    if (!body.name) {
+      return HttpResponse.json(
+        { error: 'ADMIN_TAG_001: Name is required' },
+        { status: 400 }
+      );
+    }
+
+    const newTag = {
+      id: `tag-${Date.now()}`,
+      name: body.name.toLowerCase().trim(),
+      recipeCount: 0,
+    };
+
+    return HttpResponse.json({ tag: newTag }, { status: 201 });
+  }),
+
+  http.patch(`${API_URL}/api/admin/tags/:id`, async ({ params, request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const tag = mockTags.find(t => t.id === params.id);
+    if (!tag) {
+      return HttpResponse.json(
+        { error: 'ADMIN_TAG_003: Tag not found' },
+        { status: 404 }
+      );
+    }
+
+    const body = await request.json() as Record<string, string>;
+
+    return HttpResponse.json({
+      tag: { ...tag, name: body.name?.toLowerCase().trim() || tag.name },
+    });
+  }),
+
+  http.delete(`${API_URL}/api/admin/tags/:id`, ({ params }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const tag = mockTags.find(t => t.id === params.id);
+    if (!tag) {
+      return HttpResponse.json(
+        { error: 'ADMIN_TAG_003: Tag not found' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json({ message: 'Tag deleted' });
+  }),
+
+  // =====================================
+  // Admin Ingredients
+  // =====================================
+
+  http.get(`${API_URL}/api/admin/ingredients`, ({ request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const url = new URL(request.url);
+    const search = url.searchParams.get('search');
+
+    let filteredIngredients = [...mockIngredients];
+    if (search) {
+      filteredIngredients = filteredIngredients.filter(i =>
+        i.name.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    return HttpResponse.json({ ingredients: filteredIngredients });
+  }),
+
+  http.post(`${API_URL}/api/admin/ingredients`, async ({ request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, string>;
+
+    if (!body.name) {
+      return HttpResponse.json(
+        { error: 'ADMIN_ING_001: Name is required' },
+        { status: 400 }
+      );
+    }
+
+    const newIngredient = {
+      id: `ing-${Date.now()}`,
+      name: body.name.toLowerCase().trim(),
+      recipeCount: 0,
+    };
+
+    return HttpResponse.json({ ingredient: newIngredient }, { status: 201 });
+  }),
+
+  // =====================================
+  // Admin Features
+  // =====================================
+
+  http.get(`${API_URL}/api/admin/features`, () => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    return HttpResponse.json({ features: mockFeatures });
+  }),
+
+  http.post(`${API_URL}/api/admin/features`, async ({ request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, unknown>;
+
+    if (!body.code) {
+      return HttpResponse.json(
+        { error: 'ADMIN_FEAT_001: Code is required' },
+        { status: 400 }
+      );
+    }
+
+    if (!body.name) {
+      return HttpResponse.json(
+        { error: 'ADMIN_FEAT_002: Name is required' },
+        { status: 400 }
+      );
+    }
+
+    const newFeature = {
+      id: `feat-${Date.now()}`,
+      code: (body.code as string).toUpperCase(),
+      name: body.name,
+      description: body.description || null,
+      isDefault: Boolean(body.isDefault),
+      communityCount: 0,
+    };
+
+    return HttpResponse.json({ feature: newFeature }, { status: 201 });
+  }),
+
+  // =====================================
+  // Admin Communities
+  // =====================================
+
+  http.get(`${API_URL}/api/admin/communities`, ({ request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const url = new URL(request.url);
+    const search = url.searchParams.get('search');
+
+    let filteredCommunities = [...mockCommunities];
+    if (search) {
+      filteredCommunities = filteredCommunities.filter(c =>
+        c.name.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+
+    return HttpResponse.json({ communities: filteredCommunities });
+  }),
+
+  http.get(`${API_URL}/api/admin/communities/:id`, ({ params }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const community = mockCommunities.find(c => c.id === params.id);
+    if (!community) {
+      return HttpResponse.json(
+        { error: 'ADMIN_COM_001: Community not found' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json({
+      community: {
+        ...community,
+        members: [
+          { id: 'user-1', username: 'user1', email: 'user1@test.com', role: 'ADMIN', joinedAt: new Date().toISOString() },
+        ],
+        features: [
+          { id: 'feat-1', code: 'MVP', name: 'MVP Feature', grantedAt: new Date().toISOString(), grantedBy: 'system', revokedAt: null },
+        ],
+      },
+    });
+  }),
+
+  // =====================================
+  // Admin Activity
+  // =====================================
+
+  http.get(`${API_URL}/api/admin/activity`, ({ request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const url = new URL(request.url);
+    const limit = parseInt(url.searchParams.get('limit') || '50');
+    const offset = parseInt(url.searchParams.get('offset') || '0');
+    const type = url.searchParams.get('type');
+
+    let filteredActivities = [...mockActivities];
+    if (type) {
+      filteredActivities = filteredActivities.filter(a => a.type === type);
+    }
+
+    return HttpResponse.json({
+      activities: filteredActivities.slice(offset, offset + limit),
+      pagination: {
+        total: filteredActivities.length,
+        limit,
+        offset,
+        hasMore: offset + limit < filteredActivities.length,
+      },
     });
   }),
 ];

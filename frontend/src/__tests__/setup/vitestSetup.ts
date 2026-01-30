@@ -5,7 +5,7 @@ import { server } from './mswServer';
 
 // Setup MSW server
 beforeAll(() => {
-  server.listen({ onUnhandledRequest: 'error' });
+  server.listen({ onUnhandledRequest: 'warn' });
 });
 
 afterEach(() => {

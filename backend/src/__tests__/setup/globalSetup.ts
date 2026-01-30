@@ -24,6 +24,7 @@ afterEach(async () => {
     testPrisma.userCommunity.deleteMany(),
     testPrisma.communityFeature.deleteMany(),
     testPrisma.community.deleteMany(),
+    testPrisma.feature.deleteMany(),
     testPrisma.session.deleteMany(),
     testPrisma.adminSession.deleteMany(),
     testPrisma.adminActivityLog.deleteMany(),
