@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { screen, waitFor, fireEvent } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { screen, fireEvent } from '@testing-library/react';
 import { render } from '../../../setup/testUtils';
 import MainLayout from '../../../../components/Layout/MainLayout';
 

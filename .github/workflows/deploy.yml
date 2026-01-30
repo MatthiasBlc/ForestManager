@@ -93,6 +93,7 @@ jobs:
         env:
           DATABASE_URL: postgresql://forestmanager:test_password@localhost:5432/forestmanager_test?schema=public
           NODE_ENV: test
+          PORT: 3001
           SESSION_SECRET: test_session_secret
           ADMIN_SESSION_SECRET: test_admin_session_secret
         run: npm test
