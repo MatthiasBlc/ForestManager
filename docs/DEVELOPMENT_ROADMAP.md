@@ -124,6 +124,23 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - Systeme de briques operationnel
 - Feature MVP attribuee auto
 
+### Tests Phase 0.5
+**Backend** (~60 tests):
+- [x] `adminAuth.test.ts` - Auth 2FA admin (14 tests)
+- [x] `adminTags.test.ts` - CRUD tags admin (12 tests)
+- [x] `adminIngredients.test.ts` - CRUD ingredients admin (12 tests)
+- [x] `adminFeatures.test.ts` - CRUD features + grant/revoke (10 tests)
+- [x] `adminCommunities.test.ts` - Gestion communautes admin (8 tests)
+- [x] `adminDashboard.test.ts` - Stats dashboard (4 tests)
+- [x] `adminActivity.test.ts` - Logs activite (4 tests)
+
+**Frontend** (~20 tests):
+- [x] `AdminAuthContext.test.tsx` - Context admin 2FA (7 tests)
+- [x] `AdminProtectedRoute.test.tsx` - Guard admin (4 tests)
+- [x] `AdminLoginPage.test.tsx` - Page login 2FA (8 tests)
+- [x] `AdminDashboardPage.test.tsx` - Page dashboard (6 tests)
+- [x] `AdminLayout.test.tsx` - Layout admin (3 tests)
+
 ---
 
 ## Phase 1: Authentification & Base
@@ -158,6 +175,18 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ### Livrables
 - Utilisateurs peuvent s'inscrire, se connecter, se deconnecter
 - Navigation de base fonctionnelle
+
+### Tests Phase 1
+**Backend** (~16 tests):
+- [x] `auth.test.ts` - User signup/login/logout/me (16 tests)
+
+**Frontend** (~25 tests):
+- [x] `AuthContext.test.tsx` - Context auth user (6 tests)
+- [x] `LoginModal.test.tsx` - Modal login (6 tests)
+- [x] `Modal.test.tsx` - Composant modal (4 tests)
+- [x] `SignUpPage.test.tsx` - Page inscription (6 tests)
+- [x] `ProtectedRoute.test.tsx` - Guard user (5 tests)
+- [x] `NavBar.test.tsx` - Navigation conditionnelle (4 tests)
 
 ---
 
@@ -220,6 +249,22 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] CRUD complet sur les recettes personnelles
 - [x] Interface de creation/edition fonctionnelle
 - [x] Pagination et filtres fonctionnels
+
+### Tests Phase 2
+**Backend** (~40 tests):
+- [x] `recipes.test.ts` - CRUD complet recettes (31 tests)
+- [x] `tags.test.ts` - GET /api/tags autocomplete (5 tests)
+- [x] `ingredients.test.ts` - GET /api/ingredients autocomplete (5 tests)
+
+**Frontend** (~40 tests):
+- [x] `RecipeCard.test.tsx` - Carte recette (8 tests)
+- [x] `RecipeFilters.test.tsx` - Filtres search/tags/ingredients (8 tests)
+- [x] `TagSelector.test.tsx` - Selecteur tags (6 tests)
+- [x] `IngredientList.test.tsx` - Liste ingredients (6 tests)
+- [x] `RecipesPage.test.tsx` - Page liste recettes (3 tests)
+- [x] `MainLayout.test.tsx` - Layout principal (6 tests)
+- [x] `Sidebar.test.tsx` - Navigation sidebar (10 tests)
+- [x] `HomePage.test.tsx` - Page accueil (6 tests)
 
 ---
 
@@ -617,3 +662,76 @@ Phase 8 (Finitions MVP)
 - [ ] Mettre a jour ESLint vers une version supportee (v8.57.1 deprecie)
 - [ ] Migrer config Prisma de `package.json#prisma` vers `prisma.config.ts` (deprecie Prisma 7)
 - [ ] Remplacer `npm prune --production` par `--omit=dev` dans Dockerfile
+
+---
+
+## Tests
+
+### Infrastructure
+
+**Backend**:
+- Framework: Vitest + Supertest
+- DB: PostgreSQL test database (via `testPrisma`)
+- Helpers: `backend/src/__tests__/setup/testHelpers.ts`
+- Config: `backend/vitest.config.ts`
+
+**Frontend**:
+- Framework: Vitest + Testing Library + MSW
+- Mocks: `frontend/src/__tests__/setup/mswHandlers.ts`
+- Utils: `frontend/src/__tests__/setup/testUtils.tsx`
+- Config: `frontend/vitest.config.ts`
+
+### Commandes
+
+```bash
+# Backend
+cd backend && npm test              # Lancer tous les tests
+cd backend && npm run test:coverage # Tests avec couverture
+
+# Frontend
+cd frontend && npm test             # Lancer tous les tests
+cd frontend && npm run test:coverage # Tests avec couverture
+
+# CI/CD
+# Les tests sont executes automatiquement dans deploy.yml:
+# - Job: test-backend
+# - Job: test-frontend
+```
+
+### Couverture cible
+- Backend: > 80% sur controllers/routes
+- Frontend: > 70% sur composants critiques
+
+### Template pour nouvelles fonctionnalites
+
+Lors de l'ajout d'une nouvelle fonctionnalite, inclure les tests suivants:
+
+```markdown
+### X.Y Nouvelle Fonctionnalite
+- [ ] Implementation backend
+- [ ] Implementation frontend
+- [ ] **Tests backend**: [fichiers .test.ts]
+  - Tests CRUD endpoints
+  - Tests validation input
+  - Tests error cases
+  - Tests authentication/authorization
+- [ ] **Tests frontend**: [fichiers .test.tsx]
+  - Tests rendu composants
+  - Tests interactions utilisateur
+  - Tests etats (loading, error, success)
+  - Tests integration avec API (MSW)
+```
+
+### Resume des tests implementes
+
+| Categorie | Fichiers | Tests |
+|-----------|----------|-------|
+| Backend Auth | auth.test.ts, adminAuth.test.ts | ~30 |
+| Backend Admin API | adminTags, adminIngredients, adminFeatures, adminCommunities, adminDashboard, adminActivity | ~50 |
+| Backend User API | recipes.test.ts, tags.test.ts, ingredients.test.ts | ~41 |
+| Frontend Contexts | AuthContext, AdminAuthContext | ~13 |
+| Frontend Auth | LoginModal, Modal, SignUpPage, ProtectedRoute, NavBar | ~25 |
+| Frontend Admin | AdminProtectedRoute, AdminLoginPage, AdminDashboardPage, AdminLayout | ~21 |
+| Frontend Recipes | RecipeCard, RecipeFilters, TagSelector, IngredientList | ~28 |
+| Frontend Pages | HomePage, RecipesPage, MainLayout, Sidebar | ~25 |
+| **Total** | | **~233** |
