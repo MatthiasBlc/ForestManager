@@ -271,16 +271,16 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ## Phase 3: Communautes & Invitations
 
 ### 3.1 Backend Communities
-- [ ] Route POST /api/communities
+- [x] Route POST /api/communities
   - Creation communaute
-  - Ajout createur comme ADMIN
-- [ ] Route GET /api/communities
+  - Ajout createur comme MODERATOR (admin de communaute)
+- [x] Route GET /api/communities
   - Liste des communautes de l'utilisateur
-- [ ] Route GET /api/communities/:id
+- [x] Route GET /api/communities/:id
   - Detail communaute
   - Middleware memberOf
-- [ ] Route PATCH /api/communities/:id
-  - Modification (admin only)
+- [x] Route PATCH /api/communities/:id
+  - Modification (MODERATOR only)
 
 ### 3.2 Backend Invitations (NOUVEAU)
 - [ ] Route POST /api/communities/:id/invites
@@ -344,6 +344,18 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - Systeme d'invitation avec acceptation explicite
 - Systeme de roles fonctionnel
 - Kick de membres
+
+### Tests Phase 3
+**Backend** (~50 tests):
+- [x] `communities.test.ts` - CRUD communautes (27 tests)
+- [ ] `invitations.test.ts` - Systeme d'invitations (~15 tests)
+- [ ] `members.test.ts` - Gestion membres, kick, promotion (~10 tests)
+
+**Frontend** (~30 tests):
+- [ ] `CommunitiesPage.test.tsx` - Liste communautes (6 tests)
+- [ ] `CommunityDetailPage.test.tsx` - Detail communaute (8 tests)
+- [ ] `InvitationsSection.test.tsx` - Gestion invitations (8 tests)
+- [ ] `MembersList.test.tsx` - Liste membres (8 tests)
 
 ---
 
