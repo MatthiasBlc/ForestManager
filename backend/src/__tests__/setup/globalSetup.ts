@@ -17,9 +17,13 @@ afterEach(async () => {
   await testPrisma.$transaction([
     testPrisma.recipeIngredient.deleteMany(),
     testPrisma.recipeTag.deleteMany(),
+    testPrisma.recipeView.deleteMany(),
+    testPrisma.recipeAnalytics.deleteMany(),
+    testPrisma.recipeUpdateProposal.deleteMany(),
     testPrisma.recipe.deleteMany(),
     testPrisma.tag.deleteMany(),
     testPrisma.ingredient.deleteMany(),
+    testPrisma.activityLog.deleteMany(),
     testPrisma.communityInvite.deleteMany(),
     testPrisma.userCommunity.deleteMany(),
     testPrisma.communityFeature.deleteMany(),

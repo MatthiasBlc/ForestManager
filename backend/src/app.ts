@@ -4,6 +4,8 @@ import recipesRoutes from "./routes/recipes";
 import tagsRoutes from "./routes/tags";
 import ingredientsRoutes from "./routes/ingredients";
 import communitiesRoutes from "./routes/communities";
+import invitesRoutes from "./routes/invites";
+import usersRoutes from "./routes/users";
 import adminAuthRoutes from "./admin/routes/authRoutes";
 import adminTagsRoutes from "./admin/routes/tagsRoutes";
 import adminIngredientsRoutes from "./admin/routes/ingredientsRoutes";
@@ -94,6 +96,8 @@ app.use("/api/recipes", userSession, requireAuth, recipesRoutes);
 app.use("/api/tags", userSession, requireAuth, tagsRoutes);
 app.use("/api/ingredients", userSession, requireAuth, ingredientsRoutes);
 app.use("/api/communities", userSession, requireAuth, communitiesRoutes);
+app.use("/api/invites", userSession, requireAuth, invitesRoutes);
+app.use("/api/users", userSession, requireAuth, usersRoutes);
 
 // Admin routes (avec admin session isolee + rate limiting global)
 app.use("/api/admin", adminRateLimiter); // Rate limit global admin (30 req/min)

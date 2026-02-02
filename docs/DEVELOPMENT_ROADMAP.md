@@ -283,29 +283,29 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Modification (MODERATOR only)
 
 ### 3.2 Backend Invitations (NOUVEAU)
-- [ ] Route POST /api/communities/:id/invites
-  - Envoi invitation (admin only)
-  - Recherche user par email/username
-  - Validation: pas deja membre, pas deja invite
+- [x] Route POST /api/communities/:id/invites
+  - Envoi invitation (MODERATOR only)
+  - Recherche user par email/username/userId
+  - Validation: pas deja membre, pas deja invite PENDING
   - Creation CommunityInvite (status: PENDING)
   - Log ActivityLog (INVITE_SENT)
-- [ ] Route GET /api/communities/:id/invites
-  - Liste invitations (admin only)
-  - Filtre par status
-- [ ] Route DELETE /api/communities/:id/invites/:inviteId
-  - Annulation invitation (admin only)
+- [x] Route GET /api/communities/:id/invites
+  - Liste invitations (MODERATOR only)
+  - Filtre par status (default: PENDING, ou ?status=all)
+- [x] Route DELETE /api/communities/:id/invites/:inviteId
+  - Annulation invitation (MODERATOR only)
   - Status → CANCELLED
   - Log ActivityLog (INVITE_CANCELLED)
-- [ ] Route GET /api/users/me/invites
+- [x] Route GET /api/users/me/invites
   - Invitations recues par l'utilisateur
   - Filtre par status
-- [ ] Route POST /api/invites/:id/accept
-  - Acceptation invitation
+- [x] Route POST /api/invites/:id/accept
+  - Acceptation invitation (invitee only)
   - Creation UserCommunity (role: MEMBER)
   - Status → ACCEPTED
   - Log ActivityLog (INVITE_ACCEPTED, USER_JOINED)
-- [ ] Route POST /api/invites/:id/reject
-  - Refus invitation
+- [x] Route POST /api/invites/:id/reject
+  - Refus invitation (invitee only)
   - Status → REJECTED
   - Log ActivityLog (INVITE_REJECTED)
 
@@ -348,7 +348,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ### Tests Phase 3
 **Backend** (~50 tests):
 - [x] `communities.test.ts` - CRUD communautes (27 tests)
-- [ ] `invitations.test.ts` - Systeme d'invitations (~15 tests)
+- [x] `invitations.test.ts` - Systeme d'invitations (35 tests)
 - [ ] `members.test.ts` - Gestion membres, kick, promotion (~10 tests)
 
 **Frontend** (~30 tests):
@@ -615,11 +615,11 @@ Phase 8 (Finitions MVP)
 ### Fonctionnel
 - [x] Un utilisateur peut s'inscrire et se connecter
 - [x] Un utilisateur peut creer des recettes personnelles
-- [ ] Un utilisateur peut creer une communaute
-- [ ] Un admin peut inviter des utilisateurs
-- [ ] Un utilisateur voit ses invitations recues
-- [ ] Un utilisateur peut accepter/refuser une invitation
-- [ ] Un admin peut annuler une invitation
+- [x] Un utilisateur peut creer une communaute
+- [x] Un MODERATOR peut inviter des utilisateurs (backend)
+- [x] Un utilisateur voit ses invitations recues (backend)
+- [x] Un utilisateur peut accepter/refuser une invitation (backend)
+- [x] Un MODERATOR peut annuler une invitation (backend)
 - [ ] Un admin peut promouvoir un membre en admin
 - [ ] Un admin peut retirer un membre (mais pas un admin)
 - [ ] Un membre peut creer une recette dans une communaute
@@ -741,9 +741,10 @@ Lors de l'ajout d'une nouvelle fonctionnalite, inclure les tests suivants:
 | Backend Auth | auth.test.ts, adminAuth.test.ts | ~30 |
 | Backend Admin API | adminTags, adminIngredients, adminFeatures, adminCommunities, adminDashboard, adminActivity | ~50 |
 | Backend User API | recipes.test.ts, tags.test.ts, ingredients.test.ts | ~41 |
+| Backend Communities | communities.test.ts, invitations.test.ts | ~62 |
 | Frontend Contexts | AuthContext, AdminAuthContext | ~13 |
 | Frontend Auth | LoginModal, Modal, SignUpPage, ProtectedRoute, NavBar | ~25 |
 | Frontend Admin | AdminProtectedRoute, AdminLoginPage, AdminDashboardPage, AdminLayout | ~21 |
 | Frontend Recipes | RecipeCard, RecipeFilters, TagSelector, IngredientList | ~28 |
 | Frontend Pages | HomePage, RecipesPage, MainLayout, Sidebar | ~25 |
-| **Total** | | **~233** |
+| **Total** | | **~295** |
