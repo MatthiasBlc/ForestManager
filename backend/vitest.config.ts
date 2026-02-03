@@ -23,11 +23,13 @@ export default defineConfig({
         '**/*.d.ts',
       ],
     },
-    // Isoler les tests pour eviter les conflits de session/DB
+    // singleFork requis: les tests partagent une seule DB et afterEach
+    // fait deleteMany() sur toutes les tables. Des workers paralleles
+    // se pollueraient mutuellement.
     pool: 'forks',
     poolOptions: {
       forks: {
-        singleFork: true, // Executer sequentiellement pour eviter conflits DB
+        singleFork: true,
       },
     },
   },

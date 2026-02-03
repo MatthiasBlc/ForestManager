@@ -11,6 +11,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:db:up": "docker compose -f ../docker-compose.test.yml up -d --wait",
+    "test:db:down": "docker compose -f ../docker-compose.test.yml down",
+    "test:db:reset": "npm run test:db:down && npm run test:db:up",
+    "test:integration": "npm run test:db:up && DATABASE_URL=postgresql://test:test@localhost:5433/forestmanager_test?schema=public npx prisma migrate deploy && DATABASE_URL=postgresql://test:test@localhost:5433/forestmanager_test?schema=public npm test; npm run test:db:down",
     "start:migrate:prod": "prisma migrate deploy && prisma db seed && npm run start",
     "admin:create": "ts-node src/scripts/createAdmin.ts"
   },
