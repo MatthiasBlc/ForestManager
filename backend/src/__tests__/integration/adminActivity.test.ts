@@ -3,17 +3,14 @@ import request from 'supertest';
 import app from '../../app';
 import {
   createTestAdmin,
-  createTestTag,
   loginAsAdmin,
 } from '../setup/testHelpers';
 
 describe('Admin Activity API', () => {
   let adminCookie: string;
-  let adminId: string;
 
   beforeEach(async () => {
     const admin = await createTestAdmin();
-    adminId = admin.id;
     adminCookie = await loginAsAdmin(admin);
   });
 

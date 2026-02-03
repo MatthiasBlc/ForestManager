@@ -2,8 +2,6 @@ import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../../app";
 import {
-  createTestUser,
-  createTestCommunity,
   extractSessionCookie,
 } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
@@ -133,7 +131,6 @@ describe("Communities API", () => {
   // GET /api/communities
   // =====================================
   describe("GET /api/communities", () => {
-    let user: Awaited<ReturnType<typeof createTestUser>>;
     let userCookie: string;
 
     beforeEach(async () => {
@@ -143,10 +140,6 @@ describe("Communities API", () => {
         password: "Test123!Password",
       });
       userCookie = extractSessionCookie(signupRes)!;
-
-      user = await testPrisma.user.findFirst({
-        where: { email: "list@example.com" },
-      }) as any;
     });
 
     it("should return empty list when user has no communities", async () => {
@@ -214,8 +207,6 @@ describe("Communities API", () => {
   // GET /api/communities/:communityId
   // =====================================
   describe("GET /api/communities/:communityId", () => {
-    let user: Awaited<ReturnType<typeof createTestUser>>;
-    let otherUser: Awaited<ReturnType<typeof createTestUser>>;
     let userCookie: string;
     let otherUserCookie: string;
 

@@ -5,7 +5,6 @@ import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats } from
 import { ConflictError, UnauthorizedError } from "../errors/http_errors";
 
 const apiUrl = import.meta.env.VITE_BACKEND_URL;
-// eslint-disable-next-line react-refresh/only-export-components
 const API = axios.create({ withCredentials: true, baseURL: apiUrl });
 
 API.interceptors.request.use((config) => {
@@ -14,8 +13,7 @@ API.interceptors.request.use((config) => {
 });
 
 // Utility function to handle API errors safely
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function handleApiError(error: AxiosError<any>): never {
+function handleApiError(error: AxiosError<{ error?: string }>): never {
   console.log(error);
   if (!error.response) {
     throw new Error("Network error - please check your connection");
@@ -175,10 +173,9 @@ export default class APIManager {
 
   // --------------- Admin Auth ---------------
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static async adminLogin(email: string, password: string): Promise<AdminLoginResponse> {
     const response = await API.post("/api/admin/auth/login", JSON.stringify({ email, password }))
-      .catch((error: any) => {
+      .catch((error: AxiosError<{ error?: string }>) => {
         if (error.response?.status === 401) {
           throw new UnauthorizedError(error.response.data.error);
         } else if (error.response?.status === 429) {
@@ -190,10 +187,9 @@ export default class APIManager {
     return response.data;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static async adminVerifyTotp(code: string): Promise<AdminTotpResponse> {
     const response = await API.post("/api/admin/auth/totp/verify", JSON.stringify({ code }))
-      .catch((error: any) => {
+      .catch((error: AxiosError<{ error?: string }>) => {
         if (error.response?.status === 401) {
           throw new UnauthorizedError(error.response.data.error);
         } else if (error.response?.status === 429) {
@@ -205,18 +201,16 @@ export default class APIManager {
     return response.data;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static async adminLogout(): Promise<void> {
     await API.post("/api/admin/auth/logout")
-      .catch((error: any) => {
+      .catch((error: AxiosError<{ error?: string }>) => {
         throw new Error(error.response?.data?.error || "Logout failed");
       });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static async getLoggedInAdmin(): Promise<AdminUser> {
     const response = await API.get("/api/admin/auth/me")
-      .catch((error: any) => {
+      .catch((error: AxiosError<{ error?: string }>) => {
         if (error.response?.status === 401) {
           throw new UnauthorizedError(error.response.data.error);
         } else {
@@ -229,10 +223,9 @@ export default class APIManager {
 
   // --------------- Admin Dashboard ---------------
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static async getAdminDashboardStats(): Promise<DashboardStats> {
     const response = await API.get("/api/admin/dashboard/stats")
-      .catch((error: any) => {
+      .catch((error: AxiosError<{ error?: string }>) => {
         if (error.response?.status === 401) {
           throw new UnauthorizedError(error.response.data.error);
         } else {

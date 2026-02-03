@@ -57,6 +57,7 @@ const userSession = session({
     sameSite: "lax",
   },
   rolling: true,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   store: new PrismaSessionStore(prisma as any, {
     checkPeriod: 2 * 60 * 1000,
     dbRecordIdIsSessionId: true,
@@ -77,6 +78,7 @@ const adminSession = session({
     sameSite: "strict",
   },
   rolling: false, // Pas de renouvellement automatique pour admin
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   store: new PrismaSessionStore(prisma as any, {
     checkPeriod: 2 * 60 * 1000,
     dbRecordIdIsSessionId: true,

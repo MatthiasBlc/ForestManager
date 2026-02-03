@@ -34,7 +34,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         const loggedInUser = await APIManager.getLoggedInUser();
         setUser(loggedInUser);
-      } catch (err) {
+      } catch {
         // Not authenticated - this is expected
         setUser(null);
       } finally {
@@ -122,6 +122,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (!context) {

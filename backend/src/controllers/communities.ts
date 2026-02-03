@@ -207,7 +207,7 @@ export const createCommunity: RequestHandler<
 };
 
 
-interface UpdateCommunityParams {
+interface UpdateCommunityParams extends Record<string, string> {
   communityId: string;
 }
 
