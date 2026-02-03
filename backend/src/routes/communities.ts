@@ -1,6 +1,7 @@
 import express from "express";
 import * as CommunitiesController from "../controllers/communities";
 import * as InvitesController from "../controllers/invites";
+import * as MembersController from "../controllers/members";
 import { memberOf, requireCommunityRole } from "../middleware/community";
 
 const router = express.Router();
@@ -20,6 +21,28 @@ router.patch(
   memberOf,
   requireCommunityRole("MODERATOR"),
   CommunitiesController.updateCommunity
+);
+
+// =====================================
+// Member routes
+// =====================================
+
+// List community members (any member)
+router.get("/:communityId/members", memberOf, MembersController.getMembers);
+
+// Promote a member (MODERATOR only)
+router.patch(
+  "/:communityId/members/:userId",
+  memberOf,
+  requireCommunityRole("MODERATOR"),
+  MembersController.promoteMember
+);
+
+// Leave community (self) or kick member (MODERATOR)
+router.delete(
+  "/:communityId/members/:userId",
+  memberOf,
+  MembersController.removeMember
 );
 
 // =====================================

@@ -310,14 +310,14 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Log ActivityLog (INVITE_REJECTED)
 
 ### 3.3 Backend Members
-- [ ] Route GET /api/communities/:id/members
-- [ ] Route PATCH /api/communities/:id/members/:userId
-  - Promotion (admin only, no demote)
+- [x] Route GET /api/communities/:id/members
+- [x] Route PATCH /api/communities/:id/members/:userId
+  - Promotion (MODERATOR only, no demote)
   - Log ActivityLog (USER_PROMOTED)
-- [ ] Route DELETE /api/communities/:id/members/:userId
-  - Quitter (self) ou Retirer (admin kick)
-  - Validation: admin ne peut pas kick un admin
-  - Logique dernier admin (bloquer ou forcer promotion)
+- [x] Route DELETE /api/communities/:id/members/:userId
+  - Quitter (self) ou Retirer (MODERATOR kick)
+  - Validation: MODERATOR ne peut pas kick un MODERATOR
+  - Logique dernier MODERATOR (bloquer si autres membres)
   - Suppression communaute si dernier membre (cascade soft delete)
   - Log ActivityLog (USER_LEFT ou USER_KICKED)
 
@@ -349,7 +349,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 **Backend** (~50 tests):
 - [x] `communities.test.ts` - CRUD communautes (27 tests)
 - [x] `invitations.test.ts` - Systeme d'invitations (35 tests)
-- [ ] `members.test.ts` - Gestion membres, kick, promotion (~10 tests)
+- [x] `members.test.ts` - Gestion membres, kick, promotion (22 tests)
 
 **Frontend** (~30 tests):
 - [ ] `CommunitiesPage.test.tsx` - Liste communautes (6 tests)
@@ -620,8 +620,8 @@ Phase 8 (Finitions MVP)
 - [x] Un utilisateur voit ses invitations recues (backend)
 - [x] Un utilisateur peut accepter/refuser une invitation (backend)
 - [x] Un MODERATOR peut annuler une invitation (backend)
-- [ ] Un admin peut promouvoir un membre en admin
-- [ ] Un admin peut retirer un membre (mais pas un admin)
+- [x] Un MODERATOR peut promouvoir un membre en MODERATOR (backend)
+- [x] Un MODERATOR peut retirer un membre (mais pas un MODERATOR) (backend)
 - [ ] Un membre peut creer une recette dans une communaute
 - [ ] Une copie est creee dans son catalogue personnel
 - [ ] Un membre peut proposer une modification
@@ -741,10 +741,10 @@ Lors de l'ajout d'une nouvelle fonctionnalite, inclure les tests suivants:
 | Backend Auth | auth.test.ts, adminAuth.test.ts | ~30 |
 | Backend Admin API | adminTags, adminIngredients, adminFeatures, adminCommunities, adminDashboard, adminActivity | ~50 |
 | Backend User API | recipes.test.ts, tags.test.ts, ingredients.test.ts | ~41 |
-| Backend Communities | communities.test.ts, invitations.test.ts | ~62 |
+| Backend Communities | communities.test.ts, invitations.test.ts, members.test.ts | ~84 |
 | Frontend Contexts | AuthContext, AdminAuthContext | ~13 |
 | Frontend Auth | LoginModal, Modal, SignUpPage, ProtectedRoute, NavBar | ~25 |
 | Frontend Admin | AdminProtectedRoute, AdminLoginPage, AdminDashboardPage, AdminLayout | ~21 |
 | Frontend Recipes | RecipeCard, RecipeFilters, TagSelector, IngredientList | ~28 |
 | Frontend Pages | HomePage, RecipesPage, MainLayout, Sidebar | ~25 |
-| **Total** | | **~295** |
+| **Total** | | **~317** |
