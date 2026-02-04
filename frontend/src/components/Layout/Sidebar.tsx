@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
 import { FaBook, FaPlus, FaBars, FaHome } from "react-icons/fa";
 import { CommunityListItem } from "../../models/community";
@@ -9,6 +10,39 @@ interface SidebarProps {
   isCompact?: boolean;
   onToggleCompact?: () => void;
 }
+
+const PortalTooltip = ({ text, children }: { text: string; children: ReactNode }) => {
+  const [visible, setVisible] = useState(false);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+  const ref = useRef<HTMLDivElement>(null);
+
+  const show = () => {
+    if (ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      setPosition({
+        top: rect.top + rect.height / 2,
+        left: rect.right + 12,
+      });
+      setVisible(true);
+    }
+  };
+
+  return (
+    <div ref={ref} onMouseEnter={show} onMouseLeave={() => setVisible(false)}>
+      {children}
+      {visible &&
+        createPortal(
+          <div
+            className="fixed z-[100] px-2 py-1 text-xs bg-neutral text-neutral-content rounded shadow-lg whitespace-nowrap pointer-events-none"
+            style={{ top: position.top, left: position.left, transform: "translateY(-50%)" }}
+          >
+            {text}
+          </div>,
+          document.body
+        )}
+    </div>
+  );
+};
 
 const CommunityAvatar = ({
   community,
@@ -23,12 +57,13 @@ const CommunityAvatar = ({
 }) => {
   const initial = community.name.charAt(0).toUpperCase();
 
-  return (
+  const link = (
     <Link
       to={`/communities/${community.id}`}
       onClick={onClick}
-      className={`group flex items-center gap-3 ${isCompact ? "justify-center tooltip tooltip-right" : ""}`}
-      data-tip={isCompact ? community.name : undefined}
+      className={`group flex items-center gap-3 p-2 rounded-lg transition-colors ${
+        isActive ? "bg-base-300" : "hover:bg-base-300/50"
+      } ${isCompact ? "justify-center" : ""}`}
     >
       <div
         className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center text-lg font-bold transition-all duration-200 group-hover:rounded-xl ${
@@ -51,6 +86,12 @@ const CommunityAvatar = ({
       )}
     </Link>
   );
+
+  if (isCompact) {
+    return <PortalTooltip text={community.name}>{link}</PortalTooltip>;
+  }
+
+  return link;
 };
 
 const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProps) => {
@@ -136,8 +177,8 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
         <div className="border-t border-base-300" />
       </div>
 
-      {/* Communities */}
-      <div className={`flex-1 overflow-y-auto ${isCompact ? "p-2" : "p-3"}`}>
+      {/* Communities - uses PortalTooltip to avoid overflow clipping */}
+      <div className={`flex-1 overflow-y-auto overflow-x-hidden ${isCompact ? "p-2" : "p-3"}`}>
         {!isCompact && (
           <p className="text-xs font-semibold text-base-content/50 uppercase tracking-wider mb-2 px-2">
             Communities
@@ -146,33 +187,41 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
 
         <div className="space-y-1">
           {communities.map((community) => (
-            <div key={community.id} className={`p-1 rounded-lg transition-colors ${
-              isActive(`/communities/${community.id}`) ? "bg-base-300" : "hover:bg-base-300/50"
-            }`}>
-              <CommunityAvatar
-                community={community}
-                isActive={isActive(`/communities/${community.id}`)}
-                isCompact={isCompact}
-                onClick={onNavigate}
-              />
-            </div>
+            <CommunityAvatar
+              key={community.id}
+              community={community}
+              isActive={isActive(`/communities/${community.id}`)}
+              isCompact={isCompact}
+              onClick={onNavigate}
+            />
           ))}
         </div>
 
         {/* Create community */}
-        <Link
-          to="/communities/create"
-          onClick={onNavigate}
-          className={`flex items-center gap-3 p-2 rounded-lg transition-colors mt-2 hover:bg-base-300/50 ${
-            isCompact ? "justify-center tooltip tooltip-right" : ""
-          }`}
-          data-tip={isCompact ? "Create Community" : undefined}
-        >
-          <div className="flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center bg-base-300 text-primary hover:bg-primary hover:text-primary-content transition-all hover:rounded-xl border-2 border-dashed border-primary/30">
-            <FaPlus className="w-4 h-4" />
-          </div>
-          {!isCompact && <span className="text-sm font-medium text-primary">Create Community</span>}
-        </Link>
+        {isCompact ? (
+          <PortalTooltip text="Create Community">
+            <Link
+              to="/communities/create"
+              onClick={onNavigate}
+              className="flex items-center justify-center p-2 rounded-lg transition-colors mt-2 hover:bg-base-300/50"
+            >
+              <div className="flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center bg-base-300 text-primary hover:bg-primary hover:text-primary-content transition-all hover:rounded-xl border-2 border-dashed border-primary/30">
+                <FaPlus className="w-4 h-4" />
+              </div>
+            </Link>
+          </PortalTooltip>
+        ) : (
+          <Link
+            to="/communities/create"
+            onClick={onNavigate}
+            className="flex items-center gap-3 p-2 rounded-lg transition-colors mt-2 hover:bg-base-300/50"
+          >
+            <div className="flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center bg-base-300 text-primary hover:bg-primary hover:text-primary-content transition-all hover:rounded-xl border-2 border-dashed border-primary/30">
+              <FaPlus className="w-4 h-4" />
+            </div>
+            <span className="text-sm font-medium text-primary">Create Community</span>
+          </Link>
+        )}
       </div>
 
       {/* Footer */}
