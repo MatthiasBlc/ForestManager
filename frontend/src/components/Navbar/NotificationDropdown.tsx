@@ -12,6 +12,7 @@ const NotificationDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const lastSeenCountRef = useRef<number>(0);
 
@@ -62,13 +63,14 @@ const NotificationDropdown = () => {
   const handleAccept = async (invite: ReceivedInvite) => {
     try {
       setActionLoading(invite.id);
+      setActionError(null);
       const result = await APIManager.acceptInvite(invite.id);
       setInvites((prev) => prev.filter((i) => i.id !== invite.id));
       lastSeenCountRef.current = Math.max(0, lastSeenCountRef.current - 1);
       setIsOpen(false);
       navigate(`/communities/${result.community.id}`);
-    } catch {
-      // Error handling in notification is minimal
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Failed to accept invitation");
     } finally {
       setActionLoading(null);
     }
@@ -77,11 +79,12 @@ const NotificationDropdown = () => {
   const handleReject = async (invite: ReceivedInvite) => {
     try {
       setActionLoading(invite.id);
+      setActionError(null);
       await APIManager.rejectInvite(invite.id);
       setInvites((prev) => prev.filter((i) => i.id !== invite.id));
       lastSeenCountRef.current = Math.max(0, lastSeenCountRef.current - 1);
-    } catch {
-      // Error handling in notification is minimal
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Failed to reject invitation");
     } finally {
       setActionLoading(null);
     }
@@ -109,6 +112,12 @@ const NotificationDropdown = () => {
           <div className="px-4 py-3 border-b border-base-300">
             <p className="font-medium">Notifications</p>
           </div>
+
+          {actionError && (
+            <div className="px-4 py-2 bg-error/10 text-error text-sm">
+              {actionError}
+            </div>
+          )}
 
           <div className="max-h-80 overflow-y-auto">
             {invites.length > 0 ? (

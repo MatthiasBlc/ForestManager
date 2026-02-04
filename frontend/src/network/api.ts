@@ -15,7 +15,7 @@ API.interceptors.request.use((config) => {
 
 // Utility function to handle API errors safely
 function handleApiError(error: AxiosError<{ error?: string }>): never {
-  console.log(error);
+  console.error(error);
   if (!error.response) {
     throw new Error("Network error - please check your connection");
   }
@@ -77,12 +77,6 @@ export default class APIManager {
     const url = `/api/recipes${queryString ? `?${queryString}` : ""}`;
 
     const response = await API.get(url).catch(handleApiError);
-    return response.data;
-  }
-
-  // Legacy method for backwards compatibility
-  static async loadRecipes() {
-    const response = await this.getRecipes();
     return response.data;
   }
 

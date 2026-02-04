@@ -3,6 +3,10 @@ import { FaPaperPlane } from "react-icons/fa";
 import Modal from "../Modal";
 import APIManager from "../../network/api";
 
+const MAX_SUGGESTIONS = 5;
+const SEARCH_DEBOUNCE_MS = 300;
+const MIN_SEARCH_LENGTH = 3;
+
 interface InviteUserModalProps {
   communityId: string;
   onClose: () => void;
@@ -22,7 +26,7 @@ const InviteUserModal = ({ communityId, onClose, onInviteSent }: InviteUserModal
   const isEmail = identifier.includes("@");
 
   const searchUsers = useCallback(async (query: string) => {
-    if (query.length < 3 || query.includes("@")) {
+    if (query.length < MIN_SEARCH_LENGTH || query.includes("@")) {
       setSuggestions([]);
       setShowSuggestions(false);
       return;
@@ -31,7 +35,7 @@ const InviteUserModal = ({ communityId, onClose, onInviteSent }: InviteUserModal
     try {
       const results = await APIManager.searchUsers(query);
       setSuggestions(results);
-      setShowSuggestions(results.length > 0 && results.length <= 5);
+      setShowSuggestions(results.length > 0 && results.length <= MAX_SUGGESTIONS);
     } catch {
       setSuggestions([]);
       setShowSuggestions(false);
@@ -40,8 +44,8 @@ const InviteUserModal = ({ communityId, onClose, onInviteSent }: InviteUserModal
 
   useEffect(() => {
     const trimmed = identifier.trim();
-    if (trimmed.length >= 3 && !isEmail) {
-      const timer = setTimeout(() => searchUsers(trimmed), 300);
+    if (trimmed.length >= MIN_SEARCH_LENGTH && !isEmail) {
+      const timer = setTimeout(() => searchUsers(trimmed), SEARCH_DEBOUNCE_MS);
       return () => clearTimeout(timer);
     } else {
       setSuggestions([]);
@@ -115,7 +119,7 @@ const InviteUserModal = ({ communityId, onClose, onInviteSent }: InviteUserModal
               setTimeout(() => setShowSuggestions(false), 200);
             }}
             onFocus={() => {
-              if (suggestions.length > 0 && suggestions.length <= 5 && !isEmail) {
+              if (suggestions.length > 0 && suggestions.length <= MAX_SUGGESTIONS && !isEmail) {
                 setShowSuggestions(true);
               }
             }}

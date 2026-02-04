@@ -81,11 +81,11 @@ export const updateProfile: RequestHandler<unknown, unknown, UpdateProfileBody> 
 
     if (newPassword) {
       if (!currentPassword) {
-        throw createHttpError(400, "Current password is required to change password");
+        throw createHttpError(400, "AUTH_010: Current password is required to change password");
       }
       const passwordMatch = await bcrypt.compare(currentPassword, user.password);
       if (!passwordMatch) {
-        throw createHttpError(401, "Current password is incorrect");
+        throw createHttpError(401, "AUTH_011: Current password is incorrect");
       }
       if (newPassword.length < MIN_PASSWORD_LENGTH) {
         throw createHttpError(400, `AUTH_005: Password must be at least ${MIN_PASSWORD_LENGTH} characters`);

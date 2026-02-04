@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FaSave } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext";
 import APIManager from "../network/api";
@@ -18,6 +18,25 @@ const ProfilePage = () => {
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const profileTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const passwordTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => {
+    return () => {
+      if (profileTimerRef.current) clearTimeout(profileTimerRef.current);
+      if (passwordTimerRef.current) clearTimeout(passwordTimerRef.current);
+    };
+  }, []);
+
+  const showProfileSuccess = (msg: string) => {
+    setProfileSuccess(msg);
+    profileTimerRef.current = setTimeout(() => setProfileSuccess(null), 3000);
+  };
+
+  const showPasswordSuccess = (msg: string) => {
+    setPasswordSuccess(msg);
+    passwordTimerRef.current = setTimeout(() => setPasswordSuccess(null), 3000);
+  };
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +56,7 @@ const ProfilePage = () => {
       setProfileLoading(true);
       await APIManager.updateProfile(updates);
       await refreshUser();
-      setProfileSuccess("Profile updated successfully");
+      showProfileSuccess("Profile updated successfully");
     } catch (err) {
       setProfileError(err instanceof Error ? err.message : "Failed to update profile");
     } finally {
@@ -61,7 +80,7 @@ const ProfilePage = () => {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      setPasswordSuccess("Password changed successfully");
+      showPasswordSuccess("Password changed successfully");
     } catch (err) {
       setPasswordError(err instanceof Error ? err.message : "Failed to change password");
     } finally {

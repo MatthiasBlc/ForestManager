@@ -27,8 +27,8 @@ const CommunityAvatar = ({
     <Link
       to={`/communities/${community.id}`}
       onClick={onClick}
-      className={`group flex items-center gap-3 ${isCompact ? "justify-center" : ""}`}
-      title={isCompact ? community.name : undefined}
+      className={`group flex items-center gap-3 ${isCompact ? "justify-center tooltip tooltip-right" : ""}`}
+      data-tip={isCompact ? community.name : undefined}
     >
       <div
         className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center text-lg font-bold transition-all duration-200 group-hover:rounded-xl ${
@@ -102,8 +102,8 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
           onClick={onNavigate}
           className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
             isActive("/dashboard") ? "bg-base-300" : "hover:bg-base-300/50"
-          } ${isCompact ? "justify-center" : ""}`}
-          title={isCompact ? "Dashboard" : undefined}
+          } ${isCompact ? "justify-center tooltip tooltip-right" : ""}`}
+          data-tip={isCompact ? "Dashboard" : undefined}
         >
           <div className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
             isActive("/dashboard") ? "bg-primary text-primary-content rounded-xl" : "bg-base-300 text-base-content/70"
@@ -119,8 +119,8 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
           onClick={onNavigate}
           className={`flex items-center gap-3 p-2 rounded-lg transition-colors mt-1 ${
             isActive("/recipes") ? "bg-base-300" : "hover:bg-base-300/50"
-          } ${isCompact ? "justify-center" : ""}`}
-          title={isCompact ? "My Recipes" : undefined}
+          } ${isCompact ? "justify-center tooltip tooltip-right" : ""}`}
+          data-tip={isCompact ? "My Recipes" : undefined}
         >
           <div className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
             isActive("/recipes") ? "bg-primary text-primary-content rounded-xl" : "bg-base-300 text-base-content/70"
@@ -164,9 +164,9 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
           to="/communities/create"
           onClick={onNavigate}
           className={`flex items-center gap-3 p-2 rounded-lg transition-colors mt-2 hover:bg-base-300/50 ${
-            isCompact ? "justify-center" : ""
+            isCompact ? "justify-center tooltip tooltip-right" : ""
           }`}
-          title={isCompact ? "Create Community" : undefined}
+          data-tip={isCompact ? "Create Community" : undefined}
         >
           <div className="flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center bg-base-300 text-primary hover:bg-primary hover:text-primary-content transition-all hover:rounded-xl border-2 border-dashed border-primary/30">
             <FaPlus className="w-4 h-4" />
