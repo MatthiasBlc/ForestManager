@@ -33,7 +33,7 @@ describe('InviteCard', () => {
     expect(screen.getByText('Reject')).toBeInTheDocument();
   });
 
-  it('should call onRespond after accepting', async () => {
+  it('should navigate to community after accepting', async () => {
     const user = userEvent.setup();
     renderWithUserAuth(
       <InviteCard invite={mockReceivedInvites[0]} onRespond={mockOnRespond} />
@@ -42,7 +42,8 @@ describe('InviteCard', () => {
     await user.click(screen.getByText('Accept'));
 
     await waitFor(() => {
-      expect(mockOnRespond).toHaveBeenCalled();
+      // Accept navigates to the community page instead of calling onRespond
+      expect(mockOnRespond).not.toHaveBeenCalled();
     });
   });
 
