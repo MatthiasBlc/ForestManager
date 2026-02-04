@@ -370,15 +370,15 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ## Phase 4: Recettes Communautaires
 
 ### 4.1 Backend
-- [ ] Route POST /api/communities/:id/recipes
+- [x] Route POST /api/communities/:id/recipes
   - Creation recette dans catalogue personnel (communityId: null)
   - Creation copie dans communaute (communityId: X)
   - Lien originRecipeId vers recette perso
   - Log ActivityLog (RECIPE_CREATED)
-- [ ] Route GET /api/communities/:id/recipes
+- [x] Route GET /api/communities/:id/recipes
   - Liste recettes communaute
   - Pagination, filtre tags, recherche
-- [ ] Modification routes recipes/:id
+- [x] Modification routes recipes/:id
   - Gestion recettes communautaires (verification membership)
 
 ### 4.2 Frontend
@@ -630,8 +630,8 @@ Phase 8 (Finitions MVP)
 - [x] Un MODERATOR peut annuler une invitation (backend)
 - [x] Un MODERATOR peut promouvoir un membre en MODERATOR (backend)
 - [x] Un MODERATOR peut retirer un membre (mais pas un MODERATOR) (backend)
-- [ ] Un membre peut creer une recette dans une communaute
-- [ ] Une copie est creee dans son catalogue personnel
+- [x] Un membre peut creer une recette dans une communaute
+- [x] Une copie est creee dans son catalogue personnel
 - [ ] Un membre peut proposer une modification
 - [ ] Le createur peut accepter (mise a jour des deux recettes) ou refuser (variante)
 - [ ] Les variantes sont visibles dans un dropdown
@@ -748,11 +748,11 @@ Lors de l'ajout d'une nouvelle fonctionnalite, inclure les tests suivants:
 |-----------|----------|-------|
 | Backend Auth | auth.test.ts, adminAuth.test.ts | ~30 |
 | Backend Admin API | adminTags, adminIngredients, adminFeatures, adminCommunities, adminDashboard, adminActivity | ~50 |
-| Backend User API | recipes.test.ts, tags.test.ts, ingredients.test.ts | ~41 |
-| Backend Communities | communities.test.ts, invitations.test.ts, members.test.ts | ~84 |
+| Backend User API | recipes.test.ts, tags.test.ts, ingredients.test.ts | ~42 |
+| Backend Communities | communities.test.ts, communityRecipes.test.ts, invitations.test.ts, members.test.ts | ~112 |
 | Frontend Contexts | AuthContext, AdminAuthContext | ~13 |
 | Frontend Auth | LoginModal, Modal, SignUpPage, ProtectedRoute, NavBar | ~25 |
 | Frontend Admin | AdminProtectedRoute, AdminLoginPage, AdminDashboardPage, AdminLayout | ~21 |
 | Frontend Recipes | RecipeCard, RecipeFilters, TagSelector, IngredientList | ~28 |
 | Frontend Pages | HomePage, RecipesPage, MainLayout, Sidebar | ~25 |
-| **Total** | | **~317** |
+| **Total** | | **~346** |

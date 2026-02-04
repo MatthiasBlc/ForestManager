@@ -47,7 +47,7 @@ AUTH_001 (non auth) | COMMUNITY_001-006 | RECIPE_001-002 | INVITE_001-003 | ADMI
 
 ## Regle: maintenir `.claude/` a jour
 
-Apres chaque modification (nouveau fichier, endpoint, migration, test, phase, branche), mettre a jour les fichiers `.claude/context/` concernes avant de terminer la session.
+Apres chaque modification (nouveau fichier, endpoint, migration, test, phase, branche), mettre a jour les fichiers `.claude/context/` concernes **ET `docs/DEVELOPMENT_ROADMAP.md`** (cocher les taches, maj checklist MVP, maj compteur tests) avant de terminer la session.
 Si une tache est en cours et que les tokens arrivent a leur limite, generer `.claude/context/RESUME.md` avec: tache en cours, etapes faites, etapes restantes, fichiers modifies, et tout contexte necessaire pour reprendre sans perte.
 
 ### PROGRESS.md : garder le fichier compact
