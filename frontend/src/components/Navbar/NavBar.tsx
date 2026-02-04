@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import NavBarLoggedInView from "./NavBarLoggedInView/NavBarLoggedInView";
 import NavBarLoggedOutView from "./NavBarLoggedOutView/NavBarLoggedOutView";
+import NotificationDropdown from "./NotificationDropdown";
 
 const NavBar = () => {
   const { user } = useAuth();
@@ -13,8 +14,15 @@ const NavBar = () => {
           Forest Manager
         </Link>
       </div>
-      <div className="flex-none gap-2">
-        {user ? <NavBarLoggedInView /> : <NavBarLoggedOutView />}
+      <div className="flex-none gap-1">
+        {user ? (
+          <>
+            <NotificationDropdown />
+            <NavBarLoggedInView />
+          </>
+        ) : (
+          <NavBarLoggedOutView />
+        )}
       </div>
     </div>
   );

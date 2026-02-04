@@ -63,13 +63,20 @@ DELETE /api/communities/:communityId/invites/:inviteId      # cancel (MODERATOR)
 ```
 Controller: `controllers/invites.ts`
 
+## Users (/api/users) - requireAuth
+```
+GET   /api/users/search               # search by username prefix (?q=)
+PATCH /api/users/me                    # update profile (username, email, password)
+GET   /api/users/me/invites            # received invitations (?status=)
+```
+Controller: `controllers/users.ts`, `controllers/invites.ts` | Route: `routes/users.ts`
+
 ## User Invitations
 ```
-GET  /api/users/me/invites              # received invitations (?status=)
 POST /api/invites/:inviteId/accept      # accept
 POST /api/invites/:inviteId/reject      # reject
 ```
-Controller: `controllers/invites.ts` | Routes: `routes/users.ts`, `routes/invites.ts`
+Controller: `controllers/invites.ts` | Route: `routes/invites.ts`
 
 ---
 

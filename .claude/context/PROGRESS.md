@@ -11,31 +11,44 @@
 | 3.1 | Communities CRUD backend | DONE |
 | 3.2 | Invitations backend | DONE |
 | 3.3 | Members backend (list, promote, kick, leave) | DONE |
+| 3.4 | Frontend Communities (pages, composants, sidebar Discord-style) | DONE |
+| 3.5 | Frontend Invitations (pages, composants, notifications) | DONE |
+| 3.6 | Frontend User Management (profil, menu, search) | DONE |
 
-## En cours
+## Detail Phase 3.4-3.6 (COMPLETE)
 
-**Phase 3.4-3.5**: Frontend Communities & Invitations
+### 3.4 Frontend Communities
+- [x] Page liste communautes (CommunitiesPage)
+- [x] Page creation communaute (CommunityCreatePage)
+- [x] Page detail communaute avec onglets (CommunityDetailPage)
+- [x] Page edition communaute MODERATOR only (CommunityEditPage)
+- [x] Composant CommunityCard
+- [x] Composant MembersList (promotion, retrait, leave)
+- [x] Dashboard page (communautes + recettes, page d'accueil)
+- [x] Sidebar Discord-style avec avatars communautes (initiales)
+- [x] Fix leave community (gestion 410, redirect, confirmation explicite)
+- [x] Seed representatif (5 users, 3 communautes, 17 tags, 36 ingredients, 11 recettes)
 
-### 3.4 Frontend Communities (A FAIRE)
-- [ ] Page liste mes communautes
-- [ ] Page creation communaute
-- [ ] Page detail communaute (onglets: Recettes, Membres, Invitations, Activite)
-- [ ] Composant MembersList (promotion, retrait)
-- [ ] Bouton quitter
+### 3.5 Frontend Invitations
+- [x] Page invitations recues (InvitationsPage)
+- [x] Dropdown notifications dans navbar (NotificationDropdown)
+- [x] Carte invitation avec Accept/Reject + redirect (InviteCard)
+- [x] Modal invitation avec autocomplete username (InviteUserModal)
+- [x] Liste invitations envoyees (SentInvitesList)
 
-### 3.5 Frontend Invitations (A FAIRE)
-- [ ] Page/Section invitations recues
-- [ ] Badge notification nouvelles invitations
-- [ ] Carte invitation (Accepter/Refuser)
-- [ ] Modal recherche utilisateur pour inviter
-- [ ] Liste invitations envoyees (onglet admin communaute)
-- [ ] Bouton annuler invitation
+### 3.6 Frontend User Management
+- [x] User menu dropdown (icone profil, navbar)
+- [x] Page profil (modification username, email, mot de passe)
+- [x] Backend PATCH /api/users/me
+- [x] Backend GET /api/users/search (autocomplete usernames)
 
-### Tests Phase 3 Frontend (A FAIRE)
-- [ ] CommunitiesPage.test.tsx (~6 tests)
-- [ ] CommunityDetailPage.test.tsx (~8 tests)
-- [ ] InvitationsSection.test.tsx (~8 tests)
-- [ ] MembersList.test.tsx (~8 tests)
+### Tests Phase 3 Frontend
+- [x] CommunitiesPage.test.tsx (7 tests)
+- [x] CommunityDetailPage.test.tsx (8 tests)
+- [x] InviteCard.test.tsx (5 tests)
+- [x] MembersList.test.tsx (6 tests)
+- [x] InviteUserModal.test.tsx (5 tests)
+- [x] MSW handlers pour communities, members, invitations
 
 ## Prochaines phases
 
@@ -48,19 +61,10 @@
 | 8 | Finitions MVP (erreurs, loading, empty states) | Phases 4-7 |
 | 9 | Post-MVP (analytics, notifications, PWA, admin pages) | Phase 8 |
 
-## Fichiers non commites (travail en cours)
-
-- `backend/src/controllers/members.ts` - NEW: controleur membres
-- `backend/src/__tests__/integration/members.test.ts` - NEW: 22 tests membres
-- `backend/src/routes/communities.ts` - MODIFIED: routes membres/invites
-- `docs/DEVELOPMENT_ROADMAP.md` - MODIFIED: mise a jour avancement
-- `.claude/CLAUDE.md` - MODIFIED: restructuration contexte
-- `.claude/context/` - NEW: fichiers de contexte (PROGRESS, TESTS, API_MAP, DB_MODELS, FILE_MAP)
-
 ## Maintenance technique en attente
 
 - [ ] Fix 3 vulnerabilites npm "high severity"
-- [ ] Migrer otplib v12 → v13
+- [ ] Migrer otplib v12 -> v13
 - [ ] Mettre a jour ESLint (v8.57.1 deprecie)
 - [ ] Migrer config Prisma vers prisma.config.ts (deprecie Prisma 7)
 - [ ] Remplacer `npm prune --production` par `--omit=dev` dans Dockerfile

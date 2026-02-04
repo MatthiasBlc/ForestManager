@@ -40,7 +40,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~317 tests)
+## Inventaire des tests (~352 tests)
 
 ### Backend Integration (14 fichiers, ~205 tests)
 
@@ -61,7 +61,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | adminDashboard.test.ts | Stats dashboard | 4 |
 | adminActivity.test.ts | Logs activite | 4 |
 
-### Frontend Unit (19 fichiers, ~112 tests)
+### Frontend Unit (24 fichiers, ~147 tests)
 
 | Fichier | Composant | Tests |
 |---------|-----------|-------|
@@ -84,6 +84,11 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | MainLayout.test.tsx | Layout principal | 6 |
 | Sidebar.test.tsx | Sidebar navigation | 10 |
 | HomePage.test.tsx | Page accueil | 6 |
+| CommunitiesPage.test.tsx | Page liste communautes | 7 |
+| CommunityDetailPage.test.tsx | Page detail communaute | 8 |
+| InviteCard.test.tsx | Carte invitation | 5 |
+| MembersList.test.tsx | Liste membres | 6 |
+| InviteUserModal.test.tsx | Modal invitation | 5 |
 
 ## Couverture cible
 

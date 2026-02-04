@@ -6,7 +6,7 @@ const HomePage = () => {
 
   // Redirect authenticated users to recipes
   if (!isLoading && user) {
-    return <Navigate to="/recipes" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   // Show loading while checking auth status

@@ -11,6 +11,7 @@ interface AuthContextType {
   login: (username: string, password: string) => Promise<void>;
   signUp: (username: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   openLoginModal: () => void;
   closeLoginModal: () => void;
   clearError: () => void;
@@ -88,6 +89,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
+  const refreshUser = useCallback(async (): Promise<void> => {
+    try {
+      const loggedInUser = await APIManager.getLoggedInUser();
+      setUser(loggedInUser);
+    } catch {
+      setUser(null);
+    }
+  }, []);
+
   const openLoginModal = useCallback(() => {
     setError(null);
     setShowLoginModal(true);
@@ -110,6 +120,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     login,
     signUp,
     logout,
+    refreshUser,
     openLoginModal,
     closeLoginModal,
     clearError,

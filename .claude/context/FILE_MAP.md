@@ -11,7 +11,8 @@ controllers/
 ├── invites.ts         # create, list, cancel, accept, reject invitations
 ├── recipes.ts         # CRUD recettes personnelles
 ├── tags.ts            # autocomplete tags
-└── ingredients.ts     # autocomplete ingredients
+├── ingredients.ts     # autocomplete ingredients
+└── users.ts           # search users, update profile
 ```
 
 ### Routes (endpoints API)
@@ -23,7 +24,7 @@ routes/
 ├── recipes.ts         # /api/recipes/*
 ├── tags.ts            # /api/tags
 ├── ingredients.ts     # /api/ingredients
-└── users.ts           # /api/users/me/invites
+└── users.ts           # /api/users/search, /api/users/me, /api/users/me/invites
 ```
 
 ### Middleware
@@ -100,10 +101,17 @@ __tests__/
 ### Pages
 ```
 pages/
-├── HomePage.tsx              # Accueil
+├── HomePage.tsx              # Accueil (redirect vers dashboard si connecte)
+├── DashboardPage.tsx         # Dashboard (communautes + recettes)
 ├── RecipesPage.tsx           # Liste recettes
 ├── RecipeDetailPage.tsx      # Detail recette
 ├── RecipeFormPage.tsx        # Creation/edition recette
+├── CommunitiesPage.tsx       # Liste communautes user
+├── CommunityCreatePage.tsx   # Creation communaute
+├── CommunityDetailPage.tsx   # Detail communaute (onglets)
+├── CommunityEditPage.tsx     # Edition communaute (MODERATOR)
+├── InvitationsPage.tsx       # Invitations recues
+├── ProfilePage.tsx           # Profil utilisateur (edit username/email/password)
 ├── SignUpPage.tsx            # Inscription
 ├── PrivacyPage.tsx           # Politique confidentialite
 ├── NotFoundPage.tsx          # 404
@@ -120,8 +128,17 @@ components/
 │   └── Sidebar.tsx           # Sidebar navigation communautes
 ├── Navbar/
 │   ├── NavBar.tsx            # Barre navigation
-│   ├── NavBarLoggedInView/   # Nav connecte
+│   ├── NotificationDropdown.tsx # Dropdown notifications (invitations)
+│   ├── NavBarLoggedInView/   # Nav connecte (icone user + dropdown menu)
 │   └── NavBarLoggedOutView/  # Nav deconnecte
+├── communities/
+│   ├── CommunityCard.tsx     # Carte communaute (grille)
+│   └── MembersList.tsx       # Liste membres (promote, kick, leave)
+├── invitations/
+│   ├── InviteCard.tsx        # Carte invitation recue (accept/reject)
+│   ├── InviteUserModal.tsx   # Modal inviter un utilisateur
+│   ├── SentInvitesList.tsx   # Liste invitations envoyees
+│   └── InvitationBadge.tsx   # Badge compteur invitations PENDING
 ├── recipes/
 │   ├── RecipeCard.tsx        # Carte recette (grille)
 │   ├── RecipeFilters.tsx     # Filtres search/tags
@@ -153,9 +170,10 @@ network/
 ### Models & Types
 ```
 models/
-├── user.ts                   # User, Community types
+├── user.ts                   # User types
 ├── recipe.ts                 # Recipe, Tag, Ingredient types
 ├── tag.ts                    # Tag types
+├── community.ts              # Community, Member, Invite types
 └── admin.ts                  # AdminUser types
 ```
 
@@ -196,7 +214,14 @@ __tests__/
     ├── RecipesPage.test.tsx
     ├── MainLayout.test.tsx
     ├── Sidebar.test.tsx
-    └── HomePage.test.tsx
+    ├── HomePage.test.tsx
+    ├── pages/
+    │   ├── CommunitiesPage.test.tsx
+    │   └── CommunityDetailPage.test.tsx
+    └── components/
+        ├── InviteCard.test.tsx
+        ├── MembersList.test.tsx
+        └── InviteUserModal.test.tsx
 ```
 
 ---

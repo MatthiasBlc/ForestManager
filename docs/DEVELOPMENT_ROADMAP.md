@@ -322,22 +322,29 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Log ActivityLog (USER_LEFT ou USER_KICKED)
 
 ### 3.4 Frontend Communities
-- [ ] Page liste mes communautes
-- [ ] Page creation communaute
-- [ ] Page detail communaute
-  - Onglets: Recettes, Membres, Invitations (admin), Activite
-- [ ] Composant MembersList
-  - Bouton promotion (admin only, sur MEMBER)
-  - Bouton retirer (admin only, sur MEMBER)
-- [ ] Bouton quitter
+- [x] Page liste mes communautes (CommunitiesPage)
+- [x] Page creation communaute (CommunityCreatePage)
+- [x] Page detail communaute avec onglets Membres/Invitations/Recipes
+- [x] Page edition communaute (CommunityEditPage, MODERATOR only)
+- [x] Composant MembersList (promotion, retrait, leave)
+- [x] Dashboard page (communautes + recettes, page d'accueil authentifiee)
+- [x] Sidebar Discord-style avec avatars communautes (initiales)
+- [x] Correction bug leave community (gestion 410, redirect)
 
-### 3.5 Frontend Invitations (NOUVEAU)
-- [ ] Page/Section invitations recues (/invites ou dans header)
-- [ ] Badge notification nouvelles invitations
-- [ ] Carte invitation avec boutons Accepter/Refuser
-- [ ] Modal recherche utilisateur pour inviter
-- [ ] Liste invitations envoyees (onglet admin)
-- [ ] Bouton annuler invitation
+### 3.5 Frontend Invitations
+- [x] Page invitations recues (InvitationsPage)
+- [x] Badge notification (InvitationBadge)
+- [x] Carte invitation avec Accept/Reject (InviteCard)
+- [x] Modal recherche utilisateur avec autocomplete (InviteUserModal)
+- [x] Liste invitations envoyees (SentInvitesList)
+- [x] Dropdown notifications dans navbar (NotificationDropdown)
+- [x] Redirect vers communaute apres acceptation invitation
+
+### 3.6 Frontend User Management
+- [x] User menu (icone profil + dropdown dans navbar)
+- [x] Page profil (modification username, email, mot de passe)
+- [x] Backend PATCH /api/users/me (mise a jour profil)
+- [x] Backend GET /api/users/search (autocomplete usernames)
 
 ### Livrables
 - Gestion complete des communautes
@@ -351,11 +358,12 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] `invitations.test.ts` - Systeme d'invitations (35 tests)
 - [x] `members.test.ts` - Gestion membres, kick, promotion (22 tests)
 
-**Frontend** (~30 tests):
-- [ ] `CommunitiesPage.test.tsx` - Liste communautes (6 tests)
-- [ ] `CommunityDetailPage.test.tsx` - Detail communaute (8 tests)
-- [ ] `InvitationsSection.test.tsx` - Gestion invitations (8 tests)
-- [ ] `MembersList.test.tsx` - Liste membres (8 tests)
+**Frontend** (~31 tests):
+- [x] `CommunitiesPage.test.tsx` - Liste communautes (7 tests)
+- [x] `CommunityDetailPage.test.tsx` - Detail communaute (8 tests)
+- [x] `InviteCard.test.tsx` - Carte invitation (5 tests)
+- [x] `MembersList.test.tsx` - Liste membres (6 tests)
+- [x] `InviteUserModal.test.tsx` - Modal invitation (5 tests)
 
 ---
 
