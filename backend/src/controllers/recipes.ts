@@ -138,10 +138,26 @@ export const getRecipe: RequestHandler = async (req, res, next) => {
         createdAt: true,
         updatedAt: true,
         creatorId: true,
+        communityId: true,
+        originRecipeId: true,
+        isVariant: true,
+        sharedFromCommunityId: true,
         creator: {
           select: {
             id: true,
             username: true,
+          },
+        },
+        community: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        sharedFromCommunity: {
+          select: {
+            id: true,
+            name: true,
           },
         },
         tags: {
@@ -177,8 +193,25 @@ export const getRecipe: RequestHandler = async (req, res, next) => {
       throw createHttpError(404, "RECIPE_001: Recipe not found");
     }
 
-    if (recipe.creatorId !== authenticatedUserId) {
-      throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
+    // Verification d'acces selon le type de recette
+    if (recipe.communityId === null) {
+      // Recette personnelle : seul le createur peut y acceder
+      if (recipe.creatorId !== authenticatedUserId) {
+        throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
+      }
+    } else {
+      // Recette communautaire : l'utilisateur doit etre membre de la communaute
+      const membership = await prisma.userCommunity.findFirst({
+        where: {
+          userId: authenticatedUserId,
+          communityId: recipe.communityId,
+          deletedAt: null,
+        },
+      });
+
+      if (!membership) {
+        throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
+      }
     }
 
     const responseData = {
@@ -190,6 +223,12 @@ export const getRecipe: RequestHandler = async (req, res, next) => {
       updatedAt: recipe.updatedAt,
       creatorId: recipe.creatorId,
       creator: recipe.creator,
+      communityId: recipe.communityId,
+      community: recipe.community,
+      originRecipeId: recipe.originRecipeId,
+      isVariant: recipe.isVariant,
+      sharedFromCommunityId: recipe.sharedFromCommunityId,
+      sharedFromCommunity: recipe.sharedFromCommunity,
       tags: recipe.tags.map((rt) => rt.tag),
       ingredients: recipe.ingredients.map((ri) => ({
         id: ri.id,
@@ -391,8 +430,28 @@ export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRec
       throw createHttpError(404, "RECIPE_001: Recipe not found");
     }
 
-    if (recipe.creatorId !== authenticatedUserId) {
-      throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
+    if (recipe.communityId === null) {
+      // Recette personnelle : seul le createur peut modifier
+      if (recipe.creatorId !== authenticatedUserId) {
+        throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
+      }
+    } else {
+      // Recette communautaire : createur + membre de la communaute
+      if (recipe.creatorId !== authenticatedUserId) {
+        throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
+      }
+
+      const membership = await prisma.userCommunity.findFirst({
+        where: {
+          userId: authenticatedUserId,
+          communityId: recipe.communityId,
+          deletedAt: null,
+        },
+      });
+
+      if (!membership) {
+        throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
+      }
     }
 
     const updatedRecipe = await prisma.$transaction(async (tx) => {
@@ -539,8 +598,28 @@ export const deleteRecipe: RequestHandler = async (req, res, next) => {
       throw createHttpError(404, "RECIPE_001: Recipe not found");
     }
 
-    if (recipe.creatorId !== authenticatedUserId) {
-      throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
+    if (recipe.communityId === null) {
+      // Recette personnelle : seul le createur peut supprimer
+      if (recipe.creatorId !== authenticatedUserId) {
+        throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
+      }
+    } else {
+      // Recette communautaire : createur + membre de la communaute
+      if (recipe.creatorId !== authenticatedUserId) {
+        throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
+      }
+
+      const membership = await prisma.userCommunity.findFirst({
+        where: {
+          userId: authenticatedUserId,
+          communityId: recipe.communityId,
+          deletedAt: null,
+        },
+      });
+
+      if (!membership) {
+        throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
+      }
     }
 
     await prisma.recipe.update({

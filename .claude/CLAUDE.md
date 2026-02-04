@@ -38,7 +38,7 @@ npx prisma studio              # DB GUI :5555
 
 ## Phase actuelle
 
-**Phase 3** (Communautes & Invitations) - Backend 3.1-3.3 COMPLETE, Frontend 3.4-3.5 A FAIRE.
+**Phase 4** (Recettes communautaires) - Backend 4.1 COMPLETE, Frontend 4.2 A FAIRE.
 Voir `.claude/context/PROGRESS.md` pour le detail.
 
 ## Codes erreur
@@ -49,6 +49,12 @@ AUTH_001 (non auth) | COMMUNITY_001-006 | RECIPE_001-002 | INVITE_001-003 | ADMI
 
 Apres chaque modification (nouveau fichier, endpoint, migration, test, phase, branche), mettre a jour les fichiers `.claude/context/` concernes avant de terminer la session.
 Si une tache est en cours et que les tokens arrivent a leur limite, generer `.claude/context/RESUME.md` avec: tache en cours, etapes faites, etapes restantes, fichiers modifies, et tout contexte necessaire pour reprendre sans perte.
+
+### PROGRESS.md : garder le fichier compact
+- Le tableau des phases completees = 1 ligne par phase, suffisant comme historique
+- Section "Phase en cours" : detail uniquement pour la phase active (checklist, sous-etapes)
+- **Quand une phase est terminee** : supprimer sa section de detail, ajouter la ligne au tableau, c'est tout
+- Le detail des anciennes phases reste tracable via git log et les docs (DEVELOPMENT_ROADMAP, etc.)
 
 ## Contexte approfondi (lire selon le besoin)
 

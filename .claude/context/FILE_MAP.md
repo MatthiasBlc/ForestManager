@@ -7,9 +7,10 @@
 controllers/
 ├── auth.ts            # signup, login, logout, me
 ├── communities.ts     # CRUD communautes
+├── communityRecipes.ts # create, list recettes communautaires
 ├── members.ts         # list, promote, kick/leave membres
 ├── invites.ts         # create, list, cancel, accept, reject invitations
-├── recipes.ts         # CRUD recettes personnelles
+├── recipes.ts         # CRUD recettes (perso + communautaires via detail/update/delete)
 ├── tags.ts            # autocomplete tags
 ├── ingredients.ts     # autocomplete ingredients
 └── users.ts           # search users, update profile
@@ -83,6 +84,7 @@ __tests__/
     ├── tags.test.ts
     ├── ingredients.test.ts
     ├── communities.test.ts
+    ├── communityRecipes.test.ts
     ├── invitations.test.ts
     ├── members.test.ts
     ├── adminAuth.test.ts
