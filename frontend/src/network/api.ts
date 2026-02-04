@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "axios";
-import { RecipeDetail, RecipesResponse, TagSearchResult, IngredientSearchResult } from "../models/recipe";
+import { RecipeDetail, RecipesResponse, CommunityRecipesResponse, TagSearchResult, IngredientSearchResult } from "../models/recipe";
 import { User } from "../models/user";
 import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats } from "../models/admin";
 import { CommunityListItem, CommunityDetail, CommunityMember, CommunityInvite, ReceivedInvite } from "../models/community";
@@ -110,6 +110,29 @@ export default class APIManager {
   static async deleteRecipe(recipeId: string) {
     const response = await API.delete("/api/recipes/" + recipeId).catch(handleApiError);
     return response.data;
+  }
+
+
+  // --------------- Community Recipes ---------------
+
+  static async getCommunityRecipes(communityId: string, params: GetRecipesParams = {}): Promise<CommunityRecipesResponse> {
+    const queryParams = new URLSearchParams();
+    if (params.limit) queryParams.set("limit", params.limit.toString());
+    if (params.offset) queryParams.set("offset", params.offset.toString());
+    if (params.tags && params.tags.length > 0) queryParams.set("tags", params.tags.join(","));
+    if (params.ingredients && params.ingredients.length > 0) queryParams.set("ingredients", params.ingredients.join(","));
+    if (params.search) queryParams.set("search", params.search);
+
+    const queryString = queryParams.toString();
+    const url = `/api/communities/${communityId}/recipes${queryString ? `?${queryString}` : ""}`;
+
+    const response = await API.get(url).catch(handleApiError);
+    return response.data;
+  }
+
+  static async createCommunityRecipe(communityId: string, recipe: RecipeInput): Promise<RecipeDetail> {
+    const response = await API.post(`/api/communities/${communityId}/recipes`, JSON.stringify(recipe)).catch(handleApiError);
+    return response.data.community;
   }
 
 

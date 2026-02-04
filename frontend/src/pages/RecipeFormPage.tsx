@@ -13,7 +13,7 @@ interface FormData {
 }
 
 const RecipeFormPage = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id, communityId } = useParams<{ id: string; communityId: string }>();
   const navigate = useNavigate();
   const isEditing = Boolean(id);
 
@@ -84,6 +84,9 @@ const RecipeFormPage = () => {
       if (isEditing && id) {
         await APIManager.updateRecipe(id, recipeData);
         navigate(`/recipes/${id}`);
+      } else if (communityId) {
+        await APIManager.createCommunityRecipe(communityId, recipeData);
+        navigate(`/communities/${communityId}`);
       } else {
         const newRecipe = await APIManager.createRecipe(recipeData);
         navigate(`/recipes/${newRecipe.id}`);
@@ -108,9 +111,9 @@ const RecipeFormPage = () => {
         <div className="alert alert-error">
           <span>{error}</span>
         </div>
-        <button className="btn btn-ghost mt-4 gap-2" onClick={() => navigate("/recipes")}>
+        <button className="btn btn-ghost mt-4 gap-2" onClick={() => navigate(communityId ? `/communities/${communityId}` : "/recipes")}>
           <FaArrowLeft />
-          Back to recipes
+          {communityId ? "Back to community" : "Back to recipes"}
         </button>
       </div>
     );
@@ -121,10 +124,14 @@ const RecipeFormPage = () => {
       <div className="mb-6">
         <button
           className="btn btn-ghost gap-2"
-          onClick={() => navigate(isEditing && id ? `/recipes/${id}` : "/recipes")}
+          onClick={() => {
+            if (isEditing && id) navigate(`/recipes/${id}`);
+            else if (communityId) navigate(`/communities/${communityId}`);
+            else navigate("/recipes");
+          }}
         >
           <FaArrowLeft />
-          {isEditing ? "Back to recipe" : "Back to recipes"}
+          {isEditing ? "Back to recipe" : communityId ? "Back to community" : "Back to recipes"}
         </button>
       </div>
 
@@ -198,7 +205,11 @@ const RecipeFormPage = () => {
             <button
               type="button"
               className="btn btn-ghost"
-              onClick={() => navigate(isEditing && id ? `/recipes/${id}` : "/recipes")}
+              onClick={() => {
+                if (isEditing && id) navigate(`/recipes/${id}`);
+                else if (communityId) navigate(`/communities/${communityId}`);
+                else navigate("/recipes");
+              }}
             >
               Cancel
             </button>

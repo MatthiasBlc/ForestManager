@@ -135,6 +135,7 @@ components/
 │   └── NavBarLoggedOutView/  # Nav deconnecte
 ├── communities/
 │   ├── CommunityCard.tsx     # Carte communaute (grille)
+│   ├── CommunityRecipesList.tsx # Liste recettes communaute (filtres, pagination, permissions)
 │   └── MembersList.tsx       # Liste membres (promote, kick, leave)
 ├── invitations/
 │   ├── InviteCard.tsx        # Carte invitation recue (accept/reject)

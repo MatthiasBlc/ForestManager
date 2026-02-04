@@ -1,15 +1,18 @@
 import { useNavigate } from "react-router-dom";
 import { FaEdit, FaTrash } from "react-icons/fa";
-import { RecipeListItem } from "../../models/recipe";
+import { RecipeListItem, CommunityRecipeListItem } from "../../models/recipe";
 import { formatDate } from "../../utils/format.Date";
 
 interface RecipeListRowProps {
-  recipe: RecipeListItem;
+  recipe: RecipeListItem | CommunityRecipeListItem;
   onDelete: (recipe: RecipeListItem) => void;
   onTagClick?: (tag: string) => void;
+  showCreator?: boolean;
+  canEdit?: boolean;
+  canDelete?: boolean;
 }
 
-const RecipeListRow = ({ recipe, onDelete, onTagClick }: RecipeListRowProps) => {
+const RecipeListRow = ({ recipe, onDelete, onTagClick, showCreator = false, canEdit = true, canDelete = true }: RecipeListRowProps) => {
   const navigate = useNavigate();
   const { title, imageUrl, createdAt, updatedAt, tags } = recipe;
 
@@ -65,6 +68,9 @@ const RecipeListRow = ({ recipe, onDelete, onTagClick }: RecipeListRowProps) => 
 
       <div className="flex-1 min-w-0">
         <h3 className="font-semibold truncate">{title}</h3>
+        {showCreator && "creator" in recipe && (
+          <p className="text-xs text-base-content/50">by {(recipe as CommunityRecipeListItem).creator.username}</p>
+        )}
         <p className="text-sm text-base-content/60">{dateText}</p>
       </div>
 
@@ -87,20 +93,26 @@ const RecipeListRow = ({ recipe, onDelete, onTagClick }: RecipeListRowProps) => 
         </div>
       )}
 
-      <div className="flex gap-1 flex-shrink-0">
-        <button
-          className="btn btn-ghost btn-sm"
-          onClick={handleEdit}
-        >
-          <FaEdit />
-        </button>
-        <button
-          className="btn btn-ghost btn-sm text-error"
-          onClick={handleDelete}
-        >
-          <FaTrash />
-        </button>
-      </div>
+      {(canEdit || canDelete) && (
+        <div className="flex gap-1 flex-shrink-0">
+          {canEdit && (
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={handleEdit}
+            >
+              <FaEdit />
+            </button>
+          )}
+          {canDelete && (
+            <button
+              className="btn btn-ghost btn-sm text-error"
+              onClick={handleDelete}
+            >
+              <FaTrash />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 };

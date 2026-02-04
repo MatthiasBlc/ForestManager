@@ -382,10 +382,10 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Gestion recettes communautaires (verification membership)
 
 ### 4.2 Frontend
-- [ ] Liste recettes dans page communaute
-- [ ] Creation recette depuis communaute
-- [ ] Distinction visuelle perso vs communaute
-- [ ] Lien vers communaute sur recette
+- [x] Liste recettes dans page communaute
+- [x] Creation recette depuis communaute
+- [x] Distinction visuelle perso vs communaute
+- [x] Lien vers communaute sur recette
 - [ ] Badge "Partage depuis X" si sharedFromCommunityId
 
 ### Livrables

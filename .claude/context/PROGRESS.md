@@ -15,16 +15,16 @@
 | 3.5 | Frontend Invitations (pages, composants, notifications) | DONE |
 | 3.6 | Frontend User Management (profil, menu, search) | DONE |
 | 4.1 | Backend Recettes Communautaires (CRUD, copie perso, tests) | DONE |
+| 4.2 | Frontend Recettes Communautaires (liste, creation, detail, permissions) | DONE |
 
 ## Phase en cours
 
-Aucune phase en cours. Prochaine : 4.2.
+Aucune phase en cours. Prochaine : 5.
 
 ## Prochaines phases
 
 | Phase | Description | Prerequis |
 |-------|-------------|-----------|
-| 4.2 | Frontend Recettes communautaires (pages, composants) | Phase 4.1 |
 | 5 | Propositions & Variantes (workflow accept/reject, forks) | Phase 4 |
 | 6 | Activity Feed (communautaire + personnel) | Phase 5 |
 | 7 | Partage inter-communautes (fork recettes) | Phase 3 |

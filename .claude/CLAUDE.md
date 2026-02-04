@@ -38,7 +38,7 @@ npx prisma studio              # DB GUI :5555
 
 ## Phase actuelle
 
-**Phase 4** (Recettes communautaires) - Backend 4.1 COMPLETE, Frontend 4.2 A FAIRE.
+**Phase 4** (Recettes communautaires) - Backend 4.1 COMPLETE, Frontend 4.2 COMPLETE.
 Voir `.claude/context/PROGRESS.md` pour le detail.
 
 ## Codes erreur
