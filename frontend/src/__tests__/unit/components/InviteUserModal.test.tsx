@@ -26,17 +26,13 @@ describe('InviteUserModal', () => {
     expect(screen.getByText('Send invitation')).toBeInTheDocument();
   });
 
-  it('should show validation error when submitting empty', async () => {
-    const user = userEvent.setup();
+  it('should disable submit button when input is empty', () => {
     renderWithUserAuth(
       <InviteUserModal communityId="community-1" onClose={mockOnClose} onInviteSent={mockOnInviteSent} />
     );
 
-    await user.click(screen.getByText('Send invitation'));
-
-    await waitFor(() => {
-      expect(screen.getByText('Username or email is required')).toBeInTheDocument();
-    });
+    const submitButton = screen.getByText('Send invitation').closest('button');
+    expect(submitButton).toBeDisabled();
   });
 
   it('should call onInviteSent after successful invite', async () => {

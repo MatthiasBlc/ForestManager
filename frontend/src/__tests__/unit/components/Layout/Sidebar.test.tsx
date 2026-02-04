@@ -73,11 +73,10 @@ describe('Sidebar', () => {
     expect(recipesLink).toHaveAttribute('href', '/recipes');
   });
 
-  it('should link communities to correct path', () => {
+  it('should render communities section label', () => {
     render(<Sidebar />);
 
-    const communitiesLink = screen.getByText('Communities').closest('a');
-    expect(communitiesLink).toHaveAttribute('href', '/communities');
+    expect(screen.getByText('Communities')).toBeInTheDocument();
   });
 
   it('should link create community to correct path', () => {

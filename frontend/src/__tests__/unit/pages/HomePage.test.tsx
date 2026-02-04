@@ -12,7 +12,7 @@ function TestApp() {
       <AuthProvider>
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/recipes" element={<div>Recipes Page</div>} />
+          <Route path="/dashboard" element={<div>Dashboard Page</div>} />
           <Route path="/signup" element={<div>Signup Page</div>} />
         </Routes>
       </AuthProvider>
@@ -59,12 +59,12 @@ describe('HomePage', () => {
     });
   });
 
-  it('should redirect to recipes page when authenticated', async () => {
+  it('should redirect to dashboard when authenticated', async () => {
     setUserAuthenticated(true);
     render(<TestApp />);
 
     await waitFor(() => {
-      expect(screen.getByText('Recipes Page')).toBeInTheDocument();
+      expect(screen.getByText('Dashboard Page')).toBeInTheDocument();
     });
   });
 
