@@ -74,6 +74,67 @@ export const mockActivities = [
   },
 ];
 
+// Mock community data for user-side endpoints
+export const mockUserCommunities = [
+  {
+    id: 'community-1',
+    name: 'Baking Club',
+    description: 'A community for baking enthusiasts',
+    role: 'MODERATOR' as const,
+    membersCount: 5,
+    recipesCount: 10,
+    joinedAt: new Date().toISOString(),
+  },
+  {
+    id: 'community-2',
+    name: 'Vegan Recipes',
+    description: 'Plant-based recipes',
+    role: 'MEMBER' as const,
+    membersCount: 12,
+    recipesCount: 25,
+    joinedAt: new Date().toISOString(),
+  },
+];
+
+export const mockCommunityDetail = {
+  id: 'community-1',
+  name: 'Baking Club',
+  description: 'A community for baking enthusiasts',
+  visibility: 'PRIVATE',
+  createdAt: new Date().toISOString(),
+  membersCount: 3,
+  recipesCount: 10,
+  currentUserRole: 'MODERATOR' as const,
+};
+
+export const mockMembers = [
+  { id: 'test-user-id', username: 'testuser', role: 'MODERATOR' as const, joinedAt: new Date().toISOString() },
+  { id: 'user-2', username: 'alice', role: 'MEMBER' as const, joinedAt: new Date().toISOString() },
+  { id: 'user-3', username: 'bob', role: 'MEMBER' as const, joinedAt: new Date().toISOString() },
+];
+
+export const mockCommunityInvites = [
+  {
+    id: 'invite-1',
+    status: 'PENDING' as const,
+    createdAt: new Date().toISOString(),
+    respondedAt: null,
+    invitee: { id: 'user-4', username: 'charlie', email: 'charlie@example.com' },
+    inviter: { id: 'test-user-id', username: 'testuser' },
+  },
+];
+
+export const mockReceivedInvites = [
+  {
+    id: 'recv-invite-1',
+    status: 'PENDING' as const,
+    createdAt: new Date().toISOString(),
+    respondedAt: null,
+    community: { id: 'community-3', name: 'Italian Cooking', description: 'Best pasta recipes' },
+    inviter: { id: 'user-5', username: 'david' },
+  },
+];
+
 // Etat mock pour simuler l'authentification
 let isUserAuthenticated = false;
 let isAdminAuthenticated = false;
@@ -696,6 +757,209 @@ export const handlers = [
         ],
       },
     });
+  }),
+
+  // =====================================
+  // User Communities
+  // =====================================
+
+  http.get(`${API_URL}/api/communities`, () => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+    return HttpResponse.json({ data: mockUserCommunities });
+  }),
+
+  http.post(`${API_URL}/api/communities`, async ({ request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, string>;
+
+    if (!body.name) {
+      return HttpResponse.json(
+        { error: 'Community must have a name' },
+        { status: 400 }
+      );
+    }
+
+    return HttpResponse.json({
+      id: `community-${Date.now()}`,
+      name: body.name,
+      description: body.description || null,
+      visibility: 'PRIVATE',
+      createdAt: new Date().toISOString(),
+      membersCount: 1,
+      recipesCount: 0,
+      currentUserRole: 'MODERATOR',
+    }, { status: 201 });
+  }),
+
+  http.get(`${API_URL}/api/communities/:communityId`, ({ params }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    if (params.communityId === 'not-found') {
+      return HttpResponse.json(
+        { error: 'Community not found' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json({
+      ...mockCommunityDetail,
+      id: params.communityId,
+    });
+  }),
+
+  http.patch(`${API_URL}/api/communities/:communityId`, async ({ params, request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, string>;
+
+    return HttpResponse.json({
+      ...mockCommunityDetail,
+      id: params.communityId,
+      ...body,
+    });
+  }),
+
+  // =====================================
+  // Community Members
+  // =====================================
+
+  http.get(`${API_URL}/api/communities/:communityId/members`, () => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+    return HttpResponse.json({ data: mockMembers });
+  }),
+
+  http.patch(`${API_URL}/api/communities/:communityId/members/:userId`, () => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+    return HttpResponse.json({ message: 'User promoted to MODERATOR' });
+  }),
+
+  http.delete(`${API_URL}/api/communities/:communityId/members/:userId`, () => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+    return HttpResponse.json({ message: 'Left community successfully' });
+  }),
+
+  // =====================================
+  // Community Invitations
+  // =====================================
+
+  http.get(`${API_URL}/api/communities/:communityId/invites`, () => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+    return HttpResponse.json({ data: mockCommunityInvites });
+  }),
+
+  http.post(`${API_URL}/api/communities/:communityId/invites`, async ({ request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, string>;
+
+    if (body.username === 'notfound') {
+      return HttpResponse.json(
+        { error: 'INVITE_003: User not found' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json({
+      id: `invite-${Date.now()}`,
+      status: 'PENDING',
+      createdAt: new Date().toISOString(),
+      respondedAt: null,
+      invitee: { id: 'user-new', username: body.username || 'invited', email: body.email || 'invited@example.com' },
+      inviter: { id: 'test-user-id', username: 'testuser' },
+    }, { status: 201 });
+  }),
+
+  http.delete(`${API_URL}/api/communities/:communityId/invites/:inviteId`, () => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+    return HttpResponse.json({ message: 'Invitation cancelled' });
+  }),
+
+  // =====================================
+  // User Invitations
+  // =====================================
+
+  http.get(`${API_URL}/api/users/me/invites`, () => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+    return HttpResponse.json({ data: mockReceivedInvites });
+  }),
+
+  http.post(`${API_URL}/api/invites/:inviteId/accept`, () => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+    return HttpResponse.json({
+      message: 'Invitation accepted',
+      community: { id: 'community-3', name: 'Italian Cooking' },
+    });
+  }),
+
+  http.post(`${API_URL}/api/invites/:inviteId/reject`, () => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+    return HttpResponse.json({ message: 'Invitation rejected' });
   }),
 
   // =====================================

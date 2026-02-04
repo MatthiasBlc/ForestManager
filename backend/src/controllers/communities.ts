@@ -4,41 +4,81 @@ import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
+// Validation constants
+const VALIDATION = {
+  NAME_MIN: 3,
+  NAME_MAX: 100,
+  DESCRIPTION_MAX: 1000,
+};
 
 export const getCommunities: RequestHandler = async (req, res, next) => {
   const authenticatedUserId = req.session.userId;
 
   try {
     assertIsDefine(authenticatedUserId);
-    const community = await prisma.community.findMany({
+
+    // Get user's memberships with community details
+    const memberships = await prisma.userCommunity.findMany({
       where: {
-        members: {
-          some: {
-            userId: authenticatedUserId,
-            deletedAt: null,
-          }
-        },
+        userId: authenticatedUserId,
         deletedAt: null,
+        community: {
+          deletedAt: null,
+        },
       },
-      select: {
-        id: true,
-        name: true,
-        createdAt: true,
-        updatedAt: true,
+      include: {
+        community: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            createdAt: true,
+            updatedAt: true,
+            _count: {
+              select: {
+                members: {
+                  where: { deletedAt: null },
+                },
+                recipes: {
+                  where: { deletedAt: null },
+                },
+              },
+            },
+          },
+        },
       },
-    })
-    res.status(200).json(community);
+    });
+
+    // Format response according to API spec
+    const data = memberships.map((membership) => ({
+      id: membership.community.id,
+      name: membership.community.name,
+      description: membership.community.description,
+      role: membership.role,
+      membersCount: membership.community._count.members,
+      recipesCount: membership.community._count.recipes,
+      joinedAt: membership.joinedAt,
+    }));
+
+    res.status(200).json({ data });
   } catch (error) {
     next(error);
   }
 };
 
+/**
+ * Get community details.
+ * Requires memberOf middleware to have set req.userCommunity.
+ */
 export const getCommunity: RequestHandler = async (req, res, next) => {
   const communityId = req.params.communityId;
-  const authenticatedUserId = req.session.userId;
+  const userCommunity = req.userCommunity;
 
   try {
-    assertIsDefine(authenticatedUserId);
+    // userCommunity is set by memberOf middleware
+    if (!userCommunity) {
+      throw createHttpError(500, "Middleware memberOf required");
+    }
 
     const community = await prisma.community.findUnique({
       where: {
@@ -48,144 +88,237 @@ export const getCommunity: RequestHandler = async (req, res, next) => {
       select: {
         id: true,
         name: true,
+        description: true,
+        visibility: true,
         createdAt: true,
         updatedAt: true,
-        members: {
-          where: { deletedAt: null },
+        _count: {
+          select: {
+            members: {
+              where: { deletedAt: null },
+            },
+            recipes: {
+              where: { deletedAt: null },
+            },
+          },
         },
       },
-    })
+    });
 
     if (!community) {
       throw createHttpError(404, "Community not found");
     }
 
-    if (!community.members.filter((x) => x.userId === authenticatedUserId).length) {
-      throw createHttpError(401, "You cannot access this community");
-    }
-
-
-    res.status(200).json(community);
+    // Format response according to API spec
+    res.status(200).json({
+      id: community.id,
+      name: community.name,
+      description: community.description,
+      visibility: community.visibility,
+      createdAt: community.createdAt,
+      membersCount: community._count.members,
+      recipesCount: community._count.recipes,
+      currentUserRole: userCommunity.role,
+    });
   } catch (error) {
     next(error);
   }
 }
 
 interface CreateCommunityBody {
-  name?: string,
+  name?: string;
+  description?: string;
 }
 
-export const createCommunity: RequestHandler<unknown, unknown, CreateCommunityBody, unknown> = async (req, res, next) => {
-  const name = req.body.name;
+export const createCommunity: RequestHandler<
+  unknown,
+  unknown,
+  CreateCommunityBody,
+  unknown
+> = async (req, res, next) => {
+  const { name, description } = req.body;
   const authenticatedUserId = req.session.userId;
 
   try {
     assertIsDefine(authenticatedUserId);
 
+    // Validation
     if (!name) {
       throw createHttpError(400, "Community must have a name");
     }
 
-    // Recuperer les features par defaut
+    if (name.length < VALIDATION.NAME_MIN) {
+      throw createHttpError(
+        400,
+        `Name must be at least ${VALIDATION.NAME_MIN} characters`
+      );
+    }
+
+    if (name.length > VALIDATION.NAME_MAX) {
+      throw createHttpError(
+        400,
+        `Name must be at most ${VALIDATION.NAME_MAX} characters`
+      );
+    }
+
+    if (description && description.length > VALIDATION.DESCRIPTION_MAX) {
+      throw createHttpError(
+        400,
+        `Description must be at most ${VALIDATION.DESCRIPTION_MAX} characters`
+      );
+    }
+
+    // Get default features
     const defaultFeatures = await prisma.feature.findMany({
       where: { isDefault: true },
     });
 
     const newCommunity = await prisma.community.create({
       data: {
-        name: name,
+        name,
+        description: description || null,
         members: {
           create: {
             userId: authenticatedUserId,
             role: "MODERATOR",
           },
         },
-        // Attribution auto des features par defaut
+        // Auto-assign default features
         features: {
           create: defaultFeatures.map((f) => ({
             featureId: f.id,
-            // grantedById: null = attribution automatique
+            // grantedById: null = automatic attribution
           })),
         },
       },
-      include: {
-        members: true,
-        features: {
-          include: { feature: true },
-        },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        visibility: true,
+        createdAt: true,
       },
     });
-    res.status(201).json(newCommunity);
 
+    res.status(201).json(newCommunity);
   } catch (error) {
     next(error);
   }
 };
 
 
-interface UpdateCommunityParams {
+interface UpdateCommunityParams extends Record<string, string> {
   communityId: string;
 }
 
 interface UpdateCommunityBody {
-  name?: string,
+  name?: string;
+  description?: string;
 }
 
-export const updateCommunity: RequestHandler<UpdateCommunityParams, unknown, UpdateCommunityBody, unknown> = async (req, res, next) => {
+/**
+ * Update community details.
+ * Requires memberOf and requireCommunityRole("MODERATOR") middlewares.
+ */
+export const updateCommunity: RequestHandler<
+  UpdateCommunityParams,
+  unknown,
+  UpdateCommunityBody,
+  unknown
+> = async (req, res, next) => {
   const communityId = req.params.communityId;
-  const newName = req.body.name;
-  const authenticatedUserId = req.session.userId;
-
+  const { name, description } = req.body;
+  const userCommunity = req.userCommunity;
 
   try {
-    assertIsDefine(authenticatedUserId);
-
-    if (!newName) {
-      throw createHttpError(400, "Community must have a title");
+    // userCommunity is set by memberOf middleware
+    // Role check is done by requireCommunityRole middleware
+    if (!userCommunity) {
+      throw createHttpError(500, "Middleware memberOf required");
     }
 
-    try {
-      const updatedCommunity = await prisma.community.update({
-        where: {
-          id: communityId,
-          deletedAt: null,
-          members: {
-            some: {
-              userId: authenticatedUserId,
-              role: 'MODERATOR',
-              deletedAt: null,
-            }
-          }
-        },
-        data: {
-          name: newName,
-        },
-        include: {
-          members: {
-            where: { deletedAt: null },
+    // At least one field must be provided
+    if (name === undefined && description === undefined) {
+      throw createHttpError(400, "No fields to update");
+    }
+
+    // Validate name if provided
+    if (name !== undefined) {
+      if (name.length < VALIDATION.NAME_MIN) {
+        throw createHttpError(
+          400,
+          `Name must be at least ${VALIDATION.NAME_MIN} characters`
+        );
+      }
+
+      if (name.length > VALIDATION.NAME_MAX) {
+        throw createHttpError(
+          400,
+          `Name must be at most ${VALIDATION.NAME_MAX} characters`
+        );
+      }
+    }
+
+    // Validate description if provided
+    if (description !== undefined && description.length > VALIDATION.DESCRIPTION_MAX) {
+      throw createHttpError(
+        400,
+        `Description must be at most ${VALIDATION.DESCRIPTION_MAX} characters`
+      );
+    }
+
+    // Build update data
+    const updateData: { name?: string; description?: string | null } = {};
+    if (name !== undefined) {
+      updateData.name = name;
+    }
+    if (description !== undefined) {
+      updateData.description = description || null;
+    }
+
+    const updatedCommunity = await prisma.community.update({
+      where: {
+        id: communityId,
+        deletedAt: null,
+      },
+      data: updateData,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        visibility: true,
+        createdAt: true,
+        updatedAt: true,
+        _count: {
+          select: {
+            members: {
+              where: { deletedAt: null },
+            },
+            recipes: {
+              where: { deletedAt: null },
+            },
           },
-        }
-      })
-      if (!updatedCommunity) {
-        throw createHttpError(404, "Community not found");
-      }
+        },
+      },
+    });
 
-      if (!updatedCommunity.members.filter((member) => member.userId === authenticatedUserId).length) {
-        throw createHttpError(401, "You cannot access this community");
-      }
-
-      res.status(200).json(updatedCommunity);
-    } catch (e) {
-      if (e instanceof PrismaClientKnownRequestError) {
-        if (e.code === 'P2025') {
-          throw createHttpError(401, "You cannot access this community");
-        }
-      }
-      throw e;
-    }
-
+    res.status(200).json({
+      id: updatedCommunity.id,
+      name: updatedCommunity.name,
+      description: updatedCommunity.description,
+      visibility: updatedCommunity.visibility,
+      createdAt: updatedCommunity.createdAt,
+      updatedAt: updatedCommunity.updatedAt,
+      membersCount: updatedCommunity._count.members,
+      recipesCount: updatedCommunity._count.recipes,
+      currentUserRole: userCommunity.role,
+    });
   } catch (error) {
+    if (error instanceof PrismaClientKnownRequestError) {
+      if (error.code === "P2025") {
+        return next(createHttpError(404, "Community not found"));
+      }
+    }
     next(error);
   }
-
 };

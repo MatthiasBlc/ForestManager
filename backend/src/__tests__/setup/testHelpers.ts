@@ -290,6 +290,44 @@ export async function createTestCommunity(
   };
 }
 
+interface TestInvite {
+  id: string;
+  communityId: string;
+  inviterId: string;
+  inviteeId: string;
+  status: string;
+  createdAt: Date;
+}
+
+/**
+ * Creer une invitation de test
+ */
+export async function createTestInvite(
+  communityId: string,
+  inviterId: string,
+  inviteeId: string,
+  status?: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED'
+): Promise<TestInvite> {
+  const invite = await testPrisma.communityInvite.create({
+    data: {
+      communityId,
+      inviterId,
+      inviteeId,
+      status: status ?? 'PENDING',
+      respondedAt: status && status !== 'PENDING' ? new Date() : null,
+    },
+  });
+
+  return {
+    id: invite.id,
+    communityId: invite.communityId,
+    inviterId: invite.inviterId,
+    inviteeId: invite.inviteeId,
+    status: invite.status,
+    createdAt: invite.createdAt,
+  };
+}
+
 /**
  * Creer une feature de test
  */

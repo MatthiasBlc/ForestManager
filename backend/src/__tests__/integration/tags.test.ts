@@ -4,7 +4,6 @@ import app from '../../app';
 import {
   createTestUser,
   createTestRecipe,
-  createTestTag,
   extractSessionCookie,
 } from '../setup/testHelpers';
 

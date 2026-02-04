@@ -271,79 +271,99 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ## Phase 3: Communautes & Invitations
 
 ### 3.1 Backend Communities
-- [ ] Route POST /api/communities
+- [x] Route POST /api/communities
   - Creation communaute
-  - Ajout createur comme ADMIN
-- [ ] Route GET /api/communities
+  - Ajout createur comme MODERATOR (admin de communaute)
+- [x] Route GET /api/communities
   - Liste des communautes de l'utilisateur
-- [ ] Route GET /api/communities/:id
+- [x] Route GET /api/communities/:id
   - Detail communaute
   - Middleware memberOf
-- [ ] Route PATCH /api/communities/:id
-  - Modification (admin only)
+- [x] Route PATCH /api/communities/:id
+  - Modification (MODERATOR only)
 
 ### 3.2 Backend Invitations (NOUVEAU)
-- [ ] Route POST /api/communities/:id/invites
-  - Envoi invitation (admin only)
-  - Recherche user par email/username
-  - Validation: pas deja membre, pas deja invite
+- [x] Route POST /api/communities/:id/invites
+  - Envoi invitation (MODERATOR only)
+  - Recherche user par email/username/userId
+  - Validation: pas deja membre, pas deja invite PENDING
   - Creation CommunityInvite (status: PENDING)
   - Log ActivityLog (INVITE_SENT)
-- [ ] Route GET /api/communities/:id/invites
-  - Liste invitations (admin only)
-  - Filtre par status
-- [ ] Route DELETE /api/communities/:id/invites/:inviteId
-  - Annulation invitation (admin only)
+- [x] Route GET /api/communities/:id/invites
+  - Liste invitations (MODERATOR only)
+  - Filtre par status (default: PENDING, ou ?status=all)
+- [x] Route DELETE /api/communities/:id/invites/:inviteId
+  - Annulation invitation (MODERATOR only)
   - Status → CANCELLED
   - Log ActivityLog (INVITE_CANCELLED)
-- [ ] Route GET /api/users/me/invites
+- [x] Route GET /api/users/me/invites
   - Invitations recues par l'utilisateur
   - Filtre par status
-- [ ] Route POST /api/invites/:id/accept
-  - Acceptation invitation
+- [x] Route POST /api/invites/:id/accept
+  - Acceptation invitation (invitee only)
   - Creation UserCommunity (role: MEMBER)
   - Status → ACCEPTED
   - Log ActivityLog (INVITE_ACCEPTED, USER_JOINED)
-- [ ] Route POST /api/invites/:id/reject
-  - Refus invitation
+- [x] Route POST /api/invites/:id/reject
+  - Refus invitation (invitee only)
   - Status → REJECTED
   - Log ActivityLog (INVITE_REJECTED)
 
 ### 3.3 Backend Members
-- [ ] Route GET /api/communities/:id/members
-- [ ] Route PATCH /api/communities/:id/members/:userId
-  - Promotion (admin only, no demote)
+- [x] Route GET /api/communities/:id/members
+- [x] Route PATCH /api/communities/:id/members/:userId
+  - Promotion (MODERATOR only, no demote)
   - Log ActivityLog (USER_PROMOTED)
-- [ ] Route DELETE /api/communities/:id/members/:userId
-  - Quitter (self) ou Retirer (admin kick)
-  - Validation: admin ne peut pas kick un admin
-  - Logique dernier admin (bloquer ou forcer promotion)
+- [x] Route DELETE /api/communities/:id/members/:userId
+  - Quitter (self) ou Retirer (MODERATOR kick)
+  - Validation: MODERATOR ne peut pas kick un MODERATOR
+  - Logique dernier MODERATOR (bloquer si autres membres)
   - Suppression communaute si dernier membre (cascade soft delete)
   - Log ActivityLog (USER_LEFT ou USER_KICKED)
 
 ### 3.4 Frontend Communities
-- [ ] Page liste mes communautes
-- [ ] Page creation communaute
-- [ ] Page detail communaute
-  - Onglets: Recettes, Membres, Invitations (admin), Activite
-- [ ] Composant MembersList
-  - Bouton promotion (admin only, sur MEMBER)
-  - Bouton retirer (admin only, sur MEMBER)
-- [ ] Bouton quitter
+- [x] Page liste mes communautes (CommunitiesPage)
+- [x] Page creation communaute (CommunityCreatePage)
+- [x] Page detail communaute avec onglets Membres/Invitations/Recipes
+- [x] Page edition communaute (CommunityEditPage, MODERATOR only)
+- [x] Composant MembersList (promotion, retrait, leave)
+- [x] Dashboard page (communautes + recettes, page d'accueil authentifiee)
+- [x] Sidebar Discord-style avec avatars communautes (initiales)
+- [x] Correction bug leave community (gestion 410, redirect)
 
-### 3.5 Frontend Invitations (NOUVEAU)
-- [ ] Page/Section invitations recues (/invites ou dans header)
-- [ ] Badge notification nouvelles invitations
-- [ ] Carte invitation avec boutons Accepter/Refuser
-- [ ] Modal recherche utilisateur pour inviter
-- [ ] Liste invitations envoyees (onglet admin)
-- [ ] Bouton annuler invitation
+### 3.5 Frontend Invitations
+- [x] Page invitations recues (InvitationsPage)
+- [x] Badge notification (InvitationBadge)
+- [x] Carte invitation avec Accept/Reject (InviteCard)
+- [x] Modal recherche utilisateur avec autocomplete (InviteUserModal)
+- [x] Liste invitations envoyees (SentInvitesList)
+- [x] Dropdown notifications dans navbar (NotificationDropdown)
+- [x] Redirect vers communaute apres acceptation invitation
+
+### 3.6 Frontend User Management
+- [x] User menu (icone profil + dropdown dans navbar)
+- [x] Page profil (modification username, email, mot de passe)
+- [x] Backend PATCH /api/users/me (mise a jour profil)
+- [x] Backend GET /api/users/search (autocomplete usernames)
 
 ### Livrables
 - Gestion complete des communautes
 - Systeme d'invitation avec acceptation explicite
 - Systeme de roles fonctionnel
 - Kick de membres
+
+### Tests Phase 3
+**Backend** (~50 tests):
+- [x] `communities.test.ts` - CRUD communautes (27 tests)
+- [x] `invitations.test.ts` - Systeme d'invitations (35 tests)
+- [x] `members.test.ts` - Gestion membres, kick, promotion (22 tests)
+
+**Frontend** (~31 tests):
+- [x] `CommunitiesPage.test.tsx` - Liste communautes (7 tests)
+- [x] `CommunityDetailPage.test.tsx` - Detail communaute (8 tests)
+- [x] `InviteCard.test.tsx` - Carte invitation (5 tests)
+- [x] `MembersList.test.tsx` - Liste membres (6 tests)
+- [x] `InviteUserModal.test.tsx` - Modal invitation (5 tests)
 
 ---
 
@@ -603,13 +623,13 @@ Phase 8 (Finitions MVP)
 ### Fonctionnel
 - [x] Un utilisateur peut s'inscrire et se connecter
 - [x] Un utilisateur peut creer des recettes personnelles
-- [ ] Un utilisateur peut creer une communaute
-- [ ] Un admin peut inviter des utilisateurs
-- [ ] Un utilisateur voit ses invitations recues
-- [ ] Un utilisateur peut accepter/refuser une invitation
-- [ ] Un admin peut annuler une invitation
-- [ ] Un admin peut promouvoir un membre en admin
-- [ ] Un admin peut retirer un membre (mais pas un admin)
+- [x] Un utilisateur peut creer une communaute
+- [x] Un MODERATOR peut inviter des utilisateurs (backend)
+- [x] Un utilisateur voit ses invitations recues (backend)
+- [x] Un utilisateur peut accepter/refuser une invitation (backend)
+- [x] Un MODERATOR peut annuler une invitation (backend)
+- [x] Un MODERATOR peut promouvoir un membre en MODERATOR (backend)
+- [x] Un MODERATOR peut retirer un membre (mais pas un MODERATOR) (backend)
 - [ ] Un membre peut creer une recette dans une communaute
 - [ ] Une copie est creee dans son catalogue personnel
 - [ ] Un membre peut proposer une modification
@@ -729,9 +749,10 @@ Lors de l'ajout d'une nouvelle fonctionnalite, inclure les tests suivants:
 | Backend Auth | auth.test.ts, adminAuth.test.ts | ~30 |
 | Backend Admin API | adminTags, adminIngredients, adminFeatures, adminCommunities, adminDashboard, adminActivity | ~50 |
 | Backend User API | recipes.test.ts, tags.test.ts, ingredients.test.ts | ~41 |
+| Backend Communities | communities.test.ts, invitations.test.ts, members.test.ts | ~84 |
 | Frontend Contexts | AuthContext, AdminAuthContext | ~13 |
 | Frontend Auth | LoginModal, Modal, SignUpPage, ProtectedRoute, NavBar | ~25 |
 | Frontend Admin | AdminProtectedRoute, AdminLoginPage, AdminDashboardPage, AdminLayout | ~21 |
 | Frontend Recipes | RecipeCard, RecipeFilters, TagSelector, IngredientList | ~28 |
 | Frontend Pages | HomePage, RecipesPage, MainLayout, Sidebar | ~25 |
-| **Total** | | **~233** |
+| **Total** | | **~317** |
