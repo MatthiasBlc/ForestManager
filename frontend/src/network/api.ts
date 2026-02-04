@@ -2,10 +2,10 @@ import axios, { AxiosError } from "axios";
 import { RecipeDetail, RecipesResponse, TagSearchResult, IngredientSearchResult } from "../models/recipe";
 import { User } from "../models/user";
 import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats } from "../models/admin";
+import { CommunityListItem, CommunityDetail, CommunityMember, CommunityInvite, ReceivedInvite } from "../models/community";
 import { ConflictError, UnauthorizedError } from "../errors/http_errors";
 
 const apiUrl = import.meta.env.VITE_BACKEND_URL;
-// eslint-disable-next-line react-refresh/only-export-components
 const API = axios.create({ withCredentials: true, baseURL: apiUrl });
 
 API.interceptors.request.use((config) => {
@@ -14,9 +14,8 @@ API.interceptors.request.use((config) => {
 });
 
 // Utility function to handle API errors safely
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function handleApiError(error: AxiosError<any>): never {
-  console.log(error);
+function handleApiError(error: AxiosError<{ error?: string }>): never {
+  console.error(error);
   if (!error.response) {
     throw new Error("Network error - please check your connection");
   }
@@ -78,12 +77,6 @@ export default class APIManager {
     const url = `/api/recipes${queryString ? `?${queryString}` : ""}`;
 
     const response = await API.get(url).catch(handleApiError);
-    return response.data;
-  }
-
-  // Legacy method for backwards compatibility
-  static async loadRecipes() {
-    const response = await this.getRecipes();
     return response.data;
   }
 
@@ -173,12 +166,113 @@ export default class APIManager {
   }
 
 
+  // --------------- Communities ---------------
+
+  static async getCommunities(): Promise<{ data: CommunityListItem[] }> {
+    const response = await API.get("/api/communities").catch(handleApiError);
+    return response.data;
+  }
+
+  static async createCommunity(data: { name: string; description?: string }): Promise<CommunityDetail> {
+    const response = await API.post("/api/communities", JSON.stringify(data)).catch(handleApiError);
+    return response.data;
+  }
+
+  static async getCommunity(id: string): Promise<CommunityDetail> {
+    const response = await API.get(`/api/communities/${id}`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async updateCommunity(id: string, data: { name?: string; description?: string }): Promise<CommunityDetail> {
+    const response = await API.patch(`/api/communities/${id}`, JSON.stringify(data)).catch(handleApiError);
+    return response.data;
+  }
+
+
+  // --------------- Members ---------------
+
+  static async getCommunityMembers(communityId: string): Promise<{ data: CommunityMember[] }> {
+    const response = await API.get(`/api/communities/${communityId}/members`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async promoteMember(communityId: string, userId: string): Promise<{ message: string }> {
+    const response = await API.patch(
+      `/api/communities/${communityId}/members/${userId}`,
+      JSON.stringify({ role: "MODERATOR" })
+    ).catch(handleApiError);
+    return response.data;
+  }
+
+  static async removeMember(communityId: string, userId: string): Promise<{ message: string }> {
+    const response = await API.delete(`/api/communities/${communityId}/members/${userId}`)
+      .catch((error: AxiosError<{ message?: string; error?: string }>) => {
+        if (error.response?.status === 410) {
+          // Community was destroyed (last member left) - treat as successful leave
+          return error.response;
+        }
+        return handleApiError(error);
+      });
+    return response.data;
+  }
+
+
+  // --------------- Users ---------------
+
+  static async searchUsers(query: string): Promise<{ id: string; username: string }[]> {
+    const response = await API.get(`/api/users/search?q=${encodeURIComponent(query)}`).catch(handleApiError);
+    return response.data.data;
+  }
+
+  static async updateProfile(data: { username?: string; email?: string; currentPassword?: string; newPassword?: string }): Promise<User> {
+    const response = await API.patch("/api/users/me", JSON.stringify(data)).catch(handleApiError);
+    return response.data.user;
+  }
+
+
+  // --------------- Invitations (community admin) ---------------
+
+  static async getCommunityInvites(communityId: string, status?: string): Promise<{ data: CommunityInvite[] }> {
+    const params = status ? `?status=${status}` : "";
+    const response = await API.get(`/api/communities/${communityId}/invites${params}`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async sendInvite(communityId: string, data: { username?: string; email?: string; userId?: string }): Promise<CommunityInvite> {
+    const response = await API.post(`/api/communities/${communityId}/invites`, JSON.stringify(data)).catch(handleApiError);
+    return response.data;
+  }
+
+  static async cancelInvite(communityId: string, inviteId: string): Promise<{ message: string }> {
+    const response = await API.delete(`/api/communities/${communityId}/invites/${inviteId}`).catch(handleApiError);
+    return response.data;
+  }
+
+
+  // --------------- Invitations (user) ---------------
+
+  static async getMyInvites(status?: string): Promise<{ data: ReceivedInvite[] }> {
+    const params = status ? `?status=${status}` : "";
+    const response = await API.get(`/api/users/me/invites${params}`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async acceptInvite(inviteId: string): Promise<{ message: string; community: { id: string; name: string } }> {
+    const response = await API.post(`/api/invites/${inviteId}/accept`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async rejectInvite(inviteId: string): Promise<{ message: string }> {
+    const response = await API.post(`/api/invites/${inviteId}/reject`).catch(handleApiError);
+    return response.data;
+  }
+
+
   // --------------- Admin Auth ---------------
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static async adminLogin(email: string, password: string): Promise<AdminLoginResponse> {
     const response = await API.post("/api/admin/auth/login", JSON.stringify({ email, password }))
-      .catch((error: any) => {
+      .catch((error: AxiosError<{ error?: string }>) => {
         if (error.response?.status === 401) {
           throw new UnauthorizedError(error.response.data.error);
         } else if (error.response?.status === 429) {
@@ -190,10 +284,9 @@ export default class APIManager {
     return response.data;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static async adminVerifyTotp(code: string): Promise<AdminTotpResponse> {
     const response = await API.post("/api/admin/auth/totp/verify", JSON.stringify({ code }))
-      .catch((error: any) => {
+      .catch((error: AxiosError<{ error?: string }>) => {
         if (error.response?.status === 401) {
           throw new UnauthorizedError(error.response.data.error);
         } else if (error.response?.status === 429) {
@@ -205,18 +298,16 @@ export default class APIManager {
     return response.data;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static async adminLogout(): Promise<void> {
     await API.post("/api/admin/auth/logout")
-      .catch((error: any) => {
+      .catch((error: AxiosError<{ error?: string }>) => {
         throw new Error(error.response?.data?.error || "Logout failed");
       });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static async getLoggedInAdmin(): Promise<AdminUser> {
     const response = await API.get("/api/admin/auth/me")
-      .catch((error: any) => {
+      .catch((error: AxiosError<{ error?: string }>) => {
         if (error.response?.status === 401) {
           throw new UnauthorizedError(error.response.data.error);
         } else {
@@ -229,10 +320,9 @@ export default class APIManager {
 
   // --------------- Admin Dashboard ---------------
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static async getAdminDashboardStats(): Promise<DashboardStats> {
     const response = await API.get("/api/admin/dashboard/stats")
-      .catch((error: any) => {
+      .catch((error: AxiosError<{ error?: string }>) => {
         if (error.response?.status === 401) {
           throw new UnauthorizedError(error.response.data.error);
         } else {

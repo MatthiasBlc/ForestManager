@@ -124,6 +124,23 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - Systeme de briques operationnel
 - Feature MVP attribuee auto
 
+### Tests Phase 0.5
+**Backend** (~60 tests):
+- [x] `adminAuth.test.ts` - Auth 2FA admin (14 tests)
+- [x] `adminTags.test.ts` - CRUD tags admin (12 tests)
+- [x] `adminIngredients.test.ts` - CRUD ingredients admin (12 tests)
+- [x] `adminFeatures.test.ts` - CRUD features + grant/revoke (10 tests)
+- [x] `adminCommunities.test.ts` - Gestion communautes admin (8 tests)
+- [x] `adminDashboard.test.ts` - Stats dashboard (4 tests)
+- [x] `adminActivity.test.ts` - Logs activite (4 tests)
+
+**Frontend** (~20 tests):
+- [x] `AdminAuthContext.test.tsx` - Context admin 2FA (7 tests)
+- [x] `AdminProtectedRoute.test.tsx` - Guard admin (4 tests)
+- [x] `AdminLoginPage.test.tsx` - Page login 2FA (8 tests)
+- [x] `AdminDashboardPage.test.tsx` - Page dashboard (6 tests)
+- [x] `AdminLayout.test.tsx` - Layout admin (3 tests)
+
 ---
 
 ## Phase 1: Authentification & Base
@@ -158,6 +175,18 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ### Livrables
 - Utilisateurs peuvent s'inscrire, se connecter, se deconnecter
 - Navigation de base fonctionnelle
+
+### Tests Phase 1
+**Backend** (~16 tests):
+- [x] `auth.test.ts` - User signup/login/logout/me (16 tests)
+
+**Frontend** (~25 tests):
+- [x] `AuthContext.test.tsx` - Context auth user (6 tests)
+- [x] `LoginModal.test.tsx` - Modal login (6 tests)
+- [x] `Modal.test.tsx` - Composant modal (4 tests)
+- [x] `SignUpPage.test.tsx` - Page inscription (6 tests)
+- [x] `ProtectedRoute.test.tsx` - Guard user (5 tests)
+- [x] `NavBar.test.tsx` - Navigation conditionnelle (4 tests)
 
 ---
 
@@ -221,84 +250,120 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] Interface de creation/edition fonctionnelle
 - [x] Pagination et filtres fonctionnels
 
+### Tests Phase 2
+**Backend** (~40 tests):
+- [x] `recipes.test.ts` - CRUD complet recettes (31 tests)
+- [x] `tags.test.ts` - GET /api/tags autocomplete (5 tests)
+- [x] `ingredients.test.ts` - GET /api/ingredients autocomplete (5 tests)
+
+**Frontend** (~40 tests):
+- [x] `RecipeCard.test.tsx` - Carte recette (8 tests)
+- [x] `RecipeFilters.test.tsx` - Filtres search/tags/ingredients (8 tests)
+- [x] `TagSelector.test.tsx` - Selecteur tags (6 tests)
+- [x] `IngredientList.test.tsx` - Liste ingredients (6 tests)
+- [x] `RecipesPage.test.tsx` - Page liste recettes (3 tests)
+- [x] `MainLayout.test.tsx` - Layout principal (6 tests)
+- [x] `Sidebar.test.tsx` - Navigation sidebar (10 tests)
+- [x] `HomePage.test.tsx` - Page accueil (6 tests)
+
 ---
 
 ## Phase 3: Communautes & Invitations
 
 ### 3.1 Backend Communities
-- [ ] Route POST /api/communities
+- [x] Route POST /api/communities
   - Creation communaute
-  - Ajout createur comme ADMIN
-- [ ] Route GET /api/communities
+  - Ajout createur comme MODERATOR (admin de communaute)
+- [x] Route GET /api/communities
   - Liste des communautes de l'utilisateur
-- [ ] Route GET /api/communities/:id
+- [x] Route GET /api/communities/:id
   - Detail communaute
   - Middleware memberOf
-- [ ] Route PATCH /api/communities/:id
-  - Modification (admin only)
+- [x] Route PATCH /api/communities/:id
+  - Modification (MODERATOR only)
 
 ### 3.2 Backend Invitations (NOUVEAU)
-- [ ] Route POST /api/communities/:id/invites
-  - Envoi invitation (admin only)
-  - Recherche user par email/username
-  - Validation: pas deja membre, pas deja invite
+- [x] Route POST /api/communities/:id/invites
+  - Envoi invitation (MODERATOR only)
+  - Recherche user par email/username/userId
+  - Validation: pas deja membre, pas deja invite PENDING
   - Creation CommunityInvite (status: PENDING)
   - Log ActivityLog (INVITE_SENT)
-- [ ] Route GET /api/communities/:id/invites
-  - Liste invitations (admin only)
-  - Filtre par status
-- [ ] Route DELETE /api/communities/:id/invites/:inviteId
-  - Annulation invitation (admin only)
+- [x] Route GET /api/communities/:id/invites
+  - Liste invitations (MODERATOR only)
+  - Filtre par status (default: PENDING, ou ?status=all)
+- [x] Route DELETE /api/communities/:id/invites/:inviteId
+  - Annulation invitation (MODERATOR only)
   - Status → CANCELLED
   - Log ActivityLog (INVITE_CANCELLED)
-- [ ] Route GET /api/users/me/invites
+- [x] Route GET /api/users/me/invites
   - Invitations recues par l'utilisateur
   - Filtre par status
-- [ ] Route POST /api/invites/:id/accept
-  - Acceptation invitation
+- [x] Route POST /api/invites/:id/accept
+  - Acceptation invitation (invitee only)
   - Creation UserCommunity (role: MEMBER)
   - Status → ACCEPTED
   - Log ActivityLog (INVITE_ACCEPTED, USER_JOINED)
-- [ ] Route POST /api/invites/:id/reject
-  - Refus invitation
+- [x] Route POST /api/invites/:id/reject
+  - Refus invitation (invitee only)
   - Status → REJECTED
   - Log ActivityLog (INVITE_REJECTED)
 
 ### 3.3 Backend Members
-- [ ] Route GET /api/communities/:id/members
-- [ ] Route PATCH /api/communities/:id/members/:userId
-  - Promotion (admin only, no demote)
+- [x] Route GET /api/communities/:id/members
+- [x] Route PATCH /api/communities/:id/members/:userId
+  - Promotion (MODERATOR only, no demote)
   - Log ActivityLog (USER_PROMOTED)
-- [ ] Route DELETE /api/communities/:id/members/:userId
-  - Quitter (self) ou Retirer (admin kick)
-  - Validation: admin ne peut pas kick un admin
-  - Logique dernier admin (bloquer ou forcer promotion)
+- [x] Route DELETE /api/communities/:id/members/:userId
+  - Quitter (self) ou Retirer (MODERATOR kick)
+  - Validation: MODERATOR ne peut pas kick un MODERATOR
+  - Logique dernier MODERATOR (bloquer si autres membres)
   - Suppression communaute si dernier membre (cascade soft delete)
   - Log ActivityLog (USER_LEFT ou USER_KICKED)
 
 ### 3.4 Frontend Communities
-- [ ] Page liste mes communautes
-- [ ] Page creation communaute
-- [ ] Page detail communaute
-  - Onglets: Recettes, Membres, Invitations (admin), Activite
-- [ ] Composant MembersList
-  - Bouton promotion (admin only, sur MEMBER)
-  - Bouton retirer (admin only, sur MEMBER)
-- [ ] Bouton quitter
+- [x] Page liste mes communautes (CommunitiesPage)
+- [x] Page creation communaute (CommunityCreatePage)
+- [x] Page detail communaute avec onglets Membres/Invitations/Recipes
+- [x] Page edition communaute (CommunityEditPage, MODERATOR only)
+- [x] Composant MembersList (promotion, retrait, leave)
+- [x] Dashboard page (communautes + recettes, page d'accueil authentifiee)
+- [x] Sidebar Discord-style avec avatars communautes (initiales)
+- [x] Correction bug leave community (gestion 410, redirect)
 
-### 3.5 Frontend Invitations (NOUVEAU)
-- [ ] Page/Section invitations recues (/invites ou dans header)
-- [ ] Badge notification nouvelles invitations
-- [ ] Carte invitation avec boutons Accepter/Refuser
-- [ ] Modal recherche utilisateur pour inviter
-- [ ] Liste invitations envoyees (onglet admin)
-- [ ] Bouton annuler invitation
+### 3.5 Frontend Invitations
+- [x] Page invitations recues (InvitationsPage)
+- [x] Badge notification (InvitationBadge)
+- [x] Carte invitation avec Accept/Reject (InviteCard)
+- [x] Modal recherche utilisateur avec autocomplete (InviteUserModal)
+- [x] Liste invitations envoyees (SentInvitesList)
+- [x] Dropdown notifications dans navbar (NotificationDropdown)
+- [x] Redirect vers communaute apres acceptation invitation
+
+### 3.6 Frontend User Management
+- [x] User menu (icone profil + dropdown dans navbar)
+- [x] Page profil (modification username, email, mot de passe)
+- [x] Backend PATCH /api/users/me (mise a jour profil)
+- [x] Backend GET /api/users/search (autocomplete usernames)
 
 ### Livrables
 - Gestion complete des communautes
 - Systeme d'invitation avec acceptation explicite
 - Systeme de roles fonctionnel
 - Kick de membres
+
+### Tests Phase 3
+**Backend** (~50 tests):
+- [x] `communities.test.ts` - CRUD communautes (27 tests)
+- [x] `invitations.test.ts` - Systeme d'invitations (35 tests)
+- [x] `members.test.ts` - Gestion membres, kick, promotion (22 tests)
+
+**Frontend** (~31 tests):
+- [x] `CommunitiesPage.test.tsx` - Liste communautes (7 tests)
+- [x] `CommunityDetailPage.test.tsx` - Detail communaute (8 tests)
+- [x] `InviteCard.test.tsx` - Carte invitation (5 tests)
+- [x] `MembersList.test.tsx` - Liste membres (6 tests)
+- [x] `InviteUserModal.test.tsx` - Modal invitation (5 tests)
 
 ---
 
@@ -558,13 +623,13 @@ Phase 8 (Finitions MVP)
 ### Fonctionnel
 - [x] Un utilisateur peut s'inscrire et se connecter
 - [x] Un utilisateur peut creer des recettes personnelles
-- [ ] Un utilisateur peut creer une communaute
-- [ ] Un admin peut inviter des utilisateurs
-- [ ] Un utilisateur voit ses invitations recues
-- [ ] Un utilisateur peut accepter/refuser une invitation
-- [ ] Un admin peut annuler une invitation
-- [ ] Un admin peut promouvoir un membre en admin
-- [ ] Un admin peut retirer un membre (mais pas un admin)
+- [x] Un utilisateur peut creer une communaute
+- [x] Un MODERATOR peut inviter des utilisateurs (backend)
+- [x] Un utilisateur voit ses invitations recues (backend)
+- [x] Un utilisateur peut accepter/refuser une invitation (backend)
+- [x] Un MODERATOR peut annuler une invitation (backend)
+- [x] Un MODERATOR peut promouvoir un membre en MODERATOR (backend)
+- [x] Un MODERATOR peut retirer un membre (mais pas un MODERATOR) (backend)
 - [ ] Un membre peut creer une recette dans une communaute
 - [ ] Une copie est creee dans son catalogue personnel
 - [ ] Un membre peut proposer une modification
@@ -617,3 +682,77 @@ Phase 8 (Finitions MVP)
 - [ ] Mettre a jour ESLint vers une version supportee (v8.57.1 deprecie)
 - [ ] Migrer config Prisma de `package.json#prisma` vers `prisma.config.ts` (deprecie Prisma 7)
 - [ ] Remplacer `npm prune --production` par `--omit=dev` dans Dockerfile
+
+---
+
+## Tests
+
+### Infrastructure
+
+**Backend**:
+- Framework: Vitest + Supertest
+- DB: PostgreSQL test database (via `testPrisma`)
+- Helpers: `backend/src/__tests__/setup/testHelpers.ts`
+- Config: `backend/vitest.config.ts`
+
+**Frontend**:
+- Framework: Vitest + Testing Library + MSW
+- Mocks: `frontend/src/__tests__/setup/mswHandlers.ts`
+- Utils: `frontend/src/__tests__/setup/testUtils.tsx`
+- Config: `frontend/vitest.config.ts`
+
+### Commandes
+
+```bash
+# Backend
+cd backend && npm test              # Lancer tous les tests
+cd backend && npm run test:coverage # Tests avec couverture
+
+# Frontend
+cd frontend && npm test             # Lancer tous les tests
+cd frontend && npm run test:coverage # Tests avec couverture
+
+# CI/CD
+# Les tests sont executes automatiquement dans deploy.yml:
+# - Job: test-backend
+# - Job: test-frontend
+```
+
+### Couverture cible
+- Backend: > 80% sur controllers/routes
+- Frontend: > 70% sur composants critiques
+
+### Template pour nouvelles fonctionnalites
+
+Lors de l'ajout d'une nouvelle fonctionnalite, inclure les tests suivants:
+
+```markdown
+### X.Y Nouvelle Fonctionnalite
+- [ ] Implementation backend
+- [ ] Implementation frontend
+- [ ] **Tests backend**: [fichiers .test.ts]
+  - Tests CRUD endpoints
+  - Tests validation input
+  - Tests error cases
+  - Tests authentication/authorization
+- [ ] **Tests frontend**: [fichiers .test.tsx]
+  - Tests rendu composants
+  - Tests interactions utilisateur
+  - Tests etats (loading, error, success)
+  - Tests integration avec API (MSW)
+```
+
+### Resume des tests implementes
+
+| Categorie | Fichiers | Tests |
+|-----------|----------|-------|
+| Backend Auth | auth.test.ts, adminAuth.test.ts | ~30 |
+| Backend Admin API | adminTags, adminIngredients, adminFeatures, adminCommunities, adminDashboard, adminActivity | ~50 |
+| Backend User API | recipes.test.ts, tags.test.ts, ingredients.test.ts | ~41 |
+| Backend Communities | communities.test.ts, invitations.test.ts, members.test.ts | ~84 |
+| Frontend Contexts | AuthContext, AdminAuthContext | ~13 |
+| Frontend Auth | LoginModal, Modal, SignUpPage, ProtectedRoute, NavBar | ~25 |
+| Frontend Admin | AdminProtectedRoute, AdminLoginPage, AdminDashboardPage, AdminLayout | ~21 |
+| Frontend Recipes | RecipeCard, RecipeFilters, TagSelector, IngredientList | ~28 |
+| Frontend Pages | HomePage, RecipesPage, MainLayout, Sidebar | ~25 |
+| **Total** | | **~317** |

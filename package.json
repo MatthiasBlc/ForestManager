@@ -15,7 +15,15 @@
     "docker:clean": "docker compose down -v --remove-orphans",
     "prisma:studio": "docker compose exec backend npx prisma studio",
     "prisma:migrate": "docker compose exec backend npx prisma migrate dev",
-    "prisma:generate": "docker compose exec backend npx prisma generate"
+    "prisma:generate": "docker compose exec backend npx prisma generate",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "docker compose exec backend npm test",
+    "test:frontend": "docker compose exec frontend npm test",
+    "test:watch:backend": "docker compose exec backend npm run test:watch",
+    "test:watch:frontend": "docker compose exec frontend npm run test:watch",
+    "test:coverage": "npm run test:coverage:backend && npm run test:coverage:frontend",
+    "test:coverage:backend": "docker compose exec backend npm run test:coverage",
+    "test:coverage:frontend": "docker compose exec frontend npm run test:coverage"
   },
   "repository": {
     "type": "git",

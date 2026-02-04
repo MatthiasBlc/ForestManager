@@ -58,6 +58,111 @@ npm run prisma:studio      # Open Prisma Studio
 npm run prisma:migrate     # Run migrations
 ```
 
+## Tests
+
+### Stack de tests
+
+| Outil | Role |
+|-------|------|
+| **Vitest** | Framework de tests (backend + frontend) |
+| **Supertest** | Tests d'integration API (backend) |
+| **Testing Library** | Tests de composants React (frontend) |
+| **MSW** | Mock Service Worker pour simuler l'API (frontend) |
+
+### Lancer les tests manuellement
+
+Les tests s'executent dans les conteneurs Docker pour garantir un environnement identique au CI/CD.
+
+```bash
+# Prerequis: les conteneurs doivent etre en cours d'execution
+npm run docker:up:d
+
+# Lancer tous les tests (backend + frontend)
+npm test
+
+# Lancer uniquement les tests backend
+npm run test:backend
+
+# Lancer uniquement les tests frontend
+npm run test:frontend
+
+# Mode watch (relance les tests a chaque modification)
+npm run test:watch:backend
+npm run test:watch:frontend
+
+# Tests avec rapport de couverture
+npm run test:coverage
+npm run test:coverage:backend
+npm run test:coverage:frontend
+```
+
+### Execution automatique (CI/CD)
+
+Les tests sont executes automatiquement dans le pipeline GitHub Actions (`.github/workflows/deploy.yml`) :
+
+1. **Declenchement** : A chaque push sur `master` ou `preprod`
+2. **Ordre d'execution** :
+   - `test-backend` : Lance les tests backend avec une base PostgreSQL dediee
+   - `test-frontend` : Lance les tests frontend (mocks MSW, pas de dependance DB)
+3. **Blocage du deploiement** : Si les tests echouent, le deploiement est annule
+4. **Environnement CI** :
+   - PostgreSQL 15 en service container
+   - Variables d'environnement injectees via secrets GitHub
+
+```
+push master/preprod
+       |
+       v
++-------------+     +---------------+
+| test-backend| --> | test-frontend |
++-------------+     +---------------+
+       |                   |
+       v                   v
+       +-------------------+
+                |
+                v (si tous les tests passent)
+         +------------+
+         |   build    |
+         +------------+
+                |
+                v
+         +------------+
+         |   deploy   |
+         +------------+
+```
+
+### Structure des tests
+
+```
+backend/src/__tests__/
+├── setup/
+│   ├── globalSetup.ts     # Connexion DB + cleanup entre tests
+│   └── testHelpers.ts     # Factories (createTestUser, createTestAdmin, etc.)
+└── integration/
+    ├── auth.test.ts       # Auth utilisateur
+    ├── adminAuth.test.ts  # Auth admin 2FA
+    ├── recipes.test.ts    # CRUD recettes
+    ├── tags.test.ts       # API tags
+    └── admin*.test.ts     # APIs admin
+
+frontend/src/__tests__/
+├── setup/
+│   ├── vitestSetup.ts     # Config globale + MSW
+│   ├── mswHandlers.ts     # Mocks des endpoints API
+│   └── testUtils.tsx      # Helpers de rendu avec providers
+└── unit/
+    ├── contexts/          # Tests des contexts React
+    ├── components/        # Tests des composants
+    └── pages/             # Tests des pages
+```
+
+### Objectifs de couverture
+
+| Cible | Objectif |
+|-------|----------|
+| Backend (controllers/routes) | > 80% |
+| Frontend (composants critiques) | > 70% |
+
 ## Project Structure
 
 ```

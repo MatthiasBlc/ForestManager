@@ -46,7 +46,7 @@ export function AdminAuthProvider({ children }: AdminAuthProviderProps) {
         const adminUser = await APIManager.getLoggedInAdmin();
         setAdmin(adminUser);
         setAuthStep("authenticated");
-      } catch (err) {
+      } catch {
         // Not authenticated - this is expected
         setAdmin(null);
         setAuthStep("idle");
@@ -143,6 +143,7 @@ export function AdminAuthProvider({ children }: AdminAuthProviderProps) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAdminAuth(): AdminAuthContextType {
   const context = useContext(AdminAuthContext);
   if (!context) {
