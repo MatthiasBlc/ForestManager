@@ -459,23 +459,24 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ## Phase 6: Activity Feed (communautaire + personnel)
 
 ### 6.1 Backend Activity
-- [ ] Service ActivityService
-  - Methode log() centralisee
-  - Types d'evenements (enum ActivityType)
-- [ ] Route GET /api/communities/:id/activity
-  - Feed pagine par communaute
-- [ ] Route GET /api/users/me/activity (NOUVEAU)
-  - Feed personnel
-  - Propositions sur mes recettes
-  - Variantes de mes recettes
-  - Invitations recues
+- [x] Controller `controllers/activity.ts`
+  - getCommunityActivity (feed communaute)
+  - getMyActivity (feed personnel)
+- [x] Route GET /api/communities/:id/activity
+  - Feed pagine par communaute (memberOf)
+- [x] Route GET /api/users/me/activity
+  - Feed personnel pagine
+  - Actions propres de l'utilisateur
+  - Propositions sur ses recettes
+- [x] Tests `activity.test.ts` (15 tests)
 
 ### 6.2 Frontend Activity
-- [ ] Composant ActivityFeed
-- [ ] Integration dans page communaute (onglet)
-- [ ] Page/Section feed personnel
-- [ ] Formatage des evenements par type
-- [ ] Liens vers elements concernes
+- [x] Composant ActivityFeed avec icones par type d'evenement
+- [x] Integration dans page communaute (onglet Activity)
+- [x] Section feed personnel sur DashboardPage
+- [x] Formatage des evenements (16 types supportes)
+- [x] Liens vers recettes et communautes
+- [x] Tests `ActivityFeed.test.tsx` (8 tests)
 
 ### Livrables
 - Activity feed communautaire fonctionnel
@@ -669,8 +670,8 @@ Phase 8 (Finitions MVP)
 - [x] Le createur peut accepter (mise a jour des deux recettes) ou refuser (variante)
 - [ ] Les variantes sont visibles dans un dropdown
 - [ ] Un utilisateur peut forker une recette vers une autre communaute
-- [ ] L'activity feed communautaire montre les evenements
-- [ ] L'activity feed personnel montre les propositions sur mes recettes
+- [x] L'activity feed communautaire montre les evenements
+- [x] L'activity feed personnel montre les propositions sur mes recettes
 
 ### Technique
 - [ ] Application stable sans erreurs bloquantes
@@ -785,9 +786,11 @@ Lors de l'ajout d'une nouvelle fonctionnalite, inclure les tests suivants:
 | Backend Communities | communities.test.ts, communityRecipes.test.ts, invitations.test.ts, members.test.ts | ~112 |
 | Backend Proposals | proposals.test.ts | ~31 |
 | Backend Variants | variants.test.ts | ~10 |
+| Backend Activity | activity.test.ts | ~15 |
 | Frontend Contexts | AuthContext, AdminAuthContext | ~13 |
 | Frontend Auth | LoginModal, Modal, SignUpPage, ProtectedRoute, NavBar | ~25 |
 | Frontend Admin | AdminProtectedRoute, AdminLoginPage, AdminDashboardPage, AdminLayout | ~21 |
 | Frontend Recipes | RecipeCard, RecipeFilters, TagSelector, IngredientList | ~28 |
 | Frontend Pages | HomePage, RecipesPage, MainLayout, Sidebar | ~25 |
-| **Total** | | **~387** |
+| Frontend Activity | ActivityFeed.test.tsx | ~8 |
+| **Total** | | **~410** |

@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios";
 import { RecipeDetail, RecipesResponse, CommunityRecipesResponse, TagSearchResult, IngredientSearchResult, Proposal, ProposalsResponse, ProposalInput, VariantsResponse, RejectProposalResponse } from "../models/recipe";
+import { ActivityResponse } from "../models/activity";
 import { User } from "../models/user";
 import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats } from "../models/admin";
 import { CommunityListItem, CommunityDetail, CommunityMember, CommunityInvite, ReceivedInvite } from "../models/community";
@@ -416,6 +417,33 @@ export default class APIManager {
           throw new Error(error.response?.data?.error || "Failed to load dashboard");
         }
       });
+    return response.data;
+  }
+
+
+  // --------------- Activity Feed ---------------
+
+  static async getCommunityActivity(communityId: string, params: { limit?: number; offset?: number } = {}): Promise<ActivityResponse> {
+    const queryParams = new URLSearchParams();
+    if (params.limit) queryParams.set("limit", params.limit.toString());
+    if (params.offset) queryParams.set("offset", params.offset.toString());
+
+    const queryString = queryParams.toString();
+    const url = `/api/communities/${communityId}/activity${queryString ? `?${queryString}` : ""}`;
+
+    const response = await API.get(url).catch(handleApiError);
+    return response.data;
+  }
+
+  static async getMyActivity(params: { limit?: number; offset?: number } = {}): Promise<ActivityResponse> {
+    const queryParams = new URLSearchParams();
+    if (params.limit) queryParams.set("limit", params.limit.toString());
+    if (params.offset) queryParams.set("offset", params.offset.toString());
+
+    const queryString = queryParams.toString();
+    const url = `/api/users/me/activity${queryString ? `?${queryString}` : ""}`;
+
+    const response = await API.get(url).catch(handleApiError);
     return response.data;
   }
 

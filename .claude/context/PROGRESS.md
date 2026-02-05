@@ -20,12 +20,28 @@
 | 5.2 | Backend Variants (list variants endpoint) | DONE |
 | 5.3 | Frontend Proposals (modal, list, variants dropdown, RecipeDetailPage) | DONE |
 | 5.4 | Backend Orphan Handling (auto-reject proposals on leave/kick) | DONE |
+| 6.1 | Backend Activity Feed (community + personal endpoints) | DONE |
+| 6.2 | Frontend Activity Feed (component, integration) | DONE |
 
 ## Phase en cours
 
-**Phase 5 COMPLETE** - Propositions & Variantes
+**Phase 6 COMPLETE** - Activity Feed
 
-Prochaine etape: Phase 6 - Activity Feed.
+### 6.1 Backend Activity - DONE
+- [x] Controller `controllers/activity.ts` (getCommunityActivity, getMyActivity)
+- [x] Route GET /api/communities/:communityId/activity (memberOf, paginated)
+- [x] Route GET /api/users/me/activity (personal feed, paginated)
+- [x] Tests `activity.test.ts` (15 tests)
+
+### 6.2 Frontend Activity - DONE
+- [x] Composant ActivityFeed avec icones par type
+- [x] Integration dans page communaute (onglet Activity)
+- [x] Section feed personnel sur Dashboard
+- [x] Formatage des evenements (16 types supportes)
+- [x] Liens vers recettes et communautes
+- [x] Tests `ActivityFeed.test.tsx` (8 tests)
+
+Prochaine etape: Phase 7 - Partage Inter-Communautes.
 
 ## Prochaines phases
 

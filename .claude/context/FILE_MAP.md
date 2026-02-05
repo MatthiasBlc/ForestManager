@@ -5,6 +5,7 @@
 ### Controllers (logique metier)
 ```
 controllers/
+├── activity.ts        # getCommunityActivity, getMyActivity
 ├── auth.ts            # signup, login, logout, me
 ├── communities.ts     # CRUD communautes
 ├── communityRecipes.ts # create, list recettes communautaires
@@ -87,6 +88,7 @@ __tests__/
 │   ├── globalSetup.ts    # Setup DB test
 │   └── testHelpers.ts    # createTestUser, cleanupTestData, etc.
 └── integration/
+    ├── activity.test.ts
     ├── auth.test.ts
     ├── recipes.test.ts
     ├── tags.test.ts
@@ -152,6 +154,9 @@ components/
 │   ├── InviteUserModal.tsx   # Modal inviter un utilisateur
 │   ├── SentInvitesList.tsx   # Liste invitations envoyees
 │   └── InvitationBadge.tsx   # Badge compteur invitations PENDING
+├── activity/
+│   ├── index.ts              # Exports
+│   └── ActivityFeed.tsx      # Feed activite (community + personal)
 ├── proposals/
 │   ├── index.ts              # Exports
 │   ├── ProposeModificationModal.tsx # Modal proposer modifications
@@ -237,6 +242,7 @@ __tests__/
     │   ├── CommunitiesPage.test.tsx
     │   └── CommunityDetailPage.test.tsx
     └── components/
+        ├── ActivityFeed.test.tsx
         ├── InviteCard.test.tsx
         ├── MembersList.test.tsx
         └── InviteUserModal.test.tsx
