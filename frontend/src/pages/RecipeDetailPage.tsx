@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FaArrowLeft, FaEdit, FaTrash, FaLightbulb } from "react-icons/fa";
+import { FaArrowLeft, FaEdit, FaTrash, FaLightbulb, FaShare, FaCodeBranch } from "react-icons/fa";
 import APIManager from "../network/api";
 import { RecipeDetail } from "../models/recipe";
 import { useAuth } from "../contexts/AuthContext";
 import { formatDate } from "../utils/format.Date";
 import { ProposeModificationModal, ProposalsList, VariantsDropdown } from "../components/proposals";
+import { ShareRecipeModal } from "../components/share";
 
 const RecipeDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,6 +17,7 @@ const RecipeDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showProposeModal, setShowProposeModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [proposalsKey, setProposalsKey] = useState(0);
 
   useEffect(() => {
@@ -80,6 +82,11 @@ const RecipeDetailPage = () => {
     setProposalsKey((k) => k + 1);
   };
 
+  const handleRecipeShared = (newRecipeId: string) => {
+    setShowShareModal(false);
+    navigate(`/recipes/${newRecipeId}`);
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -113,6 +120,8 @@ const RecipeDetailPage = () => {
   const isOwner = recipe.creatorId === user?.id;
   const isCommunityRecipe = !!recipe.communityId;
   const canPropose = isCommunityRecipe && !isOwner;
+  const canShare = isCommunityRecipe; // Backend validates MODERATOR or owner permission
+  const isSharedRecipe = !!recipe.sharedFromCommunityId;
   const backPath = recipe.communityId ? `/communities/${recipe.communityId}` : "/recipes";
   const backLabel = recipe.communityId ? "Back to community" : "Back to recipes";
 
@@ -143,18 +152,35 @@ const RecipeDetailPage = () => {
           <div className="flex justify-between items-start gap-4 mb-4">
             <div>
               <h1 className="text-3xl font-bold">{recipe.title}</h1>
-              {recipe.community && (
-                <button
-                  className="badge badge-secondary mt-2 cursor-pointer"
-                  onClick={() => navigate(`/communities/${recipe.communityId}`)}
-                >
-                  In: {recipe.community.name}
-                </button>
-              )}
+              <div className="flex flex-wrap gap-2 mt-2">
+                {recipe.community && (
+                  <button
+                    className="badge badge-secondary cursor-pointer"
+                    onClick={() => navigate(`/communities/${recipe.communityId}`)}
+                  >
+                    In: {recipe.community.name}
+                  </button>
+                )}
+                {isSharedRecipe && recipe.sharedFromCommunity && (
+                  <span className="badge badge-outline badge-info gap-1">
+                    <FaCodeBranch className="w-3 h-3" />
+                    Shared from: {recipe.sharedFromCommunity.name}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex gap-2 items-center">
               {isCommunityRecipe && (
                 <VariantsDropdown recipeId={recipe.id} currentRecipeId={recipe.id} />
+              )}
+              {canShare && (
+                <button
+                  className="btn btn-outline btn-sm gap-2"
+                  onClick={() => setShowShareModal(true)}
+                >
+                  <FaShare className="w-3 h-3" />
+                  Share
+                </button>
               )}
               {canPropose && (
                 <button
@@ -245,6 +271,16 @@ const RecipeDetailPage = () => {
           currentContent={recipe.content}
           onClose={() => setShowProposeModal(false)}
           onProposalSubmitted={handleProposalSubmitted}
+        />
+      )}
+
+      {showShareModal && recipe.communityId && (
+        <ShareRecipeModal
+          recipeId={recipe.id}
+          recipeTitle={recipe.title}
+          currentCommunityId={recipe.communityId}
+          onClose={() => setShowShareModal(false)}
+          onShared={handleRecipeShared}
         />
       )}
     </div>

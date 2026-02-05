@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash, FaCodeBranch } from "react-icons/fa";
 import { RecipeListItem, CommunityRecipeListItem } from "../../models/recipe";
 import { formatDate } from "../../utils/format.Date";
 
@@ -68,9 +68,17 @@ const RecipeListRow = ({ recipe, onDelete, onTagClick, showCreator = false, canE
 
       <div className="flex-1 min-w-0">
         <h3 className="font-semibold truncate">{title}</h3>
-        {showCreator && "creator" in recipe && (
-          <p className="text-xs text-base-content/50">by {(recipe as CommunityRecipeListItem).creator.username}</p>
-        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          {showCreator && "creator" in recipe && (
+            <p className="text-xs text-base-content/50">by {(recipe as CommunityRecipeListItem).creator.username}</p>
+          )}
+          {"sharedFromCommunity" in recipe && (recipe as CommunityRecipeListItem).sharedFromCommunity && (
+            <span className="badge badge-outline badge-info badge-xs gap-1">
+              <FaCodeBranch className="w-2 h-2" />
+              From: {(recipe as CommunityRecipeListItem).sharedFromCommunity!.name}
+            </span>
+          )}
+        </div>
         <p className="text-sm text-base-content/60">{dateText}</p>
       </div>
 

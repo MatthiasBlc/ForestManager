@@ -187,6 +187,23 @@ export default class APIManager {
   }
 
 
+  // --------------- Share (Fork) ---------------
+
+  static async shareRecipe(recipeId: string, targetCommunityId: string): Promise<RecipeDetail> {
+    const response = await API.post(`/api/recipes/${recipeId}/share`, JSON.stringify({ targetCommunityId }))
+      .catch((error: AxiosError<{ error?: string }>) => {
+        if (error.response?.status === 403) {
+          throw new Error(error.response.data?.error || "Cannot share this recipe");
+        }
+        if (error.response?.status === 400) {
+          throw new Error(error.response.data?.error || "Invalid share request");
+        }
+        return handleApiError(error);
+      });
+    return response.data.recipe;
+  }
+
+
   // --------------- Variants ---------------
 
   static async getRecipeVariants(recipeId: string, limit?: number, offset?: number): Promise<VariantsResponse> {

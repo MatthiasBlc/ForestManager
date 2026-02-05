@@ -301,10 +301,17 @@ export const getCommunityRecipes: RequestHandler<
           createdAt: true,
           updatedAt: true,
           creatorId: true,
+          sharedFromCommunityId: true,
           creator: {
             select: {
               id: true,
               username: true,
+            },
+          },
+          sharedFromCommunity: {
+            select: {
+              id: true,
+              name: true,
             },
           },
           tags: {
@@ -335,6 +342,8 @@ export const getCommunityRecipes: RequestHandler<
       updatedAt: recipe.updatedAt,
       creatorId: recipe.creatorId,
       creator: recipe.creator,
+      sharedFromCommunityId: recipe.sharedFromCommunityId,
+      sharedFromCommunity: recipe.sharedFromCommunity,
       tags: recipe.tags.map((rt) => rt.tag),
     }));
 

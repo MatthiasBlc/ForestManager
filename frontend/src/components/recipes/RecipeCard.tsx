@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash, FaCodeBranch } from "react-icons/fa";
 import { RecipeListItem, CommunityRecipeListItem } from "../../models/recipe";
 import { formatDate } from "../../utils/format.Date";
 
@@ -69,6 +69,12 @@ const RecipeCard = ({ recipe, onDelete, onTagClick, showCreator = false, canEdit
         <h2 className="card-title">{title}</h2>
         {showCreator && "creator" in recipe && (
           <p className="text-sm text-base-content/60">by {(recipe as CommunityRecipeListItem).creator.username}</p>
+        )}
+        {"sharedFromCommunity" in recipe && (recipe as CommunityRecipeListItem).sharedFromCommunity && (
+          <span className="badge badge-outline badge-info badge-sm gap-1">
+            <FaCodeBranch className="w-2.5 h-2.5" />
+            From: {(recipe as CommunityRecipeListItem).sharedFromCommunity!.name}
+          </span>
         )}
 
         {tags.length > 0 && (

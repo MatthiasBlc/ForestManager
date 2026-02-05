@@ -22,4 +22,7 @@ router.get("/:recipeId/proposals", ProposalsController.getProposals);
 
 router.post("/:recipeId/proposals", ProposalsController.createProposal);
 
+// Share recipe to another community (fork)
+router.post("/:recipeId/share", RecipesController.shareRecipe);
+
 export default router;
