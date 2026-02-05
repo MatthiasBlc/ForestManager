@@ -780,3 +780,314 @@ export const getVariants: RequestHandler<
     next(error);
   }
 };
+
+interface ShareRecipeBody {
+  targetCommunityId: string;
+}
+
+/**
+ * POST /api/recipes/:recipeId/share
+ * Partager (fork) une recette vers une autre communaute
+ * Regles:
+ * - Recette source doit etre communautaire
+ * - User doit etre membre des deux communautes
+ * - User doit etre MODERATOR dans une des deux OU createur de la recette
+ */
+export const shareRecipe: RequestHandler<
+  { recipeId: string },
+  unknown,
+  ShareRecipeBody,
+  unknown
+> = async (req, res, next) => {
+  const authenticatedUserId = req.session.userId;
+  const { recipeId } = req.params;
+  const { targetCommunityId } = req.body;
+
+  try {
+    assertIsDefine(authenticatedUserId);
+
+    if (!targetCommunityId?.trim()) {
+      throw createHttpError(400, "SHARE_001: Target community ID required");
+    }
+
+    // 1. Recuperer la recette source avec ses relations
+    const sourceRecipe = await prisma.recipe.findFirst({
+      where: {
+        id: recipeId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        imageUrl: true,
+        communityId: true,
+        creatorId: true,
+        tags: {
+          select: {
+            tagId: true,
+          },
+        },
+        ingredients: {
+          select: {
+            ingredientId: true,
+            quantity: true,
+            order: true,
+          },
+          orderBy: {
+            order: "asc",
+          },
+        },
+      },
+    });
+
+    if (!sourceRecipe) {
+      throw createHttpError(404, "RECIPE_001: Recipe not found");
+    }
+
+    // 2. Verifier que c'est une recette communautaire
+    if (sourceRecipe.communityId === null) {
+      throw createHttpError(400, "SHARE_002: Cannot share personal recipes");
+    }
+
+    // 3. Verifier que la communaute cible n'est pas la meme que la source
+    if (sourceRecipe.communityId === targetCommunityId) {
+      throw createHttpError(400, "SHARE_003: Cannot share to same community");
+    }
+
+    // 4. Verifier que la communaute cible existe
+    const targetCommunity = await prisma.community.findFirst({
+      where: {
+        id: targetCommunityId,
+        deletedAt: null,
+      },
+    });
+
+    if (!targetCommunity) {
+      throw createHttpError(404, "COMMUNITY_002: Target community not found");
+    }
+
+    // 5. Verifier membership dans les deux communautes
+    const [sourceMembership, targetMembership] = await Promise.all([
+      prisma.userCommunity.findFirst({
+        where: {
+          userId: authenticatedUserId,
+          communityId: sourceRecipe.communityId,
+          deletedAt: null,
+        },
+      }),
+      prisma.userCommunity.findFirst({
+        where: {
+          userId: authenticatedUserId,
+          communityId: targetCommunityId,
+          deletedAt: null,
+        },
+      }),
+    ]);
+
+    if (!sourceMembership) {
+      throw createHttpError(403, "COMMUNITY_001: Not a member of source community");
+    }
+
+    if (!targetMembership) {
+      throw createHttpError(403, "SHARE_004: Not a member of target community");
+    }
+
+    // 6. Verifier permission: MODERATOR dans une des deux OU createur de la recette
+    const isRecipeCreator = sourceRecipe.creatorId === authenticatedUserId;
+    const isModeratorInSource = sourceMembership.role === "MODERATOR";
+    const isModeratorInTarget = targetMembership.role === "MODERATOR";
+
+    if (!isRecipeCreator && !isModeratorInSource && !isModeratorInTarget) {
+      throw createHttpError(
+        403,
+        "SHARE_005: Must be recipe creator or moderator in one of the communities"
+      );
+    }
+
+    // 7. Creer le fork dans une transaction
+    const result = await prisma.$transaction(async (tx) => {
+      // Creer la nouvelle recette (fork)
+      const forkedRecipe = await tx.recipe.create({
+        data: {
+          title: sourceRecipe.title,
+          content: sourceRecipe.content,
+          imageUrl: sourceRecipe.imageUrl,
+          creatorId: authenticatedUserId,
+          communityId: targetCommunityId,
+          originRecipeId: sourceRecipe.id,
+          sharedFromCommunityId: sourceRecipe.communityId,
+          isVariant: false,
+        },
+      });
+
+      // Copier les tags
+      if (sourceRecipe.tags.length > 0) {
+        await tx.recipeTag.createMany({
+          data: sourceRecipe.tags.map((rt) => ({
+            recipeId: forkedRecipe.id,
+            tagId: rt.tagId,
+          })),
+        });
+      }
+
+      // Copier les ingredients
+      if (sourceRecipe.ingredients.length > 0) {
+        await tx.recipeIngredient.createMany({
+          data: sourceRecipe.ingredients.map((ri) => ({
+            recipeId: forkedRecipe.id,
+            ingredientId: ri.ingredientId,
+            quantity: ri.quantity,
+            order: ri.order,
+          })),
+        });
+      }
+
+      // Mettre a jour les analytics de la recette source (et de la chaine)
+      // Remonter la chaine des originRecipeId pour incrementer tous les ancetres
+      const recipesToUpdate: string[] = [sourceRecipe.id];
+      let currentRecipeId: string | null = sourceRecipe.id;
+
+      // Remonter la chaine des ancetres
+      while (currentRecipeId) {
+        const parentRecipe = await tx.recipe.findFirst({
+          where: { id: currentRecipeId },
+          select: { originRecipeId: true },
+        });
+
+        if (parentRecipe?.originRecipeId) {
+          recipesToUpdate.push(parentRecipe.originRecipeId);
+          currentRecipeId = parentRecipe.originRecipeId;
+        } else {
+          currentRecipeId = null;
+        }
+      }
+
+      // Incrementer shares et forks pour tous les ancetres
+      for (const ancestorId of recipesToUpdate) {
+        await tx.recipeAnalytics.upsert({
+          where: { recipeId: ancestorId },
+          create: {
+            recipeId: ancestorId,
+            shares: 1,
+            forks: 1,
+          },
+          update: {
+            shares: { increment: 1 },
+            forks: { increment: 1 },
+          },
+        });
+      }
+
+      // Creer ActivityLog dans la communaute source
+      await tx.activityLog.create({
+        data: {
+          type: "RECIPE_SHARED",
+          userId: authenticatedUserId,
+          communityId: sourceRecipe.communityId,
+          recipeId: sourceRecipe.id,
+          metadata: {
+            targetCommunityId,
+            targetCommunityName: targetCommunity.name,
+            forkedRecipeId: forkedRecipe.id,
+          },
+        },
+      });
+
+      // Creer ActivityLog dans la communaute cible
+      await tx.activityLog.create({
+        data: {
+          type: "RECIPE_SHARED",
+          userId: authenticatedUserId,
+          communityId: targetCommunityId,
+          recipeId: forkedRecipe.id,
+          metadata: {
+            fromCommunityId: sourceRecipe.communityId,
+            originRecipeId: sourceRecipe.id,
+          },
+        },
+      });
+
+      // Recuperer la recette forkee avec toutes ses relations
+      return tx.recipe.findUnique({
+        where: { id: forkedRecipe.id },
+        select: {
+          id: true,
+          title: true,
+          content: true,
+          imageUrl: true,
+          createdAt: true,
+          updatedAt: true,
+          creatorId: true,
+          communityId: true,
+          originRecipeId: true,
+          sharedFromCommunityId: true,
+          isVariant: true,
+          community: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          tags: {
+            select: {
+              tag: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+          ingredients: {
+            select: {
+              id: true,
+              quantity: true,
+              order: true,
+              ingredient: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+            orderBy: {
+              order: "asc",
+            },
+          },
+        },
+      });
+    });
+
+    if (!result) {
+      throw createHttpError(500, "Failed to share recipe");
+    }
+
+    const responseData = {
+      id: result.id,
+      title: result.title,
+      content: result.content,
+      imageUrl: result.imageUrl,
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt,
+      creatorId: result.creatorId,
+      communityId: result.communityId,
+      community: result.community,
+      originRecipeId: result.originRecipeId,
+      sharedFromCommunityId: result.sharedFromCommunityId,
+      isVariant: result.isVariant,
+      tags: result.tags.map((rt) => rt.tag),
+      ingredients: result.ingredients.map((ri) => ({
+        id: ri.id,
+        name: ri.ingredient.name,
+        ingredientId: ri.ingredient.id,
+        quantity: ri.quantity,
+        order: ri.order,
+      })),
+    };
+
+    res.status(201).json(responseData);
+  } catch (error) {
+    next(error);
+  }
+};

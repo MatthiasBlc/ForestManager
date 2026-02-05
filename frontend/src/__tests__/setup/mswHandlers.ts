@@ -1048,6 +1048,56 @@ export const handlers = [
   }),
 
   // =====================================
+  // Recipe Share
+  // =====================================
+
+  http.post(`${API_URL}/api/recipes/:recipeId/share`, async ({ params, request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, string>;
+    const { targetCommunityId } = body;
+
+    if (!targetCommunityId) {
+      return HttpResponse.json(
+        { error: 'RECIPE_006: Target community required' },
+        { status: 400 }
+      );
+    }
+
+    // Simulate permission error for specific test case
+    if (targetCommunityId === 'no-permission') {
+      return HttpResponse.json(
+        { error: 'RECIPE_007: Cannot share - must be MODERATOR or recipe creator' },
+        { status: 403 }
+      );
+    }
+
+    const newRecipe = {
+      id: `shared-recipe-${Date.now()}`,
+      title: 'Shared Recipe',
+      content: 'Shared recipe content',
+      imageUrl: null,
+      creatorId: mockUser.id,
+      creator: mockUser,
+      communityId: targetCommunityId,
+      originRecipeId: params.recipeId,
+      sharedFromCommunityId: 'community-1',
+      sharedFromCommunity: { id: 'community-1', name: 'Baking Club' },
+      tags: [],
+      ingredients: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    return HttpResponse.json({ recipe: newRecipe }, { status: 201 });
+  }),
+
+  // =====================================
   // Admin Activity
   // =====================================
 

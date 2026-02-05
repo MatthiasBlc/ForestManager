@@ -105,6 +105,7 @@ __tests__/
     ├── adminDashboard.test.ts
     ├── adminActivity.test.ts
     ├── proposals.test.ts
+    ├── share.test.ts
     └── variants.test.ts
 ```
 
@@ -162,6 +163,9 @@ components/
 │   ├── ProposeModificationModal.tsx # Modal proposer modifications
 │   ├── ProposalsList.tsx     # Liste propositions (owner view)
 │   └── VariantsDropdown.tsx  # Dropdown variantes recette
+├── share/
+│   ├── index.ts              # Exports
+│   └── ShareRecipeModal.tsx  # Modal partage recette inter-communautes
 ├── recipes/
 │   ├── RecipeCard.tsx        # Carte recette (grille)
 │   ├── RecipeFilters.tsx     # Filtres search/tags
@@ -245,7 +249,8 @@ __tests__/
         ├── ActivityFeed.test.tsx
         ├── InviteCard.test.tsx
         ├── MembersList.test.tsx
-        └── InviteUserModal.test.tsx
+        ├── InviteUserModal.test.tsx
+        └── ShareRecipeModal.test.tsx
 ```
 
 ---

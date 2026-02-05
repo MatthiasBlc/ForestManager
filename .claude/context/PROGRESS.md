@@ -22,34 +22,24 @@
 | 5.4 | Backend Orphan Handling (auto-reject proposals on leave/kick) | DONE |
 | 6.1 | Backend Activity Feed (community + personal endpoints) | DONE |
 | 6.2 | Frontend Activity Feed (component, integration) | DONE |
+| 7.1 | Backend Share (fork to other community, chain analytics) | DONE |
+| 7.2 | Frontend Share (modal, badge "Shared from X") | DONE |
 
 ## Phase en cours
 
-**Phase 6 COMPLETE** - Activity Feed
+**Phase 8** - Finitions MVP
 
-### 6.1 Backend Activity - DONE
-- [x] Controller `controllers/activity.ts` (getCommunityActivity, getMyActivity)
-- [x] Route GET /api/communities/:communityId/activity (memberOf, paginated)
-- [x] Route GET /api/users/me/activity (personal feed, paginated)
-- [x] Tests `activity.test.ts` (15 tests)
-
-### 6.2 Frontend Activity - DONE
-- [x] Composant ActivityFeed avec icones par type
-- [x] Integration dans page communaute (onglet Activity)
-- [x] Section feed personnel sur Dashboard
-- [x] Formatage des evenements (16 types supportes)
-- [x] Liens vers recettes et communautes
-- [x] Tests `ActivityFeed.test.tsx` (8 tests)
-
-Prochaine etape: Phase 7 - Partage Inter-Communautes.
+### 8.1 - A FAIRE
+- [ ] Gestion erreurs globale (toast notifications, error boundaries)
+- [ ] Loading states coherents
+- [ ] Empty states (pas de recettes, pas de communautes, etc.)
+- [ ] Validation formulaires cote client
+- [ ] Messages d'erreur user-friendly
 
 ## Prochaines phases
 
 | Phase | Description | Prerequis |
 |-------|-------------|-----------|
-| 5 | Propositions & Variantes (workflow accept/reject, forks) | Phase 4 |
-| 6 | Activity Feed (communautaire + personnel) | Phase 5 |
-| 7 | Partage inter-communautes (fork recettes) | Phase 3 |
 | 8 | Finitions MVP (erreurs, loading, empty states) | Phases 4-7 |
 | 9 | Post-MVP (analytics, notifications, PWA, admin pages) | Phase 8 |
 
