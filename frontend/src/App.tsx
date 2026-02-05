@@ -131,6 +131,16 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/communities/:communityId/recipes/new"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <RecipeFormPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
 
               {/* Profile route */}
               <Route

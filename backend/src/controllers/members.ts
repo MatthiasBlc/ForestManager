@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
+import { handleOrphanedRecipes } from "../services/orphanHandling";
 
 // =====================================
 // GET /api/communities/:communityId/members
@@ -180,24 +181,30 @@ async function handleLeave(
     );
   }
 
-  // Regular leave
-  await prisma.$transaction([
-    prisma.userCommunity.updateMany({
+  // Regular leave - use interactive transaction for orphan handling
+  await prisma.$transaction(async (tx) => {
+    // Handle orphaned recipes first (auto-reject pending proposals)
+    await handleOrphanedRecipes(userId, communityId, tx);
+
+    // Soft delete membership
+    await tx.userCommunity.updateMany({
       where: {
         userId,
         communityId,
         deletedAt: null,
       },
       data: { deletedAt: new Date() },
-    }),
-    prisma.activityLog.create({
+    });
+
+    // Log activity
+    await tx.activityLog.create({
       data: {
         type: "USER_LEFT",
         userId,
         communityId,
       },
-    }),
-  ]);
+    });
+  });
 
   res.status(200).json({ message: "Left community successfully" });
 }
@@ -232,13 +239,19 @@ async function handleKick(
     throw createHttpError(403, "COMMUNITY_006: Cannot remove a moderator");
   }
 
-  // Kick the member
-  await prisma.$transaction([
-    prisma.userCommunity.update({
+  // Kick the member - use interactive transaction for orphan handling
+  await prisma.$transaction(async (tx) => {
+    // Handle orphaned recipes first (auto-reject pending proposals)
+    await handleOrphanedRecipes(targetUserId, communityId, tx);
+
+    // Soft delete membership
+    await tx.userCommunity.update({
       where: { id: targetMembership.id },
       data: { deletedAt: new Date() },
-    }),
-    prisma.activityLog.create({
+    });
+
+    // Log activity
+    await tx.activityLog.create({
       data: {
         type: "USER_KICKED",
         userId: requesterId,
@@ -247,8 +260,8 @@ async function handleKick(
           kickedUserId: targetUserId,
         },
       },
-    }),
-  ]);
+    });
+  });
 
   res.status(200).json({ message: "Member removed successfully" });
 }

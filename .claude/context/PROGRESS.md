@@ -14,47 +14,23 @@
 | 3.4 | Frontend Communities (pages, composants, sidebar Discord-style) | DONE |
 | 3.5 | Frontend Invitations (pages, composants, notifications) | DONE |
 | 3.6 | Frontend User Management (profil, menu, search) | DONE |
+| 4.1 | Backend Recettes Communautaires (CRUD, copie perso, tests) | DONE |
+| 4.2 | Frontend Recettes Communautaires (liste, creation, detail, permissions) | DONE |
+| 5.1 | Backend Proposals (create, list, detail, accept, reject) | DONE |
+| 5.2 | Backend Variants (list variants endpoint) | DONE |
+| 5.3 | Frontend Proposals (modal, list, variants dropdown, RecipeDetailPage) | DONE |
+| 5.4 | Backend Orphan Handling (auto-reject proposals on leave/kick) | DONE |
 
-## Detail Phase 3.4-3.6 (COMPLETE)
+## Phase en cours
 
-### 3.4 Frontend Communities
-- [x] Page liste communautes (CommunitiesPage)
-- [x] Page creation communaute (CommunityCreatePage)
-- [x] Page detail communaute avec onglets (CommunityDetailPage)
-- [x] Page edition communaute MODERATOR only (CommunityEditPage)
-- [x] Composant CommunityCard
-- [x] Composant MembersList (promotion, retrait, leave)
-- [x] Dashboard page (communautes + recettes, page d'accueil)
-- [x] Sidebar Discord-style avec avatars communautes (initiales)
-- [x] Fix leave community (gestion 410, redirect, confirmation explicite)
-- [x] Seed representatif (5 users, 3 communautes, 17 tags, 36 ingredients, 11 recettes)
+**Phase 5 COMPLETE** - Propositions & Variantes
 
-### 3.5 Frontend Invitations
-- [x] Page invitations recues (InvitationsPage)
-- [x] Dropdown notifications dans navbar (NotificationDropdown)
-- [x] Carte invitation avec Accept/Reject + redirect (InviteCard)
-- [x] Modal invitation avec autocomplete username (InviteUserModal)
-- [x] Liste invitations envoyees (SentInvitesList)
-
-### 3.6 Frontend User Management
-- [x] User menu dropdown (icone profil, navbar)
-- [x] Page profil (modification username, email, mot de passe)
-- [x] Backend PATCH /api/users/me
-- [x] Backend GET /api/users/search (autocomplete usernames)
-
-### Tests Phase 3 Frontend
-- [x] CommunitiesPage.test.tsx (7 tests)
-- [x] CommunityDetailPage.test.tsx (8 tests)
-- [x] InviteCard.test.tsx (5 tests)
-- [x] MembersList.test.tsx (6 tests)
-- [x] InviteUserModal.test.tsx (5 tests)
-- [x] MSW handlers pour communities, members, invitations
+Prochaine etape: Phase 6 - Activity Feed.
 
 ## Prochaines phases
 
 | Phase | Description | Prerequis |
 |-------|-------------|-----------|
-| 4 | Recettes communautaires (POST dans communaute, copie perso) | Phase 3 |
 | 5 | Propositions & Variantes (workflow accept/reject, forks) | Phase 4 |
 | 6 | Activity Feed (communautaire + personnel) | Phase 5 |
 | 7 | Partage inter-communautes (fork recettes) | Phase 3 |

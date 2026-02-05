@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "axios";
-import { RecipeDetail, RecipesResponse, TagSearchResult, IngredientSearchResult } from "../models/recipe";
+import { RecipeDetail, RecipesResponse, CommunityRecipesResponse, TagSearchResult, IngredientSearchResult, Proposal, ProposalsResponse, ProposalInput, VariantsResponse, RejectProposalResponse } from "../models/recipe";
 import { User } from "../models/user";
 import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats } from "../models/admin";
 import { CommunityListItem, CommunityDetail, CommunityMember, CommunityInvite, ReceivedInvite } from "../models/community";
@@ -109,6 +109,93 @@ export default class APIManager {
 
   static async deleteRecipe(recipeId: string) {
     const response = await API.delete("/api/recipes/" + recipeId).catch(handleApiError);
+    return response.data;
+  }
+
+
+  // --------------- Community Recipes ---------------
+
+  static async getCommunityRecipes(communityId: string, params: GetRecipesParams = {}): Promise<CommunityRecipesResponse> {
+    const queryParams = new URLSearchParams();
+    if (params.limit) queryParams.set("limit", params.limit.toString());
+    if (params.offset) queryParams.set("offset", params.offset.toString());
+    if (params.tags && params.tags.length > 0) queryParams.set("tags", params.tags.join(","));
+    if (params.ingredients && params.ingredients.length > 0) queryParams.set("ingredients", params.ingredients.join(","));
+    if (params.search) queryParams.set("search", params.search);
+
+    const queryString = queryParams.toString();
+    const url = `/api/communities/${communityId}/recipes${queryString ? `?${queryString}` : ""}`;
+
+    const response = await API.get(url).catch(handleApiError);
+    return response.data;
+  }
+
+  static async createCommunityRecipe(communityId: string, recipe: RecipeInput): Promise<RecipeDetail> {
+    const response = await API.post(`/api/communities/${communityId}/recipes`, JSON.stringify(recipe)).catch(handleApiError);
+    return response.data.community;
+  }
+
+
+  // --------------- Proposals ---------------
+
+  static async getRecipeProposals(recipeId: string, status?: string): Promise<ProposalsResponse> {
+    const params = status ? `?status=${status}` : "";
+    const response = await API.get(`/api/recipes/${recipeId}/proposals${params}`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async createProposal(recipeId: string, proposal: ProposalInput): Promise<Proposal> {
+    const response = await API.post(`/api/recipes/${recipeId}/proposals`, JSON.stringify(proposal))
+      .catch((error: AxiosError<{ error?: string }>) => {
+        if (error.response?.status === 400) {
+          throw new Error(error.response.data?.error || "Cannot create proposal");
+        }
+        return handleApiError(error);
+      });
+    return response.data;
+  }
+
+  static async getProposal(proposalId: string): Promise<Proposal> {
+    const response = await API.get(`/api/proposals/${proposalId}`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async acceptProposal(proposalId: string): Promise<Proposal> {
+    const response = await API.post(`/api/proposals/${proposalId}/accept`)
+      .catch((error: AxiosError<{ error?: string }>) => {
+        if (error.response?.status === 409) {
+          throw new ConflictError(error.response.data?.error || "Recipe has been modified");
+        }
+        if (error.response?.status === 400) {
+          throw new Error(error.response.data?.error || "Cannot accept proposal");
+        }
+        return handleApiError(error);
+      });
+    return response.data;
+  }
+
+  static async rejectProposal(proposalId: string): Promise<RejectProposalResponse> {
+    const response = await API.post(`/api/proposals/${proposalId}/reject`)
+      .catch((error: AxiosError<{ error?: string }>) => {
+        if (error.response?.status === 400) {
+          throw new Error(error.response.data?.error || "Cannot reject proposal");
+        }
+        return handleApiError(error);
+      });
+    return response.data;
+  }
+
+
+  // --------------- Variants ---------------
+
+  static async getRecipeVariants(recipeId: string, limit?: number, offset?: number): Promise<VariantsResponse> {
+    const queryParams = new URLSearchParams();
+    if (limit) queryParams.set("limit", limit.toString());
+    if (offset) queryParams.set("offset", offset.toString());
+    const queryString = queryParams.toString();
+    const url = `/api/recipes/${recipeId}/variants${queryString ? `?${queryString}` : ""}`;
+
+    const response = await API.get(url).catch(handleApiError);
     return response.data;
   }
 

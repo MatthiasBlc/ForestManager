@@ -4,6 +4,7 @@ import { FaArrowLeft, FaEdit } from "react-icons/fa";
 import { CommunityDetail, CommunityMember } from "../models/community";
 import APIManager from "../network/api";
 import MembersList from "../components/communities/MembersList";
+import CommunityRecipesList from "../components/communities/CommunityRecipesList";
 import SentInvitesList from "../components/invitations/SentInvitesList";
 
 type Tab = "members" | "invitations" | "recipes";
@@ -163,9 +164,7 @@ const CommunityDetailPage = () => {
         )}
 
         {activeTab === "recipes" && (
-          <div className="text-center py-12">
-            <p className="text-base-content/60">Community recipes coming soon</p>
-          </div>
+          <CommunityRecipesList communityId={community.id} />
         )}
       </div>
     </div>

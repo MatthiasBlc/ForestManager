@@ -369,23 +369,25 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 
 ## Phase 4: Recettes Communautaires
 
+**Note**: La synchronisation bidirectionnelle (modif perso ↔ communautaire) sera implementee en Phase 5.
+
 ### 4.1 Backend
-- [ ] Route POST /api/communities/:id/recipes
+- [x] Route POST /api/communities/:id/recipes
   - Creation recette dans catalogue personnel (communityId: null)
   - Creation copie dans communaute (communityId: X)
   - Lien originRecipeId vers recette perso
   - Log ActivityLog (RECIPE_CREATED)
-- [ ] Route GET /api/communities/:id/recipes
+- [x] Route GET /api/communities/:id/recipes
   - Liste recettes communaute
   - Pagination, filtre tags, recherche
-- [ ] Modification routes recipes/:id
+- [x] Modification routes recipes/:id
   - Gestion recettes communautaires (verification membership)
 
 ### 4.2 Frontend
-- [ ] Liste recettes dans page communaute
-- [ ] Creation recette depuis communaute
-- [ ] Distinction visuelle perso vs communaute
-- [ ] Lien vers communaute sur recette
+- [x] Liste recettes dans page communaute
+- [x] Creation recette depuis communaute
+- [x] Distinction visuelle perso vs communaute
+- [x] Lien vers communaute sur recette
 - [ ] Badge "Partage depuis X" si sharedFromCommunityId
 
 ### Livrables
@@ -397,36 +399,55 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 
 ## Phase 5: Propositions & Variantes
 
+**Decisions metier validees (voir BUSINESS_RULES.md sections 3.2.1, 3.3.1, 4.2, 4.4, 5.4, 6.3):**
+- Synchro bidirectionnelle: titre/contenu/ingredients synchronises, tags LOCAUX par communaute
+- Conflit: bloquer acceptation si recipe.updatedAt > proposal.createdAt (PROPOSAL_003)
+- Cascade: acceptation → 1 ActivityLog par communaute impactee
+- Orphelins: permanent, pas de modification directe, propositions PENDING auto-refusees
+- Variantes: coexistent, dropdown PLAT, tri par MAX(createdAt, updatedAt)
+- Variantes de variantes OK, originRecipeId = parent immediat
+
 ### 5.1 Backend Proposals
-- [ ] Route GET /api/recipes/:id/proposals
+- [x] Route GET /api/recipes/:id/proposals
   - Liste propositions (filtre status)
-- [ ] Route POST /api/recipes/:id/proposals
+- [x] Route POST /api/recipes/:id/proposals
   - Creation proposition
-  - Validation: not own recipe, member
+  - Validation: not own recipe, member, recipe not orphan
   - Log ActivityLog (VARIANT_PROPOSED)
-- [ ] Route GET /api/proposals/:id
+- [x] Route GET /api/proposals/:id
   - Detail proposition
-- [ ] Route POST /api/proposals/:id/accept
-  - Mise a jour recette communautaire
+- [x] Route POST /api/proposals/:id/accept
+  - **Validation conflit**: bloquer si recipe.updatedAt > proposal.createdAt (PROPOSAL_003)
+  - Mise a jour recette communautaire (titre, contenu - PAS tags)
   - Mise a jour recette personnelle liee (via originRecipeId)
+  - **CASCADE**: Mise a jour de toutes les autres copies communautaires
+  - **ActivityLog**: 1 entry PROPOSAL_ACCEPTED + 1 entry RECIPE_UPDATED par communaute
   - Status ACCEPTED
-  - Log ActivityLog (PROPOSAL_ACCEPTED)
-- [ ] Route POST /api/proposals/:id/reject
-  - Creation variante (isVariant: true, originRecipeId, creatorId: proposer)
+- [x] Route POST /api/proposals/:id/reject
+  - Creation variante (isVariant: true, originRecipeId = parent, creatorId: proposer)
   - Status REJECTED
   - Log ActivityLog (VARIANT_CREATED)
 
 ### 5.2 Backend Variants
-- [ ] Route GET /api/recipes/:id/variants
+- [x] Route GET /api/recipes/:id/variants
   - Liste variantes (where originRecipeId = X AND isVariant = true)
+  - **Scope**: seulement les variantes de CETTE communaute
+  - **Tri**: par MAX(createdAt, updatedAt) DESC
 
-### 5.3 Frontend
-- [ ] Bouton "Proposer modification" sur recette (pas sur ses propres)
-- [ ] Page/Modal creation proposition (formulaire pre-rempli)
-- [ ] Section propositions pour proprietaire (dans feed perso)
-- [ ] Comparaison avant/apres
-- [ ] Boutons Accept/Reject
-- [ ] Dropdown variantes sur page recette
+### 5.3 Backend Orphan Handling
+- [x] Service handleOrphanedRecipes
+  - Declenche quand: membre quitte/kick
+  - Auto-refuse toutes les propositions PENDING → cree variantes
+  - Log ActivityLog (VARIANT_CREATED) avec reason: ORPHAN_AUTO_REJECT
+- [x] Integration dans members controller (handleLeave, handleKick)
+- [x] Tests integration (4 tests: leave avec proposals, multiple proposals, decided proposals, kick)
+
+### 5.4 Frontend
+- [x] Bouton "Proposer modification" sur recette (pas sur ses propres)
+- [x] Page/Modal creation proposition (formulaire pre-rempli)
+- [x] Section propositions pour proprietaire (dans RecipeDetailPage)
+- [x] Boutons Accept/Reject avec expand details
+- [x] Dropdown variantes sur page recette
 
 ### Livrables
 - Workflow complet de propositions
@@ -464,11 +485,22 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 
 ## Phase 7: Partage Inter-Communautes
 
+<!-- User Stories: US-8.1 (Fork recette vers autre communaute), US-8.2 (Voir origine recette forkee) - voir docs/USER_STORIES.md Epic 8 -->
+
+**Decisions metier validees (voir BUSINESS_RULES.md section 5):**
+- originRecipeId pointe vers recette COMMUNAUTAIRE source (pas perso)
+- Fork = totalement independant, pas de synchronisation
+- Chaines de forks OK: A→B→C, origin = parent immediat
+- Analytics: remontee en chaine (+1 pour A quand C fork B)
+
 ### 7.1 Backend
 - [ ] Route POST /api/recipes/:id/share
   - Validation membership deux communautes
   - Validation permission (admin OU createur)
-  - Creation fork (originRecipeId, sharedFromCommunityId)
+  - Creation fork:
+    - originRecipeId = recette communautaire source
+    - sharedFromCommunityId = communaute source
+  - **Analytics chaine**: incrementer shares/forks de TOUS les ancetres
   - Log ActivityLog (RECIPE_SHARED) dans les deux communautes
 
 ### 7.2 Frontend
@@ -480,6 +512,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ### Livrables
 - Fork de recettes entre communautes fonctionnel
 - Tracabilite des origines
+- Analytics avec remontee en chaine
 
 ---
 
@@ -630,10 +663,10 @@ Phase 8 (Finitions MVP)
 - [x] Un MODERATOR peut annuler une invitation (backend)
 - [x] Un MODERATOR peut promouvoir un membre en MODERATOR (backend)
 - [x] Un MODERATOR peut retirer un membre (mais pas un MODERATOR) (backend)
-- [ ] Un membre peut creer une recette dans une communaute
-- [ ] Une copie est creee dans son catalogue personnel
-- [ ] Un membre peut proposer une modification
-- [ ] Le createur peut accepter (mise a jour des deux recettes) ou refuser (variante)
+- [x] Un membre peut creer une recette dans une communaute
+- [x] Une copie est creee dans son catalogue personnel
+- [x] Un membre peut proposer une modification
+- [x] Le createur peut accepter (mise a jour des deux recettes) ou refuser (variante)
 - [ ] Les variantes sont visibles dans un dropdown
 - [ ] Un utilisateur peut forker une recette vers une autre communaute
 - [ ] L'activity feed communautaire montre les evenements
@@ -748,11 +781,13 @@ Lors de l'ajout d'une nouvelle fonctionnalite, inclure les tests suivants:
 |-----------|----------|-------|
 | Backend Auth | auth.test.ts, adminAuth.test.ts | ~30 |
 | Backend Admin API | adminTags, adminIngredients, adminFeatures, adminCommunities, adminDashboard, adminActivity | ~50 |
-| Backend User API | recipes.test.ts, tags.test.ts, ingredients.test.ts | ~41 |
-| Backend Communities | communities.test.ts, invitations.test.ts, members.test.ts | ~84 |
+| Backend User API | recipes.test.ts, tags.test.ts, ingredients.test.ts | ~42 |
+| Backend Communities | communities.test.ts, communityRecipes.test.ts, invitations.test.ts, members.test.ts | ~112 |
+| Backend Proposals | proposals.test.ts | ~31 |
+| Backend Variants | variants.test.ts | ~10 |
 | Frontend Contexts | AuthContext, AdminAuthContext | ~13 |
 | Frontend Auth | LoginModal, Modal, SignUpPage, ProtectedRoute, NavBar | ~25 |
 | Frontend Admin | AdminProtectedRoute, AdminLoginPage, AdminDashboardPage, AdminLayout | ~21 |
 | Frontend Recipes | RecipeCard, RecipeFilters, TagSelector, IngredientList | ~28 |
 | Frontend Pages | HomePage, RecipesPage, MainLayout, Sidebar | ~25 |
-| **Total** | | **~317** |
+| **Total** | | **~387** |
