@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaPlus, FaTh, FaList } from "react-icons/fa";
-import { CommunityRecipeListItem, CommunityRecipesResponse } from "../../models/recipe";
+import { CommunityRecipeListItem, CommunityRecipesResponse, RecipeListItem } from "../../models/recipe";
 import APIManager from "../../network/api";
 import { useAuth } from "../../contexts/AuthContext";
 import RecipeCard from "../recipes/RecipeCard";
@@ -94,7 +94,7 @@ const CommunityRecipesList = ({ communityId }: CommunityRecipesListProps) => {
     }
   };
 
-  async function deleteRecipe(recipe: CommunityRecipeListItem) {
+  async function deleteRecipe(recipe: RecipeListItem | CommunityRecipeListItem) {
     try {
       await APIManager.deleteRecipe(recipe.id);
       setRecipes(recipes.filter((r) => r.id !== recipe.id));

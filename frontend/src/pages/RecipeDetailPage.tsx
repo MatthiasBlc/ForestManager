@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FaArrowLeft, FaEdit, FaTrash } from "react-icons/fa";
+import { FaArrowLeft, FaEdit, FaTrash, FaLightbulb } from "react-icons/fa";
 import APIManager from "../network/api";
 import { RecipeDetail } from "../models/recipe";
 import { useAuth } from "../contexts/AuthContext";
 import { formatDate } from "../utils/format.Date";
+import { ProposeModificationModal, ProposalsList, VariantsDropdown } from "../components/proposals";
 
 const RecipeDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,6 +15,8 @@ const RecipeDetailPage = () => {
   const [recipe, setRecipe] = useState<RecipeDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showProposeModal, setShowProposeModal] = useState(false);
+  const [proposalsKey, setProposalsKey] = useState(0);
 
   useEffect(() => {
     async function loadRecipe() {
@@ -57,6 +60,26 @@ const RecipeDetailPage = () => {
     navigate(`/recipes?tags=${encodeURIComponent(tagName)}`);
   };
 
+  const loadRecipeData = async () => {
+    if (!id) return;
+    try {
+      const data = await APIManager.getRecipe(id);
+      setRecipe(data);
+    } catch (err) {
+      console.error("Error reloading recipe:", err);
+    }
+  };
+
+  const handleProposalSubmitted = () => {
+    setShowProposeModal(false);
+    setProposalsKey((k) => k + 1);
+  };
+
+  const handleProposalDecided = () => {
+    loadRecipeData();
+    setProposalsKey((k) => k + 1);
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
@@ -88,6 +111,8 @@ const RecipeDetailPage = () => {
       : `Created: ${formatDate(recipe.createdAt)}`;
 
   const isOwner = recipe.creatorId === user?.id;
+  const isCommunityRecipe = !!recipe.communityId;
+  const canPropose = isCommunityRecipe && !isOwner;
   const backPath = recipe.communityId ? `/communities/${recipe.communityId}` : "/recipes";
   const backLabel = recipe.communityId ? "Back to community" : "Back to recipes";
 
@@ -127,24 +152,38 @@ const RecipeDetailPage = () => {
                 </button>
               )}
             </div>
-            {isOwner && (
-              <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
+              {isCommunityRecipe && (
+                <VariantsDropdown recipeId={recipe.id} currentRecipeId={recipe.id} />
+              )}
+              {canPropose && (
                 <button
-                  className="btn btn-ghost btn-sm"
-                  onClick={() => navigate(`/recipes/${recipe.id}/edit`)}
+                  className="btn btn-outline btn-sm gap-2"
+                  onClick={() => setShowProposeModal(true)}
                 >
-                  <FaEdit />
-                  Edit
+                  <FaLightbulb className="w-3 h-3" />
+                  Propose changes
                 </button>
-                <button
-                  className="btn btn-ghost btn-sm text-error"
-                  onClick={handleDelete}
-                >
-                  <FaTrash />
-                  Delete
-                </button>
-              </div>
-            )}
+              )}
+              {isOwner && (
+                <>
+                  <button
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => navigate(`/recipes/${recipe.id}/edit`)}
+                  >
+                    <FaEdit />
+                    Edit
+                  </button>
+                  <button
+                    className="btn btn-ghost btn-sm text-error"
+                    onClick={handleDelete}
+                  >
+                    <FaTrash />
+                    Delete
+                  </button>
+                </>
+              )}
+            </div>
           </div>
 
           <p className="text-sm text-base-content/60 mb-4">{dateText}</p>
@@ -185,8 +224,29 @@ const RecipeDetailPage = () => {
             <h2 className="text-xl font-semibold mb-3">Instructions</h2>
             <div className="whitespace-pre-wrap">{recipe.content}</div>
           </div>
+
+          {isOwner && isCommunityRecipe && (
+            <>
+              <div className="divider" />
+              <ProposalsList
+                key={proposalsKey}
+                recipeId={recipe.id}
+                onProposalDecided={handleProposalDecided}
+              />
+            </>
+          )}
         </div>
       </article>
+
+      {showProposeModal && (
+        <ProposeModificationModal
+          recipeId={recipe.id}
+          currentTitle={recipe.title}
+          currentContent={recipe.content}
+          onClose={() => setShowProposeModal(false)}
+          onProposalSubmitted={handleProposalSubmitted}
+        />
+      )}
     </div>
   );
 };

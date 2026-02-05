@@ -18,12 +18,13 @@
 | 4.2 | Frontend Recettes Communautaires (liste, creation, detail, permissions) | DONE |
 | 5.1 | Backend Proposals (create, list, detail, accept, reject) | DONE |
 | 5.2 | Backend Variants (list variants endpoint) | DONE |
+| 5.3 | Frontend Proposals (modal, list, variants dropdown, RecipeDetailPage) | DONE |
 
 ## Phase en cours
 
-**Phase 5.3** - Backend Orphan Handling & Frontend Proposals
+**Phase 5.4** - Backend Orphan Handling
 
-Prochaine etape: gestion des recettes orphelines (detectOrphanRecipes service) ou frontend propositions.
+Prochaine etape: gestion des recettes orphelines (detectOrphanRecipes service).
 
 ## Prochaines phases
 

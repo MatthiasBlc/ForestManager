@@ -146,6 +146,11 @@ components/
 │   ├── InviteUserModal.tsx   # Modal inviter un utilisateur
 │   ├── SentInvitesList.tsx   # Liste invitations envoyees
 │   └── InvitationBadge.tsx   # Badge compteur invitations PENDING
+├── proposals/
+│   ├── index.ts              # Exports
+│   ├── ProposeModificationModal.tsx # Modal proposer modifications
+│   ├── ProposalsList.tsx     # Liste propositions (owner view)
+│   └── VariantsDropdown.tsx  # Dropdown variantes recette
 ├── recipes/
 │   ├── RecipeCard.tsx        # Carte recette (grille)
 │   ├── RecipeFilters.tsx     # Filtres search/tags

@@ -441,13 +441,12 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Auto-refuse toutes les propositions PENDING → cree variantes
   - Log ActivityLog (VARIANT_CREATED) pour chaque auto-refus
 
-### 5.3 Frontend
-- [ ] Bouton "Proposer modification" sur recette (pas sur ses propres)
-- [ ] Page/Modal creation proposition (formulaire pre-rempli)
-- [ ] Section propositions pour proprietaire (dans feed perso)
-- [ ] Comparaison avant/apres
-- [ ] Boutons Accept/Reject
-- [ ] Dropdown variantes sur page recette
+### 5.4 Frontend
+- [x] Bouton "Proposer modification" sur recette (pas sur ses propres)
+- [x] Page/Modal creation proposition (formulaire pre-rempli)
+- [x] Section propositions pour proprietaire (dans RecipeDetailPage)
+- [x] Boutons Accept/Reject avec expand details
+- [x] Dropdown variantes sur page recette
 
 ### Livrables
 - Workflow complet de propositions

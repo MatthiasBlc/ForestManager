@@ -5,7 +5,7 @@ import { formatDate } from "../../utils/format.Date";
 
 interface RecipeListRowProps {
   recipe: RecipeListItem | CommunityRecipeListItem;
-  onDelete: (recipe: RecipeListItem) => void;
+  onDelete: (recipe: RecipeListItem | CommunityRecipeListItem) => void;
   onTagClick?: (tag: string) => void;
   showCreator?: boolean;
   canEdit?: boolean;
