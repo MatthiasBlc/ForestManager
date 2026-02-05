@@ -950,10 +950,11 @@ export const shareRecipe: RequestHandler<
 
       // Remonter la chaine des ancetres
       while (currentRecipeId) {
-        const parentRecipe = await tx.recipe.findFirst({
-          where: { id: currentRecipeId },
-          select: { originRecipeId: true },
-        });
+        const parentRecipe: { originRecipeId: string | null } | null =
+          await tx.recipe.findFirst({
+            where: { id: currentRecipeId },
+            select: { originRecipeId: true },
+          });
 
         if (parentRecipe?.originRecipeId) {
           recipesToUpdate.push(parentRecipe.originRecipeId);
