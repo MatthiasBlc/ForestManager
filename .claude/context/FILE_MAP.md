@@ -5,6 +5,7 @@
 ### Controllers (logique metier)
 ```
 controllers/
+├── activity.ts        # getCommunityActivity, getMyActivity
 ├── auth.ts            # signup, login, logout, me
 ├── communities.ts     # CRUD communautes
 ├── communityRecipes.ts # create, list recettes communautaires
@@ -87,6 +88,7 @@ __tests__/
 │   ├── globalSetup.ts    # Setup DB test
 │   └── testHelpers.ts    # createTestUser, cleanupTestData, etc.
 └── integration/
+    ├── activity.test.ts
     ├── auth.test.ts
     ├── recipes.test.ts
     ├── tags.test.ts

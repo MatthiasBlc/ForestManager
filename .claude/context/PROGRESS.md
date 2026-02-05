@@ -23,9 +23,20 @@
 
 ## Phase en cours
 
-**Phase 5 COMPLETE** - Propositions & Variantes
+**Phase 6** - Activity Feed
 
-Prochaine etape: Phase 6 - Activity Feed.
+### 6.1 Backend Activity - IN PROGRESS
+- [x] Controller `controllers/activity.ts` (getCommunityActivity, getMyActivity)
+- [x] Route GET /api/communities/:communityId/activity (memberOf, paginated)
+- [x] Route GET /api/users/me/activity (personal feed, paginated)
+- [x] Tests `activity.test.ts` (15 tests)
+
+### 6.2 Frontend Activity - TODO
+- [ ] Composant ActivityFeed
+- [ ] Integration dans page communaute (onglet)
+- [ ] Page/Section feed personnel
+- [ ] Formatage des evenements par type
+- [ ] Liens vers elements concernes
 
 ## Prochaines phases
 

@@ -40,12 +40,13 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~436 tests)
+## Inventaire des tests (~451 tests)
 
-### Backend Integration (17 fichiers, ~289 tests)
+### Backend Integration (18 fichiers, ~304 tests)
 
 | Fichier | Module | Tests |
 |---------|--------|-------|
+| activity.test.ts | Activity feed (community + personal) | 15 |
 | auth.test.ts | User signup/login/logout/me | 16 |
 | recipes.test.ts | CRUD recettes (perso + community access) | 32 |
 | communityRecipes.test.ts | CRUD recettes communautaires | 28 |

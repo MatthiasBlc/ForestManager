@@ -459,16 +459,16 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ## Phase 6: Activity Feed (communautaire + personnel)
 
 ### 6.1 Backend Activity
-- [ ] Service ActivityService
-  - Methode log() centralisee
-  - Types d'evenements (enum ActivityType)
-- [ ] Route GET /api/communities/:id/activity
-  - Feed pagine par communaute
-- [ ] Route GET /api/users/me/activity (NOUVEAU)
-  - Feed personnel
-  - Propositions sur mes recettes
-  - Variantes de mes recettes
-  - Invitations recues
+- [x] Controller `controllers/activity.ts`
+  - getCommunityActivity (feed communaute)
+  - getMyActivity (feed personnel)
+- [x] Route GET /api/communities/:id/activity
+  - Feed pagine par communaute (memberOf)
+- [x] Route GET /api/users/me/activity
+  - Feed personnel pagine
+  - Actions propres de l'utilisateur
+  - Propositions sur ses recettes
+- [x] Tests `activity.test.ts` (15 tests)
 
 ### 6.2 Frontend Activity
 - [ ] Composant ActivityFeed
@@ -785,9 +785,10 @@ Lors de l'ajout d'une nouvelle fonctionnalite, inclure les tests suivants:
 | Backend Communities | communities.test.ts, communityRecipes.test.ts, invitations.test.ts, members.test.ts | ~112 |
 | Backend Proposals | proposals.test.ts | ~31 |
 | Backend Variants | variants.test.ts | ~10 |
+| Backend Activity | activity.test.ts | ~15 |
 | Frontend Contexts | AuthContext, AdminAuthContext | ~13 |
 | Frontend Auth | LoginModal, Modal, SignUpPage, ProtectedRoute, NavBar | ~25 |
 | Frontend Admin | AdminProtectedRoute, AdminLoginPage, AdminDashboardPage, AdminLayout | ~21 |
 | Frontend Recipes | RecipeCard, RecipeFilters, TagSelector, IngredientList | ~28 |
 | Frontend Pages | HomePage, RecipesPage, MainLayout, Sidebar | ~25 |
-| **Total** | | **~387** |
+| **Total** | | **~402** |
