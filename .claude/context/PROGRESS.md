@@ -16,10 +16,13 @@
 | 3.6 | Frontend User Management (profil, menu, search) | DONE |
 | 4.1 | Backend Recettes Communautaires (CRUD, copie perso, tests) | DONE |
 | 4.2 | Frontend Recettes Communautaires (liste, creation, detail, permissions) | DONE |
+| 5.1 | Backend Proposals (create, list, detail, accept, reject) | DONE |
 
 ## Phase en cours
 
-Aucune phase en cours. Prochaine : 5.
+**Phase 5.2** - Backend Variants & Orphan Handling
+
+Prochaine etape: implementer GET /api/recipes/:id/variants et gestion des orphelins.
 
 ## Prochaines phases
 

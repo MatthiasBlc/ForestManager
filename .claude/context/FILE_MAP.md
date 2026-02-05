@@ -10,6 +10,7 @@ controllers/
 ├── communityRecipes.ts # create, list recettes communautaires
 ├── members.ts         # list, promote, kick/leave membres
 ├── invites.ts         # create, list, cancel, accept, reject invitations
+├── proposals.ts       # create, list, detail, accept, reject propositions
 ├── recipes.ts         # CRUD recettes (perso + communautaires via detail/update/delete)
 ├── tags.ts            # autocomplete tags
 ├── ingredients.ts     # autocomplete ingredients
@@ -22,7 +23,8 @@ routes/
 ├── auth.ts            # /api/auth/*
 ├── communities.ts     # /api/communities/* (incl. members, invites)
 ├── invites.ts         # /api/invites/:id/accept|reject
-├── recipes.ts         # /api/recipes/*
+├── proposals.ts       # /api/proposals/:id, /api/proposals/:id/accept|reject
+├── recipes.ts         # /api/recipes/* (incl. /api/recipes/:id/proposals)
 ├── tags.ts            # /api/tags
 ├── ingredients.ts     # /api/ingredients
 └── users.ts           # /api/users/search, /api/users/me, /api/users/me/invites
@@ -93,7 +95,8 @@ __tests__/
     ├── adminFeatures.test.ts
     ├── adminCommunities.test.ts
     ├── adminDashboard.test.ts
-    └── adminActivity.test.ts
+    ├── adminActivity.test.ts
+    └── proposals.test.ts
 ```
 
 ---

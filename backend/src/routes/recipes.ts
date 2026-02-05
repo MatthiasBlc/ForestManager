@@ -1,5 +1,6 @@
 import express from "express";
 import * as RecipesController from "../controllers/recipes";
+import * as ProposalsController from "../controllers/proposals";
 
 const router = express.Router();
 
@@ -13,5 +14,9 @@ router.patch("/:recipeId", RecipesController.updateRecipe);
 
 router.delete("/:recipeId", RecipesController.deleteRecipe);
 
+// Proposals routes on recipes
+router.get("/:recipeId/proposals", ProposalsController.getProposals);
+
+router.post("/:recipeId/proposals", ProposalsController.createProposal);
 
 export default router;

@@ -85,6 +85,21 @@ POST /api/invites/:inviteId/reject      # reject
 ```
 Controller: `controllers/invites.ts` | Route: `routes/invites.ts`
 
+## Proposals (/api/proposals) - requireAuth
+```
+GET  /api/proposals/:proposalId         # detail proposition
+POST /api/proposals/:proposalId/accept  # accepter (createur recette)
+POST /api/proposals/:proposalId/reject  # refuser + creer variante
+```
+Controller: `controllers/proposals.ts` | Route: `routes/proposals.ts`
+
+### Proposals (nested under /api/recipes/:recipeId)
+```
+GET  /api/recipes/:recipeId/proposals   # list propositions (?status=)
+POST /api/recipes/:recipeId/proposals   # creer proposition
+```
+Controller: `controllers/proposals.ts` | Route: `routes/recipes.ts`
+
 ---
 
 ## Admin Auth (/api/admin/auth) - adminSession, rate limited 5/15min
@@ -157,4 +172,4 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 | adminRateLimiter | middleware/security.ts | 30 req/min global admin |
 | authRateLimiter | routes config | 5/15min sur auth endpoints |
 
-## Total: 54 endpoints (27 user + 27 admin + 1 health)
+## Total: 59 endpoints (32 user + 27 admin + 1 health)

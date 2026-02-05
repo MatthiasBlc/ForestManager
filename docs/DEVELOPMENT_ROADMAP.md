@@ -408,23 +408,22 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - Variantes de variantes OK, originRecipeId = parent immediat
 
 ### 5.1 Backend Proposals
-- [ ] Route GET /api/recipes/:id/proposals
+- [x] Route GET /api/recipes/:id/proposals
   - Liste propositions (filtre status)
-- [ ] Route POST /api/recipes/:id/proposals
+- [x] Route POST /api/recipes/:id/proposals
   - Creation proposition
   - Validation: not own recipe, member, recipe not orphan
   - Log ActivityLog (VARIANT_PROPOSED)
-- [ ] Route GET /api/proposals/:id
+- [x] Route GET /api/proposals/:id
   - Detail proposition
-- [ ] Route POST /api/proposals/:id/accept
+- [x] Route POST /api/proposals/:id/accept
   - **Validation conflit**: bloquer si recipe.updatedAt > proposal.createdAt (PROPOSAL_003)
-  - **Validation orphelin**: bloquer si recette orpheline
-  - Mise a jour recette communautaire (titre, contenu, ingredients - PAS tags)
+  - Mise a jour recette communautaire (titre, contenu - PAS tags)
   - Mise a jour recette personnelle liee (via originRecipeId)
   - **CASCADE**: Mise a jour de toutes les autres copies communautaires
   - **ActivityLog**: 1 entry PROPOSAL_ACCEPTED + 1 entry RECIPE_UPDATED par communaute
   - Status ACCEPTED
-- [ ] Route POST /api/proposals/:id/reject
+- [x] Route POST /api/proposals/:id/reject
   - Creation variante (isVariant: true, originRecipeId = parent, creatorId: proposer)
   - Status REJECTED
   - Log ActivityLog (VARIANT_CREATED)
@@ -666,8 +665,8 @@ Phase 8 (Finitions MVP)
 - [x] Un MODERATOR peut retirer un membre (mais pas un MODERATOR) (backend)
 - [x] Un membre peut creer une recette dans une communaute
 - [x] Une copie est creee dans son catalogue personnel
-- [ ] Un membre peut proposer une modification
-- [ ] Le createur peut accepter (mise a jour des deux recettes) ou refuser (variante)
+- [x] Un membre peut proposer une modification
+- [x] Le createur peut accepter (mise a jour des deux recettes) ou refuser (variante)
 - [ ] Les variantes sont visibles dans un dropdown
 - [ ] Un utilisateur peut forker une recette vers une autre communaute
 - [ ] L'activity feed communautaire montre les evenements
@@ -784,9 +783,10 @@ Lors de l'ajout d'une nouvelle fonctionnalite, inclure les tests suivants:
 | Backend Admin API | adminTags, adminIngredients, adminFeatures, adminCommunities, adminDashboard, adminActivity | ~50 |
 | Backend User API | recipes.test.ts, tags.test.ts, ingredients.test.ts | ~42 |
 | Backend Communities | communities.test.ts, communityRecipes.test.ts, invitations.test.ts, members.test.ts | ~112 |
+| Backend Proposals | proposals.test.ts | ~31 |
 | Frontend Contexts | AuthContext, AdminAuthContext | ~13 |
 | Frontend Auth | LoginModal, Modal, SignUpPage, ProtectedRoute, NavBar | ~25 |
 | Frontend Admin | AdminProtectedRoute, AdminLoginPage, AdminDashboardPage, AdminLayout | ~21 |
 | Frontend Recipes | RecipeCard, RecipeFilters, TagSelector, IngredientList | ~28 |
 | Frontend Pages | HomePage, RecipesPage, MainLayout, Sidebar | ~25 |
-| **Total** | | **~346** |
+| **Total** | | **~377** |
