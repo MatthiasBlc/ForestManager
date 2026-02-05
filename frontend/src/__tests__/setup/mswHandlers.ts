@@ -135,6 +135,37 @@ export const mockReceivedInvites = [
   },
 ];
 
+// Mock user activity feed data
+export const mockUserActivityFeed = [
+  {
+    id: 'activity-1',
+    type: 'RECIPE_CREATED' as const,
+    metadata: null,
+    createdAt: new Date().toISOString(),
+    user: { id: 'test-user-id', username: 'testuser' },
+    recipe: { id: 'test-recipe-id', title: 'Test Recipe', isDeleted: false },
+    community: { id: 'community-1', name: 'Baking Club', isDeleted: false },
+  },
+  {
+    id: 'activity-2',
+    type: 'VARIANT_PROPOSED' as const,
+    metadata: null,
+    createdAt: new Date(Date.now() - 3600000).toISOString(),
+    user: { id: 'user-2', username: 'alice' },
+    recipe: { id: 'test-recipe-id', title: 'Test Recipe', isDeleted: false },
+    community: { id: 'community-1', name: 'Baking Club', isDeleted: false },
+  },
+  {
+    id: 'activity-3',
+    type: 'USER_JOINED' as const,
+    metadata: null,
+    createdAt: new Date(Date.now() - 7200000).toISOString(),
+    user: { id: 'user-3', username: 'bob' },
+    recipe: null,
+    community: { id: 'community-1', name: 'Baking Club', isDeleted: false },
+  },
+];
+
 // Etat mock pour simuler l'authentification
 let isUserAuthenticated = false;
 let isAdminAuthenticated = false;
@@ -960,6 +991,60 @@ export const handlers = [
       );
     }
     return HttpResponse.json({ message: 'Invitation rejected' });
+  }),
+
+  // =====================================
+  // User Activity Feed
+  // =====================================
+
+  http.get(`${API_URL}/api/communities/:communityId/activity`, ({ request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const url = new URL(request.url);
+    const limit = parseInt(url.searchParams.get('limit') || '20');
+    const offset = parseInt(url.searchParams.get('offset') || '0');
+
+    const activities = mockUserActivityFeed.slice(offset, offset + limit);
+
+    return HttpResponse.json({
+      data: activities,
+      pagination: {
+        total: mockUserActivityFeed.length,
+        limit,
+        offset,
+        hasMore: offset + limit < mockUserActivityFeed.length,
+      },
+    });
+  }),
+
+  http.get(`${API_URL}/api/users/me/activity`, ({ request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const url = new URL(request.url);
+    const limit = parseInt(url.searchParams.get('limit') || '20');
+    const offset = parseInt(url.searchParams.get('offset') || '0');
+
+    const activities = mockUserActivityFeed.slice(offset, offset + limit);
+
+    return HttpResponse.json({
+      data: activities,
+      pagination: {
+        total: mockUserActivityFeed.length,
+        limit,
+        offset,
+        hasMore: offset + limit < mockUserActivityFeed.length,
+      },
+    });
   }),
 
   // =====================================

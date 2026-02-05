@@ -154,6 +154,9 @@ components/
 │   ├── InviteUserModal.tsx   # Modal inviter un utilisateur
 │   ├── SentInvitesList.tsx   # Liste invitations envoyees
 │   └── InvitationBadge.tsx   # Badge compteur invitations PENDING
+├── activity/
+│   ├── index.ts              # Exports
+│   └── ActivityFeed.tsx      # Feed activite (community + personal)
 ├── proposals/
 │   ├── index.ts              # Exports
 │   ├── ProposeModificationModal.tsx # Modal proposer modifications
@@ -239,6 +242,7 @@ __tests__/
     │   ├── CommunitiesPage.test.tsx
     │   └── CommunityDetailPage.test.tsx
     └── components/
+        ├── ActivityFeed.test.tsx
         ├── InviteCard.test.tsx
         ├── MembersList.test.tsx
         └── InviteUserModal.test.tsx

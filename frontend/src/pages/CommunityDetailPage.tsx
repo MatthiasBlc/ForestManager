@@ -6,8 +6,9 @@ import APIManager from "../network/api";
 import MembersList from "../components/communities/MembersList";
 import CommunityRecipesList from "../components/communities/CommunityRecipesList";
 import SentInvitesList from "../components/invitations/SentInvitesList";
+import { ActivityFeed } from "../components/activity";
 
-type Tab = "members" | "invitations" | "recipes";
+type Tab = "members" | "invitations" | "recipes" | "activity";
 
 const CommunityDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -145,6 +146,13 @@ const CommunityDetailPage = () => {
         >
           Recipes
         </button>
+        <button
+          role="tab"
+          className={`tab ${activeTab === "activity" ? "tab-active" : ""}`}
+          onClick={() => setActiveTab("activity")}
+        >
+          Activity
+        </button>
       </div>
 
       {/* Tab Content */}
@@ -165,6 +173,10 @@ const CommunityDetailPage = () => {
 
         {activeTab === "recipes" && (
           <CommunityRecipesList communityId={community.id} />
+        )}
+
+        {activeTab === "activity" && (
+          <ActivityFeed communityId={community.id} />
         )}
       </div>
     </div>

@@ -6,6 +6,7 @@ import { RecipeListItem } from "../models/recipe";
 import APIManager from "../network/api";
 import CommunityCard from "../components/communities/CommunityCard";
 import RecipeCard from "../components/recipes/RecipeCard";
+import { ActivityFeed } from "../components/activity";
 
 const RECENT_RECIPES_LIMIT = 8;
 
@@ -176,6 +177,16 @@ const DashboardPage = () => {
             )}
           </>
         )}
+      </section>
+
+      {/* Activity Feed Section */}
+      <section>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">Recent Activity</h2>
+        </div>
+        <div className="bg-base-100 rounded-lg shadow p-6">
+          <ActivityFeed personal limit={10} />
+        </div>
       </section>
     </div>
   );
