@@ -17,12 +17,13 @@
 | 4.1 | Backend Recettes Communautaires (CRUD, copie perso, tests) | DONE |
 | 4.2 | Frontend Recettes Communautaires (liste, creation, detail, permissions) | DONE |
 | 5.1 | Backend Proposals (create, list, detail, accept, reject) | DONE |
+| 5.2 | Backend Variants (list variants endpoint) | DONE |
 
 ## Phase en cours
 
-**Phase 5.2** - Backend Variants & Orphan Handling
+**Phase 5.3** - Backend Orphan Handling & Frontend Proposals
 
-Prochaine etape: implementer GET /api/recipes/:id/variants et gestion des orphelins.
+Prochaine etape: gestion des recettes orphelines (detectOrphanRecipes service) ou frontend propositions.
 
 ## Prochaines phases
 

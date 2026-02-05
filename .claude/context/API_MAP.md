@@ -23,6 +23,7 @@ GET    /api/recipes/:recipeId   # detail (owner or community member)
 POST   /api/recipes/            # create (title, content, tags[], ingredients[])
 PATCH  /api/recipes/:recipeId   # update (owner, +membership for community recipes)
 DELETE /api/recipes/:recipeId   # soft delete (owner, +membership for community recipes)
+GET    /api/recipes/:recipeId/variants   # list variants (isVariant=true, same community)
 ```
 Controller: `controllers/recipes.ts` | Route: `routes/recipes.ts`
 
@@ -172,4 +173,4 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 | adminRateLimiter | middleware/security.ts | 30 req/min global admin |
 | authRateLimiter | routes config | 5/15min sur auth endpoints |
 
-## Total: 59 endpoints (32 user + 27 admin + 1 health)
+## Total: 60 endpoints (33 user + 27 admin + 1 health)

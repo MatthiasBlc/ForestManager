@@ -14,6 +14,9 @@ router.patch("/:recipeId", RecipesController.updateRecipe);
 
 router.delete("/:recipeId", RecipesController.deleteRecipe);
 
+// Variants routes on recipes
+router.get("/:recipeId/variants", RecipesController.getVariants);
+
 // Proposals routes on recipes
 router.get("/:recipeId/proposals", ProposalsController.getProposals);
 

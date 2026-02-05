@@ -96,7 +96,8 @@ __tests__/
     ├── adminCommunities.test.ts
     ├── adminDashboard.test.ts
     ├── adminActivity.test.ts
-    └── proposals.test.ts
+    ├── proposals.test.ts
+    └── variants.test.ts
 ```
 
 ---

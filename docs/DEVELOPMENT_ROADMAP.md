@@ -429,7 +429,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Log ActivityLog (VARIANT_CREATED)
 
 ### 5.2 Backend Variants
-- [ ] Route GET /api/recipes/:id/variants
+- [x] Route GET /api/recipes/:id/variants
   - Liste variantes (where originRecipeId = X AND isVariant = true)
   - **Scope**: seulement les variantes de CETTE communaute
   - **Tri**: par MAX(createdAt, updatedAt) DESC
@@ -784,9 +784,10 @@ Lors de l'ajout d'une nouvelle fonctionnalite, inclure les tests suivants:
 | Backend User API | recipes.test.ts, tags.test.ts, ingredients.test.ts | ~42 |
 | Backend Communities | communities.test.ts, communityRecipes.test.ts, invitations.test.ts, members.test.ts | ~112 |
 | Backend Proposals | proposals.test.ts | ~31 |
+| Backend Variants | variants.test.ts | ~10 |
 | Frontend Contexts | AuthContext, AdminAuthContext | ~13 |
 | Frontend Auth | LoginModal, Modal, SignUpPage, ProtectedRoute, NavBar | ~25 |
 | Frontend Admin | AdminProtectedRoute, AdminLoginPage, AdminDashboardPage, AdminLayout | ~21 |
 | Frontend Recipes | RecipeCard, RecipeFilters, TagSelector, IngredientList | ~28 |
 | Frontend Pages | HomePage, RecipesPage, MainLayout, Sidebar | ~25 |
-| **Total** | | **~377** |
+| **Total** | | **~387** |
