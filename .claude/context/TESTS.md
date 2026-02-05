@@ -40,20 +40,22 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~380 tests)
+## Inventaire des tests (~436 tests)
 
-### Backend Integration (15 fichiers, ~244 tests)
+### Backend Integration (17 fichiers, ~289 tests)
 
 | Fichier | Module | Tests |
 |---------|--------|-------|
 | auth.test.ts | User signup/login/logout/me | 16 |
 | recipes.test.ts | CRUD recettes (perso + community access) | 32 |
 | communityRecipes.test.ts | CRUD recettes communautaires | 28 |
+| proposals.test.ts | Propositions modifications | 31 |
+| variants.test.ts | Liste variantes recettes | 10 |
 | tags.test.ts | Autocomplete tags | 5 |
 | ingredients.test.ts | Autocomplete ingredients | 5 |
 | communities.test.ts | CRUD communautes | 27 |
 | invitations.test.ts | Workflow invitations | 35 |
-| members.test.ts | Membres: list, promote, kick | 22 |
+| members.test.ts | Membres: list, promote, kick, orphan handling | 26 |
 | adminAuth.test.ts | Auth 2FA admin | 14 |
 | adminTags.test.ts | CRUD tags admin | 12 |
 | adminIngredients.test.ts | CRUD ingredients admin | 12 |

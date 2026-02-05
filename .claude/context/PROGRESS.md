@@ -19,12 +19,13 @@
 | 5.1 | Backend Proposals (create, list, detail, accept, reject) | DONE |
 | 5.2 | Backend Variants (list variants endpoint) | DONE |
 | 5.3 | Frontend Proposals (modal, list, variants dropdown, RecipeDetailPage) | DONE |
+| 5.4 | Backend Orphan Handling (auto-reject proposals on leave/kick) | DONE |
 
 ## Phase en cours
 
-**Phase 5.4** - Backend Orphan Handling
+**Phase 5 COMPLETE** - Propositions & Variantes
 
-Prochaine etape: gestion des recettes orphelines (detectOrphanRecipes service).
+Prochaine etape: Phase 6 - Activity Feed.
 
 ## Prochaines phases
 

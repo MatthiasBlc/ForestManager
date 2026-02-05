@@ -708,4 +708,420 @@ describe("Members API", () => {
       expect(res.status).toBe(401);
     });
   });
+
+  // =====================================
+  // Orphan Handling Tests
+  // =====================================
+  describe("Orphan Handling", () => {
+    describe("when member leaves with pending proposals on their recipes", () => {
+      it("should auto-reject pending proposals and create variants", async () => {
+        const suffix = uniqueSuffix();
+
+        // Create moderator (recipe owner who will leave)
+        const ownerRes = await request(app).post("/api/auth/signup").send({
+          username: `orphanowner_${suffix}`,
+          email: `orphanowner_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
+        const ownerCookie = extractSessionCookie(ownerRes)!;
+        const owner = (await testPrisma.user.findFirst({
+          where: { email: `orphanowner_${suffix}@example.com` },
+        }))!;
+
+        // Create community
+        const createRes = await request(app)
+          .post("/api/communities")
+          .set("Cookie", ownerCookie)
+          .send({ name: `Orphan Test Community ${suffix}` });
+        const community = createRes.body;
+
+        // Create another moderator (so owner can leave)
+        const otherMod = await createTestUser({
+          username: `orphanmod_${suffix}`,
+          email: `orphanmod_${suffix}@example.com`,
+        });
+        await testPrisma.userCommunity.create({
+          data: {
+            userId: otherMod.id,
+            communityId: community.id,
+            role: "MODERATOR",
+          },
+        });
+
+        // Create proposer
+        const proposer = await createTestUser({
+          username: `orphanproposer_${suffix}`,
+          email: `orphanproposer_${suffix}@example.com`,
+        });
+        await testPrisma.userCommunity.create({
+          data: {
+            userId: proposer.id,
+            communityId: community.id,
+            role: "MEMBER",
+          },
+        });
+
+        // Create a community recipe owned by owner
+        const recipe = await testPrisma.recipe.create({
+          data: {
+            title: `Orphan Recipe ${suffix}`,
+            content: "Original content",
+            creatorId: owner.id,
+            communityId: community.id,
+          },
+        });
+
+        // Create pending proposal
+        const proposal = await testPrisma.recipeUpdateProposal.create({
+          data: {
+            proposedTitle: `Modified Title ${suffix}`,
+            proposedContent: "Modified content",
+            status: "PENDING",
+            recipeId: recipe.id,
+            proposerId: proposer.id,
+          },
+        });
+
+        // Owner leaves
+        const res = await request(app)
+          .delete(`/api/communities/${community.id}/members/${owner.id}`)
+          .set("Cookie", ownerCookie);
+
+        expect(res.status).toBe(200);
+
+        // Verify proposal was auto-rejected
+        const updatedProposal = await testPrisma.recipeUpdateProposal.findUnique({
+          where: { id: proposal.id },
+        });
+        expect(updatedProposal!.status).toBe("REJECTED");
+        expect(updatedProposal!.decidedAt).not.toBeNull();
+
+        // Verify variant was created for proposer
+        const variant = await testPrisma.recipe.findFirst({
+          where: {
+            originRecipeId: recipe.id,
+            isVariant: true,
+            creatorId: proposer.id,
+          },
+        });
+        expect(variant).not.toBeNull();
+        expect(variant!.title).toBe(`Modified Title ${suffix}`);
+        expect(variant!.content).toBe("Modified content");
+        expect(variant!.communityId).toBe(community.id);
+
+        // Verify ActivityLog VARIANT_CREATED
+        const activity = await testPrisma.activityLog.findFirst({
+          where: {
+            type: "VARIANT_CREATED",
+            recipeId: variant!.id,
+            communityId: community.id,
+          },
+        });
+        expect(activity).not.toBeNull();
+        expect(activity!.userId).toBe(proposer.id);
+        expect((activity!.metadata as { reason: string }).reason).toBe("ORPHAN_AUTO_REJECT");
+      });
+
+      it("should handle multiple pending proposals on multiple recipes", async () => {
+        const suffix = uniqueSuffix();
+
+        // Create owner
+        const ownerRes = await request(app).post("/api/auth/signup").send({
+          username: `multiorphan_${suffix}`,
+          email: `multiorphan_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
+        const ownerCookie = extractSessionCookie(ownerRes)!;
+        const owner = (await testPrisma.user.findFirst({
+          where: { email: `multiorphan_${suffix}@example.com` },
+        }))!;
+
+        // Create community
+        const createRes = await request(app)
+          .post("/api/communities")
+          .set("Cookie", ownerCookie)
+          .send({ name: `Multi Orphan Community ${suffix}` });
+        const community = createRes.body;
+
+        // Create another moderator
+        const otherMod = await createTestUser({
+          username: `multiorphanmod_${suffix}`,
+          email: `multiorphanmod_${suffix}@example.com`,
+        });
+        await testPrisma.userCommunity.create({
+          data: {
+            userId: otherMod.id,
+            communityId: community.id,
+            role: "MODERATOR",
+          },
+        });
+
+        // Create two proposers
+        const proposer1 = await createTestUser({
+          username: `multiproposer1_${suffix}`,
+          email: `multiproposer1_${suffix}@example.com`,
+        });
+        const proposer2 = await createTestUser({
+          username: `multiproposer2_${suffix}`,
+          email: `multiproposer2_${suffix}@example.com`,
+        });
+        await testPrisma.userCommunity.createMany({
+          data: [
+            { userId: proposer1.id, communityId: community.id, role: "MEMBER" },
+            { userId: proposer2.id, communityId: community.id, role: "MEMBER" },
+          ],
+        });
+
+        // Create two recipes
+        const recipe1 = await testPrisma.recipe.create({
+          data: {
+            title: `Recipe 1 ${suffix}`,
+            content: "Content 1",
+            creatorId: owner.id,
+            communityId: community.id,
+          },
+        });
+        const recipe2 = await testPrisma.recipe.create({
+          data: {
+            title: `Recipe 2 ${suffix}`,
+            content: "Content 2",
+            creatorId: owner.id,
+            communityId: community.id,
+          },
+        });
+
+        // Create proposals
+        await testPrisma.recipeUpdateProposal.createMany({
+          data: [
+            {
+              proposedTitle: "Prop 1",
+              proposedContent: "Prop content 1",
+              status: "PENDING",
+              recipeId: recipe1.id,
+              proposerId: proposer1.id,
+            },
+            {
+              proposedTitle: "Prop 2",
+              proposedContent: "Prop content 2",
+              status: "PENDING",
+              recipeId: recipe1.id,
+              proposerId: proposer2.id,
+            },
+            {
+              proposedTitle: "Prop 3",
+              proposedContent: "Prop content 3",
+              status: "PENDING",
+              recipeId: recipe2.id,
+              proposerId: proposer1.id,
+            },
+          ],
+        });
+
+        // Owner leaves
+        await request(app)
+          .delete(`/api/communities/${community.id}/members/${owner.id}`)
+          .set("Cookie", ownerCookie);
+
+        // Verify all proposals are rejected
+        const rejectedProposals = await testPrisma.recipeUpdateProposal.findMany({
+          where: {
+            recipeId: { in: [recipe1.id, recipe2.id] },
+            status: "REJECTED",
+          },
+        });
+        expect(rejectedProposals).toHaveLength(3);
+
+        // Verify 3 variants created
+        const variants = await testPrisma.recipe.findMany({
+          where: {
+            originRecipeId: { in: [recipe1.id, recipe2.id] },
+            isVariant: true,
+          },
+        });
+        expect(variants).toHaveLength(3);
+      });
+
+      it("should not affect already decided proposals", async () => {
+        const suffix = uniqueSuffix();
+
+        // Create owner
+        const ownerRes = await request(app).post("/api/auth/signup").send({
+          username: `decidedorphan_${suffix}`,
+          email: `decidedorphan_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
+        const ownerCookie = extractSessionCookie(ownerRes)!;
+        const owner = (await testPrisma.user.findFirst({
+          where: { email: `decidedorphan_${suffix}@example.com` },
+        }))!;
+
+        // Create community
+        const createRes = await request(app)
+          .post("/api/communities")
+          .set("Cookie", ownerCookie)
+          .send({ name: `Decided Orphan Community ${suffix}` });
+        const community = createRes.body;
+
+        // Create another moderator
+        const otherMod = await createTestUser({
+          username: `decidedorphanmod_${suffix}`,
+          email: `decidedorphanmod_${suffix}@example.com`,
+        });
+        await testPrisma.userCommunity.create({
+          data: {
+            userId: otherMod.id,
+            communityId: community.id,
+            role: "MODERATOR",
+          },
+        });
+
+        // Create proposer
+        const proposer = await createTestUser({
+          username: `decidedproposer_${suffix}`,
+          email: `decidedproposer_${suffix}@example.com`,
+        });
+        await testPrisma.userCommunity.create({
+          data: {
+            userId: proposer.id,
+            communityId: community.id,
+            role: "MEMBER",
+          },
+        });
+
+        // Create recipe
+        const recipe = await testPrisma.recipe.create({
+          data: {
+            title: `Decided Recipe ${suffix}`,
+            content: "Original",
+            creatorId: owner.id,
+            communityId: community.id,
+          },
+        });
+
+        // Create already accepted proposal
+        const acceptedProposal = await testPrisma.recipeUpdateProposal.create({
+          data: {
+            proposedTitle: "Accepted",
+            proposedContent: "Accepted content",
+            status: "ACCEPTED",
+            decidedAt: new Date(),
+            recipeId: recipe.id,
+            proposerId: proposer.id,
+          },
+        });
+
+        // Owner leaves
+        await request(app)
+          .delete(`/api/communities/${community.id}/members/${owner.id}`)
+          .set("Cookie", ownerCookie);
+
+        // Verify accepted proposal unchanged
+        const unchanged = await testPrisma.recipeUpdateProposal.findUnique({
+          where: { id: acceptedProposal.id },
+        });
+        expect(unchanged!.status).toBe("ACCEPTED");
+
+        // Verify no variant created (since proposal was already decided)
+        const variants = await testPrisma.recipe.findMany({
+          where: {
+            originRecipeId: recipe.id,
+            isVariant: true,
+          },
+        });
+        expect(variants).toHaveLength(0);
+      });
+    });
+
+    describe("when member is kicked with pending proposals on their recipes", () => {
+      it("should auto-reject pending proposals and create variants", async () => {
+        const suffix = uniqueSuffix();
+
+        // Create moderator
+        const modRes = await request(app).post("/api/auth/signup").send({
+          username: `kickorphanmod_${suffix}`,
+          email: `kickorphanmod_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
+        const modCookie = extractSessionCookie(modRes)!;
+
+        // Create community
+        const createRes = await request(app)
+          .post("/api/communities")
+          .set("Cookie", modCookie)
+          .send({ name: `Kick Orphan Community ${suffix}` });
+        const community = createRes.body;
+
+        // Create member (recipe owner who will be kicked)
+        const member = await createTestUser({
+          username: `kickorphanmem_${suffix}`,
+          email: `kickorphanmem_${suffix}@example.com`,
+        });
+        await testPrisma.userCommunity.create({
+          data: {
+            userId: member.id,
+            communityId: community.id,
+            role: "MEMBER",
+          },
+        });
+
+        // Create proposer
+        const proposer = await createTestUser({
+          username: `kickorphanprop_${suffix}`,
+          email: `kickorphanprop_${suffix}@example.com`,
+        });
+        await testPrisma.userCommunity.create({
+          data: {
+            userId: proposer.id,
+            communityId: community.id,
+            role: "MEMBER",
+          },
+        });
+
+        // Create recipe owned by member
+        const recipe = await testPrisma.recipe.create({
+          data: {
+            title: `Kick Orphan Recipe ${suffix}`,
+            content: "Original content",
+            creatorId: member.id,
+            communityId: community.id,
+          },
+        });
+
+        // Create pending proposal
+        const proposal = await testPrisma.recipeUpdateProposal.create({
+          data: {
+            proposedTitle: `Kick Modified ${suffix}`,
+            proposedContent: "Kick modified content",
+            status: "PENDING",
+            recipeId: recipe.id,
+            proposerId: proposer.id,
+          },
+        });
+
+        // Moderator kicks member
+        const res = await request(app)
+          .delete(`/api/communities/${community.id}/members/${member.id}`)
+          .set("Cookie", modCookie);
+
+        expect(res.status).toBe(200);
+
+        // Verify proposal was auto-rejected
+        const updatedProposal = await testPrisma.recipeUpdateProposal.findUnique({
+          where: { id: proposal.id },
+        });
+        expect(updatedProposal!.status).toBe("REJECTED");
+
+        // Verify variant was created
+        const variant = await testPrisma.recipe.findFirst({
+          where: {
+            originRecipeId: recipe.id,
+            isVariant: true,
+            creatorId: proposer.id,
+          },
+        });
+        expect(variant).not.toBeNull();
+        expect(variant!.title).toBe(`Kick Modified ${suffix}`);
+      });
+    });
+  });
 });

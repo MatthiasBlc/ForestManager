@@ -62,6 +62,12 @@ admin/
     └── requireSuperAdmin.ts      # verifie adminId + totpVerified
 ```
 
+### Services
+```
+services/
+└── orphanHandling.ts  # Gestion recettes orphelines (auto-reject proposals)
+```
+
 ### Autres backend
 ```
 app.ts                 # Config Express, montage routes, sessions

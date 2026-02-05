@@ -435,11 +435,12 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - **Tri**: par MAX(createdAt, updatedAt) DESC
 
 ### 5.3 Backend Orphan Handling
-- [ ] Service detectOrphanRecipes
-  - Declenche quand: membre quitte/kick, compte supprime, recette perso supprimee
-  - Marque les recettes comme orphelines (creatorId reste, flag isOrphan: true?)
+- [x] Service handleOrphanedRecipes
+  - Declenche quand: membre quitte/kick
   - Auto-refuse toutes les propositions PENDING → cree variantes
-  - Log ActivityLog (VARIANT_CREATED) pour chaque auto-refus
+  - Log ActivityLog (VARIANT_CREATED) avec reason: ORPHAN_AUTO_REJECT
+- [x] Integration dans members controller (handleLeave, handleKick)
+- [x] Tests integration (4 tests: leave avec proposals, multiple proposals, decided proposals, kick)
 
 ### 5.4 Frontend
 - [x] Bouton "Proposer modification" sur recette (pas sur ses propres)
