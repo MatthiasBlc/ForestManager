@@ -369,6 +369,8 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 
 ## Phase 4: Recettes Communautaires
 
+**Note**: La synchronisation bidirectionnelle (modif perso ↔ communautaire) sera implementee en Phase 5.
+
 ### 4.1 Backend
 - [x] Route POST /api/communities/:id/recipes
   - Creation recette dans catalogue personnel (communityId: null)
@@ -397,28 +399,48 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 
 ## Phase 5: Propositions & Variantes
 
+**Decisions metier validees (voir BUSINESS_RULES.md sections 3.2.1, 3.3.1, 4.2, 4.4, 5.4, 6.3):**
+- Synchro bidirectionnelle: titre/contenu/ingredients synchronises, tags LOCAUX par communaute
+- Conflit: bloquer acceptation si recipe.updatedAt > proposal.createdAt (PROPOSAL_003)
+- Cascade: acceptation → 1 ActivityLog par communaute impactee
+- Orphelins: permanent, pas de modification directe, propositions PENDING auto-refusees
+- Variantes: coexistent, dropdown PLAT, tri par MAX(createdAt, updatedAt)
+- Variantes de variantes OK, originRecipeId = parent immediat
+
 ### 5.1 Backend Proposals
 - [ ] Route GET /api/recipes/:id/proposals
   - Liste propositions (filtre status)
 - [ ] Route POST /api/recipes/:id/proposals
   - Creation proposition
-  - Validation: not own recipe, member
+  - Validation: not own recipe, member, recipe not orphan
   - Log ActivityLog (VARIANT_PROPOSED)
 - [ ] Route GET /api/proposals/:id
   - Detail proposition
 - [ ] Route POST /api/proposals/:id/accept
-  - Mise a jour recette communautaire
+  - **Validation conflit**: bloquer si recipe.updatedAt > proposal.createdAt (PROPOSAL_003)
+  - **Validation orphelin**: bloquer si recette orpheline
+  - Mise a jour recette communautaire (titre, contenu, ingredients - PAS tags)
   - Mise a jour recette personnelle liee (via originRecipeId)
+  - **CASCADE**: Mise a jour de toutes les autres copies communautaires
+  - **ActivityLog**: 1 entry PROPOSAL_ACCEPTED + 1 entry RECIPE_UPDATED par communaute
   - Status ACCEPTED
-  - Log ActivityLog (PROPOSAL_ACCEPTED)
 - [ ] Route POST /api/proposals/:id/reject
-  - Creation variante (isVariant: true, originRecipeId, creatorId: proposer)
+  - Creation variante (isVariant: true, originRecipeId = parent, creatorId: proposer)
   - Status REJECTED
   - Log ActivityLog (VARIANT_CREATED)
 
 ### 5.2 Backend Variants
 - [ ] Route GET /api/recipes/:id/variants
   - Liste variantes (where originRecipeId = X AND isVariant = true)
+  - **Scope**: seulement les variantes de CETTE communaute
+  - **Tri**: par MAX(createdAt, updatedAt) DESC
+
+### 5.3 Backend Orphan Handling
+- [ ] Service detectOrphanRecipes
+  - Declenche quand: membre quitte/kick, compte supprime, recette perso supprimee
+  - Marque les recettes comme orphelines (creatorId reste, flag isOrphan: true?)
+  - Auto-refuse toutes les propositions PENDING → cree variantes
+  - Log ActivityLog (VARIANT_CREATED) pour chaque auto-refus
 
 ### 5.3 Frontend
 - [ ] Bouton "Proposer modification" sur recette (pas sur ses propres)
@@ -464,11 +486,22 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 
 ## Phase 7: Partage Inter-Communautes
 
+<!-- User Stories: US-8.1 (Fork recette vers autre communaute), US-8.2 (Voir origine recette forkee) - voir docs/USER_STORIES.md Epic 8 -->
+
+**Decisions metier validees (voir BUSINESS_RULES.md section 5):**
+- originRecipeId pointe vers recette COMMUNAUTAIRE source (pas perso)
+- Fork = totalement independant, pas de synchronisation
+- Chaines de forks OK: A→B→C, origin = parent immediat
+- Analytics: remontee en chaine (+1 pour A quand C fork B)
+
 ### 7.1 Backend
 - [ ] Route POST /api/recipes/:id/share
   - Validation membership deux communautes
   - Validation permission (admin OU createur)
-  - Creation fork (originRecipeId, sharedFromCommunityId)
+  - Creation fork:
+    - originRecipeId = recette communautaire source
+    - sharedFromCommunityId = communaute source
+  - **Analytics chaine**: incrementer shares/forks de TOUS les ancetres
   - Log ActivityLog (RECIPE_SHARED) dans les deux communautes
 
 ### 7.2 Frontend
@@ -480,6 +513,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ### Livrables
 - Fork de recettes entre communautes fonctionnel
 - Tracabilite des origines
+- Analytics avec remontee en chaine
 
 ---
 

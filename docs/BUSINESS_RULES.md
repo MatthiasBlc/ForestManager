@@ -121,10 +121,13 @@ SI l'utilisateur veut quitter:
 - Declenchee automatiquement quand le dernier utilisateur quitte
 - **Cascade applicative (soft delete):**
   - Toutes les recettes de la communaute → `deletedAt = now()`
+  - Toutes les variantes de ces recettes → `deletedAt = now()`
+  - Toutes les propositions sur ces recettes → `deletedAt = now()`
   - Tous les UserCommunity → `deletedAt = now()`
   - Toutes les invitations PENDING → `status = CANCELLED`
   - La communaute → `deletedAt = now()`
 - Les ActivityLog sont **conserves** pour historique
+- **Note:** Les recettes perso des anciens membres NE SONT PAS affectees
 
 ---
 
@@ -155,12 +158,64 @@ CONDITION: l'utilisateur DOIT etre membre de la communaute
 - **Communaute:** Seul le createur de la recette communautaire peut modifier directement
 - Les autres membres doivent passer par le systeme de propositions
 
+### 3.2.1 Synchronisation des copies (NOUVEAU)
+
+**Principe:** Une recette personnelle et ses copies communautaires restent synchronisees.
+
+```
+MODIFICATION PAR LE CREATEUR:
+- Synchronisation BIDIRECTIONNELLE
+- Modifier la recette perso → met a jour toutes les copies communautaires liees
+- Modifier une copie communautaire → met a jour la recette perso + les N autres copies
+
+MULTI-COMMUNAUTES:
+- Si la meme recette est partagee dans N communautes
+- Une modification depuis n'importe quelle copie propage a toutes les autres
+
+SCOPE DE LA SYNCHRONISATION:
+- Titre, contenu, ingredients: SYNCHRONISES
+- Tags: LOCAUX a chaque communaute (non synchronises)
+  → Chaque communaute peut avoir ses propres tags sur une recette
+  → Les MODERATORS peuvent modifier les tags pour leur communaute
+  → N'impacte pas les tags de la version privee du createur
+  → Toutes les variantes d'une meme recette partagent les memes tags
+```
+
+**Note:** Les forks (section 5) sont independants et ne sont PAS synchronises.
+La synchronisation passe TOUJOURS par la version privee de l'utilisateur.
+
 ### 3.3 Suppression de recette (soft delete)
 - Le createur peut supprimer sa recette
 - La suppression est un soft delete (`deletedAt = now()`)
 - Supprimer une recette personnelle **ne supprime pas** les copies communautaires
 - Supprimer une recette communautaire **ne supprime pas** la recette personnelle
 - Les tables pivot (RecipeTag, RecipeIngredient) sont hard delete via Cascade
+
+### 3.3.1 Recettes orphelines (NOUVEAU)
+
+**Declencheur:** La recette personnelle d'origine est supprimee OU le createur quitte/est expulse de la communaute OU le createur supprime son compte.
+
+```
+COMPORTEMENT D'UNE RECETTE ORPHELINE:
+1. La recette reste visible dans la communaute
+2. Le "proprietaire" affiche = la communaute elle-meme (pas d'utilisateur)
+3. Plus de synchronisation possible (pas de source de verite)
+4. L'ORPHELINAT EST PERMANENT - meme si le createur re-rejoint, la cesure est definitive
+5. Une recette orpheline NE PEUT PAS etre modifiee directement
+6. Les propositions sur une recette orpheline:
+   - Ne peuvent plus etre acceptees (pas de createur pour decider)
+   - Sont automatiquement refusees → variante creee pour le proposeur
+   - Les propositions PENDING existantes sont auto-refusees au moment de l'orphelinat
+
+DEPART/EXPULSION D'UN MEMBRE:
+- Toutes ses recettes communautaires deviennent orphelines
+- Toutes les propositions PENDING sur ces recettes sont immediatement auto-refusees
+- Pour chaque proposition PENDING: une variante est creee pour le proposeur
+
+SUPPRESSION COMPTE UTILISATEUR:
+- Toutes ses recettes (perso + communautaires) deviennent orphelines
+- Meme comportement que ci-dessus
+```
 
 ### 3.4 Tags
 - Une recette peut avoir **plusieurs tags**
@@ -193,6 +248,10 @@ ACTIONS:
 CONDITIONS:
 - L'utilisateur DOIT etre le createur de la recette cible
 - La proposition DOIT etre en status PENDING
+- La recette NE DOIT PAS avoir change depuis la creation de la proposition (NOUVEAU)
+  → Comparer recipe.updatedAt avec proposal.createdAt
+  → Si recipe.updatedAt > proposal.createdAt → BLOQUER (erreur PROPOSAL_003)
+  → Le createur doit d'abord refuser ou le proposeur doit resoumettre
 
 ACTIONS:
 1. Mettre a jour la recette communautaire avec le contenu propose
@@ -200,8 +259,11 @@ ACTIONS:
    → Chercher recipe.originRecipeId
    → Verifier que originRecipe.communityId == null
    → Mettre a jour originRecipe
-3. Mettre a jour RecipeUpdateProposal (status: ACCEPTED, decidedAt: now)
-4. Creer ActivityLog (type: PROPOSAL_ACCEPTED)
+3. CASCADE: Mettre a jour toutes les autres copies communautaires (NOUVEAU)
+   → Chercher toutes les recettes ou originRecipeId = originRecipe.id
+   → Mettre a jour chacune avec le contenu accepte
+4. Mettre a jour RecipeUpdateProposal (status: ACCEPTED, decidedAt: now)
+5. Creer ActivityLog (type: PROPOSAL_ACCEPTED)
 ```
 
 ### 4.3 Refuser une proposition
@@ -223,8 +285,25 @@ ACTIONS:
 
 ### 4.4 Visualisation des variantes
 - Sur la page d'une recette, afficher toutes les recettes ou `originRecipeId = recette.id` ET `isVariant = true`
-- Presentation en liste deroulante (dropdown)
-- Tri par date de creation (plus recent en premier)
+- **Visibilite:** Seulement les variantes de CETTE communaute (pas cross-communaute)
+- Presentation en liste deroulante (dropdown) PLATE (pas d'arbre)
+- **Version par defaut:** La plus recente (MAX de createdAt, updatedAt) s'affiche par defaut
+- **Tri:** par date la plus recente (createdAt ET updatedAt confondus), plus recent en premier
+
+**Coexistence des variantes (NOUVEAU):**
+```
+- Les variantes COEXISTENT dans la communaute (pas de remplacement)
+- Chaque variante a son propre createur
+- L'utilisateur navigue entre elles via le dropdown
+- Une recette peut avoir plusieurs variantes dans la meme communaute:
+  → Propositions refusees (devient variante du proposeur)
+  → Modifications du createur (nouvelle version)
+
+VARIANTES DE VARIANTES:
+- Une variante peut avoir ses propres variantes (chaine illimitee)
+- Le dropdown reste PLAT (affiche toutes les variantes a plat)
+- originRecipeId pointe vers le parent IMMEDIAT (pas la racine)
+```
 
 ---
 
@@ -244,7 +323,7 @@ L'utilisateur DOIT:
    - Copier title, content, tags, ingredients
    - creatorId = utilisateur qui partage
    - communityId = communaute cible
-   - originRecipeId = recette originale
+   - originRecipeId = recette COMMUNAUTAIRE source (pas la perso)
    - sharedFromCommunityId = communaute source
    - isVariant = false
 
@@ -258,6 +337,20 @@ L'utilisateur DOIT:
 - Elle peut recevoir ses propres propositions et variantes
 - Les modifications sur l'originale n'affectent pas les forks
 - Les modifications sur le fork n'affectent pas l'originale
+- **Pas de synchronisation** - la synchro passe par la version privee, le fork n'en a pas
+
+### 5.4 Chaines de forks (NOUVEAU)
+```
+FORK DE FORK:
+- On peut forker un fork (A → B → C)
+- originRecipeId pointe vers le PARENT IMMEDIAT (B, pas A)
+- sharedFromCommunityId = communaute du parent
+
+ANALYTICS EN CHAINE:
+- Quand C fork B: B.shares++ ET B.forks++
+- MAIS AUSSI: A.shares++ ET A.forks++ (remontee dans la chaine)
+- Permet de tracer l'impact total d'une recette originale
+```
 
 ---
 
@@ -287,6 +380,21 @@ L'utilisateur DOIT:
 ### 6.2 Requetes feed
 - **Feed par communaute:** `WHERE communityId = X ORDER BY createdAt DESC`
 - **Feed personnel:** `WHERE userId = X OR recipeId IN (user's recipes) ORDER BY createdAt DESC`
+
+### 6.3 Cascade et Activity Log (NOUVEAU)
+
+```
+ACCEPTATION PROPOSITION AVEC CASCADE:
+- Quand une proposition est acceptee et cascade vers N communautes:
+- Creation de 1 ActivityLog par communaute impactee
+- Chaque communaute voit RECIPE_UPDATED dans son feed
+- L'entry dans la communaute d'origine a type: PROPOSAL_ACCEPTED
+- Les entries dans les autres communautes ont type: RECIPE_UPDATED
+
+ORPHELINAT AUTO-REFUS:
+- Quand une recette devient orpheline avec propositions PENDING:
+- Creation de 1 ActivityLog VARIANT_CREATED par proposition auto-refusee
+```
 
 ---
 
@@ -364,6 +472,7 @@ L'utilisateur DOIT:
 | `RECIPE_002` | Non proprietaire | Modification sans etre createur |
 | `PROPOSAL_001` | Proposition invalide | Auto-proposition interdite |
 | `PROPOSAL_002` | Deja decidee | Proposition non-pending |
+| `PROPOSAL_003` | Recette modifiee depuis | Conflit: recipe.updatedAt > proposal.createdAt |
 | `SHARE_001` | Non membre source | Pas dans la communaute source |
 | `SHARE_002` | Non membre cible | Pas dans la communaute cible |
 | `SHARE_003` | Permission partage | Ni admin ni createur |
@@ -545,6 +654,14 @@ L'application est structuree en "briques" (modules/features) que les communautes
 2. Pour chaque feature default:
    → INSERT CommunityFeature (communityId, featureId, grantedById: null)
 3. La communaute a acces aux features par defaut
+```
+
+**Ajout d'une nouvelle feature par defaut (NOUVEAU):**
+```
+Quand une nouvelle feature est creee avec isDefault = true:
+1. Toutes les communautes EXISTANTES la recoivent automatiquement
+2. Attribution: grantedById = null (auto-attribue)
+3. Pas besoin d'action manuelle du SuperAdmin
 ```
 
 ### 12.3 Attribution manuelle
