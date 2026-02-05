@@ -7,9 +7,11 @@
 controllers/
 ├── auth.ts            # signup, login, logout, me
 ├── communities.ts     # CRUD communautes
+├── communityRecipes.ts # create, list recettes communautaires
 ├── members.ts         # list, promote, kick/leave membres
 ├── invites.ts         # create, list, cancel, accept, reject invitations
-├── recipes.ts         # CRUD recettes personnelles
+├── proposals.ts       # create, list, detail, accept, reject propositions
+├── recipes.ts         # CRUD recettes (perso + communautaires via detail/update/delete)
 ├── tags.ts            # autocomplete tags
 ├── ingredients.ts     # autocomplete ingredients
 └── users.ts           # search users, update profile
@@ -21,7 +23,8 @@ routes/
 ├── auth.ts            # /api/auth/*
 ├── communities.ts     # /api/communities/* (incl. members, invites)
 ├── invites.ts         # /api/invites/:id/accept|reject
-├── recipes.ts         # /api/recipes/*
+├── proposals.ts       # /api/proposals/:id, /api/proposals/:id/accept|reject
+├── recipes.ts         # /api/recipes/* (incl. /api/recipes/:id/proposals)
 ├── tags.ts            # /api/tags
 ├── ingredients.ts     # /api/ingredients
 └── users.ts           # /api/users/search, /api/users/me, /api/users/me/invites
@@ -59,6 +62,12 @@ admin/
     └── requireSuperAdmin.ts      # verifie adminId + totpVerified
 ```
 
+### Services
+```
+services/
+└── orphanHandling.ts  # Gestion recettes orphelines (auto-reject proposals)
+```
+
 ### Autres backend
 ```
 app.ts                 # Config Express, montage routes, sessions
@@ -83,6 +92,7 @@ __tests__/
     ├── tags.test.ts
     ├── ingredients.test.ts
     ├── communities.test.ts
+    ├── communityRecipes.test.ts
     ├── invitations.test.ts
     ├── members.test.ts
     ├── adminAuth.test.ts
@@ -91,7 +101,9 @@ __tests__/
     ├── adminFeatures.test.ts
     ├── adminCommunities.test.ts
     ├── adminDashboard.test.ts
-    └── adminActivity.test.ts
+    ├── adminActivity.test.ts
+    ├── proposals.test.ts
+    └── variants.test.ts
 ```
 
 ---
@@ -133,12 +145,18 @@ components/
 │   └── NavBarLoggedOutView/  # Nav deconnecte
 ├── communities/
 │   ├── CommunityCard.tsx     # Carte communaute (grille)
+│   ├── CommunityRecipesList.tsx # Liste recettes communaute (filtres, pagination, permissions)
 │   └── MembersList.tsx       # Liste membres (promote, kick, leave)
 ├── invitations/
 │   ├── InviteCard.tsx        # Carte invitation recue (accept/reject)
 │   ├── InviteUserModal.tsx   # Modal inviter un utilisateur
 │   ├── SentInvitesList.tsx   # Liste invitations envoyees
 │   └── InvitationBadge.tsx   # Badge compteur invitations PENDING
+├── proposals/
+│   ├── index.ts              # Exports
+│   ├── ProposeModificationModal.tsx # Modal proposer modifications
+│   ├── ProposalsList.tsx     # Liste propositions (owner view)
+│   └── VariantsDropdown.tsx  # Dropdown variantes recette
 ├── recipes/
 │   ├── RecipeCard.tsx        # Carte recette (grille)
 │   ├── RecipeFilters.tsx     # Filtres search/tags

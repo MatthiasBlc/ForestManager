@@ -1,5 +1,6 @@
 import express from "express";
 import * as CommunitiesController from "../controllers/communities";
+import * as CommunityRecipesController from "../controllers/communityRecipes";
 import * as InvitesController from "../controllers/invites";
 import * as MembersController from "../controllers/members";
 import { memberOf, requireCommunityRole } from "../middleware/community";
@@ -22,6 +23,16 @@ router.patch(
   requireCommunityRole("MODERATOR"),
   CommunitiesController.updateCommunity
 );
+
+// =====================================
+// Recipe routes (any member)
+// =====================================
+
+// List community recipes
+router.get("/:communityId/recipes", memberOf, CommunityRecipesController.getCommunityRecipes);
+
+// Create a community recipe
+router.post("/:communityId/recipes", memberOf, CommunityRecipesController.createCommunityRecipe);
 
 // =====================================
 // Member routes

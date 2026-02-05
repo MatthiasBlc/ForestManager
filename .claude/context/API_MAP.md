@@ -19,10 +19,11 @@ Controller: `controllers/auth.ts` | Route: `routes/auth.ts`
 ## Recipes (/api/recipes) - requireAuth
 ```
 GET    /api/recipes/            # list (paginated, filter by tags, search)
-GET    /api/recipes/:recipeId   # detail
+GET    /api/recipes/:recipeId   # detail (owner or community member)
 POST   /api/recipes/            # create (title, content, tags[], ingredients[])
-PATCH  /api/recipes/:recipeId   # update (owner only)
-DELETE /api/recipes/:recipeId   # soft delete (owner only)
+PATCH  /api/recipes/:recipeId   # update (owner, +membership for community recipes)
+DELETE /api/recipes/:recipeId   # soft delete (owner, +membership for community recipes)
+GET    /api/recipes/:recipeId/variants   # list variants (isVariant=true, same community)
 ```
 Controller: `controllers/recipes.ts` | Route: `routes/recipes.ts`
 
@@ -46,6 +47,13 @@ GET    /api/communities/:communityId              # detail (memberOf)
 PATCH  /api/communities/:communityId              # update (MODERATOR)
 ```
 Controller: `controllers/communities.ts` | Route: `routes/communities.ts`
+
+### Recipes (nested under /api/communities/:communityId)
+```
+GET    /api/communities/:communityId/recipes               # list (memberOf, paginated, filter tags/search)
+POST   /api/communities/:communityId/recipes               # create (memberOf, creates personal + community copy)
+```
+Controller: `controllers/communityRecipes.ts`
 
 ### Members (nested under /api/communities/:communityId)
 ```
@@ -77,6 +85,21 @@ POST /api/invites/:inviteId/accept      # accept
 POST /api/invites/:inviteId/reject      # reject
 ```
 Controller: `controllers/invites.ts` | Route: `routes/invites.ts`
+
+## Proposals (/api/proposals) - requireAuth
+```
+GET  /api/proposals/:proposalId         # detail proposition
+POST /api/proposals/:proposalId/accept  # accepter (createur recette)
+POST /api/proposals/:proposalId/reject  # refuser + creer variante
+```
+Controller: `controllers/proposals.ts` | Route: `routes/proposals.ts`
+
+### Proposals (nested under /api/recipes/:recipeId)
+```
+GET  /api/recipes/:recipeId/proposals   # list propositions (?status=)
+POST /api/recipes/:recipeId/proposals   # creer proposition
+```
+Controller: `controllers/proposals.ts` | Route: `routes/recipes.ts`
 
 ---
 
@@ -150,4 +173,4 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 | adminRateLimiter | middleware/security.ts | 30 req/min global admin |
 | authRateLimiter | routes config | 5/15min sur auth endpoints |
 
-## Total: 52 endpoints (25 user + 27 admin + 1 health)
+## Total: 60 endpoints (33 user + 27 admin + 1 health)
