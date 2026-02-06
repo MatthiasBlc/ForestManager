@@ -6,6 +6,7 @@ import APIManager from "../network/api";
 import RecipeCard from "./recipes/RecipeCard";
 import RecipeListRow from "./recipes/RecipeListRow";
 import RecipeFilters from "./recipes/RecipeFilters";
+import { SharePersonalRecipeModal } from "./share";
 
 type ViewMode = "card" | "list";
 
@@ -20,6 +21,7 @@ const RecipesPageLoggedInView = () => {
   const [recipesLoading, setRecipesLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [showRecipesLoadingError, setShowRecipesLoadingError] = useState(false);
+  const [shareRecipe, setShareRecipe] = useState<RecipeListItem | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem("recipesViewMode");
     return (saved === "list" || saved === "card") ? saved : "card";
@@ -125,6 +127,14 @@ const RecipesPageLoggedInView = () => {
     }
   };
 
+  const handleShareRecipe = (recipe: RecipeListItem) => {
+    setShareRecipe(recipe);
+  };
+
+  const handleSharePublished = () => {
+    setShareRecipe(null);
+  };
+
   async function deleteRecipe(recipe: RecipeListItem) {
     try {
       await APIManager.deleteRecipe(recipe.id);
@@ -205,6 +215,7 @@ const RecipesPageLoggedInView = () => {
                       recipe={recipe}
                       onDelete={deleteRecipe}
                       onTagClick={handleTagClick}
+                      onShare={handleShareRecipe}
                     />
                   ))}
                 </div>
@@ -216,6 +227,7 @@ const RecipesPageLoggedInView = () => {
                       recipe={recipe}
                       onDelete={deleteRecipe}
                       onTagClick={handleTagClick}
+                      onShare={handleShareRecipe}
                     />
                   ))}
                 </div>
@@ -258,6 +270,15 @@ const RecipesPageLoggedInView = () => {
             </div>
           )}
         </>
+      )}
+
+      {shareRecipe && (
+        <SharePersonalRecipeModal
+          recipeId={shareRecipe.id}
+          recipeTitle={shareRecipe.title}
+          onClose={() => setShareRecipe(null)}
+          onPublished={handleSharePublished}
+        />
       )}
     </div>
   );

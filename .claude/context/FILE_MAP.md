@@ -149,7 +149,8 @@ components/
 ├── communities/
 │   ├── CommunityCard.tsx     # Carte communaute (grille)
 │   ├── CommunityRecipesList.tsx # Liste recettes communaute (filtres, pagination, permissions)
-│   └── MembersList.tsx       # Liste membres (promote, kick, leave)
+│   ├── MembersList.tsx       # Liste membres (promote, kick, leave)
+│   └── SidePanel.tsx         # Volet lateral redimensionnable (members/activity/invitations)
 ├── invitations/
 │   ├── InviteCard.tsx        # Carte invitation recue (accept/reject)
 │   ├── InviteUserModal.tsx   # Modal inviter un utilisateur
@@ -165,7 +166,8 @@ components/
 │   └── VariantsDropdown.tsx  # Dropdown variantes recette
 ├── share/
 │   ├── index.ts              # Exports
-│   └── ShareRecipeModal.tsx  # Modal partage recette inter-communautes
+│   ├── ShareRecipeModal.tsx  # Modal partage recette inter-communautes
+│   └── SharePersonalRecipeModal.tsx # Modal publier recette perso vers communautes
 ├── recipes/
 │   ├── RecipeCard.tsx        # Carte recette (grille)
 │   ├── RecipeFilters.tsx     # Filtres search/tags

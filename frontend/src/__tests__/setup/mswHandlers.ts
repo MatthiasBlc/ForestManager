@@ -1094,7 +1094,7 @@ export const handlers = [
       updatedAt: new Date().toISOString(),
     };
 
-    return HttpResponse.json({ recipe: newRecipe }, { status: 201 });
+    return HttpResponse.json(newRecipe, { status: 201 });
   }),
 
   // =====================================

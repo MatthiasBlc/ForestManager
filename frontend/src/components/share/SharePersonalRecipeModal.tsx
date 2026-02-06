@@ -3,27 +3,25 @@ import { FaShare, FaTimes, FaUsers } from "react-icons/fa";
 import APIManager from "../../network/api";
 import { CommunityListItem } from "../../models/community";
 
-interface ShareRecipeModalProps {
+interface SharePersonalRecipeModalProps {
   recipeId: string;
   recipeTitle: string;
-  currentCommunityId: string;
   onClose: () => void;
-  onShared: (newRecipeId: string) => void;
+  onPublished: () => void;
 }
 
-export const ShareRecipeModal = ({
+export const SharePersonalRecipeModal = ({
   recipeId,
   recipeTitle,
-  currentCommunityId,
   onClose,
-  onShared,
-}: ShareRecipeModalProps) => {
+  onPublished,
+}: SharePersonalRecipeModalProps) => {
   const [communities, setCommunities] = useState<CommunityListItem[]>([]);
+  const [alreadySharedIds, setAlreadySharedIds] = useState<Set<string>>(new Set());
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
-  const [isSharing, setIsSharing] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [allShared, setAllShared] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -35,12 +33,11 @@ export const ShareRecipeModal = ({
         ]);
 
         const sharedIds = new Set(sharedRes.data.map((c) => c.id));
-        // Exclude current community AND communities where already shared
-        const available = communitiesRes.data.filter(
-          (c) => c.id !== currentCommunityId && !sharedIds.has(c.id)
-        );
+        setAlreadySharedIds(sharedIds);
+
+        // Only show communities where recipe is NOT already shared
+        const available = communitiesRes.data.filter((c) => !sharedIds.has(c.id));
         setCommunities(available);
-        setAllShared(available.length === 0 && communitiesRes.data.length > 1);
       } catch (err) {
         console.error("Error loading data:", err);
         setError("Failed to load communities");
@@ -50,7 +47,7 @@ export const ShareRecipeModal = ({
     }
 
     loadData();
-  }, [recipeId, currentCommunityId]);
+  }, [recipeId]);
 
   const toggleCommunity = (communityId: string) => {
     setSelectedIds((prev) => {
@@ -64,24 +61,18 @@ export const ShareRecipeModal = ({
     });
   };
 
-  const handleShare = async () => {
+  const handlePublish = async () => {
     if (selectedIds.size === 0) return;
 
     try {
-      setIsSharing(true);
+      setIsPublishing(true);
       setError(null);
-
-      let lastRecipeId = "";
-      for (const communityId of selectedIds) {
-        const newRecipe = await APIManager.shareRecipe(recipeId, communityId);
-        lastRecipeId = newRecipe.id;
-      }
-
-      onShared(lastRecipeId);
+      await APIManager.publishToCommunities(recipeId, Array.from(selectedIds));
+      onPublished();
     } catch (err) {
-      console.error("Error sharing recipe:", err);
-      setError(err instanceof Error ? err.message : "Failed to share recipe");
-      setIsSharing(false);
+      console.error("Error publishing recipe:", err);
+      setError(err instanceof Error ? err.message : "Failed to publish recipe");
+      setIsPublishing(false);
     }
   };
 
@@ -91,18 +82,18 @@ export const ShareRecipeModal = ({
         <button
           className="btn btn-sm btn-circle absolute right-2 top-2"
           onClick={onClose}
-          disabled={isSharing}
+          disabled={isPublishing}
         >
           <FaTimes />
         </button>
 
         <h3 className="font-bold text-lg flex items-center gap-2">
           <FaShare className="text-primary" />
-          Share Recipe
+          Share to Communities
         </h3>
 
         <p className="py-4 text-base-content/70">
-          Share &quot;{recipeTitle}&quot; to another community. A copy will be
+          Share &quot;{recipeTitle}&quot; to your communities. A copy will be
           created in each selected community.
         </p>
 
@@ -120,9 +111,9 @@ export const ShareRecipeModal = ({
           <div className="alert alert-info">
             <FaUsers className="w-4 h-4" />
             <span>
-              {allShared
-                ? "This recipe is already shared to all your other communities."
-                : "You are not a member of any other communities to share to."}
+              {alreadySharedIds.size > 0
+                ? "This recipe is already shared to all your communities."
+                : "You are not a member of any communities yet."}
             </span>
           </div>
         ) : (
@@ -137,7 +128,7 @@ export const ShareRecipeModal = ({
                   className="checkbox checkbox-primary"
                   checked={selectedIds.has(community.id)}
                   onChange={() => toggleCommunity(community.id)}
-                  disabled={isSharing}
+                  disabled={isPublishing}
                 />
                 <div className="flex-1">
                   <p className="font-medium">{community.name}</p>
@@ -155,16 +146,16 @@ export const ShareRecipeModal = ({
           <button
             className="btn btn-ghost"
             onClick={onClose}
-            disabled={isSharing}
+            disabled={isPublishing}
           >
             Cancel
           </button>
           <button
             className="btn btn-primary gap-2"
-            onClick={handleShare}
-            disabled={isSharing || selectedIds.size === 0 || isLoading}
+            onClick={handlePublish}
+            disabled={isPublishing || selectedIds.size === 0 || isLoading}
           >
-            {isSharing ? (
+            {isPublishing ? (
               <>
                 <span className="loading loading-spinner loading-sm" />
                 Sharing...
@@ -183,4 +174,4 @@ export const ShareRecipeModal = ({
   );
 };
 
-export default ShareRecipeModal;
+export default SharePersonalRecipeModal;

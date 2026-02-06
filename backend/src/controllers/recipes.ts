@@ -515,6 +515,92 @@ export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRec
         }
       }
 
+      // --- Synchronisation bidirectionnelle (titre, contenu, imageUrl, ingredients) ---
+      // Tags sont LOCAUX : pas synchronises
+      // Forks (sharedFromCommunityId != null) et variantes (isVariant = true) exclus
+
+      const syncData: Record<string, unknown> = {};
+      if (title !== undefined) syncData.title = title.trim();
+      if (content !== undefined) syncData.content = content.trim();
+      if (imageUrl !== undefined) syncData.imageUrl = imageUrl?.trim() || null;
+
+      const hasSyncableFields = Object.keys(syncData).length > 0 || ingredients !== undefined;
+
+      if (hasSyncableFields) {
+        // Trouver les recettes liees a synchroniser
+        let linkedRecipeIds: string[] = [];
+
+        if (recipe.communityId === null) {
+          // Recette personnelle : synchroniser toutes les copies communautaires
+          const copies = await tx.recipe.findMany({
+            where: {
+              originRecipeId: recipeId,
+              communityId: { not: null },
+              deletedAt: null,
+              isVariant: false,
+              sharedFromCommunityId: null,
+            },
+            select: { id: true },
+          });
+          linkedRecipeIds = copies.map((c) => c.id);
+        } else if (recipe.originRecipeId && !recipe.sharedFromCommunityId && !recipe.isVariant) {
+          // Recette communautaire (pas un fork, pas une variante) : synchroniser la recette perso + autres copies
+          linkedRecipeIds.push(recipe.originRecipeId);
+
+          const otherCopies = await tx.recipe.findMany({
+            where: {
+              originRecipeId: recipe.originRecipeId,
+              id: { not: recipeId },
+              deletedAt: null,
+              isVariant: false,
+              sharedFromCommunityId: null,
+            },
+            select: { id: true },
+          });
+          linkedRecipeIds.push(...otherCopies.map((c) => c.id));
+        }
+
+        if (linkedRecipeIds.length > 0) {
+          // Mettre a jour titre, contenu, imageUrl
+          if (Object.keys(syncData).length > 0) {
+            await tx.recipe.updateMany({
+              where: { id: { in: linkedRecipeIds } },
+              data: syncData,
+            });
+          }
+
+          // Synchroniser les ingredients
+          if (ingredients !== undefined) {
+            for (const linkedId of linkedRecipeIds) {
+              await tx.recipeIngredient.deleteMany({
+                where: { recipeId: linkedId },
+              });
+
+              for (let i = 0; i < ingredients.length; i++) {
+                const ing = ingredients[i];
+                const ingredientName = ing.name.trim().toLowerCase();
+                if (!ingredientName) continue;
+
+                const ingredient = await tx.ingredient.upsert({
+                  where: { name: ingredientName },
+                  create: { name: ingredientName },
+                  update: {},
+                });
+
+                await tx.recipeIngredient.create({
+                  data: {
+                    recipeId: linkedId,
+                    ingredientId: ingredient.id,
+                    quantity: ing.quantity?.trim() || null,
+                    order: i,
+                  },
+                });
+              }
+            }
+          }
+        }
+      }
+
       return tx.recipe.findUnique({
         where: { id: recipeId },
         select: {
@@ -905,7 +991,20 @@ export const shareRecipe: RequestHandler<
       );
     }
 
-    // 7. Creer le fork dans une transaction
+    // 7. Verifier qu'il n'existe pas deja un partage vers cette communaute
+    const existingShare = await prisma.recipe.findFirst({
+      where: {
+        originRecipeId: sourceRecipe.id,
+        communityId: targetCommunityId,
+        deletedAt: null,
+      },
+    });
+
+    if (existingShare) {
+      throw createHttpError(400, "SHARE_006: Recipe already shared with this community");
+    }
+
+    // 8. Creer le fork dans une transaction
     const result = await prisma.$transaction(async (tx) => {
       // Creer la nouvelle recette (fork)
       const forkedRecipe = await tx.recipe.create({
@@ -1088,6 +1187,251 @@ export const shareRecipe: RequestHandler<
     };
 
     res.status(201).json(responseData);
+  } catch (error) {
+    next(error);
+  }
+};
+
+interface PublishToCommunityBody {
+  communityIds: string[];
+}
+
+/**
+ * POST /api/recipes/:recipeId/publish
+ * Publier une recette personnelle vers une ou plusieurs communautes
+ */
+export const publishToCommunities: RequestHandler<
+  { recipeId: string },
+  unknown,
+  PublishToCommunityBody,
+  unknown
+> = async (req, res, next) => {
+  const authenticatedUserId = req.session.userId;
+  const { recipeId } = req.params;
+  const { communityIds } = req.body;
+
+  try {
+    assertIsDefine(authenticatedUserId);
+
+    if (!communityIds || !Array.isArray(communityIds) || communityIds.length === 0) {
+      throw createHttpError(400, "PUBLISH_001: At least one community ID required");
+    }
+
+    // Recuperer la recette source
+    const sourceRecipe = await prisma.recipe.findFirst({
+      where: { id: recipeId, deletedAt: null },
+      select: {
+        id: true,
+        title: true,
+        content: true,
+        imageUrl: true,
+        creatorId: true,
+        communityId: true,
+        tags: { select: { tagId: true } },
+        ingredients: {
+          select: { ingredientId: true, quantity: true, order: true },
+          orderBy: { order: "asc" },
+        },
+      },
+    });
+
+    if (!sourceRecipe) {
+      throw createHttpError(404, "RECIPE_001: Recipe not found");
+    }
+
+    if (sourceRecipe.communityId !== null) {
+      throw createHttpError(400, "PUBLISH_002: Can only publish personal recipes");
+    }
+
+    if (sourceRecipe.creatorId !== authenticatedUserId) {
+      throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
+    }
+
+    // Verifier membership dans chaque communaute cible
+    const memberships = await prisma.userCommunity.findMany({
+      where: {
+        userId: authenticatedUserId,
+        communityId: { in: communityIds },
+        deletedAt: null,
+      },
+    });
+
+    const memberCommunityIds = new Set(memberships.map((m) => m.communityId));
+    for (const cid of communityIds) {
+      if (!memberCommunityIds.has(cid)) {
+        throw createHttpError(403, `PUBLISH_003: Not a member of community ${cid}`);
+      }
+    }
+
+    // Filtrer les communautes ou la recette est deja partagee
+    const existingCopies = await prisma.recipe.findMany({
+      where: {
+        originRecipeId: recipeId,
+        communityId: { in: communityIds },
+        deletedAt: null,
+      },
+      select: { communityId: true },
+    });
+    const alreadySharedCommunityIds = new Set(existingCopies.map((r) => r.communityId));
+    const newCommunityIds = communityIds.filter((cid) => !alreadySharedCommunityIds.has(cid));
+
+    if (newCommunityIds.length === 0) {
+      res.status(200).json({ data: [], message: "Recipe already shared to all selected communities" });
+      return;
+    }
+
+    const createdRecipes = await prisma.$transaction(async (tx) => {
+      const results = [];
+
+      for (const communityId of newCommunityIds) {
+        const communityRecipe = await tx.recipe.create({
+          data: {
+            title: sourceRecipe.title,
+            content: sourceRecipe.content,
+            imageUrl: sourceRecipe.imageUrl,
+            creatorId: authenticatedUserId,
+            communityId,
+            originRecipeId: sourceRecipe.id,
+          },
+        });
+
+        // Copier tags
+        if (sourceRecipe.tags.length > 0) {
+          await tx.recipeTag.createMany({
+            data: sourceRecipe.tags.map((rt) => ({
+              recipeId: communityRecipe.id,
+              tagId: rt.tagId,
+            })),
+          });
+        }
+
+        // Copier ingredients
+        if (sourceRecipe.ingredients.length > 0) {
+          await tx.recipeIngredient.createMany({
+            data: sourceRecipe.ingredients.map((ri) => ({
+              recipeId: communityRecipe.id,
+              ingredientId: ri.ingredientId,
+              quantity: ri.quantity,
+              order: ri.order,
+            })),
+          });
+        }
+
+        // ActivityLog
+        await tx.activityLog.create({
+          data: {
+            type: "RECIPE_CREATED",
+            userId: authenticatedUserId,
+            communityId,
+            recipeId: communityRecipe.id,
+          },
+        });
+
+        results.push(communityRecipe);
+      }
+
+      // Fetch les recettes creees avec relations
+      return Promise.all(
+        results.map((r) =>
+          tx.recipe.findUnique({
+            where: { id: r.id },
+            select: {
+              id: true,
+              title: true,
+              communityId: true,
+              community: { select: { id: true, name: true } },
+              createdAt: true,
+            },
+          })
+        )
+      );
+    });
+
+    res.status(201).json({ data: createdRecipes.filter(Boolean) });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /api/recipes/:recipeId/communities
+ * Retourne les communautes ou une recette (ou ses copies/forks) existe
+ * Remonte toute la chaine originRecipeId pour couvrir les forks de forks
+ */
+export const getRecipeCommunities: RequestHandler<
+  { recipeId: string },
+  unknown,
+  unknown,
+  unknown
+> = async (req, res, next) => {
+  const authenticatedUserId = req.session.userId;
+  const { recipeId } = req.params;
+
+  try {
+    assertIsDefine(authenticatedUserId);
+
+    const recipe = await prisma.recipe.findFirst({
+      where: { id: recipeId, deletedAt: null },
+    });
+
+    if (!recipe) {
+      throw createHttpError(404, "RECIPE_001: Recipe not found");
+    }
+
+    // Remonter la chaine originRecipeId jusqu'a la racine
+    let rootId = recipe.id;
+    let current = recipe;
+    while (current.originRecipeId) {
+      const parent = await prisma.recipe.findFirst({
+        where: { id: current.originRecipeId, deletedAt: null },
+      });
+      if (!parent) break;
+      rootId = parent.id;
+      current = parent;
+    }
+
+    // Collecter tous les IDs de la famille (racine + toutes les copies/forks recursifs)
+    const allIds = new Set<string>([rootId]);
+    const queue = [rootId];
+    while (queue.length > 0) {
+      const parentId = queue.shift()!;
+      const children = await prisma.recipe.findMany({
+        where: { originRecipeId: parentId, deletedAt: null },
+        select: { id: true },
+      });
+      for (const child of children) {
+        if (!allIds.has(child.id)) {
+          allIds.add(child.id);
+          queue.push(child.id);
+        }
+      }
+    }
+
+    // Trouver toutes les communautes de la famille
+    const copies = await prisma.recipe.findMany({
+      where: {
+        id: { in: Array.from(allIds) },
+        deletedAt: null,
+        communityId: { not: null },
+      },
+      select: {
+        communityId: true,
+        community: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    // Deduplication par communityId
+    const seen = new Set<string>();
+    const communities = copies
+      .filter((c) => c.community && !seen.has(c.community.id) && seen.add(c.community.id))
+      .map((c) => c.community!);
+
+    res.status(200).json({ data: communities });
   } catch (error) {
     next(error);
   }

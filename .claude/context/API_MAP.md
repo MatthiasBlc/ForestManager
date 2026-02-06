@@ -25,6 +25,8 @@ PATCH  /api/recipes/:recipeId   # update (owner, +membership for community recip
 DELETE /api/recipes/:recipeId   # soft delete (owner, +membership for community recipes)
 GET    /api/recipes/:recipeId/variants   # list variants (isVariant=true, same community)
 POST   /api/recipes/:recipeId/share     # fork to another community
+POST   /api/recipes/:recipeId/publish   # publish personal recipe to communities
+GET    /api/recipes/:recipeId/communities  # list communities where recipe has copies
 ```
 Controller: `controllers/recipes.ts` | Route: `routes/recipes.ts`
 
@@ -181,4 +183,4 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 | adminRateLimiter | middleware/security.ts | 30 req/min global admin |
 | authRateLimiter | routes config | 5/15min sur auth endpoints |
 
-## Total: 63 endpoints (36 user + 27 admin + 1 health)
+## Total: 65 endpoints (38 user + 27 admin + 1 health)

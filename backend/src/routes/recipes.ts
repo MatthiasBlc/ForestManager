@@ -25,4 +25,10 @@ router.post("/:recipeId/proposals", ProposalsController.createProposal);
 // Share recipe to another community (fork)
 router.post("/:recipeId/share", RecipesController.shareRecipe);
 
+// Publish personal recipe to communities
+router.post("/:recipeId/publish", RecipesController.publishToCommunities);
+
+// Get communities where a recipe has copies
+router.get("/:recipeId/communities", RecipesController.getRecipeCommunities);
+
 export default router;

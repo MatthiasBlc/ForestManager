@@ -14,9 +14,10 @@ const RECIPES_PER_PAGE = 12;
 
 interface CommunityRecipesListProps {
   communityId: string;
+  initialTags?: string | null;
 }
 
-const CommunityRecipesList = ({ communityId }: CommunityRecipesListProps) => {
+const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesListProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -31,7 +32,9 @@ const CommunityRecipesList = ({ communityId }: CommunityRecipesListProps) => {
   });
 
   const [searchFilter, setSearchFilter] = useState("");
-  const [tagsFilter, setTagsFilter] = useState<string[]>([]);
+  const [tagsFilter, setTagsFilter] = useState<string[]>(() =>
+    initialTags ? initialTags.split(",").filter(Boolean) : []
+  );
   const [ingredientsFilter, setIngredientsFilter] = useState<string[]>([]);
 
   const toggleViewMode = () => {

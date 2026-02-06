@@ -306,6 +306,23 @@ describe("Share Recipe API", () => {
 
       expect(res.status).toBe(401);
     });
+
+    it("should reject sharing a recipe already shared to the same community", async () => {
+      // First share should succeed
+      const first = await request(app)
+        .post(`/api/recipes/${communityRecipeId}/share`)
+        .set("Cookie", user1Cookie)
+        .send({ targetCommunityId: targetCommunity.id });
+      expect(first.status).toBe(201);
+
+      // Second share to same community should fail
+      const second = await request(app)
+        .post(`/api/recipes/${communityRecipeId}/share`)
+        .set("Cookie", user1Cookie)
+        .send({ targetCommunityId: targetCommunity.id });
+      expect(second.status).toBe(400);
+      expect(second.body.error).toContain("SHARE_006");
+    });
   });
 
   // =====================================
@@ -348,6 +365,253 @@ describe("Share Recipe API", () => {
       });
       expect(fork1Analytics?.shares).toBe(1);
       expect(fork1Analytics?.forks).toBe(1);
+    });
+  });
+
+  // =====================================
+  // Bidirectional sync on update
+  // =====================================
+  describe("Bidirectional sync", () => {
+    let personalRecipeId: string;
+
+    beforeEach(async () => {
+      // The beforeEach already creates a community recipe via createCommunityRecipe,
+      // which also creates a personal copy. Find the personal recipe.
+      const communityRecipe = await testPrisma.recipe.findUnique({
+        where: { id: communityRecipeId },
+      });
+      personalRecipeId = communityRecipe!.originRecipeId!;
+    });
+
+    it("should sync title/content from personal recipe to community copies", async () => {
+      // Update the personal recipe
+      const res = await request(app)
+        .patch(`/api/recipes/${personalRecipeId}`)
+        .set("Cookie", user1Cookie)
+        .send({ title: "Updated Title", content: "Updated Content" });
+
+      expect(res.status).toBe(200);
+
+      // Check community copy is synced
+      const communityRecipe = await testPrisma.recipe.findUnique({
+        where: { id: communityRecipeId },
+      });
+      expect(communityRecipe?.title).toBe("Updated Title");
+      expect(communityRecipe?.content).toBe("Updated Content");
+    });
+
+    it("should sync title/content from community recipe to personal + other copies", async () => {
+      // Update the community recipe
+      const res = await request(app)
+        .patch(`/api/recipes/${communityRecipeId}`)
+        .set("Cookie", user1Cookie)
+        .send({ title: "Community Updated", content: "Community Content Updated" });
+
+      expect(res.status).toBe(200);
+
+      // Check personal recipe is synced
+      const personalRecipe = await testPrisma.recipe.findUnique({
+        where: { id: personalRecipeId },
+      });
+      expect(personalRecipe?.title).toBe("Community Updated");
+      expect(personalRecipe?.content).toBe("Community Content Updated");
+    });
+
+    it("should sync ingredients from personal recipe to community copies", async () => {
+      // Update ingredients on personal recipe
+      const res = await request(app)
+        .patch(`/api/recipes/${personalRecipeId}`)
+        .set("Cookie", user1Cookie)
+        .send({
+          ingredients: [
+            { name: "new ingredient", quantity: "200g" },
+            { name: "another ingredient", quantity: "50ml" },
+          ],
+        });
+
+      expect(res.status).toBe(200);
+
+      // Check community copy ingredients
+      const communityIngredients = await testPrisma.recipeIngredient.findMany({
+        where: { recipeId: communityRecipeId },
+        include: { ingredient: true },
+        orderBy: { order: "asc" },
+      });
+      expect(communityIngredients).toHaveLength(2);
+      expect(communityIngredients[0].ingredient.name).toBe("new ingredient");
+      expect(communityIngredients[0].quantity).toBe("200g");
+      expect(communityIngredients[1].ingredient.name).toBe("another ingredient");
+    });
+
+    it("should NOT sync tags (tags are local)", async () => {
+      // Update tags on personal recipe
+      await request(app)
+        .patch(`/api/recipes/${personalRecipeId}`)
+        .set("Cookie", user1Cookie)
+        .send({ tags: ["newtag1", "newtag2"] });
+
+      // Community recipe tags should remain unchanged
+      const communityTags = await testPrisma.recipeTag.findMany({
+        where: { recipeId: communityRecipeId },
+        include: { tag: true },
+      });
+      // Original tags: "sharing", "test"
+      const tagNames = communityTags.map((rt) => rt.tag.name).sort();
+      expect(tagNames).toEqual(["sharing", "test"]);
+    });
+
+    it("should NOT sync forks (sharedFromCommunityId != null)", async () => {
+      // First share the recipe to target community (creates a fork)
+      const shareRes = await request(app)
+        .post(`/api/recipes/${communityRecipeId}/share`)
+        .set("Cookie", user1Cookie)
+        .send({ targetCommunityId: targetCommunity.id });
+      const forkId = shareRes.body.id;
+
+      // Update the personal recipe
+      await request(app)
+        .patch(`/api/recipes/${personalRecipeId}`)
+        .set("Cookie", user1Cookie)
+        .send({ title: "Sync Test Title" });
+
+      // Fork should NOT be synced (it has sharedFromCommunityId)
+      const fork = await testPrisma.recipe.findUnique({
+        where: { id: forkId },
+      });
+      expect(fork?.title).toBe("Recipe to Share"); // Original title, not synced
+    });
+  });
+
+  // =====================================
+  // POST /api/recipes/:recipeId/publish
+  // =====================================
+  describe("POST /api/recipes/:recipeId/publish", () => {
+    let personalRecipeId: string;
+
+    beforeEach(async () => {
+      // Create a personal recipe
+      const res = await request(app)
+        .post("/api/recipes")
+        .set("Cookie", user1Cookie)
+        .send({
+          title: "Personal to Publish",
+          content: "Content to publish",
+          tags: ["publish"],
+          ingredients: [{ name: "flour", quantity: "200g" }],
+        });
+      personalRecipeId = res.body.id;
+    });
+
+    it("should publish a personal recipe to multiple communities", async () => {
+      const res = await request(app)
+        .post(`/api/recipes/${personalRecipeId}/publish`)
+        .set("Cookie", user1Cookie)
+        .send({ communityIds: [sourceCommunity.id, targetCommunity.id] });
+
+      expect(res.status).toBe(201);
+      expect(res.body.data).toHaveLength(2);
+
+      // Verify copies exist
+      const copies = await testPrisma.recipe.findMany({
+        where: { originRecipeId: personalRecipeId, deletedAt: null },
+      });
+      expect(copies).toHaveLength(2);
+    });
+
+    it("should skip communities where recipe is already published", async () => {
+      // First publish
+      await request(app)
+        .post(`/api/recipes/${personalRecipeId}/publish`)
+        .set("Cookie", user1Cookie)
+        .send({ communityIds: [sourceCommunity.id] });
+
+      // Second publish includes already-shared community
+      const res = await request(app)
+        .post(`/api/recipes/${personalRecipeId}/publish`)
+        .set("Cookie", user1Cookie)
+        .send({ communityIds: [sourceCommunity.id, targetCommunity.id] });
+
+      expect(res.status).toBe(201);
+      expect(res.body.data).toHaveLength(1); // Only target, source skipped
+    });
+
+    it("should reject publishing a community recipe", async () => {
+      const res = await request(app)
+        .post(`/api/recipes/${communityRecipeId}/publish`)
+        .set("Cookie", user1Cookie)
+        .send({ communityIds: [targetCommunity.id] });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain("PUBLISH_002");
+    });
+
+    it("should reject if not member of target community", async () => {
+      const res = await request(app)
+        .post(`/api/recipes/${personalRecipeId}/publish`)
+        .set("Cookie", user2Cookie)
+        .send({ communityIds: [targetCommunity.id] });
+
+      // user2 is not member of target community
+      expect(res.status).toBe(403);
+    });
+
+    it("should reject without community IDs", async () => {
+      const res = await request(app)
+        .post(`/api/recipes/${personalRecipeId}/publish`)
+        .set("Cookie", user1Cookie)
+        .send({ communityIds: [] });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain("PUBLISH_001");
+    });
+
+    it("should copy tags and ingredients to published copies", async () => {
+      await request(app)
+        .post(`/api/recipes/${personalRecipeId}/publish`)
+        .set("Cookie", user1Cookie)
+        .send({ communityIds: [sourceCommunity.id] });
+
+      const copy = await testPrisma.recipe.findFirst({
+        where: { originRecipeId: personalRecipeId, communityId: sourceCommunity.id },
+        include: {
+          tags: { include: { tag: true } },
+          ingredients: { include: { ingredient: true } },
+        },
+      });
+
+      expect(copy?.tags).toHaveLength(1);
+      expect(copy?.tags[0].tag.name).toBe("publish");
+      expect(copy?.ingredients).toHaveLength(1);
+      expect(copy?.ingredients[0].ingredient.name).toBe("flour");
+    });
+  });
+
+  // =====================================
+  // GET /api/recipes/:recipeId/communities
+  // =====================================
+  describe("GET /api/recipes/:recipeId/communities", () => {
+    it("should return communities where a personal recipe has copies", async () => {
+      // Create personal recipe
+      const recipeRes = await request(app)
+        .post("/api/recipes")
+        .set("Cookie", user1Cookie)
+        .send({ title: "Test Communities", content: "Content" });
+      const personalRecipeId = recipeRes.body.id;
+
+      // Publish to source community
+      await request(app)
+        .post(`/api/recipes/${personalRecipeId}/publish`)
+        .set("Cookie", user1Cookie)
+        .send({ communityIds: [sourceCommunity.id] });
+
+      // Get communities
+      const res = await request(app)
+        .get(`/api/recipes/${personalRecipeId}/communities`)
+        .set("Cookie", user1Cookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toHaveLength(1);
+      expect(res.body.data[0].id).toBe(sourceCommunity.id);
     });
   });
 });

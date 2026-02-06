@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { FaEdit, FaTrash, FaCodeBranch } from "react-icons/fa";
+import { FaEdit, FaTrash, FaCodeBranch, FaShare } from "react-icons/fa";
 import { RecipeListItem, CommunityRecipeListItem } from "../../models/recipe";
 import { formatDate } from "../../utils/format.Date";
 
@@ -7,12 +7,13 @@ interface RecipeCardProps {
   recipe: RecipeListItem | CommunityRecipeListItem;
   onDelete: (recipe: RecipeListItem | CommunityRecipeListItem) => void;
   onTagClick?: (tag: string) => void;
+  onShare?: (recipe: RecipeListItem) => void;
   showCreator?: boolean;
   canEdit?: boolean;
   canDelete?: boolean;
 }
 
-const RecipeCard = ({ recipe, onDelete, onTagClick, showCreator = false, canEdit = true, canDelete = true }: RecipeCardProps) => {
+const RecipeCard = ({ recipe, onDelete, onTagClick, onShare, showCreator = false, canEdit = true, canDelete = true }: RecipeCardProps) => {
   const navigate = useNavigate();
   const { title, imageUrl, createdAt, updatedAt, tags } = recipe;
 
@@ -70,10 +71,10 @@ const RecipeCard = ({ recipe, onDelete, onTagClick, showCreator = false, canEdit
         {showCreator && "creator" in recipe && (
           <p className="text-sm text-base-content/60">by {(recipe as CommunityRecipeListItem).creator.username}</p>
         )}
-        {"sharedFromCommunity" in recipe && (recipe as CommunityRecipeListItem).sharedFromCommunity && (
+        {"sharedFromCommunityId" in recipe && (recipe as CommunityRecipeListItem).sharedFromCommunityId && (
           <span className="badge badge-outline badge-info badge-sm gap-1">
             <FaCodeBranch className="w-2.5 h-2.5" />
-            From: {(recipe as CommunityRecipeListItem).sharedFromCommunity!.name}
+            {"creator" in recipe ? `Shared by: ${(recipe as CommunityRecipeListItem).creator.username}` : "Shared from another community"}
           </span>
         )}
 
@@ -98,8 +99,16 @@ const RecipeCard = ({ recipe, onDelete, onTagClick, showCreator = false, canEdit
 
         <p className="text-sm text-base-content/60 mt-2">{dateText}</p>
 
-        {(canEdit || canDelete) && (
+        {(canEdit || canDelete || onShare) && (
           <div className="card-actions justify-end mt-2">
+            {onShare && (
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={(e) => { e.stopPropagation(); onShare(recipe); }}
+              >
+                <FaShare />
+              </button>
+            )}
             {canEdit && (
               <button
                 className="btn btn-ghost btn-sm"

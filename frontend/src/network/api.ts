@@ -200,7 +200,29 @@ export default class APIManager {
         }
         return handleApiError(error);
       });
-    return response.data.recipe;
+    return response.data;
+  }
+
+
+  // --------------- Publish (personal → communities) ---------------
+
+  static async publishToCommunities(recipeId: string, communityIds: string[]): Promise<{ data: { id: string; title: string; communityId: string; community: { id: string; name: string } }[] }> {
+    const response = await API.post(`/api/recipes/${recipeId}/publish`, JSON.stringify({ communityIds }))
+      .catch((error: AxiosError<{ error?: string }>) => {
+        if (error.response?.status === 403) {
+          throw new Error(error.response.data?.error || "Cannot publish this recipe");
+        }
+        if (error.response?.status === 400) {
+          throw new Error(error.response.data?.error || "Invalid publish request");
+        }
+        return handleApiError(error);
+      });
+    return response.data;
+  }
+
+  static async getRecipeCommunities(recipeId: string): Promise<{ data: { id: string; name: string }[] }> {
+    const response = await API.get(`/api/recipes/${recipeId}/communities`).catch(handleApiError);
+    return response.data;
   }
 
 

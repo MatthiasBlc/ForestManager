@@ -397,7 +397,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 **Frontend** (~31 tests):
 
 - [x] `CommunitiesPage.test.tsx` - Liste communautes (7 tests)
-- [x] `CommunityDetailPage.test.tsx` - Detail communaute (8 tests)
+- [x] `CommunityDetailPage.test.tsx` - Detail communaute (11 tests)
 - [x] `InviteCard.test.tsx` - Carte invitation (5 tests)
 - [x] `MembersList.test.tsx` - Liste membres (6 tests)
 - [x] `InviteUserModal.test.tsx` - Modal invitation (5 tests)
@@ -552,7 +552,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Creation fork avec originRecipeId et sharedFromCommunityId
   - Analytics chaine: increment shares/forks pour tous les ancetres
   - ActivityLog RECIPE_SHARED dans les deux communautes
-- [x] Tests `share.test.ts` (15 tests)
+- [x] Tests `share.test.ts` (28 tests)
 
 ### 7.2 Frontend
 
@@ -561,11 +561,32 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] Badge "Partage depuis X" sur recettes forkees (RecipeDetailPage, RecipeCard, RecipeListRow)
 - [x] Tests ShareRecipeModal (7 tests)
 
+### 7.3 Corrections pre-Phase 8 (13 fixes)
+
+- [x] Fix bug ShareRecipeModal (response.data.recipe → response.data)
+- [x] Prevention partage doublon (SHARE_006)
+- [x] Badge "Shared by: username" (remplace "Shared from: community")
+- [x] Publish recette perso vers communautes (POST /api/recipes/:id/publish)
+- [x] Endpoint GET /api/recipes/:id/communities (liste communautes d'une recette)
+- [x] SharePersonalRecipeModal (multi-select checkboxes)
+- [x] Activity tab visible uniquement pour moderateurs
+- [x] Synchro bidirectionnelle recettes (perso ↔ communaute, excl. forks/variants/tags)
+- [x] Sidebar header sticky + scrollbar invisible
+- [x] Default tab "recipes" (au lieu de "members")
+- [x] Suppression bouton "Back to communities"
+- [x] Side panel redimensionnable (remplace tabs members/activity/invitations)
+- [x] Navigation tags communautaires (filtre via query params)
+- [x] Tests backend share.test.ts (28 tests total, +13 nouveaux)
+- [x] Tests frontend CommunityDetailPage (11 tests, reecrit pour side panel)
+
 ### Livrables
 
 - Fork de recettes entre communautes fonctionnel
 - Tracabilite des origines
 - Analytics avec remontee en chaine
+- Publication recettes perso vers communautes
+- Side panel redimensionnable pour membres/activity/invitations
+- Synchro bidirectionnelle recettes perso ↔ communaute
 
 ---
 
@@ -862,5 +883,8 @@ Lors de l'ajout d'une nouvelle fonctionnalite, inclure les tests suivants:
 | Frontend Recipes    | RecipeCard, RecipeFilters, TagSelector, IngredientList                                      | ~28      |
 | Frontend Pages      | HomePage, RecipesPage, MainLayout, Sidebar                                                  | ~25      |
 | Frontend Activity   | ActivityFeed.test.tsx                                                                       | ~8       |
-| Backend Share       | share.test.ts                                                                               | ~15      |
-| **Total**           |                                                                                             | **~425** |
+| Backend Share       | share.test.ts                                                                               | ~28      |
+| Frontend Communities| CommunitiesPage, CommunityDetailPage                                                        | ~18      |
+| Frontend Invitations| InviteCard, MembersList, InviteUserModal                                                    | ~16      |
+| Frontend Share      | ShareRecipeModal                                                                            | ~7       |
+| **Total**           |                                                                                             | **~497** |

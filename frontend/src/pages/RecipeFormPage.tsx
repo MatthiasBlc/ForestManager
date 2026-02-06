@@ -85,8 +85,8 @@ const RecipeFormPage = () => {
         await APIManager.updateRecipe(id, recipeData);
         navigate(`/recipes/${id}`);
       } else if (communityId) {
-        await APIManager.createCommunityRecipe(communityId, recipeData);
-        navigate(`/communities/${communityId}`);
+        const newCommunityRecipe = await APIManager.createCommunityRecipe(communityId, recipeData);
+        navigate(`/recipes/${newCommunityRecipe.id}`);
       } else {
         const newRecipe = await APIManager.createRecipe(recipeData);
         navigate(`/recipes/${newRecipe.id}`);

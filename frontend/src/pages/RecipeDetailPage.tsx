@@ -6,7 +6,7 @@ import { RecipeDetail } from "../models/recipe";
 import { useAuth } from "../contexts/AuthContext";
 import { formatDate } from "../utils/format.Date";
 import { ProposeModificationModal, ProposalsList, VariantsDropdown } from "../components/proposals";
-import { ShareRecipeModal } from "../components/share";
+import { ShareRecipeModal, SharePersonalRecipeModal } from "../components/share";
 
 const RecipeDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -18,6 +18,7 @@ const RecipeDetailPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [showProposeModal, setShowProposeModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
   const [proposalsKey, setProposalsKey] = useState(0);
 
   useEffect(() => {
@@ -59,7 +60,11 @@ const RecipeDetailPage = () => {
   };
 
   const handleTagClick = (tagName: string) => {
-    navigate(`/recipes?tags=${encodeURIComponent(tagName)}`);
+    if (recipe?.communityId) {
+      navigate(`/communities/${recipe.communityId}?tags=${encodeURIComponent(tagName)}`);
+    } else {
+      navigate(`/recipes?tags=${encodeURIComponent(tagName)}`);
+    }
   };
 
   const loadRecipeData = async () => {
@@ -121,6 +126,7 @@ const RecipeDetailPage = () => {
   const isCommunityRecipe = !!recipe.communityId;
   const canPropose = isCommunityRecipe && !isOwner;
   const canShare = isCommunityRecipe; // Backend validates MODERATOR or owner permission
+  const canPublish = !isCommunityRecipe && isOwner; // Personal recipe, owner can publish to communities
   const isSharedRecipe = !!recipe.sharedFromCommunityId;
   const backPath = recipe.communityId ? `/communities/${recipe.communityId}` : "/recipes";
   const backLabel = recipe.communityId ? "Back to community" : "Back to recipes";
@@ -161,10 +167,10 @@ const RecipeDetailPage = () => {
                     In: {recipe.community.name}
                   </button>
                 )}
-                {isSharedRecipe && recipe.sharedFromCommunity && (
+                {isSharedRecipe && (
                   <span className="badge badge-outline badge-info gap-1">
                     <FaCodeBranch className="w-3 h-3" />
-                    Shared from: {recipe.sharedFromCommunity.name}
+                    {recipe.creator ? `Shared by: ${recipe.creator.username}` : "Shared from another community"}
                   </span>
                 )}
               </div>
@@ -172,6 +178,15 @@ const RecipeDetailPage = () => {
             <div className="flex gap-2 items-center">
               {isCommunityRecipe && (
                 <VariantsDropdown recipeId={recipe.id} currentRecipeId={recipe.id} />
+              )}
+              {canPublish && (
+                <button
+                  className="btn btn-outline btn-sm gap-2"
+                  onClick={() => setShowPublishModal(true)}
+                >
+                  <FaShare className="w-3 h-3" />
+                  Share
+                </button>
               )}
               {canShare && (
                 <button
@@ -281,6 +296,15 @@ const RecipeDetailPage = () => {
           currentCommunityId={recipe.communityId}
           onClose={() => setShowShareModal(false)}
           onShared={handleRecipeShared}
+        />
+      )}
+
+      {showPublishModal && (
+        <SharePersonalRecipeModal
+          recipeId={recipe.id}
+          recipeTitle={recipe.title}
+          onClose={() => setShowPublishModal(false)}
+          onPublished={() => setShowPublishModal(false)}
         />
       )}
     </div>

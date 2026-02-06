@@ -24,6 +24,7 @@
 | 6.2 | Frontend Activity Feed (component, integration) | DONE |
 | 7.1 | Backend Share (fork to other community, chain analytics) | DONE |
 | 7.2 | Frontend Share (modal, badge "Shared from X") | DONE |
+| 7.3 | Pre-Phase 8 corrections (13 fixes: bugs, UX, sync, side panel, publish) | DONE |
 
 ## Phase en cours
 
