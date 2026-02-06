@@ -44,39 +44,68 @@ describe('CommunityDetailPage', () => {
     renderWithRoute('community-1');
 
     await waitFor(() => {
-      // Multiple MODERATOR texts exist (header badge + member table)
       const moderatorElements = screen.getAllByText('MODERATOR');
       expect(moderatorElements.length).toBeGreaterThanOrEqual(1);
     });
   });
 
-  it('should show Members tab by default', async () => {
+  it('should show recipes by default', async () => {
     renderWithRoute('community-1');
 
     await waitFor(() => {
-      expect(screen.getByText('testuser')).toBeInTheDocument();
-      expect(screen.getByText('alice')).toBeInTheDocument();
-      expect(screen.getByText('bob')).toBeInTheDocument();
+      expect(screen.getByText('Recipes')).toBeInTheDocument();
     });
   });
 
-  it('should show Invitations tab for moderator', async () => {
+  it('should show Members icon button', async () => {
     renderWithRoute('community-1');
 
     await waitFor(() => {
-      expect(screen.getByRole('tab', { name: /invitations/i })).toBeInTheDocument();
+      expect(screen.getByLabelText('Members')).toBeInTheDocument();
     });
   });
 
-  it('should switch to Invitations tab when clicked', async () => {
+  it('should open Members panel when Members icon is clicked', async () => {
     const user = userEvent.setup();
     renderWithRoute('community-1');
 
     await waitFor(() => {
-      expect(screen.getByRole('tab', { name: /invitations/i })).toBeInTheDocument();
+      expect(screen.getByLabelText('Members')).toBeInTheDocument();
     });
 
-    await user.click(screen.getByRole('tab', { name: /invitations/i }));
+    await user.click(screen.getByLabelText('Members'));
+
+    await waitFor(() => {
+      // Panel header should show "Members"
+      expect(screen.getByText('testuser')).toBeInTheDocument();
+    });
+  });
+
+  it('should show Activity icon for moderator', async () => {
+    renderWithRoute('community-1');
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Activity')).toBeInTheDocument();
+    });
+  });
+
+  it('should show Invitations icon for moderator', async () => {
+    renderWithRoute('community-1');
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Invitations')).toBeInTheDocument();
+    });
+  });
+
+  it('should open Invitations panel when clicked', async () => {
+    const user = userEvent.setup();
+    renderWithRoute('community-1');
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Invitations')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByLabelText('Invitations'));
 
     await waitFor(() => {
       expect(screen.getByText('Invite user')).toBeInTheDocument();
@@ -87,7 +116,7 @@ describe('CommunityDetailPage', () => {
     renderWithRoute('community-1');
 
     await waitFor(() => {
-      expect(screen.getByText('Edit')).toBeInTheDocument();
+      expect(screen.getByLabelText('Edit')).toBeInTheDocument();
     });
   });
 
@@ -95,7 +124,6 @@ describe('CommunityDetailPage', () => {
     renderWithRoute('not-found');
 
     await waitFor(() => {
-      // handleApiError throws "Request failed with status: 404 message Community not found"
       const errorAlert = document.querySelector('.alert-error');
       expect(errorAlert).toBeInTheDocument();
     });

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import toast from "react-hot-toast";
 import { FaPaperPlane } from "react-icons/fa";
 import Modal from "../Modal";
 import APIManager from "../../network/api";
@@ -88,6 +89,7 @@ const InviteUserModal = ({ communityId, onClose, onInviteSent }: InviteUserModal
       setError(null);
       const payload = isEmail ? { email: trimmed } : { username: trimmed };
       await APIManager.sendInvite(communityId, payload);
+      toast.success("Invitation sent");
       onInviteSent();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to send invitation");

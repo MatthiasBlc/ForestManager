@@ -23,6 +23,8 @@ export interface RecipeListItem {
 export interface CommunityRecipeListItem extends RecipeListItem {
   creatorId: string;
   creator: { id: string; username: string };
+  sharedFromCommunityId?: string | null;
+  sharedFromCommunity?: { id: string; name: string } | null;
 }
 
 export interface RecipeDetail {

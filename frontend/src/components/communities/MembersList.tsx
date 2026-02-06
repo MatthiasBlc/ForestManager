@@ -1,4 +1,5 @@
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { FaArrowUp, FaSignOutAlt, FaUserMinus } from "react-icons/fa";
 import { CommunityMember } from "../../models/community";
 import { useAuth } from "../../contexts/AuthContext";
@@ -26,6 +27,7 @@ const MembersList = ({ communityId, members, currentUserRole, onMembersChange, o
       setActionLoading(memberId);
       setError(null);
       await APIManager.promoteMember(communityId, memberId);
+      toast.success("Member promoted");
       onMembersChange();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to promote member");
@@ -41,6 +43,7 @@ const MembersList = ({ communityId, members, currentUserRole, onMembersChange, o
       setActionLoading(memberId);
       setError(null);
       await APIManager.removeMember(communityId, memberId);
+      toast.success("Member removed");
       onMembersChange();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to remove member");
@@ -63,6 +66,7 @@ const MembersList = ({ communityId, members, currentUserRole, onMembersChange, o
       setActionLoading(user.id);
       setError(null);
       await APIManager.removeMember(communityId, user.id);
+      toast.success("Left community");
       onLeave();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to leave community");

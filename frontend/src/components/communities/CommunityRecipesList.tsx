@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { FaPlus, FaTh, FaList } from "react-icons/fa";
 import { CommunityRecipeListItem, CommunityRecipesResponse, RecipeListItem } from "../../models/recipe";
 import APIManager from "../../network/api";
@@ -14,9 +15,10 @@ const RECIPES_PER_PAGE = 12;
 
 interface CommunityRecipesListProps {
   communityId: string;
+  initialTags?: string | null;
 }
 
-const CommunityRecipesList = ({ communityId }: CommunityRecipesListProps) => {
+const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesListProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
@@ -31,7 +33,9 @@ const CommunityRecipesList = ({ communityId }: CommunityRecipesListProps) => {
   });
 
   const [searchFilter, setSearchFilter] = useState("");
-  const [tagsFilter, setTagsFilter] = useState<string[]>([]);
+  const [tagsFilter, setTagsFilter] = useState<string[]>(() =>
+    initialTags ? initialTags.split(",").filter(Boolean) : []
+  );
   const [ingredientsFilter, setIngredientsFilter] = useState<string[]>([]);
 
   const toggleViewMode = () => {
@@ -101,9 +105,10 @@ const CommunityRecipesList = ({ communityId }: CommunityRecipesListProps) => {
       if (pagination) {
         setPagination({ ...pagination, total: pagination.total - 1 });
       }
+      toast.success("Recipe deleted");
     } catch (err) {
       console.error("Error deleting recipe:", err);
-      alert("Failed to delete recipe");
+      toast.error("Failed to delete recipe");
     }
   }
 

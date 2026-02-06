@@ -4,7 +4,7 @@ Nous allons travailler sur chacun de ces points les uns après les autres.
 Le but est de bien définir chaque point avant de passer à l'implémentation.
 Tout doit être cohérent avec l'application et son fonctionnement actuel. Ce sont des évolutions, ou parfois des reworks complets de certaines parties du projet afin de les pousser à leur maximum.
 Tout doit être clair et maitrisé, pensé pour être maintenable et évoluer dans le temps.
-Tout doit être validé avant d'écrire du code.
+Toute la logique business doit être validé et sans zone d'ombre restante avant d'écrire du code.
 
 # Rework du système de tags
 

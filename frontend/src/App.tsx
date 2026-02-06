@@ -1,7 +1,9 @@
+import { Toaster } from "react-hot-toast";
 import LoginModal from "./components/LoginModal";
 import NavBar from "./components/Navbar/NavBar";
 import MainLayout from "./components/Layout/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { AuthProvider } from "./contexts/AuthContext";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage";
@@ -29,6 +31,7 @@ function App() {
       <AuthProvider>
         <div className="min-h-screen flex flex-col">
           <NavBar />
+          <ErrorBoundary>
           <div className="flex-1 flex flex-col">
             <Routes>
               {/* Public routes - no sidebar */}
@@ -182,7 +185,9 @@ function App() {
               <Route path="/*" element={<NotFoundPage />} />
             </Routes>
           </div>
+          </ErrorBoundary>
           <LoginModal />
+          <Toaster position="top-right" />
         </div>
       </AuthProvider>
     </BrowserRouter>

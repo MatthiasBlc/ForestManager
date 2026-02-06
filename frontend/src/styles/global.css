@@ -30,23 +30,17 @@ a:hover {
 body {
   margin: 0;
   min-width: 320px;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 #root {
   width: 100%;
-  min-height: 100vh;
+  height: 100%;
+  overflow: hidden;
 }
 
-/* Sidebar tooltips: fix overflow clipping issue with DaisyUI drawer */
-.drawer-side,
-.drawer-side aside,
-.drawer-side .menu,
-.drawer-side .menu li,
-.drawer-side .menu li a {
-  overflow: visible !important;
-}
-
+/* Sidebar tooltips z-index */
 .drawer-side .tooltip::before,
 .drawer-side .tooltip::after {
   z-index: 100;
@@ -74,6 +68,15 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* Hide scrollbar utility */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 @media (prefers-color-scheme: light) {

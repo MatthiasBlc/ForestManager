@@ -40,12 +40,13 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~436 tests)
+## Inventaire des tests (~497 tests)
 
-### Backend Integration (17 fichiers, ~289 tests)
+### Backend Integration (19 fichiers, ~332 tests)
 
 | Fichier | Module | Tests |
 |---------|--------|-------|
+| activity.test.ts | Activity feed (community + personal) | 15 |
 | auth.test.ts | User signup/login/logout/me | 16 |
 | recipes.test.ts | CRUD recettes (perso + community access) | 32 |
 | communityRecipes.test.ts | CRUD recettes communautaires | 28 |
@@ -63,8 +64,9 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | adminCommunities.test.ts | Communities admin | 8 |
 | adminDashboard.test.ts | Stats dashboard | 4 |
 | adminActivity.test.ts | Logs activite | 4 |
+| share.test.ts | Partage inter-communautes + publish + sync | 28 |
 
-### Frontend Unit (24 fichiers, ~147 tests)
+### Frontend Unit (26 fichiers, ~165 tests)
 
 | Fichier | Composant | Tests |
 |---------|-----------|-------|
@@ -88,10 +90,12 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | Sidebar.test.tsx | Sidebar navigation | 10 |
 | HomePage.test.tsx | Page accueil | 6 |
 | CommunitiesPage.test.tsx | Page liste communautes | 7 |
-| CommunityDetailPage.test.tsx | Page detail communaute | 8 |
+| CommunityDetailPage.test.tsx | Page detail communaute | 11 |
 | InviteCard.test.tsx | Carte invitation | 5 |
 | MembersList.test.tsx | Liste membres | 6 |
 | InviteUserModal.test.tsx | Modal invitation | 5 |
+| ActivityFeed.test.tsx | Feed activite | 8 |
+| ShareRecipeModal.test.tsx | Modal partage recette | 7 |
 
 ## Couverture cible
 

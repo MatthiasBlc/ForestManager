@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash, FaCodeBranch, FaShare } from "react-icons/fa";
 import { RecipeListItem, CommunityRecipeListItem } from "../../models/recipe";
 import { formatDate } from "../../utils/format.Date";
 
@@ -7,12 +7,13 @@ interface RecipeListRowProps {
   recipe: RecipeListItem | CommunityRecipeListItem;
   onDelete: (recipe: RecipeListItem | CommunityRecipeListItem) => void;
   onTagClick?: (tag: string) => void;
+  onShare?: (recipe: RecipeListItem) => void;
   showCreator?: boolean;
   canEdit?: boolean;
   canDelete?: boolean;
 }
 
-const RecipeListRow = ({ recipe, onDelete, onTagClick, showCreator = false, canEdit = true, canDelete = true }: RecipeListRowProps) => {
+const RecipeListRow = ({ recipe, onDelete, onTagClick, onShare, showCreator = false, canEdit = true, canDelete = true }: RecipeListRowProps) => {
   const navigate = useNavigate();
   const { title, imageUrl, createdAt, updatedAt, tags } = recipe;
 
@@ -68,9 +69,17 @@ const RecipeListRow = ({ recipe, onDelete, onTagClick, showCreator = false, canE
 
       <div className="flex-1 min-w-0">
         <h3 className="font-semibold truncate">{title}</h3>
-        {showCreator && "creator" in recipe && (
-          <p className="text-xs text-base-content/50">by {(recipe as CommunityRecipeListItem).creator.username}</p>
-        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          {showCreator && "creator" in recipe && (
+            <p className="text-xs text-base-content/50">by {(recipe as CommunityRecipeListItem).creator.username}</p>
+          )}
+          {"sharedFromCommunityId" in recipe && (recipe as CommunityRecipeListItem).sharedFromCommunityId && (
+            <span className="badge badge-outline badge-info badge-xs gap-1">
+              <FaCodeBranch className="w-2 h-2" />
+              {"creator" in recipe ? `Shared by: ${(recipe as CommunityRecipeListItem).creator.username}` : "Shared from another community"}
+            </span>
+          )}
+        </div>
         <p className="text-sm text-base-content/60">{dateText}</p>
       </div>
 
@@ -93,8 +102,16 @@ const RecipeListRow = ({ recipe, onDelete, onTagClick, showCreator = false, canE
         </div>
       )}
 
-      {(canEdit || canDelete) && (
+      {(canEdit || canDelete || onShare) && (
         <div className="flex gap-1 flex-shrink-0">
+          {onShare && (
+            <button
+              className="btn btn-ghost btn-sm"
+              onClick={(e) => { e.stopPropagation(); onShare(recipe); }}
+            >
+              <FaShare />
+            </button>
+          )}
           {canEdit && (
             <button
               className="btn btn-ghost btn-sm"

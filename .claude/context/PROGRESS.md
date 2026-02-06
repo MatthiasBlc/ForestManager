@@ -20,20 +20,31 @@
 | 5.2 | Backend Variants (list variants endpoint) | DONE |
 | 5.3 | Frontend Proposals (modal, list, variants dropdown, RecipeDetailPage) | DONE |
 | 5.4 | Backend Orphan Handling (auto-reject proposals on leave/kick) | DONE |
+| 6.1 | Backend Activity Feed (community + personal endpoints) | DONE |
+| 6.2 | Frontend Activity Feed (component, integration) | DONE |
+| 7.1 | Backend Share (fork to other community, chain analytics) | DONE |
+| 7.2 | Frontend Share (modal, badge "Shared from X") | DONE |
+| 7.3 | Pre-Phase 8 corrections (13 fixes: bugs, UX, sync, side panel, publish) | DONE |
 
 ## Phase en cours
 
-**Phase 5 COMPLETE** - Propositions & Variantes
+**Phase 8** - Finitions MVP
 
-Prochaine etape: Phase 6 - Activity Feed.
+### 8.1 - Erreurs, Feedback, Error Boundary - DONE
+- [x] react-hot-toast installe (toast notifications)
+- [x] ErrorBoundary (class component, fallback UI)
+- [x] 6 alert() remplaces par toast.error()
+- [x] 14 toast.success() ajoutes sur actions cles
+- [x] matchMedia mock dans vitestSetup.ts
+- [x] ErrorBoundary.test.tsx (2 tests)
+- [x] Loading states coherents (deja en place - spinners DaisyUI)
+- [x] Empty states (deja en place partout)
+- [x] Validation formulaires (react-hook-form deja en place)
 
 ## Prochaines phases
 
 | Phase | Description | Prerequis |
 |-------|-------------|-----------|
-| 5 | Propositions & Variantes (workflow accept/reject, forks) | Phase 4 |
-| 6 | Activity Feed (communautaire + personnel) | Phase 5 |
-| 7 | Partage inter-communautes (fork recettes) | Phase 3 |
 | 8 | Finitions MVP (erreurs, loading, empty states) | Phases 4-7 |
 | 9 | Post-MVP (analytics, notifications, PWA, admin pages) | Phase 8 |
 

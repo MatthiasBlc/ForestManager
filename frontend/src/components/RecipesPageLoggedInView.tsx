@@ -1,11 +1,13 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import toast from "react-hot-toast";
 import { FaPlus, FaTh, FaList } from "react-icons/fa";
 import { RecipeListItem, RecipesResponse } from "../models/recipe";
 import APIManager from "../network/api";
 import RecipeCard from "./recipes/RecipeCard";
 import RecipeListRow from "./recipes/RecipeListRow";
 import RecipeFilters from "./recipes/RecipeFilters";
+import { SharePersonalRecipeModal } from "./share";
 
 type ViewMode = "card" | "list";
 
@@ -20,6 +22,7 @@ const RecipesPageLoggedInView = () => {
   const [recipesLoading, setRecipesLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [showRecipesLoadingError, setShowRecipesLoadingError] = useState(false);
+  const [shareRecipe, setShareRecipe] = useState<RecipeListItem | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem("recipesViewMode");
     return (saved === "list" || saved === "card") ? saved : "card";
@@ -125,6 +128,14 @@ const RecipesPageLoggedInView = () => {
     }
   };
 
+  const handleShareRecipe = (recipe: RecipeListItem) => {
+    setShareRecipe(recipe);
+  };
+
+  const handleSharePublished = () => {
+    setShareRecipe(null);
+  };
+
   async function deleteRecipe(recipe: RecipeListItem) {
     try {
       await APIManager.deleteRecipe(recipe.id);
@@ -132,9 +143,10 @@ const RecipesPageLoggedInView = () => {
       if (pagination) {
         setPagination({ ...pagination, total: pagination.total - 1 });
       }
+      toast.success("Recipe deleted");
     } catch (error) {
       console.error("Error deleting recipe:", error);
-      alert("Failed to delete recipe");
+      toast.error("Failed to delete recipe");
     }
   }
 
@@ -205,6 +217,7 @@ const RecipesPageLoggedInView = () => {
                       recipe={recipe}
                       onDelete={deleteRecipe}
                       onTagClick={handleTagClick}
+                      onShare={handleShareRecipe}
                     />
                   ))}
                 </div>
@@ -216,6 +229,7 @@ const RecipesPageLoggedInView = () => {
                       recipe={recipe}
                       onDelete={deleteRecipe}
                       onTagClick={handleTagClick}
+                      onShare={handleShareRecipe}
                     />
                   ))}
                 </div>
@@ -258,6 +272,15 @@ const RecipesPageLoggedInView = () => {
             </div>
           )}
         </>
+      )}
+
+      {shareRecipe && (
+        <SharePersonalRecipeModal
+          recipeId={shareRecipe.id}
+          recipeTitle={shareRecipe.title}
+          onClose={() => setShareRecipe(null)}
+          onPublished={handleSharePublished}
+        />
       )}
     </div>
   );

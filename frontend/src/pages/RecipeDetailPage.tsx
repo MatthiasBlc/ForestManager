@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { FaArrowLeft, FaEdit, FaTrash, FaLightbulb } from "react-icons/fa";
+import toast from "react-hot-toast";
+import { FaArrowLeft, FaEdit, FaTrash, FaLightbulb, FaShare, FaCodeBranch } from "react-icons/fa";
 import APIManager from "../network/api";
 import { RecipeDetail } from "../models/recipe";
 import { useAuth } from "../contexts/AuthContext";
 import { formatDate } from "../utils/format.Date";
 import { ProposeModificationModal, ProposalsList, VariantsDropdown } from "../components/proposals";
+import { ShareRecipeModal, SharePersonalRecipeModal } from "../components/share";
 
 const RecipeDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,6 +18,8 @@ const RecipeDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showProposeModal, setShowProposeModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showPublishModal, setShowPublishModal] = useState(false);
   const [proposalsKey, setProposalsKey] = useState(0);
 
   useEffect(() => {
@@ -51,13 +55,17 @@ const RecipeDetailPage = () => {
         navigate(recipe.communityId ? `/communities/${recipe.communityId}` : "/recipes");
       } catch (err) {
         console.error("Error deleting recipe:", err);
-        alert("Failed to delete recipe");
+        toast.error("Failed to delete recipe");
       }
     }
   };
 
   const handleTagClick = (tagName: string) => {
-    navigate(`/recipes?tags=${encodeURIComponent(tagName)}`);
+    if (recipe?.communityId) {
+      navigate(`/communities/${recipe.communityId}?tags=${encodeURIComponent(tagName)}`);
+    } else {
+      navigate(`/recipes?tags=${encodeURIComponent(tagName)}`);
+    }
   };
 
   const loadRecipeData = async () => {
@@ -73,11 +81,18 @@ const RecipeDetailPage = () => {
   const handleProposalSubmitted = () => {
     setShowProposeModal(false);
     setProposalsKey((k) => k + 1);
+    toast.success("Proposal submitted");
   };
 
   const handleProposalDecided = () => {
     loadRecipeData();
     setProposalsKey((k) => k + 1);
+  };
+
+  const handleRecipeShared = (newRecipeId: string) => {
+    setShowShareModal(false);
+    toast.success("Recipe shared successfully");
+    navigate(`/recipes/${newRecipeId}`);
   };
 
   if (isLoading) {
@@ -113,6 +128,9 @@ const RecipeDetailPage = () => {
   const isOwner = recipe.creatorId === user?.id;
   const isCommunityRecipe = !!recipe.communityId;
   const canPropose = isCommunityRecipe && !isOwner;
+  const canShare = isCommunityRecipe; // Backend validates MODERATOR or owner permission
+  const canPublish = !isCommunityRecipe && isOwner; // Personal recipe, owner can publish to communities
+  const isSharedRecipe = !!recipe.sharedFromCommunityId;
   const backPath = recipe.communityId ? `/communities/${recipe.communityId}` : "/recipes";
   const backLabel = recipe.communityId ? "Back to community" : "Back to recipes";
 
@@ -143,18 +161,44 @@ const RecipeDetailPage = () => {
           <div className="flex justify-between items-start gap-4 mb-4">
             <div>
               <h1 className="text-3xl font-bold">{recipe.title}</h1>
-              {recipe.community && (
-                <button
-                  className="badge badge-secondary mt-2 cursor-pointer"
-                  onClick={() => navigate(`/communities/${recipe.communityId}`)}
-                >
-                  In: {recipe.community.name}
-                </button>
-              )}
+              <div className="flex flex-wrap gap-2 mt-2">
+                {recipe.community && (
+                  <button
+                    className="badge badge-secondary cursor-pointer"
+                    onClick={() => navigate(`/communities/${recipe.communityId}`)}
+                  >
+                    In: {recipe.community.name}
+                  </button>
+                )}
+                {isSharedRecipe && (
+                  <span className="badge badge-outline badge-info gap-1">
+                    <FaCodeBranch className="w-3 h-3" />
+                    {recipe.creator ? `Shared by: ${recipe.creator.username}` : "Shared from another community"}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex gap-2 items-center">
               {isCommunityRecipe && (
                 <VariantsDropdown recipeId={recipe.id} currentRecipeId={recipe.id} />
+              )}
+              {canPublish && (
+                <button
+                  className="btn btn-outline btn-sm gap-2"
+                  onClick={() => setShowPublishModal(true)}
+                >
+                  <FaShare className="w-3 h-3" />
+                  Share
+                </button>
+              )}
+              {canShare && (
+                <button
+                  className="btn btn-outline btn-sm gap-2"
+                  onClick={() => setShowShareModal(true)}
+                >
+                  <FaShare className="w-3 h-3" />
+                  Share
+                </button>
               )}
               {canPropose && (
                 <button
@@ -245,6 +289,25 @@ const RecipeDetailPage = () => {
           currentContent={recipe.content}
           onClose={() => setShowProposeModal(false)}
           onProposalSubmitted={handleProposalSubmitted}
+        />
+      )}
+
+      {showShareModal && recipe.communityId && (
+        <ShareRecipeModal
+          recipeId={recipe.id}
+          recipeTitle={recipe.title}
+          currentCommunityId={recipe.communityId}
+          onClose={() => setShowShareModal(false)}
+          onShared={handleRecipeShared}
+        />
+      )}
+
+      {showPublishModal && (
+        <SharePersonalRecipeModal
+          recipeId={recipe.id}
+          recipeTitle={recipe.title}
+          onClose={() => setShowPublishModal(false)}
+          onPublished={() => setShowPublishModal(false)}
         />
       )}
     </div>

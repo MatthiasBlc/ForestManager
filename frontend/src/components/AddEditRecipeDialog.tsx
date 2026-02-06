@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import Modal from "./Modal";
 import { Recipe } from "../models/recipe";
 import APIManager, { RecipeInput } from "../network/api";
@@ -36,8 +37,8 @@ const AddEditRecipeDialog = ({
       }
       onRecipeSaved(recipeResponse);
     } catch (error) {
-      console.log(error);
-      alert(error);
+      console.error(error);
+      toast.error(error instanceof Error ? error.message : "Failed to save recipe");
     }
   }
 

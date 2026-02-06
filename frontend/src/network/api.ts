@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios";
 import { RecipeDetail, RecipesResponse, CommunityRecipesResponse, TagSearchResult, IngredientSearchResult, Proposal, ProposalsResponse, ProposalInput, VariantsResponse, RejectProposalResponse } from "../models/recipe";
+import { ActivityResponse } from "../models/activity";
 import { User } from "../models/user";
 import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats } from "../models/admin";
 import { CommunityListItem, CommunityDetail, CommunityMember, CommunityInvite, ReceivedInvite } from "../models/community";
@@ -182,6 +183,45 @@ export default class APIManager {
         }
         return handleApiError(error);
       });
+    return response.data;
+  }
+
+
+  // --------------- Share (Fork) ---------------
+
+  static async shareRecipe(recipeId: string, targetCommunityId: string): Promise<RecipeDetail> {
+    const response = await API.post(`/api/recipes/${recipeId}/share`, JSON.stringify({ targetCommunityId }))
+      .catch((error: AxiosError<{ error?: string }>) => {
+        if (error.response?.status === 403) {
+          throw new Error(error.response.data?.error || "Cannot share this recipe");
+        }
+        if (error.response?.status === 400) {
+          throw new Error(error.response.data?.error || "Invalid share request");
+        }
+        return handleApiError(error);
+      });
+    return response.data;
+  }
+
+
+  // --------------- Publish (personal → communities) ---------------
+
+  static async publishToCommunities(recipeId: string, communityIds: string[]): Promise<{ data: { id: string; title: string; communityId: string; community: { id: string; name: string } }[] }> {
+    const response = await API.post(`/api/recipes/${recipeId}/publish`, JSON.stringify({ communityIds }))
+      .catch((error: AxiosError<{ error?: string }>) => {
+        if (error.response?.status === 403) {
+          throw new Error(error.response.data?.error || "Cannot publish this recipe");
+        }
+        if (error.response?.status === 400) {
+          throw new Error(error.response.data?.error || "Invalid publish request");
+        }
+        return handleApiError(error);
+      });
+    return response.data;
+  }
+
+  static async getRecipeCommunities(recipeId: string): Promise<{ data: { id: string; name: string }[] }> {
+    const response = await API.get(`/api/recipes/${recipeId}/communities`).catch(handleApiError);
     return response.data;
   }
 
@@ -416,6 +456,33 @@ export default class APIManager {
           throw new Error(error.response?.data?.error || "Failed to load dashboard");
         }
       });
+    return response.data;
+  }
+
+
+  // --------------- Activity Feed ---------------
+
+  static async getCommunityActivity(communityId: string, params: { limit?: number; offset?: number } = {}): Promise<ActivityResponse> {
+    const queryParams = new URLSearchParams();
+    if (params.limit) queryParams.set("limit", params.limit.toString());
+    if (params.offset) queryParams.set("offset", params.offset.toString());
+
+    const queryString = queryParams.toString();
+    const url = `/api/communities/${communityId}/activity${queryString ? `?${queryString}` : ""}`;
+
+    const response = await API.get(url).catch(handleApiError);
+    return response.data;
+  }
+
+  static async getMyActivity(params: { limit?: number; offset?: number } = {}): Promise<ActivityResponse> {
+    const queryParams = new URLSearchParams();
+    if (params.limit) queryParams.set("limit", params.limit.toString());
+    if (params.offset) queryParams.set("offset", params.offset.toString());
+
+    const queryString = queryParams.toString();
+    const url = `/api/users/me/activity${queryString ? `?${queryString}` : ""}`;
+
+    const response = await API.get(url).catch(handleApiError);
     return response.data;
   }
 

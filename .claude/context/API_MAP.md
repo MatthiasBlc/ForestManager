@@ -24,6 +24,9 @@ POST   /api/recipes/            # create (title, content, tags[], ingredients[])
 PATCH  /api/recipes/:recipeId   # update (owner, +membership for community recipes)
 DELETE /api/recipes/:recipeId   # soft delete (owner, +membership for community recipes)
 GET    /api/recipes/:recipeId/variants   # list variants (isVariant=true, same community)
+POST   /api/recipes/:recipeId/share     # fork to another community
+POST   /api/recipes/:recipeId/publish   # publish personal recipe to communities
+GET    /api/recipes/:recipeId/communities  # list communities where recipe has copies
 ```
 Controller: `controllers/recipes.ts` | Route: `routes/recipes.ts`
 
@@ -71,13 +74,20 @@ DELETE /api/communities/:communityId/invites/:inviteId      # cancel (MODERATOR)
 ```
 Controller: `controllers/invites.ts`
 
+### Activity (nested under /api/communities/:communityId)
+```
+GET    /api/communities/:communityId/activity              # feed (memberOf, paginated)
+```
+Controller: `controllers/activity.ts`
+
 ## Users (/api/users) - requireAuth
 ```
 GET   /api/users/search               # search by username prefix (?q=)
 PATCH /api/users/me                    # update profile (username, email, password)
 GET   /api/users/me/invites            # received invitations (?status=)
+GET   /api/users/me/activity           # personal activity feed (paginated)
 ```
-Controller: `controllers/users.ts`, `controllers/invites.ts` | Route: `routes/users.ts`
+Controller: `controllers/users.ts`, `controllers/invites.ts`, `controllers/activity.ts` | Route: `routes/users.ts`
 
 ## User Invitations
 ```
@@ -173,4 +183,4 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 | adminRateLimiter | middleware/security.ts | 30 req/min global admin |
 | authRateLimiter | routes config | 5/15min sur auth endpoints |
 
-## Total: 60 endpoints (33 user + 27 admin + 1 health)
+## Total: 65 endpoints (38 user + 27 admin + 1 health)

@@ -5,6 +5,7 @@
 ### Controllers (logique metier)
 ```
 controllers/
+├── activity.ts        # getCommunityActivity, getMyActivity
 ├── auth.ts            # signup, login, logout, me
 ├── communities.ts     # CRUD communautes
 ├── communityRecipes.ts # create, list recettes communautaires
@@ -87,6 +88,7 @@ __tests__/
 │   ├── globalSetup.ts    # Setup DB test
 │   └── testHelpers.ts    # createTestUser, cleanupTestData, etc.
 └── integration/
+    ├── activity.test.ts
     ├── auth.test.ts
     ├── recipes.test.ts
     ├── tags.test.ts
@@ -103,6 +105,7 @@ __tests__/
     ├── adminDashboard.test.ts
     ├── adminActivity.test.ts
     ├── proposals.test.ts
+    ├── share.test.ts
     └── variants.test.ts
 ```
 
@@ -120,8 +123,8 @@ pages/
 ├── RecipeFormPage.tsx        # Creation/edition recette
 ├── CommunitiesPage.tsx       # Liste communautes user
 ├── CommunityCreatePage.tsx   # Creation communaute
-├── CommunityDetailPage.tsx   # Detail communaute (onglets)
-├── CommunityEditPage.tsx     # Edition communaute (MODERATOR)
+├── CommunityDetailPage.tsx   # Detail communaute (icones + side panel)
+├── CommunityEditPage.tsx     # Edition communaute (fallback route, edit inline via SidePanel)
 ├── InvitationsPage.tsx       # Invitations recues
 ├── ProfilePage.tsx           # Profil utilisateur (edit username/email/password)
 ├── SignUpPage.tsx            # Inscription
@@ -146,17 +149,25 @@ components/
 ├── communities/
 │   ├── CommunityCard.tsx     # Carte communaute (grille)
 │   ├── CommunityRecipesList.tsx # Liste recettes communaute (filtres, pagination, permissions)
-│   └── MembersList.tsx       # Liste membres (promote, kick, leave)
+│   ├── MembersList.tsx       # Liste membres (promote, kick, leave)
+│   └── SidePanel.tsx         # Volet lateral redimensionnable (members/activity/invitations)
 ├── invitations/
 │   ├── InviteCard.tsx        # Carte invitation recue (accept/reject)
 │   ├── InviteUserModal.tsx   # Modal inviter un utilisateur
 │   ├── SentInvitesList.tsx   # Liste invitations envoyees
 │   └── InvitationBadge.tsx   # Badge compteur invitations PENDING
+├── activity/
+│   ├── index.ts              # Exports
+│   └── ActivityFeed.tsx      # Feed activite (community + personal)
 ├── proposals/
 │   ├── index.ts              # Exports
 │   ├── ProposeModificationModal.tsx # Modal proposer modifications
 │   ├── ProposalsList.tsx     # Liste propositions (owner view)
 │   └── VariantsDropdown.tsx  # Dropdown variantes recette
+├── share/
+│   ├── index.ts              # Exports
+│   ├── ShareRecipeModal.tsx  # Modal partage recette inter-communautes (checkboxes multi-select)
+│   └── SharePersonalRecipeModal.tsx # Modal publier recette perso vers communautes
 ├── recipes/
 │   ├── RecipeCard.tsx        # Carte recette (grille)
 │   ├── RecipeFilters.tsx     # Filtres search/tags
@@ -169,6 +180,7 @@ components/
 │   ├── AdminLayout.tsx       # Layout admin
 │   └── AdminProtectedRoute.tsx # Guard admin
 ├── AddEditRecipeDialog.tsx   # Dialog creation/edition
+├── ErrorBoundary.tsx         # Error boundary React (crash → fallback UI)
 ├── LoginModal.tsx            # Modal login
 ├── Modal.tsx                 # Composant modal generique
 ├── ProtectedRoute.tsx        # Guard user
@@ -237,9 +249,12 @@ __tests__/
     │   ├── CommunitiesPage.test.tsx
     │   └── CommunityDetailPage.test.tsx
     └── components/
+        ├── ActivityFeed.test.tsx
+        ├── ErrorBoundary.test.tsx
         ├── InviteCard.test.tsx
         ├── MembersList.test.tsx
-        └── InviteUserModal.test.tsx
+        ├── InviteUserModal.test.tsx
+        └── ShareRecipeModal.test.tsx
 ```
 
 ---
