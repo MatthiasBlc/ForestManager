@@ -123,8 +123,8 @@ pages/
 ├── RecipeFormPage.tsx        # Creation/edition recette
 ├── CommunitiesPage.tsx       # Liste communautes user
 ├── CommunityCreatePage.tsx   # Creation communaute
-├── CommunityDetailPage.tsx   # Detail communaute (onglets)
-├── CommunityEditPage.tsx     # Edition communaute (MODERATOR)
+├── CommunityDetailPage.tsx   # Detail communaute (icones + side panel)
+├── CommunityEditPage.tsx     # Edition communaute (fallback route, edit inline via SidePanel)
 ├── InvitationsPage.tsx       # Invitations recues
 ├── ProfilePage.tsx           # Profil utilisateur (edit username/email/password)
 ├── SignUpPage.tsx            # Inscription
@@ -166,7 +166,7 @@ components/
 │   └── VariantsDropdown.tsx  # Dropdown variantes recette
 ├── share/
 │   ├── index.ts              # Exports
-│   ├── ShareRecipeModal.tsx  # Modal partage recette inter-communautes
+│   ├── ShareRecipeModal.tsx  # Modal partage recette inter-communautes (checkboxes multi-select)
 │   └── SharePersonalRecipeModal.tsx # Modal publier recette perso vers communautes
 ├── recipes/
 │   ├── RecipeCard.tsx        # Carte recette (grille)

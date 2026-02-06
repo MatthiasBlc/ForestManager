@@ -356,7 +356,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] Page liste mes communautes (CommunitiesPage)
 - [x] Page creation communaute (CommunityCreatePage)
 - [x] Page detail communaute avec onglets Membres/Invitations/Recipes
-- [x] Page edition communaute (CommunityEditPage, MODERATOR only)
+- [x] Page edition communaute (inline SidePanel, CommunityEditPage en fallback route)
 - [x] Composant MembersList (promotion, retrait, leave)
 - [x] Dashboard page (communautes + recettes, page d'accueil authentifiee)
 - [x] Sidebar Discord-style avec avatars communautes (initiales)
@@ -575,6 +575,12 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] Default tab "recipes" (au lieu de "members")
 - [x] Suppression bouton "Back to communities"
 - [x] Side panel redimensionnable (remplace tabs members/activity/invitations)
+- [x] Edit communaute inline dans le side panel (remplace page separee)
+- [x] Sidebar refresh automatique apres edit communaute (custom event)
+- [x] ShareRecipeModal refactored en checkboxes multi-select (meme UX que personal)
+- [x] getRecipeCommunities trace toute la chaine de forks (prevention doublons)
+- [x] Bouton Share sur RecipeDetailPage pour recettes personnelles
+- [x] Redirect vers page detail apres creation recette communautaire
 - [x] Navigation tags communautaires (filtre via query params)
 - [x] Tests backend share.test.ts (28 tests total, +13 nouveaux)
 - [x] Tests frontend CommunityDetailPage (11 tests, reecrit pour side panel)
