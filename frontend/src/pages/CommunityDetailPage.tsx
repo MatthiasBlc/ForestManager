@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { FaArrowLeft, FaEdit, FaUsers, FaHistory, FaEnvelope } from "react-icons/fa";
+import { FaArrowLeft, FaEdit, FaUsers, FaHistory, FaEnvelope, FaSave } from "react-icons/fa";
 import { CommunityDetail, CommunityMember } from "../models/community";
 import APIManager from "../network/api";
 import MembersList from "../components/communities/MembersList";
@@ -9,7 +9,7 @@ import SentInvitesList from "../components/invitations/SentInvitesList";
 import { ActivityFeed } from "../components/activity";
 import SidePanel from "../components/communities/SidePanel";
 
-type PanelContent = "members" | "activity" | "invitations";
+type PanelContent = "members" | "activity" | "invitations" | "edit";
 
 const PANEL_WIDTH_KEY = "communityPanelWidth";
 const DEFAULT_PANEL_WIDTH = 350;
@@ -24,6 +24,10 @@ const CommunityDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [panelContent, setPanelContent] = useState<PanelContent | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editError, setEditError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [panelWidth, setPanelWidth] = useState<number>(() => {
     const saved = localStorage.getItem(PANEL_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_PANEL_WIDTH;
@@ -69,7 +73,36 @@ const CommunityDetailPage = () => {
   }, []);
 
   const togglePanel = (content: PanelContent) => {
-    setPanelContent((prev) => (prev === content ? null : content));
+    setPanelContent((prev) => {
+      if (prev === content) return null;
+      // Initialiser le formulaire quand on ouvre "edit"
+      if (content === "edit" && community) {
+        setEditName(community.name);
+        setEditDescription(community.description || "");
+        setEditError(null);
+      }
+      return content;
+    });
+  };
+
+  const handleEditSave = async () => {
+    if (!id || !editName.trim()) return;
+
+    try {
+      setIsSaving(true);
+      setEditError(null);
+      await APIManager.updateCommunity(id, {
+        name: editName.trim(),
+        description: editDescription.trim() || undefined,
+      });
+      await loadCommunity();
+      window.dispatchEvent(new Event("community-updated"));
+      setPanelContent(null);
+    } catch (err) {
+      setEditError(err instanceof Error ? err.message : "Failed to update community");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   if (isLoading) {
@@ -102,7 +135,8 @@ const CommunityDetailPage = () => {
   const panelTitle =
     panelContent === "members" ? "Members" :
     panelContent === "activity" ? "Activity" :
-    panelContent === "invitations" ? "Invitations" : "";
+    panelContent === "invitations" ? "Invitations" :
+    panelContent === "edit" ? "Edit Community" : "";
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -167,8 +201,8 @@ const CommunityDetailPage = () => {
             {isModerator && (
               <div className="tooltip tooltip-bottom" data-tip="Edit community">
                 <button
-                  className="btn btn-ghost btn-sm btn-circle"
-                  onClick={() => navigate(`/communities/${community.id}/edit`)}
+                  className={`btn btn-ghost btn-sm btn-circle ${panelContent === "edit" ? "btn-active" : ""}`}
+                  onClick={() => togglePanel("edit")}
                   aria-label="Edit"
                 >
                   <FaEdit className="w-4 h-4" />
@@ -208,6 +242,62 @@ const CommunityDetailPage = () => {
           )}
           {panelContent === "invitations" && isModerator && (
             <SentInvitesList communityId={community.id} />
+          )}
+          {panelContent === "edit" && isModerator && (
+            <div className="space-y-4">
+              {editError && (
+                <div className="alert alert-error text-sm">
+                  <span>{editError}</span>
+                </div>
+              )}
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Name *</span>
+                </label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  placeholder="Community name"
+                  className="input input-bordered input-sm w-full"
+                  disabled={isSaving}
+                />
+              </div>
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-medium">Description</span>
+                </label>
+                <textarea
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="Describe your community..."
+                  rows={4}
+                  className="textarea textarea-bordered textarea-sm w-full"
+                  disabled={isSaving}
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => setPanelContent(null)}
+                  disabled={isSaving}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-primary btn-sm gap-2"
+                  onClick={handleEditSave}
+                  disabled={isSaving || !editName.trim()}
+                >
+                  {isSaving ? (
+                    <span className="loading loading-spinner loading-sm" />
+                  ) : (
+                    <FaSave className="w-3 h-3" />
+                  )}
+                  Save
+                </button>
+              </div>
+            </div>
           )}
         </SidePanel>
       </div>

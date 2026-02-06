@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, ReactNode } from "react";
+import { useEffect, useState, useRef, useCallback, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
 import { FaBook, FaPlus, FaBars, FaHome } from "react-icons/fa";
@@ -98,18 +98,23 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
   const location = useLocation();
   const [communities, setCommunities] = useState<CommunityListItem[]>([]);
 
-  useEffect(() => {
-    async function loadCommunities() {
-      try {
-        const response = await APIManager.getCommunities();
-        setCommunities(response.data);
-      } catch {
-        // Silently fail - sidebar communities are non-critical
-      }
+  const loadCommunities = useCallback(async () => {
+    try {
+      const response = await APIManager.getCommunities();
+      setCommunities(response.data);
+    } catch {
+      // Silently fail - sidebar communities are non-critical
     }
+  }, []);
 
+  useEffect(() => {
     loadCommunities();
-  }, [location.pathname]);
+  }, [location.pathname, loadCommunities]);
+
+  useEffect(() => {
+    window.addEventListener("community-updated", loadCommunities);
+    return () => window.removeEventListener("community-updated", loadCommunities);
+  }, [loadCommunities]);
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + "/");
