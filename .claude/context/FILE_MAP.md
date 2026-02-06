@@ -180,6 +180,7 @@ components/
 │   ├── AdminLayout.tsx       # Layout admin
 │   └── AdminProtectedRoute.tsx # Guard admin
 ├── AddEditRecipeDialog.tsx   # Dialog creation/edition
+├── ErrorBoundary.tsx         # Error boundary React (crash → fallback UI)
 ├── LoginModal.tsx            # Modal login
 ├── Modal.tsx                 # Composant modal generique
 ├── ProtectedRoute.tsx        # Guard user
@@ -249,6 +250,7 @@ __tests__/
     │   └── CommunityDetailPage.test.tsx
     └── components/
         ├── ActivityFeed.test.tsx
+        ├── ErrorBoundary.test.tsx
         ├── InviteCard.test.tsx
         ├── MembersList.test.tsx
         ├── InviteUserModal.test.tsx

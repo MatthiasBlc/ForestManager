@@ -601,14 +601,16 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ### 8.1 Qualite
 
 - [ ] Refactoring du code pour améliorer la lisibilité et la maintenabilité et découper les fichiers trop longs
-- [ ] Gestion complete des erreurs frontend (toast/notification)
-- [ ] Messages de confirmation/feedback
-- [ ] Loading states (skeletons)
-- [ ] Empty states (messages explicatifs)
+- [x] Gestion complete des erreurs frontend (toast/notification)
+- [x] Messages de confirmation/feedback
+- [x] Loading states (skeletons)
+- [x] Empty states (messages explicatifs)
 - [ ] Gestion soft delete (filtrage automatique deletedAt IS NULL)
 
 ### 8.2 Tests
 
+- [ ] Corriger les tests frontend qui ne passent pas (ShareRecipeModal.test.tsx - 6 tests cassés, role combobox obsolete)
+- [ ] Verifier que le lint passe sans erreur (`npm run lint` frontend + backend)
 - [ ] Tests manuels complets (parcours utilisateur)
 - [ ] Corrections bugs
 - [ ] Verification toutes les regles metier
@@ -893,4 +895,5 @@ Lors de l'ajout d'une nouvelle fonctionnalite, inclure les tests suivants:
 | Frontend Communities| CommunitiesPage, CommunityDetailPage                                                        | ~18      |
 | Frontend Invitations| InviteCard, MembersList, InviteUserModal                                                    | ~16      |
 | Frontend Share      | ShareRecipeModal                                                                            | ~7       |
-| **Total**           |                                                                                             | **~497** |
+| Frontend ErrorBoundary | ErrorBoundary.test.tsx                                                                    | ~2       |
+| **Total**           |                                                                                             | **~499** |

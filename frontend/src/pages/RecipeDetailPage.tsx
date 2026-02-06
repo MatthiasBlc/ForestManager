@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { FaArrowLeft, FaEdit, FaTrash, FaLightbulb, FaShare, FaCodeBranch } from "react-icons/fa";
 import APIManager from "../network/api";
 import { RecipeDetail } from "../models/recipe";
@@ -54,7 +55,7 @@ const RecipeDetailPage = () => {
         navigate(recipe.communityId ? `/communities/${recipe.communityId}` : "/recipes");
       } catch (err) {
         console.error("Error deleting recipe:", err);
-        alert("Failed to delete recipe");
+        toast.error("Failed to delete recipe");
       }
     }
   };
@@ -80,6 +81,7 @@ const RecipeDetailPage = () => {
   const handleProposalSubmitted = () => {
     setShowProposeModal(false);
     setProposalsKey((k) => k + 1);
+    toast.success("Proposal submitted");
   };
 
   const handleProposalDecided = () => {
@@ -89,6 +91,7 @@ const RecipeDetailPage = () => {
 
   const handleRecipeShared = (newRecipeId: string) => {
     setShowShareModal(false);
+    toast.success("Recipe shared successfully");
     navigate(`/recipes/${newRecipeId}`);
   };
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { FaPlus } from "react-icons/fa";
 import { CommunityListItem } from "../models/community";
 import { RecipeListItem } from "../models/recipe";
@@ -56,8 +57,9 @@ const DashboardPage = () => {
       await APIManager.deleteRecipe(recipe.id);
       setRecipes(recipes.filter((r) => r.id !== recipe.id));
       setTotalRecipes((prev) => prev - 1);
+      toast.success("Recipe deleted");
     } catch {
-      alert("Failed to delete recipe");
+      toast.error("Failed to delete recipe");
     }
   };
 

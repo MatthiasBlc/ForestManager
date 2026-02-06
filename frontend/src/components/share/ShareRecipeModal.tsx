@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { FaShare, FaTimes, FaUsers } from "react-icons/fa";
 import APIManager from "../../network/api";
 import { CommunityListItem } from "../../models/community";
@@ -77,6 +78,7 @@ export const ShareRecipeModal = ({
         lastRecipeId = newRecipe.id;
       }
 
+      toast.success("Recipe shared successfully");
       onShared(lastRecipeId);
     } catch (err) {
       console.error("Error sharing recipe:", err);

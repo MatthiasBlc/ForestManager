@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import toast from "react-hot-toast";
 import { FaPlus, FaTh, FaList } from "react-icons/fa";
 import { RecipeListItem, RecipesResponse } from "../models/recipe";
 import APIManager from "../network/api";
@@ -142,9 +143,10 @@ const RecipesPageLoggedInView = () => {
       if (pagination) {
         setPagination({ ...pagination, total: pagination.total - 1 });
       }
+      toast.success("Recipe deleted");
     } catch (error) {
       console.error("Error deleting recipe:", error);
-      alert("Failed to delete recipe");
+      toast.error("Failed to delete recipe");
     }
   }
 

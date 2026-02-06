@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { FaShare, FaTimes, FaUsers } from "react-icons/fa";
 import APIManager from "../../network/api";
 import { CommunityListItem } from "../../models/community";
@@ -68,6 +69,7 @@ export const SharePersonalRecipeModal = ({
       setIsPublishing(true);
       setError(null);
       await APIManager.publishToCommunities(recipeId, Array.from(selectedIds));
+      toast.success("Recipe shared to communities");
       onPublished();
     } catch (err) {
       console.error("Error publishing recipe:", err);

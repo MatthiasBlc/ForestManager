@@ -2,6 +2,7 @@
 import { ReactNode } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '../../contexts/AuthContext';
 import { AdminAuthProvider } from '../../contexts/AdminAuthContext';
 
@@ -16,6 +17,7 @@ function AllProviders({ children }: WrapperProps) {
       <AuthProvider>
         <AdminAuthProvider>
           {children}
+          <Toaster />
         </AdminAuthProvider>
       </AuthProvider>
     </BrowserRouter>
@@ -28,6 +30,7 @@ function UserProviders({ children }: WrapperProps) {
     <BrowserRouter>
       <AuthProvider>
         {children}
+        <Toaster />
       </AuthProvider>
     </BrowserRouter>
   );

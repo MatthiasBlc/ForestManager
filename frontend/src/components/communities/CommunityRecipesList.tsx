@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { FaPlus, FaTh, FaList } from "react-icons/fa";
 import { CommunityRecipeListItem, CommunityRecipesResponse, RecipeListItem } from "../../models/recipe";
 import APIManager from "../../network/api";
@@ -104,9 +105,10 @@ const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesList
       if (pagination) {
         setPagination({ ...pagination, total: pagination.total - 1 });
       }
+      toast.success("Recipe deleted");
     } catch (err) {
       console.error("Error deleting recipe:", err);
-      alert("Failed to delete recipe");
+      toast.error("Failed to delete recipe");
     }
   }
 

@@ -30,12 +30,16 @@
 
 **Phase 8** - Finitions MVP
 
-### 8.1 - A FAIRE
-- [ ] Gestion erreurs globale (toast notifications, error boundaries)
-- [ ] Loading states coherents
-- [ ] Empty states (pas de recettes, pas de communautes, etc.)
-- [ ] Validation formulaires cote client
-- [ ] Messages d'erreur user-friendly
+### 8.1 - Erreurs, Feedback, Error Boundary - DONE
+- [x] react-hot-toast installe (toast notifications)
+- [x] ErrorBoundary (class component, fallback UI)
+- [x] 6 alert() remplaces par toast.error()
+- [x] 14 toast.success() ajoutes sur actions cles
+- [x] matchMedia mock dans vitestSetup.ts
+- [x] ErrorBoundary.test.tsx (2 tests)
+- [x] Loading states coherents (deja en place - spinners DaisyUI)
+- [x] Empty states (deja en place partout)
+- [x] Validation formulaires (react-hook-form deja en place)
 
 ## Prochaines phases
 

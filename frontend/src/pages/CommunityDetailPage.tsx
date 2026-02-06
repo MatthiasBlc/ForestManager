@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import toast from "react-hot-toast";
 import { FaArrowLeft, FaEdit, FaUsers, FaHistory, FaEnvelope, FaSave } from "react-icons/fa";
 import { CommunityDetail, CommunityMember } from "../models/community";
 import APIManager from "../network/api";
@@ -97,6 +98,7 @@ const CommunityDetailPage = () => {
       });
       await loadCommunity();
       window.dispatchEvent(new Event("community-updated"));
+      toast.success("Community updated");
       setPanelContent(null);
     } catch (err) {
       setEditError(err instanceof Error ? err.message : "Failed to update community");

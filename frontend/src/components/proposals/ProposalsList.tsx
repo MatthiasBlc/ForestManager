@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { FaCheck, FaTimes, FaUser, FaClock } from "react-icons/fa";
 import APIManager from "../../network/api";
 import { Proposal } from "../../models/recipe";
@@ -38,6 +39,7 @@ const ProposalsList = ({ recipeId, onProposalDecided }: ProposalsListProps) => {
       setProcessingId(proposalId);
       setError(null);
       await APIManager.acceptProposal(proposalId);
+      toast.success("Proposal accepted");
       onProposalDecided();
       loadProposals();
     } catch (err) {
@@ -56,6 +58,7 @@ const ProposalsList = ({ recipeId, onProposalDecided }: ProposalsListProps) => {
       setProcessingId(proposalId);
       setError(null);
       await APIManager.rejectProposal(proposalId);
+      toast.success("Proposal rejected - variant created");
       onProposalDecided();
       loadProposals();
     } catch (err) {
