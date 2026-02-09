@@ -6,6 +6,8 @@ Tout doit être cohérent avec l'application et son fonctionnement actuel. Ce so
 Tout doit être clair et maitrisé, pensé pour être maintenable et évoluer dans le temps.
 Toute la logique business doit être validé et sans zone d'ombre restante avant d'écrire du code.
 
+# audit refactorisation complete back + front
+
 # Rework du système de tags
 
 avoir une liste par défaut globale à la création d'une communauté, et permettre à chaque communauté de créer ses propres tags complémentaires ???
@@ -23,6 +25,8 @@ nombre de personne pour les ingrédients,
 temps de préparation, temps de cuisson, de repos, temps total
 
 sélecteur du nombre de persones avec calcul automatique des quantités
+
+# audit refactorisation complete back + front
 
 # Système d'upload de photos
 

@@ -25,34 +25,13 @@
 | 7.1 | Backend Share (fork to other community, chain analytics) | DONE |
 | 7.2 | Frontend Share (modal, badge "Shared from X") | DONE |
 | 7.3 | Pre-Phase 8 corrections (13 fixes: bugs, UX, sync, side panel, publish) | DONE |
+| 8.1 | Qualite (toast, ErrorBoundary, refactoring recipes.ts, soft delete audit) | DONE |
+| 8.2 | Tests & Lint (499 tests, 0 lint errors frontend + backend) | DONE |
+| 8.3 | Documentation (README utilisateur + guide deploiement) | DONE |
 
-## Phase en cours
+## MVP COMPLET
 
-**Phase 8** - Finitions MVP
-
-### 8.1 - Qualite - DONE
-- [x] react-hot-toast installe (toast notifications)
-- [x] ErrorBoundary (class component, fallback UI)
-- [x] 6 alert() remplaces par toast.error()
-- [x] 14 toast.success() ajoutes sur actions cles
-- [x] matchMedia mock dans vitestSetup.ts
-- [x] ErrorBoundary.test.tsx (2 tests)
-- [x] Loading states coherents (deja en place - spinners DaisyUI)
-- [x] Empty states (deja en place partout)
-- [x] Validation formulaires (react-hook-form deja en place)
-- [x] Refactoring: recipes.ts (1438 -> 720 lignes) decoupe en recipeVariants.ts + recipeShare.ts
-- [x] Soft delete: audit complet - filtrage deletedAt IS NULL correct partout
-
-### 8.2 - Tests & Lint - DONE
-- [x] ShareRecipeModal.test.tsx reecrit (6 tests fixes: combobox -> checkboxes)
-- [x] MSW handler ajoute pour GET /api/recipes/:recipeId/communities
-- [x] Frontend lint: 0 erreurs (tailwind.config.js eslint-disable, useCallback ProposalsList + VariantsDropdown)
-- [x] Backend lint: 0 erreurs (dist/ exclu, unused vars prefixes _, Prisma import nettoye)
-- [x] 499 tests passent (167 frontend + 332 backend)
-
-### 8.3 - Documentation
-- [ ] README utilisateur
-- [ ] Guide de deploiement
+Toutes les phases (0 a 8) sont terminees. Le MVP est fonctionnel.
 
 ## Prochaines phases
 

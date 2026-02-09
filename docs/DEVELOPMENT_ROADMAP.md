@@ -618,8 +618,8 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 
 ### 8.3 Documentation
 
-- [ ] README utilisateur
-- [ ] Guide de deploiement
+- [x] README utilisateur
+- [x] Guide de deploiement
 
 ### Livrables
 
