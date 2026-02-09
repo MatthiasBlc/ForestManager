@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { FaCodeBranch, FaChevronDown, FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import APIManager from "../../network/api";
@@ -16,9 +16,21 @@ const VariantsDropdown = ({ recipeId, currentRecipeId }: VariantsDropdownProps) 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
+  const loadVariants = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await APIManager.getRecipeVariants(recipeId);
+      setVariants(response.data);
+    } catch {
+      setVariants([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [recipeId]);
+
   useEffect(() => {
     loadVariants();
-  }, [recipeId]);
+  }, [loadVariants]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -29,18 +41,6 @@ const VariantsDropdown = ({ recipeId, currentRecipeId }: VariantsDropdownProps) 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const loadVariants = async () => {
-    try {
-      setIsLoading(true);
-      const response = await APIManager.getRecipeVariants(recipeId);
-      setVariants(response.data);
-    } catch {
-      setVariants([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleSelect = (variantId: string) => {
     setIsOpen(false);

@@ -31,9 +31,9 @@ describe('ShareRecipeModal', () => {
   it('loads communities and filters out current community', async () => {
     render(<ShareRecipeModal {...defaultProps} />);
 
-    // Wait for communities to load
+    // Wait for communities to load - checkboxes appear
     await waitFor(() => {
-      expect(screen.getByRole('combobox')).toBeInTheDocument();
+      expect(screen.getByRole('checkbox')).toBeInTheDocument();
     });
 
     // Should show Vegan Recipes but not Baking Club (current community)
@@ -46,7 +46,7 @@ describe('ShareRecipeModal', () => {
     render(<ShareRecipeModal {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByRole('combobox')).toBeInTheDocument();
+      expect(screen.getByRole('checkbox')).toBeInTheDocument();
     });
 
     await user.click(screen.getByText('Cancel'));
@@ -58,7 +58,7 @@ describe('ShareRecipeModal', () => {
     render(<ShareRecipeModal {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByRole('combobox')).toBeInTheDocument();
+      expect(screen.getByRole('checkbox')).toBeInTheDocument();
     });
 
     // Click the backdrop
@@ -73,11 +73,11 @@ describe('ShareRecipeModal', () => {
     render(<ShareRecipeModal {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByRole('combobox')).toBeInTheDocument();
+      expect(screen.getByRole('checkbox')).toBeInTheDocument();
     });
 
     // Share button should be disabled when no community is selected
-    const shareButton = screen.getByRole('button', { name: /Share to community/i });
+    const shareButton = screen.getByRole('button', { name: /Share to 0 communities/i });
     expect(shareButton).toBeDisabled();
   });
 
@@ -86,14 +86,14 @@ describe('ShareRecipeModal', () => {
     render(<ShareRecipeModal {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByRole('combobox')).toBeInTheDocument();
+      expect(screen.getByRole('checkbox')).toBeInTheDocument();
     });
 
-    // Select a community
-    await user.selectOptions(screen.getByRole('combobox'), 'community-2');
+    // Select a community via checkbox
+    await user.click(screen.getByRole('checkbox'));
 
     // Click share
-    const shareButton = screen.getByRole('button', { name: /Share to Vegan Recipes/i });
+    const shareButton = screen.getByRole('button', { name: /Share to 1 community/i });
     await user.click(shareButton);
 
     await waitFor(() => {
@@ -106,14 +106,14 @@ describe('ShareRecipeModal', () => {
     render(<ShareRecipeModal {...defaultProps} />);
 
     await waitFor(() => {
-      expect(screen.getByRole('combobox')).toBeInTheDocument();
+      expect(screen.getByRole('checkbox')).toBeInTheDocument();
     });
 
-    // Select a community
-    await user.selectOptions(screen.getByRole('combobox'), 'community-2');
+    // Select a community via checkbox
+    await user.click(screen.getByRole('checkbox'));
 
     // Click share
-    const shareButton = screen.getByRole('button', { name: /Share to Vegan Recipes/i });
+    const shareButton = screen.getByRole('button', { name: /Share to 1 community/i });
     await user.click(shareButton);
 
     // Buttons should be disabled while sharing

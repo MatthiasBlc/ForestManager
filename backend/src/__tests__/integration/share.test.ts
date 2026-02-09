@@ -8,7 +8,7 @@ const uniqueSuffix = () =>
   `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 
 describe("Share Recipe API", () => {
-  let user1: { id: string };
+  let _user1: { id: string };
   let user1Cookie: string;
   let user2: { id: string };
   let user2Cookie: string;
@@ -26,7 +26,7 @@ describe("Share Recipe API", () => {
       password: "Test123!Password",
     });
     user1Cookie = extractSessionCookie(user1Signup)!;
-    user1 = (await testPrisma.user.findFirst({
+    _user1 = (await testPrisma.user.findFirst({
       where: { email: `shareuser1_${suffix}@example.com` },
     }))!;
 

@@ -12,7 +12,9 @@ controllers/
 ├── members.ts         # list, promote, kick/leave membres
 ├── invites.ts         # create, list, cancel, accept, reject invitations
 ├── proposals.ts       # create, list, detail, accept, reject propositions
-├── recipes.ts         # CRUD recettes (perso + communautaires via detail/update/delete)
+├── recipes.ts         # CRUD recettes personnelles (get, create, update, delete)
+├── recipeVariants.ts  # getVariants (liste variantes d'une recette)
+├── recipeShare.ts     # shareRecipe, publishToCommunities, getRecipeCommunities
 ├── tags.ts            # autocomplete tags
 ├── ingredients.ts     # autocomplete ingredients
 └── users.ts           # search users, update profile

@@ -12,7 +12,7 @@ describe("Proposals API", () => {
   let recipeCreatorCookie: string;
   let proposer: { id: string; username: string; email: string };
   let proposerCookie: string;
-  let nonMember: { id: string; username: string; email: string };
+  let _nonMember: { id: string; username: string; email: string };
   let nonMemberCookie: string;
   let community: { id: string; name: string };
   let communityRecipeId: string;
@@ -66,7 +66,7 @@ describe("Proposals API", () => {
       password: "Test123!Password",
     });
     nonMemberCookie = extractSessionCookie(nonMemberSignup)!;
-    nonMember = (await testPrisma.user.findFirst({
+    _nonMember = (await testPrisma.user.findFirst({
       where: { email: `propnonm_${suffix}@example.com` },
     }))!;
 

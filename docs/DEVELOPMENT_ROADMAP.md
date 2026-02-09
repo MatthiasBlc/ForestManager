@@ -600,20 +600,21 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 
 ### 8.1 Qualite
 
-- [ ] Refactoring du code pour améliorer la lisibilité et la maintenabilité et découper les fichiers trop longs
+- [x] Refactoring du code pour ameliorer la lisibilite et la maintenabilite et decouper les fichiers trop longs
+  - recipes.ts (1438 -> 720 lignes) decoupe en recipeVariants.ts + recipeShare.ts
 - [x] Gestion complete des erreurs frontend (toast/notification)
 - [x] Messages de confirmation/feedback
 - [x] Loading states (skeletons)
 - [x] Empty states (messages explicatifs)
-- [ ] Gestion soft delete (filtrage automatique deletedAt IS NULL)
+- [x] Gestion soft delete (filtrage automatique deletedAt IS NULL) - audit complet, tout OK
 
 ### 8.2 Tests
 
-- [ ] Corriger les tests frontend qui ne passent pas (ShareRecipeModal.test.tsx - 6 tests cassés, role combobox obsolete)
-- [ ] Verifier que le lint passe sans erreur (`npm run lint` frontend + backend)
+- [x] Corriger les tests frontend qui ne passent pas (ShareRecipeModal.test.tsx - 6 tests fixes, combobox -> checkboxes)
+- [x] Verifier que le lint passe sans erreur (`npm run lint` frontend + backend) - 0 erreurs
 - [ ] Tests manuels complets (parcours utilisateur)
-- [ ] Corrections bugs
-- [ ] Verification toutes les regles metier
+- [x] Corrections bugs
+- [x] Verification toutes les regles metier
 
 ### 8.3 Documentation
 

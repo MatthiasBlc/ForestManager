@@ -1,5 +1,5 @@
 import prisma from "../util/db";
-import { PrismaClient, Prisma } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 type TransactionClient = Omit<
   PrismaClient,

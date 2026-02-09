@@ -1048,6 +1048,20 @@ export const handlers = [
   }),
 
   // =====================================
+  // Recipe Communities (for share modal)
+  // =====================================
+
+  http.get(`${API_URL}/api/recipes/:recipeId/communities`, () => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+    return HttpResponse.json({ data: [] });
+  }),
+
+  // =====================================
   // Recipe Share
   // =====================================
 

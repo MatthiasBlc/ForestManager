@@ -7,6 +7,7 @@ module.exports = {
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended"
     ],
+    "ignorePatterns": ["dist/"],
     "overrides": [
         {
             "env": {
@@ -29,5 +30,6 @@ module.exports = {
         "@typescript-eslint"
     ],
     "rules": {
+        "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }]
     }
 }

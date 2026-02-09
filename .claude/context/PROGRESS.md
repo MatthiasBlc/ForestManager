@@ -30,7 +30,7 @@
 
 **Phase 8** - Finitions MVP
 
-### 8.1 - Erreurs, Feedback, Error Boundary - DONE
+### 8.1 - Qualite - DONE
 - [x] react-hot-toast installe (toast notifications)
 - [x] ErrorBoundary (class component, fallback UI)
 - [x] 6 alert() remplaces par toast.error()
@@ -40,12 +40,24 @@
 - [x] Loading states coherents (deja en place - spinners DaisyUI)
 - [x] Empty states (deja en place partout)
 - [x] Validation formulaires (react-hook-form deja en place)
+- [x] Refactoring: recipes.ts (1438 -> 720 lignes) decoupe en recipeVariants.ts + recipeShare.ts
+- [x] Soft delete: audit complet - filtrage deletedAt IS NULL correct partout
+
+### 8.2 - Tests & Lint - DONE
+- [x] ShareRecipeModal.test.tsx reecrit (6 tests fixes: combobox -> checkboxes)
+- [x] MSW handler ajoute pour GET /api/recipes/:recipeId/communities
+- [x] Frontend lint: 0 erreurs (tailwind.config.js eslint-disable, useCallback ProposalsList + VariantsDropdown)
+- [x] Backend lint: 0 erreurs (dist/ exclu, unused vars prefixes _, Prisma import nettoye)
+- [x] 499 tests passent (167 frontend + 332 backend)
+
+### 8.3 - Documentation
+- [ ] README utilisateur
+- [ ] Guide de deploiement
 
 ## Prochaines phases
 
 | Phase | Description | Prerequis |
 |-------|-------------|-----------|
-| 8 | Finitions MVP (erreurs, loading, empty states) | Phases 4-7 |
 | 9 | Post-MVP (analytics, notifications, PWA, admin pages) | Phase 8 |
 
 ## Maintenance technique en attente

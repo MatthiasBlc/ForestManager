@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import { FaCheck, FaTimes, FaUser, FaClock } from "react-icons/fa";
 import APIManager from "../../network/api";
@@ -17,11 +17,7 @@ const ProposalsList = ({ recipeId, onProposalDecided }: ProposalsListProps) => {
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadProposals();
-  }, [recipeId]);
-
-  const loadProposals = async () => {
+  const loadProposals = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -32,7 +28,11 @@ const ProposalsList = ({ recipeId, onProposalDecided }: ProposalsListProps) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [recipeId]);
+
+  useEffect(() => {
+    loadProposals();
+  }, [loadProposals]);
 
   const handleAccept = async (proposalId: string) => {
     try {

@@ -16,7 +16,7 @@ describe("Activity Feed API", () => {
     let creatorCookie: string;
     let member: { id: string };
     let memberCookie: string;
-    let nonMember: { id: string };
+    let _nonMember: { id: string };
     let nonMemberCookie: string;
     let community: { id: string };
 
@@ -68,7 +68,7 @@ describe("Activity Feed API", () => {
         password: "Test123!Password",
       });
       nonMemberCookie = extractSessionCookie(nonMemberSignup)!;
-      nonMember = (await testPrisma.user.findFirst({
+      _nonMember = (await testPrisma.user.findFirst({
         where: { email: `actnonm_${suffix}@example.com` },
       }))!;
     });
