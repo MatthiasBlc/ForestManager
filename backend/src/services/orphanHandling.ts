@@ -114,15 +114,3 @@ export async function handleOrphanedRecipes(
   };
 }
 
-/**
- * Version transactionnelle de handleOrphanedRecipes.
- * Utilise une transaction Prisma pour garantir l'atomicite.
- */
-export async function handleOrphanedRecipesWithTransaction(
-  userId: string,
-  communityId: string
-): Promise<OrphanHandlingResult> {
-  return prisma.$transaction(async (tx) => {
-    return handleOrphanedRecipes(userId, communityId, tx);
-  });
-}

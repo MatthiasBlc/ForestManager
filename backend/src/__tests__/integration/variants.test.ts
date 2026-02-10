@@ -175,7 +175,7 @@ describe("Variants API", () => {
         .set("Cookie", nonMemberCookie);
 
       expect(res.status).toBe(403);
-      expect(res.body.error).toContain("COMMUNITY_001");
+      expect(res.body.error).toContain("RECIPE_002");
     });
 
     it("should return 404 for non-existent recipe", async () => {

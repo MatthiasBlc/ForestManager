@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import prisma from "../util/db";
 import { assertIsDefine } from "../util/assertIsDefine";
+import { parsePagination, buildPaginationMeta } from "../util/pagination";
 
 // =====================================
 // Types
@@ -17,10 +18,7 @@ interface GetActivityQuery {
 // =====================================
 export const getCommunityActivity: RequestHandler = async (req, res, next) => {
   const communityId = req.params.communityId;
-  const { limit: limitStr, offset: offsetStr } = req.query as GetActivityQuery;
-
-  const limit = Math.min(Math.max(parseInt(limitStr || "20", 10), 1), 100);
-  const offset = Math.max(parseInt(offsetStr || "0", 10), 0);
+  const { limit, offset } = parsePagination(req.query as GetActivityQuery);
 
   try {
     const [activities, total] = await Promise.all([
@@ -77,12 +75,7 @@ export const getCommunityActivity: RequestHandler = async (req, res, next) => {
 
     res.status(200).json({
       data,
-      pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + activities.length < total,
-      },
+      pagination: buildPaginationMeta(total, limit, offset, activities.length),
     });
   } catch (error) {
     next(error);
@@ -95,10 +88,7 @@ export const getCommunityActivity: RequestHandler = async (req, res, next) => {
 // =====================================
 export const getMyActivity: RequestHandler = async (req, res, next) => {
   const userId = req.session.userId;
-  const { limit: limitStr, offset: offsetStr } = req.query as GetActivityQuery;
-
-  const limit = Math.min(Math.max(parseInt(limitStr || "20", 10), 1), 100);
-  const offset = Math.max(parseInt(offsetStr || "0", 10), 0);
+  const { limit, offset } = parsePagination(req.query as GetActivityQuery);
 
   try {
     assertIsDefine(userId);
@@ -205,12 +195,7 @@ export const getMyActivity: RequestHandler = async (req, res, next) => {
 
     res.status(200).json({
       data,
-      pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + activities.length < total,
-      },
+      pagination: buildPaginationMeta(total, limit, offset, activities.length),
     });
   } catch (error) {
     next(error);

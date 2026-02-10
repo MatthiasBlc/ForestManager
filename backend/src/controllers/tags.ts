@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import prisma from "../util/db";
 import { assertIsDefine } from "../util/assertIsDefine";
+import { parsePagination } from "../util/pagination";
 
 interface SearchTagsQuery {
   search?: string;
@@ -10,7 +11,7 @@ interface SearchTagsQuery {
 export const searchTags: RequestHandler<unknown, unknown, unknown, SearchTagsQuery> = async (req, res, next) => {
   const authenticatedUserId = req.session.userId;
   const search = req.query.search?.trim().toLowerCase() || "";
-  const limit = Math.min(Math.max(parseInt(req.query.limit || "20", 10), 1), 100);
+  const { limit } = parsePagination(req.query);
 
   try {
     assertIsDefine(authenticatedUserId);

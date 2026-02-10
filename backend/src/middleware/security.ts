@@ -37,6 +37,20 @@ export const helmetMiddleware = helmet({
  * Rate limiter global pour les routes admin (hors auth)
  * Plus permissif que le rate limiter auth (30 req/min)
  */
+/**
+ * Rate limiter pour les routes d'authentification user (signup/login).
+ * 10 tentatives par IP par fenetre de 15 minutes.
+ */
+export const authRateLimiter: RequestHandler = env.NODE_ENV === "test"
+  ? ((_req, _res, next) => next())
+  : rateLimit({
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 10,
+      message: { error: "AUTH_002: Too many attempts, please try again later" },
+      standardHeaders: true,
+      legacyHeaders: false,
+    });
+
 export const adminRateLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
   max: 30, // 30 requetes par minute

@@ -265,6 +265,14 @@ export const cancelInvite: RequestHandler = async (req, res, next) => {
       throw createHttpError(400, "INVITE_002: Invite already processed");
     }
 
+    // Only the inviter or a moderator can cancel
+    if (invite.inviterId !== userId && userCommunity.role !== "MODERATOR") {
+      throw createHttpError(
+        403,
+        "INVITE_003: Only the inviter or a moderator can cancel"
+      );
+    }
+
     // Cancel the invite and log activity in a transaction
     await prisma.$transaction([
       prisma.communityInvite.update({

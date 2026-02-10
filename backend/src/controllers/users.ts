@@ -2,11 +2,12 @@ import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import bcrypt from "bcrypt";
 import prisma from "../util/db";
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
-const MIN_USERNAME_LENGTH = 3;
-const MIN_PASSWORD_LENGTH = 8;
+import {
+  EMAIL_REGEX,
+  USERNAME_REGEX,
+  MIN_USERNAME_LENGTH,
+  MIN_PASSWORD_LENGTH,
+} from "../util/validation";
 
 export const searchUsers: RequestHandler = async (req, res, next) => {
   try {

@@ -2,6 +2,10 @@ import { RequestHandler } from "express";
 import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
+import { normalizeNames, isValidHttpUrl } from "../util/validation";
+import { parsePagination, buildPaginationMeta } from "../util/pagination";
+import { RECIPE_TAGS_SELECT, RECIPE_INGREDIENTS_SELECT } from "../util/prismaSelects";
+import { formatTags, formatIngredients } from "../util/responseFormatters";
 
 interface IngredientInput {
   name: string;
@@ -37,6 +41,10 @@ export const createCommunityRecipe: RequestHandler<
       throw createHttpError(400, "RECIPE_004: Content required");
     }
 
+    if (!isValidHttpUrl(imageUrl)) {
+      throw createHttpError(400, "RECIPE_005: Invalid image URL");
+    }
+
     const result = await prisma.$transaction(async (tx) => {
       // 1. Creer la recette personnelle (communityId: null)
       const personalRecipe = await tx.recipe.create({
@@ -63,9 +71,7 @@ export const createCommunityRecipe: RequestHandler<
 
       // 3. Gerer tags/ingredients sur les DEUX recettes
       if (tags.length > 0) {
-        const normalizedTags = [
-          ...new Set(tags.map((t) => t.trim().toLowerCase()).filter(Boolean)),
-        ];
+        const normalizedTags = normalizeNames(tags);
 
         for (const tagName of normalizedTags) {
           const tag = await tx.tag.upsert({
@@ -136,32 +142,8 @@ export const createCommunityRecipe: RequestHandler<
         creatorId: true,
         communityId: true,
         originRecipeId: true,
-        tags: {
-          select: {
-            tag: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
-        ingredients: {
-          select: {
-            id: true,
-            quantity: true,
-            order: true,
-            ingredient: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-          orderBy: {
-            order: "asc" as const,
-          },
-        },
+        tags: RECIPE_TAGS_SELECT,
+        ingredients: RECIPE_INGREDIENTS_SELECT,
       };
 
       const [personal, community] = await Promise.all([
@@ -192,14 +174,8 @@ export const createCommunityRecipe: RequestHandler<
       creatorId: recipe.creatorId,
       communityId: recipe.communityId,
       originRecipeId: recipe.originRecipeId,
-      tags: recipe.tags.map((rt) => rt.tag),
-      ingredients: recipe.ingredients.map((ri) => ({
-        id: ri.id,
-        name: ri.ingredient.name,
-        ingredientId: ri.ingredient.id,
-        quantity: ri.quantity,
-        order: ri.order,
-      })),
+      tags: formatTags(recipe.tags),
+      ingredients: formatIngredients(recipe.ingredients),
     });
 
     res.status(201).json({
@@ -226,11 +202,7 @@ export const getCommunityRecipes: RequestHandler<
   GetCommunityRecipesQuery
 > = async (req, res, next) => {
   const communityId = req.params.communityId;
-  const limit = Math.min(
-    Math.max(parseInt(req.query.limit || "20", 10), 1),
-    100
-  );
-  const offset = Math.max(parseInt(req.query.offset || "0", 10), 0);
+  const { limit, offset } = parsePagination(req.query);
   const tagsFilter =
     req.query.tags
       ?.split(",")
@@ -314,16 +286,7 @@ export const getCommunityRecipes: RequestHandler<
               name: true,
             },
           },
-          tags: {
-            select: {
-              tag: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-            },
-          },
+          tags: RECIPE_TAGS_SELECT,
         },
         orderBy: {
           updatedAt: "desc",
@@ -344,17 +307,12 @@ export const getCommunityRecipes: RequestHandler<
       creator: recipe.creator,
       sharedFromCommunityId: recipe.sharedFromCommunityId,
       sharedFromCommunity: recipe.sharedFromCommunity,
-      tags: recipe.tags.map((rt) => rt.tag),
+      tags: formatTags(recipe.tags),
     }));
 
     res.status(200).json({
       data,
-      pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + recipes.length < total,
-      },
+      pagination: buildPaginationMeta(total, limit, offset, recipes.length),
     });
   } catch (error) {
     next(error);

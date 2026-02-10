@@ -2,6 +2,8 @@ import { RequestHandler } from "express";
 import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
+import { parsePagination, buildPaginationMeta } from "../util/pagination";
+import { requireMembership } from "../services/membershipService";
 
 interface CreateProposalBody {
   proposedTitle?: string;
@@ -58,18 +60,7 @@ export const createProposal: RequestHandler<
       );
     }
 
-    // Verifier que l'utilisateur est membre de la communaute
-    const membership = await prisma.userCommunity.findFirst({
-      where: {
-        userId: authenticatedUserId,
-        communityId: recipe.communityId,
-        deletedAt: null,
-      },
-    });
-
-    if (!membership) {
-      throw createHttpError(403, "COMMUNITY_001: Not a member");
-    }
+    await requireMembership(authenticatedUserId, recipe.communityId!);
 
     // Verifier que l'utilisateur ne propose pas sur sa propre recette
     if (recipe.creatorId === authenticatedUserId) {
@@ -145,11 +136,7 @@ export const getProposals: RequestHandler<
   const authenticatedUserId = req.session.userId;
   const { recipeId } = req.params;
   const statusFilter = req.query.status?.toUpperCase();
-  const limit = Math.min(
-    Math.max(parseInt(req.query.limit || "20", 10), 1),
-    100
-  );
-  const offset = Math.max(parseInt(req.query.offset || "0", 10), 0);
+  const { limit, offset } = parsePagination(req.query);
 
   try {
     assertIsDefine(authenticatedUserId);
@@ -178,18 +165,7 @@ export const getProposals: RequestHandler<
       );
     }
 
-    // Verifier que l'utilisateur est membre de la communaute
-    const membership = await prisma.userCommunity.findFirst({
-      where: {
-        userId: authenticatedUserId,
-        communityId: recipe.communityId,
-        deletedAt: null,
-      },
-    });
-
-    if (!membership) {
-      throw createHttpError(403, "COMMUNITY_001: Not a member");
-    }
+    await requireMembership(authenticatedUserId, recipe.communityId!);
 
     // Construire la clause where
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -233,12 +209,7 @@ export const getProposals: RequestHandler<
 
     res.status(200).json({
       data: proposals,
-      pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + proposals.length < total,
-      },
+      pagination: buildPaginationMeta(total, limit, offset, proposals.length),
     });
   } catch (error) {
     next(error);
@@ -297,19 +268,8 @@ export const getProposal: RequestHandler<
       throw createHttpError(404, "Proposal not found");
     }
 
-    // Verifier que l'utilisateur est membre de la communaute
     if (proposal.recipe.communityId) {
-      const membership = await prisma.userCommunity.findFirst({
-        where: {
-          userId: authenticatedUserId,
-          communityId: proposal.recipe.communityId,
-          deletedAt: null,
-        },
-      });
-
-      if (!membership) {
-        throw createHttpError(403, "COMMUNITY_001: Not a member");
-      }
+      await requireMembership(authenticatedUserId, proposal.recipe.communityId);
     }
 
     res.status(200).json(proposal);

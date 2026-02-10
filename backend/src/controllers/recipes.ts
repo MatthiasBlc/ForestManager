@@ -2,6 +2,11 @@ import { RequestHandler } from "express";
 import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
+import { normalizeNames, isValidHttpUrl } from "../util/validation";
+import { parsePagination, buildPaginationMeta } from "../util/pagination";
+import { RECIPE_TAGS_SELECT, RECIPE_INGREDIENTS_SELECT, RECIPE_DETAIL_INCLUDE } from "../util/prismaSelects";
+import { requireRecipeAccess, requireRecipeOwnership } from "../services/membershipService";
+import { formatTags, formatIngredients } from "../util/responseFormatters";
 
 interface GetRecipesQuery {
   limit?: string;
@@ -13,8 +18,7 @@ interface GetRecipesQuery {
 
 export const getRecipes: RequestHandler<unknown, unknown, unknown, GetRecipesQuery> = async (req, res, next) => {
   const authenticatedUserId = req.session.userId;
-  const limit = Math.min(Math.max(parseInt(req.query.limit || "20", 10), 1), 100);
-  const offset = Math.max(parseInt(req.query.offset || "0", 10), 0);
+  const { limit, offset } = parsePagination(req.query);
   const tagsFilter = req.query.tags?.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean) || [];
   const ingredientsFilter = req.query.ingredients?.split(",").map((i) => i.trim().toLowerCase()).filter(Boolean) || [];
   const searchFilter = req.query.search?.trim() || "";
@@ -75,16 +79,7 @@ export const getRecipes: RequestHandler<unknown, unknown, unknown, GetRecipesQue
           imageUrl: true,
           createdAt: true,
           updatedAt: true,
-          tags: {
-            select: {
-              tag: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-            },
-          },
+          tags: RECIPE_TAGS_SELECT,
         },
         orderBy: {
           updatedAt: "desc",
@@ -101,17 +96,12 @@ export const getRecipes: RequestHandler<unknown, unknown, unknown, GetRecipesQue
       imageUrl: recipe.imageUrl,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
-      tags: recipe.tags.map((rt) => rt.tag),
+      tags: formatTags(recipe.tags),
     }));
 
     res.status(200).json({
       data,
-      pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + recipes.length < total,
-      },
+      pagination: buildPaginationMeta(total, limit, offset, recipes.length),
     });
   } catch (error) {
     next(error);
@@ -193,26 +183,7 @@ export const getRecipe: RequestHandler = async (req, res, next) => {
       throw createHttpError(404, "RECIPE_001: Recipe not found");
     }
 
-    // Verification d'acces selon le type de recette
-    if (recipe.communityId === null) {
-      // Recette personnelle : seul le createur peut y acceder
-      if (recipe.creatorId !== authenticatedUserId) {
-        throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
-      }
-    } else {
-      // Recette communautaire : l'utilisateur doit etre membre de la communaute
-      const membership = await prisma.userCommunity.findFirst({
-        where: {
-          userId: authenticatedUserId,
-          communityId: recipe.communityId,
-          deletedAt: null,
-        },
-      });
-
-      if (!membership) {
-        throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
-      }
-    }
+    await requireRecipeAccess(authenticatedUserId, recipe);
 
     const responseData = {
       id: recipe.id,
@@ -229,14 +200,8 @@ export const getRecipe: RequestHandler = async (req, res, next) => {
       isVariant: recipe.isVariant,
       sharedFromCommunityId: recipe.sharedFromCommunityId,
       sharedFromCommunity: recipe.sharedFromCommunity,
-      tags: recipe.tags.map((rt) => rt.tag),
-      ingredients: recipe.ingredients.map((ri) => ({
-        id: ri.id,
-        name: ri.ingredient.name,
-        ingredientId: ri.ingredient.id,
-        quantity: ri.quantity,
-        order: ri.order,
-      })),
+      tags: formatTags(recipe.tags),
+      ingredients: formatIngredients(recipe.ingredients),
     };
 
     res.status(200).json(responseData);
@@ -273,6 +238,10 @@ export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeBody, un
       throw createHttpError(400, "RECIPE_004: Content required");
     }
 
+    if (!isValidHttpUrl(imageUrl)) {
+      throw createHttpError(400, "RECIPE_005: Invalid image URL");
+    }
+
     const newRecipe = await prisma.$transaction(async (tx) => {
       const recipe = await tx.recipe.create({
         data: {
@@ -284,7 +253,7 @@ export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeBody, un
       });
 
       if (tags.length > 0) {
-        const normalizedTags = [...new Set(tags.map((t) => t.trim().toLowerCase()).filter(Boolean))];
+        const normalizedTags = normalizeNames(tags);
 
         for (const tagName of normalizedTags) {
           const tag = await tx.tag.upsert({
@@ -378,14 +347,8 @@ export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeBody, un
       createdAt: newRecipe.createdAt,
       updatedAt: newRecipe.updatedAt,
       creatorId: newRecipe.creatorId,
-      tags: newRecipe.tags.map((rt) => rt.tag),
-      ingredients: newRecipe.ingredients.map((ri) => ({
-        id: ri.id,
-        name: ri.ingredient.name,
-        ingredientId: ri.ingredient.id,
-        quantity: ri.quantity,
-        order: ri.order,
-      })),
+      tags: formatTags(newRecipe.tags),
+      ingredients: formatIngredients(newRecipe.ingredients),
     };
 
     res.status(201).json(responseData);
@@ -430,28 +393,10 @@ export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRec
       throw createHttpError(404, "RECIPE_001: Recipe not found");
     }
 
-    if (recipe.communityId === null) {
-      // Recette personnelle : seul le createur peut modifier
-      if (recipe.creatorId !== authenticatedUserId) {
-        throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
-      }
-    } else {
-      // Recette communautaire : createur + membre de la communaute
-      if (recipe.creatorId !== authenticatedUserId) {
-        throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
-      }
+    await requireRecipeOwnership(authenticatedUserId, recipe);
 
-      const membership = await prisma.userCommunity.findFirst({
-        where: {
-          userId: authenticatedUserId,
-          communityId: recipe.communityId,
-          deletedAt: null,
-        },
-      });
-
-      if (!membership) {
-        throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
-      }
+    if (imageUrl !== undefined && !isValidHttpUrl(imageUrl)) {
+      throw createHttpError(400, "RECIPE_005: Invalid image URL");
     }
 
     const updatedRecipe = await prisma.$transaction(async (tx) => {
@@ -469,7 +414,7 @@ export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRec
           where: { recipeId },
         });
 
-        const normalizedTags = [...new Set(tags.map((t) => t.trim().toLowerCase()).filter(Boolean))];
+        const normalizedTags = normalizeNames(tags);
 
         for (const tagName of normalizedTags) {
           const tag = await tx.tag.upsert({
@@ -653,14 +598,8 @@ export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRec
       createdAt: updatedRecipe.createdAt,
       updatedAt: updatedRecipe.updatedAt,
       creatorId: updatedRecipe.creatorId,
-      tags: updatedRecipe.tags.map((rt) => rt.tag),
-      ingredients: updatedRecipe.ingredients.map((ri) => ({
-        id: ri.id,
-        name: ri.ingredient.name,
-        ingredientId: ri.ingredient.id,
-        quantity: ri.quantity,
-        order: ri.order,
-      })),
+      tags: formatTags(updatedRecipe.tags),
+      ingredients: formatIngredients(updatedRecipe.ingredients),
     };
 
     res.status(200).json(responseData);
@@ -684,29 +623,7 @@ export const deleteRecipe: RequestHandler = async (req, res, next) => {
       throw createHttpError(404, "RECIPE_001: Recipe not found");
     }
 
-    if (recipe.communityId === null) {
-      // Recette personnelle : seul le createur peut supprimer
-      if (recipe.creatorId !== authenticatedUserId) {
-        throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
-      }
-    } else {
-      // Recette communautaire : createur + membre de la communaute
-      if (recipe.creatorId !== authenticatedUserId) {
-        throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
-      }
-
-      const membership = await prisma.userCommunity.findFirst({
-        where: {
-          userId: authenticatedUserId,
-          communityId: recipe.communityId,
-          deletedAt: null,
-        },
-      });
-
-      if (!membership) {
-        throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
-      }
-    }
+    await requireRecipeOwnership(authenticatedUserId, recipe);
 
     await prisma.recipe.update({
       where: { id: recipeId },

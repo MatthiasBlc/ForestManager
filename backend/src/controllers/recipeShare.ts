@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
+import { formatTags, formatIngredients } from "../util/responseFormatters";
 
 interface ShareRecipeBody {
   targetCommunityId: string;
@@ -312,14 +313,8 @@ export const shareRecipe: RequestHandler<
       originRecipeId: result.originRecipeId,
       sharedFromCommunityId: result.sharedFromCommunityId,
       isVariant: result.isVariant,
-      tags: result.tags.map((rt) => rt.tag),
-      ingredients: result.ingredients.map((ri) => ({
-        id: ri.id,
-        name: ri.ingredient.name,
-        ingredientId: ri.ingredient.id,
-        quantity: ri.quantity,
-        order: ri.order,
-      })),
+      tags: formatTags(result.tags),
+      ingredients: formatIngredients(result.ingredients),
     };
 
     res.status(201).json(responseData);

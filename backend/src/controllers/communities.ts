@@ -3,13 +3,7 @@ import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
-
-// Validation constants
-const VALIDATION = {
-  NAME_MIN: 3,
-  NAME_MAX: 100,
-  DESCRIPTION_MAX: 1000,
-};
+import { COMMUNITY_VALIDATION as VALIDATION } from "../util/validation";
 
 export const getCommunities: RequestHandler = async (req, res, next) => {
   const authenticatedUserId = req.session.userId;

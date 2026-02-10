@@ -2,6 +2,10 @@ import { RequestHandler } from "express";
 import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
+import { parsePagination, buildPaginationMeta } from "../util/pagination";
+import { RECIPE_TAGS_SELECT } from "../util/prismaSelects";
+import { requireRecipeAccess } from "../services/membershipService";
+import { formatTags } from "../util/responseFormatters";
 
 interface GetVariantsQuery {
   limit?: string;
@@ -21,8 +25,7 @@ export const getVariants: RequestHandler<
 > = async (req, res, next) => {
   const authenticatedUserId = req.session.userId;
   const { recipeId } = req.params;
-  const limit = Math.min(Math.max(parseInt(req.query.limit || "20", 10), 1), 100);
-  const offset = Math.max(parseInt(req.query.offset || "0", 10), 0);
+  const { limit, offset } = parsePagination(req.query);
 
   try {
     assertIsDefine(authenticatedUserId);
@@ -44,26 +47,7 @@ export const getVariants: RequestHandler<
       throw createHttpError(404, "RECIPE_001: Recipe not found");
     }
 
-    // Verification d'acces selon le type de recette
-    if (recipe.communityId === null) {
-      // Recette personnelle : seul le createur peut voir les variantes
-      if (recipe.creatorId !== authenticatedUserId) {
-        throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
-      }
-    } else {
-      // Recette communautaire : l'utilisateur doit etre membre de la communaute
-      const membership = await prisma.userCommunity.findFirst({
-        where: {
-          userId: authenticatedUserId,
-          communityId: recipe.communityId,
-          deletedAt: null,
-        },
-      });
-
-      if (!membership) {
-        throw createHttpError(403, "COMMUNITY_001: Not a member");
-      }
-    }
+    await requireRecipeAccess(authenticatedUserId, recipe);
 
     // Construire la clause where pour les variantes
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -98,16 +82,7 @@ export const getVariants: RequestHandler<
             username: true,
           },
         },
-        tags: {
-          select: {
-            tag: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
+        tags: RECIPE_TAGS_SELECT,
       },
     });
 
@@ -134,17 +109,12 @@ export const getVariants: RequestHandler<
       communityId: variant.communityId,
       originRecipeId: variant.originRecipeId,
       isVariant: variant.isVariant,
-      tags: variant.tags.map((rt) => rt.tag),
+      tags: formatTags(variant.tags),
     }));
 
     res.status(200).json({
       data,
-      pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + paginatedVariants.length < total,
-      },
+      pagination: buildPaginationMeta(total, limit, offset, paginatedVariants.length),
     });
   } catch (error) {
     next(error);
