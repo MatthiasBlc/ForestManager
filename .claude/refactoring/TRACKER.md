@@ -8,11 +8,11 @@ Derniere mise a jour : 2026-02-10
 | ------------------------- | ------ | ----- | ------ |
 | Backend P1 (fondations)   | 11     | 10    | 1      |
 | Backend P2 (services)     | 5      | 5     | 0      |
-| Backend P3 (type safety)  | 6      | 0     | 6      |
+| Backend P3 (type safety)  | 6      | 6     | 0      |
 | Frontend P1 (hooks/utils) | 6      | 0     | 6      |
 | Frontend P2 (composants)  | 6      | 0     | 6      |
 | Frontend P3 (qualite)     | 7      | 0     | 7      |
-| **TOTAL**                 | **41** | **15** | **26** |
+| **TOTAL**                 | **41** | **21** | **20** |
 
 ---
 
@@ -40,12 +40,12 @@ Derniere mise a jour : 2026-02-10
 
 ## Backend - Priorite 3 (Type safety)
 
-- [ ] B3.1 - Remplacer `any` par types Prisma
-- [ ] B3.2 - Remplacer non-null assertions par guards
-- [ ] B3.3 - Typer RequestHandler avec generics
-- [ ] B3.4 - Standardiser les codes erreur
-- [ ] B3.5 - Trim consistant sur tous les inputs
-- [ ] B3.6 - Pagination bounds dans admin controllers
+- [x] B3.1 - Remplacer `any` par types Prisma
+- [x] B3.2 - Remplacer non-null assertions par guards
+- [x] B3.3 - Typer RequestHandler avec generics
+- [x] B3.4 - Standardiser les codes erreur
+- [x] B3.5 - Trim consistant sur tous les inputs
+- [x] B3.6 - Pagination bounds dans admin controllers
 
 ## Frontend - Priorite 1 (Hooks & utils)
 
@@ -121,6 +121,18 @@ Derniere mise a jour : 2026-02-10
 - communityRecipes.ts: 320 -> 210 (-34%)
 - proposals.ts: 616 -> 434 (-30%)
 - recipeShare.ts: 569 -> 262 (-54%)
+
+**Tests:** 332/332 passent apres modifications.
+
+### Session 4 - 2026-02-10
+
+**B3 (Type safety) complete:**
+- B3.1: Remplace `whereClause: any` par `Prisma.RecipeWhereInput` / `Prisma.RecipeUpdateProposalWhereInput` dans 4 controllers
+- B3.2: Remplace 14 `req.session.adminId!` par pattern `assertIsDefine(adminId)` dans 4 admin controllers
+- B3.3: Ajoute RequestHandler generics dans members.ts (3 handlers) et invites.ts (6 handlers), supprime les casts `as`
+- B3.4: Ajoute codes erreur manquants: MEMBER_001-004, PROPOSAL_004, INVITE_004-006, USER_001
+- B3.5: Ajoute `.trim()` sur email/username/userId dans invites.ts createInvite
+- B3.6: Applique parsePagination/buildPaginationMeta dans admin activityController.ts
 
 **Tests:** 332/332 passent apres modifications.
 

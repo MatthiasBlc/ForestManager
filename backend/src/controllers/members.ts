@@ -8,7 +8,7 @@ import { handleOrphanedRecipes } from "../services/orphanHandling";
 // GET /api/communities/:communityId/members
 // List community members (any member)
 // =====================================
-export const getMembers: RequestHandler = async (req, res, next) => {
+export const getMembers: RequestHandler<{ communityId: string }> = async (req, res, next) => {
   const communityId = req.params.communityId;
   const userCommunity = req.userCommunity;
 
@@ -57,22 +57,26 @@ interface PromoteMemberBody {
   role?: string;
 }
 
-export const promoteMember: RequestHandler = async (req, res, next) => {
+export const promoteMember: RequestHandler<
+  { communityId: string; userId: string },
+  unknown,
+  PromoteMemberBody
+> = async (req, res, next) => {
   const communityId = req.params.communityId;
   const targetUserId = req.params.userId;
   const userId = req.session.userId;
-  const { role } = req.body as PromoteMemberBody;
+  const { role } = req.body;
 
   try {
     assertIsDefine(userId);
 
     // Validate role field
     if (!role) {
-      throw createHttpError(400, "Role is required");
+      throw createHttpError(400, "MEMBER_001: Role is required");
     }
 
     if (role !== "MODERATOR") {
-      throw createHttpError(400, "Only promotion to MODERATOR is allowed");
+      throw createHttpError(400, "MEMBER_002: Only promotion to MODERATOR is allowed");
     }
 
     // Find the target membership
@@ -85,11 +89,11 @@ export const promoteMember: RequestHandler = async (req, res, next) => {
     });
 
     if (!targetMembership) {
-      throw createHttpError(404, "Member not found");
+      throw createHttpError(404, "MEMBER_003: Member not found");
     }
 
     if (targetMembership.role === "MODERATOR") {
-      throw createHttpError(400, "User is already MODERATOR");
+      throw createHttpError(400, "MEMBER_004: User is already MODERATOR");
     }
 
     // Promote and log in a transaction
@@ -120,7 +124,7 @@ export const promoteMember: RequestHandler = async (req, res, next) => {
 // DELETE /api/communities/:communityId/members/:userId
 // Leave community (self) or kick member (moderator)
 // =====================================
-export const removeMember: RequestHandler = async (req, res, next) => {
+export const removeMember: RequestHandler<{ communityId: string; userId: string }> = async (req, res, next) => {
   const communityId = req.params.communityId;
   const targetUserId = req.params.userId;
   const userId = req.session.userId;

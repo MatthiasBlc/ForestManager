@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
+import { Prisma } from "@prisma/client";
 import { isValidHttpUrl } from "../util/validation";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import { RECIPE_TAGS_SELECT } from "../util/prismaSelects";
@@ -27,8 +28,7 @@ export const getRecipes: RequestHandler<unknown, unknown, unknown, GetRecipesQue
   try {
     assertIsDefine(authenticatedUserId);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const whereClause: any = {
+    const whereClause: Prisma.RecipeWhereInput = {
       creatorId: authenticatedUserId,
       communityId: null,
       deletedAt: null,

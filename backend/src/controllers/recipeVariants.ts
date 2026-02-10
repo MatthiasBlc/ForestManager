@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import prisma from "../util/db";
+import { Prisma } from "@prisma/client";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
@@ -50,8 +51,7 @@ export const getVariants: RequestHandler<
     await requireRecipeAccess(authenticatedUserId, recipe);
 
     // Construire la clause where pour les variantes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const whereClause: any = {
+    const whereClause: Prisma.RecipeWhereInput = {
       originRecipeId: recipeId,
       isVariant: true,
       deletedAt: null,

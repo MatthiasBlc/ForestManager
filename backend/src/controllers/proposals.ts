@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import prisma from "../util/db";
+import { Prisma } from "@prisma/client";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
@@ -169,8 +170,7 @@ export const getProposals: RequestHandler<
     await requireMembership(authenticatedUserId, recipe.communityId!);
 
     // Construire la clause where
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const whereClause: any = {
+    const whereClause: Prisma.RecipeUpdateProposalWhereInput = {
       recipeId,
       deletedAt: null,
     };
@@ -266,7 +266,7 @@ export const getProposal: RequestHandler<
     });
 
     if (!proposal) {
-      throw createHttpError(404, "Proposal not found");
+      throw createHttpError(404, "PROPOSAL_004: Proposal not found");
     }
 
     if (proposal.recipe.communityId) {
@@ -324,12 +324,12 @@ export const acceptProposal: RequestHandler<
     });
 
     if (!proposal) {
-      throw createHttpError(404, "Proposal not found");
+      throw createHttpError(404, "PROPOSAL_004: Proposal not found");
     }
 
     // Verifier que c'est une recette communautaire
     if (!proposal.recipe.communityId) {
-      throw createHttpError(400, "Cannot accept proposal on personal recipe");
+      throw createHttpError(400, "PROPOSAL_001: Cannot accept proposal on personal recipe");
     }
 
     // Verifier que l'utilisateur est le createur de la recette
@@ -404,12 +404,12 @@ export const rejectProposal: RequestHandler<
     });
 
     if (!proposal) {
-      throw createHttpError(404, "Proposal not found");
+      throw createHttpError(404, "PROPOSAL_004: Proposal not found");
     }
 
     // Verifier que c'est une recette communautaire
     if (!proposal.recipe.communityId) {
-      throw createHttpError(400, "Cannot reject proposal on personal recipe");
+      throw createHttpError(400, "PROPOSAL_001: Cannot reject proposal on personal recipe");
     }
 
     // Verifier que l'utilisateur est le createur de la recette

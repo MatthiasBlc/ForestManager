@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
+import { Prisma } from "@prisma/client";
 import { isValidHttpUrl } from "../util/validation";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import { RECIPE_TAGS_SELECT } from "../util/prismaSelects";
@@ -106,8 +107,7 @@ export const getCommunityRecipes: RequestHandler<
   const searchFilter = req.query.search?.trim() || "";
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const whereClause: any = {
+    const whereClause: Prisma.RecipeWhereInput = {
       communityId,
       deletedAt: null,
     };

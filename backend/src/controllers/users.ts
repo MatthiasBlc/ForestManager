@@ -51,7 +51,7 @@ export const updateProfile: RequestHandler<unknown, unknown, UpdateProfileBody> 
     const user = await prisma.user.findUnique({
       where: { id: userId, deletedAt: null },
     });
-    if (!user) throw createHttpError(404, "User not found");
+    if (!user) throw createHttpError(404, "USER_001: User not found");
 
     const updates: { username?: string; email?: string; password?: string } = {};
 

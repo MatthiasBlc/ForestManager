@@ -26,9 +26,15 @@ interface GetMyInvitesQuery {
 // POST /api/communities/:communityId/invites
 // Create an invitation (MODERATOR only)
 // =====================================
-export const createInvite: RequestHandler = async (req, res, next) => {
+export const createInvite: RequestHandler<
+  { communityId: string },
+  unknown,
+  CreateInviteBody
+> = async (req, res, next) => {
   const communityId = req.params.communityId;
-  const { email, username, userId } = req.body as CreateInviteBody;
+  const email = req.body.email?.trim();
+  const username = req.body.username?.trim();
+  const userId = req.body.userId?.trim();
   const inviterId = req.session.userId;
   const userCommunity = req.userCommunity;
 
@@ -44,13 +50,13 @@ export const createInvite: RequestHandler = async (req, res, next) => {
     if (providedFields.length === 0) {
       throw createHttpError(
         400,
-        "One of email, username, or userId is required"
+        "INVITE_004: One of email, username, or userId is required"
       );
     }
     if (providedFields.length > 1) {
       throw createHttpError(
         400,
-        "Only one of email, username, or userId should be provided"
+        "INVITE_005: Only one of email, username, or userId should be provided"
       );
     }
 
@@ -154,9 +160,14 @@ export const createInvite: RequestHandler = async (req, res, next) => {
 // GET /api/communities/:communityId/invites
 // List invitations for a community (MODERATOR only)
 // =====================================
-export const getInvites: RequestHandler = async (req, res, next) => {
+export const getInvites: RequestHandler<
+  { communityId: string },
+  unknown,
+  unknown,
+  GetInvitesQuery
+> = async (req, res, next) => {
   const communityId = req.params.communityId;
-  const { status } = req.query as GetInvitesQuery;
+  const { status } = req.query;
   const userCommunity = req.userCommunity;
 
   try {
@@ -226,7 +237,7 @@ export const getInvites: RequestHandler = async (req, res, next) => {
 // DELETE /api/communities/:communityId/invites/:inviteId
 // Cancel an invitation (MODERATOR only)
 // =====================================
-export const cancelInvite: RequestHandler = async (req, res, next) => {
+export const cancelInvite: RequestHandler<{ communityId: string; inviteId: string }> = async (req, res, next) => {
   const communityId = req.params.communityId;
   const inviteId = req.params.inviteId;
   const userId = req.session.userId;
@@ -306,9 +317,14 @@ export const cancelInvite: RequestHandler = async (req, res, next) => {
 // GET /api/users/me/invites
 // Get my received invitations
 // =====================================
-export const getMyInvites: RequestHandler = async (req, res, next) => {
+export const getMyInvites: RequestHandler<
+  unknown,
+  unknown,
+  unknown,
+  GetMyInvitesQuery
+> = async (req, res, next) => {
   const userId = req.session.userId;
-  const { status } = req.query as GetMyInvitesQuery;
+  const { status } = req.query;
 
   try {
     assertIsDefine(userId);
@@ -373,7 +389,7 @@ export const getMyInvites: RequestHandler = async (req, res, next) => {
 // POST /api/invites/:inviteId/accept
 // Accept an invitation
 // =====================================
-export const acceptInvite: RequestHandler = async (req, res, next) => {
+export const acceptInvite: RequestHandler<{ inviteId: string }> = async (req, res, next) => {
   const inviteId = req.params.inviteId;
   const userId = req.session.userId;
 
@@ -404,7 +420,7 @@ export const acceptInvite: RequestHandler = async (req, res, next) => {
 
     // Check if user is the invitee
     if (invite.inviteeId !== userId) {
-      throw createHttpError(403, "Not authorized to accept this invitation");
+      throw createHttpError(403, "INVITE_006: Not authorized to accept this invitation");
     }
 
     // Check if invite is still pending
@@ -414,7 +430,7 @@ export const acceptInvite: RequestHandler = async (req, res, next) => {
 
     // Check if community is not deleted
     if (invite.community.deletedAt) {
-      throw createHttpError(404, "Community not found");
+      throw createHttpError(404, "COMMUNITY_001: Community not found");
     }
 
     // Accept invite, create membership, and log activities in a transaction
@@ -478,7 +494,7 @@ export const acceptInvite: RequestHandler = async (req, res, next) => {
 // POST /api/invites/:inviteId/reject
 // Reject an invitation
 // =====================================
-export const rejectInvite: RequestHandler = async (req, res, next) => {
+export const rejectInvite: RequestHandler<{ inviteId: string }> = async (req, res, next) => {
   const inviteId = req.params.inviteId;
   const userId = req.session.userId;
 
@@ -499,7 +515,7 @@ export const rejectInvite: RequestHandler = async (req, res, next) => {
 
     // Check if user is the invitee
     if (invite.inviteeId !== userId) {
-      throw createHttpError(403, "Not authorized to reject this invitation");
+      throw createHttpError(403, "INVITE_006: Not authorized to reject this invitation");
     }
 
     // Check if invite is still pending
