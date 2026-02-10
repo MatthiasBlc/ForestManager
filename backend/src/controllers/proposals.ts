@@ -4,6 +4,7 @@ import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import { requireMembership } from "../services/membershipService";
+import { acceptProposal as acceptProposalService, rejectProposal as rejectProposalService } from "../services/proposalService";
 
 interface CreateProposalBody {
   proposedTitle?: string;
@@ -352,122 +353,7 @@ export const acceptProposal: RequestHandler<
       );
     }
 
-    // Transaction: accepter la proposition et propager les modifications
-    const result = await prisma.$transaction(async (tx) => {
-      const now = new Date();
-
-      // 1. Mettre a jour la recette communautaire
-      await tx.recipe.update({
-        where: { id: proposal.recipe.id },
-        data: {
-          title: proposal.proposedTitle,
-          content: proposal.proposedContent,
-          updatedAt: now,
-        },
-      });
-
-      // 2. Si la recette a un originRecipeId (lien vers la perso), propager
-      let personalRecipeId: string | null = null;
-      if (proposal.recipe.originRecipeId) {
-        // Trouver la recette personnelle (originRecipe avec communityId = null)
-        const originRecipe = await tx.recipe.findFirst({
-          where: {
-            id: proposal.recipe.originRecipeId,
-            communityId: null,
-            deletedAt: null,
-          },
-        });
-
-        if (originRecipe) {
-          personalRecipeId = originRecipe.id;
-
-          // Mettre a jour la recette personnelle
-          await tx.recipe.update({
-            where: { id: personalRecipeId },
-            data: {
-              title: proposal.proposedTitle,
-              content: proposal.proposedContent,
-              updatedAt: now,
-            },
-          });
-
-          // 3. Propager aux autres copies communautaires
-          const otherCommunityRecipes = await tx.recipe.findMany({
-            where: {
-              originRecipeId: personalRecipeId,
-              deletedAt: null,
-              id: { not: proposal.recipe.id }, // Exclure la recette deja mise a jour
-            },
-            select: {
-              id: true,
-              communityId: true,
-            },
-          });
-
-          for (const otherRecipe of otherCommunityRecipes) {
-            await tx.recipe.update({
-              where: { id: otherRecipe.id },
-              data: {
-                title: proposal.proposedTitle,
-                content: proposal.proposedContent,
-                updatedAt: now,
-              },
-            });
-
-            // Creer ActivityLog RECIPE_UPDATED pour chaque communaute
-            if (otherRecipe.communityId) {
-              await tx.activityLog.create({
-                data: {
-                  type: "RECIPE_UPDATED",
-                  userId: authenticatedUserId,
-                  communityId: otherRecipe.communityId,
-                  recipeId: otherRecipe.id,
-                  metadata: { propagatedFromProposalId: proposalId },
-                },
-              });
-            }
-          }
-        }
-      }
-
-      // 4. Mettre a jour la proposition
-      const updatedProposal = await tx.recipeUpdateProposal.update({
-        where: { id: proposalId },
-        data: {
-          status: "ACCEPTED",
-          decidedAt: now,
-        },
-        select: {
-          id: true,
-          proposedTitle: true,
-          proposedContent: true,
-          status: true,
-          createdAt: true,
-          decidedAt: true,
-          recipeId: true,
-          proposerId: true,
-          proposer: {
-            select: {
-              id: true,
-              username: true,
-            },
-          },
-        },
-      });
-
-      // 5. Creer ActivityLog PROPOSAL_ACCEPTED
-      await tx.activityLog.create({
-        data: {
-          type: "PROPOSAL_ACCEPTED",
-          userId: authenticatedUserId,
-          communityId: proposal.recipe.communityId,
-          recipeId: proposal.recipe.id,
-          metadata: { proposalId },
-        },
-      });
-
-      return updatedProposal;
-    });
+    const result = await acceptProposalService(proposalId, proposal, authenticatedUserId);
 
     res.status(200).json(result);
   } catch (error) {
@@ -539,75 +425,7 @@ export const rejectProposal: RequestHandler<
       throw createHttpError(400, "PROPOSAL_002: Proposal already decided");
     }
 
-    // Transaction: refuser la proposition et creer une variante
-    const result = await prisma.$transaction(async (tx) => {
-      const now = new Date();
-
-      // 1. Creer une variante pour le proposeur
-      const variant = await tx.recipe.create({
-        data: {
-          title: proposal.proposedTitle,
-          content: proposal.proposedContent,
-          imageUrl: proposal.recipe.imageUrl,
-          isVariant: true,
-          creatorId: proposal.proposerId, // Le proposeur devient createur de la variante
-          communityId: proposal.recipe.communityId,
-          originRecipeId: proposal.recipe.id, // Lien vers la recette cible
-        },
-        select: {
-          id: true,
-          title: true,
-          content: true,
-          imageUrl: true,
-          isVariant: true,
-          creatorId: true,
-          communityId: true,
-          originRecipeId: true,
-          createdAt: true,
-        },
-      });
-
-      // 2. Mettre a jour la proposition
-      const updatedProposal = await tx.recipeUpdateProposal.update({
-        where: { id: proposalId },
-        data: {
-          status: "REJECTED",
-          decidedAt: now,
-        },
-        select: {
-          id: true,
-          proposedTitle: true,
-          proposedContent: true,
-          status: true,
-          createdAt: true,
-          decidedAt: true,
-          recipeId: true,
-          proposerId: true,
-          proposer: {
-            select: {
-              id: true,
-              username: true,
-            },
-          },
-        },
-      });
-
-      // 3. Creer ActivityLog VARIANT_CREATED
-      await tx.activityLog.create({
-        data: {
-          type: "VARIANT_CREATED",
-          userId: proposal.proposerId,
-          communityId: proposal.recipe.communityId,
-          recipeId: variant.id,
-          metadata: {
-            proposalId,
-            originRecipeId: proposal.recipe.id,
-          },
-        },
-      });
-
-      return { proposal: updatedProposal, variant };
-    });
+    const result = await rejectProposalService(proposalId, proposal);
 
     res.status(200).json(result);
   } catch (error) {

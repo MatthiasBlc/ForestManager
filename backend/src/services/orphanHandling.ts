@@ -59,58 +59,79 @@ export async function handleOrphanedRecipes(
     },
   });
 
-  let autoRejectedProposals = 0;
-  let createdVariants = 0;
-
-  const now = new Date();
+  // Collecter toutes les propositions et preparer les variants
+  const allProposalIds: string[] = [];
+  const variantDataList: {
+    proposal: typeof recipes[0]["proposals"][0];
+    recipeId: string;
+    imageUrl: string | null;
+  }[] = [];
 
   for (const recipe of recipes) {
     for (const proposal of recipe.proposals) {
-      // Creer une variante pour le proposeur
-      const variant = await client.recipe.create({
-        data: {
-          title: proposal.proposedTitle,
-          content: proposal.proposedContent,
-          imageUrl: recipe.imageUrl,
-          isVariant: true,
-          creatorId: proposal.proposerId,
-          communityId,
-          originRecipeId: recipe.id,
-        },
-      });
-      createdVariants++;
-
-      // Mettre a jour la proposition comme REJECTED
-      await client.recipeUpdateProposal.update({
-        where: { id: proposal.id },
-        data: {
-          status: "REJECTED",
-          decidedAt: now,
-        },
-      });
-      autoRejectedProposals++;
-
-      // Creer ActivityLog VARIANT_CREATED
-      await client.activityLog.create({
-        data: {
-          type: "VARIANT_CREATED",
-          userId: proposal.proposerId,
-          communityId,
-          recipeId: variant.id,
-          metadata: {
-            proposalId: proposal.id,
-            originRecipeId: recipe.id,
-            reason: "ORPHAN_AUTO_REJECT",
-          },
-        },
+      allProposalIds.push(proposal.id);
+      variantDataList.push({
+        proposal,
+        recipeId: recipe.id,
+        imageUrl: recipe.imageUrl,
       });
     }
   }
 
+  if (allProposalIds.length === 0) {
+    return { processedRecipes: recipes.length, autoRejectedProposals: 0, createdVariants: 0 };
+  }
+
+  const now = new Date();
+
+  // Batch: rejeter toutes les propositions en une seule requete
+  await client.recipeUpdateProposal.updateMany({
+    where: { id: { in: allProposalIds } },
+    data: { status: "REJECTED", decidedAt: now },
+  });
+
+  // Creer les variantes (besoin des IDs retournes, donc boucle necessaire)
+  const activityLogData: {
+    type: string;
+    userId: string;
+    communityId: string;
+    recipeId: string;
+    metadata: Record<string, unknown>;
+  }[] = [];
+
+  for (const { proposal, recipeId, imageUrl } of variantDataList) {
+    const variant = await client.recipe.create({
+      data: {
+        title: proposal.proposedTitle,
+        content: proposal.proposedContent,
+        imageUrl,
+        isVariant: true,
+        creatorId: proposal.proposerId,
+        communityId,
+        originRecipeId: recipeId,
+      },
+    });
+
+    activityLogData.push({
+      type: "VARIANT_CREATED",
+      userId: proposal.proposerId,
+      communityId,
+      recipeId: variant.id,
+      metadata: {
+        proposalId: proposal.id,
+        originRecipeId: recipeId,
+        reason: "ORPHAN_AUTO_REJECT",
+      },
+    });
+  }
+
+  // Batch: creer tous les activity logs en une seule requete
+  await client.activityLog.createMany({ data: activityLogData });
+
   return {
     processedRecipes: recipes.length,
-    autoRejectedProposals,
-    createdVariants,
+    autoRejectedProposals: allProposalIds.length,
+    createdVariants: variantDataList.length,
   };
 }
 

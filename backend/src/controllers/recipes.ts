@@ -2,11 +2,12 @@ import { RequestHandler } from "express";
 import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
-import { normalizeNames, isValidHttpUrl } from "../util/validation";
+import { isValidHttpUrl } from "../util/validation";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
-import { RECIPE_TAGS_SELECT, RECIPE_INGREDIENTS_SELECT, RECIPE_DETAIL_INCLUDE } from "../util/prismaSelects";
+import { RECIPE_TAGS_SELECT } from "../util/prismaSelects";
 import { requireRecipeAccess, requireRecipeOwnership } from "../services/membershipService";
 import { formatTags, formatIngredients } from "../util/responseFormatters";
+import { createRecipe as createRecipeService, updateRecipe as updateRecipeService } from "../services/recipeService";
 
 interface GetRecipesQuery {
   limit?: string;
@@ -242,97 +243,8 @@ export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeBody, un
       throw createHttpError(400, "RECIPE_005: Invalid image URL");
     }
 
-    const newRecipe = await prisma.$transaction(async (tx) => {
-      const recipe = await tx.recipe.create({
-        data: {
-          title: title.trim(),
-          content: content.trim(),
-          imageUrl: imageUrl?.trim() || null,
-          creatorId: authenticatedUserId,
-        },
-      });
-
-      if (tags.length > 0) {
-        const normalizedTags = normalizeNames(tags);
-
-        for (const tagName of normalizedTags) {
-          const tag = await tx.tag.upsert({
-            where: { name: tagName },
-            create: { name: tagName },
-            update: {},
-          });
-
-          await tx.recipeTag.create({
-            data: {
-              recipeId: recipe.id,
-              tagId: tag.id,
-            },
-          });
-        }
-      }
-
-      if (ingredients.length > 0) {
-        for (let i = 0; i < ingredients.length; i++) {
-          const ing = ingredients[i];
-          const ingredientName = ing.name.trim().toLowerCase();
-
-          if (!ingredientName) continue;
-
-          const ingredient = await tx.ingredient.upsert({
-            where: { name: ingredientName },
-            create: { name: ingredientName },
-            update: {},
-          });
-
-          await tx.recipeIngredient.create({
-            data: {
-              recipeId: recipe.id,
-              ingredientId: ingredient.id,
-              quantity: ing.quantity?.trim() || null,
-              order: i,
-            },
-          });
-        }
-      }
-
-      return tx.recipe.findUnique({
-        where: { id: recipe.id },
-        select: {
-          id: true,
-          title: true,
-          content: true,
-          imageUrl: true,
-          createdAt: true,
-          updatedAt: true,
-          creatorId: true,
-          tags: {
-            select: {
-              tag: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-            },
-          },
-          ingredients: {
-            select: {
-              id: true,
-              quantity: true,
-              order: true,
-              ingredient: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-            },
-            orderBy: {
-              order: "asc",
-            },
-          },
-        },
-      });
+    const newRecipe = await createRecipeService(authenticatedUserId, {
+      title, content, imageUrl, tags, ingredients,
     });
 
     if (!newRecipe) {
@@ -399,192 +311,9 @@ export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRec
       throw createHttpError(400, "RECIPE_005: Invalid image URL");
     }
 
-    const updatedRecipe = await prisma.$transaction(async (tx) => {
-      await tx.recipe.update({
-        where: { id: recipeId },
-        data: {
-          ...(title !== undefined && { title: title.trim() }),
-          ...(content !== undefined && { content: content.trim() }),
-          ...(imageUrl !== undefined && { imageUrl: imageUrl?.trim() || null }),
-        },
-      });
-
-      if (tags !== undefined) {
-        await tx.recipeTag.deleteMany({
-          where: { recipeId },
-        });
-
-        const normalizedTags = normalizeNames(tags);
-
-        for (const tagName of normalizedTags) {
-          const tag = await tx.tag.upsert({
-            where: { name: tagName },
-            create: { name: tagName },
-            update: {},
-          });
-
-          await tx.recipeTag.create({
-            data: {
-              recipeId,
-              tagId: tag.id,
-            },
-          });
-        }
-      }
-
-      if (ingredients !== undefined) {
-        await tx.recipeIngredient.deleteMany({
-          where: { recipeId },
-        });
-
-        for (let i = 0; i < ingredients.length; i++) {
-          const ing = ingredients[i];
-          const ingredientName = ing.name.trim().toLowerCase();
-
-          if (!ingredientName) continue;
-
-          const ingredient = await tx.ingredient.upsert({
-            where: { name: ingredientName },
-            create: { name: ingredientName },
-            update: {},
-          });
-
-          await tx.recipeIngredient.create({
-            data: {
-              recipeId,
-              ingredientId: ingredient.id,
-              quantity: ing.quantity?.trim() || null,
-              order: i,
-            },
-          });
-        }
-      }
-
-      // --- Synchronisation bidirectionnelle (titre, contenu, imageUrl, ingredients) ---
-      // Tags sont LOCAUX : pas synchronises
-      // Forks (sharedFromCommunityId != null) et variantes (isVariant = true) exclus
-
-      const syncData: Record<string, unknown> = {};
-      if (title !== undefined) syncData.title = title.trim();
-      if (content !== undefined) syncData.content = content.trim();
-      if (imageUrl !== undefined) syncData.imageUrl = imageUrl?.trim() || null;
-
-      const hasSyncableFields = Object.keys(syncData).length > 0 || ingredients !== undefined;
-
-      if (hasSyncableFields) {
-        // Trouver les recettes liees a synchroniser
-        let linkedRecipeIds: string[] = [];
-
-        if (recipe.communityId === null) {
-          // Recette personnelle : synchroniser toutes les copies communautaires
-          const copies = await tx.recipe.findMany({
-            where: {
-              originRecipeId: recipeId,
-              communityId: { not: null },
-              deletedAt: null,
-              isVariant: false,
-              sharedFromCommunityId: null,
-            },
-            select: { id: true },
-          });
-          linkedRecipeIds = copies.map((c) => c.id);
-        } else if (recipe.originRecipeId && !recipe.sharedFromCommunityId && !recipe.isVariant) {
-          // Recette communautaire (pas un fork, pas une variante) : synchroniser la recette perso + autres copies
-          linkedRecipeIds.push(recipe.originRecipeId);
-
-          const otherCopies = await tx.recipe.findMany({
-            where: {
-              originRecipeId: recipe.originRecipeId,
-              id: { not: recipeId },
-              deletedAt: null,
-              isVariant: false,
-              sharedFromCommunityId: null,
-            },
-            select: { id: true },
-          });
-          linkedRecipeIds.push(...otherCopies.map((c) => c.id));
-        }
-
-        if (linkedRecipeIds.length > 0) {
-          // Mettre a jour titre, contenu, imageUrl
-          if (Object.keys(syncData).length > 0) {
-            await tx.recipe.updateMany({
-              where: { id: { in: linkedRecipeIds } },
-              data: syncData,
-            });
-          }
-
-          // Synchroniser les ingredients
-          if (ingredients !== undefined) {
-            for (const linkedId of linkedRecipeIds) {
-              await tx.recipeIngredient.deleteMany({
-                where: { recipeId: linkedId },
-              });
-
-              for (let i = 0; i < ingredients.length; i++) {
-                const ing = ingredients[i];
-                const ingredientName = ing.name.trim().toLowerCase();
-                if (!ingredientName) continue;
-
-                const ingredient = await tx.ingredient.upsert({
-                  where: { name: ingredientName },
-                  create: { name: ingredientName },
-                  update: {},
-                });
-
-                await tx.recipeIngredient.create({
-                  data: {
-                    recipeId: linkedId,
-                    ingredientId: ingredient.id,
-                    quantity: ing.quantity?.trim() || null,
-                    order: i,
-                  },
-                });
-              }
-            }
-          }
-        }
-      }
-
-      return tx.recipe.findUnique({
-        where: { id: recipeId },
-        select: {
-          id: true,
-          title: true,
-          content: true,
-          imageUrl: true,
-          createdAt: true,
-          updatedAt: true,
-          creatorId: true,
-          tags: {
-            select: {
-              tag: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-            },
-          },
-          ingredients: {
-            select: {
-              id: true,
-              quantity: true,
-              order: true,
-              ingredient: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
-            },
-            orderBy: {
-              order: "asc",
-            },
-          },
-        },
-      });
-    });
+    const updatedRecipe = await updateRecipeService(recipeId, {
+      title, content, imageUrl, tags, ingredients,
+    }, recipe);
 
     if (!updatedRecipe) {
       throw createHttpError(500, "Failed to update recipe");

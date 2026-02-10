@@ -7,12 +7,12 @@ Derniere mise a jour : 2026-02-10
 | Groupe                    | Total  | Done  | Reste  |
 | ------------------------- | ------ | ----- | ------ |
 | Backend P1 (fondations)   | 11     | 10    | 1      |
-| Backend P2 (services)     | 5      | 0     | 5      |
+| Backend P2 (services)     | 5      | 5     | 0      |
 | Backend P3 (type safety)  | 6      | 0     | 6      |
 | Frontend P1 (hooks/utils) | 6      | 0     | 6      |
 | Frontend P2 (composants)  | 6      | 0     | 6      |
 | Frontend P3 (qualite)     | 7      | 0     | 7      |
-| **TOTAL**                 | **41** | **10** | **31** |
+| **TOTAL**                 | **41** | **15** | **26** |
 
 ---
 
@@ -32,11 +32,11 @@ Derniere mise a jour : 2026-02-10
 
 ## Backend - Priorite 2 (Services)
 
-- [ ] B2.1 - Creer recipeService.ts
-- [ ] B2.2 - Creer communityRecipeService.ts
-- [ ] B2.3 - Creer proposalService.ts
-- [ ] B2.4 - Creer shareService.ts
-- [ ] B2.5 - Fix N+1 queries dans orphanHandling
+- [x] B2.1 - Creer recipeService.ts
+- [x] B2.2 - Creer communityRecipeService.ts
+- [x] B2.3 - Creer proposalService.ts
+- [x] B2.4 - Creer shareService.ts
+- [x] B2.5 - Fix N+1 queries dans orphanHandling
 
 ## Backend - Priorite 3 (Type safety)
 
@@ -105,5 +105,23 @@ Derniere mise a jour : 2026-02-10
 - Applique dans: recipes.ts, communityRecipes.ts, recipeVariants.ts, recipeShare.ts
 
 **B1.7 skipped:** Controllers tags/ingredients trop petits (~60 lignes) pour justifier une abstraction generique. Risque de sur-ingenierie.
+
+### Session 3 - 2026-02-10
+
+**B2 (Services) complete:**
+- `backend/src/services/recipeService.ts` - createRecipe, updateRecipe, syncLinkedRecipes, upsertTags, upsertIngredients
+- `backend/src/services/communityRecipeService.ts` - createCommunityRecipe (dual personal+community)
+- `backend/src/services/proposalService.ts` - acceptProposal (avec propagation), rejectProposal (avec variante)
+- `backend/src/services/shareService.ts` - forkRecipe, publishRecipe, getRecipeFamilyCommunities
+
+**B2.5:** Optimise orphanHandling : batch updateMany pour proposals, batch createMany pour activity logs
+
+**Reduction controllers:**
+- recipes.ts: 637 -> 366 (-42%)
+- communityRecipes.ts: 320 -> 210 (-34%)
+- proposals.ts: 616 -> 434 (-30%)
+- recipeShare.ts: 569 -> 262 (-54%)
+
+**Tests:** 332/332 passent apres modifications.
 
 ---
