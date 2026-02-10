@@ -1,3 +1,4 @@
+import { ActivityType } from "@prisma/client";
 import prisma from "../util/db";
 
 const PROPOSAL_SELECT = {
@@ -103,7 +104,7 @@ export async function acceptProposal(
           const activityLogs = otherCommunityRecipes
             .filter((r) => r.communityId)
             .map((r) => ({
-              type: "RECIPE_UPDATED",
+              type: "RECIPE_UPDATED" as ActivityType,
               userId: authenticatedUserId,
               communityId: r.communityId!,
               recipeId: r.id,

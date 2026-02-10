@@ -56,7 +56,7 @@ function handleApiErrorWith(
       const override = overrides[status];
       if (override === ConflictError) throw new ConflictError(msg || "Conflict");
       if (override === UnauthorizedError) throw new UnauthorizedError(msg || "Unauthorized");
-      throw new Error(msg || override);
+      throw new Error(msg || (override as string));
     }
 
     return handleApiError(error);

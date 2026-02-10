@@ -25,6 +25,7 @@ type ShareModalProps = CommunityShareProps | PersonalShareProps;
 
 export const ShareModal = (props: ShareModalProps) => {
   const { recipeId, recipeTitle, onClose, mode } = props;
+  const currentCommunityId = mode === "community" ? props.currentCommunityId : null;
 
   const [communities, setCommunities] = useState<CommunityListItem[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -46,12 +47,12 @@ export const ShareModal = (props: ShareModalProps) => {
 
         const available = communitiesRes.data.filter((c) => {
           if (sharedIds.has(c.id)) return false;
-          if (mode === "community") return c.id !== (props as CommunityShareProps).currentCommunityId;
+          if (currentCommunityId) return c.id !== currentCommunityId;
           return true;
         });
 
         setCommunities(available);
-        setAllShared(available.length === 0 && communitiesRes.data.length > (mode === "community" ? 1 : 0));
+        setAllShared(available.length === 0 && communitiesRes.data.length > (currentCommunityId ? 1 : 0));
       } catch {
         setError("Failed to load communities");
       } finally {
@@ -60,7 +61,7 @@ export const ShareModal = (props: ShareModalProps) => {
     }
 
     loadData();
-  }, [recipeId, mode, mode === "community" ? (props as CommunityShareProps).currentCommunityId : null]);
+  }, [recipeId, mode, currentCommunityId]);
 
   const toggleCommunity = (communityId: string) => {
     setSelectedIds((prev) => {

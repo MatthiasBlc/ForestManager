@@ -1,5 +1,5 @@
 import prisma from "../util/db";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient, ActivityType } from "@prisma/client";
 
 type TransactionClient = Omit<
   PrismaClient,
@@ -92,11 +92,11 @@ export async function handleOrphanedRecipes(
 
   // Creer les variantes (besoin des IDs retournes, donc boucle necessaire)
   const activityLogData: {
-    type: string;
+    type: ActivityType;
     userId: string;
     communityId: string;
     recipeId: string;
-    metadata: Record<string, unknown>;
+    metadata: Prisma.InputJsonValue;
   }[] = [];
 
   for (const { proposal, recipeId, imageUrl } of variantDataList) {

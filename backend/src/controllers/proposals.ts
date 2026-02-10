@@ -176,7 +176,7 @@ export const getProposals: RequestHandler<
     };
 
     if (statusFilter && ["PENDING", "ACCEPTED", "REJECTED"].includes(statusFilter)) {
-      whereClause.status = statusFilter;
+      whereClause.status = statusFilter as "PENDING" | "ACCEPTED" | "REJECTED";
     }
 
     // Recuperer les propositions
@@ -314,6 +314,7 @@ export const acceptProposal: RequestHandler<
             id: true,
             title: true,
             content: true,
+            imageUrl: true,
             communityId: true,
             creatorId: true,
             originRecipeId: true,
