@@ -76,8 +76,7 @@ const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesList
         setPagination({ ...pagination, total: pagination.total - 1 });
       }
       toast.success("Recipe deleted");
-    } catch (err) {
-      console.error("Error deleting recipe:", err);
+    } catch {
       toast.error("Failed to delete recipe");
     }
   }

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { FaPlus, FaTimes } from "react-icons/fa";
 import APIManager from "../../network/api";
 import { IngredientSearchResult } from "../../models/recipe";
@@ -102,6 +102,7 @@ const IngredientRow = ({ ingredient, index, onUpdate, onRemove }: IngredientRowP
         type="button"
         onClick={() => onRemove(index)}
         className="btn btn-ghost btn-square text-error"
+        aria-label="Remove ingredient"
       >
         <FaTimes />
       </button>
@@ -110,8 +111,21 @@ const IngredientRow = ({ ingredient, index, onUpdate, onRemove }: IngredientRowP
 };
 
 const IngredientList = ({ value, onChange }: IngredientListProps) => {
+  const nextId = useRef(0);
+  const [itemIds, setItemIds] = useState<number[]>(() =>
+    value.map(() => nextId.current++)
+  );
+
+  // Sync itemIds when value length changes externally (e.g. form reset)
+  useEffect(() => {
+    if (value.length !== itemIds.length) {
+      setItemIds(value.map(() => nextId.current++));
+    }
+  }, [value.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const addIngredient = () => {
     onChange([...value, { name: "", quantity: "" }]);
+    setItemIds([...itemIds, nextId.current++]);
   };
 
   const updateIngredient = (index: number, ingredient: IngredientInput) => {
@@ -122,13 +136,14 @@ const IngredientList = ({ value, onChange }: IngredientListProps) => {
 
   const removeIngredient = (index: number) => {
     onChange(value.filter((_, i) => i !== index));
+    setItemIds(itemIds.filter((_, i) => i !== index));
   };
 
   return (
     <div className="space-y-3">
       {value.map((ingredient, index) => (
         <IngredientRow
-          key={index}
+          key={itemIds[index]}
           ingredient={ingredient}
           index={index}
           onUpdate={updateIngredient}

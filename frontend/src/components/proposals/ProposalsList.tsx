@@ -8,10 +8,11 @@ import { formatDate } from "../../utils/format.Date";
 
 interface ProposalsListProps {
   recipeId: string;
+  refreshSignal?: number;
   onProposalDecided: () => void;
 }
 
-const ProposalsList = ({ recipeId, onProposalDecided }: ProposalsListProps) => {
+const ProposalsList = ({ recipeId, refreshSignal, onProposalDecided }: ProposalsListProps) => {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +34,7 @@ const ProposalsList = ({ recipeId, onProposalDecided }: ProposalsListProps) => {
 
   useEffect(() => {
     loadProposals();
-  }, [loadProposals]);
+  }, [loadProposals, refreshSignal]);
 
   const handleAccept = async (proposalId: string) => {
     try {

@@ -4,6 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import { FaBook, FaPlus, FaBars, FaHome } from "react-icons/fa";
 import { CommunityListItem } from "../../models/community";
 import APIManager from "../../network/api";
+import { communityEvents } from "../../utils/communityEvents";
 
 interface SidebarProps {
   onNavigate?: () => void;
@@ -112,8 +113,7 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
   }, [location.pathname, loadCommunities]);
 
   useEffect(() => {
-    window.addEventListener("community-updated", loadCommunities);
-    return () => window.removeEventListener("community-updated", loadCommunities);
+    return communityEvents.subscribe(loadCommunities);
   }, [loadCommunities]);
 
   const isActive = (path: string) => {

@@ -17,10 +17,8 @@ const RecipeDetailPage = () => {
   const [recipe, setRecipe] = useState<RecipeDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showProposeModal, setShowProposeModal] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [showPublishModal, setShowPublishModal] = useState(false);
-  const [proposalsKey, setProposalsKey] = useState(0);
+  const [openModal, setOpenModal] = useState<"propose" | "share" | "publish" | null>(null);
+  const [proposalsRefresh, setProposalsRefresh] = useState(0);
 
   useEffect(() => {
     async function loadRecipe() {
@@ -36,7 +34,6 @@ const RecipeDetailPage = () => {
         const data = await APIManager.getRecipe(id);
         setRecipe(data);
       } catch (err) {
-        console.error("Error loading recipe:", err);
         setError(err instanceof Error ? err.message : "Failed to load recipe");
       } finally {
         setIsLoading(false);
@@ -53,8 +50,7 @@ const RecipeDetailPage = () => {
       try {
         await APIManager.deleteRecipe(recipe.id);
         navigate(recipe.communityId ? `/communities/${recipe.communityId}` : "/recipes");
-      } catch (err) {
-        console.error("Error deleting recipe:", err);
+      } catch {
         toast.error("Failed to delete recipe");
       }
     }
@@ -73,24 +69,24 @@ const RecipeDetailPage = () => {
     try {
       const data = await APIManager.getRecipe(id);
       setRecipe(data);
-    } catch (err) {
-      console.error("Error reloading recipe:", err);
+    } catch {
+      // Reload failure is non-critical - current data remains displayed
     }
   };
 
   const handleProposalSubmitted = () => {
-    setShowProposeModal(false);
-    setProposalsKey((k) => k + 1);
+    setOpenModal(null);
+    setProposalsRefresh((k) => k + 1);
     toast.success("Proposal submitted");
   };
 
   const handleProposalDecided = () => {
     loadRecipeData();
-    setProposalsKey((k) => k + 1);
+    setProposalsRefresh((k) => k + 1);
   };
 
   const handleRecipeShared = (newRecipeId: string) => {
-    setShowShareModal(false);
+    setOpenModal(null);
     toast.success("Recipe shared successfully");
     navigate(`/recipes/${newRecipeId}`);
   };
@@ -185,7 +181,8 @@ const RecipeDetailPage = () => {
               {canPublish && (
                 <button
                   className="btn btn-outline btn-sm gap-2"
-                  onClick={() => setShowPublishModal(true)}
+                  onClick={() => setOpenModal("publish")}
+                  aria-label="Share to community"
                 >
                   <FaShare className="w-3 h-3" />
                   Share
@@ -194,7 +191,8 @@ const RecipeDetailPage = () => {
               {canShare && (
                 <button
                   className="btn btn-outline btn-sm gap-2"
-                  onClick={() => setShowShareModal(true)}
+                  onClick={() => setOpenModal("share")}
+                  aria-label="Share recipe"
                 >
                   <FaShare className="w-3 h-3" />
                   Share
@@ -203,7 +201,8 @@ const RecipeDetailPage = () => {
               {canPropose && (
                 <button
                   className="btn btn-outline btn-sm gap-2"
-                  onClick={() => setShowProposeModal(true)}
+                  onClick={() => setOpenModal("propose")}
+                  aria-label="Propose changes"
                 >
                   <FaLightbulb className="w-3 h-3" />
                   Propose changes
@@ -214,6 +213,7 @@ const RecipeDetailPage = () => {
                   <button
                     className="btn btn-ghost btn-sm"
                     onClick={() => navigate(`/recipes/${recipe.id}/edit`)}
+                    aria-label="Edit recipe"
                   >
                     <FaEdit />
                     Edit
@@ -221,6 +221,7 @@ const RecipeDetailPage = () => {
                   <button
                     className="btn btn-ghost btn-sm text-error"
                     onClick={handleDelete}
+                    aria-label="Delete recipe"
                   >
                     <FaTrash />
                     Delete
@@ -273,8 +274,8 @@ const RecipeDetailPage = () => {
             <>
               <div className="divider" />
               <ProposalsList
-                key={proposalsKey}
                 recipeId={recipe.id}
+                refreshSignal={proposalsRefresh}
                 onProposalDecided={handleProposalDecided}
               />
             </>
@@ -282,32 +283,32 @@ const RecipeDetailPage = () => {
         </div>
       </article>
 
-      {showProposeModal && (
+      {openModal === "propose" && (
         <ProposeModificationModal
           recipeId={recipe.id}
           currentTitle={recipe.title}
           currentContent={recipe.content}
-          onClose={() => setShowProposeModal(false)}
+          onClose={() => setOpenModal(null)}
           onProposalSubmitted={handleProposalSubmitted}
         />
       )}
 
-      {showShareModal && recipe.communityId && (
+      {openModal === "share" && recipe.communityId && (
         <ShareRecipeModal
           recipeId={recipe.id}
           recipeTitle={recipe.title}
           currentCommunityId={recipe.communityId}
-          onClose={() => setShowShareModal(false)}
+          onClose={() => setOpenModal(null)}
           onShared={handleRecipeShared}
         />
       )}
 
-      {showPublishModal && (
+      {openModal === "publish" && (
         <SharePersonalRecipeModal
           recipeId={recipe.id}
           recipeTitle={recipe.title}
-          onClose={() => setShowPublishModal(false)}
-          onPublished={() => setShowPublishModal(false)}
+          onClose={() => setOpenModal(null)}
+          onPublished={() => setOpenModal(null)}
         />
       )}
     </div>

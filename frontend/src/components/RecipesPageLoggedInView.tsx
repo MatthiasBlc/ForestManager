@@ -114,8 +114,7 @@ const RecipesPageLoggedInView = () => {
         setPagination({ ...pagination, total: pagination.total - 1 });
       }
       toast.success("Recipe deleted");
-    } catch (error) {
-      console.error("Error deleting recipe:", error);
+    } catch {
       toast.error("Failed to delete recipe");
     }
   }

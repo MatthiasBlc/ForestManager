@@ -15,8 +15,8 @@ const NavBarLoggedInView = () => {
   const handleLogout = async () => {
     try {
       await logout();
-    } catch (error) {
-      console.error(error);
+    } catch {
+      // Logout failure handled by AuthContext
     }
   };
 

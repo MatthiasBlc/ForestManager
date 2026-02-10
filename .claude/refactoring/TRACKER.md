@@ -11,8 +11,8 @@ Derniere mise a jour : 2026-02-10
 | Backend P3 (type safety)  | 6      | 6     | 0      |
 | Frontend P1 (hooks/utils) | 6      | 6     | 0      |
 | Frontend P2 (composants)  | 6      | 4     | 2      |
-| Frontend P3 (qualite)     | 7      | 0     | 7      |
-| **TOTAL**                 | **41** | **31** | **10** |
+| Frontend P3 (qualite)     | 7      | 7     | 0      |
+| **TOTAL**                 | **41** | **38** | **3**  |
 
 ---
 
@@ -67,13 +67,13 @@ Derniere mise a jour : 2026-02-10
 
 ## Frontend - Priorite 3 (Qualite)
 
-- [ ] F3.1 - Remplacer anti-pattern key pour force re-render
-- [ ] F3.2 - Remplacer window.dispatchEvent par state/context
-- [ ] F3.3 - Fix index comme key dans IngredientList
-- [ ] F3.4 - Retirer console.error du code production
-- [ ] F3.5 - Decomposer les pages trop grosses
-- [ ] F3.6 - Consolider states lies en objets
-- [ ] F3.7 - Ajouter aria-label manquants
+- [x] F3.1 - Remplacer anti-pattern key pour force re-render
+- [x] F3.2 - Remplacer window.dispatchEvent par event module
+- [x] F3.3 - Fix index comme key dans IngredientList
+- [x] F3.4 - Retirer console.error du code production
+- [x] F3.5 - Decomposer les pages trop grosses
+- [x] F3.6 - Consolider states lies en objets
+- [x] F3.7 - Ajouter aria-label manquants
 
 ---
 
@@ -171,6 +171,24 @@ Derniere mise a jour : 2026-02-10
 **F2.6 SKIPPED:** InviteCard et NotificationDropdown ont des callbacks trop differents (navigate vs filter list + navigate). Un hook partage ajouterait de la complexite sans benefice.
 
 **Tests mis a jour:** RecipeCard.test.tsx et MembersList.test.tsx adaptes au nouveau confirm dialog.
+**Tests:** 332/332 backend + 167/167 frontend passent.
+
+### Session 7 - 2026-02-10
+
+**F3 (Qualite) complete - 7/7:**
+
+**Fichiers crees:**
+- `frontend/src/utils/communityEvents.ts` - module subscribe/notify (remplace window.dispatchEvent)
+- `frontend/src/components/communities/CommunityEditForm.tsx` - formulaire edit extrait de CommunityDetailPage
+
+**F3.1:** ProposalsList accepte `refreshSignal` prop, RecipeDetailPage utilise `refreshSignal={proposalsRefresh}` au lieu de `key={proposalsKey}`. Plus de remount complet.
+**F3.2:** Cree `communityEvents` module (subscribe/notify pattern). Remplace `window.dispatchEvent(new Event("community-updated"))` dans CommunityDetailPage et `window.addEventListener` dans Sidebar.
+**F3.3:** IngredientList utilise `useRef` counter pour generer des IDs stables. `key={itemIds[index]}` remplace `key={index}`.
+**F3.4:** Supprime 9 `console.error` dans 8 fichiers (AuthContext, AdminAuthContext, RecipeDetailPage, RecipeFormPage, RecipesPageLoggedInView, NavBarLoggedInView, CommunityRecipesList). ErrorBoundary conserve (last-resort logger).
+**F3.5:** Extrait CommunityEditForm de CommunityDetailPage (4 useState + handler deplaces). CommunityDetailPage: 311 -> 238 lignes.
+**F3.6:** RecipeDetailPage: 3 booleans `showProposeModal/showShareModal/showPublishModal` remplaces par `openModal: "propose" | "share" | "publish" | null`.
+**F3.7:** Ajoute aria-labels: RecipeDetailPage (5 boutons), TagSelector (remove tag), IngredientList (remove ingredient).
+
 **Tests:** 332/332 backend + 167/167 frontend passent.
 
 ---

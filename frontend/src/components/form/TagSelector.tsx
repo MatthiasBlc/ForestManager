@@ -84,6 +84,7 @@ const TagSelector = ({
               type="button"
               onClick={() => removeTag(tag)}
               className="hover:opacity-70"
+              aria-label={`Remove tag ${tag}`}
             >
               <FaTimes size={12} />
             </button>

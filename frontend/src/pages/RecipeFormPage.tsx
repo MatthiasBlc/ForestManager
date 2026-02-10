@@ -57,7 +57,6 @@ const RecipeFormPage = () => {
           }))
         );
       } catch (err) {
-        console.error("Error loading recipe:", err);
         setError(err instanceof Error ? err.message : "Failed to load recipe");
       } finally {
         setIsLoading(false);
@@ -93,7 +92,6 @@ const RecipeFormPage = () => {
         navigate(`/recipes/${newRecipe.id}`);
       }
     } catch (err) {
-      console.error("Error saving recipe:", err);
       toast.error(err instanceof Error ? err.message : "Failed to save recipe");
     }
   };
