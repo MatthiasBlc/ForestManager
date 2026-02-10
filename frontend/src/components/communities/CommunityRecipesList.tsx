@@ -1,13 +1,14 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FaPlus, FaTh, FaList } from "react-icons/fa";
-import { CommunityRecipeListItem, CommunityRecipesResponse, RecipeListItem } from "../../models/recipe";
+import { CommunityRecipeListItem, RecipeListItem } from "../../models/recipe";
 import APIManager from "../../network/api";
 import { useAuth } from "../../contexts/AuthContext";
 import RecipeCard from "../recipes/RecipeCard";
 import RecipeListRow from "../recipes/RecipeListRow";
 import RecipeFilters from "../recipes/RecipeFilters";
+import { usePaginatedList } from "../../hooks/usePaginatedList";
 
 type ViewMode = "card" | "list";
 
@@ -22,11 +23,6 @@ const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesList
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [recipes, setRecipes] = useState<CommunityRecipeListItem[]>([]);
-  const [pagination, setPagination] = useState<CommunityRecipesResponse["pagination"] | null>(null);
-  const [recipesLoading, setRecipesLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem("recipesViewMode");
     return (saved === "list" || saved === "card") ? saved : "card";
@@ -44,41 +40,21 @@ const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesList
     localStorage.setItem("recipesViewMode", newMode);
   };
 
-  const loadRecipes = useCallback(async (offset: number = 0, append: boolean = false) => {
-    try {
-      if (!append) {
-        setError(false);
-        setRecipesLoading(true);
-      } else {
-        setLoadingMore(true);
-      }
-
-      const response = await APIManager.getCommunityRecipes(communityId, {
-        limit: RECIPES_PER_PAGE,
-        offset,
+  const fetchRecipes = useCallback(
+    (params: { limit: number; offset: number }) =>
+      APIManager.getCommunityRecipes(communityId, {
+        ...params,
         search: searchFilter || undefined,
         tags: tagsFilter.length > 0 ? tagsFilter : undefined,
         ingredients: ingredientsFilter.length > 0 ? ingredientsFilter : undefined,
-      });
+      }),
+    [communityId, searchFilter, tagsFilter, ingredientsFilter]
+  );
 
-      if (append) {
-        setRecipes((prev) => [...prev, ...response.data]);
-      } else {
-        setRecipes(response.data);
-      }
-      setPagination(response.pagination);
-    } catch (err) {
-      console.error("Error loading community recipes:", err);
-      setError(true);
-    } finally {
-      setRecipesLoading(false);
-      setLoadingMore(false);
-    }
-  }, [communityId, searchFilter, tagsFilter, ingredientsFilter]);
-
-  useEffect(() => {
-    loadRecipes(0, false);
-  }, [loadRecipes]);
+  const {
+    data: recipes, pagination, isLoading: recipesLoading, isLoadingMore: loadingMore,
+    error, loadMore: handleLoadMore, setData: setRecipes, setPagination,
+  } = usePaginatedList<CommunityRecipeListItem>(fetchRecipes, RECIPES_PER_PAGE, [fetchRecipes]);
 
   const handleTagClick = (tag: string) => {
     if (!tagsFilter.includes(tag)) {
@@ -90,12 +66,6 @@ const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesList
     setSearchFilter("");
     setTagsFilter([]);
     setIngredientsFilter([]);
-  };
-
-  const handleLoadMore = () => {
-    if (pagination?.hasMore && !loadingMore) {
-      loadRecipes(pagination.offset + pagination.limit, true);
-    }
   };
 
   async function deleteRecipe(recipe: RecipeListItem | CommunityRecipeListItem) {

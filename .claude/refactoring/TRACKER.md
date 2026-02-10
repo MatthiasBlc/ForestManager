@@ -10,9 +10,9 @@ Derniere mise a jour : 2026-02-10
 | Backend P2 (services)     | 5      | 5     | 0      |
 | Backend P3 (type safety)  | 6      | 6     | 0      |
 | Frontend P1 (hooks/utils) | 6      | 6     | 0      |
-| Frontend P2 (composants)  | 6      | 0     | 6      |
+| Frontend P2 (composants)  | 6      | 4     | 2      |
 | Frontend P3 (qualite)     | 7      | 0     | 7      |
-| **TOTAL**                 | **41** | **27** | **14** |
+| **TOTAL**                 | **41** | **31** | **10** |
 
 ---
 
@@ -58,12 +58,12 @@ Derniere mise a jour : 2026-02-10
 
 ## Frontend - Priorite 2 (Composants)
 
-- [ ] F2.1 - Fusionner ShareRecipeModal et SharePersonalRecipeModal
-- [ ] F2.2 - Factoriser RecipeCard et RecipeListRow
-- [ ] F2.3 - Creer composants UI reutilisables (ErrorAlert, LoadingSpinner, EmptyState, StatusBadge)
-- [ ] F2.4 - Extraire hook usePaginatedList
-- [ ] F2.5 - Remplacer window.confirm par modal custom
-- [ ] F2.6 - Factoriser invite response handlers
+- [x] F2.1 - Fusionner ShareRecipeModal et SharePersonalRecipeModal
+- [x] F2.2 - Factoriser RecipeCard et RecipeListRow
+- [ ] F2.3 - Creer composants UI reutilisables (SKIPPED - one-liners JSX, abstraction prematuree)
+- [x] F2.4 - Extraire hook usePaginatedList
+- [x] F2.5 - Remplacer window.confirm par modal custom
+- [ ] F2.6 - Factoriser invite response handlers (SKIPPED - logique trop differente entre les 2 composants)
 
 ## Frontend - Priorite 3 (Qualite)
 
@@ -151,6 +151,26 @@ Derniere mise a jour : 2026-02-10
 **F1.5:** Supprime 6 fichiers dead code: Recipe.tsx, AddEditRecipeDialog.tsx, Recipe.module.css, RecipesPage.module.css, App.module.css, utils.module.css
 **F1.6:** Cree `handleApiErrorWith()` factory dans api.ts, remplace 11 error handlers inline. Supprime aussi `console.error` du handler generique.
 
+**Tests:** 332/332 backend + 167/167 frontend passent.
+
+### Session 6 - 2026-02-10
+
+**F2 (Composants) - 4/6 fait, 2 skipped:**
+
+**Fichiers crees:**
+- `frontend/src/components/share/ShareModal.tsx` - modal unifiee avec mode "community" | "personal"
+- `frontend/src/hooks/useRecipeActions.ts` - logique commune RecipeCard/RecipeListRow
+- `frontend/src/hooks/usePaginatedList.ts` - hook generique pagination + load more
+- `frontend/src/hooks/useConfirm.tsx` - modal de confirmation custom (remplace window.confirm)
+
+**F2.1:** Fusionne ShareRecipeModal + SharePersonalRecipeModal en un seul ShareModal. Wrappers backwards-compatible preserves pour les imports existants. Supprime les 2 anciens fichiers.
+**F2.2:** Cree useRecipeActions hook, deduplique ~50 lignes de logique identique entre RecipeCard et RecipeListRow.
+**F2.3 SKIPPED:** ErrorAlert/LoadingSpinner/EmptyState/StatusBadge sont des one-liners JSX. Les wrapper dans des composants ajoute de l'indirection sans gain reel.
+**F2.4:** Cree usePaginatedList hook, applique dans RecipesPageLoggedInView et CommunityRecipesList. Elimine ~30 lignes dupliquees par composant.
+**F2.5:** Cree useConfirm hook, applique dans MembersList (3 confirms) et useRecipeActions (delete). Plus de window.confirm dans le code.
+**F2.6 SKIPPED:** InviteCard et NotificationDropdown ont des callbacks trop differents (navigate vs filter list + navigate). Un hook partage ajouterait de la complexite sans benefice.
+
+**Tests mis a jour:** RecipeCard.test.tsx et MembersList.test.tsx adaptes au nouveau confirm dialog.
 **Tests:** 332/332 backend + 167/167 frontend passent.
 
 ---

@@ -70,17 +70,18 @@ describe('MembersList', () => {
 
   it('should call onMembersChange after promoting a member', async () => {
     const user = userEvent.setup();
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
 
     renderWithUserAuth(<MembersList {...defaultProps} />);
 
     const promoteButtons = screen.getAllByText('Promote');
     await user.click(promoteButtons[0]);
 
+    // Confirm in the custom confirm dialog
+    const confirmButton = await screen.findByRole('button', { name: 'Confirm' });
+    await user.click(confirmButton);
+
     await waitFor(() => {
       expect(mockOnMembersChange).toHaveBeenCalled();
     });
-
-    vi.restoreAllMocks();
   });
 });

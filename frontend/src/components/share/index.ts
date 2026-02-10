@@ -1,2 +1,1 @@
-export { ShareRecipeModal } from "./ShareRecipeModal";
-export { SharePersonalRecipeModal } from "./SharePersonalRecipeModal";
+export { ShareRecipeModal, SharePersonalRecipeModal, ShareModal } from "./ShareModal";

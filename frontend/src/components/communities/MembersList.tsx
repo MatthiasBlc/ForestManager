@@ -4,6 +4,7 @@ import { FaArrowUp, FaSignOutAlt, FaUserMinus } from "react-icons/fa";
 import { CommunityMember } from "../../models/community";
 import { useAuth } from "../../contexts/AuthContext";
 import APIManager from "../../network/api";
+import { useConfirm } from "../../hooks/useConfirm";
 
 interface MembersListProps {
   communityId: string;
@@ -15,13 +16,14 @@ interface MembersListProps {
 
 const MembersList = ({ communityId, members, currentUserRole, onMembersChange, onLeave }: MembersListProps) => {
   const { user } = useAuth();
+  const { confirm, ConfirmDialog } = useConfirm();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const isModerator = currentUserRole === "MODERATOR";
 
   const handlePromote = async (memberId: string) => {
-    if (!window.confirm("Promote this member to moderator?")) return;
+    if (!await confirm({ message: "Promote this member to moderator?" })) return;
 
     try {
       setActionLoading(memberId);
@@ -37,7 +39,7 @@ const MembersList = ({ communityId, members, currentUserRole, onMembersChange, o
   };
 
   const handleKick = async (memberId: string) => {
-    if (!window.confirm("Remove this member from the community?")) return;
+    if (!await confirm({ message: "Remove this member from the community?", confirmLabel: "Remove", confirmClass: "btn btn-error" })) return;
 
     try {
       setActionLoading(memberId);
@@ -56,11 +58,11 @@ const MembersList = ({ communityId, members, currentUserRole, onMembersChange, o
     if (!user) return;
 
     const isLastMember = members.length === 1;
-    const confirmMessage = isLastMember
+    const message = isLastMember
       ? "You are the last member of this community. Leaving will permanently destroy it and all its data. Are you sure?"
       : "Are you sure you want to leave this community?";
 
-    if (!window.confirm(confirmMessage)) return;
+    if (!await confirm({ message, confirmLabel: "Leave", confirmClass: "btn btn-warning" })) return;
 
     try {
       setActionLoading(user.id);
@@ -184,6 +186,8 @@ const MembersList = ({ communityId, members, currentUserRole, onMembersChange, o
           </button>
         </div>
       )}
+
+      {ConfirmDialog}
     </div>
   );
 };

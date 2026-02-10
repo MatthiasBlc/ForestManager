@@ -1,7 +1,6 @@
-import { useNavigate } from "react-router-dom";
 import { FaEdit, FaTrash, FaCodeBranch, FaShare } from "react-icons/fa";
 import { RecipeListItem, CommunityRecipeListItem } from "../../models/recipe";
-import { formatDate } from "../../utils/format.Date";
+import { useRecipeActions } from "../../hooks/useRecipeActions";
 
 interface RecipeCardProps {
   recipe: RecipeListItem | CommunityRecipeListItem;
@@ -14,39 +13,12 @@ interface RecipeCardProps {
 }
 
 const RecipeCard = ({ recipe, onDelete, onTagClick, onShare, showCreator = false, canEdit = true, canDelete = true }: RecipeCardProps) => {
-  const navigate = useNavigate();
-  const { title, imageUrl, createdAt, updatedAt, tags } = recipe;
-
-  const displayedTags = tags.slice(0, 3);
-  const remainingTagsCount = tags.length - 3;
-
-  const dateText =
-    updatedAt > createdAt
-      ? `Updated: ${formatDate(updatedAt)}`
-      : `Created: ${formatDate(createdAt)}`;
-
-  const handleClick = () => {
-    navigate(`/recipes/${recipe.id}`);
-  };
-
-  const handleEdit = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigate(`/recipes/${recipe.id}/edit`);
-  };
-
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (window.confirm("Are you sure you want to delete this recipe?")) {
-      onDelete(recipe);
-    }
-  };
-
-  const handleTagClick = (e: React.MouseEvent, tag: string) => {
-    e.stopPropagation();
-    if (onTagClick) {
-      onTagClick(tag);
-    }
-  };
+  const {
+    title, imageUrl, tags, displayedTags, remainingTagsCount, dateText,
+    communityRecipe, isSharedRecipe,
+    handleClick, handleEdit, handleDelete, handleTagClick, handleShare,
+    ConfirmDialog,
+  } = useRecipeActions({ recipe, onDelete, onTagClick, onShare });
 
   return (
     <div
@@ -55,11 +27,7 @@ const RecipeCard = ({ recipe, onDelete, onTagClick, onShare, showCreator = false
     >
       {imageUrl ? (
         <figure className="h-48 overflow-hidden">
-          <img
-            src={imageUrl}
-            alt={title}
-            className="w-full h-full object-cover"
-          />
+          <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
         </figure>
       ) : (
         <figure className="h-48 bg-base-200 flex items-center justify-center">
@@ -68,13 +36,13 @@ const RecipeCard = ({ recipe, onDelete, onTagClick, onShare, showCreator = false
       )}
       <div className="card-body">
         <h2 className="card-title">{title}</h2>
-        {showCreator && "creator" in recipe && (
-          <p className="text-sm text-base-content/60">by {(recipe as CommunityRecipeListItem).creator.username}</p>
+        {showCreator && communityRecipe && (
+          <p className="text-sm text-base-content/60">by {communityRecipe.creator.username}</p>
         )}
-        {"sharedFromCommunityId" in recipe && (recipe as CommunityRecipeListItem).sharedFromCommunityId && (
+        {isSharedRecipe && communityRecipe && (
           <span className="badge badge-outline badge-info badge-sm gap-1">
             <FaCodeBranch className="w-2.5 h-2.5" />
-            {"creator" in recipe ? `Shared by: ${(recipe as CommunityRecipeListItem).creator.username}` : "Shared from another community"}
+            Shared by: {communityRecipe.creator.username}
           </span>
         )}
 
@@ -90,44 +58,34 @@ const RecipeCard = ({ recipe, onDelete, onTagClick, onShare, showCreator = false
               </span>
             ))}
             {remainingTagsCount > 0 && (
-              <span className="badge badge-ghost badge-sm">
-                +{remainingTagsCount}
-              </span>
+              <span className="badge badge-ghost badge-sm">+{remainingTagsCount}</span>
             )}
           </div>
         )}
 
         <p className="text-sm text-base-content/60 mt-2">{dateText}</p>
 
-        {(canEdit || canDelete || onShare) && (
+        {(canEdit || canDelete || handleShare) && (
           <div className="card-actions justify-end mt-2">
-            {onShare && (
-              <button
-                className="btn btn-ghost btn-sm"
-                onClick={(e) => { e.stopPropagation(); onShare(recipe); }}
-              >
+            {handleShare && (
+              <button className="btn btn-ghost btn-sm" onClick={handleShare}>
                 <FaShare />
               </button>
             )}
             {canEdit && (
-              <button
-                className="btn btn-ghost btn-sm"
-                onClick={handleEdit}
-              >
+              <button className="btn btn-ghost btn-sm" onClick={handleEdit}>
                 <FaEdit />
               </button>
             )}
             {canDelete && (
-              <button
-                className="btn btn-ghost btn-sm text-error"
-                onClick={handleDelete}
-              >
+              <button className="btn btn-ghost btn-sm text-error" onClick={handleDelete}>
                 <FaTrash />
               </button>
             )}
           </div>
         )}
       </div>
+      {ConfirmDialog}
     </div>
   );
 };

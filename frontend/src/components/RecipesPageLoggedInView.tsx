@@ -1,13 +1,14 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FaPlus, FaTh, FaList } from "react-icons/fa";
-import { RecipeListItem, RecipesResponse } from "../models/recipe";
+import { RecipeListItem } from "../models/recipe";
 import APIManager from "../network/api";
 import RecipeCard from "./recipes/RecipeCard";
 import RecipeListRow from "./recipes/RecipeListRow";
 import RecipeFilters from "./recipes/RecipeFilters";
 import { SharePersonalRecipeModal } from "./share";
+import { usePaginatedList } from "../hooks/usePaginatedList";
 
 type ViewMode = "card" | "list";
 
@@ -17,11 +18,6 @@ const RecipesPageLoggedInView = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [recipes, setRecipes] = useState<RecipeListItem[]>([]);
-  const [pagination, setPagination] = useState<RecipesResponse["pagination"] | null>(null);
-  const [recipesLoading, setRecipesLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [showRecipesLoadingError, setShowRecipesLoadingError] = useState(false);
   const [shareRecipe, setShareRecipe] = useState<RecipeListItem | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem("recipesViewMode");
@@ -46,41 +42,21 @@ const RecipesPageLoggedInView = () => {
     [ingredientsParam]
   );
 
-  const loadRecipes = useCallback(async (offset: number = 0, append: boolean = false) => {
-    try {
-      if (!append) {
-        setShowRecipesLoadingError(false);
-        setRecipesLoading(true);
-      } else {
-        setLoadingMore(true);
-      }
-
-      const response = await APIManager.getRecipes({
-        limit: RECIPES_PER_PAGE,
-        offset,
+  const fetchRecipes = useCallback(
+    (params: { limit: number; offset: number }) =>
+      APIManager.getRecipes({
+        ...params,
         search: searchFilter || undefined,
         tags: tagsFilter.length > 0 ? tagsFilter : undefined,
         ingredients: ingredientsFilter.length > 0 ? ingredientsFilter : undefined,
-      });
+      }),
+    [searchFilter, tagsFilter, ingredientsFilter]
+  );
 
-      if (append) {
-        setRecipes((prev) => [...prev, ...response.data]);
-      } else {
-        setRecipes(response.data);
-      }
-      setPagination(response.pagination);
-    } catch (error) {
-      console.error("Error loading recipes:", error);
-      setShowRecipesLoadingError(true);
-    } finally {
-      setRecipesLoading(false);
-      setLoadingMore(false);
-    }
-  }, [searchFilter, tagsFilter, ingredientsFilter]);
-
-  useEffect(() => {
-    loadRecipes(0, false);
-  }, [loadRecipes]);
+  const {
+    data: recipes, pagination, isLoading: recipesLoading, isLoadingMore: loadingMore,
+    error: showRecipesLoadingError, loadMore: handleLoadMore, setData: setRecipes, setPagination,
+  } = usePaginatedList(fetchRecipes, RECIPES_PER_PAGE, [fetchRecipes]);
 
   const handleSearchChange = (search: string) => {
     const params = new URLSearchParams(searchParams);
@@ -120,12 +96,6 @@ const RecipesPageLoggedInView = () => {
 
   const handleResetFilters = () => {
     setSearchParams({});
-  };
-
-  const handleLoadMore = () => {
-    if (pagination?.hasMore && !loadingMore) {
-      loadRecipes(pagination.offset + pagination.limit, true);
-    }
   };
 
   const handleShareRecipe = (recipe: RecipeListItem) => {
