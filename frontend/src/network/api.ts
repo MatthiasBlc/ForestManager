@@ -9,6 +9,20 @@ import { ConflictError, UnauthorizedError } from "../errors/http_errors";
 const apiUrl = import.meta.env.VITE_BACKEND_URL;
 const API = axios.create({ withCredentials: true, baseURL: apiUrl });
 
+function buildQueryString(params: Record<string, string | number | string[] | undefined>): string {
+  const searchParams = new URLSearchParams();
+  for (const [key, val] of Object.entries(params)) {
+    if (val === undefined) continue;
+    if (Array.isArray(val)) {
+      if (val.length > 0) searchParams.set(key, val.join(","));
+    } else {
+      searchParams.set(key, val.toString());
+    }
+  }
+  const qs = searchParams.toString();
+  return qs ? `?${qs}` : "";
+}
+
 API.interceptors.request.use((config) => {
   config.headers["Content-Type"] = "application/json";
   return config;
@@ -16,7 +30,6 @@ API.interceptors.request.use((config) => {
 
 // Utility function to handle API errors safely
 function handleApiError(error: AxiosError<{ error?: string }>): never {
-  console.error(error);
   if (!error.response) {
     throw new Error("Network error - please check your connection");
   }
@@ -27,8 +40,27 @@ function handleApiError(error: AxiosError<{ error?: string }>): never {
     throw new ConflictError(error.response.data?.error || "Conflict");
   }
   throw new Error(
-    `Request failed with status: ${error.response.status} message ${error.response.data?.error || "Unknown error"}`
+    error.response.data?.error || `Request failed (${error.response.status})`
   );
+}
+
+// Custom error handler with status-specific fallback messages
+function handleApiErrorWith(
+  overrides: Record<number, string | typeof ConflictError | typeof UnauthorizedError>,
+): (error: AxiosError<{ error?: string }>) => never {
+  return (error: AxiosError<{ error?: string }>) => {
+    const status = error.response?.status;
+    const msg = error.response?.data?.error;
+
+    if (status && overrides[status]) {
+      const override = overrides[status];
+      if (override === ConflictError) throw new ConflictError(msg || "Conflict");
+      if (override === UnauthorizedError) throw new UnauthorizedError(msg || "Unauthorized");
+      throw new Error(msg || override);
+    }
+
+    return handleApiError(error);
+  };
 }
 
 
@@ -67,34 +99,20 @@ export default class APIManager {
   // --------------- Recipes ---------------
 
   static async getRecipes(params: GetRecipesParams = {}): Promise<RecipesResponse> {
-    const queryParams = new URLSearchParams();
-    if (params.limit) queryParams.set("limit", params.limit.toString());
-    if (params.offset) queryParams.set("offset", params.offset.toString());
-    if (params.tags && params.tags.length > 0) queryParams.set("tags", params.tags.join(","));
-    if (params.ingredients && params.ingredients.length > 0) queryParams.set("ingredients", params.ingredients.join(","));
-    if (params.search) queryParams.set("search", params.search);
-
-    const queryString = queryParams.toString();
-    const url = `/api/recipes${queryString ? `?${queryString}` : ""}`;
-
-    const response = await API.get(url).catch(handleApiError);
+    const qs = buildQueryString({
+      limit: params.limit,
+      offset: params.offset,
+      tags: params.tags,
+      ingredients: params.ingredients,
+      search: params.search,
+    });
+    const response = await API.get(`/api/recipes${qs}`).catch(handleApiError);
     return response.data;
   }
 
   static async getRecipe(recipeId: string): Promise<RecipeDetail> {
     const response = await API.get(`/api/recipes/${recipeId}`)
-      .catch(error => {
-        if (!error.response) {
-          throw new Error("Network error - please check your connection");
-        }
-        if (error.response.status === 404) {
-          throw new Error("Recipe not found");
-        }
-        if (error.response.status === 403) {
-          throw new Error("Cannot access this recipe");
-        }
-        return handleApiError(error);
-      });
+      .catch(handleApiErrorWith({ 404: "Recipe not found", 403: "Cannot access this recipe" }));
     return response.data;
   }
 
@@ -117,17 +135,14 @@ export default class APIManager {
   // --------------- Community Recipes ---------------
 
   static async getCommunityRecipes(communityId: string, params: GetRecipesParams = {}): Promise<CommunityRecipesResponse> {
-    const queryParams = new URLSearchParams();
-    if (params.limit) queryParams.set("limit", params.limit.toString());
-    if (params.offset) queryParams.set("offset", params.offset.toString());
-    if (params.tags && params.tags.length > 0) queryParams.set("tags", params.tags.join(","));
-    if (params.ingredients && params.ingredients.length > 0) queryParams.set("ingredients", params.ingredients.join(","));
-    if (params.search) queryParams.set("search", params.search);
-
-    const queryString = queryParams.toString();
-    const url = `/api/communities/${communityId}/recipes${queryString ? `?${queryString}` : ""}`;
-
-    const response = await API.get(url).catch(handleApiError);
+    const qs = buildQueryString({
+      limit: params.limit,
+      offset: params.offset,
+      tags: params.tags,
+      ingredients: params.ingredients,
+      search: params.search,
+    });
+    const response = await API.get(`/api/communities/${communityId}/recipes${qs}`).catch(handleApiError);
     return response.data;
   }
 
@@ -147,12 +162,7 @@ export default class APIManager {
 
   static async createProposal(recipeId: string, proposal: ProposalInput): Promise<Proposal> {
     const response = await API.post(`/api/recipes/${recipeId}/proposals`, JSON.stringify(proposal))
-      .catch((error: AxiosError<{ error?: string }>) => {
-        if (error.response?.status === 400) {
-          throw new Error(error.response.data?.error || "Cannot create proposal");
-        }
-        return handleApiError(error);
-      });
+      .catch(handleApiErrorWith({ 400: "Cannot create proposal" }));
     return response.data;
   }
 
@@ -163,26 +173,13 @@ export default class APIManager {
 
   static async acceptProposal(proposalId: string): Promise<Proposal> {
     const response = await API.post(`/api/proposals/${proposalId}/accept`)
-      .catch((error: AxiosError<{ error?: string }>) => {
-        if (error.response?.status === 409) {
-          throw new ConflictError(error.response.data?.error || "Recipe has been modified");
-        }
-        if (error.response?.status === 400) {
-          throw new Error(error.response.data?.error || "Cannot accept proposal");
-        }
-        return handleApiError(error);
-      });
+      .catch(handleApiErrorWith({ 409: ConflictError, 400: "Cannot accept proposal" }));
     return response.data;
   }
 
   static async rejectProposal(proposalId: string): Promise<RejectProposalResponse> {
     const response = await API.post(`/api/proposals/${proposalId}/reject`)
-      .catch((error: AxiosError<{ error?: string }>) => {
-        if (error.response?.status === 400) {
-          throw new Error(error.response.data?.error || "Cannot reject proposal");
-        }
-        return handleApiError(error);
-      });
+      .catch(handleApiErrorWith({ 400: "Cannot reject proposal" }));
     return response.data;
   }
 
@@ -191,15 +188,7 @@ export default class APIManager {
 
   static async shareRecipe(recipeId: string, targetCommunityId: string): Promise<RecipeDetail> {
     const response = await API.post(`/api/recipes/${recipeId}/share`, JSON.stringify({ targetCommunityId }))
-      .catch((error: AxiosError<{ error?: string }>) => {
-        if (error.response?.status === 403) {
-          throw new Error(error.response.data?.error || "Cannot share this recipe");
-        }
-        if (error.response?.status === 400) {
-          throw new Error(error.response.data?.error || "Invalid share request");
-        }
-        return handleApiError(error);
-      });
+      .catch(handleApiErrorWith({ 403: "Cannot share this recipe", 400: "Invalid share request" }));
     return response.data;
   }
 
@@ -208,15 +197,7 @@ export default class APIManager {
 
   static async publishToCommunities(recipeId: string, communityIds: string[]): Promise<{ data: { id: string; title: string; communityId: string; community: { id: string; name: string } }[] }> {
     const response = await API.post(`/api/recipes/${recipeId}/publish`, JSON.stringify({ communityIds }))
-      .catch((error: AxiosError<{ error?: string }>) => {
-        if (error.response?.status === 403) {
-          throw new Error(error.response.data?.error || "Cannot publish this recipe");
-        }
-        if (error.response?.status === 400) {
-          throw new Error(error.response.data?.error || "Invalid publish request");
-        }
-        return handleApiError(error);
-      });
+      .catch(handleApiErrorWith({ 403: "Cannot publish this recipe", 400: "Invalid publish request" }));
     return response.data;
   }
 
@@ -229,13 +210,8 @@ export default class APIManager {
   // --------------- Variants ---------------
 
   static async getRecipeVariants(recipeId: string, limit?: number, offset?: number): Promise<VariantsResponse> {
-    const queryParams = new URLSearchParams();
-    if (limit) queryParams.set("limit", limit.toString());
-    if (offset) queryParams.set("offset", offset.toString());
-    const queryString = queryParams.toString();
-    const url = `/api/recipes/${recipeId}/variants${queryString ? `?${queryString}` : ""}`;
-
-    const response = await API.get(url).catch(handleApiError);
+    const qs = buildQueryString({ limit, offset });
+    const response = await API.get(`/api/recipes/${recipeId}/variants${qs}`).catch(handleApiError);
     return response.data;
   }
 
@@ -243,14 +219,8 @@ export default class APIManager {
   // --------------- Tags ---------------
 
   static async searchTags(search: string = "", limit: number = 20): Promise<TagSearchResult[]> {
-    const queryParams = new URLSearchParams();
-    if (search) queryParams.set("search", search);
-    if (limit) queryParams.set("limit", limit.toString());
-
-    const queryString = queryParams.toString();
-    const url = `/api/tags${queryString ? `?${queryString}` : ""}`;
-
-    const response = await API.get(url).catch(handleApiError);
+    const qs = buildQueryString({ search: search || undefined, limit });
+    const response = await API.get(`/api/tags${qs}`).catch(handleApiError);
     return response.data.data;
   }
 
@@ -258,14 +228,8 @@ export default class APIManager {
   // --------------- Ingredients ---------------
 
   static async searchIngredients(search: string = "", limit: number = 20): Promise<IngredientSearchResult[]> {
-    const queryParams = new URLSearchParams();
-    if (search) queryParams.set("search", search);
-    if (limit) queryParams.set("limit", limit.toString());
-
-    const queryString = queryParams.toString();
-    const url = `/api/ingredients${queryString ? `?${queryString}` : ""}`;
-
-    const response = await API.get(url).catch(handleApiError);
+    const qs = buildQueryString({ search: search || undefined, limit });
+    const response = await API.get(`/api/ingredients${qs}`).catch(handleApiError);
     return response.data.data;
   }
 
@@ -399,48 +363,22 @@ export default class APIManager {
 
   static async adminLogin(email: string, password: string): Promise<AdminLoginResponse> {
     const response = await API.post("/api/admin/auth/login", JSON.stringify({ email, password }))
-      .catch((error: AxiosError<{ error?: string }>) => {
-        if (error.response?.status === 401) {
-          throw new UnauthorizedError(error.response.data.error);
-        } else if (error.response?.status === 429) {
-          throw new Error(error.response.data.error || "Too many login attempts");
-        } else {
-          throw new Error(error.response?.data?.error || "Login failed");
-        }
-      });
+      .catch(handleApiErrorWith({ 401: UnauthorizedError, 429: "Too many login attempts" }));
     return response.data;
   }
 
   static async adminVerifyTotp(code: string): Promise<AdminTotpResponse> {
     const response = await API.post("/api/admin/auth/totp/verify", JSON.stringify({ code }))
-      .catch((error: AxiosError<{ error?: string }>) => {
-        if (error.response?.status === 401) {
-          throw new UnauthorizedError(error.response.data.error);
-        } else if (error.response?.status === 429) {
-          throw new Error(error.response.data.error || "Too many attempts");
-        } else {
-          throw new Error(error.response?.data?.error || "TOTP verification failed");
-        }
-      });
+      .catch(handleApiErrorWith({ 401: UnauthorizedError, 429: "Too many attempts" }));
     return response.data;
   }
 
   static async adminLogout(): Promise<void> {
-    await API.post("/api/admin/auth/logout")
-      .catch((error: AxiosError<{ error?: string }>) => {
-        throw new Error(error.response?.data?.error || "Logout failed");
-      });
+    await API.post("/api/admin/auth/logout").catch(handleApiError);
   }
 
   static async getLoggedInAdmin(): Promise<AdminUser> {
-    const response = await API.get("/api/admin/auth/me")
-      .catch((error: AxiosError<{ error?: string }>) => {
-        if (error.response?.status === 401) {
-          throw new UnauthorizedError(error.response.data.error);
-        } else {
-          throw new Error(error.response?.data?.error || "Failed to get admin info");
-        }
-      });
+    const response = await API.get("/api/admin/auth/me").catch(handleApiError);
     return response.data.admin;
   }
 
@@ -448,14 +386,7 @@ export default class APIManager {
   // --------------- Admin Dashboard ---------------
 
   static async getAdminDashboardStats(): Promise<DashboardStats> {
-    const response = await API.get("/api/admin/dashboard/stats")
-      .catch((error: AxiosError<{ error?: string }>) => {
-        if (error.response?.status === 401) {
-          throw new UnauthorizedError(error.response.data.error);
-        } else {
-          throw new Error(error.response?.data?.error || "Failed to load dashboard");
-        }
-      });
+    const response = await API.get("/api/admin/dashboard/stats").catch(handleApiError);
     return response.data;
   }
 
@@ -463,26 +394,14 @@ export default class APIManager {
   // --------------- Activity Feed ---------------
 
   static async getCommunityActivity(communityId: string, params: { limit?: number; offset?: number } = {}): Promise<ActivityResponse> {
-    const queryParams = new URLSearchParams();
-    if (params.limit) queryParams.set("limit", params.limit.toString());
-    if (params.offset) queryParams.set("offset", params.offset.toString());
-
-    const queryString = queryParams.toString();
-    const url = `/api/communities/${communityId}/activity${queryString ? `?${queryString}` : ""}`;
-
-    const response = await API.get(url).catch(handleApiError);
+    const qs = buildQueryString({ limit: params.limit, offset: params.offset });
+    const response = await API.get(`/api/communities/${communityId}/activity${qs}`).catch(handleApiError);
     return response.data;
   }
 
   static async getMyActivity(params: { limit?: number; offset?: number } = {}): Promise<ActivityResponse> {
-    const queryParams = new URLSearchParams();
-    if (params.limit) queryParams.set("limit", params.limit.toString());
-    if (params.offset) queryParams.set("offset", params.offset.toString());
-
-    const queryString = queryParams.toString();
-    const url = `/api/users/me/activity${queryString ? `?${queryString}` : ""}`;
-
-    const response = await API.get(url).catch(handleApiError);
+    const qs = buildQueryString({ limit: params.limit, offset: params.offset });
+    const response = await API.get(`/api/users/me/activity${qs}`).catch(handleApiError);
     return response.data;
   }
 

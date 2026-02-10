@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FaBell, FaCheck, FaTimes } from "react-icons/fa";
 import { ReceivedInvite } from "../../models/community";
 import APIManager from "../../network/api";
+import { useClickOutside } from "../../hooks/useClickOutside";
 
 const POLL_INTERVAL = 60000;
 
@@ -41,15 +42,7 @@ const NotificationDropdown = () => {
     return () => clearInterval(interval);
   }, [fetchInvites]);
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  useClickOutside(menuRef, useCallback(() => setIsOpen(false), []));
 
   const handleOpen = () => {
     setIsOpen(!isOpen);

@@ -9,10 +9,10 @@ Derniere mise a jour : 2026-02-10
 | Backend P1 (fondations)   | 11     | 10    | 1      |
 | Backend P2 (services)     | 5      | 5     | 0      |
 | Backend P3 (type safety)  | 6      | 6     | 0      |
-| Frontend P1 (hooks/utils) | 6      | 0     | 6      |
+| Frontend P1 (hooks/utils) | 6      | 6     | 0      |
 | Frontend P2 (composants)  | 6      | 0     | 6      |
 | Frontend P3 (qualite)     | 7      | 0     | 7      |
-| **TOTAL**                 | **41** | **21** | **20** |
+| **TOTAL**                 | **41** | **27** | **14** |
 
 ---
 
@@ -49,12 +49,12 @@ Derniere mise a jour : 2026-02-10
 
 ## Frontend - Priorite 1 (Hooks & utils)
 
-- [ ] F1.1 - Creer hook useClickOutside
-- [ ] F1.2 - Creer hook useDebounce
-- [ ] F1.3 - Creer utilitaire buildQueryString
-- [ ] F1.4 - Centraliser le formatage de dates
-- [ ] F1.5 - Supprimer dead code (Recipe.tsx, AddEditRecipeDialog.tsx, CSS modules)
-- [ ] F1.6 - Standardiser error handling dans api.ts
+- [x] F1.1 - Creer hook useClickOutside
+- [x] F1.2 - Creer hook useDebouncedEffect
+- [x] F1.3 - Creer utilitaire buildQueryString
+- [x] F1.4 - Centraliser le formatage de dates
+- [x] F1.5 - Supprimer dead code (Recipe.tsx, AddEditRecipeDialog.tsx, CSS modules)
+- [x] F1.6 - Standardiser error handling dans api.ts
 
 ## Frontend - Priorite 2 (Composants)
 
@@ -122,7 +122,7 @@ Derniere mise a jour : 2026-02-10
 - proposals.ts: 616 -> 434 (-30%)
 - recipeShare.ts: 569 -> 262 (-54%)
 
-**Tests:** 332/332 passent apres modifications.
+**Tests:** 332/332 backend passent apres modifications.
 
 ### Session 4 - 2026-02-10
 
@@ -134,6 +134,23 @@ Derniere mise a jour : 2026-02-10
 - B3.5: Ajoute `.trim()` sur email/username/userId dans invites.ts createInvite
 - B3.6: Applique parsePagination/buildPaginationMeta dans admin activityController.ts
 
-**Tests:** 332/332 passent apres modifications.
+**Tests:** 332/332 backend passent apres modifications.
+
+### Session 5 - 2026-02-10
+
+**F1 (Hooks & utils) complete:**
+
+**Fichiers crees:**
+- `frontend/src/hooks/useClickOutside.ts` - hook reutilisable pour fermer dropdowns au clic exterieur
+- `frontend/src/hooks/useDebouncedEffect.ts` - hook reutilisable pour debounce dans useEffect
+
+**F1.1:** Applique useClickOutside dans 6 composants (IngredientList, TagSelector, IngredientSelector, VariantsDropdown, NotificationDropdown, NavBarLoggedInView)
+**F1.2:** Applique useDebouncedEffect dans 3 composants (IngredientList, TagSelector, IngredientSelector). InviteUserModal avait deja un pattern inline plus simple (setTimeout dans useEffect), non modifie.
+**F1.3:** Cree `buildQueryString()` dans api.ts, remplace 7 blocs URLSearchParams manuels
+**F1.4:** Ajoute `formatDateShort()` dans format.Date.ts, remplace implementations locales dans VariantsDropdown et ProposalsList
+**F1.5:** Supprime 6 fichiers dead code: Recipe.tsx, AddEditRecipeDialog.tsx, Recipe.module.css, RecipesPage.module.css, App.module.css, utils.module.css
+**F1.6:** Cree `handleApiErrorWith()` factory dans api.ts, remplace 11 error handlers inline. Supprime aussi `console.error` du handler generique.
+
+**Tests:** 332/332 backend + 167/167 frontend passent.
 
 ---

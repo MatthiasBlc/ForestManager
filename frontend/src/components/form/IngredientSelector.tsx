@@ -1,7 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 import { FaTimes } from "react-icons/fa";
 import APIManager from "../../network/api";
 import { IngredientSearchResult } from "../../models/recipe";
+import { useClickOutside } from "../../hooks/useClickOutside";
+import { useDebouncedEffect } from "../../hooks/useDebouncedEffect";
 
 interface IngredientSelectorProps {
   value: string[];
@@ -18,50 +20,19 @@ const IngredientSelector = ({
   const [suggestions, setSuggestions] = useState<IngredientSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const searchIngredients = useCallback(async (search: string) => {
-    setIsLoading(true);
-    try {
-      const results = await APIManager.searchIngredients(search.trim(), 10);
-      setSuggestions(results.filter((ingredient) => !value.includes(ingredient.name)));
-    } catch (error) {
-      console.error("Error searching ingredients:", error);
-      setSuggestions([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [value]);
-
-  useEffect(() => {
+  useDebouncedEffect(() => {
     if (!showDropdown) return;
 
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
+    setIsLoading(true);
+    APIManager.searchIngredients(inputValue.trim(), 10)
+      .then((results) => setSuggestions(results.filter((ingredient) => !value.includes(ingredient.name))))
+      .catch(() => setSuggestions([]))
+      .finally(() => setIsLoading(false));
+  }, inputValue ? 300 : 0, [inputValue, value, showDropdown]);
 
-    debounceRef.current = setTimeout(() => {
-      searchIngredients(inputValue);
-    }, inputValue ? 300 : 0);
-
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-    };
-  }, [inputValue, searchIngredients, showDropdown]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setShowDropdown(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  useClickOutside(containerRef, useCallback(() => setShowDropdown(false), []));
 
   const addIngredient = (ingredientName: string) => {
     const normalizedIngredient = ingredientName.trim().toLowerCase();

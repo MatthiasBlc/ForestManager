@@ -4,6 +4,7 @@ import { FaCheck, FaTimes, FaUser, FaClock } from "react-icons/fa";
 import APIManager from "../../network/api";
 import { Proposal } from "../../models/recipe";
 import { ConflictError } from "../../errors/http_errors";
+import { formatDate } from "../../utils/format.Date";
 
 interface ProposalsListProps {
   recipeId: string;
@@ -66,16 +67,6 @@ const ProposalsList = ({ recipeId, onProposalDecided }: ProposalsListProps) => {
     } finally {
       setProcessingId(null);
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   if (isLoading) {

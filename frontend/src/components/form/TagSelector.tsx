@@ -1,7 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 import { FaTimes, FaPlus } from "react-icons/fa";
 import APIManager from "../../network/api";
 import { TagSearchResult } from "../../models/recipe";
+import { useClickOutside } from "../../hooks/useClickOutside";
+import { useDebouncedEffect } from "../../hooks/useDebouncedEffect";
 
 interface TagSelectorProps {
   value: string[];
@@ -20,50 +22,19 @@ const TagSelector = ({
   const [suggestions, setSuggestions] = useState<TagSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const searchTags = useCallback(async (search: string) => {
-    setIsLoading(true);
-    try {
-      const results = await APIManager.searchTags(search.trim(), 10);
-      setSuggestions(results.filter((tag) => !value.includes(tag.name)));
-    } catch (error) {
-      console.error("Error searching tags:", error);
-      setSuggestions([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [value]);
-
-  useEffect(() => {
+  useDebouncedEffect(() => {
     if (!showDropdown) return;
 
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
+    setIsLoading(true);
+    APIManager.searchTags(inputValue.trim(), 10)
+      .then((results) => setSuggestions(results.filter((tag) => !value.includes(tag.name))))
+      .catch(() => setSuggestions([]))
+      .finally(() => setIsLoading(false));
+  }, inputValue ? 300 : 0, [inputValue, value, showDropdown]);
 
-    debounceRef.current = setTimeout(() => {
-      searchTags(inputValue);
-    }, inputValue ? 300 : 0);
-
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-    };
-  }, [inputValue, searchTags, showDropdown]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setShowDropdown(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  useClickOutside(containerRef, useCallback(() => setShowDropdown(false), []));
 
   const addTag = (tagName: string) => {
     const normalizedTag = tagName.trim().toLowerCase();

@@ -1,7 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 import { FaPlus, FaTimes } from "react-icons/fa";
 import APIManager from "../../network/api";
 import { IngredientSearchResult } from "../../models/recipe";
+import { useClickOutside } from "../../hooks/useClickOutside";
+import { useDebouncedEffect } from "../../hooks/useDebouncedEffect";
 
 export interface IngredientInput {
   name: string;
@@ -24,53 +26,23 @@ const IngredientRow = ({ ingredient, index, onUpdate, onRemove }: IngredientRowP
   const [suggestions, setSuggestions] = useState<IngredientSearchResult[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const searchIngredients = useCallback(async (search: string) => {
-    if (!search.trim()) {
+  useDebouncedEffect(() => {
+    const search = ingredient.name.trim();
+    if (!search) {
       setSuggestions([]);
       return;
     }
 
     setIsLoading(true);
-    try {
-      const results = await APIManager.searchIngredients(search.trim(), 10);
-      setSuggestions(results);
-    } catch (error) {
-      console.error("Error searching ingredients:", error);
-      setSuggestions([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    APIManager.searchIngredients(search, 10)
+      .then(setSuggestions)
+      .catch(() => setSuggestions([]))
+      .finally(() => setIsLoading(false));
+  }, 300, [ingredient.name]);
 
-  useEffect(() => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-
-    debounceRef.current = setTimeout(() => {
-      searchIngredients(ingredient.name);
-    }, 300);
-
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-    };
-  }, [ingredient.name, searchIngredients]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-        setShowDropdown(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  useClickOutside(containerRef, useCallback(() => setShowDropdown(false), []));
 
   const selectSuggestion = (name: string) => {
     onUpdate(index, { ...ingredient, name });
