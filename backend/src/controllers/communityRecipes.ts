@@ -8,6 +8,7 @@ import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import { RECIPE_TAGS_SELECT } from "../util/prismaSelects";
 import { formatTags, formatIngredients } from "../util/responseFormatters";
 import { createCommunityRecipe as createCommunityRecipeService } from "../services/communityRecipeService";
+import appEvents from "../services/eventEmitter";
 
 interface IngredientInput {
   name: string;
@@ -67,6 +68,13 @@ export const createCommunityRecipe: RequestHandler<
       originRecipeId: recipe.originRecipeId,
       tags: formatTags(recipe.tags),
       ingredients: formatIngredients(recipe.ingredients),
+    });
+
+    appEvents.emitActivity({
+      type: "RECIPE_CREATED",
+      userId: authenticatedUserId,
+      communityId,
+      recipeId: result.community.id,
     });
 
     res.status(201).json({

@@ -630,10 +630,25 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 
 ## Phase 9: (Post-MVP) Ameliorations
 
-### 9.2 Ameliorations UX
+### 9.2 Notifications temps reel + Dark mode
 
-- [ ] Notifications en temps reel (WebSocket)
-- [ ] Mode sombre
+- [x] Dark mode : themes DaisyUI forest (dark) + winter (light)
+  - ThemeContext avec localStorage + system preference
+  - Anti-flash script inline dans index.html
+  - Toggle soleil/lune dans NavBar (user only, admin reste dark)
+  - Cleanup global.css (suppression couleurs hardcodees)
+  - 7 tests ThemeContext + 2 tests NavBar toggle
+- [x] WebSocket (Socket.IO) : events temps reel
+  - Backend : EventEmitter singleton + Socket.IO server avec auth session
+  - Middleware auth : wrappe session Express, rejette si pas de userId
+  - Rooms : user:{userId} + community:{communityId}
+  - Emissions depuis controllers : invites, members, proposals, recipes, share
+  - CSP : ajout ws:/wss: dans connectSrc
+  - Frontend : SocketContext (auto connect/disconnect), useSocketEvent, useCommunityRoom
+  - useNotificationToasts (INVITE_SENT, VARIANT_PROPOSED, PROPOSAL_ACCEPTED/REJECTED...)
+  - Remplacement polling 60s par socket events (NotificationDropdown, InvitationBadge)
+  - Auto-refresh ActivityFeed sur socket activity events
+  - 3 tests eventEmitter, 4 tests websocket integration, 2 tests SocketContext
 
 ### 9.3 Technique
 

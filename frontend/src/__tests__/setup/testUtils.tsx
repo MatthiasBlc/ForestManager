@@ -5,6 +5,8 @@ import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '../../contexts/AuthContext';
 import { AdminAuthProvider } from '../../contexts/AdminAuthContext';
+import { ThemeProvider } from '../../contexts/ThemeContext';
+import { SocketProvider } from '../../contexts/SocketContext';
 
 // Wrapper avec tous les providers necessaires
 interface WrapperProps {
@@ -13,26 +15,34 @@ interface WrapperProps {
 
 function AllProviders({ children }: WrapperProps) {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AdminAuthProvider>
-          {children}
-          <Toaster />
-        </AdminAuthProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <SocketProvider>
+            <AdminAuthProvider>
+              {children}
+              <Toaster />
+            </AdminAuthProvider>
+          </SocketProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 
 // Wrapper uniquement pour les routes user
 function UserProviders({ children }: WrapperProps) {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        {children}
-        <Toaster />
-      </AuthProvider>
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <SocketProvider>
+            {children}
+            <Toaster />
+          </SocketProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

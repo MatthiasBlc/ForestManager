@@ -8,6 +8,7 @@ import {
   publishRecipe,
   getRecipeFamilyCommunities,
 } from "../services/shareService";
+import appEvents from "../services/eventEmitter";
 
 interface ShareRecipeBody {
   targetCommunityId: string;
@@ -139,6 +140,20 @@ export const shareRecipe: RequestHandler<
       tags: formatTags(result.tags),
       ingredients: formatIngredients(result.ingredients),
     };
+
+    // Emit to both source and target communities
+    appEvents.emitActivity({
+      type: "RECIPE_SHARED",
+      userId: authenticatedUserId,
+      communityId: sourceRecipe.communityId,
+      recipeId,
+    });
+    appEvents.emitActivity({
+      type: "RECIPE_SHARED",
+      userId: authenticatedUserId,
+      communityId: targetCommunityId,
+      recipeId: result.id,
+    });
 
     res.status(201).json(responseData);
   } catch (error) {

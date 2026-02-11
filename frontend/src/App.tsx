@@ -5,6 +5,9 @@ import MainLayout from "./components/Layout/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { SocketProvider } from "./contexts/SocketContext";
+import { useNotificationToasts } from "./hooks/useNotificationToasts";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import RecipesPage from "./pages/RecipesPage";
@@ -30,10 +33,18 @@ import AdminActivityPage from "./pages/admin/AdminActivityPage";
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 import AdminLayout from "./components/admin/AdminLayout";
 
+function NotificationHandler() {
+  useNotificationToasts();
+  return null;
+}
+
 function App() {
   return (
+    <ThemeProvider>
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
+        <SocketProvider>
+        <NotificationHandler />
         <div className="min-h-screen flex flex-col">
           <NavBar />
           <ErrorBoundary>
@@ -234,8 +245,10 @@ function App() {
           <LoginModal />
           <Toaster position="top-right" />
         </div>
+        </SocketProvider>
       </AuthProvider>
     </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

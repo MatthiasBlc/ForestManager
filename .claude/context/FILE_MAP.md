@@ -68,7 +68,9 @@ admin/
 ### Services
 ```
 services/
-└── orphanHandling.ts  # Gestion recettes orphelines (auto-reject proposals)
+├── orphanHandling.ts  # Gestion recettes orphelines (auto-reject proposals)
+├── eventEmitter.ts    # AppEventEmitter singleton (emit activity events)
+└── socketServer.ts    # Socket.IO server init, auth middleware, room management
 ```
 
 ### Autres backend
@@ -89,7 +91,10 @@ __tests__/
 ├── setup/
 │   ├── globalSetup.ts    # Setup DB test
 │   └── testHelpers.ts    # createTestUser, cleanupTestData, etc.
+├── unit/
+│   └── eventEmitter.test.ts  # Event emitter unit tests
 └── integration/
+    ├── websocket.test.ts
     ├── activity.test.ts
     ├── auth.test.ts
     ├── recipes.test.ts
@@ -198,7 +203,9 @@ components/
 ```
 contexts/
 ├── AuthContext.tsx            # Auth user (session, login/logout)
-└── AdminAuthContext.tsx       # Auth admin (isole, 2FA)
+├── AdminAuthContext.tsx       # Auth admin (isole, 2FA)
+├── ThemeContext.tsx           # Theme (forest/winter), localStorage, system pref
+└── SocketContext.tsx          # Socket.IO client, auto-connect/disconnect
 
 network/
 └── api.ts                    # Client Axios, fonctions API
@@ -218,7 +225,11 @@ models/
 ```
 App.tsx                       # Routes React Router
 main.tsx                      # Entry point React
-hooks/                        # Custom hooks
+hooks/
+├── useSocketEvent.ts         # Subscribe/unsubscribe to socket events
+├── useCommunityRoom.ts       # Join/leave community socket room
+├── useNotificationToasts.ts  # Toast notifications from socket events
+└── ...                       # Other hooks
 utils/                        # Utilitaires
 errors/                       # Classes erreur
 assets/                       # Assets statiques
@@ -233,8 +244,11 @@ __tests__/
 │   ├── mswHandlers.ts        # MSW mock handlers
 │   └── testUtils.tsx         # Render utils avec providers
 └── unit/
-    ├── AuthContext.test.tsx
-    ├── AdminAuthContext.test.tsx
+    ├── contexts/
+    │   ├── AuthContext.test.tsx
+    │   ├── AdminAuthContext.test.tsx
+    │   ├── ThemeContext.test.tsx
+    │   └── SocketContext.test.tsx
     ├── LoginModal.test.tsx
     ├── Modal.test.tsx
     ├── SignUpPage.test.tsx

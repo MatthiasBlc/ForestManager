@@ -46,7 +46,7 @@ app.use(morgan("dev"));
 app.use(express.json());
 
 // User session middleware (cookie: connect.sid, duree: 1h)
-const userSession = session({
+export const userSession = session({
   name: "connect.sid",
   secret: env.SESSION_SECRET,
   resave: false,

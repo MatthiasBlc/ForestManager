@@ -14,7 +14,7 @@ export const helmetMiddleware = helmet({
       scriptSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"], // unsafe-inline pour les styles inline
       imgSrc: ["'self'", "data:"], // data: pour les QR codes base64
-      connectSrc: ["'self'"],
+      connectSrc: ["'self'", "ws:", "wss:"],
       fontSrc: ["'self'"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],

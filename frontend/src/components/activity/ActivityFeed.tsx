@@ -18,6 +18,7 @@ import {
 } from "react-icons/fa";
 import { ActivityItem, ActivityType } from "../../models/activity";
 import APIManager from "../../network/api";
+import { useSocketEvent } from "../../hooks/useSocketEvent";
 
 interface ActivityFeedProps {
   communityId?: string;
@@ -96,6 +97,21 @@ const ActivityFeed = ({ communityId, personal = false, limit = 20 }: ActivityFee
     setOffset(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [communityId, personal]);
+
+  // Auto-refresh on socket activity events matching this feed's community
+  const handleActivity = useCallback(
+    (data: { communityId?: string }) => {
+      if (communityId && data.communityId === communityId) {
+        loadActivities();
+      } else if (personal) {
+        loadActivities();
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [communityId, personal]
+  );
+
+  useSocketEvent("activity", handleActivity);
 
   const handleLoadMore = () => {
     loadActivities(true);
