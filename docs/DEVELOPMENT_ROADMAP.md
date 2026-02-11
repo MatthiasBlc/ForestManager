@@ -652,28 +652,28 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 
 ### 9.4 Frontend Admin - Pages de gestion
 
-- [ ] Layout admin avec sidebar navigation
+- [x] Layout admin avec sidebar navigation
   - Dashboard, Tags, Ingredients, Features, Communities, Activity
-- [ ] Page /admin/tags
+- [x] Page /admin/tags
   - Liste paginee avec recherche
   - Modal creation/edition tag
   - Bouton suppression avec confirmation
   - Fonctionnalite merge (selectionner 2+ tags)
-- [ ] Page /admin/ingredients
+- [x] Page /admin/ingredients
   - Liste paginee avec recherche
   - Modal creation/edition ingredient
   - Bouton suppression avec confirmation
   - Fonctionnalite merge (selectionner 2+ ingredients)
-- [ ] Page /admin/features
+- [x] Page /admin/features
   - Liste des features avec statut (actif/inactif)
   - Modal creation/edition feature
   - Toggle actif/inactif
-- [ ] Page /admin/communities
+- [x] Page /admin/communities
   - Liste paginee avec recherche
   - Detail communaute (membres, recettes, features)
   - Attribution/revocation features
   - Bouton suppression avec confirmation
-- [ ] Page /admin/activity
+- [x] Page /admin/activity
   - Liste paginee des logs d'activite admin
   - Filtres par type d'action, date
 
@@ -806,11 +806,12 @@ Phase 8 (Finitions MVP)
 
 ### Dependances a mettre a jour
 
-- [ ] Corriger les 3 vulnerabilites "high severity" (`npm audit fix`)
-- [ ] Migrer otplib de v12 vers v13
-- [ ] Mettre a jour ESLint vers une version supportee (v8.57.1 deprecie)
-- [ ] Migrer config Prisma de `package.json#prisma` vers `prisma.config.ts` (deprecie Prisma 7)
-- [ ] Remplacer `npm prune --production` par `--omit=dev` dans Dockerfile
+- [x] Corriger vulnerabilite axios frontend (`npm audit fix`)
+- [ ] Migrer otplib de v12 vers v13 (reporte: necessite Node >= 20 + ESM)
+- [x] Mettre a jour ESLint v8 -> v9 (flat config `eslint.config.mjs`)
+- [ ] Migrer config Prisma de `package.json#prisma` vers `prisma.config.ts` (reporte: seed non supporte en Prisma ~6.19)
+- [x] Remplacer `npm prune --production` par `--omit=dev` dans Dockerfile
+- [ ] Fix vulnerabilites npm restantes (dev deps: esbuild/vite/vitest, bcrypt/tar)
 
 ---
 
@@ -888,7 +889,8 @@ Lors de l'ajout d'une nouvelle fonctionnalite, inclure les tests suivants:
 | Backend Activity    | activity.test.ts                                                                            | ~15      |
 | Frontend Contexts   | AuthContext, AdminAuthContext                                                               | ~13      |
 | Frontend Auth       | LoginModal, Modal, SignUpPage, ProtectedRoute, NavBar                                       | ~25      |
-| Frontend Admin      | AdminProtectedRoute, AdminLoginPage, AdminDashboardPage, AdminLayout                        | ~21      |
+| Frontend Admin      | AdminProtectedRoute, AdminLoginPage, AdminDashboardPage, AdminLayout                        | ~19      |
+| Frontend Admin Pages| AdminTagsPage, AdminIngredientsPage, AdminFeaturesPage, AdminCommunitiesPage, AdminActivityPage | ~35  |
 | Frontend Recipes    | RecipeCard, RecipeFilters, TagSelector, IngredientList                                      | ~28      |
 | Frontend Pages      | HomePage, RecipesPage, MainLayout, Sidebar                                                  | ~25      |
 | Frontend Activity   | ActivityFeed.test.tsx                                                                       | ~8       |
@@ -897,4 +899,4 @@ Lors de l'ajout d'une nouvelle fonctionnalite, inclure les tests suivants:
 | Frontend Invitations| InviteCard, MembersList, InviteUserModal                                                    | ~16      |
 | Frontend Share      | ShareRecipeModal                                                                            | ~7       |
 | Frontend ErrorBoundary | ErrorBoundary.test.tsx                                                                    | ~2       |
-| **Total**           |                                                                                             | **~499** |
+| **Total**           |                                                                                             | **~534** |

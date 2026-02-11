@@ -133,8 +133,13 @@ pages/
 ├── PrivacyPage.tsx           # Politique confidentialite
 ├── NotFoundPage.tsx          # 404
 └── admin/
-    ├── AdminLoginPage.tsx    # Login admin 2FA
-    └── AdminDashboardPage.tsx # Dashboard admin
+    ├── AdminLoginPage.tsx         # Login admin 2FA
+    ├── AdminDashboardPage.tsx     # Dashboard admin (stats)
+    ├── AdminTagsPage.tsx          # CRUD + merge tags
+    ├── AdminIngredientsPage.tsx   # CRUD + merge ingredients
+    ├── AdminFeaturesPage.tsx      # CRUD features (code, name, isDefault)
+    ├── AdminCommunitiesPage.tsx   # Liste, detail, delete, grant/revoke features
+    └── AdminActivityPage.tsx      # Logs activite admin paginee
 ```
 
 ### Components
@@ -179,7 +184,7 @@ components/
 │   ├── IngredientSelector.tsx # Selecteur ingredients
 │   └── IngredientList.tsx    # Liste ingredients dynamique
 ├── admin/
-│   ├── AdminLayout.tsx       # Layout admin
+│   ├── AdminLayout.tsx       # Layout admin (sidebar + header + outlet)
 │   └── AdminProtectedRoute.tsx # Guard admin
 ├── AddEditRecipeDialog.tsx   # Dialog creation/edition
 ├── ErrorBoundary.tsx         # Error boundary React (crash → fallback UI)
@@ -249,7 +254,13 @@ __tests__/
     ├── HomePage.test.tsx
     ├── pages/
     │   ├── CommunitiesPage.test.tsx
-    │   └── CommunityDetailPage.test.tsx
+    │   ├── CommunityDetailPage.test.tsx
+    │   └── admin/
+    │       ├── AdminTagsPage.test.tsx
+    │       ├── AdminIngredientsPage.test.tsx
+    │       ├── AdminFeaturesPage.test.tsx
+    │       ├── AdminCommunitiesPage.test.tsx
+    │       └── AdminActivityPage.test.tsx
     └── components/
         ├── ActivityFeed.test.tsx
         ├── ErrorBoundary.test.tsx

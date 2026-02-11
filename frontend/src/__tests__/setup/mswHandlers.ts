@@ -634,6 +634,25 @@ export const handlers = [
     return HttpResponse.json({ message: 'Tag deleted' });
   }),
 
+  http.post(`${API_URL}/api/admin/tags/:id/merge`, async ({ request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, string>;
+    if (!body.targetId) {
+      return HttpResponse.json(
+        { error: 'ADMIN_TAG_004: Target ID required' },
+        { status: 400 }
+      );
+    }
+
+    return HttpResponse.json({ message: 'Tags merged' });
+  }),
+
   // =====================================
   // Admin Ingredients
   // =====================================
@@ -683,6 +702,67 @@ export const handlers = [
     };
 
     return HttpResponse.json({ ingredient: newIngredient }, { status: 201 });
+  }),
+
+  http.patch(`${API_URL}/api/admin/ingredients/:id`, async ({ params, request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const ingredient = mockIngredients.find(i => i.id === params.id);
+    if (!ingredient) {
+      return HttpResponse.json(
+        { error: 'ADMIN_ING_003: Ingredient not found' },
+        { status: 404 }
+      );
+    }
+
+    const body = await request.json() as Record<string, string>;
+
+    return HttpResponse.json({
+      ingredient: { ...ingredient, name: body.name?.toLowerCase().trim() || ingredient.name },
+    });
+  }),
+
+  http.delete(`${API_URL}/api/admin/ingredients/:id`, ({ params }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const ingredient = mockIngredients.find(i => i.id === params.id);
+    if (!ingredient) {
+      return HttpResponse.json(
+        { error: 'ADMIN_ING_003: Ingredient not found' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json({ message: 'Ingredient deleted' });
+  }),
+
+  http.post(`${API_URL}/api/admin/ingredients/:id/merge`, async ({ request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, string>;
+    if (!body.targetId) {
+      return HttpResponse.json(
+        { error: 'ADMIN_ING_004: Target ID required' },
+        { status: 400 }
+      );
+    }
+
+    return HttpResponse.json({ message: 'Ingredients merged' });
   }),
 
   // =====================================
@@ -736,6 +816,34 @@ export const handlers = [
     return HttpResponse.json({ feature: newFeature }, { status: 201 });
   }),
 
+  http.patch(`${API_URL}/api/admin/features/:id`, async ({ params, request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const feature = mockFeatures.find(f => f.id === params.id);
+    if (!feature) {
+      return HttpResponse.json(
+        { error: 'ADMIN_FEAT_003: Feature not found' },
+        { status: 404 }
+      );
+    }
+
+    const body = await request.json() as Record<string, unknown>;
+
+    return HttpResponse.json({
+      feature: {
+        ...feature,
+        name: (body.name as string) || feature.name,
+        description: body.description !== undefined ? body.description : feature.description,
+        isDefault: body.isDefault !== undefined ? body.isDefault : feature.isDefault,
+      },
+    });
+  }),
+
   // =====================================
   // Admin Communities
   // =====================================
@@ -786,8 +894,49 @@ export const handlers = [
         features: [
           { id: 'feat-1', code: 'MVP', name: 'MVP Feature', grantedAt: new Date().toISOString(), grantedBy: 'system', revokedAt: null },
         ],
+        updatedAt: new Date().toISOString(),
+        pendingInvites: 0,
       },
     });
+  }),
+
+  http.delete(`${API_URL}/api/admin/communities/:id`, ({ params }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const community = mockCommunities.find(c => c.id === params.id);
+    if (!community) {
+      return HttpResponse.json(
+        { error: 'ADMIN_COM_001: Community not found' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json({ message: 'Community deleted' });
+  }),
+
+  http.post(`${API_URL}/api/admin/communities/:communityId/features/:featureId`, () => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+    return HttpResponse.json({ message: 'Feature granted' });
+  }),
+
+  http.delete(`${API_URL}/api/admin/communities/:communityId/features/:featureId`, () => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+    return HttpResponse.json({ message: 'Feature revoked' });
   }),
 
   // =====================================
@@ -1133,13 +1282,14 @@ export const handlers = [
       filteredActivities = filteredActivities.filter(a => a.type === type);
     }
 
+    const remaining = Math.max(0, filteredActivities.length - offset - limit);
     return HttpResponse.json({
       activities: filteredActivities.slice(offset, offset + limit),
       pagination: {
         total: filteredActivities.length,
         limit,
         offset,
-        hasMore: offset + limit < filteredActivities.length,
+        remaining,
       },
     });
   }),

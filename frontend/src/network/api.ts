@@ -2,7 +2,7 @@ import axios, { AxiosError } from "axios";
 import { RecipeDetail, RecipesResponse, CommunityRecipesResponse, TagSearchResult, IngredientSearchResult, Proposal, ProposalsResponse, ProposalInput, VariantsResponse, RejectProposalResponse } from "../models/recipe";
 import { ActivityResponse } from "../models/activity";
 import { User } from "../models/user";
-import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats } from "../models/admin";
+import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats, AdminTag, AdminIngredient, AdminFeature, AdminCommunity, AdminCommunityDetail, AdminActivityResponse } from "../models/admin";
 import { CommunityListItem, CommunityDetail, CommunityMember, CommunityInvite, ReceivedInvite } from "../models/community";
 import { ConflictError, UnauthorizedError } from "../errors/http_errors";
 
@@ -402,6 +402,122 @@ export default class APIManager {
   static async getMyActivity(params: { limit?: number; offset?: number } = {}): Promise<ActivityResponse> {
     const qs = buildQueryString({ limit: params.limit, offset: params.offset });
     const response = await API.get(`/api/users/me/activity${qs}`).catch(handleApiError);
+    return response.data;
+  }
+
+
+  // --------------- Admin Tags ---------------
+
+  static async getAdminTags(search?: string): Promise<AdminTag[]> {
+    const qs = buildQueryString({ search });
+    const response = await API.get(`/api/admin/tags${qs}`).catch(handleApiError);
+    return response.data.tags;
+  }
+
+  static async createAdminTag(name: string): Promise<AdminTag> {
+    const response = await API.post("/api/admin/tags", JSON.stringify({ name }))
+      .catch(handleApiErrorWith({ 409: ConflictError }));
+    return response.data.tag;
+  }
+
+  static async updateAdminTag(id: string, name: string): Promise<AdminTag> {
+    const response = await API.patch(`/api/admin/tags/${id}`, JSON.stringify({ name }))
+      .catch(handleApiErrorWith({ 409: ConflictError }));
+    return response.data.tag;
+  }
+
+  static async deleteAdminTag(id: string): Promise<void> {
+    await API.delete(`/api/admin/tags/${id}`).catch(handleApiError);
+  }
+
+  static async mergeAdminTags(sourceId: string, targetId: string): Promise<void> {
+    await API.post(`/api/admin/tags/${sourceId}/merge`, JSON.stringify({ targetId })).catch(handleApiError);
+  }
+
+
+  // --------------- Admin Ingredients ---------------
+
+  static async getAdminIngredients(search?: string): Promise<AdminIngredient[]> {
+    const qs = buildQueryString({ search });
+    const response = await API.get(`/api/admin/ingredients${qs}`).catch(handleApiError);
+    return response.data.ingredients;
+  }
+
+  static async createAdminIngredient(name: string): Promise<AdminIngredient> {
+    const response = await API.post("/api/admin/ingredients", JSON.stringify({ name }))
+      .catch(handleApiErrorWith({ 409: ConflictError }));
+    return response.data.ingredient;
+  }
+
+  static async updateAdminIngredient(id: string, name: string): Promise<AdminIngredient> {
+    const response = await API.patch(`/api/admin/ingredients/${id}`, JSON.stringify({ name }))
+      .catch(handleApiErrorWith({ 409: ConflictError }));
+    return response.data.ingredient;
+  }
+
+  static async deleteAdminIngredient(id: string): Promise<void> {
+    await API.delete(`/api/admin/ingredients/${id}`).catch(handleApiError);
+  }
+
+  static async mergeAdminIngredients(sourceId: string, targetId: string): Promise<void> {
+    await API.post(`/api/admin/ingredients/${sourceId}/merge`, JSON.stringify({ targetId })).catch(handleApiError);
+  }
+
+
+  // --------------- Admin Features ---------------
+
+  static async getAdminFeatures(): Promise<AdminFeature[]> {
+    const response = await API.get("/api/admin/features").catch(handleApiError);
+    return response.data.features;
+  }
+
+  static async createAdminFeature(data: { code: string; name: string; description?: string; isDefault?: boolean }): Promise<AdminFeature> {
+    const response = await API.post("/api/admin/features", JSON.stringify(data))
+      .catch(handleApiErrorWith({ 409: ConflictError }));
+    return response.data.feature;
+  }
+
+  static async updateAdminFeature(id: string, data: { name?: string; description?: string; isDefault?: boolean }): Promise<AdminFeature> {
+    const response = await API.patch(`/api/admin/features/${id}`, JSON.stringify(data)).catch(handleApiError);
+    return response.data.feature;
+  }
+
+
+  // --------------- Admin Communities ---------------
+
+  static async getAdminCommunities(search?: string, includeDeleted?: boolean): Promise<AdminCommunity[]> {
+    const qs = buildQueryString({ search, includeDeleted: includeDeleted ? "true" : undefined });
+    const response = await API.get(`/api/admin/communities${qs}`).catch(handleApiError);
+    return response.data.communities;
+  }
+
+  static async getAdminCommunity(id: string): Promise<AdminCommunityDetail> {
+    const response = await API.get(`/api/admin/communities/${id}`).catch(handleApiError);
+    return response.data.community;
+  }
+
+  static async updateAdminCommunity(id: string, name: string): Promise<void> {
+    await API.patch(`/api/admin/communities/${id}`, JSON.stringify({ name })).catch(handleApiError);
+  }
+
+  static async deleteAdminCommunity(id: string): Promise<void> {
+    await API.delete(`/api/admin/communities/${id}`).catch(handleApiError);
+  }
+
+  static async grantFeature(communityId: string, featureId: string): Promise<void> {
+    await API.post(`/api/admin/communities/${communityId}/features/${featureId}`).catch(handleApiError);
+  }
+
+  static async revokeFeature(communityId: string, featureId: string): Promise<void> {
+    await API.delete(`/api/admin/communities/${communityId}/features/${featureId}`).catch(handleApiError);
+  }
+
+
+  // --------------- Admin Activity ---------------
+
+  static async getAdminActivity(params: { type?: string; limit?: number; offset?: number } = {}): Promise<AdminActivityResponse> {
+    const qs = buildQueryString({ type: params.type, limit: params.limit, offset: params.offset });
+    const response = await API.get(`/api/admin/activity${qs}`).catch(handleApiError);
     return response.data;
   }
 

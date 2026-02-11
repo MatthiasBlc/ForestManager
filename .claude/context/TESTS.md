@@ -40,7 +40,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~497 tests)
+## Inventaire des tests (~532 tests)
 
 ### Backend Integration (19 fichiers, ~332 tests)
 
@@ -66,7 +66,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | adminActivity.test.ts | Logs activite | 4 |
 | share.test.ts | Partage inter-communautes + publish + sync | 28 |
 
-### Frontend Unit (26 fichiers, ~165 tests)
+### Frontend Unit (31 fichiers, ~200 tests)
 
 | Fichier | Composant | Tests |
 |---------|-----------|-------|
@@ -79,8 +79,13 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | NavBar.test.tsx | Navigation | 4 |
 | AdminProtectedRoute.test.tsx | Guard admin | 4 |
 | AdminLoginPage.test.tsx | Page login admin | 8 |
-| AdminDashboardPage.test.tsx | Page dashboard | 6 |
+| AdminDashboardPage.test.tsx | Page dashboard | 4 |
 | AdminLayout.test.tsx | Layout admin | 3 |
+| pages/admin/AdminTagsPage.test.tsx | Page tags admin | 8 |
+| pages/admin/AdminIngredientsPage.test.tsx | Page ingredients admin | 8 |
+| pages/admin/AdminFeaturesPage.test.tsx | Page features admin | 6 |
+| pages/admin/AdminCommunitiesPage.test.tsx | Page communities admin | 8 |
+| pages/admin/AdminActivityPage.test.tsx | Page activity admin | 5 |
 | RecipeCard.test.tsx | Carte recette | 8 |
 | RecipeFilters.test.tsx | Filtres recettes | 8 |
 | TagSelector.test.tsx | Selecteur tags | 6 |

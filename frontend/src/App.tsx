@@ -22,6 +22,11 @@ import InvitationsPage from "./pages/InvitationsPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import AdminTagsPage from "./pages/admin/AdminTagsPage";
+import AdminIngredientsPage from "./pages/admin/AdminIngredientsPage";
+import AdminFeaturesPage from "./pages/admin/AdminFeaturesPage";
+import AdminCommunitiesPage from "./pages/admin/AdminCommunitiesPage";
+import AdminActivityPage from "./pages/admin/AdminActivityPage";
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 import AdminLayout from "./components/admin/AdminLayout";
 
@@ -177,6 +182,46 @@ function App() {
                   element={
                     <AdminProtectedRoute>
                       <AdminDashboardPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="tags"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminTagsPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="ingredients"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminIngredientsPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="features"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminFeaturesPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="communities"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminCommunitiesPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="activity"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminActivityPage />
                     </AdminProtectedRoute>
                   }
                 />

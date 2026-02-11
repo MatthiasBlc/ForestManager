@@ -24,7 +24,7 @@ COPY ./backend/src ./src/
 RUN npm run build
 
 # Prune dev dependencies
-RUN npm prune --production
+RUN npm prune --omit=dev
 
 # ========================================
 # Stage 2: Runtime

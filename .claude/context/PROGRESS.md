@@ -28,24 +28,29 @@
 | 8.1 | Qualite (toast, ErrorBoundary, refactoring recipes.ts, soft delete audit) | DONE |
 | 8.2 | Tests & Lint (499 tests, 0 lint errors frontend + backend) | DONE |
 | 8.3 | Documentation (README utilisateur + guide deploiement) | DONE |
+| 9.4 | Frontend Admin Pages (layout sidebar, 5 pages gestion, 35 tests) | DONE |
 
 ## MVP COMPLET
 
 Toutes les phases (0 a 8) sont terminees. Le MVP est fonctionnel.
+Phase 9.4 (admin frontend) ajoutee post-MVP.
+
+## Maintenance technique effectuee
+
+- [x] Remplacer `npm prune --production` par `--omit=dev` dans Dockerfile
+- [x] Mettre a jour ESLint v8 -> v9 (flat config `eslint.config.mjs`)
+- [ ] Migrer config Prisma vers `prisma.config.ts` (reporte: seed non supporte en Prisma ~6.19)
+- [x] Fix vulnerabilite npm axios (frontend)
+- [ ] Migrer otplib v12 -> v13 (necessite Node >= 20 + ESM, reporte)
+- [ ] Fix vulnerabilites npm restantes (dev deps: esbuild/vite/vitest, bcrypt/tar)
 
 ## Prochaines phases
 
 | Phase | Description | Prerequis |
 |-------|-------------|-----------|
-| 9 | Post-MVP (analytics, notifications, PWA, admin pages) | Phase 8 |
-
-## Maintenance technique en attente
-
-- [ ] Fix 3 vulnerabilites npm "high severity"
-- [ ] Migrer otplib v12 -> v13
-- [ ] Mettre a jour ESLint (v8.57.1 deprecie)
-- [ ] Migrer config Prisma vers prisma.config.ts (deprecie Prisma 7)
-- [ ] Remplacer `npm prune --production` par `--omit=dev` dans Dockerfile
+| 9.1 | Analytics (comptage vues, dashboard) | Phase 8 |
+| 9.2 | Ameliorations UX (recherche globale, notifications, PWA) | Phase 8 |
+| 9.3 | Technique (tests E2E, Swagger, monitoring) | Phase 8 |
 
 ## Resume de reprise
 
