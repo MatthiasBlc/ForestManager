@@ -48,9 +48,8 @@ Phase 9.4 (admin frontend) ajoutee post-MVP.
 
 | Phase | Description | Prerequis |
 |-------|-------------|-----------|
-| 9.1 | Analytics (comptage vues, dashboard) | Phase 8 |
-| 9.2 | Ameliorations UX (recherche globale, notifications, PWA) | Phase 8 |
-| 9.3 | Technique (tests E2E, Swagger, monitoring) | Phase 8 |
+| 9.2 | Ameliorations UX (notifications temps reel, mode sombre) | Phase 8 |
+| 9.3 | Technique (tests unitaires, logging structure) | Phase 8 |
 
 ## Resume de reprise
 

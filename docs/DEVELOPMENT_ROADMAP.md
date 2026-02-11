@@ -628,27 +628,17 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 
 ---
 
-## Phase 9: (Post-MVP) Analytics & Ameliorations
-
-### 9.1 Analytics
-
-- [ ] Comptage vues (RecipeView, RecipeAnalytics)
-- [ ] Affichage statistiques sur recettes
-- [ ] Dashboard analytics
+## Phase 9: (Post-MVP) Ameliorations
 
 ### 9.2 Ameliorations UX
 
-- [ ] Recherche globale
 - [ ] Notifications en temps reel (WebSocket)
 - [ ] Mode sombre
-- [ ] PWA / Offline support
 
 ### 9.3 Technique
 
 - [ ] Tests unitaires
-- [ ] Tests E2E
-- [ ] Documentation API (Swagger)
-- [ ] Monitoring / Logging
+- [ ] Logging structure (Winston/Pino)
 
 ### 9.4 Frontend Admin - Pages de gestion
 

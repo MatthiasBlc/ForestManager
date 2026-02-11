@@ -95,3 +95,25 @@ poivoir associer les ingrédients et articles à un shop favori.
 ## Multi langue ?
 
 passer le site en multilangue fr et EN ?
+
+## Tests E2E
+
+Tests end-to-end avec Playwright ou Cypress qui simulent un vrai navigateur : un utilisateur se connecte, cree une recette, invite un membre, etc. Teste toute la chaine (front -> API -> DB). Lourd a mettre en place (infra, CI, maintenance) mais detecte des bugs que les tests unitaires/integration ne voient pas.
+
+## Monitoring
+
+Metriques en production (temps de reponse, erreurs), alertes, dashboard type Grafana ou service comme Sentry pour tracker les erreurs en prod. Utile quand l'app est deployee et utilisee a plus grande echelle.
+
+## PWA / Offline support
+
+Service worker, manifest, cache des pages, installable sur mobile. Consultation des recettes sans connexion.
+
+## Recherche globale
+
+Barre de recherche unique (navbar) qui cherche simultanement dans les recettes, communautes, tags, ingredients, membres. Resultats groupes par type.
+
+## Analytics recettes
+
+Comptage vues (RecipeView, RecipeAnalytics)
+Affichage statistiques sur recettes
+Dashboard analytics utilisateur
