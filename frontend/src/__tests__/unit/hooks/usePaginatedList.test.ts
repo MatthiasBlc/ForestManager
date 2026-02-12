@@ -2,6 +2,10 @@ import { describe, it, expect, vi } from "vitest";
 import { renderHook, waitFor, act } from "@testing-library/react";
 import { usePaginatedList } from "../../../hooks/usePaginatedList";
 
+interface TestItem {
+  id: string;
+}
+
 describe("usePaginatedList", () => {
   it("should fetch initial data on mount", async () => {
     const fetchFn = vi.fn().mockResolvedValue({
@@ -9,7 +13,7 @@ describe("usePaginatedList", () => {
       pagination: { total: 10, limit: 2, offset: 0, hasMore: true },
     });
 
-    const { result } = renderHook(() => usePaginatedList(fetchFn, 2, []));
+    const { result } = renderHook(() => usePaginatedList<TestItem>(fetchFn, 2, []));
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -23,7 +27,7 @@ describe("usePaginatedList", () => {
   it("should start with isLoading=true", () => {
     const fetchFn = vi.fn().mockReturnValue(new Promise(() => {})); // never resolves
 
-    const { result } = renderHook(() => usePaginatedList(fetchFn, 10, []));
+    const { result } = renderHook(() => usePaginatedList<TestItem>(fetchFn, 10, []));
 
     expect(result.current.isLoading).toBe(true);
     expect(result.current.data).toEqual([]);
@@ -32,7 +36,7 @@ describe("usePaginatedList", () => {
   it("should set error on fetch failure", async () => {
     const fetchFn = vi.fn().mockRejectedValue(new Error("Network error"));
 
-    const { result } = renderHook(() => usePaginatedList(fetchFn, 10, []));
+    const { result } = renderHook(() => usePaginatedList<TestItem>(fetchFn, 10, []));
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -52,7 +56,7 @@ describe("usePaginatedList", () => {
         pagination: { total: 3, limit: 1, offset: 1, hasMore: true },
       });
 
-    const { result } = renderHook(() => usePaginatedList(fetchFn, 1, []));
+    const { result } = renderHook(() => usePaginatedList<TestItem>(fetchFn, 1, []));
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -76,7 +80,7 @@ describe("usePaginatedList", () => {
       pagination: { total: 1, limit: 10, offset: 0, hasMore: false },
     });
 
-    const { result } = renderHook(() => usePaginatedList(fetchFn, 10, []));
+    const { result } = renderHook(() => usePaginatedList<TestItem>(fetchFn, 10, []));
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
@@ -102,7 +106,7 @@ describe("usePaginatedList", () => {
       });
 
     const { result, rerender } = renderHook(
-      ({ deps }) => usePaginatedList(fetchFn, 10, deps),
+      ({ deps }) => usePaginatedList<TestItem>(fetchFn, 10, deps),
       { initialProps: { deps: [1] as unknown[] } }
     );
 

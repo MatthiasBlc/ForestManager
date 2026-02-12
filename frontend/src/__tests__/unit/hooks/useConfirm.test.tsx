@@ -21,11 +21,8 @@ describe("useConfirm", () => {
   it("should resolve true when confirmed", async () => {
     const { result } = renderHook(() => useConfirm());
 
-    let resolvedValue: boolean | undefined;
     act(() => {
-      result.current.confirm({ message: "Delete?" }).then((val) => {
-        resolvedValue = val;
-      });
+      result.current.confirm({ message: "Delete?" });
     });
 
     // Simulate confirm click - the handleConfirm is in the rendered JSX
