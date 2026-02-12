@@ -81,8 +81,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const logout = useCallback(async (): Promise<void> => {
     try {
       await APIManager.logout();
-    } catch (err) {
-      console.error("Logout error:", err);
+    } catch {
+      // Logout failure is non-critical - clear local state regardless
     } finally {
       setUser(null);
       setError(null);

@@ -1,9 +1,10 @@
-import { useEffect, useState, useRef, ReactNode } from "react";
+import { useEffect, useState, useRef, useCallback, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
 import { FaBook, FaPlus, FaBars, FaHome } from "react-icons/fa";
 import { CommunityListItem } from "../../models/community";
 import APIManager from "../../network/api";
+import { communityEvents } from "../../utils/communityEvents";
 
 interface SidebarProps {
   onNavigate?: () => void;
@@ -98,18 +99,22 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
   const location = useLocation();
   const [communities, setCommunities] = useState<CommunityListItem[]>([]);
 
-  useEffect(() => {
-    async function loadCommunities() {
-      try {
-        const response = await APIManager.getCommunities();
-        setCommunities(response.data);
-      } catch {
-        // Silently fail - sidebar communities are non-critical
-      }
+  const loadCommunities = useCallback(async () => {
+    try {
+      const response = await APIManager.getCommunities();
+      setCommunities(response.data);
+    } catch {
+      // Silently fail - sidebar communities are non-critical
     }
+  }, []);
 
+  useEffect(() => {
     loadCommunities();
-  }, [location.pathname]);
+  }, [location.pathname, loadCommunities]);
+
+  useEffect(() => {
+    return communityEvents.subscribe(loadCommunities);
+  }, [loadCommunities]);
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + "/");
@@ -118,7 +123,7 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
   return (
     <div className="flex flex-col h-full">
       {/* Header with toggle button - Desktop only */}
-      <div className={`hidden pointer-fine:flex p-3 border-b border-base-300 ${isCompact ? "justify-center" : "justify-between items-center"}`}>
+      <div className={`shrink-0 hidden pointer-fine:flex p-3 border-b border-base-300 ${isCompact ? "justify-center" : "justify-between items-center"}`}>
         {!isCompact && <span className="text-lg font-bold">Menu</span>}
         <button
           onClick={onToggleCompact}
@@ -131,12 +136,12 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
       </div>
 
       {/* Mobile header */}
-      <div className={`p-3 border-b border-base-300 pointer-fine:hidden ${isCompact ? "text-center" : ""}`}>
+      <div className={`shrink-0 p-3 border-b border-base-300 pointer-fine:hidden ${isCompact ? "text-center" : ""}`}>
         <span className="text-xl font-bold">{isCompact ? "FM" : "Forest Manager"}</span>
       </div>
 
       {/* Navigation */}
-      <div className={`${isCompact ? "p-2" : "p-3"}`}>
+      <div className={`shrink-0 ${isCompact ? "p-2" : "p-3"}`}>
         {/* Dashboard */}
         <Link
           to="/dashboard"
@@ -173,18 +178,21 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
       </div>
 
       {/* Divider */}
-      <div className="px-3">
+      <div className="shrink-0 px-3">
         <div className="border-t border-base-300" />
       </div>
 
-      {/* Communities - uses PortalTooltip to avoid overflow clipping */}
-      <div className={`flex-1 overflow-y-auto overflow-x-hidden ${isCompact ? "p-2" : "p-3"}`}>
-        {!isCompact && (
+      {/* Communities label - fixed outside scrollable area */}
+      {!isCompact && (
+        <div className="shrink-0 px-3 pt-3">
           <p className="text-xs font-semibold text-base-content/50 uppercase tracking-wider mb-2 px-2">
             Communities
           </p>
-        )}
+        </div>
+      )}
 
+      {/* Communities list - scrollable with hidden scrollbar */}
+      <div className={`flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide ${isCompact ? "p-2" : "px-3 pb-3"}`}>
         <div className="space-y-1">
           {communities.map((community) => (
             <CommunityAvatar
@@ -225,7 +233,7 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
       </div>
 
       {/* Footer */}
-      <div className={`border-t border-base-300 ${isCompact ? "p-2" : "p-3"}`}>
+      <div className={`shrink-0 border-t border-base-300 ${isCompact ? "p-2" : "p-3"}`}>
         <p className={`text-xs text-base-content/50 text-center`}>
           {isCompact ? "v0.1" : "Forest Manager v0.1"}
         </p>

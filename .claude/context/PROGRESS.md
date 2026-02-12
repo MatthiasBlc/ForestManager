@@ -20,30 +20,49 @@
 | 5.2 | Backend Variants (list variants endpoint) | DONE |
 | 5.3 | Frontend Proposals (modal, list, variants dropdown, RecipeDetailPage) | DONE |
 | 5.4 | Backend Orphan Handling (auto-reject proposals on leave/kick) | DONE |
+| 6.1 | Backend Activity Feed (community + personal endpoints) | DONE |
+| 6.2 | Frontend Activity Feed (component, integration) | DONE |
+| 7.1 | Backend Share (fork to other community, chain analytics) | DONE |
+| 7.2 | Frontend Share (modal, badge "Shared from X") | DONE |
+| 7.3 | Pre-Phase 8 corrections (13 fixes: bugs, UX, sync, side panel, publish) | DONE |
+| 8.1 | Qualite (toast, ErrorBoundary, refactoring recipes.ts, soft delete audit) | DONE |
+| 8.2 | Tests & Lint (499 tests, 0 lint errors frontend + backend) | DONE |
+| 8.3 | Documentation (README utilisateur + guide deploiement) | DONE |
+| 9.4 | Frontend Admin Pages (layout sidebar, 5 pages gestion, 35 tests) | DONE |
+| 9.2 | Notifications temps reel (Socket.IO) + Dark mode (forest/winter) | DONE |
+| 9.3 | Logging structure (Pino) + Tests supplementaires (+113 tests) | DONE |
 
-## Phase en cours
+## MVP COMPLET
 
-**Phase 5 COMPLETE** - Propositions & Variantes
+Toutes les phases (0 a 8) sont terminees. Le MVP est fonctionnel.
+Phases post-MVP completees : 9.4 (admin frontend), 9.2 (WebSocket + dark mode), 9.3 (logging + tests).
 
-Prochaine etape: Phase 6 - Activity Feed.
+## Ce qui reste a faire
 
-## Prochaines phases
+### Checklist validation MVP (non cochees)
 
-| Phase | Description | Prerequis |
-|-------|-------------|-----------|
-| 5 | Propositions & Variantes (workflow accept/reject, forks) | Phase 4 |
-| 6 | Activity Feed (communautaire + personnel) | Phase 5 |
-| 7 | Partage inter-communautes (fork recettes) | Phase 3 |
-| 8 | Finitions MVP (erreurs, loading, empty states) | Phases 4-7 |
-| 9 | Post-MVP (analytics, notifications, PWA, admin pages) | Phase 8 |
+- [ ] Tests manuels complets (parcours utilisateur end-to-end)
+- [ ] Application stable sans erreurs bloquantes (validation)
+- [ ] Donnees persistees correctement (validation)
+- [ ] Responsive design (audit + corrections)
+- [ ] Performance acceptable (<3s chargement page, audit)
 
-## Maintenance technique en attente
+### Maintenance technique
 
-- [ ] Fix 3 vulnerabilites npm "high severity"
-- [ ] Migrer otplib v12 -> v13
-- [ ] Mettre a jour ESLint (v8.57.1 deprecie)
-- [ ] Migrer config Prisma vers prisma.config.ts (deprecie Prisma 7)
-- [ ] Remplacer `npm prune --production` par `--omit=dev` dans Dockerfile
+- [x] Remplacer `npm prune --production` par `--omit=dev` dans Dockerfile
+- [x] Mettre a jour ESLint v8 -> v9 (flat config `eslint.config.mjs`)
+- [x] Fix vulnerabilite npm axios (frontend)
+- [x] Migrer config Prisma vers `prisma.config.ts` -> non necessaire (setup standard suffisant)
+- [x] Migrer otplib v12 -> v13 (nouvelle API: generateSecret, generateSync, verifySync, generateURI)
+- [x] Fix vulnerabilites npm: vitest 2->3, bcrypt 5->6 (0 vulns backend + frontend)
+
+## Tests actuels
+
+| Suite | Fichiers | Tests |
+|-------|----------|-------|
+| Frontend | 47 | 273 |
+| Backend | 27 | 390 |
+| **Total** | **74** | **663** |
 
 ## Resume de reprise
 

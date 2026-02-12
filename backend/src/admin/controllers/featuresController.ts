@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import prisma from "../../util/db";
+import { assertIsDefine } from "../../util/assertIsDefine";
 
 /**
  * GET /api/admin/features
@@ -40,7 +41,8 @@ export const getAll: RequestHandler = async (req, res, next) => {
 export const create: RequestHandler = async (req, res, next) => {
   try {
     const { code, name, description, isDefault } = req.body;
-    const adminId = req.session.adminId!;
+    const adminId = req.session.adminId;
+    assertIsDefine(adminId);
 
     if (!code || typeof code !== "string" || code.trim().length === 0) {
       throw createHttpError(400, "ADMIN_FEAT_001: Code is required");
@@ -93,7 +95,8 @@ export const update: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { name, description, isDefault } = req.body;
-    const adminId = req.session.adminId!;
+    const adminId = req.session.adminId;
+    assertIsDefine(adminId);
 
     const feature = await prisma.feature.findUnique({ where: { id } });
     if (!feature) {
@@ -145,7 +148,8 @@ export const update: RequestHandler = async (req, res, next) => {
 export const grant: RequestHandler = async (req, res, next) => {
   try {
     const { communityId, featureId } = req.params;
-    const adminId = req.session.adminId!;
+    const adminId = req.session.adminId;
+    assertIsDefine(adminId);
 
     const [community, feature] = await Promise.all([
       prisma.community.findUnique({ where: { id: communityId } }),
@@ -205,7 +209,8 @@ export const grant: RequestHandler = async (req, res, next) => {
 export const revoke: RequestHandler = async (req, res, next) => {
   try {
     const { communityId, featureId } = req.params;
-    const adminId = req.session.adminId!;
+    const adminId = req.session.adminId;
+    assertIsDefine(adminId);
 
     const [community, feature] = await Promise.all([
       prisma.community.findUnique({ where: { id: communityId } }),

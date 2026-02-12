@@ -1,8 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { FaCodeBranch, FaChevronDown, FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import APIManager from "../../network/api";
 import { VariantListItem } from "../../models/recipe";
+import { useClickOutside } from "../../hooks/useClickOutside";
+import { formatDateShort } from "../../utils/format.Date";
 
 interface VariantsDropdownProps {
   recipeId: string;
@@ -16,21 +18,7 @@ const VariantsDropdown = ({ recipeId, currentRecipeId }: VariantsDropdownProps) 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    loadVariants();
-  }, [recipeId]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const loadVariants = async () => {
+  const loadVariants = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await APIManager.getRecipeVariants(recipeId);
@@ -40,18 +28,17 @@ const VariantsDropdown = ({ recipeId, currentRecipeId }: VariantsDropdownProps) 
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [recipeId]);
+
+  useEffect(() => {
+    loadVariants();
+  }, [loadVariants]);
+
+  useClickOutside(dropdownRef, useCallback(() => setIsOpen(false), []));
 
   const handleSelect = (variantId: string) => {
     setIsOpen(false);
     navigate(`/recipes/${variantId}`);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-    });
   };
 
   if (isLoading) {
@@ -92,7 +79,7 @@ const VariantsDropdown = ({ recipeId, currentRecipeId }: VariantsDropdownProps) 
                     <FaUser className="w-3 h-3" />
                     <span>{variant.creator.username}</span>
                     <span>-</span>
-                    <span>{formatDate(variant.createdAt)}</span>
+                    <span>{formatDateShort(variant.createdAt)}</span>
                   </div>
                 </button>
               </li>

@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import prisma from "../../util/db";
+import { assertIsDefine } from "../../util/assertIsDefine";
 
 /**
  * GET /api/admin/ingredients
@@ -39,7 +40,8 @@ export const getAll: RequestHandler = async (req, res, next) => {
 export const create: RequestHandler = async (req, res, next) => {
   try {
     const { name } = req.body;
-    const adminId = req.session.adminId!;
+    const adminId = req.session.adminId;
+    assertIsDefine(adminId);
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       throw createHttpError(400, "ADMIN_ING_001: Name is required");
@@ -83,7 +85,8 @@ export const update: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { name } = req.body;
-    const adminId = req.session.adminId!;
+    const adminId = req.session.adminId;
+    assertIsDefine(adminId);
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       throw createHttpError(400, "ADMIN_ING_001: Name is required");
@@ -134,7 +137,8 @@ export const update: RequestHandler = async (req, res, next) => {
 export const remove: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const adminId = req.session.adminId!;
+    const adminId = req.session.adminId;
+    assertIsDefine(adminId);
 
     const ingredient = await prisma.ingredient.findUnique({ where: { id } });
     if (!ingredient) {
@@ -167,7 +171,8 @@ export const merge: RequestHandler = async (req, res, next) => {
   try {
     const { id: sourceId } = req.params;
     const { targetId } = req.body;
-    const adminId = req.session.adminId!;
+    const adminId = req.session.adminId;
+    assertIsDefine(adminId);
 
     if (!targetId) {
       throw createHttpError(400, "ADMIN_ING_004: Target ingredient ID required");

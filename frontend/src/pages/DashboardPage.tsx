@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { FaPlus } from "react-icons/fa";
 import { CommunityListItem } from "../models/community";
 import { RecipeListItem } from "../models/recipe";
 import APIManager from "../network/api";
 import CommunityCard from "../components/communities/CommunityCard";
 import RecipeCard from "../components/recipes/RecipeCard";
+import { ActivityFeed } from "../components/activity";
 
 const RECENT_RECIPES_LIMIT = 8;
 
@@ -55,8 +57,9 @@ const DashboardPage = () => {
       await APIManager.deleteRecipe(recipe.id);
       setRecipes(recipes.filter((r) => r.id !== recipe.id));
       setTotalRecipes((prev) => prev - 1);
+      toast.success("Recipe deleted");
     } catch {
-      alert("Failed to delete recipe");
+      toast.error("Failed to delete recipe");
     }
   };
 
@@ -176,6 +179,16 @@ const DashboardPage = () => {
             )}
           </>
         )}
+      </section>
+
+      {/* Activity Feed Section */}
+      <section>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">Recent Activity</h2>
+        </div>
+        <div className="bg-base-100 rounded-lg shadow p-6">
+          <ActivityFeed personal limit={10} />
+        </div>
       </section>
     </div>
   );

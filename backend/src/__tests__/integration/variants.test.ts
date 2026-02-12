@@ -12,7 +12,7 @@ describe("Variants API", () => {
   let recipeCreatorCookie: string;
   let member: { id: string; username: string; email: string };
   let memberCookie: string;
-  let nonMember: { id: string; username: string; email: string };
+  let _nonMember: { id: string; username: string; email: string };
   let nonMemberCookie: string;
   let community: { id: string; name: string };
   let communityRecipeId: string;
@@ -65,7 +65,7 @@ describe("Variants API", () => {
       password: "Test123!Password",
     });
     nonMemberCookie = extractSessionCookie(nonMemberSignup)!;
-    nonMember = (await testPrisma.user.findFirst({
+    _nonMember = (await testPrisma.user.findFirst({
       where: { email: `varnonm_${suffix}@example.com` },
     }))!;
 
@@ -175,7 +175,7 @@ describe("Variants API", () => {
         .set("Cookie", nonMemberCookie);
 
       expect(res.status).toBe(403);
-      expect(res.body.error).toContain("COMMUNITY_001");
+      expect(res.body.error).toContain("RECIPE_002");
     });
 
     it("should return 404 for non-existent recipe", async () => {

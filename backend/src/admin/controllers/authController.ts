@@ -1,7 +1,7 @@
 import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import bcrypt from "bcrypt";
-import { authenticator } from "otplib";
+import { generateURI, verifySync } from "otplib";
 import * as QRCode from "qrcode";
 import prisma from "../../util/db";
 
@@ -42,7 +42,7 @@ export const login: RequestHandler = async (req, res, next) => {
 
     // Si TOTP pas encore configure, generer le QR code
     if (!admin.totpEnabled) {
-      const otpauth = authenticator.keyuri(admin.email, APP_NAME, admin.totpSecret);
+      const otpauth = generateURI({ secret: admin.totpSecret, issuer: APP_NAME, label: admin.email });
       const qrCodeDataUrl = await QRCode.toDataURL(otpauth);
 
       return res.status(200).json({
@@ -95,10 +95,11 @@ export const verifyTotp: RequestHandler = async (req, res, next) => {
       throw createHttpError(401, "ADMIN_001: Not authenticated");
     }
 
-    const isValid = authenticator.verify({
+    const result = verifySync({
       token: code,
       secret: admin.totpSecret,
     });
+    const isValid = result.valid;
 
     if (!isValid) {
       req.session.totpAttempts = attempts + 1;

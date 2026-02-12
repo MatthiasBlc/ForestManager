@@ -1,51 +1,24 @@
-import { useNavigate } from "react-router-dom";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash, FaCodeBranch, FaShare } from "react-icons/fa";
 import { RecipeListItem, CommunityRecipeListItem } from "../../models/recipe";
-import { formatDate } from "../../utils/format.Date";
+import { useRecipeActions } from "../../hooks/useRecipeActions";
 
 interface RecipeListRowProps {
   recipe: RecipeListItem | CommunityRecipeListItem;
   onDelete: (recipe: RecipeListItem | CommunityRecipeListItem) => void;
   onTagClick?: (tag: string) => void;
+  onShare?: (recipe: RecipeListItem) => void;
   showCreator?: boolean;
   canEdit?: boolean;
   canDelete?: boolean;
 }
 
-const RecipeListRow = ({ recipe, onDelete, onTagClick, showCreator = false, canEdit = true, canDelete = true }: RecipeListRowProps) => {
-  const navigate = useNavigate();
-  const { title, imageUrl, createdAt, updatedAt, tags } = recipe;
-
-  const displayedTags = tags.slice(0, 3);
-  const remainingTagsCount = tags.length - 3;
-
-  const dateText =
-    updatedAt > createdAt
-      ? `Updated: ${formatDate(updatedAt)}`
-      : `Created: ${formatDate(createdAt)}`;
-
-  const handleClick = () => {
-    navigate(`/recipes/${recipe.id}`);
-  };
-
-  const handleEdit = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigate(`/recipes/${recipe.id}/edit`);
-  };
-
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (window.confirm("Are you sure you want to delete this recipe?")) {
-      onDelete(recipe);
-    }
-  };
-
-  const handleTagClick = (e: React.MouseEvent, tag: string) => {
-    e.stopPropagation();
-    if (onTagClick) {
-      onTagClick(tag);
-    }
-  };
+const RecipeListRow = ({ recipe, onDelete, onTagClick, onShare, showCreator = false, canEdit = true, canDelete = true }: RecipeListRowProps) => {
+  const {
+    title, imageUrl, tags, displayedTags, remainingTagsCount, dateText,
+    communityRecipe, isSharedRecipe,
+    handleClick, handleEdit, handleDelete, handleTagClick, handleShare,
+    ConfirmDialog,
+  } = useRecipeActions({ recipe, onDelete, onTagClick, onShare });
 
   return (
     <div
@@ -54,11 +27,7 @@ const RecipeListRow = ({ recipe, onDelete, onTagClick, showCreator = false, canE
     >
       {imageUrl ? (
         <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-          <img
-            src={imageUrl}
-            alt={title}
-            className="w-full h-full object-cover"
-          />
+          <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
         </div>
       ) : (
         <div className="w-16 h-16 rounded-lg bg-base-200 flex items-center justify-center flex-shrink-0">
@@ -68,9 +37,17 @@ const RecipeListRow = ({ recipe, onDelete, onTagClick, showCreator = false, canE
 
       <div className="flex-1 min-w-0">
         <h3 className="font-semibold truncate">{title}</h3>
-        {showCreator && "creator" in recipe && (
-          <p className="text-xs text-base-content/50">by {(recipe as CommunityRecipeListItem).creator.username}</p>
-        )}
+        <div className="flex items-center gap-2 flex-wrap">
+          {showCreator && communityRecipe && (
+            <p className="text-xs text-base-content/50">by {communityRecipe.creator.username}</p>
+          )}
+          {isSharedRecipe && communityRecipe && (
+            <span className="badge badge-outline badge-info badge-xs gap-1">
+              <FaCodeBranch className="w-2 h-2" />
+              Shared by: {communityRecipe.creator.username}
+            </span>
+          )}
+        </div>
         <p className="text-sm text-base-content/60">{dateText}</p>
       </div>
 
@@ -86,33 +63,31 @@ const RecipeListRow = ({ recipe, onDelete, onTagClick, showCreator = false, canE
             </span>
           ))}
           {remainingTagsCount > 0 && (
-            <span className="badge badge-ghost badge-sm">
-              +{remainingTagsCount}
-            </span>
+            <span className="badge badge-ghost badge-sm">+{remainingTagsCount}</span>
           )}
         </div>
       )}
 
-      {(canEdit || canDelete) && (
+      {(canEdit || canDelete || handleShare) && (
         <div className="flex gap-1 flex-shrink-0">
+          {handleShare && (
+            <button className="btn btn-ghost btn-sm" onClick={handleShare}>
+              <FaShare />
+            </button>
+          )}
           {canEdit && (
-            <button
-              className="btn btn-ghost btn-sm"
-              onClick={handleEdit}
-            >
+            <button className="btn btn-ghost btn-sm" onClick={handleEdit}>
               <FaEdit />
             </button>
           )}
           {canDelete && (
-            <button
-              className="btn btn-ghost btn-sm text-error"
-              onClick={handleDelete}
-            >
+            <button className="btn btn-ghost btn-sm text-error" onClick={handleDelete}>
               <FaTrash />
             </button>
           )}
         </div>
       )}
+      {ConfirmDialog}
     </div>
   );
 };

@@ -10,7 +10,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
-import { authenticator } from "otplib";
+import { generateSecret } from "otplib";
 import { read } from "read";
 
 const prisma = new PrismaClient();
@@ -98,7 +98,7 @@ async function main() {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Generate TOTP secret
-    const totpSecret = authenticator.generateSecret();
+    const totpSecret = generateSecret();
 
     // Create AdminUser
     const adminUser = await prisma.adminUser.create({

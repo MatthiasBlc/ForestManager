@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import prisma from "../../util/db";
+import { assertIsDefine } from "../../util/assertIsDefine";
 
 /**
  * GET /api/admin/communities
@@ -125,7 +126,8 @@ export const update: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { name } = req.body;
-    const adminId = req.session.adminId!;
+    const adminId = req.session.adminId;
+    assertIsDefine(adminId);
 
     const community = await prisma.community.findUnique({ where: { id } });
     if (!community) {
@@ -165,7 +167,8 @@ export const update: RequestHandler = async (req, res, next) => {
 export const remove: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const adminId = req.session.adminId!;
+    const adminId = req.session.adminId;
+    assertIsDefine(adminId);
 
     const community = await prisma.community.findUnique({ where: { id } });
     if (!community) {

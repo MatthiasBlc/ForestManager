@@ -1,7 +1,7 @@
 import { Request, Response } from 'supertest';
 import bcrypt from 'bcrypt';
 import { testPrisma } from './globalSetup';
-import { authenticator } from 'otplib';
+import { generateSecret, generateSync } from 'otplib';
 
 // Types pour les donnees de test
 interface TestUser {
@@ -68,7 +68,7 @@ export async function createTestAdmin(data?: Partial<{
 }>): Promise<TestAdmin> {
   const password = data?.password ?? 'AdminTest123!';
   const hashedPassword = await bcrypt.hash(password, 10);
-  const totpSecret = authenticator.generateSecret();
+  const totpSecret = generateSecret();
 
   const admin = await testPrisma.adminUser.create({
     data: {
@@ -102,7 +102,7 @@ export async function createTestAdminWithoutTotp(data?: Partial<{
   const password = data?.password ?? 'AdminTest123!';
   const hashedPassword = await bcrypt.hash(password, 10);
   // Le secret sera regenere lors de la premiere connexion
-  const placeholderSecret = authenticator.generateSecret();
+  const placeholderSecret = generateSecret();
 
   const admin = await testPrisma.adminUser.create({
     data: {
@@ -222,7 +222,7 @@ export function extractSessionCookie(res: Response, cookieName = 'connect.sid'):
  * Generer un code TOTP valide pour un admin
  */
 export function generateTotpCode(secret: string): string {
-  return authenticator.generate(secret);
+  return generateSync({ secret });
 }
 
 // =====================================

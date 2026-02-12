@@ -2,8 +2,6 @@ import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../../app";
 import {
-  createTestUser,
-  createTestCommunity,
   extractSessionCookie,
 } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
@@ -16,7 +14,7 @@ describe("Community Recipes API", () => {
   let moderatorCookie: string;
   let member: { id: string; username: string; email: string };
   let memberCookie: string;
-  let nonMember: { id: string; username: string; email: string };
+  let _nonMember: { id: string; username: string; email: string };
   let nonMemberCookie: string;
   let community: { id: string; name: string };
 
@@ -68,7 +66,7 @@ describe("Community Recipes API", () => {
       password: "Test123!Password",
     });
     nonMemberCookie = extractSessionCookie(nonMemSignup)!;
-    nonMember = (await testPrisma.user.findFirst({
+    _nonMember = (await testPrisma.user.findFirst({
       where: { email: `crnonm_${suffix}@example.com` },
     }))!;
   });

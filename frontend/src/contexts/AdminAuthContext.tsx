@@ -110,8 +110,8 @@ export function AdminAuthProvider({ children }: AdminAuthProviderProps) {
   const logout = useCallback(async (): Promise<void> => {
     try {
       await APIManager.adminLogout();
-    } catch (err) {
-      console.error("Logout error:", err);
+    } catch {
+      // Logout failure is non-critical - clear local state regardless
     } finally {
       setAdmin(null);
       setAuthStep("idle");

@@ -1,8 +1,13 @@
+import { Toaster } from "react-hot-toast";
 import LoginModal from "./components/LoginModal";
 import NavBar from "./components/Navbar/NavBar";
 import MainLayout from "./components/Layout/MainLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ThemeProvider } from "./contexts/ThemeContext";
+import { SocketProvider } from "./contexts/SocketContext";
+import { useNotificationToasts } from "./hooks/useNotificationToasts";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import RecipesPage from "./pages/RecipesPage";
@@ -20,15 +25,29 @@ import InvitationsPage from "./pages/InvitationsPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import AdminTagsPage from "./pages/admin/AdminTagsPage";
+import AdminIngredientsPage from "./pages/admin/AdminIngredientsPage";
+import AdminFeaturesPage from "./pages/admin/AdminFeaturesPage";
+import AdminCommunitiesPage from "./pages/admin/AdminCommunitiesPage";
+import AdminActivityPage from "./pages/admin/AdminActivityPage";
 import AdminProtectedRoute from "./components/admin/AdminProtectedRoute";
 import AdminLayout from "./components/admin/AdminLayout";
 
+function NotificationHandler() {
+  useNotificationToasts();
+  return null;
+}
+
 function App() {
   return (
+    <ThemeProvider>
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
+        <SocketProvider>
+        <NotificationHandler />
         <div className="min-h-screen flex flex-col">
           <NavBar />
+          <ErrorBoundary>
           <div className="flex-1 flex flex-col">
             <Routes>
               {/* Public routes - no sidebar */}
@@ -177,15 +196,59 @@ function App() {
                     </AdminProtectedRoute>
                   }
                 />
+                <Route
+                  path="tags"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminTagsPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="ingredients"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminIngredientsPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="features"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminFeaturesPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="communities"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminCommunitiesPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="activity"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminActivityPage />
+                    </AdminProtectedRoute>
+                  }
+                />
               </Route>
 
               <Route path="/*" element={<NotFoundPage />} />
             </Routes>
           </div>
+          </ErrorBoundary>
           <LoginModal />
+          <Toaster position="top-right" />
         </div>
+        </SocketProvider>
       </AuthProvider>
     </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

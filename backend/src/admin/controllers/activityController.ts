@@ -1,17 +1,23 @@
 import { RequestHandler } from "express";
 import { AdminActionType, Prisma } from "@prisma/client";
 import prisma from "../../util/db";
+import { parsePagination, buildPaginationMeta } from "../../util/pagination";
+
+interface GetActivityQuery {
+  type?: string;
+  adminId?: string;
+  limit?: string;
+  offset?: string;
+}
 
 /**
  * GET /api/admin/activity
  * Liste des activites admin avec pagination
  */
-export const getAll: RequestHandler = async (req, res, next) => {
+export const getAll: RequestHandler<unknown, unknown, unknown, GetActivityQuery> = async (req, res, next) => {
   try {
-    const { type, adminId, limit = "50", offset = "0" } = req.query;
-
-    const take = Math.min(parseInt(String(limit), 10) || 50, 100);
-    const skip = parseInt(String(offset), 10) || 0;
+    const { type, adminId } = req.query;
+    const { limit: take, offset: skip } = parsePagination(req.query, 50);
 
     const where: Prisma.AdminActivityLogWhereInput = {};
 
@@ -48,12 +54,7 @@ export const getAll: RequestHandler = async (req, res, next) => {
         createdAt: a.createdAt,
         admin: a.admin,
       })),
-      pagination: {
-        total,
-        limit: take,
-        offset: skip,
-        hasMore: skip + take < total,
-      },
+      pagination: buildPaginationMeta(total, take, skip, activities.length),
     });
   } catch (error) {
     next(error);

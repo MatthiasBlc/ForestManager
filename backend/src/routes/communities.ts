@@ -3,6 +3,7 @@ import * as CommunitiesController from "../controllers/communities";
 import * as CommunityRecipesController from "../controllers/communityRecipes";
 import * as InvitesController from "../controllers/invites";
 import * as MembersController from "../controllers/members";
+import * as ActivityController from "../controllers/activity";
 import { memberOf, requireCommunityRole } from "../middleware/community";
 
 const router = express.Router();
@@ -83,5 +84,12 @@ router.delete(
   requireCommunityRole("MODERATOR"),
   InvitesController.cancelInvite
 );
+
+// =====================================
+// Activity feed
+// =====================================
+
+// Get community activity feed (any member)
+router.get("/:communityId/activity", memberOf, ActivityController.getCommunityActivity);
 
 export default router;

@@ -1,26 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import toast from "react-hot-toast";
 import { FaCheck, FaTimes, FaUser, FaClock } from "react-icons/fa";
 import APIManager from "../../network/api";
 import { Proposal } from "../../models/recipe";
 import { ConflictError } from "../../errors/http_errors";
+import { formatDate } from "../../utils/format.Date";
 
 interface ProposalsListProps {
   recipeId: string;
+  refreshSignal?: number;
   onProposalDecided: () => void;
 }
 
-const ProposalsList = ({ recipeId, onProposalDecided }: ProposalsListProps) => {
+const ProposalsList = ({ recipeId, refreshSignal, onProposalDecided }: ProposalsListProps) => {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadProposals();
-  }, [recipeId]);
-
-  const loadProposals = async () => {
+  const loadProposals = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -31,13 +30,18 @@ const ProposalsList = ({ recipeId, onProposalDecided }: ProposalsListProps) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [recipeId]);
+
+  useEffect(() => {
+    loadProposals();
+  }, [loadProposals, refreshSignal]);
 
   const handleAccept = async (proposalId: string) => {
     try {
       setProcessingId(proposalId);
       setError(null);
       await APIManager.acceptProposal(proposalId);
+      toast.success("Proposal accepted");
       onProposalDecided();
       loadProposals();
     } catch (err) {
@@ -56,6 +60,7 @@ const ProposalsList = ({ recipeId, onProposalDecided }: ProposalsListProps) => {
       setProcessingId(proposalId);
       setError(null);
       await APIManager.rejectProposal(proposalId);
+      toast.success("Proposal rejected - variant created");
       onProposalDecided();
       loadProposals();
     } catch (err) {
@@ -63,16 +68,6 @@ const ProposalsList = ({ recipeId, onProposalDecided }: ProposalsListProps) => {
     } finally {
       setProcessingId(null);
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
   };
 
   if (isLoading) {

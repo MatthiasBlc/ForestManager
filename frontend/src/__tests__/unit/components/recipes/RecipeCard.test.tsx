@@ -25,8 +25,6 @@ describe('RecipeCard', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Mock window.confirm to return true
-    vi.spyOn(window, 'confirm').mockImplementation(() => true);
   });
 
   it('should render recipe title', () => {
@@ -100,6 +98,10 @@ describe('RecipeCard', () => {
     if (deleteButton) {
       await user.click(deleteButton);
     }
+
+    // Confirm in the custom confirm dialog
+    const confirmButton = await screen.findByRole('button', { name: 'Delete' });
+    await user.click(confirmButton);
 
     expect(mockOnDelete).toHaveBeenCalledWith(mockRecipe);
   });

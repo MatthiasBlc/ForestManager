@@ -40,12 +40,13 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~436 tests)
+## Inventaire des tests (~663 tests)
 
-### Backend Integration (17 fichiers, ~289 tests)
+### Backend Integration (19 fichiers, ~339 tests)
 
 | Fichier | Module | Tests |
 |---------|--------|-------|
+| activity.test.ts | Activity feed (community + personal) | 15 |
 | auth.test.ts | User signup/login/logout/me | 16 |
 | recipes.test.ts | CRUD recettes (perso + community access) | 32 |
 | communityRecipes.test.ts | CRUD recettes communautaires | 28 |
@@ -63,8 +64,21 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | adminCommunities.test.ts | Communities admin | 8 |
 | adminDashboard.test.ts | Stats dashboard | 4 |
 | adminActivity.test.ts | Logs activite | 4 |
+| share.test.ts | Partage inter-communautes + publish + sync | 28 |
 
-### Frontend Unit (24 fichiers, ~147 tests)
+### Backend Unit (7 fichiers, ~51 tests)
+
+| Fichier | Module | Tests |
+|---------|--------|-------|
+| eventEmitter.test.ts | Event emitter | 3 |
+| pagination.test.ts | parsePagination, buildPaginationMeta | 14 |
+| validation.test.ts | normalizeNames, isValidHttpUrl, constants | 17 |
+| responseFormatters.test.ts | formatTags, formatIngredients | 5 |
+| middleware/auth.test.ts | requireAuth | 4 |
+| middleware/requireSuperAdmin.test.ts | requireSuperAdmin, requireAdminSession | 6 |
+| middleware/security.test.ts | requireHttps, rateLimiters, helmet | 5 |
+
+### Frontend Unit (47 fichiers, ~273 tests)
 
 | Fichier | Composant | Tests |
 |---------|-----------|-------|
@@ -77,8 +91,13 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | NavBar.test.tsx | Navigation | 4 |
 | AdminProtectedRoute.test.tsx | Guard admin | 4 |
 | AdminLoginPage.test.tsx | Page login admin | 8 |
-| AdminDashboardPage.test.tsx | Page dashboard | 6 |
+| AdminDashboardPage.test.tsx | Page dashboard | 4 |
 | AdminLayout.test.tsx | Layout admin | 3 |
+| pages/admin/AdminTagsPage.test.tsx | Page tags admin | 8 |
+| pages/admin/AdminIngredientsPage.test.tsx | Page ingredients admin | 8 |
+| pages/admin/AdminFeaturesPage.test.tsx | Page features admin | 6 |
+| pages/admin/AdminCommunitiesPage.test.tsx | Page communities admin | 8 |
+| pages/admin/AdminActivityPage.test.tsx | Page activity admin | 5 |
 | RecipeCard.test.tsx | Carte recette | 8 |
 | RecipeFilters.test.tsx | Filtres recettes | 8 |
 | TagSelector.test.tsx | Selecteur tags | 6 |
@@ -88,10 +107,25 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | Sidebar.test.tsx | Sidebar navigation | 10 |
 | HomePage.test.tsx | Page accueil | 6 |
 | CommunitiesPage.test.tsx | Page liste communautes | 7 |
-| CommunityDetailPage.test.tsx | Page detail communaute | 8 |
+| CommunityDetailPage.test.tsx | Page detail communaute | 11 |
 | InviteCard.test.tsx | Carte invitation | 5 |
 | MembersList.test.tsx | Liste membres | 6 |
 | InviteUserModal.test.tsx | Modal invitation | 5 |
+| ActivityFeed.test.tsx | Feed activite | 8 |
+| ShareRecipeModal.test.tsx | Modal partage recette | 7 |
+| hooks/useClickOutside.test.ts | Hook click outside | 4 |
+| hooks/useDebouncedEffect.test.ts | Hook debounce | 5 |
+| hooks/useConfirm.test.tsx | Hook confirm dialog | 6 |
+| hooks/useSocketEvent.test.ts | Hook socket event | 5 |
+| hooks/useCommunityRoom.test.ts | Hook community room | 4 |
+| hooks/useNotificationToasts.test.ts | Hook notification toasts | 5 |
+| hooks/usePaginatedList.test.ts | Hook paginated list | 6 |
+| utils/formatDate.test.ts | Format date utils | 5 |
+| utils/communityEvents.test.ts | Community events bus | 2 |
+| pages/DashboardPage.test.tsx | Page dashboard user | 8 |
+| pages/ProfilePage.test.tsx | Page profil user | 8 |
+| pages/NotFoundPage.test.tsx | Page 404 | 2 |
+| pages/RecipeFormPage.test.tsx | Page formulaire recette | 2 |
 
 ## Couverture cible
 

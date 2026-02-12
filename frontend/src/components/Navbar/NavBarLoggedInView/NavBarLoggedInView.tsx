@@ -1,29 +1,22 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { FaUser, FaUserCircle, FaEnvelope, FaSignOutAlt } from "react-icons/fa";
 import { useAuth } from "../../../contexts/AuthContext";
 import InvitationBadge from "../../invitations/InvitationBadge";
+import { useClickOutside } from "../../../hooks/useClickOutside";
 
 const NavBarLoggedInView = () => {
   const { user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  useClickOutside(menuRef, useCallback(() => setIsOpen(false), []));
 
   const handleLogout = async () => {
     try {
       await logout();
-    } catch (error) {
-      console.error(error);
+    } catch {
+      // Logout failure handled by AuthContext
     }
   };
 

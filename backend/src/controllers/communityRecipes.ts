@@ -2,6 +2,13 @@ import { RequestHandler } from "express";
 import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
+import { Prisma } from "@prisma/client";
+import { isValidHttpUrl } from "../util/validation";
+import { parsePagination, buildPaginationMeta } from "../util/pagination";
+import { RECIPE_TAGS_SELECT } from "../util/prismaSelects";
+import { formatTags, formatIngredients } from "../util/responseFormatters";
+import { createCommunityRecipe as createCommunityRecipeService } from "../services/communityRecipeService";
+import appEvents from "../services/eventEmitter";
 
 interface IngredientInput {
   name: string;
@@ -37,145 +44,12 @@ export const createCommunityRecipe: RequestHandler<
       throw createHttpError(400, "RECIPE_004: Content required");
     }
 
-    const result = await prisma.$transaction(async (tx) => {
-      // 1. Creer la recette personnelle (communityId: null)
-      const personalRecipe = await tx.recipe.create({
-        data: {
-          title: title.trim(),
-          content: content.trim(),
-          imageUrl: imageUrl?.trim() || null,
-          creatorId: authenticatedUserId,
-          communityId: null,
-        },
-      });
+    if (!isValidHttpUrl(imageUrl)) {
+      throw createHttpError(400, "RECIPE_005: Invalid image URL");
+    }
 
-      // 2. Creer la copie communautaire liee a la recette perso
-      const communityRecipe = await tx.recipe.create({
-        data: {
-          title: title.trim(),
-          content: content.trim(),
-          imageUrl: imageUrl?.trim() || null,
-          creatorId: authenticatedUserId,
-          communityId,
-          originRecipeId: personalRecipe.id,
-        },
-      });
-
-      // 3. Gerer tags/ingredients sur les DEUX recettes
-      if (tags.length > 0) {
-        const normalizedTags = [
-          ...new Set(tags.map((t) => t.trim().toLowerCase()).filter(Boolean)),
-        ];
-
-        for (const tagName of normalizedTags) {
-          const tag = await tx.tag.upsert({
-            where: { name: tagName },
-            create: { name: tagName },
-            update: {},
-          });
-
-          await tx.recipeTag.createMany({
-            data: [
-              { recipeId: personalRecipe.id, tagId: tag.id },
-              { recipeId: communityRecipe.id, tagId: tag.id },
-            ],
-          });
-        }
-      }
-
-      if (ingredients.length > 0) {
-        for (let i = 0; i < ingredients.length; i++) {
-          const ing = ingredients[i];
-          const ingredientName = ing.name.trim().toLowerCase();
-
-          if (!ingredientName) continue;
-
-          const ingredient = await tx.ingredient.upsert({
-            where: { name: ingredientName },
-            create: { name: ingredientName },
-            update: {},
-          });
-
-          await tx.recipeIngredient.createMany({
-            data: [
-              {
-                recipeId: personalRecipe.id,
-                ingredientId: ingredient.id,
-                quantity: ing.quantity?.trim() || null,
-                order: i,
-              },
-              {
-                recipeId: communityRecipe.id,
-                ingredientId: ingredient.id,
-                quantity: ing.quantity?.trim() || null,
-                order: i,
-              },
-            ],
-          });
-        }
-      }
-
-      // 4. Creer ActivityLog
-      await tx.activityLog.create({
-        data: {
-          type: "RECIPE_CREATED",
-          userId: authenticatedUserId,
-          communityId,
-          recipeId: communityRecipe.id,
-        },
-      });
-
-      // Fetch les deux recettes avec leurs relations
-      const recipeSelect = {
-        id: true,
-        title: true,
-        content: true,
-        imageUrl: true,
-        createdAt: true,
-        updatedAt: true,
-        creatorId: true,
-        communityId: true,
-        originRecipeId: true,
-        tags: {
-          select: {
-            tag: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
-        ingredients: {
-          select: {
-            id: true,
-            quantity: true,
-            order: true,
-            ingredient: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-          orderBy: {
-            order: "asc" as const,
-          },
-        },
-      };
-
-      const [personal, community] = await Promise.all([
-        tx.recipe.findUnique({
-          where: { id: personalRecipe.id },
-          select: recipeSelect,
-        }),
-        tx.recipe.findUnique({
-          where: { id: communityRecipe.id },
-          select: recipeSelect,
-        }),
-      ]);
-
-      return { personal, community };
+    const result = await createCommunityRecipeService(authenticatedUserId, communityId, {
+      title, content, imageUrl, tags, ingredients,
     });
 
     if (!result.personal || !result.community) {
@@ -192,14 +66,15 @@ export const createCommunityRecipe: RequestHandler<
       creatorId: recipe.creatorId,
       communityId: recipe.communityId,
       originRecipeId: recipe.originRecipeId,
-      tags: recipe.tags.map((rt) => rt.tag),
-      ingredients: recipe.ingredients.map((ri) => ({
-        id: ri.id,
-        name: ri.ingredient.name,
-        ingredientId: ri.ingredient.id,
-        quantity: ri.quantity,
-        order: ri.order,
-      })),
+      tags: formatTags(recipe.tags),
+      ingredients: formatIngredients(recipe.ingredients),
+    });
+
+    appEvents.emitActivity({
+      type: "RECIPE_CREATED",
+      userId: authenticatedUserId,
+      communityId,
+      recipeId: result.community.id,
     });
 
     res.status(201).json({
@@ -226,11 +101,7 @@ export const getCommunityRecipes: RequestHandler<
   GetCommunityRecipesQuery
 > = async (req, res, next) => {
   const communityId = req.params.communityId;
-  const limit = Math.min(
-    Math.max(parseInt(req.query.limit || "20", 10), 1),
-    100
-  );
-  const offset = Math.max(parseInt(req.query.offset || "0", 10), 0);
+  const { limit, offset } = parsePagination(req.query);
   const tagsFilter =
     req.query.tags
       ?.split(",")
@@ -244,8 +115,7 @@ export const getCommunityRecipes: RequestHandler<
   const searchFilter = req.query.search?.trim() || "";
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const whereClause: any = {
+    const whereClause: Prisma.RecipeWhereInput = {
       communityId,
       deletedAt: null,
     };
@@ -301,22 +171,20 @@ export const getCommunityRecipes: RequestHandler<
           createdAt: true,
           updatedAt: true,
           creatorId: true,
+          sharedFromCommunityId: true,
           creator: {
             select: {
               id: true,
               username: true,
             },
           },
-          tags: {
+          sharedFromCommunity: {
             select: {
-              tag: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
+              id: true,
+              name: true,
             },
           },
+          tags: RECIPE_TAGS_SELECT,
         },
         orderBy: {
           updatedAt: "desc",
@@ -335,17 +203,14 @@ export const getCommunityRecipes: RequestHandler<
       updatedAt: recipe.updatedAt,
       creatorId: recipe.creatorId,
       creator: recipe.creator,
-      tags: recipe.tags.map((rt) => rt.tag),
+      sharedFromCommunityId: recipe.sharedFromCommunityId,
+      sharedFromCommunity: recipe.sharedFromCommunity,
+      tags: formatTags(recipe.tags),
     }));
 
     res.status(200).json({
       data,
-      pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + recipes.length < total,
-      },
+      pagination: buildPaginationMeta(total, limit, offset, recipes.length),
     });
   } catch (error) {
     next(error);

@@ -135,6 +135,37 @@ export const mockReceivedInvites = [
   },
 ];
 
+// Mock user activity feed data
+export const mockUserActivityFeed = [
+  {
+    id: 'activity-1',
+    type: 'RECIPE_CREATED' as const,
+    metadata: null,
+    createdAt: new Date().toISOString(),
+    user: { id: 'test-user-id', username: 'testuser' },
+    recipe: { id: 'test-recipe-id', title: 'Test Recipe', isDeleted: false },
+    community: { id: 'community-1', name: 'Baking Club', isDeleted: false },
+  },
+  {
+    id: 'activity-2',
+    type: 'VARIANT_PROPOSED' as const,
+    metadata: null,
+    createdAt: new Date(Date.now() - 3600000).toISOString(),
+    user: { id: 'user-2', username: 'alice' },
+    recipe: { id: 'test-recipe-id', title: 'Test Recipe', isDeleted: false },
+    community: { id: 'community-1', name: 'Baking Club', isDeleted: false },
+  },
+  {
+    id: 'activity-3',
+    type: 'USER_JOINED' as const,
+    metadata: null,
+    createdAt: new Date(Date.now() - 7200000).toISOString(),
+    user: { id: 'user-3', username: 'bob' },
+    recipe: null,
+    community: { id: 'community-1', name: 'Baking Club', isDeleted: false },
+  },
+];
+
 // Etat mock pour simuler l'authentification
 let isUserAuthenticated = false;
 let isAdminAuthenticated = false;
@@ -603,6 +634,25 @@ export const handlers = [
     return HttpResponse.json({ message: 'Tag deleted' });
   }),
 
+  http.post(`${API_URL}/api/admin/tags/:id/merge`, async ({ request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, string>;
+    if (!body.targetId) {
+      return HttpResponse.json(
+        { error: 'ADMIN_TAG_004: Target ID required' },
+        { status: 400 }
+      );
+    }
+
+    return HttpResponse.json({ message: 'Tags merged' });
+  }),
+
   // =====================================
   // Admin Ingredients
   // =====================================
@@ -652,6 +702,67 @@ export const handlers = [
     };
 
     return HttpResponse.json({ ingredient: newIngredient }, { status: 201 });
+  }),
+
+  http.patch(`${API_URL}/api/admin/ingredients/:id`, async ({ params, request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const ingredient = mockIngredients.find(i => i.id === params.id);
+    if (!ingredient) {
+      return HttpResponse.json(
+        { error: 'ADMIN_ING_003: Ingredient not found' },
+        { status: 404 }
+      );
+    }
+
+    const body = await request.json() as Record<string, string>;
+
+    return HttpResponse.json({
+      ingredient: { ...ingredient, name: body.name?.toLowerCase().trim() || ingredient.name },
+    });
+  }),
+
+  http.delete(`${API_URL}/api/admin/ingredients/:id`, ({ params }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const ingredient = mockIngredients.find(i => i.id === params.id);
+    if (!ingredient) {
+      return HttpResponse.json(
+        { error: 'ADMIN_ING_003: Ingredient not found' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json({ message: 'Ingredient deleted' });
+  }),
+
+  http.post(`${API_URL}/api/admin/ingredients/:id/merge`, async ({ request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, string>;
+    if (!body.targetId) {
+      return HttpResponse.json(
+        { error: 'ADMIN_ING_004: Target ID required' },
+        { status: 400 }
+      );
+    }
+
+    return HttpResponse.json({ message: 'Ingredients merged' });
   }),
 
   // =====================================
@@ -705,6 +816,34 @@ export const handlers = [
     return HttpResponse.json({ feature: newFeature }, { status: 201 });
   }),
 
+  http.patch(`${API_URL}/api/admin/features/:id`, async ({ params, request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const feature = mockFeatures.find(f => f.id === params.id);
+    if (!feature) {
+      return HttpResponse.json(
+        { error: 'ADMIN_FEAT_003: Feature not found' },
+        { status: 404 }
+      );
+    }
+
+    const body = await request.json() as Record<string, unknown>;
+
+    return HttpResponse.json({
+      feature: {
+        ...feature,
+        name: (body.name as string) || feature.name,
+        description: body.description !== undefined ? body.description : feature.description,
+        isDefault: body.isDefault !== undefined ? body.isDefault : feature.isDefault,
+      },
+    });
+  }),
+
   // =====================================
   // Admin Communities
   // =====================================
@@ -755,8 +894,49 @@ export const handlers = [
         features: [
           { id: 'feat-1', code: 'MVP', name: 'MVP Feature', grantedAt: new Date().toISOString(), grantedBy: 'system', revokedAt: null },
         ],
+        updatedAt: new Date().toISOString(),
+        pendingInvites: 0,
       },
     });
+  }),
+
+  http.delete(`${API_URL}/api/admin/communities/:id`, ({ params }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const community = mockCommunities.find(c => c.id === params.id);
+    if (!community) {
+      return HttpResponse.json(
+        { error: 'ADMIN_COM_001: Community not found' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json({ message: 'Community deleted' });
+  }),
+
+  http.post(`${API_URL}/api/admin/communities/:communityId/features/:featureId`, () => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+    return HttpResponse.json({ message: 'Feature granted' });
+  }),
+
+  http.delete(`${API_URL}/api/admin/communities/:communityId/features/:featureId`, () => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json(
+        { error: 'ADMIN_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+    return HttpResponse.json({ message: 'Feature revoked' });
   }),
 
   // =====================================
@@ -926,6 +1106,33 @@ export const handlers = [
   }),
 
   // =====================================
+  // User Profile
+  // =====================================
+
+  http.patch(`${API_URL}/api/users/me`, async ({ request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, string>;
+
+    if (body.email === 'taken@example.com') {
+      return HttpResponse.json(
+        { error: 'Email already in use' },
+        { status: 409 }
+      );
+    }
+
+    return HttpResponse.json({
+      ...mockUser,
+      ...body,
+    });
+  }),
+
+  // =====================================
   // User Invitations
   // =====================================
 
@@ -963,6 +1170,124 @@ export const handlers = [
   }),
 
   // =====================================
+  // User Activity Feed
+  // =====================================
+
+  http.get(`${API_URL}/api/communities/:communityId/activity`, ({ request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const url = new URL(request.url);
+    const limit = parseInt(url.searchParams.get('limit') || '20');
+    const offset = parseInt(url.searchParams.get('offset') || '0');
+
+    const activities = mockUserActivityFeed.slice(offset, offset + limit);
+
+    return HttpResponse.json({
+      data: activities,
+      pagination: {
+        total: mockUserActivityFeed.length,
+        limit,
+        offset,
+        hasMore: offset + limit < mockUserActivityFeed.length,
+      },
+    });
+  }),
+
+  http.get(`${API_URL}/api/users/me/activity`, ({ request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const url = new URL(request.url);
+    const limit = parseInt(url.searchParams.get('limit') || '20');
+    const offset = parseInt(url.searchParams.get('offset') || '0');
+
+    const activities = mockUserActivityFeed.slice(offset, offset + limit);
+
+    return HttpResponse.json({
+      data: activities,
+      pagination: {
+        total: mockUserActivityFeed.length,
+        limit,
+        offset,
+        hasMore: offset + limit < mockUserActivityFeed.length,
+      },
+    });
+  }),
+
+  // =====================================
+  // Recipe Communities (for share modal)
+  // =====================================
+
+  http.get(`${API_URL}/api/recipes/:recipeId/communities`, () => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+    return HttpResponse.json({ data: [] });
+  }),
+
+  // =====================================
+  // Recipe Share
+  // =====================================
+
+  http.post(`${API_URL}/api/recipes/:recipeId/share`, async ({ params, request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, string>;
+    const { targetCommunityId } = body;
+
+    if (!targetCommunityId) {
+      return HttpResponse.json(
+        { error: 'RECIPE_006: Target community required' },
+        { status: 400 }
+      );
+    }
+
+    // Simulate permission error for specific test case
+    if (targetCommunityId === 'no-permission') {
+      return HttpResponse.json(
+        { error: 'RECIPE_007: Cannot share - must be MODERATOR or recipe creator' },
+        { status: 403 }
+      );
+    }
+
+    const newRecipe = {
+      id: `shared-recipe-${Date.now()}`,
+      title: 'Shared Recipe',
+      content: 'Shared recipe content',
+      imageUrl: null,
+      creatorId: mockUser.id,
+      creator: mockUser,
+      communityId: targetCommunityId,
+      originRecipeId: params.recipeId,
+      sharedFromCommunityId: 'community-1',
+      sharedFromCommunity: { id: 'community-1', name: 'Baking Club' },
+      tags: [],
+      ingredients: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    return HttpResponse.json(newRecipe, { status: 201 });
+  }),
+
+  // =====================================
   // Admin Activity
   // =====================================
 
@@ -984,13 +1309,14 @@ export const handlers = [
       filteredActivities = filteredActivities.filter(a => a.type === type);
     }
 
+    const remaining = Math.max(0, filteredActivities.length - offset - limit);
     return HttpResponse.json({
       activities: filteredActivities.slice(offset, offset + limit),
       pagination: {
         total: filteredActivities.length,
         limit,
         offset,
-        hasMore: offset + limit < filteredActivities.length,
+        remaining,
       },
     });
   }),

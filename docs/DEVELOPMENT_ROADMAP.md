@@ -9,6 +9,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ## Phase 0: Setup & Infrastructure
 
 ### 0.1 Configuration initiale
+
 - [x] Setup boilerplate (React + Express + PostgreSQL + Docker)
 - [x] Configuration Docker Compose
 - [x] CI/CD GitHub Actions
@@ -18,12 +19,14 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] Migration initiale creee et appliquee
 
 ### 0.2 Structure du code
+
 - [x] Creation de l'arborescence backend (services/, middleware/, admin/)
 - [x] Creation de l'arborescence frontend (pages/, components/, hooks/, contexts/)
 - [x] Configuration ESLint/Prettier uniformes
 - [x] Setup des types TypeScript partages (frontend/src/models/)
 
 ### Livrables
+
 - Projet demarrable en local via `docker-compose up`
 - Schema BDD complet et migre
 - Structure de code prete pour le developpement
@@ -33,6 +36,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ## Phase 0.5: SuperAdmin & Briques (NOUVEAU)
 
 ### 0.5.1 Backend Admin
+
 - [x] Installation dependances (otplib, qrcode)
 - [x] Creation module admin/ isole
   - admin/controllers/
@@ -49,6 +53,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Genere totpSecret
 
 ### 0.5.2 Backend Auth Admin
+
 - [x] Configuration double session store
   - Session users: `connect.sid` → model Session
   - Session admin: `admin.sid` → model AdminSession
@@ -71,6 +76,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Retourne infos admin (sans totpSecret)
 
 ### 0.5.3 Backend Admin API
+
 - [x] Routes Tags CRUD (/api/admin/tags)
   - GET, POST, PATCH, DELETE, POST merge
 - [x] Routes Ingredients CRUD (/api/admin/ingredients)
@@ -86,12 +92,14 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] AdminActivityLog sur toutes les actions
 
 ### 0.5.4 Seed Feature MVP
+
 - [x] Ajouter feature MVP dans seed
   - code: "MVP", isDefault: true
 - [x] Modifier creation communaute
   - Attribution auto features par defaut
 
 ### 0.5.5 Frontend Admin (NOUVEAU)
+
 - [x] Route React /admin/login
   - Etape 1: Formulaire email + password
   - Etape 2: Affichage QR code si !totpEnabled (setup initial)
@@ -107,8 +115,9 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] Context AdminAuthProvider (isole de AuthProvider user)
 
 ### 0.5.6 Securite Admin (transversal)
-- [x] Rate limiting sur /api/admin/auth/* (express-rate-limit, 5/15min)
-- [x] Rate limiting global sur /api/admin/* (30 req/min)
+
+- [x] Rate limiting sur /api/admin/auth/\* (express-rate-limit, 5/15min)
+- [x] Rate limiting global sur /api/admin/\* (30 req/min)
 - [x] Headers securite (helmet)
   - CSP strict pour pages admin
   - X-Frame-Options: DENY
@@ -118,6 +127,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] Session admin courte (30min, non renouvelable)
 
 ### Livrables
+
 - SuperAdmin fonctionnel avec 2FA
 - Interface admin minimale et securisee (login + dashboard)
 - API admin complete (tags, ingredients, features, communities)
@@ -125,7 +135,9 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - Feature MVP attribuee auto
 
 ### Tests Phase 0.5
+
 **Backend** (~60 tests):
+
 - [x] `adminAuth.test.ts` - Auth 2FA admin (14 tests)
 - [x] `adminTags.test.ts` - CRUD tags admin (12 tests)
 - [x] `adminIngredients.test.ts` - CRUD ingredients admin (12 tests)
@@ -135,6 +147,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] `adminActivity.test.ts` - Logs activite (4 tests)
 
 **Frontend** (~20 tests):
+
 - [x] `AdminAuthContext.test.tsx` - Context admin 2FA (7 tests)
 - [x] `AdminProtectedRoute.test.tsx` - Guard admin (4 tests)
 - [x] `AdminLoginPage.test.tsx` - Page login 2FA (8 tests)
@@ -146,6 +159,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ## Phase 1: Authentification & Base
 
 ### 1.1 Backend Auth
+
 - [x] Route POST /api/auth/signup
   - Validation email, username, password
   - Hash password (bcrypt)
@@ -160,6 +174,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] Middleware requireAuth
 
 ### 1.2 Frontend Auth
+
 - [x] Page Login (Modal - pattern UX hybride)
 - [x] Page Signup (Page dediee - meilleur onboarding)
 - [x] Context AuthProvider
@@ -168,19 +183,24 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] Redirection automatique
 
 ### 1.3 Layout de base
+
 - [x] Header avec navigation (NavBar sticky)
 - [x] Sidebar (communautes) - placeholder, ready for Phase 3
 - [x] Layout responsive (DaisyUI drawer pattern)
 
 ### Livrables
+
 - Utilisateurs peuvent s'inscrire, se connecter, se deconnecter
 - Navigation de base fonctionnelle
 
 ### Tests Phase 1
+
 **Backend** (~16 tests):
+
 - [x] `auth.test.ts` - User signup/login/logout/me (16 tests)
 
 **Frontend** (~25 tests):
+
 - [x] `AuthContext.test.tsx` - Context auth user (6 tests)
 - [x] `LoginModal.test.tsx` - Modal login (6 tests)
 - [x] `Modal.test.tsx` - Composant modal (4 tests)
@@ -193,6 +213,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ## Phase 2: Catalogue Personnel
 
 ### 2.1 Backend Recipes (personnel)
+
 - [x] Route POST /api/recipes
   - Creation recette personnelle
   - Gestion tags (creation a la volee si inexistant)
@@ -211,6 +232,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Soft delete (owner only)
 
 ### 2.2 Backend Autocomplete (NOUVEAU)
+
 - [x] Route GET /api/tags
   - Recherche tags avec recipeCount
   - Limite configurable (max 100)
@@ -219,6 +241,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Limite configurable (max 100)
 
 ### 2.3 Frontend Catalogue
+
 - [x] Page liste recettes personnelles
   - Grille responsive (1-4 colonnes)
   - Pagination "Load more"
@@ -246,17 +269,21 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Bouton reset
 
 ### Livrables
+
 - [x] CRUD complet sur les recettes personnelles
 - [x] Interface de creation/edition fonctionnelle
 - [x] Pagination et filtres fonctionnels
 
 ### Tests Phase 2
+
 **Backend** (~40 tests):
+
 - [x] `recipes.test.ts` - CRUD complet recettes (31 tests)
 - [x] `tags.test.ts` - GET /api/tags autocomplete (5 tests)
 - [x] `ingredients.test.ts` - GET /api/ingredients autocomplete (5 tests)
 
 **Frontend** (~40 tests):
+
 - [x] `RecipeCard.test.tsx` - Carte recette (8 tests)
 - [x] `RecipeFilters.test.tsx` - Filtres search/tags/ingredients (8 tests)
 - [x] `TagSelector.test.tsx` - Selecteur tags (6 tests)
@@ -271,6 +298,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ## Phase 3: Communautes & Invitations
 
 ### 3.1 Backend Communities
+
 - [x] Route POST /api/communities
   - Creation communaute
   - Ajout createur comme MODERATOR (admin de communaute)
@@ -283,6 +311,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Modification (MODERATOR only)
 
 ### 3.2 Backend Invitations (NOUVEAU)
+
 - [x] Route POST /api/communities/:id/invites
   - Envoi invitation (MODERATOR only)
   - Recherche user par email/username/userId
@@ -310,6 +339,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Log ActivityLog (INVITE_REJECTED)
 
 ### 3.3 Backend Members
+
 - [x] Route GET /api/communities/:id/members
 - [x] Route PATCH /api/communities/:id/members/:userId
   - Promotion (MODERATOR only, no demote)
@@ -322,16 +352,18 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Log ActivityLog (USER_LEFT ou USER_KICKED)
 
 ### 3.4 Frontend Communities
+
 - [x] Page liste mes communautes (CommunitiesPage)
 - [x] Page creation communaute (CommunityCreatePage)
 - [x] Page detail communaute avec onglets Membres/Invitations/Recipes
-- [x] Page edition communaute (CommunityEditPage, MODERATOR only)
+- [x] Page edition communaute (inline SidePanel, CommunityEditPage en fallback route)
 - [x] Composant MembersList (promotion, retrait, leave)
 - [x] Dashboard page (communautes + recettes, page d'accueil authentifiee)
 - [x] Sidebar Discord-style avec avatars communautes (initiales)
 - [x] Correction bug leave community (gestion 410, redirect)
 
 ### 3.5 Frontend Invitations
+
 - [x] Page invitations recues (InvitationsPage)
 - [x] Badge notification (InvitationBadge)
 - [x] Carte invitation avec Accept/Reject (InviteCard)
@@ -341,26 +373,31 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] Redirect vers communaute apres acceptation invitation
 
 ### 3.6 Frontend User Management
+
 - [x] User menu (icone profil + dropdown dans navbar)
 - [x] Page profil (modification username, email, mot de passe)
 - [x] Backend PATCH /api/users/me (mise a jour profil)
 - [x] Backend GET /api/users/search (autocomplete usernames)
 
 ### Livrables
+
 - Gestion complete des communautes
 - Systeme d'invitation avec acceptation explicite
 - Systeme de roles fonctionnel
 - Kick de membres
 
 ### Tests Phase 3
+
 **Backend** (~50 tests):
+
 - [x] `communities.test.ts` - CRUD communautes (27 tests)
 - [x] `invitations.test.ts` - Systeme d'invitations (35 tests)
 - [x] `members.test.ts` - Gestion membres, kick, promotion (22 tests)
 
 **Frontend** (~31 tests):
+
 - [x] `CommunitiesPage.test.tsx` - Liste communautes (7 tests)
-- [x] `CommunityDetailPage.test.tsx` - Detail communaute (8 tests)
+- [x] `CommunityDetailPage.test.tsx` - Detail communaute (11 tests)
 - [x] `InviteCard.test.tsx` - Carte invitation (5 tests)
 - [x] `MembersList.test.tsx` - Liste membres (6 tests)
 - [x] `InviteUserModal.test.tsx` - Modal invitation (5 tests)
@@ -372,6 +409,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 **Note**: La synchronisation bidirectionnelle (modif perso ↔ communautaire) sera implementee en Phase 5.
 
 ### 4.1 Backend
+
 - [x] Route POST /api/communities/:id/recipes
   - Creation recette dans catalogue personnel (communityId: null)
   - Creation copie dans communaute (communityId: X)
@@ -384,13 +422,15 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Gestion recettes communautaires (verification membership)
 
 ### 4.2 Frontend
+
 - [x] Liste recettes dans page communaute
 - [x] Creation recette depuis communaute
 - [x] Distinction visuelle perso vs communaute
 - [x] Lien vers communaute sur recette
-- [ ] Badge "Partage depuis X" si sharedFromCommunityId
+- [x] Badge "Partage depuis X" si sharedFromCommunityId
 
 ### Livrables
+
 - Creation et affichage de recettes dans les communautes
 - Copie automatique dans catalogue personnel
 - Lien recette perso ↔ communautaire fonctionnel
@@ -400,6 +440,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ## Phase 5: Propositions & Variantes
 
 **Decisions metier validees (voir BUSINESS_RULES.md sections 3.2.1, 3.3.1, 4.2, 4.4, 5.4, 6.3):**
+
 - Synchro bidirectionnelle: titre/contenu/ingredients synchronises, tags LOCAUX par communaute
 - Conflit: bloquer acceptation si recipe.updatedAt > proposal.createdAt (PROPOSAL_003)
 - Cascade: acceptation → 1 ActivityLog par communaute impactee
@@ -408,6 +449,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - Variantes de variantes OK, originRecipeId = parent immediat
 
 ### 5.1 Backend Proposals
+
 - [x] Route GET /api/recipes/:id/proposals
   - Liste propositions (filtre status)
 - [x] Route POST /api/recipes/:id/proposals
@@ -429,12 +471,14 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
   - Log ActivityLog (VARIANT_CREATED)
 
 ### 5.2 Backend Variants
+
 - [x] Route GET /api/recipes/:id/variants
   - Liste variantes (where originRecipeId = X AND isVariant = true)
   - **Scope**: seulement les variantes de CETTE communaute
   - **Tri**: par MAX(createdAt, updatedAt) DESC
 
 ### 5.3 Backend Orphan Handling
+
 - [x] Service handleOrphanedRecipes
   - Declenche quand: membre quitte/kick
   - Auto-refuse toutes les propositions PENDING → cree variantes
@@ -443,6 +487,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] Tests integration (4 tests: leave avec proposals, multiple proposals, decided proposals, kick)
 
 ### 5.4 Frontend
+
 - [x] Bouton "Proposer modification" sur recette (pas sur ses propres)
 - [x] Page/Modal creation proposition (formulaire pre-rempli)
 - [x] Section propositions pour proprietaire (dans RecipeDetailPage)
@@ -450,6 +495,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 - [x] Dropdown variantes sur page recette
 
 ### Livrables
+
 - Workflow complet de propositions
 - Creation automatique de variantes
 - Visualisation des variantes
@@ -459,25 +505,29 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 ## Phase 6: Activity Feed (communautaire + personnel)
 
 ### 6.1 Backend Activity
-- [ ] Service ActivityService
-  - Methode log() centralisee
-  - Types d'evenements (enum ActivityType)
-- [ ] Route GET /api/communities/:id/activity
-  - Feed pagine par communaute
-- [ ] Route GET /api/users/me/activity (NOUVEAU)
-  - Feed personnel
-  - Propositions sur mes recettes
-  - Variantes de mes recettes
-  - Invitations recues
+
+- [x] Controller `controllers/activity.ts`
+  - getCommunityActivity (feed communaute)
+  - getMyActivity (feed personnel)
+- [x] Route GET /api/communities/:id/activity
+  - Feed pagine par communaute (memberOf)
+- [x] Route GET /api/users/me/activity
+  - Feed personnel pagine
+  - Actions propres de l'utilisateur
+  - Propositions sur ses recettes
+- [x] Tests `activity.test.ts` (15 tests)
 
 ### 6.2 Frontend Activity
-- [ ] Composant ActivityFeed
-- [ ] Integration dans page communaute (onglet)
-- [ ] Page/Section feed personnel
-- [ ] Formatage des evenements par type
-- [ ] Liens vers elements concernes
+
+- [x] Composant ActivityFeed avec icones par type d'evenement
+- [x] Integration dans page communaute (onglet Activity)
+- [x] Section feed personnel sur DashboardPage
+- [x] Formatage des evenements (16 types supportes)
+- [x] Liens vers recettes et communautes
+- [x] Tests `ActivityFeed.test.tsx` (8 tests)
 
 ### Livrables
+
 - Activity feed communautaire fonctionnel
 - Activity feed personnel fonctionnel
 
@@ -488,100 +538,154 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 <!-- User Stories: US-8.1 (Fork recette vers autre communaute), US-8.2 (Voir origine recette forkee) - voir docs/USER_STORIES.md Epic 8 -->
 
 **Decisions metier validees (voir BUSINESS_RULES.md section 5):**
+
 - originRecipeId pointe vers recette COMMUNAUTAIRE source (pas perso)
 - Fork = totalement independant, pas de synchronisation
 - Chaines de forks OK: A→B→C, origin = parent immediat
 - Analytics: remontee en chaine (+1 pour A quand C fork B)
 
 ### 7.1 Backend
-- [ ] Route POST /api/recipes/:id/share
+
+- [x] Route POST /api/recipes/:id/share
   - Validation membership deux communautes
-  - Validation permission (admin OU createur)
-  - Creation fork:
-    - originRecipeId = recette communautaire source
-    - sharedFromCommunityId = communaute source
-  - **Analytics chaine**: incrementer shares/forks de TOUS les ancetres
-  - Log ActivityLog (RECIPE_SHARED) dans les deux communautes
+  - Validation permission (MODERATOR OU createur)
+  - Creation fork avec originRecipeId et sharedFromCommunityId
+  - Analytics chaine: increment shares/forks pour tous les ancetres
+  - ActivityLog RECIPE_SHARED dans les deux communautes
+- [x] Tests `share.test.ts` (28 tests)
 
 ### 7.2 Frontend
-- [ ] Bouton "Partager dans une communaute"
-- [ ] Modal selection communaute cible
-- [ ] Badge "Partage depuis X" sur recettes forkees
-- [ ] Lien vers origine (si accessible)
+
+- [x] Bouton "Partager dans une communaute"
+- [x] Modal selection communaute cible (ShareRecipeModal)
+- [x] Badge "Partage depuis X" sur recettes forkees (RecipeDetailPage, RecipeCard, RecipeListRow)
+- [x] Tests ShareRecipeModal (7 tests)
+
+### 7.3 Corrections pre-Phase 8 (13 fixes)
+
+- [x] Fix bug ShareRecipeModal (response.data.recipe → response.data)
+- [x] Prevention partage doublon (SHARE_006)
+- [x] Badge "Shared by: username" (remplace "Shared from: community")
+- [x] Publish recette perso vers communautes (POST /api/recipes/:id/publish)
+- [x] Endpoint GET /api/recipes/:id/communities (liste communautes d'une recette)
+- [x] SharePersonalRecipeModal (multi-select checkboxes)
+- [x] Activity tab visible uniquement pour moderateurs
+- [x] Synchro bidirectionnelle recettes (perso ↔ communaute, excl. forks/variants/tags)
+- [x] Sidebar header sticky + scrollbar invisible
+- [x] Default tab "recipes" (au lieu de "members")
+- [x] Suppression bouton "Back to communities"
+- [x] Side panel redimensionnable (remplace tabs members/activity/invitations)
+- [x] Edit communaute inline dans le side panel (remplace page separee)
+- [x] Sidebar refresh automatique apres edit communaute (custom event)
+- [x] ShareRecipeModal refactored en checkboxes multi-select (meme UX que personal)
+- [x] getRecipeCommunities trace toute la chaine de forks (prevention doublons)
+- [x] Bouton Share sur RecipeDetailPage pour recettes personnelles
+- [x] Redirect vers page detail apres creation recette communautaire
+- [x] Navigation tags communautaires (filtre via query params)
+- [x] Tests backend share.test.ts (28 tests total, +13 nouveaux)
+- [x] Tests frontend CommunityDetailPage (11 tests, reecrit pour side panel)
 
 ### Livrables
+
 - Fork de recettes entre communautes fonctionnel
 - Tracabilite des origines
 - Analytics avec remontee en chaine
+- Publication recettes perso vers communautes
+- Side panel redimensionnable pour membres/activity/invitations
+- Synchro bidirectionnelle recettes perso ↔ communaute
 
 ---
 
 ## Phase 8: Finitions MVP
 
 ### 8.1 Qualite
-- [ ] Gestion complete des erreurs frontend (toast/notification)
-- [ ] Messages de confirmation/feedback
-- [ ] Loading states (skeletons)
-- [ ] Empty states (messages explicatifs)
-- [ ] Gestion soft delete (filtrage automatique deletedAt IS NULL)
+
+- [x] Refactoring du code pour ameliorer la lisibilite et la maintenabilite et decouper les fichiers trop longs
+  - recipes.ts (1438 -> 720 lignes) decoupe en recipeVariants.ts + recipeShare.ts
+- [x] Gestion complete des erreurs frontend (toast/notification)
+- [x] Messages de confirmation/feedback
+- [x] Loading states (skeletons)
+- [x] Empty states (messages explicatifs)
+- [x] Gestion soft delete (filtrage automatique deletedAt IS NULL) - audit complet, tout OK
 
 ### 8.2 Tests
+
+- [x] Corriger les tests frontend qui ne passent pas (ShareRecipeModal.test.tsx - 6 tests fixes, combobox -> checkboxes)
+- [x] Verifier que le lint passe sans erreur (`npm run lint` frontend + backend) - 0 erreurs
 - [ ] Tests manuels complets (parcours utilisateur)
-- [ ] Corrections bugs
-- [ ] Verification toutes les regles metier
+- [x] Corrections bugs
+- [x] Verification toutes les regles metier
 
 ### 8.3 Documentation
-- [ ] README utilisateur
-- [ ] Guide de deploiement
+
+- [x] README utilisateur
+- [x] Guide de deploiement
 
 ### Livrables
+
 - Application MVP complete et testee
 - Prete pour mise en production
 
 ---
 
-## Phase 9: (Post-MVP) Analytics & Ameliorations
+## Phase 9: (Post-MVP) Ameliorations
 
-### 9.1 Analytics
-- [ ] Comptage vues (RecipeView, RecipeAnalytics)
-- [ ] Affichage statistiques sur recettes
-- [ ] Dashboard analytics
+### 9.2 Notifications temps reel + Dark mode
 
-### 9.2 Ameliorations UX
-- [ ] Recherche globale
-- [ ] Notifications en temps reel (WebSocket)
-- [ ] Mode sombre
-- [ ] PWA / Offline support
+- [x] Dark mode : themes DaisyUI forest (dark) + winter (light)
+  - ThemeContext avec localStorage + system preference
+  - Anti-flash script inline dans index.html
+  - Toggle soleil/lune dans NavBar (user only, admin reste dark)
+  - Cleanup global.css (suppression couleurs hardcodees)
+  - 7 tests ThemeContext + 2 tests NavBar toggle
+- [x] WebSocket (Socket.IO) : events temps reel
+  - Backend : EventEmitter singleton + Socket.IO server avec auth session
+  - Middleware auth : wrappe session Express, rejette si pas de userId
+  - Rooms : user:{userId} + community:{communityId}
+  - Emissions depuis controllers : invites, members, proposals, recipes, share
+  - CSP : ajout ws:/wss: dans connectSrc
+  - Frontend : SocketContext (auto connect/disconnect), useSocketEvent, useCommunityRoom
+  - useNotificationToasts (INVITE_SENT, VARIANT_PROPOSED, PROPOSAL_ACCEPTED/REJECTED...)
+  - Remplacement polling 60s par socket events (NotificationDropdown, InvitationBadge)
+  - Auto-refresh ActivityFeed sur socket activity events
+  - 3 tests eventEmitter, 4 tests websocket integration, 2 tests SocketContext
 
 ### 9.3 Technique
-- [ ] Tests unitaires
-- [ ] Tests E2E
-- [ ] Documentation API (Swagger)
-- [ ] Monitoring / Logging
+
+- [x] Tests unitaires supplementaires (+113 tests, 550 -> 663)
+  - Backend: pagination, validation, responseFormatters, auth middleware, requireSuperAdmin, security
+  - Frontend hooks: useClickOutside, useDebouncedEffect, useConfirm, useSocketEvent, useCommunityRoom, useNotificationToasts, usePaginatedList
+  - Frontend utils: formatDate, communityEvents
+  - Frontend pages: DashboardPage, ProfilePage, NotFoundPage, RecipeFormPage
+- [x] Logging structure (Pino)
+  - Remplacement morgan par pino-http
+  - Logger central (pino) : silent en test, pino-pretty en dev, JSON en prod
+  - Remplacement console.log/error dans app.ts, server.ts, socketServer.ts
 
 ### 9.4 Frontend Admin - Pages de gestion
-- [ ] Layout admin avec sidebar navigation
+
+- [x] Layout admin avec sidebar navigation
   - Dashboard, Tags, Ingredients, Features, Communities, Activity
-- [ ] Page /admin/tags
+- [x] Page /admin/tags
   - Liste paginee avec recherche
   - Modal creation/edition tag
   - Bouton suppression avec confirmation
   - Fonctionnalite merge (selectionner 2+ tags)
-- [ ] Page /admin/ingredients
+- [x] Page /admin/ingredients
   - Liste paginee avec recherche
   - Modal creation/edition ingredient
   - Bouton suppression avec confirmation
   - Fonctionnalite merge (selectionner 2+ ingredients)
-- [ ] Page /admin/features
+- [x] Page /admin/features
   - Liste des features avec statut (actif/inactif)
   - Modal creation/edition feature
   - Toggle actif/inactif
-- [ ] Page /admin/communities
+- [x] Page /admin/communities
   - Liste paginee avec recherche
   - Detail communaute (membres, recettes, features)
   - Attribution/revocation features
   - Bouton suppression avec confirmation
-- [ ] Page /admin/activity
+- [x] Page /admin/activity
   - Liste paginee des logs d'activite admin
   - Filtres par type d'action, date
 
@@ -589,18 +693,18 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 
 ## Estimation par phase
 
-| Phase | Description | Complexite |
-|-------|-------------|------------|
-| 0 | Setup | Faible |
-| **0.5** | **SuperAdmin & Briques** | **Haute** |
-| 1 | Auth | Moyenne |
-| 2 | Catalogue personnel | Moyenne |
-| 3 | Communautes & Invitations | **Haute** |
-| 4 | Recettes communautaires | Moyenne |
-| 5 | Propositions & Variantes | Haute |
-| 6 | Activity Feed | Moyenne |
-| 7 | Partage inter-communautes | Moyenne |
-| 8 | Finitions | Moyenne |
+| Phase   | Description               | Complexite |
+| ------- | ------------------------- | ---------- |
+| 0       | Setup                     | Faible     |
+| **0.5** | **SuperAdmin & Briques**  | **Haute**  |
+| 1       | Auth                      | Moyenne    |
+| 2       | Catalogue personnel       | Moyenne    |
+| 3       | Communautes & Invitations | **Haute**  |
+| 4       | Recettes communautaires   | Moyenne    |
+| 5       | Propositions & Variantes  | Haute      |
+| 6       | Activity Feed             | Moyenne    |
+| 7       | Partage inter-communautes | Moyenne    |
+| 8       | Finitions                 | Moyenne    |
 
 ---
 
@@ -643,6 +747,7 @@ Phase 8 (Finitions MVP)
 ## Checklist de validation MVP
 
 ### SuperAdmin (Phase 0.5)
+
 - [x] SuperAdmin cree via CLI (`npm run admin:create`)
 - [x] SuperAdmin peut se connecter avec 2FA TOTP (backend ready)
 - [x] SuperAdmin peut gerer les tags (CRUD, merge) (backend ready)
@@ -654,6 +759,7 @@ Phase 8 (Finitions MVP)
 - [x] Toutes les actions admin sont loguees
 
 ### Fonctionnel
+
 - [x] Un utilisateur peut s'inscrire et se connecter
 - [x] Un utilisateur peut creer des recettes personnelles
 - [x] Un utilisateur peut creer une communaute
@@ -667,12 +773,13 @@ Phase 8 (Finitions MVP)
 - [x] Une copie est creee dans son catalogue personnel
 - [x] Un membre peut proposer une modification
 - [x] Le createur peut accepter (mise a jour des deux recettes) ou refuser (variante)
-- [ ] Les variantes sont visibles dans un dropdown
-- [ ] Un utilisateur peut forker une recette vers une autre communaute
-- [ ] L'activity feed communautaire montre les evenements
-- [ ] L'activity feed personnel montre les propositions sur mes recettes
+- [x] Les variantes sont visibles dans un dropdown
+- [x] Un utilisateur peut forker une recette vers une autre communaute
+- [x] L'activity feed communautaire montre les evenements
+- [x] L'activity feed personnel montre les propositions sur mes recettes
 
 ### Technique
+
 - [ ] Application stable sans erreurs bloquantes
 - [ ] Donnees persistees correctement
 - [x] Sessions utilisateurs fonctionnelles (via @quixo3/prisma-session-store)
@@ -710,11 +817,14 @@ Phase 8 (Finitions MVP)
 ## Maintenance technique (CI/CD)
 
 ### Dependances a mettre a jour
-- [ ] Corriger les 3 vulnerabilites "high severity" (`npm audit fix`)
-- [ ] Migrer otplib de v12 vers v13
-- [ ] Mettre a jour ESLint vers une version supportee (v8.57.1 deprecie)
-- [ ] Migrer config Prisma de `package.json#prisma` vers `prisma.config.ts` (deprecie Prisma 7)
-- [ ] Remplacer `npm prune --production` par `--omit=dev` dans Dockerfile
+
+- [x] Corriger vulnerabilite axios frontend (`npm audit fix`)
+- [x] Migrer otplib v12 -> v13 (nouvelle API: generateSecret, generateSync, verifySync, generateURI)
+- [x] Mettre a jour ESLint v8 -> v9 (flat config `eslint.config.mjs`)
+- [x] Migrer config Prisma vers `prisma.config.ts` -> non necessaire (setup standard suffisant, seed non supporte en ~6.19)
+- [x] Remplacer `npm prune --production` par `--omit=dev` dans Dockerfile
+- [x] Fix vulnerabilites npm: vitest 2->3 (fix 12 vulns esbuild/vite), bcrypt 5->6 (fix 3 vulns tar)
+- [x] `npm audit` 0 vulnerabilites (backend + frontend)
 
 ---
 
@@ -723,12 +833,14 @@ Phase 8 (Finitions MVP)
 ### Infrastructure
 
 **Backend**:
+
 - Framework: Vitest + Supertest
 - DB: PostgreSQL test database (via `testPrisma`)
 - Helpers: `backend/src/__tests__/setup/testHelpers.ts`
 - Config: `backend/vitest.config.ts`
 
 **Frontend**:
+
 - Framework: Vitest + Testing Library + MSW
 - Mocks: `frontend/src/__tests__/setup/mswHandlers.ts`
 - Utils: `frontend/src/__tests__/setup/testUtils.tsx`
@@ -752,6 +864,7 @@ cd frontend && npm run test:coverage # Tests avec couverture
 ```
 
 ### Couverture cible
+
 - Backend: > 80% sur controllers/routes
 - Frontend: > 70% sur composants critiques
 
@@ -761,6 +874,7 @@ Lors de l'ajout d'une nouvelle fonctionnalite, inclure les tests suivants:
 
 ```markdown
 ### X.Y Nouvelle Fonctionnalite
+
 - [ ] Implementation backend
 - [ ] Implementation frontend
 - [ ] **Tests backend**: [fichiers .test.ts]
@@ -777,17 +891,25 @@ Lors de l'ajout d'une nouvelle fonctionnalite, inclure les tests suivants:
 
 ### Resume des tests implementes
 
-| Categorie | Fichiers | Tests |
-|-----------|----------|-------|
-| Backend Auth | auth.test.ts, adminAuth.test.ts | ~30 |
-| Backend Admin API | adminTags, adminIngredients, adminFeatures, adminCommunities, adminDashboard, adminActivity | ~50 |
-| Backend User API | recipes.test.ts, tags.test.ts, ingredients.test.ts | ~42 |
-| Backend Communities | communities.test.ts, communityRecipes.test.ts, invitations.test.ts, members.test.ts | ~112 |
-| Backend Proposals | proposals.test.ts | ~31 |
-| Backend Variants | variants.test.ts | ~10 |
-| Frontend Contexts | AuthContext, AdminAuthContext | ~13 |
-| Frontend Auth | LoginModal, Modal, SignUpPage, ProtectedRoute, NavBar | ~25 |
-| Frontend Admin | AdminProtectedRoute, AdminLoginPage, AdminDashboardPage, AdminLayout | ~21 |
-| Frontend Recipes | RecipeCard, RecipeFilters, TagSelector, IngredientList | ~28 |
-| Frontend Pages | HomePage, RecipesPage, MainLayout, Sidebar | ~25 |
-| **Total** | | **~387** |
+| Categorie           | Fichiers                                                                                    | Tests    |
+| ------------------- | ------------------------------------------------------------------------------------------- | -------- |
+| Backend Auth        | auth.test.ts, adminAuth.test.ts                                                             | ~30      |
+| Backend Admin API   | adminTags, adminIngredients, adminFeatures, adminCommunities, adminDashboard, adminActivity | ~50      |
+| Backend User API    | recipes.test.ts, tags.test.ts, ingredients.test.ts                                          | ~42      |
+| Backend Communities | communities.test.ts, communityRecipes.test.ts, invitations.test.ts, members.test.ts         | ~112     |
+| Backend Proposals   | proposals.test.ts                                                                           | ~31      |
+| Backend Variants    | variants.test.ts                                                                            | ~10      |
+| Backend Activity    | activity.test.ts                                                                            | ~15      |
+| Frontend Contexts   | AuthContext, AdminAuthContext                                                               | ~13      |
+| Frontend Auth       | LoginModal, Modal, SignUpPage, ProtectedRoute, NavBar                                       | ~25      |
+| Frontend Admin      | AdminProtectedRoute, AdminLoginPage, AdminDashboardPage, AdminLayout                        | ~19      |
+| Frontend Admin Pages| AdminTagsPage, AdminIngredientsPage, AdminFeaturesPage, AdminCommunitiesPage, AdminActivityPage | ~35  |
+| Frontend Recipes    | RecipeCard, RecipeFilters, TagSelector, IngredientList                                      | ~28      |
+| Frontend Pages      | HomePage, RecipesPage, MainLayout, Sidebar                                                  | ~25      |
+| Frontend Activity   | ActivityFeed.test.tsx                                                                       | ~8       |
+| Backend Share       | share.test.ts                                                                               | ~28      |
+| Frontend Communities| CommunitiesPage, CommunityDetailPage                                                        | ~18      |
+| Frontend Invitations| InviteCard, MembersList, InviteUserModal                                                    | ~16      |
+| Frontend Share      | ShareRecipeModal                                                                            | ~7       |
+| Frontend ErrorBoundary | ErrorBoundary.test.tsx                                                                    | ~2       |
+| **Total**           |                                                                                             | **~534** |

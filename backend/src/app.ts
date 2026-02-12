@@ -14,8 +14,9 @@ import adminCommunitiesRoutes from "./admin/routes/communitiesRoutes";
 import adminFeaturesRoutes from "./admin/routes/featuresRoutes";
 import adminDashboardRoutes from "./admin/routes/dashboardRoutes";
 import adminActivityRoutes from "./admin/routes/activityRoutes";
-import morgan from "morgan";
 import createHttpError, { isHttpError } from "http-errors";
+import { httpLogger } from "./middleware/httpLogger";
+import logger from "./util/logger";
 import cors from "cors";
 import session from "express-session";
 import env from "./util/validateEnv";
@@ -41,12 +42,12 @@ if (env.CORS_ORIGIN) {
   app.use(cors({ credentials: true, origin: env.CORS_ORIGIN }));
 }
 
-app.use(morgan("dev"));
+app.use(httpLogger);
 
 app.use(express.json());
 
 // User session middleware (cookie: connect.sid, duree: 1h)
-const userSession = session({
+export const userSession = session({
   name: "connect.sid",
   secret: env.SESSION_SECRET,
   resave: false,
@@ -119,7 +120,7 @@ app.use((req, res, next) => {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
-  console.error(error);
+  logger.error({ err: error, path: req.path, method: req.method }, "Unhandled error");
   let errorMessage = "An unknown error occurred";
   let statusCode = 500;
   if (isHttpError(error)) {

@@ -21,7 +21,7 @@ describe("Members API", () => {
     let moderator: Awaited<ReturnType<typeof createTestUser>>;
     let moderatorCookie: string;
     let member: Awaited<ReturnType<typeof createTestUser>>;
-    let memberCookie: string;
+    let _memberCookie: string;
     let community: Awaited<ReturnType<typeof createTestCommunity>>;
 
     beforeEach(async () => {
@@ -53,7 +53,7 @@ describe("Members API", () => {
           email: `getmembermem_${suffix}@example.com`,
           password: "Test123!Password",
         });
-      memberCookie = extractSessionCookie(memberSignupRes)!;
+      _memberCookie = extractSessionCookie(memberSignupRes)!;
       member = (await testPrisma.user.findFirst({
         where: { email: `getmembermem_${suffix}@example.com` },
       }))!;
@@ -304,7 +304,7 @@ describe("Members API", () => {
         password: "Test123!Password",
       });
       const modCookie = extractSessionCookie(modRes)!;
-      const moderator = (await testPrisma.user.findFirst({
+      const _moderator = (await testPrisma.user.findFirst({
         where: { email: `leavemod_${suffix}@example.com` },
       }))!;
 

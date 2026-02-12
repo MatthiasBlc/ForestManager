@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { FaBell, FaCheck, FaTimes } from "react-icons/fa";
 import { ReceivedInvite } from "../../models/community";
 import APIManager from "../../network/api";
-
-const POLL_INTERVAL = 60000;
+import { useClickOutside } from "../../hooks/useClickOutside";
+import { useSocketEvent } from "../../hooks/useSocketEvent";
 
 const NotificationDropdown = () => {
   const navigate = useNavigate();
@@ -26,7 +26,6 @@ const NotificationDropdown = () => {
       if (newCount > lastSeenCountRef.current) {
         setUnreadCount(newCount - lastSeenCountRef.current);
       } else if (!isOpen) {
-        // If count decreased (invites handled elsewhere), reset
         lastSeenCountRef.current = newCount;
         setUnreadCount(0);
       }
@@ -35,26 +34,33 @@ const NotificationDropdown = () => {
     }
   }, [isOpen]);
 
+  // Initial fetch on mount
   useEffect(() => {
     fetchInvites();
-    const interval = setInterval(fetchInvites, POLL_INTERVAL);
-    return () => clearInterval(interval);
   }, [fetchInvites]);
 
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
+  // Re-fetch on relevant socket notification events
+  const handleNotification = useCallback(
+    (data: { type: string }) => {
+      if (
+        data.type === "INVITE_SENT" ||
+        data.type === "INVITE_CANCELLED" ||
+        data.type === "INVITE_ACCEPTED" ||
+        data.type === "INVITE_REJECTED"
+      ) {
+        fetchInvites();
       }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    },
+    [fetchInvites]
+  );
+
+  useSocketEvent("notification", handleNotification);
+
+  useClickOutside(menuRef, useCallback(() => setIsOpen(false), []));
 
   const handleOpen = () => {
     setIsOpen(!isOpen);
     if (!isOpen) {
-      // Mark as read
       lastSeenCountRef.current = invites.length;
       setUnreadCount(0);
     }
