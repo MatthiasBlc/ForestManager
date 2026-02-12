@@ -3,6 +3,7 @@ import app, { userSession } from "./app";
 import env from "./util/validateEnv";
 import prisma from "./util/db";
 import { initSocketServer } from "./services/socketServer";
+import logger from "./util/logger";
 
 const port = env.PORT;
 
@@ -11,10 +12,10 @@ async function main() {
   initSocketServer(server, userSession);
 
   server.listen(port, () => {
-    console.log(`server running on port: ${port}!`);
+    logger.info({ port }, "Server started");
   });
 }
 
 main()
-  .catch((e) => console.error(e))
+  .catch((e) => logger.fatal({ err: e }, "Failed to start server"))
   .finally(async () => await prisma.$disconnect());

@@ -30,18 +30,14 @@
 | 8.3 | Documentation (README utilisateur + guide deploiement) | DONE |
 | 9.4 | Frontend Admin Pages (layout sidebar, 5 pages gestion, 35 tests) | DONE |
 | 9.2 | Notifications temps reel (Socket.IO) + Dark mode (forest/winter) | DONE |
+| 9.3 | Logging structure (Pino) + Tests supplementaires (+113 tests) | DONE |
 
 ## MVP COMPLET
 
 Toutes les phases (0 a 8) sont terminees. Le MVP est fonctionnel.
-Phases post-MVP completees : 9.4 (admin frontend), 9.2 (WebSocket + dark mode).
+Phases post-MVP completees : 9.4 (admin frontend), 9.2 (WebSocket + dark mode), 9.3 (logging + tests).
 
 ## Ce qui reste a faire
-
-### Phase 9.3 - Technique
-
-- [ ] Tests unitaires supplementaires (augmenter couverture)
-- [ ] Logging structure (Winston ou Pino) pour remplacer console.log/error
 
 ### Checklist validation MVP (non cochees)
 
@@ -64,9 +60,9 @@ Phases post-MVP completees : 9.4 (admin frontend), 9.2 (WebSocket + dark mode).
 
 | Suite | Fichiers | Tests |
 |-------|----------|-------|
-| Frontend | 34 | 211 |
-| Backend | 21 | 339 |
-| **Total** | **55** | **550** |
+| Frontend | 47 | 273 |
+| Backend | 27 | 390 |
+| **Total** | **74** | **663** |
 
 ## Resume de reprise
 

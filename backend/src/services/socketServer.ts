@@ -4,6 +4,7 @@ import { RequestHandler } from "express";
 import prisma from "../util/db";
 import env from "../util/validateEnv";
 import appEvents, { AppEvent } from "./eventEmitter";
+import logger from "../util/logger";
 
 let io: Server | null = null;
 
@@ -55,8 +56,8 @@ export function initSocketServer(
       for (const m of memberships) {
         socket.join(`community:${m.communityId}`);
       }
-    } catch {
-      // Non-critical - user just won't get community events until rejoin
+    } catch (err) {
+      logger.debug({ err, userId }, "Failed to load community memberships for socket");
     }
 
     // Dynamic room management

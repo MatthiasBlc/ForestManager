@@ -38,6 +38,7 @@ routes/
 middleware/
 ├── auth.ts            # requireAuth (verifie session.userId)
 ├── community.ts       # memberOf, requireCommunityRole
+├── httpLogger.ts      # pino-http middleware (remplace morgan)
 └── security.ts        # helmet, CORS, rate limiting
 ```
 
@@ -80,7 +81,13 @@ server.ts              # Entry point (listen)
 types/
 ├── express.d.ts       # Extension types Express
 └── session.d.ts       # Types session
-util/                  # Utilitaires
+util/
+├── logger.ts          # Logger Pino central (silent test, pretty dev, JSON prod)
+├── pagination.ts      # parsePagination, buildPaginationMeta
+├── validation.ts      # normalizeNames, isValidHttpUrl, regex constants
+├── responseFormatters.ts # formatTags, formatIngredients
+├── db.ts              # Prisma client singleton
+└── validateEnv.ts     # envalid env vars
 scripts/
 └── createAdmin.ts     # CLI creation SuperAdmin
 ```
@@ -92,7 +99,14 @@ __tests__/
 │   ├── globalSetup.ts    # Setup DB test
 │   └── testHelpers.ts    # createTestUser, cleanupTestData, etc.
 ├── unit/
-│   └── eventEmitter.test.ts  # Event emitter unit tests
+│   ├── eventEmitter.test.ts       # Event emitter unit tests
+│   ├── pagination.test.ts         # Pagination utils
+│   ├── validation.test.ts         # Validation utils & constants
+│   ├── responseFormatters.test.ts # Response formatters
+│   └── middleware/
+│       ├── auth.test.ts           # requireAuth
+│       ├── requireSuperAdmin.test.ts # requireSuperAdmin, requireAdminSession
+│       └── security.test.ts       # requireHttps, rate limiters
 └── integration/
     ├── websocket.test.ts
     ├── activity.test.ts
@@ -226,11 +240,17 @@ models/
 App.tsx                       # Routes React Router
 main.tsx                      # Entry point React
 hooks/
+├── useClickOutside.ts        # Detect clicks outside a ref element
+├── useDebouncedEffect.ts     # Effect with configurable delay
+├── useConfirm.tsx            # Confirmation dialog hook (promise-based)
+├── usePaginatedList.ts       # Generic paginated list with loadMore
+├── useRecipeActions.ts       # Recipe CRUD actions
 ├── useSocketEvent.ts         # Subscribe/unsubscribe to socket events
 ├── useCommunityRoom.ts       # Join/leave community socket room
-├── useNotificationToasts.ts  # Toast notifications from socket events
-└── ...                       # Other hooks
-utils/                        # Utilitaires
+└── useNotificationToasts.ts  # Toast notifications from socket events
+utils/
+├── format.Date.ts            # formatDate, formatDateShort
+└── communityEvents.ts        # Event bus for community refresh
 errors/                       # Classes erreur
 assets/                       # Assets statiques
 styles/                       # CSS
@@ -240,7 +260,8 @@ styles/                       # CSS
 ```
 __tests__/
 ├── setup/
-│   ├── vitestSetup.ts        # Setup Testing Library
+│   ├── vitestSetup.ts        # Setup Testing Library + MSW
+│   ├── mswServer.ts          # MSW server instance
 │   ├── mswHandlers.ts        # MSW mock handlers
 │   └── testUtils.tsx         # Render utils avec providers
 └── unit/
@@ -249,38 +270,57 @@ __tests__/
     │   ├── AdminAuthContext.test.tsx
     │   ├── ThemeContext.test.tsx
     │   └── SocketContext.test.tsx
-    ├── LoginModal.test.tsx
-    ├── Modal.test.tsx
-    ├── SignUpPage.test.tsx
-    ├── ProtectedRoute.test.tsx
-    ├── NavBar.test.tsx
-    ├── AdminProtectedRoute.test.tsx
-    ├── AdminLoginPage.test.tsx
-    ├── AdminDashboardPage.test.tsx
-    ├── AdminLayout.test.tsx
-    ├── RecipeCard.test.tsx
-    ├── RecipeFilters.test.tsx
-    ├── TagSelector.test.tsx
-    ├── IngredientList.test.tsx
-    ├── RecipesPage.test.tsx
-    ├── MainLayout.test.tsx
-    ├── Sidebar.test.tsx
-    ├── HomePage.test.tsx
+    ├── hooks/
+    │   ├── useClickOutside.test.ts
+    │   ├── useDebouncedEffect.test.ts
+    │   ├── useConfirm.test.tsx
+    │   ├── useSocketEvent.test.ts
+    │   ├── useCommunityRoom.test.ts
+    │   ├── useNotificationToasts.test.ts
+    │   └── usePaginatedList.test.ts
+    ├── utils/
+    │   ├── formatDate.test.ts
+    │   └── communityEvents.test.ts
     ├── pages/
     │   ├── CommunitiesPage.test.tsx
     │   ├── CommunityDetailPage.test.tsx
+    │   ├── DashboardPage.test.tsx
+    │   ├── HomePage.test.tsx
+    │   ├── NotFoundPage.test.tsx
+    │   ├── ProfilePage.test.tsx
+    │   ├── RecipesPage.test.tsx
+    │   ├── RecipeFormPage.test.tsx
+    │   ├── SignUpPage.test.tsx
     │   └── admin/
+    │       ├── AdminLoginPage.test.tsx
+    │       ├── AdminDashboardPage.test.tsx
     │       ├── AdminTagsPage.test.tsx
     │       ├── AdminIngredientsPage.test.tsx
     │       ├── AdminFeaturesPage.test.tsx
     │       ├── AdminCommunitiesPage.test.tsx
     │       └── AdminActivityPage.test.tsx
     └── components/
+        ├── Layout/
+        │   ├── MainLayout.test.tsx
+        │   └── Sidebar.test.tsx
+        ├── admin/
+        │   ├── AdminLayout.test.tsx
+        │   └── AdminProtectedRoute.test.tsx
+        ├── recipes/
+        │   ├── RecipeCard.test.tsx
+        │   └── RecipeFilters.test.tsx
+        ├── form/
+        │   ├── TagSelector.test.tsx
+        │   └── IngredientList.test.tsx
         ├── ActivityFeed.test.tsx
         ├── ErrorBoundary.test.tsx
         ├── InviteCard.test.tsx
-        ├── MembersList.test.tsx
         ├── InviteUserModal.test.tsx
+        ├── LoginModal.test.tsx
+        ├── MembersList.test.tsx
+        ├── Modal.test.tsx
+        ├── NavBar.test.tsx
+        ├── ProtectedRoute.test.tsx
         └── ShareRecipeModal.test.tsx
 ```
 

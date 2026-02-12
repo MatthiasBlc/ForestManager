@@ -1106,6 +1106,33 @@ export const handlers = [
   }),
 
   // =====================================
+  // User Profile
+  // =====================================
+
+  http.patch(`${API_URL}/api/users/me`, async ({ request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, string>;
+
+    if (body.email === 'taken@example.com') {
+      return HttpResponse.json(
+        { error: 'Email already in use' },
+        { status: 409 }
+      );
+    }
+
+    return HttpResponse.json({
+      ...mockUser,
+      ...body,
+    });
+  }),
+
+  // =====================================
   // User Invitations
   // =====================================
 

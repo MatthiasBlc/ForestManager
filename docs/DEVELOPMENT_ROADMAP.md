@@ -652,8 +652,15 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 
 ### 9.3 Technique
 
-- [ ] Tests unitaires
-- [ ] Logging structure (Winston/Pino)
+- [x] Tests unitaires supplementaires (+113 tests, 550 -> 663)
+  - Backend: pagination, validation, responseFormatters, auth middleware, requireSuperAdmin, security
+  - Frontend hooks: useClickOutside, useDebouncedEffect, useConfirm, useSocketEvent, useCommunityRoom, useNotificationToasts, usePaginatedList
+  - Frontend utils: formatDate, communityEvents
+  - Frontend pages: DashboardPage, ProfilePage, NotFoundPage, RecipeFormPage
+- [x] Logging structure (Pino)
+  - Remplacement morgan par pino-http
+  - Logger central (pino) : silent en test, pino-pretty en dev, JSON en prod
+  - Remplacement console.log/error dans app.ts, server.ts, socketServer.ts
 
 ### 9.4 Frontend Admin - Pages de gestion
 
