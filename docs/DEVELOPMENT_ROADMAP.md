@@ -819,11 +819,12 @@ Phase 8 (Finitions MVP)
 ### Dependances a mettre a jour
 
 - [x] Corriger vulnerabilite axios frontend (`npm audit fix`)
-- [ ] Migrer otplib de v12 vers v13 (reporte: necessite Node >= 20 + ESM)
+- [x] Migrer otplib v12 -> v13 (nouvelle API: generateSecret, generateSync, verifySync, generateURI)
 - [x] Mettre a jour ESLint v8 -> v9 (flat config `eslint.config.mjs`)
-- [ ] Migrer config Prisma de `package.json#prisma` vers `prisma.config.ts` (reporte: seed non supporte en Prisma ~6.19)
+- [x] Migrer config Prisma vers `prisma.config.ts` -> non necessaire (setup standard suffisant, seed non supporte en ~6.19)
 - [x] Remplacer `npm prune --production` par `--omit=dev` dans Dockerfile
-- [ ] Fix vulnerabilites npm restantes (dev deps: esbuild/vite/vitest, bcrypt/tar)
+- [x] Fix vulnerabilites npm: vitest 2->3 (fix 12 vulns esbuild/vite), bcrypt 5->6 (fix 3 vulns tar)
+- [x] `npm audit` 0 vulnerabilites (backend + frontend)
 
 ---
 

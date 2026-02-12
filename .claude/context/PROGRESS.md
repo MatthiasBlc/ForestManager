@@ -52,9 +52,9 @@ Phases post-MVP completees : 9.4 (admin frontend), 9.2 (WebSocket + dark mode), 
 - [x] Remplacer `npm prune --production` par `--omit=dev` dans Dockerfile
 - [x] Mettre a jour ESLint v8 -> v9 (flat config `eslint.config.mjs`)
 - [x] Fix vulnerabilite npm axios (frontend)
-- [ ] Migrer config Prisma vers `prisma.config.ts` (reporte: seed non supporte en Prisma ~6.19)
-- [ ] Migrer otplib v12 -> v13 (reporte: necessite Node >= 20 + ESM)
-- [ ] Fix vulnerabilites npm restantes (dev deps: esbuild/vite/vitest, bcrypt/tar)
+- [x] Migrer config Prisma vers `prisma.config.ts` -> non necessaire (setup standard suffisant)
+- [x] Migrer otplib v12 -> v13 (nouvelle API: generateSecret, generateSync, verifySync, generateURI)
+- [x] Fix vulnerabilites npm: vitest 2->3, bcrypt 5->6 (0 vulns backend + frontend)
 
 ## Tests actuels
 
