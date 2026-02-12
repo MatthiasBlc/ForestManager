@@ -6,6 +6,7 @@ import { assertIsDefine } from "../util/assertIsDefine";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import { requireMembership } from "../services/membershipService";
 import { acceptProposal as acceptProposalService, rejectProposal as rejectProposalService } from "../services/proposalService";
+import appEvents from "../services/eventEmitter";
 
 interface CreateProposalBody {
   proposedTitle?: string;
@@ -111,6 +112,15 @@ export const createProposal: RequestHandler<
       });
 
       return newProposal;
+    });
+
+    appEvents.emitActivity({
+      type: "VARIANT_PROPOSED",
+      userId: authenticatedUserId,
+      communityId: recipe.communityId,
+      recipeId,
+      targetUserIds: [recipe.creatorId],
+      metadata: { proposalId: proposal.id },
     });
 
     res.status(201).json(proposal);
@@ -356,6 +366,15 @@ export const acceptProposal: RequestHandler<
 
     const result = await acceptProposalService(proposalId, proposal, authenticatedUserId);
 
+    appEvents.emitActivity({
+      type: "PROPOSAL_ACCEPTED",
+      userId: authenticatedUserId,
+      communityId: proposal.recipe.communityId,
+      recipeId: proposal.recipeId,
+      targetUserIds: [proposal.proposerId],
+      metadata: { proposalId },
+    });
+
     res.status(200).json(result);
   } catch (error) {
     next(error);
@@ -427,6 +446,15 @@ export const rejectProposal: RequestHandler<
     }
 
     const result = await rejectProposalService(proposalId, proposal);
+
+    appEvents.emitActivity({
+      type: "PROPOSAL_REJECTED",
+      userId: authenticatedUserId,
+      communityId: proposal.recipe.communityId,
+      recipeId: proposal.recipeId,
+      targetUserIds: [proposal.proposerId],
+      metadata: { proposalId },
+    });
 
     res.status(200).json(result);
   } catch (error) {

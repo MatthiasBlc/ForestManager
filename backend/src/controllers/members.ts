@@ -3,6 +3,7 @@ import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { handleOrphanedRecipes } from "../services/orphanHandling";
+import appEvents from "../services/eventEmitter";
 
 // =====================================
 // GET /api/communities/:communityId/members
@@ -114,6 +115,13 @@ export const promoteMember: RequestHandler<
       }),
     ]);
 
+    appEvents.emitActivity({
+      type: "USER_PROMOTED",
+      userId,
+      communityId,
+      targetUserIds: [targetUserId],
+    });
+
     res.status(200).json({ message: "User promoted to MODERATOR" });
   } catch (error) {
     next(error);
@@ -210,6 +218,12 @@ async function handleLeave(
     });
   });
 
+  appEvents.emitActivity({
+    type: "USER_LEFT",
+    userId,
+    communityId,
+  });
+
   res.status(200).json({ message: "Left community successfully" });
 }
 
@@ -265,6 +279,13 @@ async function handleKick(
         },
       },
     });
+  });
+
+  appEvents.emitActivity({
+    type: "USER_KICKED",
+    userId: requesterId,
+    communityId,
+    targetUserIds: [targetUserId],
   });
 
   res.status(200).json({ message: "Member removed successfully" });

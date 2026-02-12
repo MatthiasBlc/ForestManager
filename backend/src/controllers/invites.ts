@@ -3,6 +3,7 @@ import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { InviteStatus } from "@prisma/client";
+import appEvents from "../services/eventEmitter";
 
 // =====================================
 // Types
@@ -143,6 +144,14 @@ export const createInvite: RequestHandler<
         },
       }),
     ]);
+
+    appEvents.emitActivity({
+      type: "INVITE_SENT",
+      userId: inviterId,
+      communityId,
+      targetUserIds: [invitee.id],
+      metadata: { inviteeUsername: invitee.username },
+    });
 
     res.status(201).json({
       id: invite.id,
@@ -306,6 +315,14 @@ export const cancelInvite: RequestHandler<{ communityId: string; inviteId: strin
         },
       }),
     ]);
+
+    appEvents.emitActivity({
+      type: "INVITE_CANCELLED",
+      userId,
+      communityId,
+      targetUserIds: [invite.inviteeId],
+      metadata: { inviteeUsername: invite.invitee.username },
+    });
 
     res.status(200).json({ message: "Invitation cancelled" });
   } catch (error) {
@@ -477,6 +494,13 @@ export const acceptInvite: RequestHandler<{ inviteId: string }> = async (req, re
       }),
     ]);
 
+    appEvents.emitActivity({
+      type: "INVITE_ACCEPTED",
+      userId,
+      communityId: invite.communityId,
+      targetUserIds: [invite.inviterId],
+    });
+
     res.status(200).json({
       message: "Invitation accepted",
       community: {
@@ -544,6 +568,13 @@ export const rejectInvite: RequestHandler<{ inviteId: string }> = async (req, re
         },
       }),
     ]);
+
+    appEvents.emitActivity({
+      type: "INVITE_REJECTED",
+      userId,
+      communityId: invite.communityId,
+      targetUserIds: [invite.inviterId],
+    });
 
     res.status(200).json({ message: "Invitation rejected" });
   } catch (error) {

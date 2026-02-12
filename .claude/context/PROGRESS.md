@@ -29,27 +29,44 @@
 | 8.2 | Tests & Lint (499 tests, 0 lint errors frontend + backend) | DONE |
 | 8.3 | Documentation (README utilisateur + guide deploiement) | DONE |
 | 9.4 | Frontend Admin Pages (layout sidebar, 5 pages gestion, 35 tests) | DONE |
+| 9.2 | Notifications temps reel (Socket.IO) + Dark mode (forest/winter) | DONE |
 
 ## MVP COMPLET
 
 Toutes les phases (0 a 8) sont terminees. Le MVP est fonctionnel.
-Phase 9.4 (admin frontend) ajoutee post-MVP.
+Phases post-MVP completees : 9.4 (admin frontend), 9.2 (WebSocket + dark mode).
 
-## Maintenance technique effectuee
+## Ce qui reste a faire
+
+### Phase 9.3 - Technique
+
+- [ ] Tests unitaires supplementaires (augmenter couverture)
+- [ ] Logging structure (Winston ou Pino) pour remplacer console.log/error
+
+### Checklist validation MVP (non cochees)
+
+- [ ] Tests manuels complets (parcours utilisateur end-to-end)
+- [ ] Application stable sans erreurs bloquantes (validation)
+- [ ] Donnees persistees correctement (validation)
+- [ ] Responsive design (audit + corrections)
+- [ ] Performance acceptable (<3s chargement page, audit)
+
+### Maintenance technique
 
 - [x] Remplacer `npm prune --production` par `--omit=dev` dans Dockerfile
 - [x] Mettre a jour ESLint v8 -> v9 (flat config `eslint.config.mjs`)
-- [ ] Migrer config Prisma vers `prisma.config.ts` (reporte: seed non supporte en Prisma ~6.19)
 - [x] Fix vulnerabilite npm axios (frontend)
-- [ ] Migrer otplib v12 -> v13 (necessite Node >= 20 + ESM, reporte)
+- [ ] Migrer config Prisma vers `prisma.config.ts` (reporte: seed non supporte en Prisma ~6.19)
+- [ ] Migrer otplib v12 -> v13 (reporte: necessite Node >= 20 + ESM)
 - [ ] Fix vulnerabilites npm restantes (dev deps: esbuild/vite/vitest, bcrypt/tar)
 
-## Prochaines phases
+## Tests actuels
 
-| Phase | Description | Prerequis |
-|-------|-------------|-----------|
-| 9.2 | Ameliorations UX (notifications temps reel, mode sombre) | Phase 8 |
-| 9.3 | Technique (tests unitaires, logging structure) | Phase 8 |
+| Suite | Fichiers | Tests |
+|-------|----------|-------|
+| Frontend | 34 | 211 |
+| Backend | 21 | 339 |
+| **Total** | **55** | **550** |
 
 ## Resume de reprise
 

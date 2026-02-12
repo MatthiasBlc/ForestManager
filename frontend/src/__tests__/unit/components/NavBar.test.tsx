@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { renderWithUserAuth } from '../../setup/testUtils';
 import NavBar from '../../../components/Navbar/NavBar';
 import { setUserAuthenticated, resetAuthState } from '../../setup/mswHandlers';
@@ -7,6 +8,7 @@ import { setUserAuthenticated, resetAuthState } from '../../setup/mswHandlers';
 describe('NavBar', () => {
   beforeEach(() => {
     resetAuthState();
+    localStorage.clear();
   });
 
   it('should render app name/logo', async () => {
@@ -42,6 +44,31 @@ describe('NavBar', () => {
     await waitFor(() => {
       // Logged in view typically shows user info or logout button
       expect(screen.queryByText('Log In')).not.toBeInTheDocument();
+    });
+  });
+
+  it('should render theme toggle button', async () => {
+    renderWithUserAuth(<NavBar />);
+
+    await waitFor(() => {
+      const toggleBtn = screen.getByLabelText(/switch to (light|dark) mode/i);
+      expect(toggleBtn).toBeInTheDocument();
+    });
+  });
+
+  it('should toggle theme on click', async () => {
+    localStorage.setItem('forestmanager-theme', 'forest');
+    const user = userEvent.setup();
+    renderWithUserAuth(<NavBar />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Switch to light mode')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByLabelText('Switch to light mode'));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Switch to dark mode')).toBeInTheDocument();
     });
   });
 });
