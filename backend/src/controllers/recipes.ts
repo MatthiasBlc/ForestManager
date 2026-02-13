@@ -151,16 +151,7 @@ export const getRecipe: RequestHandler = async (req, res, next) => {
             name: true,
           },
         },
-        tags: {
-          select: {
-            tag: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
+        tags: RECIPE_TAGS_SELECT,
         ingredients: {
           select: {
             id: true,
@@ -313,7 +304,7 @@ export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRec
 
     const updatedRecipe = await updateRecipeService(recipeId, {
       title, content, imageUrl, tags, ingredients,
-    }, recipe);
+    }, recipe, authenticatedUserId);
 
     if (!updatedRecipe) {
       throw createHttpError(500, "Failed to update recipe");

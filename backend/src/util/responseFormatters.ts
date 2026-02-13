@@ -3,7 +3,7 @@
  * Centralise les mappings repetes dans les controllers.
  */
 
-type RawTag = { tag: { id: string; name: string } };
+type RawTag = { tag: { id: string; name: string; scope: string; status: string; communityId: string | null } };
 type RawIngredient = {
   id: string;
   quantity: string | null;
@@ -13,7 +13,13 @@ type RawIngredient = {
 
 /** Extrait les tags depuis le format Prisma pivot */
 export function formatTags(tags: RawTag[]) {
-  return tags.map((rt) => rt.tag);
+  return tags.map((rt) => ({
+    id: rt.tag.id,
+    name: rt.tag.name,
+    scope: rt.tag.scope,
+    status: rt.tag.status,
+    communityId: rt.tag.communityId,
+  }));
 }
 
 /** Formate les ingredients depuis le format Prisma pivot */

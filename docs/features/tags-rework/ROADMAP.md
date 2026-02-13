@@ -16,14 +16,14 @@
 
 ## 10.2 - Backend Tags (CRUD + validation)
 
-- [ ] Refactoring recipeService : upsertTags → logique scope-aware
-- [ ] Endpoint autocomplete tags : scope-aware (global + communaute)
-- [ ] Creation tag pending (membre sur recette communautaire)
-- [ ] Reutilisation tag pending existant (meme communaute)
-- [ ] Regles d'unicite (global vs communaute vs pending)
-- [ ] Gestion tags au fork inter-communaute (tags inconnus → pending)
-- [ ] Tags sur recette perso : global + communautes selon preferences
-- [ ] Tests unitaires + integration
+- [x] Refactoring recipeService : upsertTags → logique scope-aware
+- [x] Endpoint autocomplete tags : scope-aware (global + communaute)
+- [x] Creation tag pending (membre sur recette communautaire)
+- [x] Reutilisation tag pending existant (meme communaute)
+- [x] Regles d'unicite (global vs communaute vs pending)
+- [x] Gestion tags au fork inter-communaute (tags inconnus → pending)
+- [x] Tags sur recette perso : global + communautes selon preferences
+- [x] Tests unitaires + integration
 
 ## 10.3 - Backend Administration tags
 

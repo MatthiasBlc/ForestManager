@@ -69,6 +69,11 @@ admin/
 ### Services
 ```
 services/
+├── tagService.ts      # Logique scope-aware tags (resolve, autocomplete, fork)
+├── recipeService.ts   # upsertTags, upsertIngredients, createRecipe, updateRecipe
+├── communityRecipeService.ts # createCommunityRecipe (perso + comm)
+├── shareService.ts    # forkRecipe, publishRecipe, getRecipeFamilyCommunities
+├── membershipService.ts # requireRecipeAccess, requireRecipeOwnership
 ├── orphanHandling.ts  # Gestion recettes orphelines (auto-reject proposals)
 ├── eventEmitter.ts    # AppEventEmitter singleton (emit activity events)
 └── socketServer.ts    # Socket.IO server init, auth middleware, room management

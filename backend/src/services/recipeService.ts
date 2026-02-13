@@ -1,7 +1,7 @@
 import prisma from "../util/db";
 import { PrismaClient } from "@prisma/client";
-import { normalizeNames } from "../util/validation";
 import { RECIPE_TAGS_SELECT, RECIPE_INGREDIENTS_SELECT } from "../util/prismaSelects";
+import { resolveTagsForRecipe } from "./tagService";
 
 type TransactionClient = Omit<
   PrismaClient,
@@ -15,19 +15,18 @@ export interface IngredientInput {
 
 // --- Helpers partages pour tags/ingredients ---
 
-export async function upsertTags(tx: TransactionClient, recipeId: string, tags: string[]) {
-  const normalizedTags = normalizeNames(tags);
+export async function upsertTags(
+  tx: TransactionClient,
+  recipeId: string,
+  tags: string[],
+  userId: string,
+  communityId: string | null
+) {
+  const { tagIds } = await resolveTagsForRecipe(tx, tags, userId, communityId);
 
-  for (const tagName of normalizedTags) {
-    let tag = await tx.tag.findFirst({
-      where: { name: tagName, communityId: null },
-    });
-    if (!tag) {
-      tag = await tx.tag.create({ data: { name: tagName } });
-    }
-
+  for (const tagId of tagIds) {
     await tx.recipeTag.create({
-      data: { recipeId, tagId: tag.id },
+      data: { recipeId, tagId },
     });
   }
 }
@@ -95,7 +94,7 @@ export async function createRecipe(userId: string, data: CreateRecipeData) {
     });
 
     if (data.tags.length > 0) {
-      await upsertTags(tx, recipe.id, data.tags);
+      await upsertTags(tx, recipe.id, data.tags, userId, null);
     }
 
     if (data.ingredients.length > 0) {
@@ -127,7 +126,8 @@ interface RecipeForSync {
 export async function updateRecipe(
   recipeId: string,
   data: UpdateRecipeData,
-  recipe: RecipeForSync
+  recipe: RecipeForSync,
+  userId: string
 ) {
   return prisma.$transaction(async (tx) => {
     // Mettre a jour les champs de base
@@ -143,7 +143,7 @@ export async function updateRecipe(
     // Remplacer tags si fournis
     if (data.tags !== undefined) {
       await tx.recipeTag.deleteMany({ where: { recipeId } });
-      await upsertTags(tx, recipeId, data.tags);
+      await upsertTags(tx, recipeId, data.tags, userId, recipe.communityId);
     }
 
     // Remplacer ingredients si fournis

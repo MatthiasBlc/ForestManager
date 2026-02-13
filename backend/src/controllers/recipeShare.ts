@@ -45,7 +45,7 @@ export const shareRecipe: RequestHandler<
         imageUrl: true,
         communityId: true,
         creatorId: true,
-        tags: { select: { tagId: true } },
+        tags: { select: { tagId: true, tag: { select: { id: true, name: true, scope: true, communityId: true } } } },
         ingredients: {
           select: { ingredientId: true, quantity: true, order: true },
           orderBy: { order: "asc" },
