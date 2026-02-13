@@ -6,8 +6,6 @@ Tout doit être cohérent avec l'application et son fonctionnement actuel. Ce so
 Tout doit être clair et maitrisé, pensé pour être maintenable et évoluer dans le temps.
 Toute la logique business doit être validé et sans zone d'ombre restante avant d'écrire du code.
 
-# audit refactorisation complete back + front
-
 # Rework du système de tags
 
 avoir une liste par défaut globale à la création d'une communauté, et permettre à chaque communauté de créer ses propres tags complémentaires ???
@@ -17,6 +15,7 @@ avoir une liste par défaut globale à la création d'une communauté, et permet
 
 Problèmes similaires au système de tags :
 -> vu que les recettes sont associé à un user, comment faire de manière logique ?
+proposer une modification de recette doit aussi prendre en compte les ingrédients (je crois que ce n'est pas le cas)
 
 # Rework des pages recettes (v2)
 
