@@ -40,33 +40,35 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~663 tests)
+## Inventaire des tests (~704 tests)
 
-### Backend Integration (19 fichiers, ~339 tests)
+### Backend Integration (20 fichiers, ~380 tests)
 
 | Fichier | Module | Tests |
 |---------|--------|-------|
 | activity.test.ts | Activity feed (community + personal) | 15 |
 | auth.test.ts | User signup/login/logout/me | 16 |
 | recipes.test.ts | CRUD recettes (perso + community access) | 32 |
-| communityRecipes.test.ts | CRUD recettes communautaires | 28 |
+| communityRecipes.test.ts | CRUD recettes communautaires (+ tags scope-aware) | 33 |
 | proposals.test.ts | Propositions modifications | 31 |
 | variants.test.ts | Liste variantes recettes | 10 |
-| tags.test.ts | Autocomplete tags | 5 |
+| tags.test.ts | Autocomplete tags (scope-aware) | 9 |
 | ingredients.test.ts | Autocomplete ingredients | 5 |
 | communities.test.ts | CRUD communautes | 27 |
 | invitations.test.ts | Workflow invitations | 35 |
 | members.test.ts | Membres: list, promote, kick, orphan handling | 26 |
 | adminAuth.test.ts | Auth 2FA admin | 14 |
-| adminTags.test.ts | CRUD tags admin | 12 |
+| adminTags.test.ts | CRUD tags admin (+ scope filter) | 15 |
 | adminIngredients.test.ts | CRUD ingredients admin | 12 |
 | adminFeatures.test.ts | Features grant/revoke | 10 |
 | adminCommunities.test.ts | Communities admin | 8 |
 | adminDashboard.test.ts | Stats dashboard | 4 |
 | adminActivity.test.ts | Logs activite | 4 |
-| share.test.ts | Partage inter-communautes + publish + sync | 28 |
+| share.test.ts | Partage inter-communautes + publish + sync + fork tags | 31 |
+| communityTags.test.ts | CRUD + approve/reject tags communaute (moderateur) | 26 |
 
 ### Backend Unit (7 fichiers, ~51 tests)
+
 
 | Fichier | Module | Tests |
 |---------|--------|-------|

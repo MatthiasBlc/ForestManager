@@ -2,14 +2,15 @@
 
 ## MVP COMPLET
 
-Phases 0 a 9.3 terminees. 663 tests (273 frontend + 390 backend).
+Phases 0 a 9.3 terminees.
 
 ## Phase en cours : 10 - Rework Tags
 
 - **Spec** : `docs/features/tags-rework/SPEC_TAGS_REWORK.md`
 - **Roadmap** : `docs/features/tags-rework/ROADMAP.md`
-- **Sous-etape en cours** : Spec validee, implementation non commencee
-- **Branche** : a creer (`tags-rework`)
+- **Sous-etape en cours** : 10.3 termine, prochaine etape 10.4 (TagSuggestion)
+- **Branche** : `TagsRework`
+- **Tests** : 704 (273 frontend + 431 backend)
 
 ## Prochains chantiers (a specifier)
 
