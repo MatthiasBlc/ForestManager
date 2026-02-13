@@ -32,7 +32,7 @@ Controller: `controllers/recipes.ts` | Route: `routes/recipes.ts`
 
 ## Tags (/api/tags) - requireAuth
 ```
-GET /api/tags/                  # autocomplete (search, recipeCount)
+GET /api/tags/                  # autocomplete scope-aware (search, communityId?, recipeCount)
 ```
 Controller: `controllers/tags.ts` | Route: `routes/tags.ts`
 
@@ -73,6 +73,17 @@ POST   /api/communities/:communityId/invites               # create (MODERATOR)
 DELETE /api/communities/:communityId/invites/:inviteId      # cancel (MODERATOR)
 ```
 Controller: `controllers/invites.ts`
+
+### Tags (nested under /api/communities/:communityId) - MODERATOR
+```
+GET    /api/communities/:communityId/tags                  # list (APPROVED + PENDING, ?status=, ?search=)
+POST   /api/communities/:communityId/tags                  # create APPROVED community tag
+PATCH  /api/communities/:communityId/tags/:tagId           # rename
+DELETE /api/communities/:communityId/tags/:tagId           # delete (hard, cascade RecipeTag)
+POST   /api/communities/:communityId/tags/:tagId/approve   # approve PENDING → APPROVED
+POST   /api/communities/:communityId/tags/:tagId/reject    # reject PENDING → hard delete
+```
+Controller: `controllers/communityTags.ts`
 
 ### Activity (nested under /api/communities/:communityId)
 ```
@@ -124,10 +135,10 @@ Controller: `admin/controllers/authController.ts` | Route: `admin/routes/authRou
 
 ## Admin Tags (/api/admin/tags) - requireSuperAdmin
 ```
-GET    /api/admin/tags/             # list all
-POST   /api/admin/tags/             # create
-PATCH  /api/admin/tags/:id          # update
-DELETE /api/admin/tags/:id          # delete
+GET    /api/admin/tags/             # list all (?scope=GLOBAL|COMMUNITY, ?search=)
+POST   /api/admin/tags/             # create (GLOBAL only)
+PATCH  /api/admin/tags/:id          # update (any tag)
+DELETE /api/admin/tags/:id          # delete (any tag)
 POST   /api/admin/tags/:id/merge    # merge into another
 ```
 Controller: `admin/controllers/tagsController.ts` | Route: `admin/routes/tagsRoutes.ts`
@@ -183,4 +194,4 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 | adminRateLimiter | middleware/security.ts | 30 req/min global admin |
 | authRateLimiter | routes config | 5/15min sur auth endpoints |
 
-## Total: 65 endpoints (38 user + 27 admin + 1 health)
+## Total: 71 endpoints (44 user + 27 admin + 1 health)

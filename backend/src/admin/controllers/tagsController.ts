@@ -9,14 +9,25 @@ import { assertIsDefine } from "../../util/assertIsDefine";
  */
 export const getAll: RequestHandler = async (req, res, next) => {
   try {
-    const { search } = req.query;
+    const { search, scope } = req.query;
+
+    const where: Record<string, unknown> = {};
+
+    if (search) {
+      where.name = { contains: String(search), mode: "insensitive" };
+    }
+
+    if (scope === "GLOBAL") {
+      where.scope = "GLOBAL";
+    } else if (scope === "COMMUNITY") {
+      where.scope = "COMMUNITY";
+    }
 
     const tags = await prisma.tag.findMany({
-      where: search
-        ? { name: { contains: String(search), mode: "insensitive" } }
-        : undefined,
+      where,
       include: {
         _count: { select: { recipes: true } },
+        community: { select: { id: true, name: true } },
       },
       orderBy: { name: "asc" },
     });
@@ -25,6 +36,10 @@ export const getAll: RequestHandler = async (req, res, next) => {
       tags: tags.map((t) => ({
         id: t.id,
         name: t.name,
+        scope: t.scope,
+        status: t.status,
+        communityId: t.communityId,
+        community: t.community,
         recipeCount: t._count.recipes,
       })),
     });
@@ -100,12 +115,15 @@ export const update: RequestHandler = async (req, res, next) => {
     const normalized = name.trim().toLowerCase();
 
     if (normalized !== tag.name) {
+      // Verifier unicite dans le meme scope
       const existing = await prisma.tag.findFirst({
-        where: { name: normalized, communityId: null },
+        where: { name: normalized, communityId: tag.communityId, id: { not: tag.id } },
       });
       if (existing) {
         throw createHttpError(409, "ADMIN_TAG_002: Tag already exists");
       }
+      // Si c'est un tag global, verifier aussi qu'aucun tag communaute n'a ce nom
+      // (pas necessaire car la contrainte unique est [name, communityId])
     }
 
     const oldName = tag.name;

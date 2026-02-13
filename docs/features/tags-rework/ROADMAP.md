@@ -27,12 +27,12 @@
 
 ## 10.3 - Backend Administration tags
 
-- [ ] Endpoints moderateur : GET/POST/PUT/DELETE community tags
-- [ ] Endpoints moderateur : approve/reject tag pending
-- [ ] Cascade rejet : hard delete tag + RecipeTags + notifications
-- [ ] Cascade validation : update status + notifications
-- [ ] Adaptation endpoints SuperAdmin (filtre scope)
-- [ ] Tests
+- [x] Endpoints moderateur : GET/POST/PUT/DELETE community tags
+- [x] Endpoints moderateur : approve/reject tag pending
+- [x] Cascade rejet : hard delete tag + RecipeTags + notifications
+- [x] Cascade validation : update status + notifications
+- [x] Adaptation endpoints SuperAdmin (filtre scope)
+- [x] Tests
 
 ## 10.4 - Backend TagSuggestion
 

@@ -543,6 +543,13 @@ enum ActivityType {
   INVITE_ACCEPTED
   INVITE_REJECTED
   INVITE_CANCELLED
+
+  // Tags communaute
+  TAG_CREATED
+  TAG_UPDATED
+  TAG_DELETED
+  TAG_APPROVED
+  TAG_REJECTED
 }
 
 // =============================================================================

@@ -66,6 +66,67 @@ describe('Admin Tags API', () => {
 
       expect(res.status).toBe(401);
     });
+
+    it('should filter by scope=GLOBAL', async () => {
+      await createTestTag('global_filter_tag');
+      const user = await createTestUser();
+      const community = await testPrisma.community.create({
+        data: { name: `Admin Filter ${Date.now()}` },
+      });
+      await createTestTag('comm_filter_tag', {
+        scope: 'COMMUNITY',
+        status: 'APPROVED',
+        communityId: community.id,
+        createdById: user.id,
+      });
+
+      const res = await request(app)
+        .get('/api/admin/tags?scope=GLOBAL')
+        .set('Cookie', adminCookie);
+
+      expect(res.status).toBe(200);
+      const names = res.body.tags.map((t: { name: string }) => t.name);
+      expect(names).toContain('global_filter_tag');
+      expect(names).not.toContain('comm_filter_tag');
+    });
+
+    it('should filter by scope=COMMUNITY', async () => {
+      await createTestTag('global_excluded');
+      const user = await createTestUser();
+      const community = await testPrisma.community.create({
+        data: { name: `Admin Filter2 ${Date.now()}` },
+      });
+      await createTestTag('comm_included', {
+        scope: 'COMMUNITY',
+        status: 'APPROVED',
+        communityId: community.id,
+        createdById: user.id,
+      });
+
+      const res = await request(app)
+        .get('/api/admin/tags?scope=COMMUNITY')
+        .set('Cookie', adminCookie);
+
+      expect(res.status).toBe(200);
+      const names = res.body.tags.map((t: { name: string }) => t.name);
+      expect(names).not.toContain('global_excluded');
+      expect(names).toContain('comm_included');
+    });
+
+    it('should include scope and community info in response', async () => {
+      await createTestTag('scope_info_tag');
+
+      const res = await request(app)
+        .get('/api/admin/tags')
+        .set('Cookie', adminCookie);
+
+      expect(res.status).toBe(200);
+      const tag = res.body.tags.find((t: { name: string }) => t.name === 'scope_info_tag');
+      expect(tag).toBeDefined();
+      expect(tag.scope).toBe('GLOBAL');
+      expect(tag.status).toBe('APPROVED');
+      expect(tag.communityId).toBeNull();
+    });
   });
 
   // =====================================

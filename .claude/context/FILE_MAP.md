@@ -9,13 +9,14 @@ controllers/
 ├── auth.ts            # signup, login, logout, me
 ├── communities.ts     # CRUD communautes
 ├── communityRecipes.ts # create, list recettes communautaires
+├── communityTags.ts   # CRUD + approve/reject tags communaute (moderateur)
 ├── members.ts         # list, promote, kick/leave membres
 ├── invites.ts         # create, list, cancel, accept, reject invitations
 ├── proposals.ts       # create, list, detail, accept, reject propositions
 ├── recipes.ts         # CRUD recettes personnelles (get, create, update, delete)
 ├── recipeVariants.ts  # getVariants (liste variantes d'une recette)
 ├── recipeShare.ts     # shareRecipe, publishToCommunities, getRecipeCommunities
-├── tags.ts            # autocomplete tags
+├── tags.ts            # autocomplete tags (scope-aware)
 ├── ingredients.ts     # autocomplete ingredients
 └── users.ts           # search users, update profile
 ```
@@ -121,6 +122,7 @@ __tests__/
     ├── ingredients.test.ts
     ├── communities.test.ts
     ├── communityRecipes.test.ts
+    ├── communityTags.test.ts
     ├── invitations.test.ts
     ├── members.test.ts
     ├── adminAuth.test.ts
