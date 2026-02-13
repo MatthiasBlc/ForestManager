@@ -3,13 +3,16 @@
  * Centralise les patterns repetes dans les controllers.
  */
 
-/** Select pour les tags d'une recette (retourne { tag: { id, name } }) */
+/** Select pour les tags d'une recette (retourne { tag: { id, name, scope, status, communityId } }) */
 export const RECIPE_TAGS_SELECT = {
   select: {
     tag: {
       select: {
         id: true,
         name: true,
+        scope: true,
+        status: true,
+        communityId: true,
       },
     },
   },

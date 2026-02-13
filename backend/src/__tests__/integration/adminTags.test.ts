@@ -84,8 +84,8 @@ describe('Admin Tags API', () => {
       expect(res.body.tag.id).toBeDefined();
 
       // Verifier en DB
-      const tag = await testPrisma.tag.findUnique({
-        where: { name: 'new test tag' },
+      const tag = await testPrisma.tag.findFirst({
+        where: { name: 'new test tag', communityId: null },
       });
       expect(tag).not.toBeNull();
     });

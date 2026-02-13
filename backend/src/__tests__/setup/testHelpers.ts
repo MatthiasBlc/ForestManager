@@ -136,21 +136,27 @@ export async function createTestRecipe(
     ingredients: Array<{ name: string; quantity?: string }>;
   }>
 ): Promise<TestRecipe> {
+  // Creer/trouver les tags en amont (compound unique avec nullable ne supporte pas connectOrCreate)
+  const tagIds: string[] = [];
+  if (data?.tags) {
+    for (const tagName of data.tags) {
+      const normalized = tagName.toLowerCase().trim();
+      let tag = await testPrisma.tag.findFirst({ where: { name: normalized, communityId: null } });
+      if (!tag) {
+        tag = await testPrisma.tag.create({ data: { name: normalized } });
+      }
+      tagIds.push(tag.id);
+    }
+  }
+
   const recipe = await testPrisma.recipe.create({
     data: {
       title: data?.title ?? `Test Recipe ${Date.now()}`,
       content: data?.content ?? 'Test recipe content',
       imageUrl: data?.imageUrl ?? null,
       creatorId,
-      tags: data?.tags ? {
-        create: data.tags.map(tagName => ({
-          tag: {
-            connectOrCreate: {
-              where: { name: tagName.toLowerCase().trim() },
-              create: { name: tagName.toLowerCase().trim() },
-            },
-          },
-        })),
+      tags: tagIds.length > 0 ? {
+        create: tagIds.map(tagId => ({ tagId })),
       } : undefined,
       ingredients: data?.ingredients ? {
         create: data.ingredients.map((ing, index) => ({
@@ -179,10 +185,22 @@ export async function createTestRecipe(
 /**
  * Creer un tag de test
  */
-export async function createTestTag(name?: string) {
+export async function createTestTag(
+  name?: string,
+  options?: Partial<{
+    scope: 'GLOBAL' | 'COMMUNITY';
+    status: 'APPROVED' | 'PENDING';
+    communityId: string;
+    createdById: string;
+  }>
+) {
   return testPrisma.tag.create({
     data: {
       name: name ?? `tag_${Date.now()}`,
+      scope: options?.scope,
+      status: options?.status,
+      communityId: options?.communityId,
+      createdById: options?.createdById,
     },
   });
 }

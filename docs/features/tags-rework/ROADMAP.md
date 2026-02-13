@@ -1,18 +1,18 @@
 # Roadmap : Rework Tags (Phase 10)
 
 > **Spec** : `docs/features/tags-rework/SPEC_TAGS_REWORK.md`
-> **Branche** : a creer (`tags-rework`)
+> **Branche** : `TagsRework`
 
 ---
 
 ## 10.1 - Schema & Migration
 
-- [ ] Migration Prisma : enrichir Tag (scope, communityId, status, createdById)
-- [ ] Nouveau modele TagSuggestion
-- [ ] Nouveau modele UserCommunityTagPreference
-- [ ] Nouveau modele ModeratorNotificationPreference
-- [ ] Migration des tags existants → scope=GLOBAL, status=APPROVED
-- [ ] Tests migration
+- [x] Migration Prisma : enrichir Tag (scope, communityId, status, createdById)
+- [x] Nouveau modele TagSuggestion
+- [x] Nouveau modele UserCommunityTagPreference
+- [x] Nouveau modele ModeratorNotificationPreference
+- [x] Migration des tags existants → scope=GLOBAL, status=APPROVED
+- [x] Tests migration
 
 ## 10.2 - Backend Tags (CRUD + validation)
 

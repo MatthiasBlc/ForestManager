@@ -49,8 +49,8 @@ export const create: RequestHandler = async (req, res, next) => {
 
     const normalized = name.trim().toLowerCase();
 
-    const existing = await prisma.tag.findUnique({
-      where: { name: normalized },
+    const existing = await prisma.tag.findFirst({
+      where: { name: normalized, communityId: null },
     });
 
     if (existing) {
@@ -100,8 +100,8 @@ export const update: RequestHandler = async (req, res, next) => {
     const normalized = name.trim().toLowerCase();
 
     if (normalized !== tag.name) {
-      const existing = await prisma.tag.findUnique({
-        where: { name: normalized },
+      const existing = await prisma.tag.findFirst({
+        where: { name: normalized, communityId: null },
       });
       if (existing) {
         throw createHttpError(409, "ADMIN_TAG_002: Tag already exists");

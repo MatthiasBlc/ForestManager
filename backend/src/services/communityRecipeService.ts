@@ -63,11 +63,12 @@ export async function createCommunityRecipe(
       const normalizedTags = normalizeNames(data.tags);
 
       for (const tagName of normalizedTags) {
-        const tag = await tx.tag.upsert({
-          where: { name: tagName },
-          create: { name: tagName },
-          update: {},
+        let tag = await tx.tag.findFirst({
+          where: { name: tagName, communityId: null },
         });
+        if (!tag) {
+          tag = await tx.tag.create({ data: { name: tagName } });
+        }
 
         await tx.recipeTag.createMany({
           data: [

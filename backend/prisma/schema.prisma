@@ -170,6 +170,10 @@ model User {
   recipeViews       RecipeView[]
   invitesSent       CommunityInvite[]      @relation("InviteSender")
   invitesReceived   CommunityInvite[]      @relation("InviteReceiver")
+  createdTags       Tag[]                  @relation("TagCreator")
+  tagSuggestions    TagSuggestion[]
+  tagPreferences    UserCommunityTagPreference[]
+  moderatorNotifPrefs ModeratorNotificationPreference[]
 
   @@index([email])
   @@index([username])
@@ -196,6 +200,9 @@ model Community {
   activities      ActivityLog[]
   invites         CommunityInvite[]
   features        CommunityFeature[] // Briques attribuees a cette communaute
+  tags            Tag[]
+  tagPreferences  UserCommunityTagPreference[]
+  moderatorNotifPrefs ModeratorNotificationPreference[]
 
   @@index([deletedAt])
 }
@@ -307,6 +314,7 @@ model Recipe {
   analytics             RecipeAnalytics?
   views                 RecipeView[]
   activities            ActivityLog[]
+  tagSuggestions        TagSuggestion[]
 
   @@index([creatorId])
   @@index([communityId])
@@ -352,14 +360,43 @@ enum ProposalStatus {
 // Note: Tables pivot - Cascade OK (hard delete quand recette supprimee)
 // =============================================================================
 
+enum TagScope {
+  GLOBAL
+  COMMUNITY
+}
+
+enum TagStatus {
+  APPROVED
+  PENDING
+}
+
+enum TagSuggestionStatus {
+  PENDING_OWNER
+  PENDING_MODERATOR
+  APPROVED
+  REJECTED
+}
+
 model Tag {
-  id      String      @id @default(uuid())
-  name    String      @unique
+  id          String    @id @default(uuid())
+  name        String
+  scope       TagScope  @default(GLOBAL)
+  status      TagStatus @default(APPROVED)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   // Relations
+  communityId String?
+  community   Community? @relation(fields: [communityId], references: [id])
+
+  createdById String?
+  createdBy   User? @relation("TagCreator", fields: [createdById], references: [id])
+
   recipes RecipeTag[]
 
+  @@unique([name, communityId])
   @@index([name])
+  @@index([communityId, status])
 }
 
 model RecipeTag {
@@ -371,6 +408,59 @@ model RecipeTag {
 
   @@id([recipeId, tagId])
   @@index([tagId])
+}
+
+// =============================================================================
+// TAG SUGGESTION (Suggestions de tags sur recettes d'autrui)
+// =============================================================================
+
+model TagSuggestion {
+  id            String              @id @default(uuid())
+  recipeId      String
+  tagName       String
+  suggestedById String
+  status        TagSuggestionStatus @default(PENDING_OWNER)
+  createdAt     DateTime            @default(now())
+  decidedAt     DateTime?
+
+  recipe      Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  suggestedBy User   @relation(fields: [suggestedById], references: [id])
+
+  @@unique([recipeId, tagName, suggestedById])
+  @@index([recipeId, status])
+}
+
+// =============================================================================
+// USER COMMUNITY TAG PREFERENCE (Visibilite tags par communaute)
+// =============================================================================
+
+model UserCommunityTagPreference {
+  userId      String
+  communityId String
+  showTags    Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@id([userId, communityId])
+}
+
+// =============================================================================
+// MODERATOR NOTIFICATION PREFERENCE (Preferences notifications tags)
+// =============================================================================
+
+model ModeratorNotificationPreference {
+  id               String    @id @default(uuid())
+  userId           String
+  communityId      String?
+  tagNotifications Boolean   @default(true)
+  updatedAt        DateTime  @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community Community? @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, communityId])
 }
 
 // =============================================================================
