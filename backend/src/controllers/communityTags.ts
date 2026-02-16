@@ -283,6 +283,16 @@ export const approveCommunityTag: RequestHandler = async (req, res, next) => {
       data: { status: "APPROVED" },
     });
 
+    // Cascade : approuver les TagSuggestions PENDING_MODERATOR avec ce tagName dans cette communaute
+    await prisma.tagSuggestion.updateMany({
+      where: {
+        tagName: tag.name,
+        status: "PENDING_MODERATOR",
+        recipe: { communityId, deletedAt: null },
+      },
+      data: { status: "APPROVED", decidedAt: new Date() },
+    });
+
     await prisma.activityLog.create({
       data: {
         type: "TAG_APPROVED",
@@ -328,6 +338,16 @@ export const rejectCommunityTag: RequestHandler = async (req, res, next) => {
     if (tag.status !== "PENDING") {
       throw createHttpError(400, "TAG_004: Tag is not pending");
     }
+
+    // Cascade : rejeter les TagSuggestions PENDING_MODERATOR avec ce tagName dans cette communaute
+    await prisma.tagSuggestion.updateMany({
+      where: {
+        tagName: tag.name,
+        status: "PENDING_MODERATOR",
+        recipe: { communityId, deletedAt: null },
+      },
+      data: { status: "REJECTED", decidedAt: new Date() },
+    });
 
     // Hard delete (cascade supprime les RecipeTag)
     await prisma.tag.delete({ where: { id: tagId } });

@@ -377,6 +377,29 @@ export async function createTestFeature(data?: Partial<{
 }
 
 // =====================================
+// TagSuggestion Factory
+// =====================================
+
+export async function createTestTagSuggestion(
+  recipeId: string,
+  suggestedById: string,
+  tagName: string,
+  status?: 'PENDING_OWNER' | 'PENDING_MODERATOR' | 'APPROVED' | 'REJECTED'
+) {
+  return testPrisma.tagSuggestion.create({
+    data: {
+      recipeId,
+      suggestedById,
+      tagName: tagName.trim().toLowerCase(),
+      status: status ?? 'PENDING_OWNER',
+      decidedAt: status && status !== 'PENDING_OWNER' && status !== 'PENDING_MODERATOR'
+        ? new Date()
+        : null,
+    },
+  });
+}
+
+// =====================================
 // Admin Login Helper
 // =====================================
 

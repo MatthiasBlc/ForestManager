@@ -550,6 +550,10 @@ enum ActivityType {
   TAG_DELETED
   TAG_APPROVED
   TAG_REJECTED
+
+  // Tag suggestions
+  TAG_SUGGESTION_ACCEPTED
+  TAG_SUGGESTION_REJECTED
 }
 
 // =============================================================================

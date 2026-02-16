@@ -122,6 +122,20 @@ POST /api/recipes/:recipeId/proposals   # creer proposition
 ```
 Controller: `controllers/proposals.ts` | Route: `routes/recipes.ts`
 
+## Tag Suggestions (/api/tag-suggestions) - requireAuth
+```
+POST /api/tag-suggestions/:id/accept   # owner accepte suggestion
+POST /api/tag-suggestions/:id/reject   # owner rejette suggestion
+```
+Controller: `controllers/tagSuggestions.ts` | Route: `routes/tagSuggestions.ts`
+
+### Tag Suggestions (nested under /api/recipes/:recipeId)
+```
+GET  /api/recipes/:recipeId/tag-suggestions   # list suggestions (?status=)
+POST /api/recipes/:recipeId/tag-suggestions   # suggerer un tag (membre, pas owner)
+```
+Controller: `controllers/tagSuggestions.ts` | Route: `routes/recipes.ts`
+
 ---
 
 ## Admin Auth (/api/admin/auth) - adminSession, rate limited 5/15min
@@ -194,4 +208,4 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 | adminRateLimiter | middleware/security.ts | 30 req/min global admin |
 | authRateLimiter | routes config | 5/15min sur auth endpoints |
 
-## Total: 71 endpoints (44 user + 27 admin + 1 health)
+## Total: 75 endpoints (48 user + 27 admin + 1 health)

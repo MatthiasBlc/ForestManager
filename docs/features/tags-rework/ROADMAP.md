@@ -36,11 +36,12 @@
 
 ## 10.4 - Backend TagSuggestion
 
-- [ ] Endpoint POST tag-suggestion (suggerer tag sur recette d'autrui)
-- [ ] Endpoint accept/reject par owner
-- [ ] Workflow 2 etapes : owner → moderateur (si tag inconnu)
-- [ ] Auto-rejet suggestions sur recettes orphelines
-- [ ] Tests
+- [x] Endpoint POST tag-suggestion (suggerer tag sur recette d'autrui)
+- [x] Endpoint accept/reject par owner
+- [x] Workflow 2 etapes : owner → moderateur (si tag inconnu)
+- [x] Auto-rejet suggestions sur recettes orphelines
+- [x] Cascade moderateur approve/reject → TagSuggestion PENDING_MODERATOR
+- [x] Tests (29 tests)
 
 ## 10.5 - Backend Preferences & Notifications
 
