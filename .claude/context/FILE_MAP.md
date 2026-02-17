@@ -16,6 +16,8 @@ controllers/
 ├── recipes.ts         # CRUD recettes personnelles (get, create, update, delete)
 ├── recipeVariants.ts  # getVariants (liste variantes d'une recette)
 ├── recipeShare.ts     # shareRecipe, publishToCommunities, getRecipeCommunities
+├── tagPreferences.ts  # tag visibility & moderator notification prefs (5 handlers)
+├── tagSuggestions.ts  # create, accept, reject tag suggestions
 ├── tags.ts            # autocomplete tags (scope-aware)
 ├── ingredients.ts     # autocomplete ingredients
 └── users.ts           # search users, update profile
@@ -29,9 +31,10 @@ routes/
 ├── invites.ts         # /api/invites/:id/accept|reject
 ├── proposals.ts       # /api/proposals/:id, /api/proposals/:id/accept|reject
 ├── recipes.ts         # /api/recipes/* (incl. /api/recipes/:id/proposals)
+├── tagSuggestions.ts  # /api/tag-suggestions/*
 ├── tags.ts            # /api/tags
 ├── ingredients.ts     # /api/ingredients
-└── users.ts           # /api/users/search, /api/users/me, /api/users/me/invites
+└── users.ts           # /api/users/* (incl. tag-preferences, notification-preferences)
 ```
 
 ### Middleware
@@ -76,6 +79,8 @@ services/
 ├── shareService.ts    # forkRecipe, publishRecipe, getRecipeFamilyCommunities
 ├── membershipService.ts # requireRecipeAccess, requireRecipeOwnership
 ├── orphanHandling.ts  # Gestion recettes orphelines (auto-reject proposals)
+├── notificationService.ts  # getModeratorIdsForTagNotification (filtre par prefs)
+├── tagSuggestionService.ts # create, accept, reject tag suggestions
 ├── eventEmitter.ts    # AppEventEmitter singleton (emit activity events)
 └── socketServer.ts    # Socket.IO server init, auth middleware, room management
 ```

@@ -38,6 +38,7 @@ export async function forkRecipe(
     });
 
     // Copier les tags (scope-aware)
+    let forkPendingTagIds: string[] = [];
     if (sourceRecipe.tags.length > 0) {
       const sourceTags = sourceRecipe.tags.map((rt) => ({
         id: rt.tag.id,
@@ -45,7 +46,8 @@ export async function forkRecipe(
         scope: rt.tag.scope,
         communityId: rt.tag.communityId,
       }));
-      const tagIds = await resolveTagsForFork(tx, sourceTags, targetCommunityId, userId);
+      const { tagIds, pendingTagIds } = await resolveTagsForFork(tx, sourceTags, targetCommunityId, userId);
+      forkPendingTagIds = pendingTagIds;
       if (tagIds.length > 0) {
         await tx.recipeTag.createMany({
           data: tagIds.map((tagId) => ({
@@ -101,7 +103,7 @@ export async function forkRecipe(
     });
 
     // Recuperer la recette forkee avec toutes ses relations
-    return tx.recipe.findUnique({
+    const forkedResult = await tx.recipe.findUnique({
       where: { id: forkedRecipe.id },
       select: {
         id: true,
@@ -120,6 +122,8 @@ export async function forkRecipe(
         ingredients: RECIPE_INGREDIENTS_SELECT,
       },
     });
+
+    return { recipe: forkedResult, pendingTagIds: forkPendingTagIds };
   });
 }
 

@@ -3,6 +3,8 @@ import createHttpError from "http-errors";
 import prisma from "../util/db";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { parsePagination } from "../util/pagination";
+import appEvents from "../services/eventEmitter";
+import { getModeratorIdsForTagNotification } from "../services/notificationService";
 
 /**
  * GET /api/communities/:communityId/tags
@@ -302,6 +304,17 @@ export const approveCommunityTag: RequestHandler = async (req, res, next) => {
       },
     });
 
+    // Notifier le createur du tag
+    if (tag.createdById) {
+      appEvents.emitActivity({
+        type: "tag:approved",
+        userId,
+        communityId,
+        targetUserIds: [tag.createdById],
+        metadata: { tagId, tagName: tag.name },
+      });
+    }
+
     res.status(200).json({
       id: updated.id,
       name: updated.name,
@@ -360,6 +373,17 @@ export const rejectCommunityTag: RequestHandler = async (req, res, next) => {
         metadata: { tagId, tagName: tag.name, createdById: tag.createdById },
       },
     });
+
+    // Notifier le createur du tag
+    if (tag.createdById) {
+      appEvents.emitActivity({
+        type: "tag:rejected",
+        userId,
+        communityId,
+        targetUserIds: [tag.createdById],
+        metadata: { tagId, tagName: tag.name },
+      });
+    }
 
     res.status(200).json({ message: "Tag rejected and removed" });
   } catch (error) {

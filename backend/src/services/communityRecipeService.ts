@@ -33,7 +33,9 @@ export async function createCommunityRecipe(
   communityId: string,
   data: CreateCommunityRecipeData
 ) {
-  return prisma.$transaction(async (tx) => {
+  let pendingTagIds: string[] = [];
+
+  const result = await prisma.$transaction(async (tx) => {
     // 1. Creer la recette personnelle (communityId: null)
     const personalRecipe = await tx.recipe.create({
       data: {
@@ -61,7 +63,7 @@ export async function createCommunityRecipe(
     // IMPORTANT: traiter la recette communautaire EN PREMIER pour que les tags
     // inconnus deviennent COMMUNITY PENDING (et non GLOBAL APPROVED via le perso)
     if (data.tags.length > 0) {
-      await upsertTags(tx, communityRecipe.id, data.tags, userId, communityId);
+      pendingTagIds = await upsertTags(tx, communityRecipe.id, data.tags, userId, communityId);
       await upsertTags(tx, personalRecipe.id, data.tags, userId, null);
     }
 
@@ -94,4 +96,6 @@ export async function createCommunityRecipe(
 
     return { personal, community };
   });
+
+  return { ...result, pendingTagIds };
 }

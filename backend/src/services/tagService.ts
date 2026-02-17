@@ -242,8 +242,9 @@ export async function resolveTagsForFork(
   sourceTags: SourceTag[],
   targetCommunityId: string,
   userId: string
-): Promise<string[]> {
+): Promise<{ tagIds: string[]; pendingTagIds: string[] }> {
   const tagIds: string[] = [];
+  const pendingTagIds: string[] = [];
 
   for (const sourceTag of sourceTags) {
     if (sourceTag.scope === "GLOBAL") {
@@ -279,6 +280,7 @@ export async function resolveTagsForFork(
 
     if (targetTag) {
       tagIds.push(targetTag.id);
+      pendingTagIds.push(targetTag.id);
       continue;
     }
 
@@ -294,7 +296,8 @@ export async function resolveTagsForFork(
     });
 
     tagIds.push(newTag.id);
+    pendingTagIds.push(newTag.id);
   }
 
-  return tagIds;
+  return { tagIds, pendingTagIds };
 }

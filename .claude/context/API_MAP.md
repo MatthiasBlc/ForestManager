@@ -97,8 +97,13 @@ GET   /api/users/search               # search by username prefix (?q=)
 PATCH /api/users/me                    # update profile (username, email, password)
 GET   /api/users/me/invites            # received invitations (?status=)
 GET   /api/users/me/activity           # personal activity feed (paginated)
+GET   /api/users/me/tag-preferences                            # tag visibility prefs per community
+PUT   /api/users/me/tag-preferences/:communityId               # toggle showTags (member)
+GET   /api/users/me/notification-preferences                   # moderator notification prefs
+PUT   /api/users/me/notification-preferences/tags              # toggle global tagNotifications (moderator)
+PUT   /api/users/me/notification-preferences/tags/:communityId # toggle per community (moderator)
 ```
-Controller: `controllers/users.ts`, `controllers/invites.ts`, `controllers/activity.ts` | Route: `routes/users.ts`
+Controller: `controllers/users.ts`, `controllers/invites.ts`, `controllers/activity.ts`, `controllers/tagPreferences.ts` | Route: `routes/users.ts`
 
 ## User Invitations
 ```
@@ -208,4 +213,4 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 | adminRateLimiter | middleware/security.ts | 30 req/min global admin |
 | authRateLimiter | routes config | 5/15min sur auth endpoints |
 
-## Total: 75 endpoints (48 user + 27 admin + 1 health)
+## Total: 80 endpoints (53 user + 27 admin + 1 health)

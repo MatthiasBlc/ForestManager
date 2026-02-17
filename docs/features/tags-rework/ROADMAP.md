@@ -45,12 +45,12 @@
 
 ## 10.5 - Backend Preferences & Notifications
 
-- [ ] Endpoints UserCommunityTagPreference (GET/PUT)
-- [ ] Endpoints ModeratorNotificationPreference (GET/PUT)
-- [ ] Notifications WebSocket : tag:pending, tag:approved, tag:rejected
-- [ ] Notifications WebSocket : tag-suggestion:new, approved, rejected
-- [ ] Filtrage notifications selon preferences moderateur
-- [ ] Tests
+- [x] Endpoints UserCommunityTagPreference (GET/PUT)
+- [x] Endpoints ModeratorNotificationPreference (GET/PUT global + par communaute)
+- [x] Notifications WebSocket : tag:pending, tag:approved, tag:rejected
+- [x] Notifications WebSocket : tag-suggestion:pending-mod
+- [x] Filtrage notifications selon preferences moderateur (notificationService)
+- [x] Tests (25 tests)
 
 ## 10.6 - Frontend Tags (refactoring)
 

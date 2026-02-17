@@ -11,6 +11,7 @@ import {
   rejectTagSuggestion as rejectTagSuggestionService,
 } from "../services/tagSuggestionService";
 import appEvents from "../services/eventEmitter";
+import { getModeratorIdsForTagNotification } from "../services/notificationService";
 
 const MAX_TAGS_PER_RECIPE = 10;
 
@@ -247,6 +248,23 @@ export const acceptTagSuggestion: RequestHandler<
       targetUserIds: [suggestion.suggestedById],
       metadata: { suggestionId: id, tagName: suggestion.tagName },
     });
+
+    // Si la suggestion est passee en PENDING_MODERATOR, notifier les moderateurs
+    if (result.status === "PENDING_MODERATOR" && suggestion.recipe.communityId) {
+      const moderatorIds = await getModeratorIdsForTagNotification(
+        suggestion.recipe.communityId
+      );
+      if (moderatorIds.length > 0) {
+        appEvents.emitActivity({
+          type: "tag-suggestion:pending-mod",
+          userId: authenticatedUserId,
+          communityId: suggestion.recipe.communityId,
+          recipeId: suggestion.recipeId,
+          targetUserIds: moderatorIds,
+          metadata: { suggestionId: id, tagName: suggestion.tagName },
+        });
+      }
+    }
 
     res.status(200).json(result);
   } catch (error) {

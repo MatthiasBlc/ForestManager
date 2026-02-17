@@ -21,14 +21,16 @@ export async function upsertTags(
   tags: string[],
   userId: string,
   communityId: string | null
-) {
-  const { tagIds } = await resolveTagsForRecipe(tx, tags, userId, communityId);
+): Promise<string[]> {
+  const { tagIds, pendingTagIds } = await resolveTagsForRecipe(tx, tags, userId, communityId);
 
   for (const tagId of tagIds) {
     await tx.recipeTag.create({
       data: { recipeId, tagId },
     });
   }
+
+  return pendingTagIds;
 }
 
 export async function upsertIngredients(
@@ -129,7 +131,9 @@ export async function updateRecipe(
   recipe: RecipeForSync,
   userId: string
 ) {
-  return prisma.$transaction(async (tx) => {
+  let pendingTagIds: string[] = [];
+
+  const result = await prisma.$transaction(async (tx) => {
     // Mettre a jour les champs de base
     await tx.recipe.update({
       where: { id: recipeId },
@@ -143,7 +147,7 @@ export async function updateRecipe(
     // Remplacer tags si fournis
     if (data.tags !== undefined) {
       await tx.recipeTag.deleteMany({ where: { recipeId } });
-      await upsertTags(tx, recipeId, data.tags, userId, recipe.communityId);
+      pendingTagIds = await upsertTags(tx, recipeId, data.tags, userId, recipe.communityId);
     }
 
     // Remplacer ingredients si fournis
@@ -160,6 +164,8 @@ export async function updateRecipe(
       select: RECIPE_RESULT_SELECT,
     });
   });
+
+  return { result, pendingTagIds };
 }
 
 /**
