@@ -78,6 +78,6 @@
 
 ## 10.9 - Frontend Preferences
 
-- [ ] Page profil : toggle visibilite tags par communaute
-- [ ] Page profil moderateur : toggle notifications tags par communaute + global
-- [ ] Tests
+- [x] Page profil : toggle visibilite tags par communaute
+- [x] Page profil moderateur : toggle notifications tags par communaute + global
+- [x] Tests

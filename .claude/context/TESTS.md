@@ -40,7 +40,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~798 tests)
+## Inventaire des tests (~808 tests)
 
 ### Backend Integration (20 fichiers, ~380 tests)
 
@@ -80,7 +80,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | middleware/requireSuperAdmin.test.ts | requireSuperAdmin, requireAdminSession | 6 |
 | middleware/security.test.ts | requireHttps, rateLimiters, helmet | 5 |
 
-### Frontend Unit (50 fichiers, ~316 tests)
+### Frontend Unit (52 fichiers, ~326 tests)
 
 | Fichier | Composant | Tests |
 |---------|-----------|-------|
@@ -118,6 +118,8 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | ShareRecipeModal.test.tsx | Modal partage recette | 7 |
 | recipes/SuggestTagModal.test.tsx | Modal suggestion tag | 5 |
 | recipes/TagSuggestionsList.test.tsx | Liste suggestions tags owner | 5 |
+| profile/TagPreferencesSection.test.tsx | Toggle tag visibility per community | 5 |
+| profile/NotificationPreferencesSection.test.tsx | Toggle tag notifications (moderator) | 5 |
 | hooks/useClickOutside.test.ts | Hook click outside | 4 |
 | hooks/useDebouncedEffect.test.ts | Hook debounce | 5 |
 | hooks/useConfirm.test.tsx | Hook confirm dialog | 6 |

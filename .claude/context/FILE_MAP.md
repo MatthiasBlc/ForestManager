@@ -214,6 +214,9 @@ components/
 │   ├── SuggestTagModal.tsx   # Modal suggestion de tag sur recette d'autrui
 │   ├── TagBadge.tsx          # Badge tag avec style pending/approved
 │   └── TagSuggestionsList.tsx # Liste suggestions de tags (owner view, accept/reject)
+├── profile/
+│   ├── TagPreferencesSection.tsx     # Toggle tag visibility per community
+│   └── NotificationPreferencesSection.tsx # Toggle tag notifications (moderator)
 ├── form/
 │   ├── TagSelector.tsx       # Multi-select tags (debounce, create on-the-fly)
 │   ├── IngredientSelector.tsx # Selecteur ingredients
@@ -249,6 +252,7 @@ models/
 ├── tag.ts                    # Tag types
 ├── tagSuggestion.ts          # TagSuggestion types
 ├── community.ts              # Community, Member, Invite types
+├── preferences.ts            # TagPreference, NotificationPreferences types
 └── admin.ts                  # AdminUser types
 ```
 
@@ -317,6 +321,9 @@ __tests__/
     │       ├── AdminCommunitiesPage.test.tsx
     │       └── AdminActivityPage.test.tsx
     └── components/
+        ├── profile/
+        │   ├── TagPreferencesSection.test.tsx
+        │   └── NotificationPreferencesSection.test.tsx
         ├── communities/
         │   └── CommunityTagsList.test.tsx
         ├── Layout/

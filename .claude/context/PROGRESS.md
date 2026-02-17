@@ -8,9 +8,9 @@ Phases 0 a 9.3 terminees.
 
 - **Spec** : `docs/features/tags-rework/SPEC_TAGS_REWORK.md`
 - **Roadmap** : `docs/features/tags-rework/ROADMAP.md`
-- **Sous-etape en cours** : 10.8 termine, prochaine etape 10.9 (Frontend Preferences)
+- **Sous-etape en cours** : 10.9 termine - Phase 10 complete
 - **Branche** : `TagsRework`
-- **Tests** : 798 (316 frontend + 485 backend)
+- **Tests** : 808 (326 frontend + 485 backend)
 
 ## Prochains chantiers (a specifier)
 

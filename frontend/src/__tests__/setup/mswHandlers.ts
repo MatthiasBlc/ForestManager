@@ -1544,6 +1544,86 @@ export const handlers = [
   }),
 
   // =====================================
+  // User Tag Preferences
+  // =====================================
+
+  http.get(`${API_URL}/api/users/me/tag-preferences`, () => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+    return HttpResponse.json({
+      data: [
+        { communityId: 'community-1', communityName: 'Baking Club', showTags: true },
+        { communityId: 'community-2', communityName: 'Vegan Recipes', showTags: false },
+      ],
+    });
+  }),
+
+  http.put(`${API_URL}/api/users/me/tag-preferences/:communityId`, async ({ params, request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, boolean>;
+    return HttpResponse.json({
+      communityId: params.communityId,
+      showTags: body.showTags,
+    });
+  }),
+
+  // =====================================
+  // User Notification Preferences
+  // =====================================
+
+  http.get(`${API_URL}/api/users/me/notification-preferences`, () => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+    return HttpResponse.json({
+      global: { tagNotifications: true },
+      communities: [
+        { communityId: 'community-1', communityName: 'Baking Club', tagNotifications: true },
+      ],
+    });
+  }),
+
+  http.put(`${API_URL}/api/users/me/notification-preferences/tags`, async ({ request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, boolean>;
+    return HttpResponse.json({ tagNotifications: body.tagNotifications });
+  }),
+
+  http.put(`${API_URL}/api/users/me/notification-preferences/tags/:communityId`, async ({ params, request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, boolean>;
+    return HttpResponse.json({
+      communityId: params.communityId,
+      tagNotifications: body.tagNotifications,
+    });
+  }),
+
+  // =====================================
   // Recipe Share
   // =====================================
 

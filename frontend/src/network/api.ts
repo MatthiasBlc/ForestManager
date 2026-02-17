@@ -5,6 +5,7 @@ import { User } from "../models/user";
 import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats, AdminTag, AdminIngredient, AdminFeature, AdminCommunity, AdminCommunityDetail, AdminActivityResponse } from "../models/admin";
 import { CommunityTag } from "../models/tag";
 import { TagSuggestion, TagSuggestionsResponse } from "../models/tagSuggestion";
+import { TagPreference, NotificationPreferences } from "../models/preferences";
 import { CommunityListItem, CommunityDetail, CommunityMember, CommunityInvite, ReceivedInvite } from "../models/community";
 import { ConflictError, UnauthorizedError } from "../errors/http_errors";
 
@@ -345,6 +346,34 @@ export default class APIManager {
   static async updateProfile(data: { username?: string; email?: string; currentPassword?: string; newPassword?: string }): Promise<User> {
     const response = await API.patch("/api/users/me", JSON.stringify(data)).catch(handleApiError);
     return response.data.user;
+  }
+
+
+  // --------------- User Preferences ---------------
+
+  static async getTagPreferences(): Promise<{ data: TagPreference[] }> {
+    const response = await API.get("/api/users/me/tag-preferences").catch(handleApiError);
+    return response.data;
+  }
+
+  static async updateTagPreference(communityId: string, showTags: boolean): Promise<{ communityId: string; showTags: boolean }> {
+    const response = await API.put(`/api/users/me/tag-preferences/${communityId}`, JSON.stringify({ showTags })).catch(handleApiError);
+    return response.data;
+  }
+
+  static async getNotificationPreferences(): Promise<NotificationPreferences> {
+    const response = await API.get("/api/users/me/notification-preferences").catch(handleApiError);
+    return response.data;
+  }
+
+  static async updateGlobalNotificationPreference(tagNotifications: boolean): Promise<{ tagNotifications: boolean }> {
+    const response = await API.put("/api/users/me/notification-preferences/tags", JSON.stringify({ tagNotifications })).catch(handleApiError);
+    return response.data;
+  }
+
+  static async updateCommunityNotificationPreference(communityId: string, tagNotifications: boolean): Promise<{ communityId: string; tagNotifications: boolean }> {
+    const response = await API.put(`/api/users/me/notification-preferences/tags/${communityId}`, JSON.stringify({ tagNotifications })).catch(handleApiError);
+    return response.data;
   }
 
 
