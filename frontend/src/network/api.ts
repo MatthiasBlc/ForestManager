@@ -218,8 +218,8 @@ export default class APIManager {
 
   // --------------- Tags ---------------
 
-  static async searchTags(search: string = "", limit: number = 20): Promise<TagSearchResult[]> {
-    const qs = buildQueryString({ search: search || undefined, limit });
+  static async searchTags(search: string = "", limit: number = 20, communityId?: string): Promise<TagSearchResult[]> {
+    const qs = buildQueryString({ search: search || undefined, limit, communityId });
     const response = await API.get(`/api/tags${qs}`).catch(handleApiError);
     return response.data.data;
   }

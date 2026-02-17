@@ -54,12 +54,12 @@
 
 ## 10.6 - Frontend Tags (refactoring)
 
-- [ ] Composant TagBadge : style normal vs pending
-- [ ] Autocomplete tags : scope-aware (global + communaute filtree)
-- [ ] Creation recette : gestion tag inconnu → pending
-- [ ] Edition recette : idem
-- [ ] Affichage tags pending sur RecipeDetailPage
-- [ ] Tests composants
+- [x] Composant TagBadge : style normal vs pending
+- [x] Autocomplete tags : scope-aware (global + communaute filtree)
+- [x] Creation recette : gestion tag inconnu → pending
+- [x] Edition recette : idem
+- [x] Affichage tags pending sur RecipeDetailPage
+- [x] Tests composants
 
 ## 10.7 - Frontend Administration tags
 

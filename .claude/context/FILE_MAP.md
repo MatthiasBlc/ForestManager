@@ -208,8 +208,9 @@ components/
 │   └── SharePersonalRecipeModal.tsx # Modal publier recette perso vers communautes
 ├── recipes/
 │   ├── RecipeCard.tsx        # Carte recette (grille)
-│   ├── RecipeFilters.tsx     # Filtres search/tags
-│   └── RecipeListRow.tsx     # Ligne recette (liste)
+│   ├── RecipeFilters.tsx     # Filtres search/tags (scope-aware via communityId)
+│   ├── RecipeListRow.tsx     # Ligne recette (liste)
+│   └── TagBadge.tsx          # Badge tag avec style pending/approved
 ├── form/
 │   ├── TagSelector.tsx       # Multi-select tags (debounce, create on-the-fly)
 │   ├── IngredientSelector.tsx # Selecteur ingredients
@@ -320,7 +321,8 @@ __tests__/
         │   └── AdminProtectedRoute.test.tsx
         ├── recipes/
         │   ├── RecipeCard.test.tsx
-        │   └── RecipeFilters.test.tsx
+        │   ├── RecipeFilters.test.tsx
+        │   └── TagBadge.test.tsx
         ├── form/
         │   ├── TagSelector.test.tsx
         │   └── IngredientList.test.tsx

@@ -5,6 +5,7 @@ import { FaArrowLeft, FaEdit, FaTrash, FaLightbulb, FaShare, FaCodeBranch } from
 import APIManager from "../network/api";
 import { RecipeDetail } from "../models/recipe";
 import { useAuth } from "../contexts/AuthContext";
+import TagBadge from "../components/recipes/TagBadge";
 import { formatDate } from "../utils/format.Date";
 import { ProposeModificationModal, ProposalsList, VariantsDropdown } from "../components/proposals";
 import { ShareRecipeModal, SharePersonalRecipeModal } from "../components/share";
@@ -236,13 +237,12 @@ const RecipeDetailPage = () => {
           {recipe.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-6">
               {recipe.tags.map((tag) => (
-                <button
+                <TagBadge
                   key={tag.id}
+                  tag={tag}
+                  size="lg"
                   onClick={() => handleTagClick(tag.name)}
-                  className="badge badge-primary badge-lg cursor-pointer hover:badge-secondary"
-                >
-                  {tag.name}
-                </button>
+                />
               ))}
             </div>
           )}

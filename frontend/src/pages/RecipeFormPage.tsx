@@ -171,7 +171,7 @@ const RecipeFormPage = () => {
             <label className="label">
               <span className="label-text font-medium">Tags</span>
             </label>
-            <TagSelector value={tags} onChange={setTags} allowCreate={true} />
+            <TagSelector value={tags} onChange={setTags} allowCreate={true} communityId={communityId} />
           </div>
 
           <div className="form-control">
