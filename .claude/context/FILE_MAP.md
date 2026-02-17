@@ -187,8 +187,9 @@ components/
 ├── communities/
 │   ├── CommunityCard.tsx     # Carte communaute (grille)
 │   ├── CommunityRecipesList.tsx # Liste recettes communaute (filtres, pagination, permissions)
+│   ├── CommunityTagsList.tsx # Gestion tags communaute moderateur (CRUD, approve/reject)
 │   ├── MembersList.tsx       # Liste membres (promote, kick, leave)
-│   └── SidePanel.tsx         # Volet lateral redimensionnable (members/activity/invitations)
+│   └── SidePanel.tsx         # Volet lateral redimensionnable (members/activity/invitations/tags)
 ├── invitations/
 │   ├── InviteCard.tsx        # Carte invitation recue (accept/reject)
 │   ├── InviteUserModal.tsx   # Modal inviter un utilisateur
@@ -313,6 +314,8 @@ __tests__/
     │       ├── AdminCommunitiesPage.test.tsx
     │       └── AdminActivityPage.test.tsx
     └── components/
+        ├── communities/
+        │   └── CommunityTagsList.test.tsx
         ├── Layout/
         │   ├── MainLayout.test.tsx
         │   └── Sidebar.test.tsx

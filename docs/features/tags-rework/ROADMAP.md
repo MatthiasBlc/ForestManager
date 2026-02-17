@@ -63,11 +63,11 @@
 
 ## 10.7 - Frontend Administration tags
 
-- [ ] Page moderateur : liste tags communaute (APPROVED + PENDING)
-- [ ] Actions moderateur : creer, renommer, supprimer tag communaute
-- [ ] Actions moderateur : valider/rejeter tag pending
-- [ ] Adaptation pages SuperAdmin (filtre scope)
-- [ ] Tests
+- [x] Page moderateur : liste tags communaute (APPROVED + PENDING)
+- [x] Actions moderateur : creer, renommer, supprimer tag communaute
+- [x] Actions moderateur : valider/rejeter tag pending
+- [x] Adaptation pages SuperAdmin (filtre scope)
+- [x] Tests
 
 ## 10.8 - Frontend TagSuggestion
 

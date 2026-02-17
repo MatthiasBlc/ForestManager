@@ -3,6 +3,7 @@ import { RecipeDetail, RecipesResponse, CommunityRecipesResponse, TagSearchResul
 import { ActivityResponse } from "../models/activity";
 import { User } from "../models/user";
 import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats, AdminTag, AdminIngredient, AdminFeature, AdminCommunity, AdminCommunityDetail, AdminActivityResponse } from "../models/admin";
+import { CommunityTag } from "../models/tag";
 import { CommunityListItem, CommunityDetail, CommunityMember, CommunityInvite, ReceivedInvite } from "../models/community";
 import { ConflictError, UnauthorizedError } from "../errors/http_errors";
 
@@ -406,10 +407,44 @@ export default class APIManager {
   }
 
 
+  // --------------- Community Tags (moderator) ---------------
+
+  static async getCommunityTags(communityId: string, params?: { status?: string; search?: string }): Promise<{ data: CommunityTag[]; total: number }> {
+    const qs = buildQueryString({ status: params?.status, search: params?.search });
+    const response = await API.get(`/api/communities/${communityId}/tags${qs}`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async createCommunityTag(communityId: string, name: string): Promise<CommunityTag> {
+    const response = await API.post(`/api/communities/${communityId}/tags`, JSON.stringify({ name }))
+      .catch(handleApiErrorWith({ 409: ConflictError }));
+    return response.data;
+  }
+
+  static async updateCommunityTag(communityId: string, tagId: string, name: string): Promise<CommunityTag> {
+    const response = await API.patch(`/api/communities/${communityId}/tags/${tagId}`, JSON.stringify({ name }))
+      .catch(handleApiErrorWith({ 409: ConflictError }));
+    return response.data;
+  }
+
+  static async deleteCommunityTag(communityId: string, tagId: string): Promise<void> {
+    await API.delete(`/api/communities/${communityId}/tags/${tagId}`).catch(handleApiError);
+  }
+
+  static async approveCommunityTag(communityId: string, tagId: string): Promise<CommunityTag> {
+    const response = await API.post(`/api/communities/${communityId}/tags/${tagId}/approve`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async rejectCommunityTag(communityId: string, tagId: string): Promise<void> {
+    await API.post(`/api/communities/${communityId}/tags/${tagId}/reject`).catch(handleApiError);
+  }
+
+
   // --------------- Admin Tags ---------------
 
-  static async getAdminTags(search?: string): Promise<AdminTag[]> {
-    const qs = buildQueryString({ search });
+  static async getAdminTags(search?: string, scope?: string): Promise<AdminTag[]> {
+    const qs = buildQueryString({ search, scope });
     const response = await API.get(`/api/admin/tags${qs}`).catch(handleApiError);
     return response.data.tags;
   }

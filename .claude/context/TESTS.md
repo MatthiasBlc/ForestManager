@@ -40,7 +40,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~704 tests)
+## Inventaire des tests (~783 tests)
 
 ### Backend Integration (20 fichiers, ~380 tests)
 
@@ -80,7 +80,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | middleware/requireSuperAdmin.test.ts | requireSuperAdmin, requireAdminSession | 6 |
 | middleware/security.test.ts | requireHttps, rateLimiters, helmet | 5 |
 
-### Frontend Unit (47 fichiers, ~273 tests)
+### Frontend Unit (48 fichiers, ~301 tests)
 
 | Fichier | Composant | Tests |
 |---------|-----------|-------|
@@ -95,7 +95,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | AdminLoginPage.test.tsx | Page login admin | 8 |
 | AdminDashboardPage.test.tsx | Page dashboard | 4 |
 | AdminLayout.test.tsx | Layout admin | 3 |
-| pages/admin/AdminTagsPage.test.tsx | Page tags admin | 8 |
+| pages/admin/AdminTagsPage.test.tsx | Page tags admin (+ scope filter) | 12 |
 | pages/admin/AdminIngredientsPage.test.tsx | Page ingredients admin | 8 |
 | pages/admin/AdminFeaturesPage.test.tsx | Page features admin | 6 |
 | pages/admin/AdminCommunitiesPage.test.tsx | Page communities admin | 8 |
@@ -111,6 +111,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | CommunitiesPage.test.tsx | Page liste communautes | 7 |
 | CommunityDetailPage.test.tsx | Page detail communaute | 11 |
 | InviteCard.test.tsx | Carte invitation | 5 |
+| communities/CommunityTagsList.test.tsx | Tags communaute moderateur (CRUD, approve/reject) | 8 |
 | MembersList.test.tsx | Liste membres | 6 |
 | InviteUserModal.test.tsx | Modal invitation | 5 |
 | ActivityFeed.test.tsx | Feed activite | 8 |
@@ -120,7 +121,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | hooks/useConfirm.test.tsx | Hook confirm dialog | 6 |
 | hooks/useSocketEvent.test.ts | Hook socket event | 5 |
 | hooks/useCommunityRoom.test.ts | Hook community room | 4 |
-| hooks/useNotificationToasts.test.ts | Hook notification toasts | 5 |
+| hooks/useNotificationToasts.test.ts | Hook notification toasts (+ tag events) | 8 |
 | hooks/usePaginatedList.test.ts | Hook paginated list | 6 |
 | utils/formatDate.test.ts | Format date utils | 5 |
 | utils/communityEvents.test.ts | Community events bus | 2 |

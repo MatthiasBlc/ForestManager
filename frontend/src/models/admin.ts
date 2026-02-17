@@ -22,6 +22,10 @@ export interface AdminTag {
   id: string;
   name: string;
   recipeCount: number;
+  scope?: "GLOBAL" | "COMMUNITY";
+  status?: "APPROVED" | "PENDING";
+  communityId?: string | null;
+  community?: { name: string } | null;
 }
 
 export interface AdminIngredient {

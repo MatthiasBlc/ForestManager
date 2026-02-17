@@ -70,6 +70,45 @@ describe("useNotificationToasts", () => {
     );
   });
 
+  it("should show toast for TAG_PENDING", () => {
+    renderHook(() => useNotificationToasts());
+    const handler = mockSocket.on.mock.calls.find(
+      (call) => call[0] === "notification"
+    )?.[1];
+
+    handler({ type: "TAG_PENDING", userId: "u1", communityId: "c1" });
+    expect(mockToast).toHaveBeenCalledWith(
+      "Nouveau tag en attente de validation",
+      expect.any(Object)
+    );
+  });
+
+  it("should show toast for TAG_APPROVED", () => {
+    renderHook(() => useNotificationToasts());
+    const handler = mockSocket.on.mock.calls.find(
+      (call) => call[0] === "notification"
+    )?.[1];
+
+    handler({ type: "TAG_APPROVED", userId: "u1", communityId: "c1" });
+    expect(mockToast).toHaveBeenCalledWith(
+      "Votre tag a ete valide",
+      expect.any(Object)
+    );
+  });
+
+  it("should show toast for TAG_REJECTED", () => {
+    renderHook(() => useNotificationToasts());
+    const handler = mockSocket.on.mock.calls.find(
+      (call) => call[0] === "notification"
+    )?.[1];
+
+    handler({ type: "TAG_REJECTED", userId: "u1", communityId: "c1" });
+    expect(mockToast).toHaveBeenCalledWith(
+      "Votre tag a ete rejete",
+      expect.any(Object)
+    );
+  });
+
   it("should skip unknown notification type", () => {
     renderHook(() => useNotificationToasts());
     const handler = mockSocket.on.mock.calls.find(

@@ -32,9 +32,9 @@ export const mockRecipes = [mockRecipe];
 
 // Mock admin data
 export const mockTags = [
-  { id: 'tag-1', name: 'dessert', recipeCount: 5 },
-  { id: 'tag-2', name: 'dinner', recipeCount: 3 },
-  { id: 'tag-3', name: 'breakfast', recipeCount: 2 },
+  { id: 'tag-1', name: 'dessert', recipeCount: 5, scope: 'GLOBAL' as const, status: 'APPROVED' as const, communityId: null, community: null },
+  { id: 'tag-2', name: 'dinner', recipeCount: 3, scope: 'GLOBAL' as const, status: 'APPROVED' as const, communityId: null, community: null },
+  { id: 'tag-3', name: 'breakfast', recipeCount: 2, scope: 'COMMUNITY' as const, status: 'APPROVED' as const, communityId: 'com-1', community: { name: 'Test Community' } },
 ];
 
 export const mockIngredients = [
@@ -132,6 +132,40 @@ export const mockReceivedInvites = [
     respondedAt: null,
     community: { id: 'community-3', name: 'Italian Cooking', description: 'Best pasta recipes' },
     inviter: { id: 'user-5', username: 'david' },
+  },
+];
+
+// Mock community tags data
+export const mockCommunityTags = [
+  {
+    id: 'ctag-1',
+    name: 'appetizer',
+    scope: 'COMMUNITY' as const,
+    status: 'APPROVED' as const,
+    communityId: 'community-1',
+    createdBy: { id: 'test-user-id', username: 'testuser' },
+    recipeCount: 3,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'ctag-2',
+    name: 'spicy',
+    scope: 'COMMUNITY' as const,
+    status: 'PENDING' as const,
+    communityId: 'community-1',
+    createdBy: { id: 'user-2', username: 'alice' },
+    recipeCount: 1,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: 'ctag-3',
+    name: 'healthy',
+    scope: 'COMMUNITY' as const,
+    status: 'APPROVED' as const,
+    communityId: 'community-1',
+    createdBy: null,
+    recipeCount: 5,
+    createdAt: new Date().toISOString(),
   },
 ];
 
@@ -555,12 +589,16 @@ export const handlers = [
 
     const url = new URL(request.url);
     const search = url.searchParams.get('search');
+    const scope = url.searchParams.get('scope');
 
     let filteredTags = [...mockTags];
     if (search) {
       filteredTags = filteredTags.filter(t =>
         t.name.toLowerCase().includes(search.toLowerCase())
       );
+    }
+    if (scope) {
+      filteredTags = filteredTags.filter(t => t.scope === scope);
     }
 
     return HttpResponse.json({ tags: filteredTags });
@@ -1221,6 +1259,143 @@ export const handlers = [
         hasMore: offset + limit < mockUserActivityFeed.length,
       },
     });
+  }),
+
+  // =====================================
+  // Community Tags (moderator)
+  // =====================================
+
+  http.get(`${API_URL}/api/communities/:communityId/tags`, ({ request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const url = new URL(request.url);
+    const search = url.searchParams.get('search');
+    const status = url.searchParams.get('status');
+
+    let filtered = [...mockCommunityTags];
+    if (search) {
+      filtered = filtered.filter(t =>
+        t.name.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+    if (status) {
+      filtered = filtered.filter(t => t.status === status);
+    }
+
+    return HttpResponse.json({ data: filtered, total: filtered.length });
+  }),
+
+  http.post(`${API_URL}/api/communities/:communityId/tags`, async ({ request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, string>;
+    if (!body.name) {
+      return HttpResponse.json(
+        { error: 'TAG_001: Tag name is required' },
+        { status: 400 }
+      );
+    }
+
+    return HttpResponse.json({
+      id: `ctag-${Date.now()}`,
+      name: body.name.toLowerCase().trim(),
+      scope: 'COMMUNITY',
+      status: 'APPROVED',
+      communityId: 'community-1',
+    }, { status: 201 });
+  }),
+
+  http.patch(`${API_URL}/api/communities/:communityId/tags/:tagId`, async ({ params, request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const tag = mockCommunityTags.find(t => t.id === params.tagId);
+    if (!tag) {
+      return HttpResponse.json(
+        { error: 'TAG_001: Tag not found' },
+        { status: 404 }
+      );
+    }
+
+    const body = await request.json() as Record<string, string>;
+    return HttpResponse.json({
+      ...tag,
+      name: body.name?.toLowerCase().trim() || tag.name,
+    });
+  }),
+
+  http.delete(`${API_URL}/api/communities/:communityId/tags/:tagId`, ({ params }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const tag = mockCommunityTags.find(t => t.id === params.tagId);
+    if (!tag) {
+      return HttpResponse.json(
+        { error: 'TAG_001: Tag not found' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json({ message: 'Tag deleted' });
+  }),
+
+  http.post(`${API_URL}/api/communities/:communityId/tags/:tagId/approve`, ({ params }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const tag = mockCommunityTags.find(t => t.id === params.tagId);
+    if (!tag) {
+      return HttpResponse.json(
+        { error: 'TAG_001: Tag not found' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json({
+      ...tag,
+      status: 'APPROVED',
+    });
+  }),
+
+  http.post(`${API_URL}/api/communities/:communityId/tags/:tagId/reject`, ({ params }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const tag = mockCommunityTags.find(t => t.id === params.tagId);
+    if (!tag) {
+      return HttpResponse.json(
+        { error: 'TAG_001: Tag not found' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json({ message: 'Tag rejected and removed' });
   }),
 
   // =====================================
