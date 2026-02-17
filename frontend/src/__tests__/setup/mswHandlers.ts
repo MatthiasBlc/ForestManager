@@ -135,6 +135,30 @@ export const mockReceivedInvites = [
   },
 ];
 
+// Mock tag suggestions data
+export const mockTagSuggestions = [
+  {
+    id: 'suggestion-1',
+    tagName: 'vegan',
+    status: 'PENDING_OWNER' as const,
+    createdAt: new Date().toISOString(),
+    decidedAt: null,
+    recipeId: 'test-recipe-id',
+    suggestedById: 'user-2',
+    suggestedBy: { id: 'user-2', username: 'alice' },
+  },
+  {
+    id: 'suggestion-2',
+    tagName: 'gluten-free',
+    status: 'PENDING_OWNER' as const,
+    createdAt: new Date().toISOString(),
+    decidedAt: null,
+    recipeId: 'test-recipe-id',
+    suggestedById: 'user-3',
+    suggestedBy: { id: 'user-3', username: 'bob' },
+  },
+];
+
 // Mock community tags data
 export const mockCommunityTags = [
   {
@@ -1410,6 +1434,113 @@ export const handlers = [
       );
     }
     return HttpResponse.json({ data: [] });
+  }),
+
+  // =====================================
+  // Tag Suggestions
+  // =====================================
+
+  http.get(`${API_URL}/api/recipes/:recipeId/tag-suggestions`, ({ request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const url = new URL(request.url);
+    const status = url.searchParams.get('status');
+
+    let filtered = [...mockTagSuggestions];
+    if (status) {
+      filtered = filtered.filter(s => s.status === status);
+    }
+
+    return HttpResponse.json({
+      data: filtered,
+      pagination: { total: filtered.length, limit: 20, offset: 0, hasMore: false },
+    });
+  }),
+
+  http.post(`${API_URL}/api/recipes/:recipeId/tag-suggestions`, async ({ params, request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, string>;
+    if (!body.tagName) {
+      return HttpResponse.json(
+        { error: 'TAG_001: Tag name is required' },
+        { status: 400 }
+      );
+    }
+
+    if (body.tagName === 'duplicate') {
+      return HttpResponse.json(
+        { error: 'TAG_005: Tag already suggested' },
+        { status: 409 }
+      );
+    }
+
+    return HttpResponse.json({
+      id: `suggestion-${Date.now()}`,
+      tagName: body.tagName,
+      status: 'PENDING_OWNER',
+      createdAt: new Date().toISOString(),
+      decidedAt: null,
+      recipeId: params.recipeId,
+      suggestedById: mockUser.id,
+      suggestedBy: { id: mockUser.id, username: mockUser.username },
+    }, { status: 201 });
+  }),
+
+  http.post(`${API_URL}/api/tag-suggestions/:id/accept`, ({ params }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const suggestion = mockTagSuggestions.find(s => s.id === params.id);
+    if (!suggestion) {
+      return HttpResponse.json(
+        { error: 'TAG_006: Suggestion not found' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json({
+      ...suggestion,
+      status: 'ACCEPTED',
+      decidedAt: new Date().toISOString(),
+    });
+  }),
+
+  http.post(`${API_URL}/api/tag-suggestions/:id/reject`, ({ params }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const suggestion = mockTagSuggestions.find(s => s.id === params.id);
+    if (!suggestion) {
+      return HttpResponse.json(
+        { error: 'TAG_006: Suggestion not found' },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json({
+      ...suggestion,
+      status: 'REJECTED',
+      decidedAt: new Date().toISOString(),
+    });
   }),
 
   // =====================================

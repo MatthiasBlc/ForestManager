@@ -4,6 +4,7 @@ import { ActivityResponse } from "../models/activity";
 import { User } from "../models/user";
 import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats, AdminTag, AdminIngredient, AdminFeature, AdminCommunity, AdminCommunityDetail, AdminActivityResponse } from "../models/admin";
 import { CommunityTag } from "../models/tag";
+import { TagSuggestion, TagSuggestionsResponse } from "../models/tagSuggestion";
 import { CommunityListItem, CommunityDetail, CommunityMember, CommunityInvite, ReceivedInvite } from "../models/community";
 import { ConflictError, UnauthorizedError } from "../errors/http_errors";
 
@@ -213,6 +214,31 @@ export default class APIManager {
   static async getRecipeVariants(recipeId: string, limit?: number, offset?: number): Promise<VariantsResponse> {
     const qs = buildQueryString({ limit, offset });
     const response = await API.get(`/api/recipes/${recipeId}/variants${qs}`).catch(handleApiError);
+    return response.data;
+  }
+
+
+  // --------------- Tag Suggestions ---------------
+
+  static async getTagSuggestions(recipeId: string, status?: string): Promise<TagSuggestionsResponse> {
+    const params = status ? `?status=${status}` : "";
+    const response = await API.get(`/api/recipes/${recipeId}/tag-suggestions${params}`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async createTagSuggestion(recipeId: string, tagName: string): Promise<TagSuggestion> {
+    const response = await API.post(`/api/recipes/${recipeId}/tag-suggestions`, JSON.stringify({ tagName }))
+      .catch(handleApiErrorWith({ 409: ConflictError }));
+    return response.data;
+  }
+
+  static async acceptTagSuggestion(suggestionId: string): Promise<TagSuggestion> {
+    const response = await API.post(`/api/tag-suggestions/${suggestionId}/accept`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async rejectTagSuggestion(suggestionId: string): Promise<TagSuggestion> {
+    const response = await API.post(`/api/tag-suggestions/${suggestionId}/reject`).catch(handleApiError);
     return response.data;
   }
 

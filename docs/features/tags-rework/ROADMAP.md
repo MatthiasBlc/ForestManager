@@ -71,10 +71,10 @@
 
 ## 10.8 - Frontend TagSuggestion
 
-- [ ] Bouton "Suggerer un tag" sur recette d'autrui
-- [ ] Vue owner : liste suggestions recues, accept/reject
-- [ ] Notifications temps reel tag suggestions
-- [ ] Tests
+- [x] Bouton "Suggerer un tag" sur recette d'autrui
+- [x] Vue owner : liste suggestions recues, accept/reject
+- [x] Notifications temps reel tag suggestions
+- [x] Tests
 
 ## 10.9 - Frontend Preferences
 

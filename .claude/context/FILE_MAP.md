@@ -211,7 +211,9 @@ components/
 │   ├── RecipeCard.tsx        # Carte recette (grille)
 │   ├── RecipeFilters.tsx     # Filtres search/tags (scope-aware via communityId)
 │   ├── RecipeListRow.tsx     # Ligne recette (liste)
-│   └── TagBadge.tsx          # Badge tag avec style pending/approved
+│   ├── SuggestTagModal.tsx   # Modal suggestion de tag sur recette d'autrui
+│   ├── TagBadge.tsx          # Badge tag avec style pending/approved
+│   └── TagSuggestionsList.tsx # Liste suggestions de tags (owner view, accept/reject)
 ├── form/
 │   ├── TagSelector.tsx       # Multi-select tags (debounce, create on-the-fly)
 │   ├── IngredientSelector.tsx # Selecteur ingredients
@@ -245,6 +247,7 @@ models/
 ├── user.ts                   # User types
 ├── recipe.ts                 # Recipe, Tag, Ingredient types
 ├── tag.ts                    # Tag types
+├── tagSuggestion.ts          # TagSuggestion types
 ├── community.ts              # Community, Member, Invite types
 └── admin.ts                  # AdminUser types
 ```
@@ -325,7 +328,9 @@ __tests__/
         ├── recipes/
         │   ├── RecipeCard.test.tsx
         │   ├── RecipeFilters.test.tsx
-        │   └── TagBadge.test.tsx
+        │   ├── SuggestTagModal.test.tsx
+        │   ├── TagBadge.test.tsx
+        │   └── TagSuggestionsList.test.tsx
         ├── form/
         │   ├── TagSelector.test.tsx
         │   └── IngredientList.test.tsx
