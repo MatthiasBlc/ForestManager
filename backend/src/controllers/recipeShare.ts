@@ -9,6 +9,7 @@ import {
   getRecipeFamilyCommunities,
 } from "../services/shareService";
 import appEvents from "../services/eventEmitter";
+import { getModeratorIdsForTagNotification } from "../services/notificationService";
 
 interface ShareRecipeBody {
   targetCommunityId: string;
@@ -45,7 +46,7 @@ export const shareRecipe: RequestHandler<
         imageUrl: true,
         communityId: true,
         creatorId: true,
-        tags: { select: { tagId: true } },
+        tags: { select: { tagId: true, tag: { select: { id: true, name: true, scope: true, communityId: true } } } },
         ingredients: {
           select: { ingredientId: true, quantity: true, order: true },
           orderBy: { order: "asc" },
@@ -113,32 +114,32 @@ export const shareRecipe: RequestHandler<
       throw createHttpError(400, "SHARE_006: Recipe already shared with this community");
     }
 
-    const result = await forkRecipe(
+    const { recipe: forkResult, pendingTagIds } = await forkRecipe(
       authenticatedUserId,
       { ...sourceRecipe, communityId: sourceRecipe.communityId },
       targetCommunityId,
       targetCommunity.name
     );
 
-    if (!result) {
+    if (!forkResult) {
       throw createHttpError(500, "Failed to share recipe");
     }
 
     const responseData = {
-      id: result.id,
-      title: result.title,
-      content: result.content,
-      imageUrl: result.imageUrl,
-      createdAt: result.createdAt,
-      updatedAt: result.updatedAt,
-      creatorId: result.creatorId,
-      communityId: result.communityId,
-      community: result.community,
-      originRecipeId: result.originRecipeId,
-      sharedFromCommunityId: result.sharedFromCommunityId,
-      isVariant: result.isVariant,
-      tags: formatTags(result.tags),
-      ingredients: formatIngredients(result.ingredients),
+      id: forkResult.id,
+      title: forkResult.title,
+      content: forkResult.content,
+      imageUrl: forkResult.imageUrl,
+      createdAt: forkResult.createdAt,
+      updatedAt: forkResult.updatedAt,
+      creatorId: forkResult.creatorId,
+      communityId: forkResult.communityId,
+      community: forkResult.community,
+      originRecipeId: forkResult.originRecipeId,
+      sharedFromCommunityId: forkResult.sharedFromCommunityId,
+      isVariant: forkResult.isVariant,
+      tags: formatTags(forkResult.tags),
+      ingredients: formatIngredients(forkResult.ingredients),
     };
 
     // Emit to both source and target communities
@@ -152,8 +153,23 @@ export const shareRecipe: RequestHandler<
       type: "RECIPE_SHARED",
       userId: authenticatedUserId,
       communityId: targetCommunityId,
-      recipeId: result.id,
+      recipeId: forkResult.id,
     });
+
+    // Notifier les moderateurs si des tags PENDING ont ete crees
+    if (pendingTagIds.length > 0) {
+      const moderatorIds = await getModeratorIdsForTagNotification(targetCommunityId);
+      if (moderatorIds.length > 0) {
+        appEvents.emitActivity({
+          type: "tag:pending",
+          userId: authenticatedUserId,
+          communityId: targetCommunityId,
+          recipeId: forkResult.id,
+          targetUserIds: moderatorIds,
+          metadata: { pendingTagIds },
+        });
+      }
+    }
 
     res.status(201).json(responseData);
   } catch (error) {

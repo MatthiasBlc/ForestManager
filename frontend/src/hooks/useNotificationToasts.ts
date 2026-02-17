@@ -17,6 +17,13 @@ const notificationMessages: Record<string, string> = {
   PROPOSAL_REJECTED: "Votre proposition a ete refusee",
   USER_PROMOTED: "Vous avez ete promu moderateur",
   USER_KICKED: "Vous avez ete retire de la communaute",
+  TAG_PENDING: "Nouveau tag en attente de validation",
+  TAG_APPROVED: "Votre tag a ete valide",
+  TAG_REJECTED: "Votre tag a ete rejete",
+  TAG_SUGGESTION_CREATED: "Nouvelle suggestion de tag sur votre recette",
+  TAG_SUGGESTION_ACCEPTED: "Votre suggestion de tag a ete acceptee",
+  TAG_SUGGESTION_REJECTED: "Votre suggestion de tag a ete refusee",
+  "tag-suggestion:pending-mod": "Un tag suggere attend votre validation",
 };
 
 export function useNotificationToasts() {

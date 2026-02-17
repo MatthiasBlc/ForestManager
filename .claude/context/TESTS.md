@@ -40,33 +40,35 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~663 tests)
+## Inventaire des tests (~808 tests)
 
-### Backend Integration (19 fichiers, ~339 tests)
+### Backend Integration (20 fichiers, ~380 tests)
 
 | Fichier | Module | Tests |
 |---------|--------|-------|
 | activity.test.ts | Activity feed (community + personal) | 15 |
 | auth.test.ts | User signup/login/logout/me | 16 |
 | recipes.test.ts | CRUD recettes (perso + community access) | 32 |
-| communityRecipes.test.ts | CRUD recettes communautaires | 28 |
+| communityRecipes.test.ts | CRUD recettes communautaires (+ tags scope-aware) | 33 |
 | proposals.test.ts | Propositions modifications | 31 |
 | variants.test.ts | Liste variantes recettes | 10 |
-| tags.test.ts | Autocomplete tags | 5 |
+| tags.test.ts | Autocomplete tags (scope-aware) | 9 |
 | ingredients.test.ts | Autocomplete ingredients | 5 |
 | communities.test.ts | CRUD communautes | 27 |
 | invitations.test.ts | Workflow invitations | 35 |
 | members.test.ts | Membres: list, promote, kick, orphan handling | 26 |
 | adminAuth.test.ts | Auth 2FA admin | 14 |
-| adminTags.test.ts | CRUD tags admin | 12 |
+| adminTags.test.ts | CRUD tags admin (+ scope filter) | 15 |
 | adminIngredients.test.ts | CRUD ingredients admin | 12 |
 | adminFeatures.test.ts | Features grant/revoke | 10 |
 | adminCommunities.test.ts | Communities admin | 8 |
 | adminDashboard.test.ts | Stats dashboard | 4 |
 | adminActivity.test.ts | Logs activite | 4 |
-| share.test.ts | Partage inter-communautes + publish + sync | 28 |
+| share.test.ts | Partage inter-communautes + publish + sync + fork tags | 31 |
+| communityTags.test.ts | CRUD + approve/reject tags communaute (moderateur) | 26 |
 
 ### Backend Unit (7 fichiers, ~51 tests)
+
 
 | Fichier | Module | Tests |
 |---------|--------|-------|
@@ -78,7 +80,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | middleware/requireSuperAdmin.test.ts | requireSuperAdmin, requireAdminSession | 6 |
 | middleware/security.test.ts | requireHttps, rateLimiters, helmet | 5 |
 
-### Frontend Unit (47 fichiers, ~273 tests)
+### Frontend Unit (52 fichiers, ~326 tests)
 
 | Fichier | Composant | Tests |
 |---------|-----------|-------|
@@ -93,7 +95,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | AdminLoginPage.test.tsx | Page login admin | 8 |
 | AdminDashboardPage.test.tsx | Page dashboard | 4 |
 | AdminLayout.test.tsx | Layout admin | 3 |
-| pages/admin/AdminTagsPage.test.tsx | Page tags admin | 8 |
+| pages/admin/AdminTagsPage.test.tsx | Page tags admin (+ scope filter) | 12 |
 | pages/admin/AdminIngredientsPage.test.tsx | Page ingredients admin | 8 |
 | pages/admin/AdminFeaturesPage.test.tsx | Page features admin | 6 |
 | pages/admin/AdminCommunitiesPage.test.tsx | Page communities admin | 8 |
@@ -109,16 +111,21 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | CommunitiesPage.test.tsx | Page liste communautes | 7 |
 | CommunityDetailPage.test.tsx | Page detail communaute | 11 |
 | InviteCard.test.tsx | Carte invitation | 5 |
+| communities/CommunityTagsList.test.tsx | Tags communaute moderateur (CRUD, approve/reject) | 8 |
 | MembersList.test.tsx | Liste membres | 6 |
 | InviteUserModal.test.tsx | Modal invitation | 5 |
 | ActivityFeed.test.tsx | Feed activite | 8 |
 | ShareRecipeModal.test.tsx | Modal partage recette | 7 |
+| recipes/SuggestTagModal.test.tsx | Modal suggestion tag | 5 |
+| recipes/TagSuggestionsList.test.tsx | Liste suggestions tags owner | 5 |
+| profile/TagPreferencesSection.test.tsx | Toggle tag visibility per community | 5 |
+| profile/NotificationPreferencesSection.test.tsx | Toggle tag notifications (moderator) | 5 |
 | hooks/useClickOutside.test.ts | Hook click outside | 4 |
 | hooks/useDebouncedEffect.test.ts | Hook debounce | 5 |
 | hooks/useConfirm.test.tsx | Hook confirm dialog | 6 |
 | hooks/useSocketEvent.test.ts | Hook socket event | 5 |
 | hooks/useCommunityRoom.test.ts | Hook community room | 4 |
-| hooks/useNotificationToasts.test.ts | Hook notification toasts | 5 |
+| hooks/useNotificationToasts.test.ts | Hook notification toasts (+ tag events + suggestions) | 12 |
 | hooks/usePaginatedList.test.ts | Hook paginated list | 6 |
 | utils/formatDate.test.ts | Format date utils | 5 |
 | utils/communityEvents.test.ts | Community events bus | 2 |

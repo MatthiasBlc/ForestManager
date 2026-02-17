@@ -9,6 +9,7 @@ import { RECIPE_TAGS_SELECT } from "../util/prismaSelects";
 import { formatTags, formatIngredients } from "../util/responseFormatters";
 import { createCommunityRecipe as createCommunityRecipeService } from "../services/communityRecipeService";
 import appEvents from "../services/eventEmitter";
+import { getModeratorIdsForTagNotification } from "../services/notificationService";
 
 interface IngredientInput {
   name: string;
@@ -76,6 +77,21 @@ export const createCommunityRecipe: RequestHandler<
       communityId,
       recipeId: result.community.id,
     });
+
+    // Notifier les moderateurs si des tags PENDING ont ete crees
+    if (result.pendingTagIds.length > 0) {
+      const moderatorIds = await getModeratorIdsForTagNotification(communityId);
+      if (moderatorIds.length > 0) {
+        appEvents.emitActivity({
+          type: "tag:pending",
+          userId: authenticatedUserId,
+          communityId,
+          recipeId: result.community.id,
+          targetUserIds: moderatorIds,
+          metadata: { pendingTagIds: result.pendingTagIds },
+        });
+      }
+    }
 
     res.status(201).json({
       personal: formatRecipe(result.personal),

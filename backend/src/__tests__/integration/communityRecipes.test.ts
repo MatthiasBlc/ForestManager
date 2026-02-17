@@ -210,6 +210,123 @@ describe("Community Recipes API", () => {
   });
 
   // =====================================
+  // Tags scope-aware
+  // =====================================
+  describe("Tags scope-aware (POST /api/communities/:communityId/recipes)", () => {
+    it("should use existing GLOBAL APPROVED tag directly", async () => {
+      // Creer un tag global via recette perso
+      await request(app)
+        .post("/api/recipes")
+        .set("Cookie", memberCookie)
+        .send({ title: "Perso", content: "c", tags: ["existing_global"] });
+
+      // Creer recette communautaire avec le meme tag
+      const res = await request(app)
+        .post(`/api/communities/${community.id}/recipes`)
+        .set("Cookie", memberCookie)
+        .send({ title: "Comm", content: "c", tags: ["existing_global"] });
+
+      expect(res.status).toBe(201);
+      const communityTags = res.body.community.tags;
+      expect(communityTags).toHaveLength(1);
+      expect(communityTags[0].name).toBe("existing_global");
+      expect(communityTags[0].scope).toBe("GLOBAL");
+      expect(communityTags[0].status).toBe("APPROVED");
+    });
+
+    it("should create PENDING community tag for unknown tag", async () => {
+      const res = await request(app)
+        .post(`/api/communities/${community.id}/recipes`)
+        .set("Cookie", memberCookie)
+        .send({ title: "Recette", content: "c", tags: ["brand_new_tag"] });
+
+      expect(res.status).toBe(201);
+
+      // La recette communautaire doit avoir un tag PENDING
+      const communityTags = res.body.community.tags;
+      expect(communityTags).toHaveLength(1);
+      expect(communityTags[0].name).toBe("brand_new_tag");
+      expect(communityTags[0].scope).toBe("COMMUNITY");
+      expect(communityTags[0].status).toBe("PENDING");
+      expect(communityTags[0].communityId).toBe(community.id);
+
+      // La recette perso doit avoir un tag GLOBAL APPROVED (creation libre)
+      const personalTags = res.body.personal.tags;
+      expect(personalTags).toHaveLength(1);
+      expect(personalTags[0].name).toBe("brand_new_tag");
+      expect(personalTags[0].scope).toBe("GLOBAL");
+      expect(personalTags[0].status).toBe("APPROVED");
+    });
+
+    it("should reuse existing COMMUNITY APPROVED tag", async () => {
+      // Creer un tag APPROVED dans la communaute
+      await testPrisma.tag.create({
+        data: {
+          name: "approved_comm_tag",
+          scope: "COMMUNITY",
+          status: "APPROVED",
+          communityId: community.id,
+        },
+      });
+
+      const res = await request(app)
+        .post(`/api/communities/${community.id}/recipes`)
+        .set("Cookie", memberCookie)
+        .send({ title: "R", content: "c", tags: ["approved_comm_tag"] });
+
+      expect(res.status).toBe(201);
+      const communityTags = res.body.community.tags;
+      expect(communityTags).toHaveLength(1);
+      expect(communityTags[0].name).toBe("approved_comm_tag");
+      expect(communityTags[0].scope).toBe("COMMUNITY");
+      expect(communityTags[0].status).toBe("APPROVED");
+    });
+
+    it("should reuse existing PENDING tag in same community (no duplicate)", async () => {
+      // Creer un tag PENDING directement en DB
+      const pendingTag = await testPrisma.tag.create({
+        data: {
+          name: "pending_reuse",
+          scope: "COMMUNITY",
+          status: "PENDING",
+          communityId: community.id,
+          createdById: member.id,
+        },
+      });
+
+      // Creer une recette avec ce tag → doit reutiliser le PENDING existant
+      const res = await request(app)
+        .post(`/api/communities/${community.id}/recipes`)
+        .set("Cookie", memberCookie)
+        .send({ title: "R2", content: "c", tags: ["pending_reuse"] });
+
+      expect(res.status).toBe(201);
+      const communityTags = res.body.community.tags;
+      expect(communityTags).toHaveLength(1);
+      expect(communityTags[0].name).toBe("pending_reuse");
+      expect(communityTags[0].status).toBe("PENDING");
+      expect(communityTags[0].id).toBe(pendingTag.id);
+
+      // Verifier qu'il n'y a qu'un seul tag COMMUNITY dans la DB
+      const dbTags = await testPrisma.tag.findMany({
+        where: { name: "pending_reuse", communityId: community.id },
+      });
+      expect(dbTags).toHaveLength(1);
+    });
+
+    it("should reject more than 10 tags per recipe (TAG_003)", async () => {
+      const tags = Array.from({ length: 11 }, (_, i) => `tag_${i}`);
+      const res = await request(app)
+        .post(`/api/communities/${community.id}/recipes`)
+        .set("Cookie", memberCookie)
+        .send({ title: "Too many tags", content: "c", tags });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain("TAG_003");
+    });
+  });
+
+  // =====================================
   // GET /api/communities/:communityId/recipes
   // =====================================
   describe("GET /api/communities/:communityId/recipes", () => {

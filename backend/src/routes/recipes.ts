@@ -3,6 +3,7 @@ import * as RecipesController from "../controllers/recipes";
 import * as RecipeVariantsController from "../controllers/recipeVariants";
 import * as RecipeShareController from "../controllers/recipeShare";
 import * as ProposalsController from "../controllers/proposals";
+import * as TagSuggestionsController from "../controllers/tagSuggestions";
 
 const router = express.Router();
 
@@ -23,6 +24,11 @@ router.get("/:recipeId/variants", RecipeVariantsController.getVariants);
 router.get("/:recipeId/proposals", ProposalsController.getProposals);
 
 router.post("/:recipeId/proposals", ProposalsController.createProposal);
+
+// Tag suggestions routes on recipes
+router.get("/:recipeId/tag-suggestions", TagSuggestionsController.getTagSuggestions);
+
+router.post("/:recipeId/tag-suggestions", TagSuggestionsController.createTagSuggestion);
 
 // Share recipe to another community (fork)
 router.post("/:recipeId/share", RecipeShareController.shareRecipe);

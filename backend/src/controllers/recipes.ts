@@ -9,6 +9,8 @@ import { RECIPE_TAGS_SELECT } from "../util/prismaSelects";
 import { requireRecipeAccess, requireRecipeOwnership } from "../services/membershipService";
 import { formatTags, formatIngredients } from "../util/responseFormatters";
 import { createRecipe as createRecipeService, updateRecipe as updateRecipeService } from "../services/recipeService";
+import appEvents from "../services/eventEmitter";
+import { getModeratorIdsForTagNotification } from "../services/notificationService";
 
 interface GetRecipesQuery {
   limit?: string;
@@ -151,16 +153,7 @@ export const getRecipe: RequestHandler = async (req, res, next) => {
             name: true,
           },
         },
-        tags: {
-          select: {
-            tag: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
+        tags: RECIPE_TAGS_SELECT,
         ingredients: {
           select: {
             id: true,
@@ -311,12 +304,27 @@ export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRec
       throw createHttpError(400, "RECIPE_005: Invalid image URL");
     }
 
-    const updatedRecipe = await updateRecipeService(recipeId, {
+    const { result: updatedRecipe, pendingTagIds } = await updateRecipeService(recipeId, {
       title, content, imageUrl, tags, ingredients,
-    }, recipe);
+    }, recipe, authenticatedUserId);
 
     if (!updatedRecipe) {
       throw createHttpError(500, "Failed to update recipe");
+    }
+
+    // Notifier les moderateurs si des tags PENDING ont ete crees
+    if (pendingTagIds.length > 0 && recipe.communityId) {
+      const moderatorIds = await getModeratorIdsForTagNotification(recipe.communityId);
+      if (moderatorIds.length > 0) {
+        appEvents.emitActivity({
+          type: "tag:pending",
+          userId: authenticatedUserId,
+          communityId: recipe.communityId,
+          recipeId,
+          targetUserIds: moderatorIds,
+          metadata: { pendingTagIds },
+        });
+      }
     }
 
     const responseData = {

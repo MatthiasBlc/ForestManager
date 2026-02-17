@@ -1,6 +1,9 @@
 export interface Tag {
   id: string;
   name: string;
+  scope?: "GLOBAL" | "COMMUNITY";
+  status?: "APPROVED" | "PENDING";
+  communityId?: string | null;
 }
 
 export interface RecipeIngredient {
@@ -73,6 +76,8 @@ export interface TagSearchResult {
   id: string;
   name: string;
   recipeCount: number;
+  scope?: "GLOBAL" | "COMMUNITY";
+  communityId?: string | null;
 }
 
 export interface IngredientSearchResult {

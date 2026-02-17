@@ -1,7 +1,6 @@
 import prisma from "../util/db";
-import { normalizeNames } from "../util/validation";
 import { RECIPE_TAGS_SELECT, RECIPE_INGREDIENTS_SELECT } from "../util/prismaSelects";
-import { IngredientInput } from "./recipeService";
+import { IngredientInput, upsertTags, upsertIngredients } from "./recipeService";
 
 interface CreateCommunityRecipeData {
   title: string;
@@ -34,7 +33,9 @@ export async function createCommunityRecipe(
   communityId: string,
   data: CreateCommunityRecipeData
 ) {
-  return prisma.$transaction(async (tx) => {
+  let pendingTagIds: string[] = [];
+
+  const result = await prisma.$transaction(async (tx) => {
     // 1. Creer la recette personnelle (communityId: null)
     const personalRecipe = await tx.recipe.create({
       data: {
@@ -59,54 +60,16 @@ export async function createCommunityRecipe(
     });
 
     // 3. Gerer tags/ingredients sur les DEUX recettes
+    // IMPORTANT: traiter la recette communautaire EN PREMIER pour que les tags
+    // inconnus deviennent COMMUNITY PENDING (et non GLOBAL APPROVED via le perso)
     if (data.tags.length > 0) {
-      const normalizedTags = normalizeNames(data.tags);
-
-      for (const tagName of normalizedTags) {
-        const tag = await tx.tag.upsert({
-          where: { name: tagName },
-          create: { name: tagName },
-          update: {},
-        });
-
-        await tx.recipeTag.createMany({
-          data: [
-            { recipeId: personalRecipe.id, tagId: tag.id },
-            { recipeId: communityRecipe.id, tagId: tag.id },
-          ],
-        });
-      }
+      pendingTagIds = await upsertTags(tx, communityRecipe.id, data.tags, userId, communityId);
+      await upsertTags(tx, personalRecipe.id, data.tags, userId, null);
     }
 
     if (data.ingredients.length > 0) {
-      for (let i = 0; i < data.ingredients.length; i++) {
-        const ing = data.ingredients[i];
-        const ingredientName = ing.name.trim().toLowerCase();
-        if (!ingredientName) continue;
-
-        const ingredient = await tx.ingredient.upsert({
-          where: { name: ingredientName },
-          create: { name: ingredientName },
-          update: {},
-        });
-
-        await tx.recipeIngredient.createMany({
-          data: [
-            {
-              recipeId: personalRecipe.id,
-              ingredientId: ingredient.id,
-              quantity: ing.quantity?.trim() || null,
-              order: i,
-            },
-            {
-              recipeId: communityRecipe.id,
-              ingredientId: ingredient.id,
-              quantity: ing.quantity?.trim() || null,
-              order: i,
-            },
-          ],
-        });
-      }
+      await upsertIngredients(tx, personalRecipe.id, data.ingredients);
+      await upsertIngredients(tx, communityRecipe.id, data.ingredients);
     }
 
     // 4. Creer ActivityLog
@@ -133,4 +96,6 @@ export async function createCommunityRecipe(
 
     return { personal, community };
   });
+
+  return { ...result, pendingTagIds };
 }

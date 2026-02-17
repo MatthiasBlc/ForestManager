@@ -142,4 +142,58 @@ describe('AdminTagsPage', () => {
       expect(screen.getByText(/Merge "dessert" into/)).toBeInTheDocument();
     });
   });
+
+  it('should display Scope and Community columns', async () => {
+    render(<TestApp />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Scope')).toBeInTheDocument();
+      // "Community" appears both as column header and in scope filter option
+      const communityElements = screen.getAllByText('Community');
+      expect(communityElements.length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  it('should display scope badges for tags', async () => {
+    render(<TestApp />);
+
+    await waitFor(() => {
+      expect(screen.getByText('dessert')).toBeInTheDocument();
+    });
+
+    const globalBadges = screen.getAllByText('GLOBAL');
+    expect(globalBadges.length).toBeGreaterThanOrEqual(2);
+
+    expect(screen.getByText('COMMUNITY')).toBeInTheDocument();
+  });
+
+  it('should display community name for community-scoped tags', async () => {
+    render(<TestApp />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Test Community')).toBeInTheDocument();
+    });
+  });
+
+  it('should filter by scope when scope select changes', async () => {
+    const user = userEvent.setup();
+    render(<TestApp />);
+
+    await waitFor(() => {
+      expect(screen.getByText('dessert')).toBeInTheDocument();
+    });
+
+    const scopeSelect = screen.getByLabelText('Filter by scope');
+    await user.selectOptions(scopeSelect, 'GLOBAL');
+
+    await waitFor(() => {
+      expect(screen.getByText('dessert')).toBeInTheDocument();
+      expect(screen.getByText('dinner')).toBeInTheDocument();
+    });
+
+    // breakfast is COMMUNITY scope, should not be visible with GLOBAL filter
+    await waitFor(() => {
+      expect(screen.queryByText('breakfast')).not.toBeInTheDocument();
+    });
+  });
 });

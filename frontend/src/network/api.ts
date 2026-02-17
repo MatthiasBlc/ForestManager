@@ -3,6 +3,9 @@ import { RecipeDetail, RecipesResponse, CommunityRecipesResponse, TagSearchResul
 import { ActivityResponse } from "../models/activity";
 import { User } from "../models/user";
 import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats, AdminTag, AdminIngredient, AdminFeature, AdminCommunity, AdminCommunityDetail, AdminActivityResponse } from "../models/admin";
+import { CommunityTag } from "../models/tag";
+import { TagSuggestion, TagSuggestionsResponse } from "../models/tagSuggestion";
+import { TagPreference, NotificationPreferences } from "../models/preferences";
 import { CommunityListItem, CommunityDetail, CommunityMember, CommunityInvite, ReceivedInvite } from "../models/community";
 import { ConflictError, UnauthorizedError } from "../errors/http_errors";
 
@@ -216,10 +219,35 @@ export default class APIManager {
   }
 
 
+  // --------------- Tag Suggestions ---------------
+
+  static async getTagSuggestions(recipeId: string, status?: string): Promise<TagSuggestionsResponse> {
+    const params = status ? `?status=${status}` : "";
+    const response = await API.get(`/api/recipes/${recipeId}/tag-suggestions${params}`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async createTagSuggestion(recipeId: string, tagName: string): Promise<TagSuggestion> {
+    const response = await API.post(`/api/recipes/${recipeId}/tag-suggestions`, JSON.stringify({ tagName }))
+      .catch(handleApiErrorWith({ 409: ConflictError }));
+    return response.data;
+  }
+
+  static async acceptTagSuggestion(suggestionId: string): Promise<TagSuggestion> {
+    const response = await API.post(`/api/tag-suggestions/${suggestionId}/accept`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async rejectTagSuggestion(suggestionId: string): Promise<TagSuggestion> {
+    const response = await API.post(`/api/tag-suggestions/${suggestionId}/reject`).catch(handleApiError);
+    return response.data;
+  }
+
+
   // --------------- Tags ---------------
 
-  static async searchTags(search: string = "", limit: number = 20): Promise<TagSearchResult[]> {
-    const qs = buildQueryString({ search: search || undefined, limit });
+  static async searchTags(search: string = "", limit: number = 20, communityId?: string): Promise<TagSearchResult[]> {
+    const qs = buildQueryString({ search: search || undefined, limit, communityId });
     const response = await API.get(`/api/tags${qs}`).catch(handleApiError);
     return response.data.data;
   }
@@ -321,6 +349,34 @@ export default class APIManager {
   }
 
 
+  // --------------- User Preferences ---------------
+
+  static async getTagPreferences(): Promise<{ data: TagPreference[] }> {
+    const response = await API.get("/api/users/me/tag-preferences").catch(handleApiError);
+    return response.data;
+  }
+
+  static async updateTagPreference(communityId: string, showTags: boolean): Promise<{ communityId: string; showTags: boolean }> {
+    const response = await API.put(`/api/users/me/tag-preferences/${communityId}`, JSON.stringify({ showTags })).catch(handleApiError);
+    return response.data;
+  }
+
+  static async getNotificationPreferences(): Promise<NotificationPreferences> {
+    const response = await API.get("/api/users/me/notification-preferences").catch(handleApiError);
+    return response.data;
+  }
+
+  static async updateGlobalNotificationPreference(tagNotifications: boolean): Promise<{ tagNotifications: boolean }> {
+    const response = await API.put("/api/users/me/notification-preferences/tags", JSON.stringify({ tagNotifications })).catch(handleApiError);
+    return response.data;
+  }
+
+  static async updateCommunityNotificationPreference(communityId: string, tagNotifications: boolean): Promise<{ communityId: string; tagNotifications: boolean }> {
+    const response = await API.put(`/api/users/me/notification-preferences/tags/${communityId}`, JSON.stringify({ tagNotifications })).catch(handleApiError);
+    return response.data;
+  }
+
+
   // --------------- Invitations (community admin) ---------------
 
   static async getCommunityInvites(communityId: string, status?: string): Promise<{ data: CommunityInvite[] }> {
@@ -406,10 +462,44 @@ export default class APIManager {
   }
 
 
+  // --------------- Community Tags (moderator) ---------------
+
+  static async getCommunityTags(communityId: string, params?: { status?: string; search?: string }): Promise<{ data: CommunityTag[]; total: number }> {
+    const qs = buildQueryString({ status: params?.status, search: params?.search });
+    const response = await API.get(`/api/communities/${communityId}/tags${qs}`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async createCommunityTag(communityId: string, name: string): Promise<CommunityTag> {
+    const response = await API.post(`/api/communities/${communityId}/tags`, JSON.stringify({ name }))
+      .catch(handleApiErrorWith({ 409: ConflictError }));
+    return response.data;
+  }
+
+  static async updateCommunityTag(communityId: string, tagId: string, name: string): Promise<CommunityTag> {
+    const response = await API.patch(`/api/communities/${communityId}/tags/${tagId}`, JSON.stringify({ name }))
+      .catch(handleApiErrorWith({ 409: ConflictError }));
+    return response.data;
+  }
+
+  static async deleteCommunityTag(communityId: string, tagId: string): Promise<void> {
+    await API.delete(`/api/communities/${communityId}/tags/${tagId}`).catch(handleApiError);
+  }
+
+  static async approveCommunityTag(communityId: string, tagId: string): Promise<CommunityTag> {
+    const response = await API.post(`/api/communities/${communityId}/tags/${tagId}/approve`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async rejectCommunityTag(communityId: string, tagId: string): Promise<void> {
+    await API.post(`/api/communities/${communityId}/tags/${tagId}/reject`).catch(handleApiError);
+  }
+
+
   // --------------- Admin Tags ---------------
 
-  static async getAdminTags(search?: string): Promise<AdminTag[]> {
-    const qs = buildQueryString({ search });
+  static async getAdminTags(search?: string, scope?: string): Promise<AdminTag[]> {
+    const qs = buildQueryString({ search, scope });
     const response = await API.get(`/api/admin/tags${qs}`).catch(handleApiError);
     return response.data.tags;
   }

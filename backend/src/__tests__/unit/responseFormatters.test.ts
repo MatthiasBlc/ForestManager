@@ -4,12 +4,12 @@ import { formatTags, formatIngredients } from "../../util/responseFormatters";
 describe("formatTags", () => {
   it("should extract tags from pivot format", () => {
     const raw = [
-      { tag: { id: "t1", name: "dessert" } },
-      { tag: { id: "t2", name: "vegan" } },
+      { tag: { id: "t1", name: "dessert", scope: "GLOBAL", status: "APPROVED", communityId: null } },
+      { tag: { id: "t2", name: "vegan", scope: "COMMUNITY", status: "PENDING", communityId: "c1" } },
     ];
     expect(formatTags(raw)).toEqual([
-      { id: "t1", name: "dessert" },
-      { id: "t2", name: "vegan" },
+      { id: "t1", name: "dessert", scope: "GLOBAL", status: "APPROVED", communityId: null },
+      { id: "t2", name: "vegan", scope: "COMMUNITY", status: "PENDING", communityId: "c1" },
     ]);
   });
 

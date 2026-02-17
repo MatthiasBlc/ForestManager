@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { FaArrowLeft, FaEdit, FaTrash, FaLightbulb, FaShare, FaCodeBranch } from "react-icons/fa";
+import { FaArrowLeft, FaEdit, FaTrash, FaLightbulb, FaShare, FaCodeBranch, FaTag } from "react-icons/fa";
 import APIManager from "../network/api";
 import { RecipeDetail } from "../models/recipe";
 import { useAuth } from "../contexts/AuthContext";
+import TagBadge from "../components/recipes/TagBadge";
 import { formatDate } from "../utils/format.Date";
 import { ProposeModificationModal, ProposalsList, VariantsDropdown } from "../components/proposals";
 import { ShareRecipeModal, SharePersonalRecipeModal } from "../components/share";
+import SuggestTagModal from "../components/recipes/SuggestTagModal";
+import TagSuggestionsList from "../components/recipes/TagSuggestionsList";
 
 const RecipeDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,8 +20,9 @@ const RecipeDetailPage = () => {
   const [recipe, setRecipe] = useState<RecipeDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [openModal, setOpenModal] = useState<"propose" | "share" | "publish" | null>(null);
+  const [openModal, setOpenModal] = useState<"propose" | "share" | "publish" | "suggest-tag" | null>(null);
   const [proposalsRefresh, setProposalsRefresh] = useState(0);
+  const [suggestionsRefresh, setSuggestionsRefresh] = useState(0);
 
   useEffect(() => {
     async function loadRecipe() {
@@ -83,6 +87,17 @@ const RecipeDetailPage = () => {
   const handleProposalDecided = () => {
     loadRecipeData();
     setProposalsRefresh((k) => k + 1);
+  };
+
+  const handleSuggestionSubmitted = () => {
+    setOpenModal(null);
+    setSuggestionsRefresh((k) => k + 1);
+    toast.success("Tag suggestion submitted");
+  };
+
+  const handleSuggestionDecided = () => {
+    loadRecipeData();
+    setSuggestionsRefresh((k) => k + 1);
   };
 
   const handleRecipeShared = (newRecipeId: string) => {
@@ -199,14 +214,24 @@ const RecipeDetailPage = () => {
                 </button>
               )}
               {canPropose && (
-                <button
-                  className="btn btn-outline btn-sm gap-2"
-                  onClick={() => setOpenModal("propose")}
-                  aria-label="Propose changes"
-                >
-                  <FaLightbulb className="w-3 h-3" />
-                  Propose changes
-                </button>
+                <>
+                  <button
+                    className="btn btn-outline btn-sm gap-2"
+                    onClick={() => setOpenModal("suggest-tag")}
+                    aria-label="Suggest tag"
+                  >
+                    <FaTag className="w-3 h-3" />
+                    Suggest tag
+                  </button>
+                  <button
+                    className="btn btn-outline btn-sm gap-2"
+                    onClick={() => setOpenModal("propose")}
+                    aria-label="Propose changes"
+                  >
+                    <FaLightbulb className="w-3 h-3" />
+                    Propose changes
+                  </button>
+                </>
               )}
               {isOwner && (
                 <>
@@ -236,13 +261,12 @@ const RecipeDetailPage = () => {
           {recipe.tags.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-6">
               {recipe.tags.map((tag) => (
-                <button
+                <TagBadge
                   key={tag.id}
+                  tag={tag}
+                  size="lg"
                   onClick={() => handleTagClick(tag.name)}
-                  className="badge badge-primary badge-lg cursor-pointer hover:badge-secondary"
-                >
-                  {tag.name}
-                </button>
+                />
               ))}
             </div>
           )}
@@ -278,10 +302,23 @@ const RecipeDetailPage = () => {
                 refreshSignal={proposalsRefresh}
                 onProposalDecided={handleProposalDecided}
               />
+              <TagSuggestionsList
+                recipeId={recipe.id}
+                refreshSignal={suggestionsRefresh}
+                onSuggestionDecided={handleSuggestionDecided}
+              />
             </>
           )}
         </div>
       </article>
+
+      {openModal === "suggest-tag" && (
+        <SuggestTagModal
+          recipeId={recipe.id}
+          onClose={() => setOpenModal(null)}
+          onSuggestionSubmitted={handleSuggestionSubmitted}
+        />
+      )}
 
       {openModal === "propose" && (
         <ProposeModificationModal

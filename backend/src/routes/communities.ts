@@ -1,6 +1,7 @@
 import express from "express";
 import * as CommunitiesController from "../controllers/communities";
 import * as CommunityRecipesController from "../controllers/communityRecipes";
+import * as CommunityTagsController from "../controllers/communityTags";
 import * as InvitesController from "../controllers/invites";
 import * as MembersController from "../controllers/members";
 import * as ActivityController from "../controllers/activity";
@@ -83,6 +84,58 @@ router.delete(
   memberOf,
   requireCommunityRole("MODERATOR"),
   InvitesController.cancelInvite
+);
+
+// =====================================
+// Tag management routes (MODERATOR only)
+// =====================================
+
+// List community tags (APPROVED + PENDING)
+router.get(
+  "/:communityId/tags",
+  memberOf,
+  requireCommunityRole("MODERATOR"),
+  CommunityTagsController.getCommunityTags
+);
+
+// Create a community tag
+router.post(
+  "/:communityId/tags",
+  memberOf,
+  requireCommunityRole("MODERATOR"),
+  CommunityTagsController.createCommunityTag
+);
+
+// Rename a community tag
+router.patch(
+  "/:communityId/tags/:tagId",
+  memberOf,
+  requireCommunityRole("MODERATOR"),
+  CommunityTagsController.updateCommunityTag
+);
+
+// Delete a community tag
+router.delete(
+  "/:communityId/tags/:tagId",
+  memberOf,
+  requireCommunityRole("MODERATOR"),
+  CommunityTagsController.deleteCommunityTag
+);
+
+// Approve a pending tag
+router.post(
+  "/:communityId/tags/:tagId/approve",
+  memberOf,
+  requireCommunityRole("MODERATOR"),
+  CommunityTagsController.approveCommunityTag
+);
+
+// Reject a pending tag
+router.post(
+  "/:communityId/tags/:tagId/reject",
+  memberOf,
+  requireCommunityRole("MODERATOR"),
+  CommunityTagsController.rejectCommunityTag
 );
 
 // =====================================

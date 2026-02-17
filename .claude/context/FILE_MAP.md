@@ -9,13 +9,16 @@ controllers/
 ├── auth.ts            # signup, login, logout, me
 ├── communities.ts     # CRUD communautes
 ├── communityRecipes.ts # create, list recettes communautaires
+├── communityTags.ts   # CRUD + approve/reject tags communaute (moderateur)
 ├── members.ts         # list, promote, kick/leave membres
 ├── invites.ts         # create, list, cancel, accept, reject invitations
 ├── proposals.ts       # create, list, detail, accept, reject propositions
 ├── recipes.ts         # CRUD recettes personnelles (get, create, update, delete)
 ├── recipeVariants.ts  # getVariants (liste variantes d'une recette)
 ├── recipeShare.ts     # shareRecipe, publishToCommunities, getRecipeCommunities
-├── tags.ts            # autocomplete tags
+├── tagPreferences.ts  # tag visibility & moderator notification prefs (5 handlers)
+├── tagSuggestions.ts  # create, accept, reject tag suggestions
+├── tags.ts            # autocomplete tags (scope-aware)
 ├── ingredients.ts     # autocomplete ingredients
 └── users.ts           # search users, update profile
 ```
@@ -28,9 +31,10 @@ routes/
 ├── invites.ts         # /api/invites/:id/accept|reject
 ├── proposals.ts       # /api/proposals/:id, /api/proposals/:id/accept|reject
 ├── recipes.ts         # /api/recipes/* (incl. /api/recipes/:id/proposals)
+├── tagSuggestions.ts  # /api/tag-suggestions/*
 ├── tags.ts            # /api/tags
 ├── ingredients.ts     # /api/ingredients
-└── users.ts           # /api/users/search, /api/users/me, /api/users/me/invites
+└── users.ts           # /api/users/* (incl. tag-preferences, notification-preferences)
 ```
 
 ### Middleware
@@ -69,7 +73,14 @@ admin/
 ### Services
 ```
 services/
+├── tagService.ts      # Logique scope-aware tags (resolve, autocomplete, fork)
+├── recipeService.ts   # upsertTags, upsertIngredients, createRecipe, updateRecipe
+├── communityRecipeService.ts # createCommunityRecipe (perso + comm)
+├── shareService.ts    # forkRecipe, publishRecipe, getRecipeFamilyCommunities
+├── membershipService.ts # requireRecipeAccess, requireRecipeOwnership
 ├── orphanHandling.ts  # Gestion recettes orphelines (auto-reject proposals)
+├── notificationService.ts  # getModeratorIdsForTagNotification (filtre par prefs)
+├── tagSuggestionService.ts # create, accept, reject tag suggestions
 ├── eventEmitter.ts    # AppEventEmitter singleton (emit activity events)
 └── socketServer.ts    # Socket.IO server init, auth middleware, room management
 ```
@@ -116,6 +127,7 @@ __tests__/
     ├── ingredients.test.ts
     ├── communities.test.ts
     ├── communityRecipes.test.ts
+    ├── communityTags.test.ts
     ├── invitations.test.ts
     ├── members.test.ts
     ├── adminAuth.test.ts
@@ -175,8 +187,9 @@ components/
 ├── communities/
 │   ├── CommunityCard.tsx     # Carte communaute (grille)
 │   ├── CommunityRecipesList.tsx # Liste recettes communaute (filtres, pagination, permissions)
+│   ├── CommunityTagsList.tsx # Gestion tags communaute moderateur (CRUD, approve/reject)
 │   ├── MembersList.tsx       # Liste membres (promote, kick, leave)
-│   └── SidePanel.tsx         # Volet lateral redimensionnable (members/activity/invitations)
+│   └── SidePanel.tsx         # Volet lateral redimensionnable (members/activity/invitations/tags)
 ├── invitations/
 │   ├── InviteCard.tsx        # Carte invitation recue (accept/reject)
 │   ├── InviteUserModal.tsx   # Modal inviter un utilisateur
@@ -196,8 +209,14 @@ components/
 │   └── SharePersonalRecipeModal.tsx # Modal publier recette perso vers communautes
 ├── recipes/
 │   ├── RecipeCard.tsx        # Carte recette (grille)
-│   ├── RecipeFilters.tsx     # Filtres search/tags
-│   └── RecipeListRow.tsx     # Ligne recette (liste)
+│   ├── RecipeFilters.tsx     # Filtres search/tags (scope-aware via communityId)
+│   ├── RecipeListRow.tsx     # Ligne recette (liste)
+│   ├── SuggestTagModal.tsx   # Modal suggestion de tag sur recette d'autrui
+│   ├── TagBadge.tsx          # Badge tag avec style pending/approved
+│   └── TagSuggestionsList.tsx # Liste suggestions de tags (owner view, accept/reject)
+├── profile/
+│   ├── TagPreferencesSection.tsx     # Toggle tag visibility per community
+│   └── NotificationPreferencesSection.tsx # Toggle tag notifications (moderator)
 ├── form/
 │   ├── TagSelector.tsx       # Multi-select tags (debounce, create on-the-fly)
 │   ├── IngredientSelector.tsx # Selecteur ingredients
@@ -231,7 +250,9 @@ models/
 ├── user.ts                   # User types
 ├── recipe.ts                 # Recipe, Tag, Ingredient types
 ├── tag.ts                    # Tag types
+├── tagSuggestion.ts          # TagSuggestion types
 ├── community.ts              # Community, Member, Invite types
+├── preferences.ts            # TagPreference, NotificationPreferences types
 └── admin.ts                  # AdminUser types
 ```
 
@@ -300,6 +321,11 @@ __tests__/
     │       ├── AdminCommunitiesPage.test.tsx
     │       └── AdminActivityPage.test.tsx
     └── components/
+        ├── profile/
+        │   ├── TagPreferencesSection.test.tsx
+        │   └── NotificationPreferencesSection.test.tsx
+        ├── communities/
+        │   └── CommunityTagsList.test.tsx
         ├── Layout/
         │   ├── MainLayout.test.tsx
         │   └── Sidebar.test.tsx
@@ -308,7 +334,10 @@ __tests__/
         │   └── AdminProtectedRoute.test.tsx
         ├── recipes/
         │   ├── RecipeCard.test.tsx
-        │   └── RecipeFilters.test.tsx
+        │   ├── RecipeFilters.test.tsx
+        │   ├── SuggestTagModal.test.tsx
+        │   ├── TagBadge.test.tsx
+        │   └── TagSuggestionsList.test.tsx
         ├── form/
         │   ├── TagSelector.test.tsx
         │   └── IngredientList.test.tsx

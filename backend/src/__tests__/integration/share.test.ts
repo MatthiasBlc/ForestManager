@@ -326,6 +326,115 @@ describe("Share Recipe API", () => {
   });
 
   // =====================================
+  // Fork tags scope-aware
+  // =====================================
+  describe("Fork tags scope-aware", () => {
+    it("should copy GLOBAL tags directly during fork", async () => {
+      // Creer un tag GLOBAL APPROVED et l'attacher a la recette source
+      const globalTag = await testPrisma.tag.create({
+        data: { name: "global_fork_tag", scope: "GLOBAL", status: "APPROVED" },
+      });
+      await testPrisma.recipeTag.create({
+        data: { recipeId: communityRecipeId, tagId: globalTag.id },
+      });
+
+      const res = await request(app)
+        .post(`/api/recipes/${communityRecipeId}/share`)
+        .set("Cookie", user1Cookie)
+        .send({ targetCommunityId: targetCommunity.id });
+
+      expect(res.status).toBe(201);
+      const forkGlobalTag = res.body.tags.find((t: { name: string }) => t.name === "global_fork_tag");
+      expect(forkGlobalTag).toBeDefined();
+      expect(forkGlobalTag.scope).toBe("GLOBAL");
+      expect(forkGlobalTag.id).toBe(globalTag.id);
+    });
+
+    it("should create PENDING tag in target community for COMMUNITY tag", async () => {
+      // Creer un tag COMMUNITY APPROVED dans la source
+      await testPrisma.tag.create({
+        data: {
+          name: "source_community_tag",
+          scope: "COMMUNITY",
+          status: "APPROVED",
+          communityId: sourceCommunity.id,
+        },
+      });
+
+      // Attacher ce tag a la recette source
+      const tag = await testPrisma.tag.findFirst({
+        where: { name: "source_community_tag", communityId: sourceCommunity.id },
+      });
+      await testPrisma.recipeTag.create({
+        data: { recipeId: communityRecipeId, tagId: tag!.id },
+      });
+
+      const res = await request(app)
+        .post(`/api/recipes/${communityRecipeId}/share`)
+        .set("Cookie", user1Cookie)
+        .send({ targetCommunityId: targetCommunity.id });
+
+      expect(res.status).toBe(201);
+
+      // Verifier qu'un tag PENDING a ete cree dans la communaute cible
+      const pendingTag = await testPrisma.tag.findFirst({
+        where: {
+          name: "source_community_tag",
+          communityId: targetCommunity.id,
+          scope: "COMMUNITY",
+          status: "PENDING",
+        },
+      });
+      expect(pendingTag).not.toBeNull();
+
+      // Verifier que le fork a ce tag
+      const forkTag = res.body.tags.find((t: { name: string }) => t.name === "source_community_tag");
+      expect(forkTag).toBeDefined();
+      expect(forkTag.communityId).toBe(targetCommunity.id);
+    });
+
+    it("should reuse existing APPROVED community tag in target during fork", async () => {
+      // Creer un tag COMMUNITY APPROVED dans la source et la cible avec le meme nom
+      await testPrisma.tag.create({
+        data: {
+          name: "shared_name_tag",
+          scope: "COMMUNITY",
+          status: "APPROVED",
+          communityId: sourceCommunity.id,
+        },
+      });
+      const targetTag = await testPrisma.tag.create({
+        data: {
+          name: "shared_name_tag",
+          scope: "COMMUNITY",
+          status: "APPROVED",
+          communityId: targetCommunity.id,
+        },
+      });
+
+      // Attacher le tag source a la recette
+      const sourceTag = await testPrisma.tag.findFirst({
+        where: { name: "shared_name_tag", communityId: sourceCommunity.id },
+      });
+      await testPrisma.recipeTag.create({
+        data: { recipeId: communityRecipeId, tagId: sourceTag!.id },
+      });
+
+      const res = await request(app)
+        .post(`/api/recipes/${communityRecipeId}/share`)
+        .set("Cookie", user1Cookie)
+        .send({ targetCommunityId: targetCommunity.id });
+
+      expect(res.status).toBe(201);
+
+      // Le fork doit utiliser le tag APPROVED de la cible
+      const forkTag = res.body.tags.find((t: { name: string }) => t.name === "shared_name_tag");
+      expect(forkTag).toBeDefined();
+      expect(forkTag.id).toBe(targetTag.id);
+    });
+  });
+
+  // =====================================
   // Chain analytics (fork of fork)
   // =====================================
   describe("Chain analytics", () => {
