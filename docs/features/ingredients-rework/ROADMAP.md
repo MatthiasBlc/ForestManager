@@ -79,10 +79,10 @@
 
 ## 11.8 - Frontend Proposals + Ingredients
 
-- [ ] Formulaire de proposal : inclure la section ingredients (meme composant que creation recette)
-- [ ] Vue detail proposal : afficher les ingredients proposes vs actuels (diff)
-- [ ] Acceptation proposal : feedback visuel ingredients mis a jour
-- [ ] Tests
+- [x] Formulaire de proposal : inclure la section ingredients (meme composant que creation recette)
+- [x] Vue detail proposal : afficher les ingredients proposes vs actuels (diff)
+- [x] Acceptation proposal : feedback visuel ingredients mis a jour
+- [x] Tests
 
 ## 11.9 - Documentation & Tests manuels
 

@@ -559,6 +559,129 @@ export const handlers = [
   }),
 
   // =====================================
+  // Proposals
+  // =====================================
+
+  http.get(`${API_URL}/api/recipes/:recipeId/proposals`, ({ request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const url = new URL(request.url);
+    const status = url.searchParams.get('status');
+
+    const proposals = [
+      {
+        id: 'proposal-1',
+        proposedTitle: 'Updated Recipe Title',
+        proposedContent: 'Updated recipe content with new instructions',
+        status: 'PENDING',
+        createdAt: new Date().toISOString(),
+        decidedAt: null,
+        recipeId: 'test-recipe-id',
+        proposerId: 'user-2',
+        proposer: { id: 'user-2', username: 'alice' },
+        proposedIngredients: [
+          {
+            id: 'pi-1',
+            ingredientId: 'ing-1',
+            ingredient: { id: 'ing-1', name: 'sugar', status: 'APPROVED' },
+            quantity: 200,
+            unitId: 'unit-1',
+            order: 0,
+          },
+          {
+            id: 'pi-2',
+            ingredientId: 'ing-new',
+            ingredient: { id: 'ing-new', name: 'vanilla extract', status: 'PENDING' },
+            quantity: 5,
+            unitId: 'unit-3',
+            order: 1,
+          },
+        ],
+      },
+    ];
+
+    const filtered = status ? proposals.filter(p => p.status === status) : proposals;
+
+    return HttpResponse.json({
+      data: filtered,
+      pagination: { total: filtered.length, limit: 20, offset: 0, hasMore: false },
+    });
+  }),
+
+  http.post(`${API_URL}/api/recipes/:recipeId/proposals`, async ({ params, request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json() as Record<string, unknown>;
+
+    if (!body.proposedTitle || !body.proposedContent) {
+      return HttpResponse.json(
+        { error: 'RECIPE_003: Title and content required' },
+        { status: 400 }
+      );
+    }
+
+    return HttpResponse.json({
+      id: `proposal-${Date.now()}`,
+      proposedTitle: body.proposedTitle,
+      proposedContent: body.proposedContent,
+      proposedIngredients: body.proposedIngredients || [],
+      status: 'PENDING',
+      createdAt: new Date().toISOString(),
+      decidedAt: null,
+      recipeId: params.recipeId,
+      proposerId: mockUser.id,
+      proposer: { id: mockUser.id, username: mockUser.username },
+    }, { status: 201 });
+  }),
+
+  http.post(`${API_URL}/api/proposals/:id/accept`, ({ params }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    return HttpResponse.json({
+      id: params.id,
+      status: 'ACCEPTED',
+      decidedAt: new Date().toISOString(),
+    });
+  }),
+
+  http.post(`${API_URL}/api/proposals/:id/reject`, ({ params }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    return HttpResponse.json({
+      proposal: {
+        id: params.id,
+        status: 'REJECTED',
+        decidedAt: new Date().toISOString(),
+      },
+      variant: {
+        id: `variant-${Date.now()}`,
+        title: 'Variant Recipe',
+        isVariant: true,
+      },
+    });
+  }),
+
+  // =====================================
   // Tags
   // =====================================
 

@@ -143,6 +143,7 @@ export interface Proposal {
     id: string;
     username: string;
   };
+  proposedIngredients?: ProposalIngredient[];
   recipe?: {
     id: string;
     title: string;
@@ -161,9 +162,16 @@ export interface ProposalsResponse {
   };
 }
 
+export interface ProposalIngredientInput {
+  name: string;
+  quantity?: number;
+  unitId?: string;
+}
+
 export interface ProposalInput {
   proposedTitle: string;
   proposedContent: string;
+  proposedIngredients?: ProposalIngredientInput[];
 }
 
 // Variants

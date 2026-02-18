@@ -15,9 +15,9 @@ Phases 0 a 9.3 terminees.
 
 - **Spec** : `docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md`
 - **Roadmap** : `docs/features/ingredients-rework/ROADMAP.md`
-- **Sous-etape en cours** : 11.7 termine - passer a 11.8
+- **Sous-etape en cours** : 11.8 termine - passer a 11.9
 - **Branche** : `IngredientsRework`
-- **Tests** : 544 backend + 356 frontend = 900 total
+- **Tests** : 544 backend + 370 frontend = 914 total
 
 ## Resume de reprise
 
