@@ -6,11 +6,40 @@ export interface Tag {
   communityId?: string | null;
 }
 
+export type UnitCategory = "WEIGHT" | "VOLUME" | "SPOON" | "COUNT" | "QUALITATIVE";
+export type IngredientStatus = "APPROVED" | "PENDING";
+
+export interface Unit {
+  id: string;
+  name: string;
+  abbreviation: string;
+  category: UnitCategory;
+  sortOrder: number;
+}
+
+export type UnitsByCategory = Partial<Record<UnitCategory, Unit[]>>;
+
+export interface SuggestedUnit {
+  suggestedUnitId: string | null;
+  source: "default" | "popular" | null;
+}
+
 export interface RecipeIngredient {
   id: string;
   name: string;
   ingredientId: string;
   quantity: number | null;
+  unitId?: string | null;
+  unit?: { id: string; name: string; abbreviation: string } | null;
+  order: number;
+}
+
+export interface ProposalIngredient {
+  id: string;
+  ingredientId: string;
+  ingredient: { id: string; name: string; status: IngredientStatus };
+  quantity: number | null;
+  unitId: string | null;
   order: number;
 }
 
@@ -84,6 +113,7 @@ export interface IngredientSearchResult {
   id: string;
   name: string;
   recipeCount: number;
+  status?: IngredientStatus;
 }
 
 // Legacy interface for backwards compatibility

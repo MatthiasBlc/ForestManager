@@ -60,13 +60,13 @@
 
 ## 11.6 - Frontend Units & Ingredients (refactoring formulaire)
 
-- [ ] Composant UnitSelector : dropdown groupee par categorie
-- [ ] Refactoring IngredientList : autocomplete + champ quantite numerique + UnitSelector
-- [ ] Pre-selection unite intelligente (appel suggested-unit au choix d'ingredient)
-- [ ] Badge "nouveau" sur ingredients PENDING dans l'autocomplete
-- [ ] Endpoint frontend API : GET /api/units, GET /api/ingredients/:id/suggested-unit
-- [ ] Types TypeScript : Unit, UnitCategory, IngredientStatus, ProposalIngredient
-- [ ] Tests composants
+- [x] Composant UnitSelector : dropdown groupee par categorie
+- [x] Refactoring IngredientList : autocomplete + champ quantite numerique + UnitSelector
+- [x] Pre-selection unite intelligente (appel suggested-unit au choix d'ingredient)
+- [x] Badge "nouveau" sur ingredients PENDING dans l'autocomplete
+- [x] Endpoint frontend API : GET /api/units, GET /api/ingredients/:id/suggested-unit
+- [x] Types TypeScript : Unit, UnitCategory, IngredientStatus, ProposalIngredient
+- [x] Tests composants
 
 ## 11.7 - Frontend Administration
 

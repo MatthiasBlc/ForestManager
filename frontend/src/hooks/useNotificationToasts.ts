@@ -26,8 +26,30 @@ const notificationMessages: Record<string, string> = {
   "tag-suggestion:pending-mod": "Un tag suggere attend votre validation",
 };
 
+function buildIngredientMessage(data: NotificationEvent): string | null {
+  const meta = data.metadata ?? {};
+  const name = meta.ingredientName as string | undefined;
+  switch (data.type) {
+    case "INGREDIENT_APPROVED":
+      return `Votre ingredient '${name}' a ete valide`;
+    case "INGREDIENT_MODIFIED":
+      return `Votre ingredient a ete valide sous le nom '${meta.newName as string}'`;
+    case "INGREDIENT_MERGED":
+      return `Votre ingredient '${name}' a ete fusionne avec '${meta.targetName as string}'`;
+    case "INGREDIENT_REJECTED":
+      return `Votre ingredient '${name}' a ete rejete : ${meta.reason as string}`;
+    default:
+      return null;
+  }
+}
+
 export function useNotificationToasts() {
   const handler = useCallback((data: NotificationEvent) => {
+    const ingredientMessage = buildIngredientMessage(data);
+    if (ingredientMessage) {
+      toast(ingredientMessage, { icon: "🔔" });
+      return;
+    }
     const message = notificationMessages[data.type];
     if (message) {
       toast(message, { icon: "🔔" });

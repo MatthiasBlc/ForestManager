@@ -38,10 +38,23 @@ export const mockTags = [
 ];
 
 export const mockIngredients = [
-  { id: 'ing-1', name: 'sugar', recipeCount: 10 },
-  { id: 'ing-2', name: 'flour', recipeCount: 8 },
-  { id: 'ing-3', name: 'butter', recipeCount: 5 },
+  { id: 'ing-1', name: 'sugar', recipeCount: 10, status: 'APPROVED' },
+  { id: 'ing-2', name: 'flour', recipeCount: 8, status: 'APPROVED' },
+  { id: 'ing-3', name: 'butter', recipeCount: 5, status: 'APPROVED' },
 ];
+
+export const mockUnits = {
+  WEIGHT: [
+    { id: 'unit-1', name: 'gramme', abbreviation: 'g', category: 'WEIGHT', sortOrder: 1 },
+    { id: 'unit-2', name: 'kilogramme', abbreviation: 'kg', category: 'WEIGHT', sortOrder: 2 },
+  ],
+  VOLUME: [
+    { id: 'unit-3', name: 'centilitre', abbreviation: 'cl', category: 'VOLUME', sortOrder: 2 },
+  ],
+  COUNT: [
+    { id: 'unit-4', name: 'piece', abbreviation: 'pc', category: 'COUNT', sortOrder: 1 },
+  ],
+};
 
 export const mockFeatures = [
   { id: 'feat-1', code: 'MVP', name: 'MVP Feature', description: 'Default feature', isDefault: true, communityCount: 3 },
@@ -561,10 +574,37 @@ export const handlers = [
 
     return HttpResponse.json({
       data: [
-        { id: 'ing-1', name: 'sugar', recipeCount: 10 },
-        { id: 'ing-2', name: 'flour', recipeCount: 8 },
+        { id: 'ing-1', name: 'sugar', recipeCount: 10, status: 'APPROVED' },
+        { id: 'ing-2', name: 'flour', recipeCount: 8, status: 'APPROVED' },
+        { id: 'ing-3', name: 'new_pending', recipeCount: 1, status: 'PENDING' },
       ],
     });
+  }),
+
+  // GET /api/units
+  http.get(`${API_URL}/api/units`, () => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+    return HttpResponse.json(mockUnits);
+  }),
+
+  // GET /api/ingredients/:id/suggested-unit
+  http.get(`${API_URL}/api/ingredients/:id/suggested-unit`, ({ params }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json(
+        { error: 'AUTH_001: Not authenticated' },
+        { status: 401 }
+      );
+    }
+    // ing-1 (sugar) -> suggest gramme unit
+    if (params.id === 'ing-1') {
+      return HttpResponse.json({ suggestedUnitId: 'unit-1', source: 'popular' });
+    }
+    return HttpResponse.json({ suggestedUnitId: null, source: null });
   }),
 
   // =====================================

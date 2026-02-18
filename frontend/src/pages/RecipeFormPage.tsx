@@ -53,7 +53,9 @@ const RecipeFormPage = () => {
         setIngredients(
           recipe.ingredients.map((ing) => ({
             name: ing.name,
-            quantity: ing.quantity != null ? String(ing.quantity) : "",
+            quantity: ing.quantity ?? undefined,
+            unitId: ing.unitId ?? undefined,
+            ingredientId: ing.ingredientId,
           }))
         );
       } catch (err) {
@@ -75,14 +77,11 @@ const RecipeFormPage = () => {
         tags: tags,
         ingredients: ingredients
           .filter((ing) => ing.name.trim())
-          .map((ing) => {
-            const qty = ing.quantity.trim();
-            const parsed = qty ? parseFloat(qty) : undefined;
-            return {
-              name: ing.name.trim(),
-              quantity: parsed != null && !isNaN(parsed) ? parsed : undefined,
-            };
-          }),
+          .map((ing) => ({
+            name: ing.name.trim(),
+            quantity: ing.quantity,
+            unitId: ing.unitId,
+          })),
       };
 
       if (isEditing && id) {

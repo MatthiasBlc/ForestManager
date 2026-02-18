@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "axios";
-import { RecipeDetail, RecipesResponse, CommunityRecipesResponse, TagSearchResult, IngredientSearchResult, Proposal, ProposalsResponse, ProposalInput, VariantsResponse, RejectProposalResponse } from "../models/recipe";
+import { RecipeDetail, RecipesResponse, CommunityRecipesResponse, TagSearchResult, IngredientSearchResult, Proposal, ProposalsResponse, ProposalInput, VariantsResponse, RejectProposalResponse, UnitsByCategory, SuggestedUnit } from "../models/recipe";
 import { ActivityResponse } from "../models/activity";
 import { User } from "../models/user";
 import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats, AdminTag, AdminIngredient, AdminFeature, AdminCommunity, AdminCommunityDetail, AdminActivityResponse } from "../models/admin";
@@ -72,7 +72,7 @@ export interface RecipeInput {
   content: string;
   imageUrl?: string;
   tags?: string[];
-  ingredients?: { name: string; quantity?: number }[];
+  ingredients?: { name: string; quantity?: number; unitId?: string }[];
 }
 
 export interface GetRecipesParams {
@@ -259,6 +259,16 @@ export default class APIManager {
     const qs = buildQueryString({ search: search || undefined, limit });
     const response = await API.get(`/api/ingredients${qs}`).catch(handleApiError);
     return response.data.data;
+  }
+
+  static async getUnits(): Promise<UnitsByCategory> {
+    const response = await API.get("/api/units").catch(handleApiError);
+    return response.data;
+  }
+
+  static async getSuggestedUnit(ingredientId: string): Promise<SuggestedUnit> {
+    const response = await API.get(`/api/ingredients/${ingredientId}/suggested-unit`).catch(handleApiError);
+    return response.data;
   }
 
 
