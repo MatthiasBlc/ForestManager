@@ -34,14 +34,14 @@ describe('Ingredients API', () => {
       // Creer des recettes avec des ingredients
       await createTestRecipe(userId, {
         ingredients: [
-          { name: 'flour', quantity: '200g' },
-          { name: 'sugar', quantity: '100g' },
+          { name: 'flour', quantity: 200 },
+          { name: 'sugar', quantity: 100 },
         ],
       });
       await createTestRecipe(userId, {
         ingredients: [
-          { name: 'flour', quantity: '300g' },
-          { name: 'butter', quantity: '50g' },
+          { name: 'flour', quantity: 300 },
+          { name: 'butter', quantity: 50 },
         ],
       });
 

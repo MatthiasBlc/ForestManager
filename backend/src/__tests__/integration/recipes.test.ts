@@ -47,8 +47,8 @@ describe('Recipes API', () => {
           content: 'Contenu',
           tags: ['dessert', 'rapide'],
           ingredients: [
-            { name: 'sucre', quantity: '100g' },
-            { name: 'farine', quantity: '200g' },
+            { name: 'sucre', quantity: 100 },
+            { name: 'farine', quantity: 200 },
           ],
         });
 
@@ -229,7 +229,7 @@ describe('Recipes API', () => {
         title: 'Ma recette',
         content: 'Mon contenu',
         tags: ['tag1'],
-        ingredients: [{ name: 'ingredient1', quantity: '100g' }],
+        ingredients: [{ name: 'ingredient1', quantity: 100 }],
       });
 
       const res = await request(app)

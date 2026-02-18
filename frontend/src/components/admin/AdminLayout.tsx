@@ -1,11 +1,12 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { AdminAuthProvider, useAdminAuth } from "../../contexts/AdminAuthContext";
-import { FaHome, FaTags, FaCarrot, FaStar, FaUsers, FaClipboardList, FaSignOutAlt } from "react-icons/fa";
+import { FaHome, FaTags, FaCarrot, FaBalanceScale, FaStar, FaUsers, FaClipboardList, FaSignOutAlt } from "react-icons/fa";
 
 const adminNavItems = [
   { to: "/admin/dashboard", label: "Dashboard", icon: FaHome },
   { to: "/admin/tags", label: "Tags", icon: FaTags },
   { to: "/admin/ingredients", label: "Ingredients", icon: FaCarrot },
+  { to: "/admin/units", label: "Units", icon: FaBalanceScale },
   { to: "/admin/features", label: "Features", icon: FaStar },
   { to: "/admin/communities", label: "Communities", icon: FaUsers },
   { to: "/admin/activity", label: "Activity", icon: FaClipboardList },

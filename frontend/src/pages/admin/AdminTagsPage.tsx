@@ -4,10 +4,13 @@ import APIManager from "../../network/api";
 import { useConfirm } from "../../hooks/useConfirm";
 import toast from "react-hot-toast";
 
+type ScopeFilter = "ALL" | "GLOBAL" | "COMMUNITY";
+
 function AdminTagsPage() {
   const [tags, setTags] = useState<AdminTag[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [scopeFilter, setScopeFilter] = useState<ScopeFilter>("ALL");
   const [modalOpen, setModalOpen] = useState(false);
   const [editingTag, setEditingTag] = useState<AdminTag | null>(null);
   const [tagName, setTagName] = useState("");
@@ -18,14 +21,15 @@ function AdminTagsPage() {
 
   const loadTags = useCallback(async () => {
     try {
-      const data = await APIManager.getAdminTags(search || undefined);
+      const scope = scopeFilter !== "ALL" ? scopeFilter : undefined;
+      const data = await APIManager.getAdminTags(search || undefined, scope);
       setTags(data);
     } catch {
       toast.error("Failed to load tags");
     } finally {
       setIsLoading(false);
     }
-  }, [search]);
+  }, [search, scopeFilter]);
 
   useEffect(() => {
     setIsLoading(true);
@@ -107,8 +111,8 @@ function AdminTagsPage() {
         <button className="btn btn-primary" onClick={openCreate}>Add Tag</button>
       </div>
 
-      {/* Search */}
-      <div className="mb-4">
+      {/* Filters */}
+      <div className="flex gap-4 mb-4 items-center flex-wrap">
         <input
           type="text"
           placeholder="Search tags..."
@@ -116,6 +120,16 @@ function AdminTagsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
+        <select
+          className="select select-bordered select-sm"
+          value={scopeFilter}
+          onChange={(e) => setScopeFilter(e.target.value as ScopeFilter)}
+          aria-label="Filter by scope"
+        >
+          <option value="ALL">All scopes</option>
+          <option value="GLOBAL">Global</option>
+          <option value="COMMUNITY">Community</option>
+        </select>
       </div>
 
       {/* Table */}
@@ -130,6 +144,8 @@ function AdminTagsPage() {
               <thead>
                 <tr>
                   <th>Name</th>
+                  <th>Scope</th>
+                  <th>Community</th>
                   <th className="text-right">Recipes</th>
                   <th className="text-right">Actions</th>
                 </tr>
@@ -139,6 +155,14 @@ function AdminTagsPage() {
                   tags.map((tag) => (
                     <tr key={tag.id}>
                       <td className="font-medium">{tag.name}</td>
+                      <td>
+                        <span className={`badge badge-sm ${tag.scope === "GLOBAL" ? "badge-primary" : "badge-secondary"}`}>
+                          {tag.scope || "GLOBAL"}
+                        </span>
+                      </td>
+                      <td className="text-base-content/60">
+                        {tag.community?.name || "-"}
+                      </td>
                       <td className="text-right">{tag.recipeCount}</td>
                       <td className="text-right">
                         <div className="flex justify-end gap-1">
@@ -151,7 +175,7 @@ function AdminTagsPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={3} className="text-center text-base-content/50">No tags found</td>
+                    <td colSpan={5} className="text-center text-base-content/50">No tags found</td>
                   </tr>
                 )}
               </tbody>

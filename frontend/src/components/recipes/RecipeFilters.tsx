@@ -11,6 +11,7 @@ interface RecipeFiltersProps {
   onTagsChange: (tags: string[]) => void;
   onIngredientsChange: (ingredients: string[]) => void;
   onReset: () => void;
+  communityId?: string;
 }
 
 const RecipeFilters = ({
@@ -21,6 +22,7 @@ const RecipeFilters = ({
   onTagsChange,
   onIngredientsChange,
   onReset,
+  communityId,
 }: RecipeFiltersProps) => {
   const [localSearch, setLocalSearch] = useState(search);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
@@ -77,6 +79,7 @@ const RecipeFilters = ({
             onChange={onTagsChange}
             placeholder="Select tags..."
             allowCreate={false}
+            communityId={communityId}
           />
         </div>
 

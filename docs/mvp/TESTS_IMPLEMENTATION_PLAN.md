@@ -227,7 +227,7 @@ frontend/src/__tests__/
 
 1. `backend/src/__tests__/setup/testHelpers.ts` - Ajouter helpers
 2. `frontend/src/__tests__/setup/mswHandlers.ts` - Ajouter mocks admin API
-3. `docs/DEVELOPMENT_ROADMAP.md` - Ajouter sections tests
+3. `DEVELOPMENT_ROADMAP.md` - Ajouter sections tests
 
 ---
 

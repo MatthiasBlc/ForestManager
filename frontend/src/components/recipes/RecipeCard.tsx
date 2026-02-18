@@ -1,6 +1,7 @@
 import { FaEdit, FaTrash, FaCodeBranch, FaShare } from "react-icons/fa";
 import { RecipeListItem, CommunityRecipeListItem } from "../../models/recipe";
 import { useRecipeActions } from "../../hooks/useRecipeActions";
+import TagBadge from "./TagBadge";
 
 interface RecipeCardProps {
   recipe: RecipeListItem | CommunityRecipeListItem;
@@ -49,13 +50,12 @@ const RecipeCard = ({ recipe, onDelete, onTagClick, onShare, showCreator = false
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-1">
             {displayedTags.map((tag) => (
-              <span
+              <TagBadge
                 key={tag.id}
+                tag={tag}
+                size="sm"
                 onClick={(e) => handleTagClick(e, tag.name)}
-                className="badge badge-primary badge-sm cursor-pointer hover:badge-secondary"
-              >
-                {tag.name}
-              </span>
+              />
             ))}
             {remainingTagsCount > 0 && (
               <span className="badge badge-ghost badge-sm">+{remainingTagsCount}</span>

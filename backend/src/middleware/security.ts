@@ -51,17 +51,19 @@ export const authRateLimiter: RequestHandler = env.NODE_ENV === "test"
       legacyHeaders: false,
     });
 
-export const adminRateLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 30, // 30 requetes par minute
-  message: { error: "ADMIN_011: Too many requests, please slow down" },
-  standardHeaders: true,
-  legacyHeaders: false,
-  skip: (req) => {
-    // Skip pour les routes auth (elles ont leur propre rate limiter plus strict)
-    return req.path.startsWith("/auth");
-  },
-});
+export const adminRateLimiter: RequestHandler = env.NODE_ENV === "test"
+  ? ((_req, _res, next) => next())
+  : rateLimit({
+      windowMs: 60 * 1000, // 1 minute
+      max: 30, // 30 requetes par minute
+      message: { error: "ADMIN_011: Too many requests, please slow down" },
+      standardHeaders: true,
+      legacyHeaders: false,
+      skip: (req) => {
+        // Skip pour les routes auth (elles ont leur propre rate limiter plus strict)
+        return req.path.startsWith("/auth");
+      },
+    });
 
 /**
  * Middleware pour forcer HTTPS en production

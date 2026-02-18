@@ -22,12 +22,31 @@ export interface AdminTag {
   id: string;
   name: string;
   recipeCount: number;
+  scope?: "GLOBAL" | "COMMUNITY";
+  status?: "APPROVED" | "PENDING";
+  communityId?: string | null;
+  community?: { name: string } | null;
 }
 
 export interface AdminIngredient {
   id: string;
   name: string;
+  status: "APPROVED" | "PENDING";
+  createdBy: { id: string; username: string } | null;
+  defaultUnit: { id: string; name: string; abbreviation: string } | null;
   recipeCount: number;
+  proposalCount: number;
+  createdAt: string;
+}
+
+export interface AdminUnit {
+  id: string;
+  name: string;
+  abbreviation: string;
+  category: "WEIGHT" | "VOLUME" | "SPOON" | "COUNT" | "QUALITATIVE";
+  sortOrder: number;
+  usageCount: number;
+  defaultIngredientCount: number;
 }
 
 export interface AdminFeature {

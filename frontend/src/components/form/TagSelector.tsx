@@ -10,6 +10,7 @@ interface TagSelectorProps {
   onChange: (tags: string[]) => void;
   placeholder?: string;
   allowCreate?: boolean;
+  communityId?: string;
 }
 
 const TagSelector = ({
@@ -17,6 +18,7 @@ const TagSelector = ({
   onChange,
   placeholder = "Search tags...",
   allowCreate = true,
+  communityId,
 }: TagSelectorProps) => {
   const [inputValue, setInputValue] = useState("");
   const [suggestions, setSuggestions] = useState<TagSearchResult[]>([]);
@@ -28,11 +30,11 @@ const TagSelector = ({
     if (!showDropdown) return;
 
     setIsLoading(true);
-    APIManager.searchTags(inputValue.trim(), 10)
+    APIManager.searchTags(inputValue.trim(), 10, communityId)
       .then((results) => setSuggestions(results.filter((tag) => !value.includes(tag.name))))
       .catch(() => setSuggestions([]))
       .finally(() => setIsLoading(false));
-  }, inputValue ? 300 : 0, [inputValue, value, showDropdown]);
+  }, inputValue ? 300 : 0, [inputValue, value, showDropdown, communityId]);
 
   useClickOutside(containerRef, useCallback(() => setShowDropdown(false), []));
 
@@ -119,7 +121,14 @@ const TagSelector = ({
                   onClick={() => addTag(suggestion.name)}
                   className="w-full px-3 py-2 text-left hover:bg-base-200 flex justify-between items-center"
                 >
-                  <span>{suggestion.name}</span>
+                  <span className="flex items-center gap-2">
+                    {suggestion.name}
+                    {suggestion.scope && (
+                      <span className="text-[0.65rem] opacity-50 uppercase">
+                        {suggestion.scope === "GLOBAL" ? "global" : "community"}
+                      </span>
+                    )}
+                  </span>
                   <span className="text-xs text-base-content/60">
                     {suggestion.recipeCount} recipe{suggestion.recipeCount !== 1 ? "s" : ""}
                   </span>
@@ -132,7 +141,12 @@ const TagSelector = ({
                   className="w-full px-3 py-2 text-left hover:bg-base-200 flex items-center gap-2 border-t"
                 >
                   <FaPlus size={12} />
-                  <span>Create "{inputValue.trim().toLowerCase()}"</span>
+                  <span>
+                    Create "{inputValue.trim().toLowerCase()}"
+                    {communityId && (
+                      <span className="text-xs text-warning ml-1">(will be pending)</span>
+                    )}
+                  </span>
                 </button>
               )}
               {suggestions.length === 0 && !showCreateOption && !isLoading && (

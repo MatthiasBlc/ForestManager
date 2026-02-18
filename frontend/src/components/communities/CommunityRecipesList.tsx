@@ -123,6 +123,7 @@ const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesList
           onTagsChange={setTagsFilter}
           onIngredientsChange={setIngredientsFilter}
           onReset={handleResetFilters}
+          communityId={communityId}
         />
       </div>
 

@@ -4,8 +4,10 @@ import app from '../../app';
 import {
   createTestUser,
   createTestRecipe,
+  createTestTag,
   extractSessionCookie,
 } from '../setup/testHelpers';
+import { testPrisma } from '../setup/globalSetup';
 
 describe('Tags API', () => {
   let userCookie: string;
@@ -100,6 +102,112 @@ describe('Tags API', () => {
         .get('/api/tags');
 
       expect(res.status).toBe(401);
+    });
+
+    it('should return only GLOBAL APPROVED tags without communityId', async () => {
+      // Creer un tag GLOBAL APPROVED via recette perso
+      await createTestRecipe(userId, { tags: ['global_tag'] });
+
+      // Creer un tag COMMUNITY APPROVED (ne devrait pas apparaitre sans communityId specifique)
+      const community = await testPrisma.community.create({
+        data: { name: `TagTest Community ${Date.now()}` },
+      });
+      await testPrisma.userCommunity.create({
+        data: { userId, communityId: community.id, role: 'MEMBER' },
+      });
+      await createTestTag('community_only_tag', {
+        scope: 'COMMUNITY',
+        status: 'APPROVED',
+        communityId: community.id,
+      });
+
+      const res = await request(app)
+        .get('/api/tags')
+        .set('Cookie', userCookie);
+
+      expect(res.status).toBe(200);
+      const globalTag = res.body.data.find((t: { name: string }) => t.name === 'global_tag');
+      expect(globalTag).toBeDefined();
+      expect(globalTag.scope).toBe('GLOBAL');
+
+      // Le tag communautaire apparait aussi car l'user est membre et showTags=true par defaut
+      const communityTag = res.body.data.find((t: { name: string }) => t.name === 'community_only_tag');
+      expect(communityTag).toBeDefined();
+      expect(communityTag.scope).toBe('COMMUNITY');
+    });
+
+    it('should return GLOBAL + COMMUNITY APPROVED tags with communityId', async () => {
+      await createTestRecipe(userId, { tags: ['global_for_community'] });
+
+      const community = await testPrisma.community.create({
+        data: { name: `TagCommunity ${Date.now()}` },
+      });
+      await createTestTag('comm_approved', {
+        scope: 'COMMUNITY',
+        status: 'APPROVED',
+        communityId: community.id,
+      });
+
+      const res = await request(app)
+        .get(`/api/tags?communityId=${community.id}`)
+        .set('Cookie', userCookie);
+
+      expect(res.status).toBe(200);
+      const names = res.body.data.map((t: { name: string }) => t.name);
+      expect(names).toContain('global_for_community');
+      expect(names).toContain('comm_approved');
+    });
+
+    it('should exclude PENDING tags from autocomplete', async () => {
+      const community = await testPrisma.community.create({
+        data: { name: `TagPending ${Date.now()}` },
+      });
+      await createTestTag('pending_tag', {
+        scope: 'COMMUNITY',
+        status: 'PENDING',
+        communityId: community.id,
+      });
+      await createTestTag('approved_tag', {
+        scope: 'COMMUNITY',
+        status: 'APPROVED',
+        communityId: community.id,
+      });
+
+      const res = await request(app)
+        .get(`/api/tags?communityId=${community.id}`)
+        .set('Cookie', userCookie);
+
+      expect(res.status).toBe(200);
+      const names = res.body.data.map((t: { name: string }) => t.name);
+      expect(names).toContain('approved_tag');
+      expect(names).not.toContain('pending_tag');
+    });
+
+    it('should respect showTags=false preference in personal context', async () => {
+      const community = await testPrisma.community.create({
+        data: { name: `TagHidden ${Date.now()}` },
+      });
+      await testPrisma.userCommunity.create({
+        data: { userId, communityId: community.id, role: 'MEMBER' },
+      });
+      await createTestTag('hidden_comm_tag', {
+        scope: 'COMMUNITY',
+        status: 'APPROVED',
+        communityId: community.id,
+      });
+
+      // Desactiver showTags pour cette communaute
+      await testPrisma.userCommunityTagPreference.create({
+        data: { userId, communityId: community.id, showTags: false },
+      });
+
+      const res = await request(app)
+        .get('/api/tags')
+        .set('Cookie', userCookie);
+
+      expect(res.status).toBe(200);
+      const names = res.body.data.map((t: { name: string }) => t.name);
+      expect(names).not.toContain('hidden_comm_tag');
     });
   });
 });

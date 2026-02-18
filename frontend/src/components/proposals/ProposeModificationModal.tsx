@@ -2,28 +2,50 @@ import { useState } from "react";
 import { FaPaperPlane } from "react-icons/fa";
 import Modal from "../Modal";
 import APIManager from "../../network/api";
+import IngredientList, { IngredientInput } from "../form/IngredientList";
+import { RecipeIngredient } from "../../models/recipe";
 
 interface ProposeModificationModalProps {
   recipeId: string;
   currentTitle: string;
   currentContent: string;
+  currentIngredients: RecipeIngredient[];
   onClose: () => void;
   onProposalSubmitted: () => void;
+}
+
+function recipeIngredientsToInputs(ingredients: RecipeIngredient[]): IngredientInput[] {
+  return ingredients.map((ing) => ({
+    name: ing.name,
+    quantity: ing.quantity ?? undefined,
+    unitId: ing.unitId ?? undefined,
+    ingredientId: ing.ingredientId,
+  }));
 }
 
 const ProposeModificationModal = ({
   recipeId,
   currentTitle,
   currentContent,
+  currentIngredients,
   onClose,
   onProposalSubmitted,
 }: ProposeModificationModalProps) => {
   const [proposedTitle, setProposedTitle] = useState(currentTitle);
   const [proposedContent, setProposedContent] = useState(currentContent);
+  const [proposedIngredients, setProposedIngredients] = useState<IngredientInput[]>(
+    () => recipeIngredientsToInputs(currentIngredients)
+  );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const hasChanges = proposedTitle !== currentTitle || proposedContent !== currentContent;
+  const ingredientsChanged = JSON.stringify(
+    proposedIngredients.filter((i) => i.name.trim()).map(({ name, quantity, unitId }) => ({ name, quantity, unitId }))
+  ) !== JSON.stringify(
+    currentIngredients.map((i) => ({ name: i.name, quantity: i.quantity ?? undefined, unitId: i.unitId ?? undefined }))
+  );
+
+  const hasChanges = proposedTitle !== currentTitle || proposedContent !== currentContent || ingredientsChanged;
   const isValid = proposedTitle.trim().length > 0 && proposedContent.trim().length > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,9 +55,19 @@ const ProposeModificationModal = ({
     try {
       setIsSubmitting(true);
       setError(null);
+
+      const filteredIngredients = proposedIngredients
+        .filter((ing) => ing.name.trim())
+        .map((ing) => ({
+          name: ing.name.trim(),
+          quantity: ing.quantity,
+          unitId: ing.unitId,
+        }));
+
       await APIManager.createProposal(recipeId, {
         proposedTitle: proposedTitle.trim(),
         proposedContent: proposedContent.trim(),
+        proposedIngredients: filteredIngredients.length > 0 ? filteredIngredients : undefined,
       });
       onProposalSubmitted();
     } catch (err) {
@@ -78,6 +110,16 @@ const ProposeModificationModal = ({
             placeholder="Recipe content and instructions"
             className="textarea textarea-bordered w-full h-48"
             disabled={isSubmitting}
+          />
+        </div>
+
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text">Ingredients</span>
+          </label>
+          <IngredientList
+            value={proposedIngredients}
+            onChange={setProposedIngredients}
           />
         </div>
 

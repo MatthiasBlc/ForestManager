@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from "react";
 import { FaSave } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext";
 import APIManager from "../network/api";
+import TagPreferencesSection from "../components/profile/TagPreferencesSection";
+import NotificationPreferencesSection from "../components/profile/NotificationPreferencesSection";
 
 const ProfilePage = () => {
   const { user, refreshUser } = useAuth();
@@ -211,6 +213,12 @@ const ProfilePage = () => {
           </button>
         </form>
       </div>
+
+      {/* Tag Preferences */}
+      <TagPreferencesSection />
+
+      {/* Notification Preferences */}
+      <NotificationPreferencesSection />
     </div>
   );
 };

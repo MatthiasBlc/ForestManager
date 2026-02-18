@@ -1,5 +1,6 @@
 import prisma from "../util/db";
 import { RECIPE_TAGS_SELECT, RECIPE_INGREDIENTS_SELECT } from "../util/prismaSelects";
+import { resolveTagsForFork } from "./tagService";
 
 interface SourceRecipeForShare {
   id: string;
@@ -7,8 +8,8 @@ interface SourceRecipeForShare {
   content: string;
   imageUrl: string | null;
   communityId: string;
-  tags: { tagId: string }[];
-  ingredients: { ingredientId: string; quantity: string | null; order: number }[];
+  tags: { tagId: string; tag: { id: string; name: string; scope: string; communityId: string | null } }[];
+  ingredients: { ingredientId: string; quantity: number | null; order: number }[];
 }
 
 /**
@@ -36,14 +37,25 @@ export async function forkRecipe(
       },
     });
 
-    // Copier les tags
+    // Copier les tags (scope-aware)
+    let forkPendingTagIds: string[] = [];
     if (sourceRecipe.tags.length > 0) {
-      await tx.recipeTag.createMany({
-        data: sourceRecipe.tags.map((rt) => ({
-          recipeId: forkedRecipe.id,
-          tagId: rt.tagId,
-        })),
-      });
+      const sourceTags = sourceRecipe.tags.map((rt) => ({
+        id: rt.tag.id,
+        name: rt.tag.name,
+        scope: rt.tag.scope,
+        communityId: rt.tag.communityId,
+      }));
+      const { tagIds, pendingTagIds } = await resolveTagsForFork(tx, sourceTags, targetCommunityId, userId);
+      forkPendingTagIds = pendingTagIds;
+      if (tagIds.length > 0) {
+        await tx.recipeTag.createMany({
+          data: tagIds.map((tagId) => ({
+            recipeId: forkedRecipe.id,
+            tagId,
+          })),
+        });
+      }
     }
 
     // Copier les ingredients
@@ -91,7 +103,7 @@ export async function forkRecipe(
     });
 
     // Recuperer la recette forkee avec toutes ses relations
-    return tx.recipe.findUnique({
+    const forkedResult = await tx.recipe.findUnique({
       where: { id: forkedRecipe.id },
       select: {
         id: true,
@@ -110,6 +122,8 @@ export async function forkRecipe(
         ingredients: RECIPE_INGREDIENTS_SELECT,
       },
     });
+
+    return { recipe: forkedResult, pendingTagIds: forkPendingTagIds };
   });
 }
 
@@ -119,7 +133,7 @@ interface SourceRecipeForPublish {
   content: string;
   imageUrl: string | null;
   tags: { tagId: string }[];
-  ingredients: { ingredientId: string; quantity: string | null; order: number }[];
+  ingredients: { ingredientId: string; quantity: number | null; order: number }[];
 }
 
 /**

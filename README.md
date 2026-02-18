@@ -286,11 +286,12 @@ Le script demande un username et un mot de passe, puis genere un QR code TOTP a 
 
 | Document                                       | Description                        |
 | ---------------------------------------------- | ---------------------------------- |
-| [Architecture](docs/ARCHITECTURE.md)           | Architecture technique et patterns |
-| [Specification API](docs/API_SPECIFICATION.md) | Contrat REST complet               |
-| [Regles metier](docs/BUSINESS_RULES.md)        | Regles metier detaillees           |
-| [User Stories](docs/USER_STORIES.md)           | Fonctionnalites utilisateur        |
-| [Roadmap](docs/DEVELOPMENT_ROADMAP.md)         | Plan de developpement              |
+| [Architecture](docs/mvp/ARCHITECTURE.md)           | Architecture technique et patterns |
+| [Specification API](docs/mvp/API_SPECIFICATION.md) | Contrat REST complet               |
+| [Regles metier](docs/mvp/BUSINESS_RULES.md)        | Regles metier detaillees           |
+| [User Stories](docs/mvp/USER_STORIES.md)           | Fonctionnalites utilisateur        |
+| [Roadmap](docs/mvp/DEVELOPMENT_ROADMAP.md)         | Plan de developpement              |
+| [Spec Tags Rework](docs/features/tags-rework/SPEC_TAGS_REWORK.md) | Rework systeme de tags |
 
 ## Auteur
 
