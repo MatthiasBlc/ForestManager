@@ -4,10 +4,42 @@ import bcrypt from "bcrypt";
 const prisma = new PrismaClient();
 
 async function seed() {
+  // ===========================================
+  // Units (always upsert - idempotent)
+  // ===========================================
+  const unitData = [
+    { name: "gramme", abbreviation: "g", category: "WEIGHT", sortOrder: 1 },
+    { name: "kilogramme", abbreviation: "kg", category: "WEIGHT", sortOrder: 2 },
+    { name: "millilitre", abbreviation: "ml", category: "VOLUME", sortOrder: 1 },
+    { name: "centilitre", abbreviation: "cl", category: "VOLUME", sortOrder: 2 },
+    { name: "decilitre", abbreviation: "dl", category: "VOLUME", sortOrder: 3 },
+    { name: "litre", abbreviation: "l", category: "VOLUME", sortOrder: 4 },
+    { name: "cuillere a cafe", abbreviation: "cac", category: "SPOON", sortOrder: 1 },
+    { name: "cuillere a soupe", abbreviation: "cas", category: "SPOON", sortOrder: 2 },
+    { name: "piece", abbreviation: "pc", category: "COUNT", sortOrder: 1 },
+    { name: "tranche", abbreviation: "tr", category: "COUNT", sortOrder: 2 },
+    { name: "gousse", abbreviation: "gse", category: "COUNT", sortOrder: 3 },
+    { name: "botte", abbreviation: "bte", category: "COUNT", sortOrder: 4 },
+    { name: "feuille", abbreviation: "fle", category: "COUNT", sortOrder: 5 },
+    { name: "brin", abbreviation: "brn", category: "COUNT", sortOrder: 6 },
+    { name: "pincee", abbreviation: "pincee", category: "QUALITATIVE", sortOrder: 1 },
+    { name: "a gout", abbreviation: "a gout", category: "QUALITATIVE", sortOrder: 2 },
+    { name: "selon besoin", abbreviation: "selon besoin", category: "QUALITATIVE", sortOrder: 3 },
+  ];
+
+  for (const unit of unitData) {
+    await prisma.unit.upsert({
+      where: { name: unit.name },
+      update: { abbreviation: unit.abbreviation, category: unit.category, sortOrder: unit.sortOrder },
+      create: unit,
+    });
+  }
+  console.log("Units seeded:", unitData.length);
+
   const userCount = await prisma.user.count();
 
   if (userCount > 0) {
-    console.log("Database already seeded, skipping...");
+    console.log("Database already seeded (users exist), skipping rest...");
     return;
   }
 

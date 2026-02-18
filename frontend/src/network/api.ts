@@ -1,8 +1,8 @@
 import axios, { AxiosError } from "axios";
-import { RecipeDetail, RecipesResponse, CommunityRecipesResponse, TagSearchResult, IngredientSearchResult, Proposal, ProposalsResponse, ProposalInput, VariantsResponse, RejectProposalResponse } from "../models/recipe";
+import { RecipeDetail, RecipesResponse, CommunityRecipesResponse, TagSearchResult, IngredientSearchResult, Proposal, ProposalsResponse, ProposalInput, VariantsResponse, RejectProposalResponse, UnitsByCategory, SuggestedUnit } from "../models/recipe";
 import { ActivityResponse } from "../models/activity";
 import { User } from "../models/user";
-import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats, AdminTag, AdminIngredient, AdminFeature, AdminCommunity, AdminCommunityDetail, AdminActivityResponse } from "../models/admin";
+import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats, AdminTag, AdminIngredient, AdminUnit, AdminFeature, AdminCommunity, AdminCommunityDetail, AdminActivityResponse } from "../models/admin";
 import { CommunityTag } from "../models/tag";
 import { TagSuggestion, TagSuggestionsResponse } from "../models/tagSuggestion";
 import { TagPreference, NotificationPreferences } from "../models/preferences";
@@ -72,7 +72,7 @@ export interface RecipeInput {
   content: string;
   imageUrl?: string;
   tags?: string[];
-  ingredients?: { name: string; quantity?: string }[];
+  ingredients?: { name: string; quantity?: number; unitId?: string }[];
 }
 
 export interface GetRecipesParams {
@@ -259,6 +259,16 @@ export default class APIManager {
     const qs = buildQueryString({ search: search || undefined, limit });
     const response = await API.get(`/api/ingredients${qs}`).catch(handleApiError);
     return response.data.data;
+  }
+
+  static async getUnits(): Promise<UnitsByCategory> {
+    const response = await API.get("/api/units").catch(handleApiError);
+    return response.data;
+  }
+
+  static async getSuggestedUnit(ingredientId: string): Promise<SuggestedUnit> {
+    const response = await API.get(`/api/ingredients/${ingredientId}/suggested-unit`).catch(handleApiError);
+    return response.data;
   }
 
 
@@ -527,20 +537,20 @@ export default class APIManager {
 
   // --------------- Admin Ingredients ---------------
 
-  static async getAdminIngredients(search?: string): Promise<AdminIngredient[]> {
-    const qs = buildQueryString({ search });
+  static async getAdminIngredients(search?: string, status?: string): Promise<AdminIngredient[]> {
+    const qs = buildQueryString({ search, status });
     const response = await API.get(`/api/admin/ingredients${qs}`).catch(handleApiError);
     return response.data.ingredients;
   }
 
-  static async createAdminIngredient(name: string): Promise<AdminIngredient> {
-    const response = await API.post("/api/admin/ingredients", JSON.stringify({ name }))
+  static async createAdminIngredient(name: string, defaultUnitId?: string): Promise<AdminIngredient> {
+    const response = await API.post("/api/admin/ingredients", JSON.stringify({ name, defaultUnitId }))
       .catch(handleApiErrorWith({ 409: ConflictError }));
     return response.data.ingredient;
   }
 
-  static async updateAdminIngredient(id: string, name: string): Promise<AdminIngredient> {
-    const response = await API.patch(`/api/admin/ingredients/${id}`, JSON.stringify({ name }))
+  static async updateAdminIngredient(id: string, data: { name?: string; defaultUnitId?: string | null }): Promise<AdminIngredient> {
+    const response = await API.patch(`/api/admin/ingredients/${id}`, JSON.stringify(data))
       .catch(handleApiErrorWith({ 409: ConflictError }));
     return response.data.ingredient;
   }
@@ -551,6 +561,43 @@ export default class APIManager {
 
   static async mergeAdminIngredients(sourceId: string, targetId: string): Promise<void> {
     await API.post(`/api/admin/ingredients/${sourceId}/merge`, JSON.stringify({ targetId })).catch(handleApiError);
+  }
+
+  static async approveAdminIngredient(id: string, newName?: string): Promise<AdminIngredient> {
+    const body = newName ? { newName } : {};
+    const response = await API.post(`/api/admin/ingredients/${id}/approve`, JSON.stringify(body))
+      .catch(handleApiErrorWith({ 409: ConflictError }));
+    return response.data.ingredient;
+  }
+
+  static async rejectAdminIngredient(id: string, reason: string): Promise<void> {
+    await API.post(`/api/admin/ingredients/${id}/reject`, JSON.stringify({ reason })).catch(handleApiError);
+  }
+
+
+  // --------------- Admin Units ---------------
+
+  static async getAdminUnits(search?: string, category?: string): Promise<AdminUnit[]> {
+    const qs = buildQueryString({ search, category });
+    const response = await API.get(`/api/admin/units${qs}`).catch(handleApiError);
+    return response.data.units;
+  }
+
+  static async createAdminUnit(data: { name: string; abbreviation: string; category: string; sortOrder?: number }): Promise<AdminUnit> {
+    const response = await API.post("/api/admin/units", JSON.stringify(data))
+      .catch(handleApiErrorWith({ 409: ConflictError }));
+    return response.data.unit;
+  }
+
+  static async updateAdminUnit(id: string, data: { name?: string; abbreviation?: string; category?: string; sortOrder?: number }): Promise<AdminUnit> {
+    const response = await API.patch(`/api/admin/units/${id}`, JSON.stringify(data))
+      .catch(handleApiErrorWith({ 409: ConflictError }));
+    return response.data.unit;
+  }
+
+  static async deleteAdminUnit(id: string): Promise<void> {
+    await API.delete(`/api/admin/units/${id}`)
+      .catch(handleApiErrorWith({ 409: "Cannot delete unit that is in use" }));
   }
 
 

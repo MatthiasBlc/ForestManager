@@ -133,7 +133,7 @@ export async function createTestRecipe(
     content: string;
     imageUrl: string | null;
     tags: string[];
-    ingredients: Array<{ name: string; quantity?: string }>;
+    ingredients: Array<{ name: string; quantity?: number }>;
   }>
 ): Promise<TestRecipe> {
   // Creer/trouver les tags en amont (compound unique avec nullable ne supporte pas connectOrCreate)
@@ -208,10 +208,42 @@ export async function createTestTag(
 /**
  * Creer un ingredient de test
  */
-export async function createTestIngredient(name?: string) {
+export async function createTestIngredient(
+  name?: string,
+  options?: Partial<{
+    status: 'APPROVED' | 'PENDING';
+    defaultUnitId: string;
+    createdById: string;
+  }>
+) {
   return testPrisma.ingredient.create({
     data: {
       name: name ?? `ingredient_${Date.now()}`,
+      status: options?.status,
+      defaultUnitId: options?.defaultUnitId,
+      createdById: options?.createdById,
+    },
+  });
+}
+
+/**
+ * Creer une unite de test
+ */
+export async function createTestUnit(
+  data?: Partial<{
+    name: string;
+    abbreviation: string;
+    category: 'WEIGHT' | 'VOLUME' | 'SPOON' | 'COUNT' | 'QUALITATIVE';
+    sortOrder: number;
+  }>
+) {
+  const suffix = Date.now();
+  return testPrisma.unit.create({
+    data: {
+      name: data?.name ?? `unit_${suffix}`,
+      abbreviation: data?.abbreviation ?? `u${suffix}`,
+      category: data?.category ?? 'WEIGHT',
+      sortOrder: data?.sortOrder ?? 0,
     },
   });
 }

@@ -3,7 +3,7 @@
 Source: `backend/prisma/schema.prisma`
 DB: PostgreSQL | ORM: Prisma
 
-## Models (24 total)
+## Models (27 total)
 
 ### Sessions (isolees)
 | Model | Champs cles | Notes |
@@ -27,15 +27,17 @@ DB: PostgreSQL | ORM: Prisma
 | UserCommunity | userId, communityId, role(MEMBER/MODERATOR), joinedAt, deletedAt? | Soft delete, @@unique(userId,communityId) |
 | CommunityInvite | communityId, inviterId, inviteeId, status(PENDING/ACCEPTED/REJECTED/CANCELLED), respondedAt? | Index composite(communityId,inviteeId,status) |
 
-### Recipes (6 models)
+### Recipes (8 models)
 | Model | Champs cles | Notes |
 |-------|-------------|-------|
 | Recipe | id, title, content, imageUrl?, isVariant, creatorId, communityId?, originRecipeId?, sharedFromCommunityId?, deletedAt? | Soft delete. communityId=null → perso |
-| RecipeUpdateProposal | recipeId, proposerId, proposedTitle, proposedContent, status(PENDING/ACCEPTED/REJECTED), deletedAt? | Soft delete |
+| RecipeUpdateProposal | recipeId, proposerId, proposedTitle, proposedContent, status(PENDING/ACCEPTED/REJECTED), deletedAt?, proposedIngredients[] | Soft delete |
 | Tag | id, name, scope(GLOBAL/COMMUNITY), status(APPROVED/PENDING), communityId?, createdById?, createdAt, updatedAt | @@unique(name,communityId) + partial unique index global. Index name, communityId+status |
 | RecipeTag | recipeId, tagId | PK composite, **Cascade** delete |
-| Ingredient | id, name(unique) | Index name |
-| RecipeIngredient | recipeId, ingredientId, quantity?, order | **Cascade** delete, @@unique(recipeId,ingredientId) |
+| Unit | id, name(unique), abbreviation(unique), category(UnitCategory), sortOrder | Index (category,sortOrder). Phase 11 |
+| Ingredient | id, name(unique), status(IngredientStatus), defaultUnitId?, createdById?, createdAt, updatedAt | Index name, status. FK Unit + User. Phase 11 enriched |
+| RecipeIngredient | recipeId, ingredientId, quantity(Float?), unitId?, order | **Cascade** delete, @@unique(recipeId,ingredientId). FK Unit |
+| ProposalIngredient | proposalId, ingredientId, quantity(Float?), unitId?, order | **Cascade** on proposal+ingredient, @@unique(proposalId,ingredientId). Phase 11 |
 
 ### Tags (3 models - Phase 10)
 | Model | Champs cles | Notes |
@@ -67,8 +69,13 @@ TagScope: GLOBAL | COMMUNITY
 TagStatus: APPROVED | PENDING
 TagSuggestionStatus: PENDING_OWNER | PENDING_MODERATOR | APPROVED | REJECTED
 
+UnitCategory: WEIGHT | VOLUME | SPOON | COUNT | QUALITATIVE
+IngredientStatus: APPROVED | PENDING
+
 AdminActionType: TAG_CREATED | TAG_UPDATED | TAG_DELETED | TAG_MERGED |
   INGREDIENT_CREATED | INGREDIENT_UPDATED | INGREDIENT_DELETED | INGREDIENT_MERGED |
+  INGREDIENT_APPROVED | INGREDIENT_REJECTED |
+  UNIT_CREATED | UNIT_UPDATED | UNIT_DELETED |
   COMMUNITY_RENAMED | COMMUNITY_DELETED |
   FEATURE_CREATED | FEATURE_UPDATED | FEATURE_GRANTED | FEATURE_REVOKED |
   ADMIN_LOGIN | ADMIN_LOGOUT | ADMIN_TOTP_SETUP
@@ -86,6 +93,7 @@ ActivityType: RECIPE_CREATED | RECIPE_UPDATED | RECIPE_DELETED | RECIPE_SHARED |
 User <-N:N-> Community (via UserCommunity avec role)
 User <-1:N-> Recipe (creatorId)
 User <-1:N-> Tag (createdById, relation "TagCreator")
+User <-1:N-> Ingredient (createdById, relation "IngredientCreator")
 User <-1:N-> TagSuggestion (suggestedById)
 User <-1:N-> UserCommunityTagPreference
 User <-1:N-> ModeratorNotificationPreference
@@ -93,6 +101,10 @@ Recipe <-N:N-> Tag (via RecipeTag, cascade)
 Recipe <-N:N-> Ingredient (via RecipeIngredient, cascade)
 Recipe <-self-> Recipe (originRecipeId -> variantes/forks)
 Recipe <-1:N-> TagSuggestion (cascade on delete)
+RecipeUpdateProposal <-1:N-> ProposalIngredient (cascade on delete)
+Ingredient -> Unit? (defaultUnitId)
+RecipeIngredient -> Unit? (unitId)
+ProposalIngredient -> Unit? (unitId)
 Community <-1:N-> CommunityInvite
 Community <-1:N-> Tag (communityId)
 Community <-1:N-> UserCommunityTagPreference (cascade)
@@ -107,5 +119,5 @@ AdminUser <-1:N-> AdminActivityLog
 | Type | Modeles | Methode |
 |------|---------|---------|
 | Soft delete (deletedAt) | User, Community, UserCommunity, Recipe, RecipeUpdateProposal, CommunityInvite | Applicatif (where deletedAt: null) |
-| Hard delete (Cascade) | RecipeTag, RecipeIngredient, RecipeAnalytics, RecipeView, TagSuggestion (via Recipe), UserCommunityTagPreference, ModeratorNotificationPreference | DB cascade |
+| Hard delete (Cascade) | RecipeTag, RecipeIngredient, ProposalIngredient, RecipeAnalytics, RecipeView, TagSuggestion (via Recipe), UserCommunityTagPreference, ModeratorNotificationPreference | DB cascade |
 | Soft revoke | CommunityFeature | revokedAt timestamp |

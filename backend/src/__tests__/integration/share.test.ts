@@ -72,7 +72,7 @@ describe("Share Recipe API", () => {
         title: "Recipe to Share",
         content: "This recipe will be shared",
         tags: ["sharing", "test"],
-        ingredients: [{ name: "ingredient1", quantity: "100g" }],
+        ingredients: [{ name: "ingredient1", quantity: 100 }],
       });
     communityRecipeId = recipeRes.body.community.id;
   });
@@ -533,8 +533,8 @@ describe("Share Recipe API", () => {
         .set("Cookie", user1Cookie)
         .send({
           ingredients: [
-            { name: "new ingredient", quantity: "200g" },
-            { name: "another ingredient", quantity: "50ml" },
+            { name: "new ingredient", quantity: 200 },
+            { name: "another ingredient", quantity: 50 },
           ],
         });
 
@@ -548,7 +548,7 @@ describe("Share Recipe API", () => {
       });
       expect(communityIngredients).toHaveLength(2);
       expect(communityIngredients[0].ingredient.name).toBe("new ingredient");
-      expect(communityIngredients[0].quantity).toBe("200g");
+      expect(communityIngredients[0].quantity).toBe(200);
       expect(communityIngredients[1].ingredient.name).toBe("another ingredient");
     });
 
@@ -606,7 +606,7 @@ describe("Share Recipe API", () => {
           title: "Personal to Publish",
           content: "Content to publish",
           tags: ["publish"],
-          ingredients: [{ name: "flour", quantity: "200g" }],
+          ingredients: [{ name: "flour", quantity: 200 }],
         });
       personalRecipeId = res.body.id;
     });

@@ -9,7 +9,7 @@ interface SourceRecipeForShare {
   imageUrl: string | null;
   communityId: string;
   tags: { tagId: string; tag: { id: string; name: string; scope: string; communityId: string | null } }[];
-  ingredients: { ingredientId: string; quantity: string | null; order: number }[];
+  ingredients: { ingredientId: string; quantity: number | null; order: number }[];
 }
 
 /**
@@ -133,7 +133,7 @@ interface SourceRecipeForPublish {
   content: string;
   imageUrl: string | null;
   tags: { tagId: string }[];
-  ingredients: { ingredientId: string; quantity: string | null; order: number }[];
+  ingredients: { ingredientId: string; quantity: number | null; order: number }[];
 }
 
 /**

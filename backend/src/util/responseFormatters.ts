@@ -6,7 +6,7 @@
 type RawTag = { tag: { id: string; name: string; scope: string; status: string; communityId: string | null } };
 type RawIngredient = {
   id: string;
-  quantity: string | null;
+  quantity: number | null;
   order: number;
   ingredient: { id: string; name: string };
 };

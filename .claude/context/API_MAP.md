@@ -38,9 +38,16 @@ Controller: `controllers/tags.ts` | Route: `routes/tags.ts`
 
 ## Ingredients (/api/ingredients) - requireAuth
 ```
-GET /api/ingredients/           # autocomplete (search, recipeCount)
+GET /api/ingredients/                      # autocomplete (search, recipeCount, status)
+GET /api/ingredients/:id/suggested-unit    # suggested unit (defaultUnit → popular → null)
 ```
 Controller: `controllers/ingredients.ts` | Route: `routes/ingredients.ts`
+
+## Units (/api/units) - requireAuth
+```
+GET /api/units/                 # list grouped by category (UnitCategory → Unit[])
+```
+Controller: `controllers/units.ts` | Route: `routes/units.ts`
 
 ## Communities (/api/communities) - requireAuth
 ```
@@ -164,13 +171,24 @@ Controller: `admin/controllers/tagsController.ts` | Route: `admin/routes/tagsRou
 
 ## Admin Ingredients (/api/admin/ingredients) - requireSuperAdmin
 ```
-GET    /api/admin/ingredients/             # list all
-POST   /api/admin/ingredients/             # create
-PATCH  /api/admin/ingredients/:id          # update
-DELETE /api/admin/ingredients/:id          # delete
-POST   /api/admin/ingredients/:id/merge    # merge into another
+GET    /api/admin/ingredients/               # list all (?search=, ?status=APPROVED|PENDING)
+POST   /api/admin/ingredients/               # create (name, defaultUnitId?)
+PATCH  /api/admin/ingredients/:id            # update (name?, defaultUnitId?)
+DELETE /api/admin/ingredients/:id            # delete
+POST   /api/admin/ingredients/:id/merge      # merge into another (+ ProposalIngredient)
+POST   /api/admin/ingredients/:id/approve    # approve PENDING (newName?)
+POST   /api/admin/ingredients/:id/reject     # reject PENDING (reason required, hard delete)
 ```
 Controller: `admin/controllers/ingredientsController.ts` | Route: `admin/routes/ingredientsRoutes.ts`
+
+## Admin Units (/api/admin/units) - requireSuperAdmin
+```
+GET    /api/admin/units/             # list all (?search=, ?category=)
+POST   /api/admin/units/             # create (name, abbreviation, category, sortOrder?)
+PATCH  /api/admin/units/:id          # update (name?, abbreviation?, category?, sortOrder?)
+DELETE /api/admin/units/:id          # delete (blocked if in use)
+```
+Controller: `admin/controllers/unitsController.ts` | Route: `admin/routes/unitsRoutes.ts`
 
 ## Admin Communities (/api/admin/communities) - requireSuperAdmin
 ```
@@ -213,4 +231,4 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 | adminRateLimiter | middleware/security.ts | 30 req/min global admin |
 | authRateLimiter | routes config | 5/15min sur auth endpoints |
 
-## Total: 80 endpoints (53 user + 27 admin + 1 health)
+## Total: 89 endpoints (55 user + 33 admin + 1 health)

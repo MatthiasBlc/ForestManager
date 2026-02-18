@@ -6,16 +6,13 @@ Tout doit être cohérent avec l'application et son fonctionnement actuel. Ce so
 Tout doit être clair et maitrisé, pensé pour être maintenable et évoluer dans le temps.
 Toute la logique business doit être validé et sans zone d'ombre restante avant d'écrire du code.
 
-# Rework du système de tags
+# ~~Rework du système d'ingrédients~~ DONE (Phase 11)
 
-avoir une liste par défaut globale à la création d'une communauté, et permettre à chaque communauté de créer ses propres tags complémentaires ???
--> vu que les recettes sont associé à un user, comment faire de manière logique ?
+Implemente : unites structurees, gouvernance PENDING/APPROVED, moderation admin, propositions avec ingredients, notifications WebSocket.
 
-# Rework du système d'ingrédients
+# Le système de notifications doit être amélioré
 
-Problèmes similaires au système de tags :
--> vu que les recettes sont associé à un user, comment faire de manière logique ?
-proposer une modification de recette doit aussi prendre en compte les ingrédients (je crois que ce n'est pas le cas)
+persistance, fonctionne y compris offline (je me connecte je dois voir les notifs reçues lorsque j'étais offline)
 
 # Rework des pages recettes (v2)
 

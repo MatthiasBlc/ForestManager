@@ -132,6 +132,13 @@ enum AdminActionType {
   INGREDIENT_UPDATED
   INGREDIENT_DELETED
   INGREDIENT_MERGED
+  INGREDIENT_APPROVED
+  INGREDIENT_REJECTED
+
+  // Units
+  UNIT_CREATED
+  UNIT_UPDATED
+  UNIT_DELETED
 
   // Communities
   COMMUNITY_RENAMED
@@ -171,6 +178,7 @@ model User {
   invitesSent       CommunityInvite[]      @relation("InviteSender")
   invitesReceived   CommunityInvite[]      @relation("InviteReceiver")
   createdTags       Tag[]                  @relation("TagCreator")
+  createdIngredients Ingredient[]          @relation("IngredientCreator")
   tagSuggestions    TagSuggestion[]
   tagPreferences    UserCommunityTagPreference[]
   moderatorNotifPrefs ModeratorNotificationPreference[]
@@ -343,6 +351,8 @@ model RecipeUpdateProposal {
   proposerId      String
   proposer        User           @relation("ProposalProposer", fields: [proposerId], references: [id])
 
+  proposedIngredients ProposalIngredient[]
+
   @@index([recipeId])
   @@index([proposerId])
   @@index([status])
@@ -464,33 +474,96 @@ model ModeratorNotificationPreference {
 }
 
 // =============================================================================
+// UNIT (Unites de mesure structurees)
+// =============================================================================
+
+enum UnitCategory {
+  WEIGHT
+  VOLUME
+  SPOON
+  COUNT
+  QUALITATIVE
+}
+
+model Unit {
+  id           String       @id @default(uuid())
+  name         String       @unique
+  abbreviation String       @unique
+  category     UnitCategory
+  sortOrder    Int          @default(0)
+
+  // Relations
+  recipeIngredients   RecipeIngredient[]
+  proposalIngredients ProposalIngredient[]
+  defaultIngredients  Ingredient[]
+
+  @@index([category, sortOrder])
+}
+
+// =============================================================================
 // INGREDIENT & RECIPE-INGREDIENT
-// Note: Ingredients crees a la volee (comme les tags)
+// Note: Ingredients crees a la volee avec moderation admin
 // Tables pivot - Cascade OK
 // =============================================================================
 
+enum IngredientStatus {
+  APPROVED
+  PENDING
+}
+
 model Ingredient {
-  id   String @id @default(uuid())
-  name String @unique
+  id            String           @id @default(uuid())
+  name          String           @unique
+  status        IngredientStatus @default(APPROVED)
+  defaultUnitId String?
+  createdById   String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
   // Relations
-  recipes RecipeIngredient[]
+  defaultUnit Unit? @relation(fields: [defaultUnitId], references: [id])
+  createdBy   User? @relation("IngredientCreator", fields: [createdById], references: [id])
+  recipes     RecipeIngredient[]
+  proposals   ProposalIngredient[]
 
   @@index([name])
+  @@index([status])
 }
 
 model RecipeIngredient {
   id           String  @id @default(uuid())
   recipeId     String
   ingredientId String
-  quantity     String?
+  quantity     Float?
+  unitId       String?
   order        Int     @default(0)
 
   recipe     Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  unit       Unit?      @relation(fields: [unitId], references: [id])
 
   @@unique([recipeId, ingredientId])
   @@index([recipeId])
+}
+
+// =============================================================================
+// PROPOSAL-INGREDIENT (Ingredients dans les propositions de modification)
+// =============================================================================
+
+model ProposalIngredient {
+  id           String  @id @default(uuid())
+  proposalId   String
+  ingredientId String
+  quantity     Float?
+  unitId       String?
+  order        Int     @default(0)
+
+  proposal   RecipeUpdateProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  ingredient Ingredient           @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  unit       Unit?                @relation(fields: [unitId], references: [id])
+
+  @@unique([proposalId, ingredientId])
+  @@index([proposalId])
 }
 
 // =============================================================================

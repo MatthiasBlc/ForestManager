@@ -278,8 +278,10 @@ const RecipeDetailPage = () => {
                 {recipe.ingredients.map((ing) => (
                   <li key={ing.id} className="text-base-content">
                     <span className="font-medium">{ing.name}</span>
-                    {ing.quantity && (
-                      <span className="text-base-content/70"> - {ing.quantity}</span>
+                    {ing.quantity != null && (
+                      <span className="text-base-content/70">
+                        {" "}- {ing.quantity}{ing.unit ? ` ${ing.unit.abbreviation}` : ""}
+                      </span>
                     )}
                   </li>
                 ))}
@@ -299,6 +301,7 @@ const RecipeDetailPage = () => {
               <div className="divider" />
               <ProposalsList
                 recipeId={recipe.id}
+                currentIngredients={recipe.ingredients}
                 refreshSignal={proposalsRefresh}
                 onProposalDecided={handleProposalDecided}
               />
@@ -325,6 +328,7 @@ const RecipeDetailPage = () => {
           recipeId={recipe.id}
           currentTitle={recipe.title}
           currentContent={recipe.content}
+          currentIngredients={recipe.ingredients}
           onClose={() => setOpenModal(null)}
           onProposalSubmitted={handleProposalSubmitted}
         />

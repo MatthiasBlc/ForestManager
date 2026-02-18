@@ -19,7 +19,8 @@ controllers/
 ├── tagPreferences.ts  # tag visibility & moderator notification prefs (5 handlers)
 ├── tagSuggestions.ts  # create, accept, reject tag suggestions
 ├── tags.ts            # autocomplete tags (scope-aware)
-├── ingredients.ts     # autocomplete ingredients
+├── ingredients.ts     # autocomplete ingredients + suggested-unit
+├── units.ts           # list units grouped by category
 └── users.ts           # search users, update profile
 ```
 
@@ -34,6 +35,7 @@ routes/
 ├── tagSuggestions.ts  # /api/tag-suggestions/*
 ├── tags.ts            # /api/tags
 ├── ingredients.ts     # /api/ingredients
+├── units.ts           # /api/units
 └── users.ts           # /api/users/* (incl. tag-preferences, notification-preferences)
 ```
 
@@ -54,7 +56,8 @@ admin/
 │   ├── communitiesController.ts  # list, detail, update, delete, grant/revoke feature
 │   ├── membersController.ts      # admin member management
 │   ├── tagsController.ts         # CRUD + merge tags
-│   ├── ingredientsController.ts  # CRUD + merge ingredients
+│   ├── ingredientsController.ts  # CRUD + merge + approve/reject ingredients
+│   ├── unitsController.ts        # CRUD units (+ usage protection)
 │   ├── featuresController.ts     # CRUD features
 │   ├── dashboardController.ts    # stats globales
 │   └── activityController.ts     # logs activite admin
@@ -63,6 +66,7 @@ admin/
 │   ├── communitiesRoutes.ts
 │   ├── tagsRoutes.ts
 │   ├── ingredientsRoutes.ts
+│   ├── unitsRoutes.ts
 │   ├── featuresRoutes.ts
 │   ├── dashboardRoutes.ts
 │   └── activityRoutes.ts
@@ -167,7 +171,8 @@ pages/
     ├── AdminLoginPage.tsx         # Login admin 2FA
     ├── AdminDashboardPage.tsx     # Dashboard admin (stats)
     ├── AdminTagsPage.tsx          # CRUD + merge tags
-    ├── AdminIngredientsPage.tsx   # CRUD + merge ingredients
+    ├── AdminIngredientsPage.tsx   # CRUD + merge + approve/reject ingredients
+    ├── AdminUnitsPage.tsx         # CRUD units (category filter, sortOrder)
     ├── AdminFeaturesPage.tsx      # CRUD features (code, name, isDefault)
     ├── AdminCommunitiesPage.tsx   # Liste, detail, delete, grant/revoke features
     └── AdminActivityPage.tsx      # Logs activite admin paginee
@@ -220,7 +225,8 @@ components/
 ├── form/
 │   ├── TagSelector.tsx       # Multi-select tags (debounce, create on-the-fly)
 │   ├── IngredientSelector.tsx # Selecteur ingredients
-│   └── IngredientList.tsx    # Liste ingredients dynamique
+│   ├── IngredientList.tsx    # Liste ingredients dynamique (autocomplete, units, PENDING badge)
+│   └── UnitSelector.tsx      # Dropdown unites groupee par categorie
 ├── admin/
 │   ├── AdminLayout.tsx       # Layout admin (sidebar + header + outlet)
 │   └── AdminProtectedRoute.tsx # Guard admin
@@ -317,6 +323,7 @@ __tests__/
     │       ├── AdminDashboardPage.test.tsx
     │       ├── AdminTagsPage.test.tsx
     │       ├── AdminIngredientsPage.test.tsx
+    │       ├── AdminUnitsPage.test.tsx
     │       ├── AdminFeaturesPage.test.tsx
     │       ├── AdminCommunitiesPage.test.tsx
     │       └── AdminActivityPage.test.tsx
@@ -338,9 +345,13 @@ __tests__/
         │   ├── SuggestTagModal.test.tsx
         │   ├── TagBadge.test.tsx
         │   └── TagSuggestionsList.test.tsx
+        ├── proposals/
+        │   ├── ProposeModificationModal.test.tsx
+        │   └── ProposalsList.test.tsx
         ├── form/
         │   ├── TagSelector.test.tsx
-        │   └── IngredientList.test.tsx
+        │   ├── IngredientList.test.tsx
+        │   └── UnitSelector.test.tsx
         ├── ActivityFeed.test.tsx
         ├── ErrorBoundary.test.tsx
         ├── InviteCard.test.tsx

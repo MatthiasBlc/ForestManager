@@ -23,21 +23,21 @@ describe("formatIngredients", () => {
     const raw = [
       {
         id: "ri1",
-        quantity: "100g",
+        quantity: 100,
         order: 0,
         ingredient: { id: "i1", name: "sugar" },
       },
       {
         id: "ri2",
-        quantity: "200ml",
+        quantity: 200,
         order: 1,
         ingredient: { id: "i2", name: "milk" },
       },
     ];
 
     expect(formatIngredients(raw)).toEqual([
-      { id: "ri1", name: "sugar", ingredientId: "i1", quantity: "100g", order: 0 },
-      { id: "ri2", name: "milk", ingredientId: "i2", quantity: "200ml", order: 1 },
+      { id: "ri1", name: "sugar", ingredientId: "i1", quantity: 100, order: 0 },
+      { id: "ri2", name: "milk", ingredientId: "i2", quantity: 200, order: 1 },
     ]);
   });
 

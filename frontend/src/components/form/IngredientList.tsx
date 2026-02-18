@@ -1,13 +1,16 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { FaPlus, FaTimes } from "react-icons/fa";
 import APIManager from "../../network/api";
-import { IngredientSearchResult } from "../../models/recipe";
+import { IngredientSearchResult, UnitsByCategory } from "../../models/recipe";
 import { useClickOutside } from "../../hooks/useClickOutside";
 import { useDebouncedEffect } from "../../hooks/useDebouncedEffect";
+import UnitSelector from "./UnitSelector";
 
 export interface IngredientInput {
   name: string;
-  quantity: string;
+  quantity?: number;
+  unitId?: string;
+  ingredientId?: string;
 }
 
 interface IngredientListProps {
@@ -18,11 +21,12 @@ interface IngredientListProps {
 interface IngredientRowProps {
   ingredient: IngredientInput;
   index: number;
+  units: UnitsByCategory;
   onUpdate: (index: number, ingredient: IngredientInput) => void;
   onRemove: (index: number) => void;
 }
 
-const IngredientRow = ({ ingredient, index, onUpdate, onRemove }: IngredientRowProps) => {
+const IngredientRow = ({ ingredient, index, units, onUpdate, onRemove }: IngredientRowProps) => {
   const [suggestions, setSuggestions] = useState<IngredientSearchResult[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,9 +48,20 @@ const IngredientRow = ({ ingredient, index, onUpdate, onRemove }: IngredientRowP
 
   useClickOutside(containerRef, useCallback(() => setShowDropdown(false), []));
 
-  const selectSuggestion = (name: string) => {
-    onUpdate(index, { ...ingredient, name });
+  const selectSuggestion = async (suggestion: IngredientSearchResult) => {
     setShowDropdown(false);
+    let unitId = ingredient.unitId;
+
+    try {
+      const suggested = await APIManager.getSuggestedUnit(suggestion.id);
+      if (suggested.suggestedUnitId) {
+        unitId = suggested.suggestedUnitId;
+      }
+    } catch {
+      // Ignore pre-selection errors
+    }
+
+    onUpdate(index, { ...ingredient, name: suggestion.name, ingredientId: suggestion.id, unitId });
   };
 
   return (
@@ -56,7 +71,7 @@ const IngredientRow = ({ ingredient, index, onUpdate, onRemove }: IngredientRowP
           type="text"
           value={ingredient.name}
           onChange={(e) => {
-            onUpdate(index, { ...ingredient, name: e.target.value });
+            onUpdate(index, { ...ingredient, name: e.target.value, ingredientId: undefined });
             setShowDropdown(true);
           }}
           onFocus={() => setShowDropdown(true)}
@@ -74,10 +89,15 @@ const IngredientRow = ({ ingredient, index, onUpdate, onRemove }: IngredientRowP
                 <button
                   key={suggestion.id}
                   type="button"
-                  onClick={() => selectSuggestion(suggestion.name)}
+                  onClick={() => selectSuggestion(suggestion)}
                   className="w-full px-3 py-2 text-left hover:bg-base-200 flex justify-between items-center"
                 >
-                  <span>{suggestion.name}</span>
+                  <span className="flex items-center gap-2">
+                    {suggestion.name}
+                    {suggestion.status === "PENDING" && (
+                      <span className="badge badge-warning badge-xs">nouveau</span>
+                    )}
+                  </span>
                   <span className="text-xs text-base-content/60">
                     {suggestion.recipeCount} recipe{suggestion.recipeCount !== 1 ? "s" : ""}
                   </span>
@@ -92,11 +112,21 @@ const IngredientRow = ({ ingredient, index, onUpdate, onRemove }: IngredientRowP
         )}
       </div>
       <input
-        type="text"
-        value={ingredient.quantity}
-        onChange={(e) => onUpdate(index, { ...ingredient, quantity: e.target.value })}
-        placeholder="Quantity (optional)"
-        className="input input-bordered w-32"
+        type="number"
+        value={ingredient.quantity ?? ""}
+        onChange={(e) => {
+          const val = e.target.value;
+          onUpdate(index, { ...ingredient, quantity: val ? parseFloat(val) : undefined });
+        }}
+        placeholder="Qty"
+        min={0}
+        step="any"
+        className="input input-bordered w-24"
+      />
+      <UnitSelector
+        value={ingredient.unitId ?? null}
+        onChange={(unitId) => onUpdate(index, { ...ingredient, unitId: unitId ?? undefined })}
+        units={units}
       />
       <button
         type="button"
@@ -115,6 +145,14 @@ const IngredientList = ({ value, onChange }: IngredientListProps) => {
   const [itemIds, setItemIds] = useState<number[]>(() =>
     value.map(() => nextId.current++)
   );
+  const [units, setUnits] = useState<UnitsByCategory>({});
+
+  // Charge les unites une seule fois au montage
+  useEffect(() => {
+    APIManager.getUnits()
+      .then(setUnits)
+      .catch(() => setUnits({}));
+  }, []);
 
   // Sync itemIds when value length changes externally (e.g. form reset)
   useEffect(() => {
@@ -124,7 +162,7 @@ const IngredientList = ({ value, onChange }: IngredientListProps) => {
   }, [value.length]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const addIngredient = () => {
-    onChange([...value, { name: "", quantity: "" }]);
+    onChange([...value, { name: "" }]);
     setItemIds([...itemIds, nextId.current++]);
   };
 
@@ -146,6 +184,7 @@ const IngredientList = ({ value, onChange }: IngredientListProps) => {
           key={itemIds[index]}
           ingredient={ingredient}
           index={index}
+          units={units}
           onUpdate={updateIngredient}
           onRemove={removeIngredient}
         />
