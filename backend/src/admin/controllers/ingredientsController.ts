@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import prisma from "../../util/db";
 import { assertIsDefine } from "../../util/assertIsDefine";
+import appEvents from "../../services/eventEmitter";
 
 /**
  * GET /api/admin/ingredients
@@ -301,6 +302,20 @@ export const merge: RequestHandler = async (req, res, next) => {
       },
     });
 
+    // Notification WebSocket au createur de l'ingredient source
+    if (source.createdById) {
+      appEvents.emitActivity({
+        type: "INGREDIENT_MERGED",
+        userId: adminId,
+        communityId: null,
+        targetUserIds: [source.createdById],
+        metadata: {
+          ingredientName: source.name,
+          targetName: target.name,
+        },
+      });
+    }
+
     res.status(200).json({
       message: `Ingredient "${source.name}" merged into "${target.name}"`,
     });
@@ -360,6 +375,20 @@ export const approve: RequestHandler = async (req, res, next) => {
       },
     });
 
+    // Notification WebSocket au createur (si un user a cree cet ingredient)
+    if (ingredient.createdById) {
+      const isRenamed = metadata.newName !== undefined;
+      appEvents.emitActivity({
+        type: isRenamed ? "INGREDIENT_MODIFIED" : "INGREDIENT_APPROVED",
+        userId: adminId,
+        communityId: null,
+        targetUserIds: [ingredient.createdById],
+        metadata: isRenamed
+          ? { ingredientName: ingredient.name, newName: metadata.newName }
+          : { ingredientName: ingredient.name },
+      });
+    }
+
     res.status(200).json({ ingredient: updated });
   } catch (error) {
     next(error);
@@ -406,6 +435,20 @@ export const reject: RequestHandler = async (req, res, next) => {
         },
       },
     });
+
+    // Notification WebSocket au createur (si un user a cree cet ingredient)
+    if (ingredient.createdById) {
+      appEvents.emitActivity({
+        type: "INGREDIENT_REJECTED",
+        userId: adminId,
+        communityId: null,
+        targetUserIds: [ingredient.createdById],
+        metadata: {
+          ingredientName: ingredient.name,
+          reason: reason.trim(),
+        },
+      });
+    }
 
     res.status(200).json({ message: "Ingredient rejected and deleted" });
   } catch (error) {

@@ -73,6 +73,43 @@ export async function upsertIngredients(
   }
 }
 
+export async function upsertProposalIngredients(
+  tx: TransactionClient,
+  proposalId: string,
+  ingredients: IngredientInput[],
+  userId?: string
+) {
+  for (let i = 0; i < ingredients.length; i++) {
+    const ing = ingredients[i];
+    const ingredientName = ing.name.trim().toLowerCase();
+    if (!ingredientName) continue;
+
+    let ingredient = await tx.ingredient.findUnique({
+      where: { name: ingredientName },
+    });
+
+    if (!ingredient) {
+      ingredient = await tx.ingredient.create({
+        data: {
+          name: ingredientName,
+          status: userId ? "PENDING" : "APPROVED",
+          createdById: userId ?? null,
+        },
+      });
+    }
+
+    await tx.proposalIngredient.create({
+      data: {
+        proposalId,
+        ingredientId: ingredient.id,
+        quantity: ing.quantity ?? null,
+        unitId: ing.unitId ?? null,
+        order: i,
+      },
+    });
+  }
+}
+
 // --- Select pour re-fetch apres create/update ---
 
 const RECIPE_RESULT_SELECT = {

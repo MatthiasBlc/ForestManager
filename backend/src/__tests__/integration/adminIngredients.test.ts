@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import request from 'supertest';
 import app from '../../app';
 import {
@@ -10,6 +10,7 @@ import {
   loginAsAdmin,
 } from '../setup/testHelpers';
 import { testPrisma } from '../setup/globalSetup';
+import appEvents from '../../services/eventEmitter';
 
 describe('Admin Ingredients API', () => {
   let adminCookie: string;
@@ -485,6 +486,174 @@ describe('Admin Ingredients API', () => {
 
       expect(res2.status).toBe(400);
       expect(res2.body.error).toContain('ADMIN_ING_009');
+    });
+  });
+
+  // =====================================
+  // Phase 11.5 - Notifications WebSocket
+  // =====================================
+  describe('WebSocket Notifications (Phase 11.5)', () => {
+    it('should emit INGREDIENT_APPROVED event when approving a PENDING ingredient with a creator', async () => {
+      const creator = await createTestUser();
+      const ingredient = await createTestIngredient('notif_approve', {
+        status: 'PENDING',
+        createdById: creator.id,
+      });
+
+      const emittedEvents: unknown[] = [];
+      const listener = (event: unknown) => emittedEvents.push(event);
+      appEvents.on('activity', listener);
+
+      const res = await request(app)
+        .post(`/api/admin/ingredients/${ingredient.id}/approve`)
+        .set('Cookie', adminCookie);
+
+      appEvents.off('activity', listener);
+
+      expect(res.status).toBe(200);
+      expect(emittedEvents).toHaveLength(1);
+      const event = emittedEvents[0] as Record<string, unknown>;
+      expect(event.type).toBe('INGREDIENT_APPROVED');
+      expect(event.communityId).toBeNull();
+      expect(event.targetUserIds).toContain(creator.id);
+      expect((event.metadata as Record<string, unknown>).ingredientName).toBe('notif_approve');
+    });
+
+    it('should emit INGREDIENT_MODIFIED event when approving with rename', async () => {
+      const creator = await createTestUser();
+      const ingredient = await createTestIngredient('notif_typo', {
+        status: 'PENDING',
+        createdById: creator.id,
+      });
+
+      const emittedEvents: unknown[] = [];
+      const listener = (event: unknown) => emittedEvents.push(event);
+      appEvents.on('activity', listener);
+
+      const res = await request(app)
+        .post(`/api/admin/ingredients/${ingredient.id}/approve`)
+        .set('Cookie', adminCookie)
+        .send({ newName: 'Correct Name Notif' });
+
+      appEvents.off('activity', listener);
+
+      expect(res.status).toBe(200);
+      expect(emittedEvents).toHaveLength(1);
+      const event = emittedEvents[0] as Record<string, unknown>;
+      expect(event.type).toBe('INGREDIENT_MODIFIED');
+      expect(event.targetUserIds).toContain(creator.id);
+      const meta = event.metadata as Record<string, unknown>;
+      expect(meta.ingredientName).toBe('notif_typo');
+      expect(meta.newName).toBe('correct name notif');
+    });
+
+    it('should NOT emit any event when approving an ingredient without a creator', async () => {
+      const ingredient = await createTestIngredient('notif_no_creator', { status: 'PENDING' });
+
+      const emittedEvents: unknown[] = [];
+      const listener = (event: unknown) => emittedEvents.push(event);
+      appEvents.on('activity', listener);
+
+      await request(app)
+        .post(`/api/admin/ingredients/${ingredient.id}/approve`)
+        .set('Cookie', adminCookie);
+
+      appEvents.off('activity', listener);
+
+      expect(emittedEvents).toHaveLength(0);
+    });
+
+    it('should emit INGREDIENT_REJECTED event when rejecting a PENDING ingredient with a creator', async () => {
+      const creator = await createTestUser();
+      const ingredient = await createTestIngredient('notif_reject', {
+        status: 'PENDING',
+        createdById: creator.id,
+      });
+
+      const emittedEvents: unknown[] = [];
+      const listener = (event: unknown) => emittedEvents.push(event);
+      appEvents.on('activity', listener);
+
+      const res = await request(app)
+        .post(`/api/admin/ingredients/${ingredient.id}/reject`)
+        .set('Cookie', adminCookie)
+        .send({ reason: 'Ingredient trop vague' });
+
+      appEvents.off('activity', listener);
+
+      expect(res.status).toBe(200);
+      expect(emittedEvents).toHaveLength(1);
+      const event = emittedEvents[0] as Record<string, unknown>;
+      expect(event.type).toBe('INGREDIENT_REJECTED');
+      expect(event.communityId).toBeNull();
+      expect(event.targetUserIds).toContain(creator.id);
+      const meta = event.metadata as Record<string, unknown>;
+      expect(meta.ingredientName).toBe('notif_reject');
+      expect(meta.reason).toBe('Ingredient trop vague');
+    });
+
+    it('should NOT emit any event when rejecting an ingredient without a creator', async () => {
+      const ingredient = await createTestIngredient('notif_reject_no_creator', { status: 'PENDING' });
+
+      const emittedEvents: unknown[] = [];
+      const listener = (event: unknown) => emittedEvents.push(event);
+      appEvents.on('activity', listener);
+
+      await request(app)
+        .post(`/api/admin/ingredients/${ingredient.id}/reject`)
+        .set('Cookie', adminCookie)
+        .send({ reason: 'No creator' });
+
+      appEvents.off('activity', listener);
+
+      expect(emittedEvents).toHaveLength(0);
+    });
+
+    it('should emit INGREDIENT_MERGED event when merging a source with a creator', async () => {
+      const creator = await createTestUser();
+      const source = await createTestIngredient('notif_merge_source', {
+        status: 'PENDING',
+        createdById: creator.id,
+      });
+      const target = await createTestIngredient('notif_merge_target');
+
+      const emittedEvents: unknown[] = [];
+      const listener = (event: unknown) => emittedEvents.push(event);
+      appEvents.on('activity', listener);
+
+      await request(app)
+        .post(`/api/admin/ingredients/${source.id}/merge`)
+        .set('Cookie', adminCookie)
+        .send({ targetId: target.id });
+
+      appEvents.off('activity', listener);
+
+      expect(emittedEvents).toHaveLength(1);
+      const event = emittedEvents[0] as Record<string, unknown>;
+      expect(event.type).toBe('INGREDIENT_MERGED');
+      expect(event.communityId).toBeNull();
+      expect(event.targetUserIds).toContain(creator.id);
+      const meta = event.metadata as Record<string, unknown>;
+      expect(meta.ingredientName).toBe('notif_merge_source');
+      expect(meta.targetName).toBe('notif_merge_target');
+    });
+
+    it('should NOT emit any event when merging a source without a creator', async () => {
+      const source = await createTestIngredient('notif_merge_no_creator');
+      const target = await createTestIngredient('notif_merge_no_creator_target');
+
+      const emittedEvents: unknown[] = [];
+      const listener = (event: unknown) => emittedEvents.push(event);
+      appEvents.on('activity', listener);
+
+      await request(app)
+        .post(`/api/admin/ingredients/${source.id}/merge`)
+        .set('Cookie', adminCookie)
+        .send({ targetId: target.id });
+
+      appEvents.off('activity', listener);
+
+      expect(emittedEvents).toHaveLength(0);
     });
   });
 });

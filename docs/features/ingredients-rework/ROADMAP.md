@@ -44,19 +44,19 @@
 
 ## 11.4 - Backend Proposals + Ingredients
 
-- [ ] Adapter creation de proposal : stocker ProposalIngredient (ingredients proposes)
-- [ ] Adapter acceptation de proposal : remplacer RecipeIngredient par ProposalIngredient
-- [ ] Adapter rejet de proposal : cascade delete ProposalIngredient
-- [ ] Creation ingredient PENDING depuis une proposal (meme flow que recette)
-- [ ] Tests unitaires + integration
+- [x] Adapter creation de proposal : stocker ProposalIngredient (ingredients proposes)
+- [x] Adapter acceptation de proposal : remplacer RecipeIngredient par ProposalIngredient
+- [x] Adapter rejet de proposal : cascade delete ProposalIngredient
+- [x] Creation ingredient PENDING depuis une proposal (meme flow que recette)
+- [x] Tests unitaires + integration
 
 ## 11.5 - Backend Notifications
 
-- [ ] Notification WebSocket : INGREDIENT_APPROVED (au createur)
-- [ ] Notification WebSocket : INGREDIENT_MODIFIED (au createur, avec newName)
-- [ ] Notification WebSocket : INGREDIENT_MERGED (au createur, avec targetName)
-- [ ] Notification WebSocket : INGREDIENT_REJECTED (au createur, avec reason)
-- [ ] Tests
+- [x] Notification WebSocket : INGREDIENT_APPROVED (au createur)
+- [x] Notification WebSocket : INGREDIENT_MODIFIED (au createur, avec newName)
+- [x] Notification WebSocket : INGREDIENT_MERGED (au createur, avec targetName)
+- [x] Notification WebSocket : INGREDIENT_REJECTED (au createur, avec reason)
+- [x] Tests
 
 ## 11.6 - Frontend Units & Ingredients (refactoring formulaire)
 

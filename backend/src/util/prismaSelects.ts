@@ -18,6 +18,26 @@ export const RECIPE_TAGS_SELECT = {
   },
 } as const;
 
+/** Select pour les ingredients proposes dans une proposal, tries par ordre */
+export const PROPOSAL_INGREDIENTS_SELECT = {
+  select: {
+    id: true,
+    quantity: true,
+    unitId: true,
+    order: true,
+    ingredient: {
+      select: {
+        id: true,
+        name: true,
+        status: true,
+      },
+    },
+  },
+  orderBy: {
+    order: "asc" as const,
+  },
+};
+
 /** Select pour les ingredients d'une recette, tries par ordre */
 export const RECIPE_INGREDIENTS_SELECT = {
   select: {
