@@ -13,7 +13,7 @@ import { getModeratorIdsForTagNotification } from "../services/notificationServi
 
 interface IngredientInput {
   name: string;
-  quantity?: string;
+  quantity?: number;
 }
 
 interface CreateCommunityRecipeBody {

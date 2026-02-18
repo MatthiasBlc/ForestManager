@@ -4,20 +4,20 @@
 
 Phases 0 a 9.3 terminees.
 
-## Phase en cours : 10 - Rework Tags
+## Phase 10 - Rework Tags : COMPLETE
 
 - **Spec** : `docs/features/tags-rework/SPEC_TAGS_REWORK.md`
 - **Roadmap** : `docs/features/tags-rework/ROADMAP.md`
-- **Sous-etape en cours** : 10.9 termine - Phase 10 complete
-- **Branche** : `TagsRework`
+- **Branche** : `TagsRework` (merged)
 - **Tests** : 808 (326 frontend + 485 backend)
 
-## Prochains chantiers (a specifier)
+## Phase en cours : 11 - Rework Ingredients
 
-- Rework systeme d'ingredients
-- Rework pages recettes v2 (etapes, temps, portions)
-- Systeme d'upload de photos (Cloudflare R2)
-- Audit refactorisation complete back + front
+- **Spec** : `docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md`
+- **Roadmap** : `docs/features/ingredients-rework/ROADMAP.md`
+- **Sous-etape en cours** : 11.2 termine - passer a 11.3
+- **Branche** : `IngredientsRework`
+- **Tests** : 510 backend + 326 frontend = 836 total
 
 ## Resume de reprise
 

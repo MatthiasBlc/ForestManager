@@ -200,7 +200,7 @@ describe('Admin Ingredients API', () => {
 
       // Creer une recette avec l'ingredient source
       await createTestRecipe(user.id, {
-        ingredients: [{ name: 'source_ing', quantity: '100g' }],
+        ingredients: [{ name: 'source_ing', quantity: 100 }],
       });
 
       const res = await request(app)

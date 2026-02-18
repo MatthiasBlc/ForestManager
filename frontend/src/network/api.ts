@@ -72,7 +72,7 @@ export interface RecipeInput {
   content: string;
   imageUrl?: string;
   tags?: string[];
-  ingredients?: { name: string; quantity?: string }[];
+  ingredients?: { name: string; quantity?: number }[];
 }
 
 export interface GetRecipesParams {

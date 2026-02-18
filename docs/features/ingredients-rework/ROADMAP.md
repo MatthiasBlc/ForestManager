@@ -7,26 +7,26 @@
 
 ## 11.1 - Schema & Migration
 
-- [ ] Migration Prisma : creer table Unit (id, name, abbreviation, category, sortOrder)
-- [ ] Migration Prisma : enrichir Ingredient (status, defaultUnitId, createdById, createdAt, updatedAt)
-- [ ] Migration Prisma : modifier RecipeIngredient (quantity String? → Float?, ajout unitId)
-- [ ] Migration Prisma : creer table ProposalIngredient
-- [ ] Migration Prisma : relation ProposalIngredient sur RecipeUpdateProposal
-- [ ] Nouveaux enums : UnitCategory, IngredientStatus
-- [ ] Nouveaux types AdminActionType : INGREDIENT_APPROVED, INGREDIENT_REJECTED, UNIT_CREATED, UNIT_UPDATED, UNIT_DELETED
-- [ ] Seed : unites standard (18 unites, 5 categories)
-- [ ] Seed : mettre a jour les ingredients existants (status=APPROVED)
-- [ ] Tests migration
+- [x] Migration Prisma : creer table Unit (id, name, abbreviation, category, sortOrder)
+- [x] Migration Prisma : enrichir Ingredient (status, defaultUnitId, createdById, createdAt, updatedAt)
+- [x] Migration Prisma : modifier RecipeIngredient (quantity String? → Float?, ajout unitId)
+- [x] Migration Prisma : creer table ProposalIngredient
+- [x] Migration Prisma : relation ProposalIngredient sur RecipeUpdateProposal
+- [x] Nouveaux enums : UnitCategory, IngredientStatus
+- [x] Nouveaux types AdminActionType : INGREDIENT_APPROVED, INGREDIENT_REJECTED, UNIT_CREATED, UNIT_UPDATED, UNIT_DELETED
+- [x] Seed : unites standard (17 unites, 5 categories)
+- [x] Seed : mettre a jour les ingredients existants (status=APPROVED)
+- [x] Tests migration
 
 ## 11.2 - Backend Units (CRUD admin + lecture user)
 
-- [ ] Endpoint user : GET /api/units (liste groupee par categorie)
-- [ ] Endpoint admin : GET /api/admin/units
-- [ ] Endpoint admin : POST /api/admin/units (creation + validation unicite)
-- [ ] Endpoint admin : PATCH /api/admin/units/:id (modification)
-- [ ] Endpoint admin : DELETE /api/admin/units/:id (avec protection si utilisee)
-- [ ] Audit log : UNIT_CREATED, UNIT_UPDATED, UNIT_DELETED
-- [ ] Tests unitaires + integration
+- [x] Endpoint user : GET /api/units (liste groupee par categorie)
+- [x] Endpoint admin : GET /api/admin/units
+- [x] Endpoint admin : POST /api/admin/units (creation + validation unicite)
+- [x] Endpoint admin : PATCH /api/admin/units/:id (modification)
+- [x] Endpoint admin : DELETE /api/admin/units/:id (avec protection si utilisee)
+- [x] Audit log : UNIT_CREATED, UNIT_UPDATED, UNIT_DELETED
+- [x] Tests unitaires + integration
 
 ## 11.3 - Backend Ingredients (gouvernance + moderation)
 

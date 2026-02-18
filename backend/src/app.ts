@@ -3,6 +3,7 @@ import authRoutes from "./routes/auth";
 import recipesRoutes from "./routes/recipes";
 import tagsRoutes from "./routes/tags";
 import ingredientsRoutes from "./routes/ingredients";
+import unitsRoutes from "./routes/units";
 import communitiesRoutes from "./routes/communities";
 import invitesRoutes from "./routes/invites";
 import usersRoutes from "./routes/users";
@@ -15,6 +16,7 @@ import adminCommunitiesRoutes from "./admin/routes/communitiesRoutes";
 import adminFeaturesRoutes from "./admin/routes/featuresRoutes";
 import adminDashboardRoutes from "./admin/routes/dashboardRoutes";
 import adminActivityRoutes from "./admin/routes/activityRoutes";
+import adminUnitsRoutes from "./admin/routes/unitsRoutes";
 import createHttpError, { isHttpError } from "http-errors";
 import { httpLogger } from "./middleware/httpLogger";
 import logger from "./util/logger";
@@ -100,6 +102,7 @@ app.use("/api/auth", userSession, authRoutes);
 app.use("/api/recipes", userSession, requireAuth, recipesRoutes);
 app.use("/api/tags", userSession, requireAuth, tagsRoutes);
 app.use("/api/ingredients", userSession, requireAuth, ingredientsRoutes);
+app.use("/api/units", userSession, requireAuth, unitsRoutes);
 app.use("/api/communities", userSession, requireAuth, communitiesRoutes);
 app.use("/api/invites", userSession, requireAuth, invitesRoutes);
 app.use("/api/users", userSession, requireAuth, usersRoutes);
@@ -115,6 +118,7 @@ app.use("/api/admin/communities", adminSession, requireSuperAdmin, adminCommunit
 app.use("/api/admin/features", adminSession, requireSuperAdmin, adminFeaturesRoutes);
 app.use("/api/admin/dashboard", adminSession, requireSuperAdmin, adminDashboardRoutes);
 app.use("/api/admin/activity", adminSession, requireSuperAdmin, adminActivityRoutes);
+app.use("/api/admin/units", adminSession, requireSuperAdmin, adminUnitsRoutes);
 
 app.use((req, res, next) => {
   next(createHttpError(404, "Endpoint not found"));

@@ -42,6 +42,12 @@ GET /api/ingredients/           # autocomplete (search, recipeCount)
 ```
 Controller: `controllers/ingredients.ts` | Route: `routes/ingredients.ts`
 
+## Units (/api/units) - requireAuth
+```
+GET /api/units/                 # list grouped by category (UnitCategory → Unit[])
+```
+Controller: `controllers/units.ts` | Route: `routes/units.ts`
+
 ## Communities (/api/communities) - requireAuth
 ```
 GET    /api/communities/                          # list user's communities
@@ -172,6 +178,15 @@ POST   /api/admin/ingredients/:id/merge    # merge into another
 ```
 Controller: `admin/controllers/ingredientsController.ts` | Route: `admin/routes/ingredientsRoutes.ts`
 
+## Admin Units (/api/admin/units) - requireSuperAdmin
+```
+GET    /api/admin/units/             # list all (?search=, ?category=)
+POST   /api/admin/units/             # create (name, abbreviation, category, sortOrder?)
+PATCH  /api/admin/units/:id          # update (name?, abbreviation?, category?, sortOrder?)
+DELETE /api/admin/units/:id          # delete (blocked if in use)
+```
+Controller: `admin/controllers/unitsController.ts` | Route: `admin/routes/unitsRoutes.ts`
+
 ## Admin Communities (/api/admin/communities) - requireSuperAdmin
 ```
 GET    /api/admin/communities/                                    # list all
@@ -213,4 +228,4 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 | adminRateLimiter | middleware/security.ts | 30 req/min global admin |
 | authRateLimiter | routes config | 5/15min sur auth endpoints |
 
-## Total: 80 endpoints (53 user + 27 admin + 1 health)
+## Total: 86 endpoints (54 user + 31 admin + 1 health)

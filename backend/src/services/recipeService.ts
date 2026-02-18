@@ -10,7 +10,7 @@ type TransactionClient = Omit<
 
 export interface IngredientInput {
   name: string;
-  quantity?: string;
+  quantity?: number;
 }
 
 // --- Helpers partages pour tags/ingredients ---
@@ -53,7 +53,7 @@ export async function upsertIngredients(
       data: {
         recipeId,
         ingredientId: ingredient.id,
-        quantity: ing.quantity?.trim() || null,
+        quantity: ing.quantity ?? null,
         order: i,
       },
     });

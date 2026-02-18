@@ -109,8 +109,8 @@ describe("Community Recipes API", () => {
           content: "Contenu detaille",
           tags: ["dessert", "rapide"],
           ingredients: [
-            { name: "sucre", quantity: "100g" },
-            { name: "farine", quantity: "200g" },
+            { name: "sucre", quantity: 100 },
+            { name: "farine", quantity: 200 },
           ],
         });
 
@@ -440,7 +440,7 @@ describe("Community Recipes API", () => {
           title: "Recette detail",
           content: "Contenu detail",
           tags: ["tag1"],
-          ingredients: [{ name: "ingredient1", quantity: "50g" }],
+          ingredients: [{ name: "ingredient1", quantity: 50 }],
         });
       communityRecipeId = createRes.body.community.id;
     });
