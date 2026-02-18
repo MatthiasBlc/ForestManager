@@ -70,12 +70,12 @@
 
 ## 11.7 - Frontend Administration
 
-- [ ] Page admin units : liste, creation, modification, suppression
-- [ ] Page admin ingredients : filtre par status (APPROVED / PENDING / tous)
-- [ ] Actions admin ingredients : approuver, approuver + modifier, merger, rejeter (avec raison)
-- [ ] Affichage defaultUnit sur chaque ingredient, modification inline
-- [ ] Notifications toast : INGREDIENT_APPROVED, INGREDIENT_MODIFIED, INGREDIENT_MERGED, INGREDIENT_REJECTED
-- [ ] Tests
+- [x] Page admin units : liste, creation, modification, suppression
+- [x] Page admin ingredients : filtre par status (APPROVED / PENDING / tous)
+- [x] Actions admin ingredients : approuver, approuver + modifier, merger, rejeter (avec raison)
+- [x] Affichage defaultUnit sur chaque ingredient, modification inline
+- [x] Notifications toast : INGREDIENT_APPROVED, INGREDIENT_MODIFIED, INGREDIENT_MERGED, INGREDIENT_REJECTED
+- [x] Tests
 
 ## 11.8 - Frontend Proposals + Ingredients
 

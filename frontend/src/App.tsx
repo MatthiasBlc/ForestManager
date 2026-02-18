@@ -27,6 +27,7 @@ import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminTagsPage from "./pages/admin/AdminTagsPage";
 import AdminIngredientsPage from "./pages/admin/AdminIngredientsPage";
+import AdminUnitsPage from "./pages/admin/AdminUnitsPage";
 import AdminFeaturesPage from "./pages/admin/AdminFeaturesPage";
 import AdminCommunitiesPage from "./pages/admin/AdminCommunitiesPage";
 import AdminActivityPage from "./pages/admin/AdminActivityPage";
@@ -209,6 +210,14 @@ function App() {
                   element={
                     <AdminProtectedRoute>
                       <AdminIngredientsPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="units"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminUnitsPage />
                     </AdminProtectedRoute>
                   }
                 />
