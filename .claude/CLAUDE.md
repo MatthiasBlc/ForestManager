@@ -43,7 +43,7 @@ Voir `.claude/context/PROGRESS.md` pour le detail et les liens vers spec/roadmap
 
 ## Codes erreur
 
-AUTH_001-002 | COMMUNITY_001-006 | RECIPE_001-005 | INVITE_001-003 | ADMIN_001-012 | PROPOSAL_001-003 | SHARE_001-003 | TAG_001-007
+AUTH_001-002 | COMMUNITY_001-006 | RECIPE_001-005 | INVITE_001-003 | ADMIN_001-012 | PROPOSAL_001-003 | SHARE_001-003 | TAG_001-007 | ADMIN_ING_001-009 | ADMIN_UNIT_001-007
 
 ## Regle: maintenir `.claude/` a jour
 

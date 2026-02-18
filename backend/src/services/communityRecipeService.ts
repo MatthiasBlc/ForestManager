@@ -68,8 +68,8 @@ export async function createCommunityRecipe(
     }
 
     if (data.ingredients.length > 0) {
-      await upsertIngredients(tx, personalRecipe.id, data.ingredients);
-      await upsertIngredients(tx, communityRecipe.id, data.ingredients);
+      await upsertIngredients(tx, personalRecipe.id, data.ingredients, userId);
+      await upsertIngredients(tx, communityRecipe.id, data.ingredients, userId);
     }
 
     // 4. Creer ActivityLog

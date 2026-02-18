@@ -30,17 +30,17 @@
 
 ## 11.3 - Backend Ingredients (gouvernance + moderation)
 
-- [ ] Refactoring recipeService : upsertIngredients → gestion quantity Float + unitId + creation PENDING
-- [ ] Endpoint GET /api/ingredients : enrichir avec status, filtrer APPROVED + PENDING
-- [ ] Endpoint GET /api/ingredients/:id/suggested-unit (pre-selection intelligente)
-- [ ] Adaptation endpoints admin existants : filtre par status, enrichir reponses
-- [ ] Endpoint admin : POST /api/admin/ingredients/:id/approve (avec rename optionnel)
-- [ ] Endpoint admin : POST /api/admin/ingredients/:id/reject (avec raison obligatoire)
-- [ ] Enrichir merge admin : gerer ProposalIngredient en plus de RecipeIngredient
-- [ ] Enrichir PATCH admin : gestion du defaultUnitId
-- [ ] Audit log : INGREDIENT_APPROVED, INGREDIENT_REJECTED
-- [ ] Protection suppression unite : verifier usage dans RecipeIngredient + ProposalIngredient
-- [ ] Tests unitaires + integration
+- [x] Refactoring recipeService : upsertIngredients → gestion quantity Float + unitId + creation PENDING
+- [x] Endpoint GET /api/ingredients : enrichir avec status, filtrer APPROVED + PENDING
+- [x] Endpoint GET /api/ingredients/:id/suggested-unit (pre-selection intelligente)
+- [x] Adaptation endpoints admin existants : filtre par status, enrichir reponses
+- [x] Endpoint admin : POST /api/admin/ingredients/:id/approve (avec rename optionnel)
+- [x] Endpoint admin : POST /api/admin/ingredients/:id/reject (avec raison obligatoire)
+- [x] Enrichir merge admin : gerer ProposalIngredient en plus de RecipeIngredient
+- [x] Enrichir PATCH admin : gestion du defaultUnitId
+- [x] Audit log : INGREDIENT_APPROVED, INGREDIENT_REJECTED
+- [x] Protection suppression unite : verifier usage dans RecipeIngredient + ProposalIngredient
+- [x] Tests unitaires + integration
 
 ## 11.4 - Backend Proposals + Ingredients
 

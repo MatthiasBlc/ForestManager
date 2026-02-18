@@ -207,6 +207,7 @@ export const getRecipe: RequestHandler = async (req, res, next) => {
 interface IngredientInput {
   name: string;
   quantity?: number;
+  unitId?: string;
 }
 
 interface CreateRecipeBody {

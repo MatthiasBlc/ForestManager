@@ -14,6 +14,7 @@ import { getModeratorIdsForTagNotification } from "../services/notificationServi
 interface IngredientInput {
   name: string;
   quantity?: number;
+  unitId?: string;
 }
 
 interface CreateCommunityRecipeBody {
