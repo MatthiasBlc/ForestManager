@@ -86,6 +86,6 @@
 
 ## 11.9 - Documentation & Tests manuels
 
-- [ ] Mettre a jour docs/0 - brainstorming futur.md (cocher le point)
-- [ ] Mettre a jour .claude/context/ (DB_MODELS, API_MAP, FILE_MAP, TESTS, PROGRESS)
-- [ ] Tests manuels end-to-end (scenarios cles documentes)
+- [x] Mettre a jour docs/0 - brainstorming futur.md (cocher le point)
+- [x] Mettre a jour .claude/context/ (DB_MODELS, API_MAP, FILE_MAP, TESTS, PROGRESS)
+- [x] Tests manuels end-to-end (scenarios cles documentes dans MANUAL_TESTS.md)

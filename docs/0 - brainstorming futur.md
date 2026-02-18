@@ -6,11 +6,9 @@ Tout doit être cohérent avec l'application et son fonctionnement actuel. Ce so
 Tout doit être clair et maitrisé, pensé pour être maintenable et évoluer dans le temps.
 Toute la logique business doit être validé et sans zone d'ombre restante avant d'écrire du code.
 
-# Rework du système d'ingrédients
+# ~~Rework du système d'ingrédients~~ DONE (Phase 11)
 
-Problèmes similaires au système de tags :
--> vu que les recettes sont associé à un user, comment faire de manière logique ?
-proposer une modification de recette doit aussi prendre en compte les ingrédients (je crois que ce n'est pas le cas)
+Implemente : unites structurees, gouvernance PENDING/APPROVED, moderation admin, propositions avec ingredients, notifications WebSocket.
 
 # Le système de notifications doit être amélioré
 

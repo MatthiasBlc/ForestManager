@@ -40,9 +40,9 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~850 tests)
+## Inventaire des tests (~914 tests)
 
-### Backend Integration (21 fichiers, ~420 tests)
+### Backend Integration (22 fichiers, ~449 tests)
 
 | Fichier | Module | Tests |
 |---------|--------|-------|
@@ -50,16 +50,16 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | auth.test.ts | User signup/login/logout/me | 16 |
 | recipes.test.ts | CRUD recettes (perso + community access) | 32 |
 | communityRecipes.test.ts | CRUD recettes communautaires (+ tags scope-aware) | 33 |
-| proposals.test.ts | Propositions modifications | 31 |
+| proposals.test.ts | Propositions modifications (+ proposedIngredients) | 38 |
 | variants.test.ts | Liste variantes recettes | 10 |
 | tags.test.ts | Autocomplete tags (scope-aware) | 9 |
-| ingredients.test.ts | Autocomplete ingredients + suggested-unit | 5 |
+| ingredients.test.ts | Autocomplete ingredients + suggested-unit | 8 |
 | communities.test.ts | CRUD communautes | 27 |
 | invitations.test.ts | Workflow invitations | 35 |
 | members.test.ts | Membres: list, promote, kick, orphan handling | 26 |
 | adminAuth.test.ts | Auth 2FA admin | 14 |
 | adminTags.test.ts | CRUD tags admin (+ scope filter) | 15 |
-| adminIngredients.test.ts | CRUD + approve/reject/merge ingredients admin | 28 |
+| adminIngredients.test.ts | CRUD + approve/reject/merge ingredients admin + notifications | 35 |
 | adminUnits.test.ts | CRUD units admin + user endpoint | 25 |
 | adminFeatures.test.ts | Features grant/revoke | 10 |
 | adminCommunities.test.ts | Communities admin | 8 |
@@ -81,7 +81,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | middleware/requireSuperAdmin.test.ts | requireSuperAdmin, requireAdminSession | 6 |
 | middleware/security.test.ts | requireHttps, rateLimiters, helmet | 5 |
 
-### Frontend Unit (52 fichiers, ~326 tests)
+### Frontend Unit (57 fichiers, ~370 tests)
 
 | Fichier | Composant | Tests |
 |---------|-----------|-------|
@@ -97,14 +97,16 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | AdminDashboardPage.test.tsx | Page dashboard | 4 |
 | AdminLayout.test.tsx | Layout admin | 3 |
 | pages/admin/AdminTagsPage.test.tsx | Page tags admin (+ scope filter) | 12 |
-| pages/admin/AdminIngredientsPage.test.tsx | Page ingredients admin | 8 |
+| pages/admin/AdminIngredientsPage.test.tsx | Page ingredients admin (status, approve/reject) | 17 |
+| pages/admin/AdminUnitsPage.test.tsx | Page units admin (CRUD, category filter) | 10 |
 | pages/admin/AdminFeaturesPage.test.tsx | Page features admin | 6 |
 | pages/admin/AdminCommunitiesPage.test.tsx | Page communities admin | 8 |
 | pages/admin/AdminActivityPage.test.tsx | Page activity admin | 5 |
 | RecipeCard.test.tsx | Carte recette | 8 |
 | RecipeFilters.test.tsx | Filtres recettes | 8 |
 | TagSelector.test.tsx | Selecteur tags | 6 |
-| IngredientList.test.tsx | Liste ingredients | 6 |
+| IngredientList.test.tsx | Liste ingredients (autocomplete, units, PENDING) | 8 |
+| UnitSelector.test.tsx | Selecteur unites par categorie | 7 |
 | RecipesPage.test.tsx | Page recettes | 3 |
 | MainLayout.test.tsx | Layout principal | 6 |
 | Sidebar.test.tsx | Sidebar navigation | 10 |
@@ -134,6 +136,8 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | pages/ProfilePage.test.tsx | Page profil user | 8 |
 | pages/NotFoundPage.test.tsx | Page 404 | 2 |
 | pages/RecipeFormPage.test.tsx | Page formulaire recette | 2 |
+| proposals/ProposeModificationModal.test.tsx | Modal proposition avec ingredients | 7 |
+| proposals/ProposalsList.test.tsx | Liste propositions (diff ingredients, accept/reject) | 7 |
 
 ## Couverture cible
 

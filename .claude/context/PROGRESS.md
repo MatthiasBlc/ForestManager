@@ -11,12 +11,12 @@ Phases 0 a 9.3 terminees.
 - **Branche** : `TagsRework` (merged)
 - **Tests** : 808 (326 frontend + 485 backend)
 
-## Phase en cours : 11 - Rework Ingredients
+## Phase 11 - Rework Ingredients : COMPLETE
 
 - **Spec** : `docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md`
 - **Roadmap** : `docs/features/ingredients-rework/ROADMAP.md`
-- **Sous-etape en cours** : 11.8 termine - passer a 11.9
-- **Branche** : `IngredientsRework`
+- **Tests manuels** : `docs/features/ingredients-rework/MANUAL_TESTS.md`
+- **Branche** : `IngredientsRework` (a merger)
 - **Tests** : 544 backend + 370 frontend = 914 total
 
 ## Resume de reprise
