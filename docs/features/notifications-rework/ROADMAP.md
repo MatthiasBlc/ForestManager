@@ -1,44 +1,44 @@
 # Roadmap : Rework Notifications (Phase 12)
 
 > **Spec** : `docs/features/notifications-rework/SPEC_NOTIFICATIONS_REWORK.md`
-> **Branche** : `NotificationsRework`
+> **Branche** : `NotificationsUpgrade`
 
 ---
 
 ## 12.1 - Schema & Migration
 
-- [ ] Nouveau modele Prisma `Notification` (avec index)
-- [ ] Nouveau modele Prisma `NotificationPreference`
-- [ ] Enum `NotificationCategory` (INVITATION, RECIPE_PROPOSAL, TAG, INGREDIENT, MODERATION)
-- [ ] Migration des donnees `ModeratorNotificationPreference` → `NotificationPreference` (category=TAG)
-- [ ] Suppression du modele `ModeratorNotificationPreference`
-- [ ] Tests migration
+- [x] Nouveau modele Prisma `Notification` (avec index)
+- [x] Nouveau modele Prisma `NotificationPreference`
+- [x] Enum `NotificationCategory` (INVITATION, RECIPE_PROPOSAL, TAG, INGREDIENT, MODERATION)
+- [x] Migration des donnees `ModeratorNotificationPreference` → `NotificationPreference` (category=TAG)
+- [x] Suppression du modele `ModeratorNotificationPreference`
+- [x] Tests migration
 
 ## 12.2 - Backend Service de notifications
 
-- [ ] `notificationService.ts` : refonte complete
-  - [ ] `createNotification(userId, type, data)` : creation unitaire avec resolution titre/message/actionUrl/category/groupKey
-  - [ ] `createBroadcastNotifications(communityId, type, data)` : creation pour tous les membres (sauf acteur), batch insert
-  - [ ] `checkPreference(userId, communityId, category)` : verification preferences (hierarchie global > communaute > defaut)
-  - [ ] Mapping `type → category` centralise
-  - [ ] Mapping `type → { title, message, actionUrl }` centralise (templates avec variables)
-- [ ] Tests unitaires service
+- [x] `notificationService.ts` : refonte complete
+  - [x] `createNotification(userId, type, data)` : creation unitaire avec resolution titre/message/actionUrl/category/groupKey
+  - [x] `createBroadcastNotifications(communityId, type, data)` : creation pour tous les membres (sauf acteur), batch insert
+  - [x] `checkPreference(userId, communityId, category)` : verification preferences (hierarchie global > communaute > defaut)
+  - [x] Mapping `type → category` centralise
+  - [x] Mapping `type → { title, message, actionUrl }` centralise (templates avec variables)
+- [x] Tests unitaires service (30 tests)
 
 ## 12.3 - Backend API Notifications (CRUD + lecture)
 
-- [ ] `GET /api/notifications` : liste paginee avec groupement
-  - [ ] Pagination (page, limit)
-  - [ ] Filtre par categorie
-  - [ ] Filtre non-lues uniquement
-  - [ ] Algorithme de groupement (groupKey + fenetre 60min)
-- [ ] `GET /api/notifications/unread-count` : compteur non-lues (total + par categorie)
-- [ ] `PATCH /api/notifications/:id/read` : marquer une notification comme lue
-- [ ] `PATCH /api/notifications/read` : batch mark as read (body: ids[])
-- [ ] `PATCH /api/notifications/read-all` : tout marquer comme lu (optionnel: category)
-- [ ] Middleware auth sur tous les endpoints
-- [ ] Validation : notification appartient bien au user connecte
-- [ ] Codes erreur (NOTIF_001 a NOTIF_005)
-- [ ] Tests integration endpoints
+- [x] `GET /api/notifications` : liste paginee avec groupement
+  - [x] Pagination (page, limit)
+  - [x] Filtre par categorie
+  - [x] Filtre non-lues uniquement
+  - [x] Algorithme de groupement (groupKey + fenetre 60min)
+- [x] `GET /api/notifications/unread-count` : compteur non-lues (total + par categorie)
+- [x] `PATCH /api/notifications/:id/read` : marquer une notification comme lue
+- [x] `PATCH /api/notifications/read` : batch mark as read (body: ids[])
+- [x] `PATCH /api/notifications/read-all` : tout marquer comme lu (optionnel: category)
+- [x] Middleware auth sur tous les endpoints
+- [x] Validation : notification appartient bien au user connecte
+- [x] Codes erreur (NOTIF_001 a NOTIF_005)
+- [x] Tests integration endpoints (27 tests)
 
 ## 12.4 - Backend API Preferences
 
