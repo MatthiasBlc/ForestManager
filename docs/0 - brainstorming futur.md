@@ -22,6 +22,11 @@ temps de préparation, temps de cuisson, de repos, temps total
 
 sélecteur du nombre de persones avec calcul automatique des quantités
 
+Voici une inspiration : (regarde la version mobile du site principalement, j'aime la structure séquentielle.)
+https://www.magimix.fr/recettes/brioche-a-la-praline-rose_c
+
+pour le desktop le site de marmiton peut être une bonne piste.
+
 # audit refactorisation complete back + front
 
 # Système d'upload de photos
