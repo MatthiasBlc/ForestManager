@@ -122,4 +122,35 @@ describe('TagSelector', () => {
 
     expect(mockOnChange).toHaveBeenCalledWith(['dessert']);
   });
+
+  it('should accept communityId prop without error', () => {
+    render(
+      <TagSelector
+        value={[]}
+        onChange={mockOnChange}
+        communityId="community-123"
+      />
+    );
+
+    expect(screen.getByRole('textbox')).toBeInTheDocument();
+  });
+
+  it('should show pending hint when creating tag with communityId', async () => {
+    const user = userEvent.setup();
+    render(
+      <TagSelector
+        value={[]}
+        onChange={mockOnChange}
+        allowCreate={true}
+        communityId="community-123"
+      />
+    );
+
+    const input = screen.getByRole('textbox');
+    await user.type(input, 'unknowntag');
+
+    await waitFor(() => {
+      expect(screen.getByText('(will be pending)')).toBeInTheDocument();
+    });
+  });
 });

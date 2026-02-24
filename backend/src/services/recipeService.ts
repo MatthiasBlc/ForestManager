@@ -1,7 +1,7 @@
 import prisma from "../util/db";
 import { PrismaClient } from "@prisma/client";
-import { normalizeNames } from "../util/validation";
 import { RECIPE_TAGS_SELECT, RECIPE_INGREDIENTS_SELECT } from "../util/prismaSelects";
+import { resolveTagsForRecipe } from "./tagService";
 
 type TransactionClient = Omit<
   PrismaClient,
@@ -10,48 +10,100 @@ type TransactionClient = Omit<
 
 export interface IngredientInput {
   name: string;
-  quantity?: string;
+  quantity?: number;
+  unitId?: string;
 }
 
 // --- Helpers partages pour tags/ingredients ---
 
-export async function upsertTags(tx: TransactionClient, recipeId: string, tags: string[]) {
-  const normalizedTags = normalizeNames(tags);
+export async function upsertTags(
+  tx: TransactionClient,
+  recipeId: string,
+  tags: string[],
+  userId: string,
+  communityId: string | null
+): Promise<string[]> {
+  const { tagIds, pendingTagIds } = await resolveTagsForRecipe(tx, tags, userId, communityId);
 
-  for (const tagName of normalizedTags) {
-    const tag = await tx.tag.upsert({
-      where: { name: tagName },
-      create: { name: tagName },
-      update: {},
-    });
-
+  for (const tagId of tagIds) {
     await tx.recipeTag.create({
-      data: { recipeId, tagId: tag.id },
+      data: { recipeId, tagId },
     });
   }
+
+  return pendingTagIds;
 }
 
 export async function upsertIngredients(
   tx: TransactionClient,
   recipeId: string,
-  ingredients: IngredientInput[]
+  ingredients: IngredientInput[],
+  userId?: string
 ) {
   for (let i = 0; i < ingredients.length; i++) {
     const ing = ingredients[i];
     const ingredientName = ing.name.trim().toLowerCase();
     if (!ingredientName) continue;
 
-    const ingredient = await tx.ingredient.upsert({
+    // Chercher l'ingredient existant d'abord
+    let ingredient = await tx.ingredient.findUnique({
       where: { name: ingredientName },
-      create: { name: ingredientName },
-      update: {},
     });
+
+    if (!ingredient) {
+      // Nouvel ingredient : PENDING si cree par un user, APPROVED si pas de userId (admin/seed)
+      ingredient = await tx.ingredient.create({
+        data: {
+          name: ingredientName,
+          status: userId ? "PENDING" : "APPROVED",
+          createdById: userId ?? null,
+        },
+      });
+    }
 
     await tx.recipeIngredient.create({
       data: {
         recipeId,
         ingredientId: ingredient.id,
-        quantity: ing.quantity?.trim() || null,
+        quantity: ing.quantity ?? null,
+        unitId: ing.unitId ?? null,
+        order: i,
+      },
+    });
+  }
+}
+
+export async function upsertProposalIngredients(
+  tx: TransactionClient,
+  proposalId: string,
+  ingredients: IngredientInput[],
+  userId?: string
+) {
+  for (let i = 0; i < ingredients.length; i++) {
+    const ing = ingredients[i];
+    const ingredientName = ing.name.trim().toLowerCase();
+    if (!ingredientName) continue;
+
+    let ingredient = await tx.ingredient.findUnique({
+      where: { name: ingredientName },
+    });
+
+    if (!ingredient) {
+      ingredient = await tx.ingredient.create({
+        data: {
+          name: ingredientName,
+          status: userId ? "PENDING" : "APPROVED",
+          createdById: userId ?? null,
+        },
+      });
+    }
+
+    await tx.proposalIngredient.create({
+      data: {
+        proposalId,
+        ingredientId: ingredient.id,
+        quantity: ing.quantity ?? null,
+        unitId: ing.unitId ?? null,
         order: i,
       },
     });
@@ -94,11 +146,11 @@ export async function createRecipe(userId: string, data: CreateRecipeData) {
     });
 
     if (data.tags.length > 0) {
-      await upsertTags(tx, recipe.id, data.tags);
+      await upsertTags(tx, recipe.id, data.tags, userId, null);
     }
 
     if (data.ingredients.length > 0) {
-      await upsertIngredients(tx, recipe.id, data.ingredients);
+      await upsertIngredients(tx, recipe.id, data.ingredients, userId);
     }
 
     return tx.recipe.findUnique({
@@ -126,9 +178,12 @@ interface RecipeForSync {
 export async function updateRecipe(
   recipeId: string,
   data: UpdateRecipeData,
-  recipe: RecipeForSync
+  recipe: RecipeForSync,
+  userId: string
 ) {
-  return prisma.$transaction(async (tx) => {
+  let pendingTagIds: string[] = [];
+
+  const result = await prisma.$transaction(async (tx) => {
     // Mettre a jour les champs de base
     await tx.recipe.update({
       where: { id: recipeId },
@@ -142,23 +197,25 @@ export async function updateRecipe(
     // Remplacer tags si fournis
     if (data.tags !== undefined) {
       await tx.recipeTag.deleteMany({ where: { recipeId } });
-      await upsertTags(tx, recipeId, data.tags);
+      pendingTagIds = await upsertTags(tx, recipeId, data.tags, userId, recipe.communityId);
     }
 
     // Remplacer ingredients si fournis
     if (data.ingredients !== undefined) {
       await tx.recipeIngredient.deleteMany({ where: { recipeId } });
-      await upsertIngredients(tx, recipeId, data.ingredients);
+      await upsertIngredients(tx, recipeId, data.ingredients, userId);
     }
 
     // Synchronisation bidirectionnelle
-    await syncLinkedRecipes(tx, recipeId, data, recipe);
+    await syncLinkedRecipes(tx, recipeId, data, recipe, userId);
 
     return tx.recipe.findUnique({
       where: { id: recipeId },
       select: RECIPE_RESULT_SELECT,
     });
   });
+
+  return { result, pendingTagIds };
 }
 
 /**
@@ -170,7 +227,8 @@ async function syncLinkedRecipes(
   tx: TransactionClient,
   recipeId: string,
   data: UpdateRecipeData,
-  recipe: RecipeForSync
+  recipe: RecipeForSync,
+  userId: string
 ) {
   const syncData: Record<string, unknown> = {};
   if (data.title !== undefined) syncData.title = data.title.trim();
@@ -227,7 +285,7 @@ async function syncLinkedRecipes(
   if (data.ingredients !== undefined) {
     for (const linkedId of linkedRecipeIds) {
       await tx.recipeIngredient.deleteMany({ where: { recipeId: linkedId } });
-      await upsertIngredients(tx, linkedId, data.ingredients);
+      await upsertIngredients(tx, linkedId, data.ingredients, userId);
     }
   }
 }

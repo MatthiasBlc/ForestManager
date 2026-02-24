@@ -132,6 +132,13 @@ enum AdminActionType {
   INGREDIENT_UPDATED
   INGREDIENT_DELETED
   INGREDIENT_MERGED
+  INGREDIENT_APPROVED
+  INGREDIENT_REJECTED
+
+  // Units
+  UNIT_CREATED
+  UNIT_UPDATED
+  UNIT_DELETED
 
   // Communities
   COMMUNITY_RENAMED
@@ -170,6 +177,13 @@ model User {
   recipeViews       RecipeView[]
   invitesSent       CommunityInvite[]      @relation("InviteSender")
   invitesReceived   CommunityInvite[]      @relation("InviteReceiver")
+  createdTags       Tag[]                  @relation("TagCreator")
+  createdIngredients Ingredient[]          @relation("IngredientCreator")
+  tagSuggestions    TagSuggestion[]
+  tagPreferences    UserCommunityTagPreference[]
+  notifications     Notification[]   @relation("NotificationRecipient")
+  notificationsActed Notification[]  @relation("NotificationActor")
+  notificationPrefs NotificationPreference[]
 
   @@index([email])
   @@index([username])
@@ -196,6 +210,10 @@ model Community {
   activities      ActivityLog[]
   invites         CommunityInvite[]
   features        CommunityFeature[] // Briques attribuees a cette communaute
+  tags            Tag[]
+  tagPreferences  UserCommunityTagPreference[]
+  notifications   Notification[]
+  notificationPrefs NotificationPreference[]
 
   @@index([deletedAt])
 }
@@ -307,6 +325,8 @@ model Recipe {
   analytics             RecipeAnalytics?
   views                 RecipeView[]
   activities            ActivityLog[]
+  tagSuggestions        TagSuggestion[]
+  notifications         Notification[]
 
   @@index([creatorId])
   @@index([communityId])
@@ -335,6 +355,8 @@ model RecipeUpdateProposal {
   proposerId      String
   proposer        User           @relation("ProposalProposer", fields: [proposerId], references: [id])
 
+  proposedIngredients ProposalIngredient[]
+
   @@index([recipeId])
   @@index([proposerId])
   @@index([status])
@@ -352,14 +374,43 @@ enum ProposalStatus {
 // Note: Tables pivot - Cascade OK (hard delete quand recette supprimee)
 // =============================================================================
 
+enum TagScope {
+  GLOBAL
+  COMMUNITY
+}
+
+enum TagStatus {
+  APPROVED
+  PENDING
+}
+
+enum TagSuggestionStatus {
+  PENDING_OWNER
+  PENDING_MODERATOR
+  APPROVED
+  REJECTED
+}
+
 model Tag {
-  id      String      @id @default(uuid())
-  name    String      @unique
+  id          String    @id @default(uuid())
+  name        String
+  scope       TagScope  @default(GLOBAL)
+  status      TagStatus @default(APPROVED)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   // Relations
+  communityId String?
+  community   Community? @relation(fields: [communityId], references: [id])
+
+  createdById String?
+  createdBy   User? @relation("TagCreator", fields: [createdById], references: [id])
+
   recipes RecipeTag[]
 
+  @@unique([name, communityId])
   @@index([name])
+  @@index([communityId, status])
 }
 
 model RecipeTag {
@@ -374,33 +425,196 @@ model RecipeTag {
 }
 
 // =============================================================================
+// TAG SUGGESTION (Suggestions de tags sur recettes d'autrui)
+// =============================================================================
+
+model TagSuggestion {
+  id            String              @id @default(uuid())
+  recipeId      String
+  tagName       String
+  suggestedById String
+  status        TagSuggestionStatus @default(PENDING_OWNER)
+  createdAt     DateTime            @default(now())
+  decidedAt     DateTime?
+
+  recipe      Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  suggestedBy User   @relation(fields: [suggestedById], references: [id])
+
+  @@unique([recipeId, tagName, suggestedById])
+  @@index([recipeId, status])
+}
+
+// =============================================================================
+// USER COMMUNITY TAG PREFERENCE (Visibilite tags par communaute)
+// =============================================================================
+
+model UserCommunityTagPreference {
+  userId      String
+  communityId String
+  showTags    Boolean  @default(true)
+  updatedAt   DateTime @updatedAt
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community Community @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@id([userId, communityId])
+}
+
+// =============================================================================
+// NOTIFICATION (Notifications persistantes par utilisateur)
+// =============================================================================
+
+enum NotificationCategory {
+  INVITATION
+  RECIPE_PROPOSAL
+  TAG
+  INGREDIENT
+  MODERATION
+}
+
+model Notification {
+  id          String               @id @default(uuid())
+  userId      String
+  type        String
+  category    NotificationCategory
+  title       String
+  message     String
+  actionUrl   String?
+  metadata    Json?
+
+  // Contexte source
+  actorId     String?
+  communityId String?
+  recipeId    String?
+
+  // Groupement (broadcasts uniquement)
+  groupKey    String?
+
+  // Etat
+  readAt      DateTime?
+  createdAt   DateTime             @default(now())
+
+  // Relations
+  user      User       @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor     User?      @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  community Community? @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  recipe    Recipe?    @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+
+  @@index([userId, readAt, createdAt])
+  @@index([userId, createdAt])
+  @@index([userId, groupKey, createdAt])
+  @@index([createdAt])
+}
+
+// =============================================================================
+// NOTIFICATION PREFERENCE (Preferences notifications par categorie)
+// =============================================================================
+
+model NotificationPreference {
+  id          String               @id @default(uuid())
+  userId      String
+  communityId String?
+  category    NotificationCategory
+  enabled     Boolean              @default(true)
+  updatedAt   DateTime             @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community Community? @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, communityId, category])
+}
+
+// =============================================================================
+// UNIT (Unites de mesure structurees)
+// =============================================================================
+
+enum UnitCategory {
+  WEIGHT
+  VOLUME
+  SPOON
+  COUNT
+  QUALITATIVE
+}
+
+model Unit {
+  id           String       @id @default(uuid())
+  name         String       @unique
+  abbreviation String       @unique
+  category     UnitCategory
+  sortOrder    Int          @default(0)
+
+  // Relations
+  recipeIngredients   RecipeIngredient[]
+  proposalIngredients ProposalIngredient[]
+  defaultIngredients  Ingredient[]
+
+  @@index([category, sortOrder])
+}
+
+// =============================================================================
 // INGREDIENT & RECIPE-INGREDIENT
-// Note: Ingredients crees a la volee (comme les tags)
+// Note: Ingredients crees a la volee avec moderation admin
 // Tables pivot - Cascade OK
 // =============================================================================
 
+enum IngredientStatus {
+  APPROVED
+  PENDING
+}
+
 model Ingredient {
-  id   String @id @default(uuid())
-  name String @unique
+  id            String           @id @default(uuid())
+  name          String           @unique
+  status        IngredientStatus @default(APPROVED)
+  defaultUnitId String?
+  createdById   String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
   // Relations
-  recipes RecipeIngredient[]
+  defaultUnit Unit? @relation(fields: [defaultUnitId], references: [id])
+  createdBy   User? @relation("IngredientCreator", fields: [createdById], references: [id])
+  recipes     RecipeIngredient[]
+  proposals   ProposalIngredient[]
 
   @@index([name])
+  @@index([status])
 }
 
 model RecipeIngredient {
   id           String  @id @default(uuid())
   recipeId     String
   ingredientId String
-  quantity     String?
+  quantity     Float?
+  unitId       String?
   order        Int     @default(0)
 
   recipe     Recipe     @relation(fields: [recipeId], references: [id], onDelete: Cascade)
   ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  unit       Unit?      @relation(fields: [unitId], references: [id])
 
   @@unique([recipeId, ingredientId])
   @@index([recipeId])
+}
+
+// =============================================================================
+// PROPOSAL-INGREDIENT (Ingredients dans les propositions de modification)
+// =============================================================================
+
+model ProposalIngredient {
+  id           String  @id @default(uuid())
+  proposalId   String
+  ingredientId String
+  quantity     Float?
+  unitId       String?
+  order        Int     @default(0)
+
+  proposal   RecipeUpdateProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  ingredient Ingredient           @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  unit       Unit?                @relation(fields: [unitId], references: [id])
+
+  @@unique([proposalId, ingredientId])
+  @@index([proposalId])
 }
 
 // =============================================================================
@@ -453,6 +667,17 @@ enum ActivityType {
   INVITE_ACCEPTED
   INVITE_REJECTED
   INVITE_CANCELLED
+
+  // Tags communaute
+  TAG_CREATED
+  TAG_UPDATED
+  TAG_DELETED
+  TAG_APPROVED
+  TAG_REJECTED
+
+  // Tag suggestions
+  TAG_SUGGESTION_ACCEPTED
+  TAG_SUGGESTION_REJECTED
 }
 
 // =============================================================================

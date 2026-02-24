@@ -535,7 +535,7 @@ Ce document decrit les phases de developpement du MVP de Forest Manager, avec le
 
 ## Phase 7: Partage Inter-Communautes
 
-<!-- User Stories: US-8.1 (Fork recette vers autre communaute), US-8.2 (Voir origine recette forkee) - voir docs/USER_STORIES.md Epic 8 -->
+<!-- User Stories: US-8.1 (Fork recette vers autre communaute), US-8.2 (Voir origine recette forkee) - voir USER_STORIES.md Epic 8 -->
 
 **Decisions metier validees (voir BUSINESS_RULES.md section 5):**
 
@@ -828,88 +828,4 @@ Phase 8 (Finitions MVP)
 
 ---
 
-## Tests
-
-### Infrastructure
-
-**Backend**:
-
-- Framework: Vitest + Supertest
-- DB: PostgreSQL test database (via `testPrisma`)
-- Helpers: `backend/src/__tests__/setup/testHelpers.ts`
-- Config: `backend/vitest.config.ts`
-
-**Frontend**:
-
-- Framework: Vitest + Testing Library + MSW
-- Mocks: `frontend/src/__tests__/setup/mswHandlers.ts`
-- Utils: `frontend/src/__tests__/setup/testUtils.tsx`
-- Config: `frontend/vitest.config.ts`
-
-### Commandes
-
-```bash
-# Backend
-cd backend && npm test              # Lancer tous les tests
-cd backend && npm run test:coverage # Tests avec couverture
-
-# Frontend
-cd frontend && npm test             # Lancer tous les tests
-cd frontend && npm run test:coverage # Tests avec couverture
-
-# CI/CD
-# Les tests sont executes automatiquement dans deploy.yml:
-# - Job: test-backend
-# - Job: test-frontend
-```
-
-### Couverture cible
-
-- Backend: > 80% sur controllers/routes
-- Frontend: > 70% sur composants critiques
-
-### Template pour nouvelles fonctionnalites
-
-Lors de l'ajout d'une nouvelle fonctionnalite, inclure les tests suivants:
-
-```markdown
-### X.Y Nouvelle Fonctionnalite
-
-- [ ] Implementation backend
-- [ ] Implementation frontend
-- [ ] **Tests backend**: [fichiers .test.ts]
-  - Tests CRUD endpoints
-  - Tests validation input
-  - Tests error cases
-  - Tests authentication/authorization
-- [ ] **Tests frontend**: [fichiers .test.tsx]
-  - Tests rendu composants
-  - Tests interactions utilisateur
-  - Tests etats (loading, error, success)
-  - Tests integration avec API (MSW)
-```
-
-### Resume des tests implementes
-
-| Categorie           | Fichiers                                                                                    | Tests    |
-| ------------------- | ------------------------------------------------------------------------------------------- | -------- |
-| Backend Auth        | auth.test.ts, adminAuth.test.ts                                                             | ~30      |
-| Backend Admin API   | adminTags, adminIngredients, adminFeatures, adminCommunities, adminDashboard, adminActivity | ~50      |
-| Backend User API    | recipes.test.ts, tags.test.ts, ingredients.test.ts                                          | ~42      |
-| Backend Communities | communities.test.ts, communityRecipes.test.ts, invitations.test.ts, members.test.ts         | ~112     |
-| Backend Proposals   | proposals.test.ts                                                                           | ~31      |
-| Backend Variants    | variants.test.ts                                                                            | ~10      |
-| Backend Activity    | activity.test.ts                                                                            | ~15      |
-| Frontend Contexts   | AuthContext, AdminAuthContext                                                               | ~13      |
-| Frontend Auth       | LoginModal, Modal, SignUpPage, ProtectedRoute, NavBar                                       | ~25      |
-| Frontend Admin      | AdminProtectedRoute, AdminLoginPage, AdminDashboardPage, AdminLayout                        | ~19      |
-| Frontend Admin Pages| AdminTagsPage, AdminIngredientsPage, AdminFeaturesPage, AdminCommunitiesPage, AdminActivityPage | ~35  |
-| Frontend Recipes    | RecipeCard, RecipeFilters, TagSelector, IngredientList                                      | ~28      |
-| Frontend Pages      | HomePage, RecipesPage, MainLayout, Sidebar                                                  | ~25      |
-| Frontend Activity   | ActivityFeed.test.tsx                                                                       | ~8       |
-| Backend Share       | share.test.ts                                                                               | ~28      |
-| Frontend Communities| CommunitiesPage, CommunityDetailPage                                                        | ~18      |
-| Frontend Invitations| InviteCard, MembersList, InviteUserModal                                                    | ~16      |
-| Frontend Share      | ShareRecipeModal                                                                            | ~7       |
-| Frontend ErrorBoundary | ErrorBoundary.test.tsx                                                                    | ~2       |
-| **Total**           |                                                                                             | **~534** |
+> **Tests** : Infrastructure, commandes, inventaire et conventions sont dans `.claude/context/TESTS.md` (reference unique).

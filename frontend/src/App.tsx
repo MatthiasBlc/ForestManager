@@ -22,11 +22,13 @@ import CommunityCreatePage from "./pages/CommunityCreatePage";
 import CommunityDetailPage from "./pages/CommunityDetailPage";
 import CommunityEditPage from "./pages/CommunityEditPage";
 import InvitationsPage from "./pages/InvitationsPage";
+import NotificationsPage from "./pages/NotificationsPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminTagsPage from "./pages/admin/AdminTagsPage";
 import AdminIngredientsPage from "./pages/admin/AdminIngredientsPage";
+import AdminUnitsPage from "./pages/admin/AdminUnitsPage";
 import AdminFeaturesPage from "./pages/admin/AdminFeaturesPage";
 import AdminCommunitiesPage from "./pages/admin/AdminCommunitiesPage";
 import AdminActivityPage from "./pages/admin/AdminActivityPage";
@@ -173,6 +175,18 @@ function App() {
                 }
               />
 
+              {/* Notifications route */}
+              <Route
+                path="/notifications"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <NotificationsPage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+
               {/* Invitations route - with sidebar layout */}
               <Route
                 path="/invitations"
@@ -209,6 +223,14 @@ function App() {
                   element={
                     <AdminProtectedRoute>
                       <AdminIngredientsPage />
+                    </AdminProtectedRoute>
+                  }
+                />
+                <Route
+                  path="units"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminUnitsPage />
                     </AdminProtectedRoute>
                   }
                 />

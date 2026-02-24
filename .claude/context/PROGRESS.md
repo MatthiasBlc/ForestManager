@@ -1,68 +1,31 @@
 # Avancement du projet
 
-## Phases completees
-
-| Phase | Description | Status |
-|-------|-------------|--------|
-| 0 | Setup & Infrastructure | DONE |
-| 0.5 | SuperAdmin & Briques (2FA, Features, Admin API, Frontend admin) | DONE |
-| 1 | Auth user (signup/login/logout, frontend auth, layout) | DONE |
-| 2 | Catalogue personnel (CRUD recettes, autocomplete tags/ingredients, frontend) | DONE |
-| 3.1 | Communities CRUD backend | DONE |
-| 3.2 | Invitations backend | DONE |
-| 3.3 | Members backend (list, promote, kick, leave) | DONE |
-| 3.4 | Frontend Communities (pages, composants, sidebar Discord-style) | DONE |
-| 3.5 | Frontend Invitations (pages, composants, notifications) | DONE |
-| 3.6 | Frontend User Management (profil, menu, search) | DONE |
-| 4.1 | Backend Recettes Communautaires (CRUD, copie perso, tests) | DONE |
-| 4.2 | Frontend Recettes Communautaires (liste, creation, detail, permissions) | DONE |
-| 5.1 | Backend Proposals (create, list, detail, accept, reject) | DONE |
-| 5.2 | Backend Variants (list variants endpoint) | DONE |
-| 5.3 | Frontend Proposals (modal, list, variants dropdown, RecipeDetailPage) | DONE |
-| 5.4 | Backend Orphan Handling (auto-reject proposals on leave/kick) | DONE |
-| 6.1 | Backend Activity Feed (community + personal endpoints) | DONE |
-| 6.2 | Frontend Activity Feed (component, integration) | DONE |
-| 7.1 | Backend Share (fork to other community, chain analytics) | DONE |
-| 7.2 | Frontend Share (modal, badge "Shared from X") | DONE |
-| 7.3 | Pre-Phase 8 corrections (13 fixes: bugs, UX, sync, side panel, publish) | DONE |
-| 8.1 | Qualite (toast, ErrorBoundary, refactoring recipes.ts, soft delete audit) | DONE |
-| 8.2 | Tests & Lint (499 tests, 0 lint errors frontend + backend) | DONE |
-| 8.3 | Documentation (README utilisateur + guide deploiement) | DONE |
-| 9.4 | Frontend Admin Pages (layout sidebar, 5 pages gestion, 35 tests) | DONE |
-| 9.2 | Notifications temps reel (Socket.IO) + Dark mode (forest/winter) | DONE |
-| 9.3 | Logging structure (Pino) + Tests supplementaires (+113 tests) | DONE |
-
 ## MVP COMPLET
 
-Toutes les phases (0 a 8) sont terminees. Le MVP est fonctionnel.
-Phases post-MVP completees : 9.4 (admin frontend), 9.2 (WebSocket + dark mode), 9.3 (logging + tests).
+Phases 0 a 9.3 terminees.
 
-## Ce qui reste a faire
+## Phase 10 - Rework Tags : COMPLETE
 
-### Checklist validation MVP (non cochees)
+- **Spec** : `docs/features/tags-rework/SPEC_TAGS_REWORK.md`
+- **Roadmap** : `docs/features/tags-rework/ROADMAP.md`
+- **Branche** : `TagsRework` (merged)
+- **Tests** : 808 (326 frontend + 485 backend)
 
-- [ ] Tests manuels complets (parcours utilisateur end-to-end)
-- [ ] Application stable sans erreurs bloquantes (validation)
-- [ ] Donnees persistees correctement (validation)
-- [ ] Responsive design (audit + corrections)
-- [ ] Performance acceptable (<3s chargement page, audit)
+## Phase 11 - Rework Ingredients : COMPLETE
 
-### Maintenance technique
+- **Spec** : `docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md`
+- **Roadmap** : `docs/features/ingredients-rework/ROADMAP.md`
+- **Tests manuels** : `docs/features/ingredients-rework/MANUAL_TESTS.md`
+- **Branche** : `IngredientsRework` (merged)
+- **Tests** : 544 backend + 370 frontend = 914 total
 
-- [x] Remplacer `npm prune --production` par `--omit=dev` dans Dockerfile
-- [x] Mettre a jour ESLint v8 -> v9 (flat config `eslint.config.mjs`)
-- [x] Fix vulnerabilite npm axios (frontend)
-- [x] Migrer config Prisma vers `prisma.config.ts` -> non necessaire (setup standard suffisant)
-- [x] Migrer otplib v12 -> v13 (nouvelle API: generateSecret, generateSync, verifySync, generateURI)
-- [x] Fix vulnerabilites npm: vitest 2->3, bcrypt 5->6 (0 vulns backend + frontend)
+## Phase 12 - Rework Notifications : COMPLETE
 
-## Tests actuels
-
-| Suite | Fichiers | Tests |
-|-------|----------|-------|
-| Frontend | 47 | 273 |
-| Backend | 27 | 390 |
-| **Total** | **74** | **663** |
+- **Spec** : `docs/features/notifications-rework/SPEC_NOTIFICATIONS_REWORK.md`
+- **Roadmap** : `docs/features/notifications-rework/ROADMAP.md`
+- **Tests manuels** : `docs/features/notifications-rework/MANUAL_TESTS.md`
+- **Branche** : `NotificationsUpgrade`
+- **Tests** : 590 backend + 363 frontend = 953 total
 
 ## Resume de reprise
 

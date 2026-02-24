@@ -7,11 +7,32 @@ import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import { requireMembership } from "../services/membershipService";
 import { acceptProposal as acceptProposalService, rejectProposal as rejectProposalService } from "../services/proposalService";
 import appEvents from "../services/eventEmitter";
+import { IngredientInput, upsertProposalIngredients } from "../services/recipeService";
+import { PROPOSAL_INGREDIENTS_SELECT } from "../util/prismaSelects";
 
 interface CreateProposalBody {
   proposedTitle?: string;
   proposedContent?: string;
+  proposedIngredients?: IngredientInput[];
 }
+
+const PROPOSAL_RESPONSE_SELECT = {
+  id: true,
+  proposedTitle: true,
+  proposedContent: true,
+  status: true,
+  createdAt: true,
+  decidedAt: true,
+  recipeId: true,
+  proposerId: true,
+  proposer: {
+    select: {
+      id: true,
+      username: true,
+    },
+  },
+  proposedIngredients: PROPOSAL_INGREDIENTS_SELECT,
+};
 
 /**
  * POST /api/recipes/:recipeId/proposals
@@ -23,7 +44,7 @@ export const createProposal: RequestHandler<
   CreateProposalBody,
   unknown
 > = async (req, res, next) => {
-  const { proposedTitle, proposedContent } = req.body;
+  const { proposedTitle, proposedContent, proposedIngredients } = req.body;
   const authenticatedUserId = req.session.userId;
   const { recipeId } = req.params;
 
@@ -36,6 +57,11 @@ export const createProposal: RequestHandler<
     }
     if (!proposedContent?.trim()) {
       throw createHttpError(400, "RECIPE_004: Content required");
+    }
+
+    // Validation du nombre d'ingredients
+    if (proposedIngredients && proposedIngredients.length > 50) {
+      throw createHttpError(400, "INGREDIENT_003: Too many ingredients (max 50)");
     }
 
     // Recuperer la recette avec sa communaute
@@ -82,23 +108,13 @@ export const createProposal: RequestHandler<
           recipeId,
           proposerId: authenticatedUserId,
         },
-        select: {
-          id: true,
-          proposedTitle: true,
-          proposedContent: true,
-          status: true,
-          createdAt: true,
-          decidedAt: true,
-          recipeId: true,
-          proposerId: true,
-          proposer: {
-            select: {
-              id: true,
-              username: true,
-            },
-          },
-        },
+        select: { id: true },
       });
+
+      // Stocker les ingredients proposes
+      if (proposedIngredients && proposedIngredients.length > 0) {
+        await upsertProposalIngredients(tx, newProposal.id, proposedIngredients, authenticatedUserId);
+      }
 
       // Creer ActivityLog
       await tx.activityLog.create({
@@ -111,7 +127,12 @@ export const createProposal: RequestHandler<
         },
       });
 
-      return newProposal;
+      const created = await tx.recipeUpdateProposal.findUnique({
+        where: { id: newProposal.id },
+        select: PROPOSAL_RESPONSE_SELECT,
+      });
+      // Ne peut pas etre null : on vient de le creer
+      return created!;
     });
 
     appEvents.emitActivity({
@@ -193,22 +214,7 @@ export const getProposals: RequestHandler<
     const [proposals, total] = await Promise.all([
       prisma.recipeUpdateProposal.findMany({
         where: whereClause,
-        select: {
-          id: true,
-          proposedTitle: true,
-          proposedContent: true,
-          status: true,
-          createdAt: true,
-          decidedAt: true,
-          recipeId: true,
-          proposerId: true,
-          proposer: {
-            select: {
-              id: true,
-              username: true,
-            },
-          },
-        },
+        select: PROPOSAL_RESPONSE_SELECT,
         orderBy: {
           createdAt: "desc",
         },
@@ -250,20 +256,7 @@ export const getProposal: RequestHandler<
         deletedAt: null,
       },
       select: {
-        id: true,
-        proposedTitle: true,
-        proposedContent: true,
-        status: true,
-        createdAt: true,
-        decidedAt: true,
-        recipeId: true,
-        proposerId: true,
-        proposer: {
-          select: {
-            id: true,
-            username: true,
-          },
-        },
+        ...PROPOSAL_RESPONSE_SELECT,
         recipe: {
           select: {
             id: true,

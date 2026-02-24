@@ -29,54 +29,51 @@ describe("useNotificationToasts", () => {
     mockToast.mockClear();
   });
 
-  it("should subscribe to notification event", () => {
+  it("should subscribe to notification:new event", () => {
     renderHook(() => useNotificationToasts());
-    expect(mockSocket.on).toHaveBeenCalledWith("notification", expect.any(Function));
+    expect(mockSocket.on).toHaveBeenCalledWith("notification:new", expect.any(Function));
   });
 
-  it("should show toast for INVITE_SENT", () => {
+  it("should show toast with notification message", () => {
     renderHook(() => useNotificationToasts());
     const handler = mockSocket.on.mock.calls.find(
-      (call) => call[0] === "notification"
+      (call) => call[0] === "notification:new"
     )?.[1];
 
-    handler({ type: "INVITE_SENT", userId: "u1", communityId: "c1" });
+    handler({ notification: { message: "Nouvelle invitation !", type: "INVITE_SENT" } });
     expect(mockToast).toHaveBeenCalledWith("Nouvelle invitation !", expect.any(Object));
   });
 
-  it("should show toast for PROPOSAL_ACCEPTED", () => {
+  it("should show toast for any notification with a message", () => {
     renderHook(() => useNotificationToasts());
     const handler = mockSocket.on.mock.calls.find(
-      (call) => call[0] === "notification"
+      (call) => call[0] === "notification:new"
     )?.[1];
 
-    handler({ type: "PROPOSAL_ACCEPTED", userId: "u1", communityId: "c1" });
+    handler({ notification: { message: "Votre proposition a ete acceptee", type: "PROPOSAL_ACCEPTED" } });
     expect(mockToast).toHaveBeenCalledWith(
       "Votre proposition a ete acceptee",
       expect.any(Object)
     );
   });
 
-  it("should show toast for USER_KICKED", () => {
+  it("should not show toast when notification has no message", () => {
     renderHook(() => useNotificationToasts());
     const handler = mockSocket.on.mock.calls.find(
-      (call) => call[0] === "notification"
+      (call) => call[0] === "notification:new"
     )?.[1];
 
-    handler({ type: "USER_KICKED", userId: "u1", communityId: "c1" });
-    expect(mockToast).toHaveBeenCalledWith(
-      "Vous avez ete retire de la communaute",
-      expect.any(Object)
-    );
+    handler({ notification: { type: "UNKNOWN_TYPE" } });
+    expect(mockToast).not.toHaveBeenCalled();
   });
 
-  it("should skip unknown notification type", () => {
+  it("should not show toast when notification is null", () => {
     renderHook(() => useNotificationToasts());
     const handler = mockSocket.on.mock.calls.find(
-      (call) => call[0] === "notification"
+      (call) => call[0] === "notification:new"
     )?.[1];
 
-    handler({ type: "UNKNOWN_TYPE", userId: "u1", communityId: "c1" });
+    handler({ notification: null });
     expect(mockToast).not.toHaveBeenCalled();
   });
 });

@@ -12,10 +12,10 @@ const mockRecipe: RecipeListItem = {
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
   tags: [
-    { id: 'tag-1', name: 'dessert' },
-    { id: 'tag-2', name: 'chocolate' },
-    { id: 'tag-3', name: 'easy' },
-    { id: 'tag-4', name: 'quick' },
+    { id: 'tag-1', name: 'dessert', scope: 'GLOBAL', status: 'APPROVED' },
+    { id: 'tag-2', name: 'chocolate', scope: 'GLOBAL', status: 'APPROVED' },
+    { id: 'tag-3', name: 'easy', scope: 'COMMUNITY', status: 'APPROVED' },
+    { id: 'tag-4', name: 'quick', scope: 'COMMUNITY', status: 'PENDING' },
   ],
 };
 
@@ -124,5 +124,25 @@ describe('RecipeCard', () => {
     );
 
     expect(screen.getByText(/Updated:/)).toBeInTheDocument();
+  });
+
+  it('should render pending tags with warning style via TagBadge', () => {
+    const recipeWithPending: RecipeListItem = {
+      ...mockRecipe,
+      tags: [
+        { id: 'tag-1', name: 'approved-tag', scope: 'GLOBAL', status: 'APPROVED' },
+        { id: 'tag-2', name: 'pending-tag', scope: 'COMMUNITY', status: 'PENDING' },
+      ],
+    };
+    render(
+      <RecipeCard recipe={recipeWithPending} onDelete={mockOnDelete} />
+    );
+
+    const approvedBadge = screen.getByText('approved-tag');
+    expect(approvedBadge.className).toContain('badge-primary');
+
+    const pendingBadge = screen.getByText('pending-tag', { exact: false });
+    expect(pendingBadge.className).toContain('badge-warning');
+    expect(pendingBadge.className).toContain('border-dashed');
   });
 });

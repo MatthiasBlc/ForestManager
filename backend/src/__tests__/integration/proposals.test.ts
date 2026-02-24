@@ -571,4 +571,341 @@ describe("Proposals API", () => {
       expect(res.status).toBe(404);
     });
   });
+
+  // =====================================
+  // Phase 11.4 - Proposals + Ingredients
+  // =====================================
+  describe("Proposals with proposedIngredients (Phase 11.4)", () => {
+    // ---- Creation avec ingredients ----
+    describe("POST /api/recipes/:recipeId/proposals with proposedIngredients", () => {
+      it("should store proposedIngredients in the proposal", async () => {
+        const res = await request(app)
+          .post(`/api/recipes/${communityRecipeId}/proposals`)
+          .set("Cookie", proposerCookie)
+          .send({
+            proposedTitle: "Recipe with ingredients",
+            proposedContent: "Content with ingredients",
+            proposedIngredients: [
+              { name: "Farine", quantity: 200 },
+              { name: "Sucre", quantity: 100 },
+            ],
+          });
+
+        expect(res.status).toBe(201);
+        expect(res.body.proposedIngredients).toBeDefined();
+        expect(res.body.proposedIngredients).toHaveLength(2);
+        expect(res.body.proposedIngredients[0].ingredient.name).toBe("farine");
+        expect(res.body.proposedIngredients[0].quantity).toBe(200);
+        expect(res.body.proposedIngredients[1].ingredient.name).toBe("sucre");
+      });
+
+      it("should create PENDING ingredient when new name is submitted", async () => {
+        const suffix = uniqueSuffix();
+        const newIngredientName = `ingredient_nouveau_${suffix}`;
+
+        const res = await request(app)
+          .post(`/api/recipes/${communityRecipeId}/proposals`)
+          .set("Cookie", proposerCookie)
+          .send({
+            proposedTitle: "Recipe with new ingredient",
+            proposedContent: "Content",
+            proposedIngredients: [{ name: newIngredientName, quantity: 1 }],
+          });
+
+        expect(res.status).toBe(201);
+
+        const ingredient = await testPrisma.ingredient.findFirst({
+          where: { name: newIngredientName.toLowerCase() },
+        });
+        expect(ingredient).not.toBeNull();
+        expect(ingredient?.status).toBe("PENDING");
+        expect(ingredient?.createdById).toBe(proposer.id);
+      });
+
+      it("should reuse existing ingredient without creating duplicate", async () => {
+        const existingIngredient = await testPrisma.ingredient.create({
+          data: { name: "ingredient_existant_reuse", status: "APPROVED" },
+        });
+
+        const countBefore = await testPrisma.ingredient.count({
+          where: { name: "ingredient_existant_reuse" },
+        });
+
+        const res = await request(app)
+          .post(`/api/recipes/${communityRecipeId}/proposals`)
+          .set("Cookie", proposerCookie)
+          .send({
+            proposedTitle: "Recipe reusing ingredient",
+            proposedContent: "Content",
+            proposedIngredients: [
+              { name: existingIngredient.name, quantity: 3 },
+            ],
+          });
+
+        expect(res.status).toBe(201);
+
+        const countAfter = await testPrisma.ingredient.count({
+          where: { name: "ingredient_existant_reuse" },
+        });
+        expect(countAfter).toBe(countBefore);
+      });
+
+      it("should return 400 when proposedIngredients exceeds 50", async () => {
+        const tooManyIngredients = Array.from({ length: 51 }, (_, i) => ({
+          name: `ingredient_limit_${i}`,
+        }));
+
+        const res = await request(app)
+          .post(`/api/recipes/${communityRecipeId}/proposals`)
+          .set("Cookie", proposerCookie)
+          .send({
+            proposedTitle: "Too many ingredients",
+            proposedContent: "Content",
+            proposedIngredients: tooManyIngredients,
+          });
+
+        expect(res.status).toBe(400);
+        expect(res.body.error).toContain("INGREDIENT_003");
+      });
+
+      it("should create proposal without ingredients when not provided", async () => {
+        const res = await request(app)
+          .post(`/api/recipes/${communityRecipeId}/proposals`)
+          .set("Cookie", proposerCookie)
+          .send({
+            proposedTitle: "No ingredients",
+            proposedContent: "Content",
+          });
+
+        expect(res.status).toBe(201);
+        expect(res.body.proposedIngredients).toHaveLength(0);
+      });
+
+      it("should store unitId in ProposalIngredient when provided", async () => {
+        const suffix = uniqueSuffix();
+        const unit = await testPrisma.unit.create({
+          data: {
+            name: `gramme_test_${suffix}`,
+            abbreviation: `g_${suffix}`,
+            category: "WEIGHT",
+            sortOrder: 1,
+          },
+        });
+
+        const res = await request(app)
+          .post(`/api/recipes/${communityRecipeId}/proposals`)
+          .set("Cookie", proposerCookie)
+          .send({
+            proposedTitle: "Recipe with unit",
+            proposedContent: "Content",
+            proposedIngredients: [
+              { name: "Chocolat", quantity: 150, unitId: unit.id },
+            ],
+          });
+
+        expect(res.status).toBe(201);
+        expect(res.body.proposedIngredients[0].unitId).toBe(unit.id);
+      });
+    });
+
+    // ---- Acceptation avec remplacement ingredients ----
+    describe("POST /api/proposals/:proposalId/accept with proposedIngredients", () => {
+      let proposalWithIngredientsId: string;
+
+      beforeEach(async () => {
+        const res = await request(app)
+          .post(`/api/recipes/${communityRecipeId}/proposals`)
+          .set("Cookie", proposerCookie)
+          .send({
+            proposedTitle: "Recipe with new ingredients",
+            proposedContent: "New content with ingredients",
+            proposedIngredients: [
+              { name: "Oeuf", quantity: 3 },
+              { name: "Beurre", quantity: 50 },
+            ],
+          });
+        proposalWithIngredientsId = res.body.id;
+      });
+
+      it("should replace RecipeIngredients when accepting a proposal with ingredients", async () => {
+        const res = await request(app)
+          .post(`/api/proposals/${proposalWithIngredientsId}/accept`)
+          .set("Cookie", recipeCreatorCookie);
+
+        expect(res.status).toBe(200);
+        expect(res.body.status).toBe("ACCEPTED");
+
+        const recipeIngredients = await testPrisma.recipeIngredient.findMany({
+          where: { recipeId: communityRecipeId },
+          include: { ingredient: true },
+          orderBy: { order: "asc" },
+        });
+
+        expect(recipeIngredients).toHaveLength(2);
+        expect(recipeIngredients[0].ingredient.name).toBe("oeuf");
+        expect(recipeIngredients[0].quantity).toBe(3);
+        expect(recipeIngredients[1].ingredient.name).toBe("beurre");
+        expect(recipeIngredients[1].quantity).toBe(50);
+      });
+
+      it("should propagate ingredient replacement to the personal recipe", async () => {
+        await request(app)
+          .post(`/api/proposals/${proposalWithIngredientsId}/accept`)
+          .set("Cookie", recipeCreatorCookie);
+
+        const personalIngredients = await testPrisma.recipeIngredient.findMany({
+          where: { recipeId: personalRecipeId },
+          include: { ingredient: true },
+          orderBy: { order: "asc" },
+        });
+
+        expect(personalIngredients).toHaveLength(2);
+        expect(personalIngredients[0].ingredient.name).toBe("oeuf");
+        expect(personalIngredients[1].ingredient.name).toBe("beurre");
+      });
+
+      it("should not touch RecipeIngredients when proposal has no proposedIngredients", async () => {
+        // Ajouter un ingredient a la recette communautaire d'abord
+        const ingredient = await testPrisma.ingredient.create({
+          data: { name: "ingredient_preserved", status: "APPROVED" },
+        });
+        await testPrisma.recipeIngredient.create({
+          data: {
+            recipeId: communityRecipeId,
+            ingredientId: ingredient.id,
+            quantity: 5,
+            order: 0,
+          },
+        });
+
+        // Creer un proposal sans ingredients
+        const proposalRes = await request(app)
+          .post(`/api/recipes/${communityRecipeId}/proposals`)
+          .set("Cookie", proposerCookie)
+          .send({
+            proposedTitle: "Only title change",
+            proposedContent: "Only content change",
+          });
+
+        // Modifier la recette pour qu'elle soit plus recente que le proposal...
+        // On doit contourner la contrainte updatedAt > createdAt en creant directement
+        await testPrisma.recipeUpdateProposal.update({
+          where: { id: proposalRes.body.id },
+          data: { createdAt: new Date(Date.now() + 1000) },
+        });
+
+        const acceptRes = await request(app)
+          .post(`/api/proposals/${proposalRes.body.id}/accept`)
+          .set("Cookie", recipeCreatorCookie);
+
+        expect(acceptRes.status).toBe(200);
+
+        // Les ingredients doivent etre preserves
+        const ingredients = await testPrisma.recipeIngredient.findMany({
+          where: { recipeId: communityRecipeId },
+        });
+        expect(ingredients).toHaveLength(1);
+        expect(ingredients[0].ingredientId).toBe(ingredient.id);
+      });
+    });
+
+    // ---- Rejet avec copie ingredients dans la variante ----
+    describe("POST /api/proposals/:proposalId/reject with proposedIngredients", () => {
+      it("should copy proposedIngredients to the variant's RecipeIngredients", async () => {
+        const res = await request(app)
+          .post(`/api/recipes/${communityRecipeId}/proposals`)
+          .set("Cookie", proposerCookie)
+          .send({
+            proposedTitle: "Rejected with ingredients",
+            proposedContent: "Content",
+            proposedIngredients: [
+              { name: "Carotte", quantity: 2 },
+              { name: "Poireau", quantity: 1 },
+            ],
+          });
+        const proposalId = res.body.id;
+
+        const rejectRes = await request(app)
+          .post(`/api/proposals/${proposalId}/reject`)
+          .set("Cookie", recipeCreatorCookie);
+
+        expect(rejectRes.status).toBe(200);
+        const variantId = rejectRes.body.variant.id;
+
+        const variantIngredients = await testPrisma.recipeIngredient.findMany({
+          where: { recipeId: variantId },
+          include: { ingredient: true },
+          orderBy: { order: "asc" },
+        });
+
+        expect(variantIngredients).toHaveLength(2);
+        expect(variantIngredients[0].ingredient.name).toBe("carotte");
+        expect(variantIngredients[0].quantity).toBe(2);
+        expect(variantIngredients[1].ingredient.name).toBe("poireau");
+        expect(variantIngredients[1].quantity).toBe(1);
+      });
+
+      it("should create variant without RecipeIngredients when proposal has no ingredients", async () => {
+        const proposalRes = await request(app)
+          .post(`/api/recipes/${communityRecipeId}/proposals`)
+          .set("Cookie", proposerCookie)
+          .send({
+            proposedTitle: "No ingredients proposal",
+            proposedContent: "Content",
+          });
+
+        const rejectRes = await request(app)
+          .post(`/api/proposals/${proposalRes.body.id}/reject`)
+          .set("Cookie", recipeCreatorCookie);
+
+        expect(rejectRes.status).toBe(200);
+        const variantId = rejectRes.body.variant.id;
+
+        const variantIngredients = await testPrisma.recipeIngredient.findMany({
+          where: { recipeId: variantId },
+        });
+        expect(variantIngredients).toHaveLength(0);
+      });
+    });
+
+    // ---- proposedIngredients dans les reponses GET ----
+    describe("GET proposals responses include proposedIngredients", () => {
+      let proposalId: string;
+
+      beforeEach(async () => {
+        const res = await request(app)
+          .post(`/api/recipes/${communityRecipeId}/proposals`)
+          .set("Cookie", proposerCookie)
+          .send({
+            proposedTitle: "Proposal with ingredients",
+            proposedContent: "Content",
+            proposedIngredients: [{ name: "Tomate", quantity: 4 }],
+          });
+        proposalId = res.body.id;
+      });
+
+      it("GET /api/proposals/:id should include proposedIngredients", async () => {
+        const res = await request(app)
+          .get(`/api/proposals/${proposalId}`)
+          .set("Cookie", proposerCookie);
+
+        expect(res.status).toBe(200);
+        expect(res.body.proposedIngredients).toBeDefined();
+        expect(res.body.proposedIngredients).toHaveLength(1);
+        expect(res.body.proposedIngredients[0].ingredient.name).toBe("tomate");
+      });
+
+      it("GET /api/recipes/:recipeId/proposals should include proposedIngredients", async () => {
+        const res = await request(app)
+          .get(`/api/recipes/${communityRecipeId}/proposals`)
+          .set("Cookie", proposerCookie);
+
+        expect(res.status).toBe(200);
+        const proposal = res.body.data.find((p: { id: string }) => p.id === proposalId);
+        expect(proposal).toBeDefined();
+        expect(proposal.proposedIngredients).toHaveLength(1);
+        expect(proposal.proposedIngredients[0].ingredient.name).toBe("tomate");
+      });
+    });
+  });
 });

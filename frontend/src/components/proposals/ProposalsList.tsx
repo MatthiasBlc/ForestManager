@@ -2,17 +2,99 @@ import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import { FaCheck, FaTimes, FaUser, FaClock } from "react-icons/fa";
 import APIManager from "../../network/api";
-import { Proposal } from "../../models/recipe";
+import { Proposal, ProposalIngredient, RecipeIngredient } from "../../models/recipe";
 import { ConflictError } from "../../errors/http_errors";
 import { formatDate } from "../../utils/format.Date";
 
 interface ProposalsListProps {
   recipeId: string;
+  currentIngredients: RecipeIngredient[];
   refreshSignal?: number;
   onProposalDecided: () => void;
 }
 
-const ProposalsList = ({ recipeId, refreshSignal, onProposalDecided }: ProposalsListProps) => {
+function formatIngredient(ing: { name: string; quantity?: number | null }): string {
+  if (ing.quantity != null) {
+    return `${ing.name} (${ing.quantity})`;
+  }
+  return ing.name;
+}
+
+function IngredientsComparison({
+  current,
+  proposed,
+}: {
+  current: RecipeIngredient[];
+  proposed: ProposalIngredient[];
+}) {
+  const currentNames = new Set(current.map((i) => i.name));
+  const proposedNames = new Set(proposed.map((i) => i.ingredient.name));
+
+  const added = proposed.filter((i) => !currentNames.has(i.ingredient.name));
+  const removed = current.filter((i) => !proposedNames.has(i.name));
+  const kept = proposed.filter((i) => currentNames.has(i.ingredient.name));
+
+  if (added.length === 0 && removed.length === 0 && kept.length === proposed.length) {
+    // Check if quantities changed
+    const hasQuantityChanges = kept.some((pi) => {
+      const ci = current.find((c) => c.name === pi.ingredient.name);
+      return ci && (ci.quantity !== pi.quantity || (ci.unitId ?? null) !== pi.unitId);
+    });
+    if (!hasQuantityChanges) {
+      return <p className="text-sm text-base-content/60 italic">No ingredient changes</p>;
+    }
+  }
+
+  return (
+    <div className="space-y-2">
+      {added.length > 0 && (
+        <div>
+          <span className="text-xs font-semibold text-success">+ Added:</span>
+          <ul className="list-disc list-inside text-sm ml-2">
+            {added.map((i) => (
+              <li key={i.id} className="text-success">
+                {formatIngredient({ name: i.ingredient.name, quantity: i.quantity })}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {removed.length > 0 && (
+        <div>
+          <span className="text-xs font-semibold text-error">- Removed:</span>
+          <ul className="list-disc list-inside text-sm ml-2">
+            {removed.map((i) => (
+              <li key={i.id} className="text-error line-through">
+                {formatIngredient(i)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {kept.length > 0 && (
+        <div>
+          <span className="text-xs font-semibold text-base-content/70">Kept:</span>
+          <ul className="list-disc list-inside text-sm ml-2">
+            {kept.map((i) => {
+              const ci = current.find((c) => c.name === i.ingredient.name);
+              const qtyChanged = ci && ci.quantity !== i.quantity;
+              return (
+                <li key={i.id} className={qtyChanged ? "text-warning" : "text-base-content/70"}>
+                  {formatIngredient({ name: i.ingredient.name, quantity: i.quantity })}
+                  {qtyChanged && ci && (
+                    <span className="text-xs"> (was {ci.quantity ?? "no qty"})</span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const ProposalsList = ({ recipeId, currentIngredients, refreshSignal, onProposalDecided }: ProposalsListProps) => {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -151,7 +233,7 @@ const ProposalsList = ({ recipeId, refreshSignal, onProposalDecided }: Proposals
 
               {expandedId === proposal.id && (
                 <div className="mt-4 p-3 bg-base-100 rounded-lg">
-                  <div className="text-sm space-y-2">
+                  <div className="text-sm space-y-3">
                     <div>
                       <span className="font-medium">Proposed title:</span>
                       <p className="mt-1">{proposal.proposedTitle}</p>
@@ -162,6 +244,17 @@ const ProposalsList = ({ recipeId, refreshSignal, onProposalDecided }: Proposals
                         {proposal.proposedContent}
                       </pre>
                     </div>
+                    {proposal.proposedIngredients && proposal.proposedIngredients.length > 0 && (
+                      <div>
+                        <span className="font-medium">Proposed ingredients:</span>
+                        <div className="mt-1">
+                          <IngredientsComparison
+                            current={currentIngredients}
+                            proposed={proposal.proposedIngredients}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

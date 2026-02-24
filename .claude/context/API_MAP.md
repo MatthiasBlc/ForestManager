@@ -32,15 +32,22 @@ Controller: `controllers/recipes.ts` | Route: `routes/recipes.ts`
 
 ## Tags (/api/tags) - requireAuth
 ```
-GET /api/tags/                  # autocomplete (search, recipeCount)
+GET /api/tags/                  # autocomplete scope-aware (search, communityId?, recipeCount)
 ```
 Controller: `controllers/tags.ts` | Route: `routes/tags.ts`
 
 ## Ingredients (/api/ingredients) - requireAuth
 ```
-GET /api/ingredients/           # autocomplete (search, recipeCount)
+GET /api/ingredients/                      # autocomplete (search, recipeCount, status)
+GET /api/ingredients/:id/suggested-unit    # suggested unit (defaultUnit → popular → null)
 ```
 Controller: `controllers/ingredients.ts` | Route: `routes/ingredients.ts`
+
+## Units (/api/units) - requireAuth
+```
+GET /api/units/                 # list grouped by category (UnitCategory → Unit[])
+```
+Controller: `controllers/units.ts` | Route: `routes/units.ts`
 
 ## Communities (/api/communities) - requireAuth
 ```
@@ -74,6 +81,17 @@ DELETE /api/communities/:communityId/invites/:inviteId      # cancel (MODERATOR)
 ```
 Controller: `controllers/invites.ts`
 
+### Tags (nested under /api/communities/:communityId) - MODERATOR
+```
+GET    /api/communities/:communityId/tags                  # list (APPROVED + PENDING, ?status=, ?search=)
+POST   /api/communities/:communityId/tags                  # create APPROVED community tag
+PATCH  /api/communities/:communityId/tags/:tagId           # rename
+DELETE /api/communities/:communityId/tags/:tagId           # delete (hard, cascade RecipeTag)
+POST   /api/communities/:communityId/tags/:tagId/approve   # approve PENDING → APPROVED
+POST   /api/communities/:communityId/tags/:tagId/reject    # reject PENDING → hard delete
+```
+Controller: `controllers/communityTags.ts`
+
 ### Activity (nested under /api/communities/:communityId)
 ```
 GET    /api/communities/:communityId/activity              # feed (memberOf, paginated)
@@ -86,8 +104,22 @@ GET   /api/users/search               # search by username prefix (?q=)
 PATCH /api/users/me                    # update profile (username, email, password)
 GET   /api/users/me/invites            # received invitations (?status=)
 GET   /api/users/me/activity           # personal activity feed (paginated)
+GET   /api/users/me/tag-preferences                            # tag visibility prefs per community
+PUT   /api/users/me/tag-preferences/:communityId               # toggle showTags (member)
 ```
-Controller: `controllers/users.ts`, `controllers/invites.ts`, `controllers/activity.ts` | Route: `routes/users.ts`
+Controller: `controllers/users.ts`, `controllers/invites.ts`, `controllers/activity.ts`, `controllers/tagPreferences.ts` | Route: `routes/users.ts`
+
+## Notifications (/api/notifications) - requireAuth
+```
+GET   /api/notifications/                   # list paginated (page, limit, category, unreadOnly, grouped)
+GET   /api/notifications/unread-count       # total + by category
+PATCH /api/notifications/read               # batch mark as read (body: ids[])
+PATCH /api/notifications/read-all           # mark all as read (body: category?)
+PATCH /api/notifications/:id/read           # mark single as read
+GET   /api/notifications/preferences        # preferences (global + per community, 5 categories)
+PUT   /api/notifications/preferences        # update preference (category, enabled, communityId?)
+```
+Controller: `controllers/notifications.ts` | Route: `routes/notifications.ts`
 
 ## User Invitations
 ```
@@ -111,6 +143,20 @@ POST /api/recipes/:recipeId/proposals   # creer proposition
 ```
 Controller: `controllers/proposals.ts` | Route: `routes/recipes.ts`
 
+## Tag Suggestions (/api/tag-suggestions) - requireAuth
+```
+POST /api/tag-suggestions/:id/accept   # owner accepte suggestion
+POST /api/tag-suggestions/:id/reject   # owner rejette suggestion
+```
+Controller: `controllers/tagSuggestions.ts` | Route: `routes/tagSuggestions.ts`
+
+### Tag Suggestions (nested under /api/recipes/:recipeId)
+```
+GET  /api/recipes/:recipeId/tag-suggestions   # list suggestions (?status=)
+POST /api/recipes/:recipeId/tag-suggestions   # suggerer un tag (membre, pas owner)
+```
+Controller: `controllers/tagSuggestions.ts` | Route: `routes/recipes.ts`
+
 ---
 
 ## Admin Auth (/api/admin/auth) - adminSession, rate limited 5/15min
@@ -124,23 +170,34 @@ Controller: `admin/controllers/authController.ts` | Route: `admin/routes/authRou
 
 ## Admin Tags (/api/admin/tags) - requireSuperAdmin
 ```
-GET    /api/admin/tags/             # list all
-POST   /api/admin/tags/             # create
-PATCH  /api/admin/tags/:id          # update
-DELETE /api/admin/tags/:id          # delete
+GET    /api/admin/tags/             # list all (?scope=GLOBAL|COMMUNITY, ?search=)
+POST   /api/admin/tags/             # create (GLOBAL only)
+PATCH  /api/admin/tags/:id          # update (any tag)
+DELETE /api/admin/tags/:id          # delete (any tag)
 POST   /api/admin/tags/:id/merge    # merge into another
 ```
 Controller: `admin/controllers/tagsController.ts` | Route: `admin/routes/tagsRoutes.ts`
 
 ## Admin Ingredients (/api/admin/ingredients) - requireSuperAdmin
 ```
-GET    /api/admin/ingredients/             # list all
-POST   /api/admin/ingredients/             # create
-PATCH  /api/admin/ingredients/:id          # update
-DELETE /api/admin/ingredients/:id          # delete
-POST   /api/admin/ingredients/:id/merge    # merge into another
+GET    /api/admin/ingredients/               # list all (?search=, ?status=APPROVED|PENDING)
+POST   /api/admin/ingredients/               # create (name, defaultUnitId?)
+PATCH  /api/admin/ingredients/:id            # update (name?, defaultUnitId?)
+DELETE /api/admin/ingredients/:id            # delete
+POST   /api/admin/ingredients/:id/merge      # merge into another (+ ProposalIngredient)
+POST   /api/admin/ingredients/:id/approve    # approve PENDING (newName?)
+POST   /api/admin/ingredients/:id/reject     # reject PENDING (reason required, hard delete)
 ```
 Controller: `admin/controllers/ingredientsController.ts` | Route: `admin/routes/ingredientsRoutes.ts`
+
+## Admin Units (/api/admin/units) - requireSuperAdmin
+```
+GET    /api/admin/units/             # list all (?search=, ?category=)
+POST   /api/admin/units/             # create (name, abbreviation, category, sortOrder?)
+PATCH  /api/admin/units/:id          # update (name?, abbreviation?, category?, sortOrder?)
+DELETE /api/admin/units/:id          # delete (blocked if in use)
+```
+Controller: `admin/controllers/unitsController.ts` | Route: `admin/routes/unitsRoutes.ts`
 
 ## Admin Communities (/api/admin/communities) - requireSuperAdmin
 ```
@@ -183,4 +240,4 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 | adminRateLimiter | middleware/security.ts | 30 req/min global admin |
 | authRateLimiter | routes config | 5/15min sur auth endpoints |
 
-## Total: 65 endpoints (38 user + 27 admin + 1 health)
+## Total: 93 endpoints (59 user + 33 admin + 1 health)

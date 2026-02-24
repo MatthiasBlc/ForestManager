@@ -1,5 +1,6 @@
 import { ActivityType } from "@prisma/client";
 import prisma from "../util/db";
+import { PROPOSAL_INGREDIENTS_SELECT } from "../util/prismaSelects";
 
 const PROPOSAL_SELECT = {
   id: true,
@@ -16,6 +17,7 @@ const PROPOSAL_SELECT = {
       username: true,
     },
   },
+  proposedIngredients: PROPOSAL_INGREDIENTS_SELECT,
 };
 
 interface ProposalWithRecipe {
@@ -39,7 +41,31 @@ interface ProposalWithRecipe {
 }
 
 /**
+ * Copie les ProposalIngredients vers les RecipeIngredients d'une recette cible.
+ * Supprime d'abord les RecipeIngredients existants.
+ */
+async function applyProposalIngredients(
+  tx: Omit<typeof prisma, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">,
+  recipeId: string,
+  proposalIngredients: Array<{ ingredientId: string; quantity: number | null; unitId: string | null; order: number }>
+) {
+  await tx.recipeIngredient.deleteMany({ where: { recipeId } });
+  for (const pi of proposalIngredients) {
+    await tx.recipeIngredient.create({
+      data: {
+        recipeId,
+        ingredientId: pi.ingredientId,
+        quantity: pi.quantity,
+        unitId: pi.unitId,
+        order: pi.order,
+      },
+    });
+  }
+}
+
+/**
  * Accepte une proposition : met a jour la recette + propage aux copies liees.
+ * Si des ProposalIngredients existent, remplace les RecipeIngredients.
  */
 export async function acceptProposal(
   proposalId: string,
@@ -49,7 +75,21 @@ export async function acceptProposal(
   return prisma.$transaction(async (tx) => {
     const now = new Date();
 
-    // 1. Mettre a jour la recette communautaire
+    // Recuperer les ingredients proposes
+    const proposalIngredients = await tx.proposalIngredient.findMany({
+      where: { proposalId },
+      select: {
+        ingredientId: true,
+        quantity: true,
+        unitId: true,
+        order: true,
+      },
+      orderBy: { order: "asc" },
+    });
+
+    const hasProposedIngredients = proposalIngredients.length > 0;
+
+    // 1. Mettre a jour la recette communautaire (titre + contenu)
     await tx.recipe.update({
       where: { id: proposal.recipe.id },
       data: {
@@ -58,6 +98,11 @@ export async function acceptProposal(
         updatedAt: now,
       },
     });
+
+    // Remplacer les ingredients sur la recette communautaire
+    if (hasProposedIngredients) {
+      await applyProposalIngredients(tx, proposal.recipe.id, proposalIngredients);
+    }
 
     // 2. Si la recette a un originRecipeId (lien vers la perso), propager
     if (proposal.recipe.originRecipeId) {
@@ -80,6 +125,10 @@ export async function acceptProposal(
           },
         });
 
+        if (hasProposedIngredients) {
+          await applyProposalIngredients(tx, originRecipe.id, proposalIngredients);
+        }
+
         // 3. Propager aux autres copies communautaires
         const otherCommunityRecipes = await tx.recipe.findMany({
           where: {
@@ -99,6 +148,12 @@ export async function acceptProposal(
               updatedAt: now,
             },
           });
+
+          if (hasProposedIngredients) {
+            for (const linked of otherCommunityRecipes) {
+              await applyProposalIngredients(tx, linked.id, proposalIngredients);
+            }
+          }
 
           // Creer ActivityLog RECIPE_UPDATED pour chaque communaute
           const activityLogs = otherCommunityRecipes
@@ -154,6 +209,7 @@ interface ProposalForReject {
 
 /**
  * Refuse une proposition et cree une variante pour le proposeur.
+ * Si des ProposalIngredients existent, les copie dans la variante.
  */
 export async function rejectProposal(
   proposalId: string,
@@ -161,6 +217,18 @@ export async function rejectProposal(
 ) {
   return prisma.$transaction(async (tx) => {
     const now = new Date();
+
+    // Recuperer les ingredients proposes avant de creer la variante
+    const proposalIngredients = await tx.proposalIngredient.findMany({
+      where: { proposalId },
+      select: {
+        ingredientId: true,
+        quantity: true,
+        unitId: true,
+        order: true,
+      },
+      orderBy: { order: "asc" },
+    });
 
     // 1. Creer une variante pour le proposeur
     const variant = await tx.recipe.create({
@@ -185,6 +253,21 @@ export async function rejectProposal(
         createdAt: true,
       },
     });
+
+    // Copier les ingredients proposes dans la variante
+    if (proposalIngredients.length > 0) {
+      for (const pi of proposalIngredients) {
+        await tx.recipeIngredient.create({
+          data: {
+            recipeId: variant.id,
+            ingredientId: pi.ingredientId,
+            quantity: pi.quantity,
+            unitId: pi.unitId,
+            order: pi.order,
+          },
+        });
+      }
+    }
 
     // 2. Mettre a jour la proposition
     const updatedProposal = await tx.recipeUpdateProposal.update({

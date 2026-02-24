@@ -1,13 +1,45 @@
 export interface Tag {
   id: string;
   name: string;
+  scope?: "GLOBAL" | "COMMUNITY";
+  status?: "APPROVED" | "PENDING";
+  communityId?: string | null;
+}
+
+export type UnitCategory = "WEIGHT" | "VOLUME" | "SPOON" | "COUNT" | "QUALITATIVE";
+export type IngredientStatus = "APPROVED" | "PENDING";
+
+export interface Unit {
+  id: string;
+  name: string;
+  abbreviation: string;
+  category: UnitCategory;
+  sortOrder: number;
+}
+
+export type UnitsByCategory = Partial<Record<UnitCategory, Unit[]>>;
+
+export interface SuggestedUnit {
+  suggestedUnitId: string | null;
+  source: "default" | "popular" | null;
 }
 
 export interface RecipeIngredient {
   id: string;
   name: string;
   ingredientId: string;
-  quantity: string | null;
+  quantity: number | null;
+  unitId?: string | null;
+  unit?: { id: string; name: string; abbreviation: string } | null;
+  order: number;
+}
+
+export interface ProposalIngredient {
+  id: string;
+  ingredientId: string;
+  ingredient: { id: string; name: string; status: IngredientStatus };
+  quantity: number | null;
+  unitId: string | null;
   order: number;
 }
 
@@ -73,12 +105,15 @@ export interface TagSearchResult {
   id: string;
   name: string;
   recipeCount: number;
+  scope?: "GLOBAL" | "COMMUNITY";
+  communityId?: string | null;
 }
 
 export interface IngredientSearchResult {
   id: string;
   name: string;
   recipeCount: number;
+  status?: IngredientStatus;
 }
 
 // Legacy interface for backwards compatibility
@@ -108,6 +143,7 @@ export interface Proposal {
     id: string;
     username: string;
   };
+  proposedIngredients?: ProposalIngredient[];
   recipe?: {
     id: string;
     title: string;
@@ -126,9 +162,16 @@ export interface ProposalsResponse {
   };
 }
 
+export interface ProposalIngredientInput {
+  name: string;
+  quantity?: number;
+  unitId?: string;
+}
+
 export interface ProposalInput {
   proposedTitle: string;
   proposedContent: string;
+  proposedIngredients?: ProposalIngredientInput[];
 }
 
 // Variants

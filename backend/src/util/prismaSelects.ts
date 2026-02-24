@@ -3,17 +3,40 @@
  * Centralise les patterns repetes dans les controllers.
  */
 
-/** Select pour les tags d'une recette (retourne { tag: { id, name } }) */
+/** Select pour les tags d'une recette (retourne { tag: { id, name, scope, status, communityId } }) */
 export const RECIPE_TAGS_SELECT = {
   select: {
     tag: {
       select: {
         id: true,
         name: true,
+        scope: true,
+        status: true,
+        communityId: true,
       },
     },
   },
 } as const;
+
+/** Select pour les ingredients proposes dans une proposal, tries par ordre */
+export const PROPOSAL_INGREDIENTS_SELECT = {
+  select: {
+    id: true,
+    quantity: true,
+    unitId: true,
+    order: true,
+    ingredient: {
+      select: {
+        id: true,
+        name: true,
+        status: true,
+      },
+    },
+  },
+  orderBy: {
+    order: "asc" as const,
+  },
+};
 
 /** Select pour les ingredients d'une recette, tries par ordre */
 export const RECIPE_INGREDIENTS_SELECT = {

@@ -33,41 +33,74 @@ npx prisma studio              # DB GUI :5555
 ## Git
 
 - **Main**: master
-- **Branche courante**: CommunitiesBases
+- **Branche courante**: NotificationsUpgrade
 - **Commits**: Ne JAMAIS ajouter de Co-Authored-By pour Claude
 
 ## Phase actuelle
 
-**Phase 4** (Recettes communautaires) - Backend 4.1 COMPLETE, Frontend 4.2 COMPLETE.
-Voir `.claude/context/PROGRESS.md` pour le detail.
+**Phase 12** - Rework Notifications : COMPLETE.
+Voir `.claude/context/PROGRESS.md` pour le detail et les liens vers spec/roadmap.
 
 ## Codes erreur
 
-AUTH_001 (non auth) | COMMUNITY_001-006 | RECIPE_001-002 | INVITE_001-003 | ADMIN_001-012
+AUTH_001-002 | COMMUNITY_001-006 | RECIPE_001-005 | INVITE_001-003 | ADMIN_001-012 | PROPOSAL_001-003 | SHARE_001-003 | TAG_001-007 | ADMIN_ING_001-009 | ADMIN_UNIT_001-007 | NOTIF_001-005
 
 ## Regle: maintenir `.claude/` a jour
 
-Apres chaque modification (nouveau fichier, endpoint, migration, test, phase, branche), mettre a jour les fichiers `.claude/context/` concernes **ET `docs/DEVELOPMENT_ROADMAP.md`** (cocher les taches, maj checklist MVP, maj compteur tests) avant de terminer la session.
+Apres chaque modification (nouveau fichier, endpoint, migration, test, phase, branche), mettre a jour :
+- `.claude/context/` (PROGRESS, TESTS, API_MAP, DB_MODELS, FILE_MAP selon pertinence)
+- La **roadmap de la feature en cours** (cocher les taches dans `docs/features/*/ROADMAP.md`)
+
 Si une tache est en cours et que les tokens arrivent a leur limite, generer `.claude/context/RESUME.md` avec: tache en cours, etapes faites, etapes restantes, fichiers modifies, et tout contexte necessaire pour reprendre sans perte.
 
 ### PROGRESS.md : garder le fichier compact
-- Le tableau des phases completees = 1 ligne par phase, suffisant comme historique
-- Section "Phase en cours" : detail uniquement pour la phase active (checklist, sous-etapes)
-- **Quand une phase est terminee** : supprimer sa section de detail, ajouter la ligne au tableau, c'est tout
-- Le detail des anciennes phases reste tracable via git log et les docs (DEVELOPMENT_ROADMAP, etc.)
+- Juste un lien vers la phase en cours (spec + roadmap dans `docs/features/`)
+- Pas de duplication de la roadmap dans PROGRESS
+- Le detail du MVP est dans `docs/mvp/DEVELOPMENT_ROADMAP.md` (archive, ne plus modifier)
+
+## Organisation docs/
+
+```
+docs/
+  0 - brainstorming futur.md       # Idees futures (transversal)
+  mvp/                              # Docs du MVP (archive, phases 0-8)
+  features/                         # Specs + roadmaps par feature post-MVP
+    tags-rework/
+      SPEC_TAGS_REWORK.md
+      ROADMAP.md
+    ingredients-rework/
+      SPEC_INGREDIENTS_REWORK.md
+      ROADMAP.md
+      MANUAL_TESTS.md
+    notifications-rework/
+      SPEC_NOTIFICATIONS_REWORK.md
+      ROADMAP.md
+      MANUAL_TESTS.md
+```
+
+Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une spec et une roadmap.
 
 ## Contexte approfondi (lire selon le besoin)
 
 | Besoin | Fichier |
 |--------|---------|
-| Avancement phases & resume | `.claude/context/PROGRESS.md` |
-| Tests: commandes, fichiers, infra | `.claude/context/TESTS.md` |
+| Avancement & phase en cours | `.claude/context/PROGRESS.md` |
+| Tests: commandes, inventaire, infra | `.claude/context/TESTS.md` |
 | Endpoints API complets | `.claude/context/API_MAP.md` |
 | Schema DB & modeles Prisma | `.claude/context/DB_MODELS.md` |
 | Arborescence fichiers source | `.claude/context/FILE_MAP.md` |
-| Regles metier detaillees | `docs/BUSINESS_RULES.md` |
-| User stories | `docs/USER_STORIES.md` |
-| Architecture & patterns | `docs/ARCHITECTURE.md` |
-| Roadmap & plan de tests | `docs/DEVELOPMENT_ROADMAP.md` |
-| Spec API (contrat REST) | `docs/API_SPECIFICATION.md` |
-| Roadmap tests par sprint | `docs/TESTS_IMPLEMENTATION_PLAN.md` |
+| **Feature : Tags Rework** | |
+| Spec Tags Rework | `docs/features/tags-rework/SPEC_TAGS_REWORK.md` |
+| Roadmap Tags Rework | `docs/features/tags-rework/ROADMAP.md` |
+| **Feature : Ingredients Rework** | |
+| Spec Ingredients Rework | `docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md` |
+| Roadmap Ingredients Rework | `docs/features/ingredients-rework/ROADMAP.md` |
+| **Feature : Notifications Rework** | |
+| Spec Notifications Rework | `docs/features/notifications-rework/SPEC_NOTIFICATIONS_REWORK.md` |
+| Roadmap Notifications Rework | `docs/features/notifications-rework/ROADMAP.md` |
+| **Archive MVP** | |
+| Regles metier | `docs/mvp/BUSINESS_RULES.md` |
+| User stories | `docs/mvp/USER_STORIES.md` |
+| Architecture & patterns | `docs/mvp/ARCHITECTURE.md` |
+| Roadmap MVP (archive) | `docs/mvp/DEVELOPMENT_ROADMAP.md` |
+| Spec API (contrat REST) | `docs/mvp/API_SPECIFICATION.md` |

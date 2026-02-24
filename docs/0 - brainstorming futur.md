@@ -6,25 +6,27 @@ Tout doit être cohérent avec l'application et son fonctionnement actuel. Ce so
 Tout doit être clair et maitrisé, pensé pour être maintenable et évoluer dans le temps.
 Toute la logique business doit être validé et sans zone d'ombre restante avant d'écrire du code.
 
-# audit refactorisation complete back + front
+# ~~Rework du système d'ingrédients~~ DONE (Phase 11)
 
-# Rework du système de tags
+Implemente : unites structurees, gouvernance PENDING/APPROVED, moderation admin, propositions avec ingredients, notifications WebSocket.
 
-avoir une liste par défaut globale à la création d'une communauté, et permettre à chaque communauté de créer ses propres tags complémentaires ???
--> vu que les recettes sont associé à un user, comment faire de manière logique ?
+# ~~Le système de notifications doit être amélioré~~ DONE (Phase 12)
 
-# Rework du système d'ingrédients
-
-Problèmes similaires au système de tags :
--> vu que les recettes sont associé à un user, comment faire de manière logique ?
+persistance, fonctionne y compris offline (je me connecte je dois voir les notifs reçues lorsque j'étais offline)
 
 # Rework des pages recettes (v2)
 
 nombre de personne pour les ingrédients,
 étapes claires et structurées
-temps de préparation, temps de cuisson, de repos, temps total
+temps de préparation, temps de cuisson, de repos,
+-> temps total (calcul automatique)
 
 sélecteur du nombre de persones avec calcul automatique des quantités
+
+Voici une inspiration : (regarde la version mobile du site principalement, j'aime la structure séquentielle.)
+https://www.magimix.fr/recettes/brioche-a-la-praline-rose_c
+
+pour le desktop le site de marmiton peut être une bonne piste.
 
 # audit refactorisation complete back + front
 
