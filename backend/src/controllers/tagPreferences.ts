@@ -87,7 +87,7 @@ export const updateTagPreference: RequestHandler<
 };
 
 // =============================================================================
-// MODERATOR NOTIFICATION PREFERENCES (ModeratorNotificationPreference)
+// MODERATOR NOTIFICATION PREFERENCES (NotificationPreference, category=TAG)
 // =============================================================================
 
 /**
@@ -113,26 +113,26 @@ export const getNotificationPreferences: RequestHandler = async (
       },
     });
 
-    // Recuperer toutes les prefs
-    const prefs = await prisma.moderatorNotificationPreference.findMany({
-      where: { userId },
+    // Recuperer les prefs TAG
+    const prefs = await prisma.notificationPreference.findMany({
+      where: { userId, category: "TAG" },
     });
 
     // Pref globale (communityId = null)
     const globalPref = prefs.find((p) => p.communityId === null);
     const communityPrefs = prefs.filter((p) => p.communityId !== null);
     const communityPrefMap = new Map(
-      communityPrefs.map((p) => [p.communityId, p.tagNotifications])
+      communityPrefs.map((p) => [p.communityId, p.enabled])
     );
 
     const data = {
       global: {
-        tagNotifications: globalPref?.tagNotifications ?? true,
+        tagNotifications: globalPref?.enabled ?? true,
       },
       communities: moderatorships.map((m) => ({
         communityId: m.communityId,
         communityName: m.community.name,
-        tagNotifications: communityPrefMap.get(m.communityId) ?? globalPref?.tagNotifications ?? true,
+        tagNotifications: communityPrefMap.get(m.communityId) ?? globalPref?.enabled ?? true,
       })),
     };
 
@@ -176,25 +176,25 @@ export const updateGlobalNotificationPreference: RequestHandler<
       );
     }
 
-    // Chercher la pref globale (communityId = null)
-    const existing = await prisma.moderatorNotificationPreference.findFirst({
-      where: { userId, communityId: null },
+    // communityId null : upsert impossible sur contrainte unique avec null
+    const existing = await prisma.notificationPreference.findFirst({
+      where: { userId, communityId: null, category: "TAG" },
     });
 
     let pref;
     if (existing) {
-      pref = await prisma.moderatorNotificationPreference.update({
+      pref = await prisma.notificationPreference.update({
         where: { id: existing.id },
-        data: { tagNotifications },
+        data: { enabled: tagNotifications },
       });
     } else {
-      pref = await prisma.moderatorNotificationPreference.create({
-        data: { userId, communityId: null, tagNotifications },
+      pref = await prisma.notificationPreference.create({
+        data: { userId, communityId: null, category: "TAG", enabled: tagNotifications },
       });
     }
 
     res.status(200).json({
-      tagNotifications: pref.tagNotifications,
+      tagNotifications: pref.enabled,
     });
   } catch (error) {
     next(error);
@@ -234,15 +234,21 @@ export const updateCommunityNotificationPreference: RequestHandler<
       );
     }
 
-    const pref = await prisma.moderatorNotificationPreference.upsert({
-      where: { userId_communityId: { userId, communityId } },
-      update: { tagNotifications },
-      create: { userId, communityId, tagNotifications },
+    const pref = await prisma.notificationPreference.upsert({
+      where: {
+        userId_communityId_category: {
+          userId,
+          communityId,
+          category: "TAG",
+        },
+      },
+      update: { enabled: tagNotifications },
+      create: { userId, communityId, category: "TAG", enabled: tagNotifications },
     });
 
     res.status(200).json({
       communityId: pref.communityId,
-      tagNotifications: pref.tagNotifications,
+      tagNotifications: pref.enabled,
     });
   } catch (error) {
     next(error);

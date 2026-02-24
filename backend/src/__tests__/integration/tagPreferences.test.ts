@@ -423,8 +423,8 @@ describe("Notification Service - getModeratorIdsForTagNotification", () => {
   });
 
   it("should exclude moderator with global notifications disabled", async () => {
-    await testPrisma.moderatorNotificationPreference.create({
-      data: { userId: moderator1.id, communityId: null, tagNotifications: false },
+    await testPrisma.notificationPreference.create({
+      data: { userId: moderator1.id, communityId: null, category: "TAG", enabled: false },
     });
 
     const { getModeratorIdsForTagNotification } = await import(
@@ -437,11 +437,11 @@ describe("Notification Service - getModeratorIdsForTagNotification", () => {
 
   it("should respect community preference over global", async () => {
     // Global disabled but community enabled
-    await testPrisma.moderatorNotificationPreference.create({
-      data: { userId: moderator1.id, communityId: null, tagNotifications: false },
+    await testPrisma.notificationPreference.create({
+      data: { userId: moderator1.id, communityId: null, category: "TAG", enabled: false },
     });
-    await testPrisma.moderatorNotificationPreference.create({
-      data: { userId: moderator1.id, communityId: community.id, tagNotifications: true },
+    await testPrisma.notificationPreference.create({
+      data: { userId: moderator1.id, communityId: community.id, category: "TAG", enabled: true },
     });
 
     const { getModeratorIdsForTagNotification } = await import(
@@ -454,11 +454,11 @@ describe("Notification Service - getModeratorIdsForTagNotification", () => {
 
   it("should exclude moderator with community notifications disabled", async () => {
     // Global enabled but community disabled
-    await testPrisma.moderatorNotificationPreference.create({
-      data: { userId: moderator1.id, communityId: null, tagNotifications: true },
+    await testPrisma.notificationPreference.create({
+      data: { userId: moderator1.id, communityId: null, category: "TAG", enabled: true },
     });
-    await testPrisma.moderatorNotificationPreference.create({
-      data: { userId: moderator1.id, communityId: community.id, tagNotifications: false },
+    await testPrisma.notificationPreference.create({
+      data: { userId: moderator1.id, communityId: community.id, category: "TAG", enabled: false },
     });
 
     const { getModeratorIdsForTagNotification } = await import(

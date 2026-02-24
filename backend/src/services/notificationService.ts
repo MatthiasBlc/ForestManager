@@ -2,7 +2,7 @@ import prisma from "../util/db";
 
 /**
  * Retourne les IDs des moderateurs d'une communaute qui ont les notifications tags activees.
- * Filtre par ModeratorNotificationPreference (global puis par communaute).
+ * Filtre par NotificationPreference (category=TAG, global puis par communaute).
  */
 export async function getModeratorIdsForTagNotification(
   communityId: string
@@ -21,10 +21,11 @@ export async function getModeratorIdsForTagNotification(
 
   const moderatorIds = moderators.map((m) => m.userId);
 
-  // Recuperer les preferences de notification de ces moderateurs
-  const prefs = await prisma.moderatorNotificationPreference.findMany({
+  // Recuperer les preferences de notification TAG de ces moderateurs
+  const prefs = await prisma.notificationPreference.findMany({
     where: {
       userId: { in: moderatorIds },
+      category: "TAG",
       OR: [{ communityId: null }, { communityId }],
     },
   });
@@ -38,9 +39,9 @@ export async function getModeratorIdsForTagNotification(
   for (const pref of prefs) {
     const entry = prefMap.get(pref.userId) ?? { global: true };
     if (pref.communityId === null) {
-      entry.global = pref.tagNotifications;
+      entry.global = pref.enabled;
     } else {
-      entry.community = pref.tagNotifications;
+      entry.community = pref.enabled;
     }
     prefMap.set(pref.userId, entry);
   }
