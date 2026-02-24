@@ -40,9 +40,9 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~998 tests)
+## Inventaire des tests (~1004 tests)
 
-### Backend Integration (25 fichiers, ~533 tests)
+### Backend Integration (26 fichiers, ~539 tests)
 
 | Fichier | Module | Tests |
 |---------|--------|-------|
@@ -71,6 +71,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | notificationService.test.ts | Notification service (create, broadcast, preferences, templates) | 30 |
 | notifications.test.ts | Notifications API (CRUD, grouping, batch, preferences) | 27 |
 | websocket.test.ts | WebSocket (auth, rooms, notification:new, notification:count, persistence) | 8 |
+| notificationCleanup.test.ts | Notification cleanup job (retention, batch, edge cases) | 6 |
 
 ### Backend Unit (7 fichiers, ~51 tests)
 

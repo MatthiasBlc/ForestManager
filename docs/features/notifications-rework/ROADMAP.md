@@ -61,10 +61,10 @@
 
 ## 12.6 - Backend Job de nettoyage
 
-- [ ] Job cron quotidien : suppression des notifications lues > 30 jours
-- [ ] Execution en batch (eviter lock table longue)
-- [ ] Logs du nombre de notifications nettoyees
-- [ ] Tests job nettoyage
+- [x] Job cron quotidien : suppression des notifications lues > 30 jours (daily 03:00)
+- [x] Execution en batch (500 par batch, eviter lock table longue)
+- [x] Logs du nombre de notifications nettoyees
+- [x] Tests job nettoyage (6 tests)
 
 ## 12.7 - Frontend Dropdown notifications
 
