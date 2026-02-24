@@ -22,6 +22,7 @@ import CommunityCreatePage from "./pages/CommunityCreatePage";
 import CommunityDetailPage from "./pages/CommunityDetailPage";
 import CommunityEditPage from "./pages/CommunityEditPage";
 import InvitationsPage from "./pages/InvitationsPage";
+import NotificationsPage from "./pages/NotificationsPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminLoginPage from "./pages/admin/AdminLoginPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
@@ -169,6 +170,18 @@ function App() {
                   <ProtectedRoute>
                     <MainLayout>
                       <ProfilePage />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Notifications route */}
+              <Route
+                path="/notifications"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <NotificationsPage />
                     </MainLayout>
                   </ProtectedRoute>
                 }

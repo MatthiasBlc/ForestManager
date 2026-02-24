@@ -6,6 +6,7 @@ import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats, Admin
 import { CommunityTag } from "../models/tag";
 import { TagSuggestion, TagSuggestionsResponse } from "../models/tagSuggestion";
 import { TagPreference, NotificationPreferences } from "../models/preferences";
+import { NotificationsResponse, UnreadCountResponse, NotificationPreferencesResponse } from "../models/notification";
 import { CommunityListItem, CommunityDetail, CommunityMember, CommunityInvite, ReceivedInvite } from "../models/community";
 import { ConflictError, UnauthorizedError } from "../errors/http_errors";
 
@@ -371,18 +372,47 @@ export default class APIManager {
     return response.data;
   }
 
-  static async getNotificationPreferences(): Promise<NotificationPreferences> {
-    const response = await API.get("/api/users/me/notification-preferences").catch(handleApiError);
+  // --------------- Notifications ---------------
+
+  static async getNotifications(params: { page?: number; limit?: number; category?: string; unreadOnly?: boolean; grouped?: boolean } = {}): Promise<NotificationsResponse> {
+    const qs = buildQueryString({
+      page: params.page,
+      limit: params.limit,
+      category: params.category,
+      unreadOnly: params.unreadOnly ? "true" : undefined,
+      grouped: params.grouped === false ? "false" : undefined,
+    });
+    const response = await API.get(`/api/notifications${qs}`).catch(handleApiError);
     return response.data;
   }
 
-  static async updateGlobalNotificationPreference(tagNotifications: boolean): Promise<{ tagNotifications: boolean }> {
-    const response = await API.put("/api/users/me/notification-preferences/tags", JSON.stringify({ tagNotifications })).catch(handleApiError);
+  static async getUnreadCount(): Promise<UnreadCountResponse> {
+    const response = await API.get("/api/notifications/unread-count").catch(handleApiError);
     return response.data;
   }
 
-  static async updateCommunityNotificationPreference(communityId: string, tagNotifications: boolean): Promise<{ communityId: string; tagNotifications: boolean }> {
-    const response = await API.put(`/api/users/me/notification-preferences/tags/${communityId}`, JSON.stringify({ tagNotifications })).catch(handleApiError);
+  static async markAsRead(id: string): Promise<{ id: string; readAt: string }> {
+    const response = await API.patch(`/api/notifications/${id}/read`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async markBatchAsRead(ids: string[]): Promise<{ updated: number }> {
+    const response = await API.patch("/api/notifications/read", JSON.stringify({ ids })).catch(handleApiError);
+    return response.data;
+  }
+
+  static async markAllAsRead(category?: string): Promise<{ updated: number }> {
+    const response = await API.patch("/api/notifications/read-all", JSON.stringify({ category })).catch(handleApiError);
+    return response.data;
+  }
+
+  static async getNotificationPreferences(): Promise<NotificationPreferencesResponse> {
+    const response = await API.get("/api/notifications/preferences").catch(handleApiError);
+    return response.data;
+  }
+
+  static async updateNotificationPreference(category: string, enabled: boolean, communityId?: string): Promise<{ category: string; enabled: boolean; communityId: string | null }> {
+    const response = await API.put("/api/notifications/preferences", JSON.stringify({ category, enabled, communityId })).catch(handleApiError);
     return response.data;
   }
 

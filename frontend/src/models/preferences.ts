@@ -4,11 +4,12 @@ export interface TagPreference {
   showTags: boolean;
 }
 
+// Legacy type kept for backward compatibility - use NotificationPreferencesResponse from notification.ts instead
 export interface NotificationPreferences {
-  global: { tagNotifications: boolean };
+  global: Record<string, boolean>;
   communities: {
     communityId: string;
     communityName: string;
-    tagNotifications: boolean;
+    preferences: Record<string, boolean>;
   }[];
 }

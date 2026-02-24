@@ -68,40 +68,40 @@
 
 ## 12.7 - Frontend Dropdown notifications
 
-- [ ] Nouveau composant `NotificationDropdown` (remplacement complet)
-  - [ ] Bell icon avec badge numerique (compteur non-lues, cap 99+)
-  - [ ] Panneau dropdown : header + liste + footer "Voir tout"
-  - [ ] Rendu notifications individuelles (icone categorie, texte, temps relatif, dot non-lu)
-  - [ ] Rendu notifications groupees (collapsed, compteur)
-  - [ ] Click notification : navigation actionUrl + mark as read + fermeture
-  - [ ] Auto-mark as read : notifications visibles marquees apres 3s d'ouverture
-  - [ ] Bouton "Tout marquer comme lu"
-- [ ] Hook `useNotifications` : fetch, cache, pagination, mark as read
-- [ ] Hook `useUnreadCount` : compteur temps-reel (init REST + update WebSocket)
-- [ ] Adaptation `useNotificationToasts` : utiliser `notification:new` au lieu de `notification`
-- [ ] Suppression de l'ancien `NotificationDropdown` (invitations only)
-- [ ] Tests composants
+- [x] Nouveau composant `NotificationDropdown` (remplacement complet)
+  - [x] Bell icon avec badge numerique (compteur non-lues, cap 99+)
+  - [x] Panneau dropdown : header + liste + footer "Voir tout"
+  - [x] Rendu notifications individuelles (icone categorie, texte, temps relatif, dot non-lu)
+  - [x] Rendu notifications groupees (collapsed, compteur)
+  - [x] Click notification : navigation actionUrl + mark as read + fermeture
+  - [x] Auto-mark as read : notifications visibles marquees apres 3s d'ouverture
+  - [x] Bouton "Tout marquer comme lu"
+- [x] Hook `useNotifications` : fetch, cache, pagination, mark as read
+- [x] Hook `useUnreadCount` : compteur temps-reel (init REST + update WebSocket)
+- [x] Adaptation `useNotificationToasts` : utiliser `notification:new` au lieu de `notification`
+- [x] Suppression de l'ancien `NotificationDropdown` (invitations only)
+- [x] Tests composants
 
 ## 12.8 - Frontend Page notifications
 
-- [ ] Route `/notifications` + page `NotificationsPage`
-- [ ] Liste paginee (load more) de toutes les notifications
-- [ ] Filtres : chips par categorie + toggle non-lues uniquement
-- [ ] Groupes expansibles (clic pour voir les notifications individuelles)
-- [ ] Bouton "Tout marquer comme lu" (global ou par categorie)
-- [ ] Navigation contextuelle (click → actionUrl)
-- [ ] Etat vide ("Aucune notification")
-- [ ] Tests page
+- [x] Route `/notifications` + page `NotificationsPage`
+- [x] Liste paginee (load more) de toutes les notifications
+- [x] Filtres : chips par categorie + toggle non-lues uniquement
+- [x] Groupes expansibles (clic pour voir les notifications individuelles)
+- [x] Bouton "Tout marquer comme lu" (global ou par categorie)
+- [x] Navigation contextuelle (click → actionUrl)
+- [x] Etat vide ("Aucune notification")
+- [x] Tests page
 
 ## 12.9 - Frontend Preferences notifications
 
-- [ ] Refonte `NotificationPreferencesSection` dans la page profil
-  - [ ] Visible pour tous les utilisateurs (plus reserve moderateurs)
-  - [ ] Toggle par categorie (5 categories) au niveau global
-  - [ ] Overrides par communaute sous chaque categorie
-  - [ ] Indication visuelle si preference communaute differe de la globale
-- [ ] Suppression de l'ancien composant preferences tags moderateurs
-- [ ] Tests composants preferences
+- [x] Refonte `NotificationPreferencesSection` dans la page profil
+  - [x] Visible pour tous les utilisateurs (plus reserve moderateurs)
+  - [x] Toggle par categorie (5 categories) au niveau global
+  - [x] Overrides par communaute sous chaque categorie
+  - [x] Indication visuelle si preference communaute differe de la globale
+- [x] Suppression de l'ancien composant preferences tags moderateurs
+- [x] Tests composants preferences
 
 ## 12.10 - Finalisation & documentation
 

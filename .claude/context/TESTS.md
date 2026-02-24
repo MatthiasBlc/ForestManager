@@ -40,7 +40,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~1004 tests)
+## Inventaire des tests (~953 tests)
 
 ### Backend Integration (26 fichiers, ~539 tests)
 
@@ -86,7 +86,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | middleware/requireSuperAdmin.test.ts | requireSuperAdmin, requireAdminSession | 6 |
 | middleware/security.test.ts | requireHttps, rateLimiters, helmet | 5 |
 
-### Frontend Unit (57 fichiers, ~370 tests)
+### Frontend Unit (57 fichiers, ~363 tests)
 
 | Fichier | Composant | Tests |
 |---------|-----------|-------|
@@ -127,13 +127,13 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | recipes/SuggestTagModal.test.tsx | Modal suggestion tag | 5 |
 | recipes/TagSuggestionsList.test.tsx | Liste suggestions tags owner | 5 |
 | profile/TagPreferencesSection.test.tsx | Toggle tag visibility per community | 5 |
-| profile/NotificationPreferencesSection.test.tsx | Toggle tag notifications (moderator) | 5 |
+| profile/NotificationPreferencesSection.test.tsx | Notification preferences (5 categories, global toggles, error states) | 5 |
 | hooks/useClickOutside.test.ts | Hook click outside | 4 |
 | hooks/useDebouncedEffect.test.ts | Hook debounce | 5 |
 | hooks/useConfirm.test.tsx | Hook confirm dialog | 6 |
 | hooks/useSocketEvent.test.ts | Hook socket event | 5 |
 | hooks/useCommunityRoom.test.ts | Hook community room | 4 |
-| hooks/useNotificationToasts.test.ts | Hook notification toasts (+ tag events + suggestions) | 12 |
+| hooks/useNotificationToasts.test.ts | Hook notification toasts (notification:new event) | 5 |
 | hooks/usePaginatedList.test.ts | Hook paginated list | 6 |
 | utils/formatDate.test.ts | Format date utils | 5 |
 | utils/communityEvents.test.ts | Community events bus | 2 |

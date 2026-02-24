@@ -1905,10 +1905,10 @@ export const handlers = [
   }),
 
   // =====================================
-  // User Notification Preferences
+  // Notification Preferences
   // =====================================
 
-  http.get(`${API_URL}/api/users/me/notification-preferences`, () => {
+  http.get(`${API_URL}/api/notifications/preferences`, () => {
     if (!isUserAuthenticated) {
       return HttpResponse.json(
         { error: 'AUTH_001: Not authenticated' },
@@ -1916,14 +1916,30 @@ export const handlers = [
       );
     }
     return HttpResponse.json({
-      global: { tagNotifications: true },
+      global: {
+        INVITATION: true,
+        RECIPE_PROPOSAL: true,
+        TAG: true,
+        INGREDIENT: true,
+        MODERATION: true,
+      },
       communities: [
-        { communityId: 'community-1', communityName: 'Baking Club', tagNotifications: true },
+        {
+          communityId: 'community-1',
+          communityName: 'Baking Club',
+          preferences: {
+            INVITATION: true,
+            RECIPE_PROPOSAL: true,
+            TAG: true,
+            INGREDIENT: true,
+            MODERATION: true,
+          },
+        },
       ],
     });
   }),
 
-  http.put(`${API_URL}/api/users/me/notification-preferences/tags`, async ({ request }) => {
+  http.put(`${API_URL}/api/notifications/preferences`, async ({ request }) => {
     if (!isUserAuthenticated) {
       return HttpResponse.json(
         { error: 'AUTH_001: Not authenticated' },
@@ -1931,23 +1947,8 @@ export const handlers = [
       );
     }
 
-    const body = await request.json() as Record<string, boolean>;
-    return HttpResponse.json({ tagNotifications: body.tagNotifications });
-  }),
-
-  http.put(`${API_URL}/api/users/me/notification-preferences/tags/:communityId`, async ({ params, request }) => {
-    if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
-    }
-
-    const body = await request.json() as Record<string, boolean>;
-    return HttpResponse.json({
-      communityId: params.communityId,
-      tagNotifications: body.tagNotifications,
-    });
+    const body = await request.json() as Record<string, unknown>;
+    return HttpResponse.json({ category: body.category, enabled: body.enabled });
   }),
 
   // =====================================
