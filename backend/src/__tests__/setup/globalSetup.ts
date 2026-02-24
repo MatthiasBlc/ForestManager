@@ -15,11 +15,14 @@ afterEach(async () => {
   // Nettoyer les donnees de test apres chaque test
   // Ordre important pour respecter les contraintes FK
   await testPrisma.$transaction([
+    testPrisma.notification.deleteMany(),
+    testPrisma.notificationPreference.deleteMany(),
     testPrisma.proposalIngredient.deleteMany(),
     testPrisma.recipeIngredient.deleteMany(),
     testPrisma.recipeTag.deleteMany(),
     testPrisma.recipeView.deleteMany(),
     testPrisma.recipeAnalytics.deleteMany(),
+    testPrisma.tagSuggestion.deleteMany(),
     testPrisma.recipeUpdateProposal.deleteMany(),
     testPrisma.recipe.deleteMany(),
     testPrisma.tag.deleteMany(),
@@ -27,6 +30,7 @@ afterEach(async () => {
     testPrisma.unit.deleteMany(),
     testPrisma.activityLog.deleteMany(),
     testPrisma.communityInvite.deleteMany(),
+    testPrisma.userCommunityTagPreference.deleteMany(),
     testPrisma.userCommunity.deleteMany(),
     testPrisma.communityFeature.deleteMany(),
     testPrisma.community.deleteMany(),
