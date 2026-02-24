@@ -50,14 +50,14 @@
 
 ## 12.5 - Backend WebSocket & Integration evenements
 
-- [ ] Modifier le listener `socketServer.ts` : a chaque `appEvents.emitActivity`
-  - [ ] Appel au service de creation de notifications (persistance DB)
-  - [ ] Emission `notification:new` (remplace `notification`) aux users connectes
-  - [ ] Emission `notification:count` aux users concernes
-- [ ] A la connexion socket : emettre `notification:count` initial
-- [ ] Gestion des notifications non-desactivables (USER_KICKED, INVITE_SENT)
-- [ ] Adaptation des controllers existants (aucun changement cote emission `appEvents`, tout est dans le listener)
-- [ ] Tests integration WebSocket (creation + emission + persistance)
+- [x] Modifier le listener `socketServer.ts` : a chaque `appEvents.emitActivity`
+  - [x] Appel au service de creation de notifications (persistance DB)
+  - [x] Emission `notification:new` (remplace `notification`) aux users connectes
+  - [x] Emission `notification:count` aux users concernes
+- [x] A la connexion socket : emettre `notification:count` initial
+- [x] Gestion des notifications non-desactivables (USER_KICKED, INVITE_SENT)
+- [x] Adaptation des controllers existants (aucun changement cote emission `appEvents`, tout est dans le listener)
+- [x] Tests integration WebSocket (8 tests: auth, connection, count, activity, broadcast, personal, preferences, non-disableable)
 
 ## 12.6 - Backend Job de nettoyage
 

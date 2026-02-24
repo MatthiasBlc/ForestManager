@@ -5,12 +5,61 @@ import prisma from "../util/db";
 import env from "../util/validateEnv";
 import appEvents, { AppEvent } from "./eventEmitter";
 import logger from "../util/logger";
+import {
+  getCategoryForType,
+  createNotification,
+  createBroadcastNotifications,
+  resolveTemplateVars,
+} from "./notificationService";
 
 let io: Server | null = null;
 
 export function getIO(): Server | null {
   return io;
 }
+
+/**
+ * Recupere le compteur de notifications non-lues pour un user (total + par categorie).
+ */
+async function getUnreadCount(userId: string) {
+  const [total, ...categoryCounts] = await Promise.all([
+    prisma.notification.count({ where: { userId, readAt: null } }),
+    ...["INVITATION", "RECIPE_PROPOSAL", "TAG", "INGREDIENT", "MODERATION"].map(
+      (cat) =>
+        prisma.notification.count({
+          where: { userId, readAt: null, category: cat as never },
+        })
+    ),
+  ]);
+
+  const categories = ["INVITATION", "RECIPE_PROPOSAL", "TAG", "INGREDIENT", "MODERATION"];
+  const byCategory: Record<string, number> = {};
+  categories.forEach((cat, i) => {
+    byCategory[cat] = categoryCounts[i];
+  });
+
+  return { count: total, byCategory };
+}
+
+/**
+ * Emet notification:count a un user connecte.
+ */
+async function emitUnreadCount(ioServer: Server, userId: string) {
+  try {
+    const countData = await getUnreadCount(userId);
+    ioServer.to(`user:${userId}`).emit("notification:count", countData);
+  } catch (err) {
+    logger.debug({ err, userId }, "Failed to emit notification:count");
+  }
+}
+
+// Types de broadcast communautaire (notifient tous les membres sauf l'acteur)
+const BROADCAST_TYPES = new Set([
+  "RECIPE_CREATED",
+  "RECIPE_SHARED",
+  "USER_JOINED",
+  "USER_LEFT",
+]);
 
 export function initSocketServer(
   httpServer: HttpServer,
@@ -60,6 +109,9 @@ export function initSocketServer(
       logger.debug({ err, userId }, "Failed to load community memberships for socket");
     }
 
+    // Emit initial notification:count on connection
+    emitUnreadCount(io!, userId);
+
     // Dynamic room management
     socket.on("join:community", (communityId: string) => {
       socket.join(`community:${communityId}`);
@@ -74,7 +126,7 @@ export function initSocketServer(
   appEvents.on("activity", (event: AppEvent) => {
     if (!io) return;
 
-    // Broadcast to community room
+    // Broadcast activity to community room (inchange)
     if (event.communityId) {
       io.to(`community:${event.communityId}`).emit("activity", {
         type: event.type,
@@ -85,19 +137,75 @@ export function initSocketServer(
       });
     }
 
-    // Send personal notifications to target users
-    if (event.targetUserIds) {
-      for (const targetUserId of event.targetUserIds) {
-        io.to(`user:${targetUserId}`).emit("notification", {
-          type: event.type,
-          userId: event.userId,
-          communityId: event.communityId,
-          recipeId: event.recipeId,
-          metadata: event.metadata,
-        });
-      }
+    // Persister les notifications et emettre notification:new + notification:count
+    const category = getCategoryForType(event.type);
+    if (category) {
+      handleNotificationCreation(io!, event).catch((err) => {
+        logger.error({ err, event: event.type }, "Failed to handle notification creation");
+      });
     }
   });
 
   return io;
+}
+
+/**
+ * Gere la creation des notifications en DB et l'emission WebSocket.
+ * Separe en broadcast (tous les membres sauf acteur) et personal (targetUserIds).
+ */
+async function handleNotificationCreation(ioServer: Server, event: AppEvent) {
+  const templateVars = await resolveTemplateVars(event);
+
+  if (BROADCAST_TYPES.has(event.type) && event.communityId) {
+    // Notifications broadcast : tous les membres sauf l'acteur
+    const notifications = await createBroadcastNotifications({
+      type: event.type,
+      actorId: event.userId,
+      communityId: event.communityId,
+      recipeId: event.recipeId,
+      metadata: event.metadata,
+      templateVars,
+    });
+
+    // Emettre notification:new a chaque destinataire connecte
+    const notifiedUserIds = new Set<string>();
+    for (const notif of notifications) {
+      ioServer.to(`user:${notif.userId}`).emit("notification:new", {
+        notification: notif,
+      });
+      notifiedUserIds.add(notif.userId);
+    }
+
+    // Emettre notification:count a chaque destinataire
+    for (const userId of notifiedUserIds) {
+      emitUnreadCount(ioServer, userId);
+    }
+  } else if (event.targetUserIds && event.targetUserIds.length > 0) {
+    // Notifications personnelles (invitations, proposals, etc.)
+    const notifiedUserIds: string[] = [];
+
+    for (const targetUserId of event.targetUserIds) {
+      const notification = await createNotification({
+        userId: targetUserId,
+        type: event.type,
+        actorId: event.userId,
+        communityId: event.communityId,
+        recipeId: event.recipeId,
+        metadata: event.metadata,
+        templateVars,
+      });
+
+      if (notification) {
+        ioServer.to(`user:${targetUserId}`).emit("notification:new", {
+          notification,
+        });
+        notifiedUserIds.push(targetUserId);
+      }
+    }
+
+    // Emettre notification:count a chaque destinataire
+    for (const userId of notifiedUserIds) {
+      emitUnreadCount(ioServer, userId);
+    }
+  }
 }
