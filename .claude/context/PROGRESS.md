@@ -19,12 +19,13 @@ Phases 0 a 9.3 terminees.
 - **Branche** : `IngredientsRework` (merged)
 - **Tests** : 544 backend + 370 frontend = 914 total
 
-## Phase 12 - Rework Notifications : EN COURS
+## Phase 12 - Rework Notifications : COMPLETE
 
 - **Spec** : `docs/features/notifications-rework/SPEC_NOTIFICATIONS_REWORK.md`
 - **Roadmap** : `docs/features/notifications-rework/ROADMAP.md`
+- **Tests manuels** : `docs/features/notifications-rework/MANUAL_TESTS.md`
 - **Branche** : `NotificationsUpgrade`
-- **Avancement** : 12.1 et 12.2 termines, 12.3 en cours
+- **Tests** : 590 backend + 363 frontend = 953 total
 
 ## Resume de reprise
 

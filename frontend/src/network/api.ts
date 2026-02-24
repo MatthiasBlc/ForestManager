@@ -5,7 +5,7 @@ import { User } from "../models/user";
 import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats, AdminTag, AdminIngredient, AdminUnit, AdminFeature, AdminCommunity, AdminCommunityDetail, AdminActivityResponse } from "../models/admin";
 import { CommunityTag } from "../models/tag";
 import { TagSuggestion, TagSuggestionsResponse } from "../models/tagSuggestion";
-import { TagPreference, NotificationPreferences } from "../models/preferences";
+import { TagPreference } from "../models/preferences";
 import { NotificationsResponse, UnreadCountResponse, NotificationPreferencesResponse } from "../models/notification";
 import { CommunityListItem, CommunityDetail, CommunityMember, CommunityInvite, ReceivedInvite } from "../models/community";
 import { ConflictError, UnauthorizedError } from "../errors/http_errors";

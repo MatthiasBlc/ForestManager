@@ -24,18 +24,16 @@ const InvitationBadge = ({ className = "" }: InvitationBadgeProps) => {
 
   // Re-fetch on relevant socket notification events
   const handleNotification = useCallback(
-    (data: { type: string }) => {
-      if (
-        data.type === "INVITE_SENT" ||
-        data.type === "INVITE_CANCELLED"
-      ) {
+    (data: { notification: { type: string } }) => {
+      const type = data.notification?.type;
+      if (type === "INVITE_SENT" || type === "INVITE_CANCELLED") {
         fetchCount();
       }
     },
     [fetchCount]
   );
 
-  useSocketEvent("notification", handleNotification);
+  useSocketEvent("notification:new", handleNotification);
 
   if (count === 0) return null;
 

@@ -105,9 +105,9 @@
 
 ## 12.10 - Finalisation & documentation
 
-- [ ] Tests end-to-end du flux complet : creation evenement → notif DB → WebSocket → dropdown → mark as read
-- [ ] Test offline : deconnexion → evenements → reconnexion → notifs presentes
-- [ ] Générer les tests manuels
-- [ ] Nettoyage code mort (anciens hooks, composants, endpoints)
-- [ ] Mise a jour `.claude/context/` (API_MAP, DB_MODELS, FILE_MAP, TESTS, PROGRESS)
-- [ ] Mise a jour CLAUDE.md (codes erreur, phase courante)
+- [x] Tests end-to-end du flux complet : creation evenement → notif DB → WebSocket → dropdown → mark as read
+- [x] Test offline : deconnexion → evenements → reconnexion → notifs presentes
+- [x] Générer les tests manuels (`MANUAL_TESTS.md`)
+- [x] Nettoyage code mort (InvitationBadge socket event, legacy NotificationPreferences type, dead import)
+- [x] Mise a jour `.claude/context/` (API_MAP, DB_MODELS, FILE_MAP, TESTS, PROGRESS)
+- [x] Mise a jour CLAUDE.md (codes erreur, phase courante, docs table)
