@@ -22,9 +22,4 @@ router.get("/me/activity", ActivityController.getMyActivity);
 router.get("/me/tag-preferences", TagPreferencesController.getTagPreferences);
 router.put("/me/tag-preferences/:communityId", TagPreferencesController.updateTagPreference);
 
-// Moderator notification preferences
-router.get("/me/notification-preferences", TagPreferencesController.getNotificationPreferences);
-router.put("/me/notification-preferences/tags", TagPreferencesController.updateGlobalNotificationPreference);
-router.put("/me/notification-preferences/tags/:communityId", TagPreferencesController.updateCommunityNotificationPreference);
-
 export default router;

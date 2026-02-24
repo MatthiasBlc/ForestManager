@@ -40,9 +40,9 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~914 tests)
+## Inventaire des tests (~994 tests)
 
-### Backend Integration (22 fichiers, ~449 tests)
+### Backend Integration (25 fichiers, ~529 tests)
 
 | Fichier | Module | Tests |
 |---------|--------|-------|
@@ -67,6 +67,9 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | adminActivity.test.ts | Logs activite | 4 |
 | share.test.ts | Partage inter-communautes + publish + sync + fork tags | 31 |
 | communityTags.test.ts | CRUD + approve/reject tags communaute (moderateur) | 26 |
+| tagPreferences.test.ts | Tag visibility + notification preferences + getModeratorIds | 23 |
+| notificationService.test.ts | Notification service (create, broadcast, preferences, templates) | 30 |
+| notifications.test.ts | Notifications API (CRUD, grouping, batch, preferences) | 27 |
 
 ### Backend Unit (7 fichiers, ~51 tests)
 

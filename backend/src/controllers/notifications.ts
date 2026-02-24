@@ -406,3 +406,161 @@ export const markAllAsRead: RequestHandler<
     next(error);
   }
 };
+
+// =============================================================================
+// GET /api/notifications/preferences
+// =============================================================================
+
+export const getPreferences: RequestHandler = async (req, res, next) => {
+  const userId = req.session.userId;
+
+  try {
+    assertIsDefine(userId);
+
+    // Toutes les communautes de l'utilisateur
+    const memberships = await prisma.userCommunity.findMany({
+      where: { userId, deletedAt: null },
+      select: {
+        communityId: true,
+        community: { select: { id: true, name: true } },
+      },
+    });
+
+    // Toutes les preferences existantes
+    const prefs = await prisma.notificationPreference.findMany({
+      where: { userId },
+    });
+
+    // Construire les preferences globales (defaut true si pas de row)
+    const allCategories: NotificationCategory[] = [
+      "INVITATION",
+      "RECIPE_PROPOSAL",
+      "TAG",
+      "INGREDIENT",
+      "MODERATION",
+    ];
+
+    const globalPrefs: Record<string, boolean> = {};
+    for (const cat of allCategories) {
+      const pref = prefs.find((p) => p.communityId === null && p.category === cat);
+      globalPrefs[cat] = pref?.enabled ?? true;
+    }
+
+    // Construire les preferences par communaute
+    const communities = memberships.map((m) => {
+      const communityPrefs: Record<string, boolean> = {};
+      for (const cat of allCategories) {
+        const pref = prefs.find(
+          (p) => p.communityId === m.communityId && p.category === cat
+        );
+        // Si pas de pref communaute, heriter de la globale
+        communityPrefs[cat] = pref?.enabled ?? globalPrefs[cat];
+      }
+      return {
+        communityId: m.communityId,
+        communityName: m.community.name,
+        preferences: communityPrefs,
+      };
+    });
+
+    res.status(200).json({
+      global: globalPrefs,
+      communities,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// =============================================================================
+// PUT /api/notifications/preferences
+// =============================================================================
+
+export const updatePreference: RequestHandler<
+  unknown,
+  unknown,
+  { category?: string; enabled?: boolean; communityId?: string | null }
+> = async (req, res, next) => {
+  const userId = req.session.userId;
+  const { category, enabled, communityId } = req.body;
+
+  try {
+    assertIsDefine(userId);
+
+    if (!category || !VALID_CATEGORIES.has(category)) {
+      throw createHttpError(400, "NOTIF_003: Invalid notification category");
+    }
+
+    if (typeof enabled !== "boolean") {
+      throw createHttpError(400, "NOTIF_005: enabled must be a boolean");
+    }
+
+    // Si communityId fourni, verifier le membership
+    if (communityId) {
+      const membership = await prisma.userCommunity.findFirst({
+        where: { userId, communityId, deletedAt: null },
+      });
+      if (!membership) {
+        throw createHttpError(403, "COMMUNITY_001: Not a member of this community");
+      }
+    }
+
+    const resolvedCommunityId = communityId ?? null;
+
+    // Upsert : findFirst + update/create (communityId nullable dans contrainte unique)
+    if (resolvedCommunityId) {
+      const pref = await prisma.notificationPreference.upsert({
+        where: {
+          userId_communityId_category: {
+            userId,
+            communityId: resolvedCommunityId,
+            category: category as NotificationCategory,
+          },
+        },
+        update: { enabled },
+        create: {
+          userId,
+          communityId: resolvedCommunityId,
+          category: category as NotificationCategory,
+          enabled,
+        },
+      });
+
+      res.status(200).json({
+        category: pref.category,
+        enabled: pref.enabled,
+        communityId: pref.communityId,
+      });
+    } else {
+      // communityId null : upsert impossible sur contrainte unique avec null
+      const existing = await prisma.notificationPreference.findFirst({
+        where: { userId, communityId: null, category: category as NotificationCategory },
+      });
+
+      let pref;
+      if (existing) {
+        pref = await prisma.notificationPreference.update({
+          where: { id: existing.id },
+          data: { enabled },
+        });
+      } else {
+        pref = await prisma.notificationPreference.create({
+          data: {
+            userId,
+            communityId: null,
+            category: category as NotificationCategory,
+            enabled,
+          },
+        });
+      }
+
+      res.status(200).json({
+        category: pref.category,
+        enabled: pref.enabled,
+        communityId: pref.communityId,
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};

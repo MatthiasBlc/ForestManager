@@ -18,4 +18,10 @@ router.patch("/read-all", notificationsController.markAllAsRead);
 // PATCH /api/notifications/:id/read
 router.patch("/:id/read", notificationsController.markAsRead);
 
+// GET /api/notifications/preferences
+router.get("/preferences", notificationsController.getPreferences);
+
+// PUT /api/notifications/preferences
+router.put("/preferences", notificationsController.updatePreference);
+
 export default router;

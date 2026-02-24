@@ -42,11 +42,11 @@
 
 ## 12.4 - Backend API Preferences
 
-- [ ] `GET /api/notifications/preferences` : preferences utilisateur (global + par communaute)
-- [ ] `PUT /api/notifications/preferences` : modifier une preference (category, enabled, communityId?)
-- [ ] Migration des endpoints existants (`/api/users/me/notification-preferences/*`)
-- [ ] Suppression des anciens endpoints de preferences tags
-- [ ] Tests integration preferences
+- [x] `GET /api/notifications/preferences` : preferences utilisateur (global + par communaute)
+- [x] `PUT /api/notifications/preferences` : modifier une preference (category, enabled, communityId?)
+- [x] Migration des endpoints existants (`/api/users/me/notification-preferences/*`)
+- [x] Suppression des anciens endpoints de preferences tags
+- [x] Tests integration preferences (12 tests)
 
 ## 12.5 - Backend WebSocket & Integration evenements
 
