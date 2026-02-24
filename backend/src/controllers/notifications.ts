@@ -4,13 +4,8 @@ import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { NotificationCategory, Notification } from "@prisma/client";
 
-const VALID_CATEGORIES: Set<string> = new Set([
-  "INVITATION",
-  "RECIPE_PROPOSAL",
-  "TAG",
-  "INGREDIENT",
-  "MODERATION",
-]);
+const ALL_CATEGORIES = Object.values(NotificationCategory);
+const VALID_CATEGORIES: Set<string> = new Set(ALL_CATEGORIES);
 
 const GROUP_WINDOW_MS = 60 * 60 * 1000; // 60 minutes
 
@@ -254,24 +249,15 @@ export const getUnreadCount: RequestHandler = async (req, res, next) => {
 
     const [total, ...categoryCounts] = await Promise.all([
       prisma.notification.count({ where: { userId, readAt: null } }),
-      ...["INVITATION", "RECIPE_PROPOSAL", "TAG", "INGREDIENT", "MODERATION"].map(
-        (cat) =>
-          prisma.notification.count({
-            where: { userId, readAt: null, category: cat as NotificationCategory },
-          })
+      ...ALL_CATEGORIES.map((cat) =>
+        prisma.notification.count({
+          where: { userId, readAt: null, category: cat },
+        })
       ),
     ]);
 
-    const categories = [
-      "INVITATION",
-      "RECIPE_PROPOSAL",
-      "TAG",
-      "INGREDIENT",
-      "MODERATION",
-    ];
-
     const byCategory: Record<string, number> = {};
-    categories.forEach((cat, i) => {
+    ALL_CATEGORIES.forEach((cat, i) => {
       byCategory[cat] = categoryCounts[i];
     });
 

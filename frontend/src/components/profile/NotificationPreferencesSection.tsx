@@ -1,14 +1,7 @@
 import { useState, useEffect } from "react";
 import { NotificationPreferencesResponse } from "../../models/notification";
+import { NOTIFICATION_CATEGORIES, CATEGORY_CONFIG } from "../../config/notificationCategories";
 import APIManager from "../../network/api";
-
-const CATEGORIES: { key: string; label: string }[] = [
-  { key: "INVITATION", label: "Invitations" },
-  { key: "RECIPE_PROPOSAL", label: "Propositions de recettes" },
-  { key: "TAG", label: "Tags" },
-  { key: "INGREDIENT", label: "Ingredients" },
-  { key: "MODERATION", label: "Moderation" },
-];
 
 const NotificationPreferencesSection = () => {
   const [prefs, setPrefs] = useState<NotificationPreferencesResponse | null>(null);
@@ -126,7 +119,8 @@ const NotificationPreferencesSection = () => {
       </p>
 
       <div className="space-y-4">
-        {CATEGORIES.map(({ key, label }) => {
+        {NOTIFICATION_CATEGORIES.map((key) => {
+          const label = CATEGORY_CONFIG[key].label;
           const globalEnabled = prefs.global[key] ?? true;
           const isExpanded = expandedCategories.has(key);
           const hasOverride = hasCommunities && prefs.communities.some(c => {

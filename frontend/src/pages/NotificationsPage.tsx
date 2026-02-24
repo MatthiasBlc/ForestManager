@@ -2,11 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaBell,
-  FaEnvelope,
-  FaUtensils,
-  FaTag,
-  FaLeaf,
-  FaShieldAlt,
   FaCheckDouble,
   FaChevronDown,
   FaChevronUp,
@@ -14,43 +9,8 @@ import {
 import { useNotifications } from "../hooks/useNotifications";
 import { useUnreadCount } from "../hooks/useUnreadCount";
 import { Notification, NotificationCategory } from "../models/notification";
-
-const CATEGORY_CONFIG: Record<
-  NotificationCategory,
-  { label: string; icon: React.ReactNode }
-> = {
-  INVITATION: { label: "Invitations", icon: <FaEnvelope /> },
-  RECIPE_PROPOSAL: { label: "Recettes", icon: <FaUtensils /> },
-  TAG: { label: "Tags", icon: <FaTag /> },
-  INGREDIENT: { label: "Ingredients", icon: <FaLeaf /> },
-  MODERATION: { label: "Moderation", icon: <FaShieldAlt /> },
-};
-
-const ALL_CATEGORIES: NotificationCategory[] = [
-  "INVITATION",
-  "RECIPE_PROPOSAL",
-  "TAG",
-  "INGREDIENT",
-  "MODERATION",
-];
-
-function formatRelativeTime(dateString: string): string {
-  const now = Date.now();
-  const date = new Date(dateString).getTime();
-  const diffMs = now - date;
-  const diffSeconds = Math.floor(diffMs / 1000);
-  const diffMinutes = Math.floor(diffSeconds / 60);
-  const diffHours = Math.floor(diffMinutes / 60);
-  const diffDays = Math.floor(diffHours / 24);
-  const diffWeeks = Math.floor(diffDays / 7);
-
-  if (diffSeconds < 60) return "il y a quelques secondes";
-  if (diffMinutes < 60) return `il y a ${diffMinutes}min`;
-  if (diffHours < 24) return `il y a ${diffHours}h`;
-  if (diffDays < 7) return `il y a ${diffDays}j`;
-  if (diffWeeks < 5) return `il y a ${diffWeeks}sem`;
-  return new Date(dateString).toLocaleDateString("fr-FR");
-}
+import { NOTIFICATION_CATEGORIES, CATEGORY_CONFIG } from "../config/notificationCategories";
+import { formatRelativeTime } from "../utils/formatTime";
 
 const NotificationsPage = () => {
   const navigate = useNavigate();
@@ -110,7 +70,8 @@ const NotificationsPage = () => {
   };
 
   const getCategoryIcon = (category: NotificationCategory) => {
-    return CATEGORY_CONFIG[category]?.icon ?? <FaBell />;
+    const Icon = CATEGORY_CONFIG[category]?.icon ?? FaBell;
+    return <Icon />;
   };
 
   const hasUnread = notifications.some((n) => !n.readAt);
@@ -149,8 +110,9 @@ const NotificationsPage = () => {
           >
             Toutes
           </button>
-          {ALL_CATEGORIES.map((cat) => {
+          {NOTIFICATION_CATEGORIES.map((cat) => {
             const config = CATEGORY_CONFIG[cat];
+            const CatIcon = config.icon;
             const unreadForCat = byCategory[cat] || 0;
             return (
               <button
@@ -160,7 +122,7 @@ const NotificationsPage = () => {
                 }`}
                 onClick={() => handleCategoryChange(cat)}
               >
-                {config.icon}
+                <CatIcon />
                 {config.label}
                 {unreadForCat > 0 && (
                   <span className="badge badge-sm badge-secondary">

@@ -2,65 +2,16 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FaBell,
-  FaEnvelope,
-  FaUtensils,
-  FaTag,
-  FaLeaf,
-  FaShieldAlt,
   FaCheckDouble,
   FaChevronDown,
   FaChevronUp,
 } from "react-icons/fa";
-import { Notification, NotificationCategory } from "../../models/notification";
+import { Notification } from "../../models/notification";
+import { CATEGORY_CONFIG } from "../../config/notificationCategories";
+import { formatRelativeTime } from "../../utils/formatTime";
 import { useUnreadCount } from "../../hooks/useUnreadCount";
 import { useNotifications } from "../../hooks/useNotifications";
 import { useClickOutside } from "../../hooks/useClickOutside";
-
-// --- Helpers ---
-
-const CATEGORY_ICONS: Record<NotificationCategory, React.ComponentType<{ className?: string }>> = {
-  INVITATION: FaEnvelope,
-  RECIPE_PROPOSAL: FaUtensils,
-  TAG: FaTag,
-  INGREDIENT: FaLeaf,
-  MODERATION: FaShieldAlt,
-};
-
-const CATEGORY_COLORS: Record<NotificationCategory, string> = {
-  INVITATION: "text-info",
-  RECIPE_PROPOSAL: "text-warning",
-  TAG: "text-accent",
-  INGREDIENT: "text-success",
-  MODERATION: "text-error",
-};
-
-/**
- * Formatte une date en temps relatif en francais (sans accents).
- * Ex: "il y a 2h", "il y a 3j", "a l'instant"
- */
-function formatRelativeTime(dateStr: string): string {
-  const now = Date.now();
-  const then = new Date(dateStr).getTime();
-  const diffMs = now - then;
-  const diffSec = Math.floor(diffMs / 1000);
-
-  if (diffSec < 60) return "a l'instant";
-
-  const diffMin = Math.floor(diffSec / 60);
-  if (diffMin < 60) return `il y a ${diffMin}min`;
-
-  const diffHours = Math.floor(diffMin / 60);
-  if (diffHours < 24) return `il y a ${diffHours}h`;
-
-  const diffDays = Math.floor(diffHours / 24);
-  if (diffDays < 30) return `il y a ${diffDays}j`;
-
-  const diffMonths = Math.floor(diffDays / 30);
-  if (diffMonths < 12) return `il y a ${diffMonths}mo`;
-
-  const diffYears = Math.floor(diffMonths / 12);
-  return `il y a ${diffYears}a`;
-}
 
 function formatBadgeCount(count: number): string {
   return count > 99 ? "99+" : String(count);
@@ -75,8 +26,9 @@ interface NotificationItemProps {
 
 const NotificationItem = ({ notification, onClick }: NotificationItemProps) => {
   const isUnread = notification.readAt === null;
-  const Icon = CATEGORY_ICONS[notification.category] ?? FaBell;
-  const iconColor = CATEGORY_COLORS[notification.category] ?? "text-base-content";
+  const config = CATEGORY_CONFIG[notification.category];
+  const Icon = config?.icon ?? FaBell;
+  const iconColor = config?.color ?? "text-base-content";
 
   return (
     <li>
@@ -121,8 +73,9 @@ interface GroupedNotificationItemProps {
 const GroupedNotificationItem = ({ notification, onClick }: GroupedNotificationItemProps) => {
   const [expanded, setExpanded] = useState(false);
   const isUnread = notification.readAt === null;
-  const Icon = CATEGORY_ICONS[notification.category] ?? FaBell;
-  const iconColor = CATEGORY_COLORS[notification.category] ?? "text-base-content";
+  const config = CATEGORY_CONFIG[notification.category];
+  const Icon = config?.icon ?? FaBell;
+  const iconColor = config?.color ?? "text-base-content";
   const groupCount = notification.group?.count ?? 0;
 
   return (

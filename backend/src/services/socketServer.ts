@@ -5,12 +5,15 @@ import prisma from "../util/db";
 import env from "../util/validateEnv";
 import appEvents, { AppEvent } from "./eventEmitter";
 import logger from "../util/logger";
+import { NotificationCategory } from "@prisma/client";
 import {
   getCategoryForType,
   createNotification,
   createBroadcastNotifications,
   resolveTemplateVars,
 } from "./notificationService";
+
+const ALL_CATEGORIES = Object.values(NotificationCategory);
 
 let io: Server | null = null;
 
@@ -24,17 +27,15 @@ export function getIO(): Server | null {
 async function getUnreadCount(userId: string) {
   const [total, ...categoryCounts] = await Promise.all([
     prisma.notification.count({ where: { userId, readAt: null } }),
-    ...["INVITATION", "RECIPE_PROPOSAL", "TAG", "INGREDIENT", "MODERATION"].map(
-      (cat) =>
-        prisma.notification.count({
-          where: { userId, readAt: null, category: cat as never },
-        })
+    ...ALL_CATEGORIES.map((cat) =>
+      prisma.notification.count({
+        where: { userId, readAt: null, category: cat },
+      })
     ),
   ]);
 
-  const categories = ["INVITATION", "RECIPE_PROPOSAL", "TAG", "INGREDIENT", "MODERATION"];
   const byCategory: Record<string, number> = {};
-  categories.forEach((cat, i) => {
+  ALL_CATEGORIES.forEach((cat, i) => {
     byCategory[cat] = categoryCounts[i];
   });
 
