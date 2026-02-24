@@ -181,7 +181,9 @@ model User {
   createdIngredients Ingredient[]          @relation("IngredientCreator")
   tagSuggestions    TagSuggestion[]
   tagPreferences    UserCommunityTagPreference[]
-  moderatorNotifPrefs ModeratorNotificationPreference[]
+  notifications     Notification[]   @relation("NotificationRecipient")
+  notificationsActed Notification[]  @relation("NotificationActor")
+  notificationPrefs NotificationPreference[]
 
   @@index([email])
   @@index([username])
@@ -210,7 +212,8 @@ model Community {
   features        CommunityFeature[] // Briques attribuees a cette communaute
   tags            Tag[]
   tagPreferences  UserCommunityTagPreference[]
-  moderatorNotifPrefs ModeratorNotificationPreference[]
+  notifications   Notification[]
+  notificationPrefs NotificationPreference[]
 
   @@index([deletedAt])
 }
@@ -323,6 +326,7 @@ model Recipe {
   views                 RecipeView[]
   activities            ActivityLog[]
   tagSuggestions        TagSuggestion[]
+  notifications         Notification[]
 
   @@index([creatorId])
   @@index([communityId])
@@ -457,20 +461,67 @@ model UserCommunityTagPreference {
 }
 
 // =============================================================================
-// MODERATOR NOTIFICATION PREFERENCE (Preferences notifications tags)
+// NOTIFICATION (Notifications persistantes par utilisateur)
 // =============================================================================
 
-model ModeratorNotificationPreference {
-  id               String    @id @default(uuid())
-  userId           String
-  communityId      String?
-  tagNotifications Boolean   @default(true)
-  updatedAt        DateTime  @updatedAt
+enum NotificationCategory {
+  INVITATION
+  RECIPE_PROPOSAL
+  TAG
+  INGREDIENT
+  MODERATION
+}
+
+model Notification {
+  id          String               @id @default(uuid())
+  userId      String
+  type        String
+  category    NotificationCategory
+  title       String
+  message     String
+  actionUrl   String?
+  metadata    Json?
+
+  // Contexte source
+  actorId     String?
+  communityId String?
+  recipeId    String?
+
+  // Groupement (broadcasts uniquement)
+  groupKey    String?
+
+  // Etat
+  readAt      DateTime?
+  createdAt   DateTime             @default(now())
+
+  // Relations
+  user      User       @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor     User?      @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  community Community? @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  recipe    Recipe?    @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+
+  @@index([userId, readAt, createdAt])
+  @@index([userId, createdAt])
+  @@index([userId, groupKey, createdAt])
+  @@index([createdAt])
+}
+
+// =============================================================================
+// NOTIFICATION PREFERENCE (Preferences notifications par categorie)
+// =============================================================================
+
+model NotificationPreference {
+  id          String               @id @default(uuid())
+  userId      String
+  communityId String?
+  category    NotificationCategory
+  enabled     Boolean              @default(true)
+  updatedAt   DateTime             @updatedAt
 
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   community Community? @relation(fields: [communityId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, communityId])
+  @@unique([userId, communityId, category])
 }
 
 // =============================================================================

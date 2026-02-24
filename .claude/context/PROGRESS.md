@@ -16,8 +16,16 @@ Phases 0 a 9.3 terminees.
 - **Spec** : `docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md`
 - **Roadmap** : `docs/features/ingredients-rework/ROADMAP.md`
 - **Tests manuels** : `docs/features/ingredients-rework/MANUAL_TESTS.md`
-- **Branche** : `IngredientsRework` (a merger)
+- **Branche** : `IngredientsRework` (merged)
 - **Tests** : 544 backend + 370 frontend = 914 total
+
+## Phase 12 - Rework Notifications : COMPLETE
+
+- **Spec** : `docs/features/notifications-rework/SPEC_NOTIFICATIONS_REWORK.md`
+- **Roadmap** : `docs/features/notifications-rework/ROADMAP.md`
+- **Tests manuels** : `docs/features/notifications-rework/MANUAL_TESTS.md`
+- **Branche** : `NotificationsUpgrade`
+- **Tests** : 590 backend + 363 frontend = 953 total
 
 ## Resume de reprise
 

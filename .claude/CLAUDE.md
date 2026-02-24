@@ -33,17 +33,17 @@ npx prisma studio              # DB GUI :5555
 ## Git
 
 - **Main**: master
-- **Branche courante**: Developement
+- **Branche courante**: NotificationsUpgrade
 - **Commits**: Ne JAMAIS ajouter de Co-Authored-By pour Claude
 
 ## Phase actuelle
 
-**Phase 10** - Rework Tags (3 niveaux : Global/Communaute/Pending, validation moderateurs, suggestions).
+**Phase 12** - Rework Notifications : COMPLETE.
 Voir `.claude/context/PROGRESS.md` pour le detail et les liens vers spec/roadmap.
 
 ## Codes erreur
 
-AUTH_001-002 | COMMUNITY_001-006 | RECIPE_001-005 | INVITE_001-003 | ADMIN_001-012 | PROPOSAL_001-003 | SHARE_001-003 | TAG_001-007 | ADMIN_ING_001-009 | ADMIN_UNIT_001-007
+AUTH_001-002 | COMMUNITY_001-006 | RECIPE_001-005 | INVITE_001-003 | ADMIN_001-012 | PROPOSAL_001-003 | SHARE_001-003 | TAG_001-007 | ADMIN_ING_001-009 | ADMIN_UNIT_001-007 | NOTIF_001-005
 
 ## Regle: maintenir `.claude/` a jour
 
@@ -68,6 +68,14 @@ docs/
     tags-rework/
       SPEC_TAGS_REWORK.md
       ROADMAP.md
+    ingredients-rework/
+      SPEC_INGREDIENTS_REWORK.md
+      ROADMAP.md
+      MANUAL_TESTS.md
+    notifications-rework/
+      SPEC_NOTIFICATIONS_REWORK.md
+      ROADMAP.md
+      MANUAL_TESTS.md
 ```
 
 Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une spec et une roadmap.
@@ -81,9 +89,15 @@ Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une 
 | Endpoints API complets | `.claude/context/API_MAP.md` |
 | Schema DB & modeles Prisma | `.claude/context/DB_MODELS.md` |
 | Arborescence fichiers source | `.claude/context/FILE_MAP.md` |
-| **Feature en cours : Tags Rework** | |
+| **Feature : Tags Rework** | |
 | Spec Tags Rework | `docs/features/tags-rework/SPEC_TAGS_REWORK.md` |
 | Roadmap Tags Rework | `docs/features/tags-rework/ROADMAP.md` |
+| **Feature : Ingredients Rework** | |
+| Spec Ingredients Rework | `docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md` |
+| Roadmap Ingredients Rework | `docs/features/ingredients-rework/ROADMAP.md` |
+| **Feature : Notifications Rework** | |
+| Spec Notifications Rework | `docs/features/notifications-rework/SPEC_NOTIFICATIONS_REWORK.md` |
+| Roadmap Notifications Rework | `docs/features/notifications-rework/ROADMAP.md` |
 | **Archive MVP** | |
 | Regles metier | `docs/mvp/BUSINESS_RULES.md` |
 | User stories | `docs/mvp/USER_STORIES.md` |

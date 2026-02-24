@@ -184,140 +184,109 @@ describe("Tag Preferences API", () => {
   });
 
   // =====================================
-  // GET /api/users/me/notification-preferences
+  // GET /api/notifications/preferences
   // =====================================
-  describe("GET /api/users/me/notification-preferences", () => {
-    it("should return notification preferences for moderator", async () => {
+  describe("GET /api/notifications/preferences", () => {
+    it("should return preferences for all categories with defaults true", async () => {
       const res = await request(app)
-        .get("/api/users/me/notification-preferences")
-        .set("Cookie", moderatorCookie);
-
-      expect(res.status).toBe(200);
-      expect(res.body.global).toHaveProperty("tagNotifications");
-      expect(res.body.global.tagNotifications).toBe(true); // default
-      expect(res.body.communities).toBeInstanceOf(Array);
-      expect(res.body.communities.length).toBe(2); // 2 communities
-    });
-
-    it("should return empty communities for non-moderator", async () => {
-      const res = await request(app)
-        .get("/api/users/me/notification-preferences")
+        .get("/api/notifications/preferences")
         .set("Cookie", memberCookie);
 
       expect(res.status).toBe(200);
-      expect(res.body.communities).toEqual([]);
+      expect(res.body.global).toBeDefined();
+      // Toutes les categories doivent avoir un defaut true
+      expect(res.body.global.INVITATION).toBe(true);
+      expect(res.body.global.RECIPE_PROPOSAL).toBe(true);
+      expect(res.body.global.TAG).toBe(true);
+      expect(res.body.global.INGREDIENT).toBe(true);
+      expect(res.body.global.MODERATION).toBe(true);
+    });
+
+    it("should return communities with inherited preferences", async () => {
+      const res = await request(app)
+        .get("/api/notifications/preferences")
+        .set("Cookie", memberCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.communities).toBeInstanceOf(Array);
+      expect(res.body.communities.length).toBe(2);
+      // Chaque communaute herite des prefs globales
+      for (const comm of res.body.communities) {
+        expect(comm.communityId).toBeDefined();
+        expect(comm.communityName).toBeDefined();
+        expect(comm.preferences.INVITATION).toBe(true);
+        expect(comm.preferences.TAG).toBe(true);
+      }
     });
 
     it("should return 401 if not authenticated", async () => {
-      const res = await request(app).get(
-        "/api/users/me/notification-preferences"
-      );
+      const res = await request(app).get("/api/notifications/preferences");
       expect(res.status).toBe(401);
     });
   });
 
   // =====================================
-  // PUT /api/users/me/notification-preferences/tags
+  // PUT /api/notifications/preferences
   // =====================================
-  describe("PUT /api/users/me/notification-preferences/tags", () => {
-    it("should toggle global tagNotifications", async () => {
+  describe("PUT /api/notifications/preferences", () => {
+    it("should update global preference", async () => {
       const res = await request(app)
-        .put("/api/users/me/notification-preferences/tags")
-        .set("Cookie", moderatorCookie)
-        .send({ tagNotifications: false });
+        .put("/api/notifications/preferences")
+        .set("Cookie", memberCookie)
+        .send({ category: "TAG", enabled: false });
 
       expect(res.status).toBe(200);
-      expect(res.body.tagNotifications).toBe(false);
+      expect(res.body.category).toBe("TAG");
+      expect(res.body.enabled).toBe(false);
+      expect(res.body.communityId).toBeNull();
+    });
+
+    it("should update community-level preference", async () => {
+      const res = await request(app)
+        .put("/api/notifications/preferences")
+        .set("Cookie", memberCookie)
+        .send({ category: "RECIPE_PROPOSAL", enabled: false, communityId: community.id });
+
+      expect(res.status).toBe(200);
+      expect(res.body.category).toBe("RECIPE_PROPOSAL");
+      expect(res.body.enabled).toBe(false);
+      expect(res.body.communityId).toBe(community.id);
     });
 
     it("should toggle back to true", async () => {
       await request(app)
-        .put("/api/users/me/notification-preferences/tags")
-        .set("Cookie", moderatorCookie)
-        .send({ tagNotifications: false });
+        .put("/api/notifications/preferences")
+        .set("Cookie", memberCookie)
+        .send({ category: "TAG", enabled: false });
 
       const res = await request(app)
-        .put("/api/users/me/notification-preferences/tags")
-        .set("Cookie", moderatorCookie)
-        .send({ tagNotifications: true });
+        .put("/api/notifications/preferences")
+        .set("Cookie", memberCookie)
+        .send({ category: "TAG", enabled: true });
 
       expect(res.status).toBe(200);
-      expect(res.body.tagNotifications).toBe(true);
+      expect(res.body.enabled).toBe(true);
     });
 
-    it("should return 400 if tagNotifications is not a boolean", async () => {
+    it("should return 400 for invalid category", async () => {
       const res = await request(app)
-        .put("/api/users/me/notification-preferences/tags")
-        .set("Cookie", moderatorCookie)
-        .send({ tagNotifications: "yes" });
+        .put("/api/notifications/preferences")
+        .set("Cookie", memberCookie)
+        .send({ category: "INVALID", enabled: false });
 
       expect(res.status).toBe(400);
     });
 
-    it("should return 403 for non-moderator", async () => {
+    it("should return 400 if enabled is not a boolean", async () => {
       const res = await request(app)
-        .put("/api/users/me/notification-preferences/tags")
+        .put("/api/notifications/preferences")
         .set("Cookie", memberCookie)
-        .send({ tagNotifications: false });
-
-      expect(res.status).toBe(403);
-    });
-
-    it("should reflect in GET after update", async () => {
-      await request(app)
-        .put("/api/users/me/notification-preferences/tags")
-        .set("Cookie", moderatorCookie)
-        .send({ tagNotifications: false });
-
-      const res = await request(app)
-        .get("/api/users/me/notification-preferences")
-        .set("Cookie", moderatorCookie);
-
-      expect(res.status).toBe(200);
-      expect(res.body.global.tagNotifications).toBe(false);
-    });
-  });
-
-  // =====================================
-  // PUT /api/users/me/notification-preferences/tags/:communityId
-  // =====================================
-  describe("PUT /api/users/me/notification-preferences/tags/:communityId", () => {
-    it("should toggle tagNotifications per community", async () => {
-      const res = await request(app)
-        .put(
-          `/api/users/me/notification-preferences/tags/${community.id}`
-        )
-        .set("Cookie", moderatorCookie)
-        .send({ tagNotifications: false });
-
-      expect(res.status).toBe(200);
-      expect(res.body.communityId).toBe(community.id);
-      expect(res.body.tagNotifications).toBe(false);
-    });
-
-    it("should return 400 if tagNotifications is not a boolean", async () => {
-      const res = await request(app)
-        .put(
-          `/api/users/me/notification-preferences/tags/${community.id}`
-        )
-        .set("Cookie", moderatorCookie)
-        .send({ tagNotifications: 123 });
+        .send({ category: "TAG", enabled: "yes" });
 
       expect(res.status).toBe(400);
     });
 
-    it("should return 403 for non-moderator of that community", async () => {
-      const res = await request(app)
-        .put(
-          `/api/users/me/notification-preferences/tags/${community.id}`
-        )
-        .set("Cookie", memberCookie)
-        .send({ tagNotifications: false });
-
-      expect(res.status).toBe(403);
-    });
-
-    it("should return 403 for non-member", async () => {
+    it("should return 403 for non-member community", async () => {
       const suffix = uniqueSuffix();
       const outsiderSignup = await request(app).post("/api/auth/signup").send({
         username: `tpout2_${suffix}`,
@@ -327,46 +296,51 @@ describe("Tag Preferences API", () => {
       const outsiderCookie = extractSessionCookie(outsiderSignup)!;
 
       const res = await request(app)
-        .put(
-          `/api/users/me/notification-preferences/tags/${community.id}`
-        )
+        .put("/api/notifications/preferences")
         .set("Cookie", outsiderCookie)
-        .send({ tagNotifications: false });
+        .send({ category: "TAG", enabled: false, communityId: community.id });
 
       expect(res.status).toBe(403);
     });
 
     it("community preference should override global in GET response", async () => {
-      // Set global to true, community to false
+      // Set global TAG to true
       await request(app)
-        .put("/api/users/me/notification-preferences/tags")
-        .set("Cookie", moderatorCookie)
-        .send({ tagNotifications: true });
+        .put("/api/notifications/preferences")
+        .set("Cookie", memberCookie)
+        .send({ category: "TAG", enabled: true });
 
+      // Set community TAG to false
       await request(app)
-        .put(
-          `/api/users/me/notification-preferences/tags/${community.id}`
-        )
-        .set("Cookie", moderatorCookie)
-        .send({ tagNotifications: false });
+        .put("/api/notifications/preferences")
+        .set("Cookie", memberCookie)
+        .send({ category: "TAG", enabled: false, communityId: community.id });
 
       const res = await request(app)
-        .get("/api/users/me/notification-preferences")
-        .set("Cookie", moderatorCookie);
+        .get("/api/notifications/preferences")
+        .set("Cookie", memberCookie);
 
       expect(res.status).toBe(200);
-      expect(res.body.global.tagNotifications).toBe(true);
+      expect(res.body.global.TAG).toBe(true);
 
       const comm = res.body.communities.find(
         (c: { communityId: string }) => c.communityId === community.id
       );
-      expect(comm.tagNotifications).toBe(false);
+      expect(comm.preferences.TAG).toBe(false);
 
       // community2 should inherit global (true)
       const comm2 = res.body.communities.find(
         (c: { communityId: string }) => c.communityId === community2.id
       );
-      expect(comm2.tagNotifications).toBe(true);
+      expect(comm2.preferences.TAG).toBe(true);
+    });
+
+    it("should return 401 if not authenticated", async () => {
+      const res = await request(app)
+        .put("/api/notifications/preferences")
+        .send({ category: "TAG", enabled: false });
+
+      expect(res.status).toBe(401);
     });
   });
 });
@@ -423,8 +397,8 @@ describe("Notification Service - getModeratorIdsForTagNotification", () => {
   });
 
   it("should exclude moderator with global notifications disabled", async () => {
-    await testPrisma.moderatorNotificationPreference.create({
-      data: { userId: moderator1.id, communityId: null, tagNotifications: false },
+    await testPrisma.notificationPreference.create({
+      data: { userId: moderator1.id, communityId: null, category: "TAG", enabled: false },
     });
 
     const { getModeratorIdsForTagNotification } = await import(
@@ -437,11 +411,11 @@ describe("Notification Service - getModeratorIdsForTagNotification", () => {
 
   it("should respect community preference over global", async () => {
     // Global disabled but community enabled
-    await testPrisma.moderatorNotificationPreference.create({
-      data: { userId: moderator1.id, communityId: null, tagNotifications: false },
+    await testPrisma.notificationPreference.create({
+      data: { userId: moderator1.id, communityId: null, category: "TAG", enabled: false },
     });
-    await testPrisma.moderatorNotificationPreference.create({
-      data: { userId: moderator1.id, communityId: community.id, tagNotifications: true },
+    await testPrisma.notificationPreference.create({
+      data: { userId: moderator1.id, communityId: community.id, category: "TAG", enabled: true },
     });
 
     const { getModeratorIdsForTagNotification } = await import(
@@ -454,11 +428,11 @@ describe("Notification Service - getModeratorIdsForTagNotification", () => {
 
   it("should exclude moderator with community notifications disabled", async () => {
     // Global enabled but community disabled
-    await testPrisma.moderatorNotificationPreference.create({
-      data: { userId: moderator1.id, communityId: null, tagNotifications: true },
+    await testPrisma.notificationPreference.create({
+      data: { userId: moderator1.id, communityId: null, category: "TAG", enabled: true },
     });
-    await testPrisma.moderatorNotificationPreference.create({
-      data: { userId: moderator1.id, communityId: community.id, tagNotifications: false },
+    await testPrisma.notificationPreference.create({
+      data: { userId: moderator1.id, communityId: community.id, category: "TAG", enabled: false },
     });
 
     const { getModeratorIdsForTagNotification } = await import(

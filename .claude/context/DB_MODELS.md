@@ -3,7 +3,7 @@
 Source: `backend/prisma/schema.prisma`
 DB: PostgreSQL | ORM: Prisma
 
-## Models (27 total)
+## Models (28 total)
 
 ### Sessions (isolees)
 | Model | Champs cles | Notes |
@@ -39,12 +39,17 @@ DB: PostgreSQL | ORM: Prisma
 | RecipeIngredient | recipeId, ingredientId, quantity(Float?), unitId?, order | **Cascade** delete, @@unique(recipeId,ingredientId). FK Unit |
 | ProposalIngredient | proposalId, ingredientId, quantity(Float?), unitId?, order | **Cascade** on proposal+ingredient, @@unique(proposalId,ingredientId). Phase 11 |
 
-### Tags (3 models - Phase 10)
+### Tags (2 models - Phase 10)
 | Model | Champs cles | Notes |
 |-------|-------------|-------|
 | TagSuggestion | id, recipeId, tagName, suggestedById, status(TagSuggestionStatus), createdAt, decidedAt? | @@unique(recipeId,tagName,suggestedById), Cascade on recipe delete |
 | UserCommunityTagPreference | userId, communityId, showTags(default true), updatedAt | PK composite(userId,communityId), Cascade delete |
-| ModeratorNotificationPreference | id, userId, communityId?(null=global), tagNotifications(default true), updatedAt | @@unique(userId,communityId), Cascade delete |
+
+### Notifications (2 models - Phase 12)
+| Model | Champs cles | Notes |
+|-------|-------------|-------|
+| Notification | id, userId, type, category(NotificationCategory), title, message, actionUrl?, metadata?(Json), actorId?, communityId?, recipeId?, groupKey?, readAt?, createdAt | Index userId+readAt+createdAt, userId+createdAt, userId+groupKey+createdAt, createdAt. Cascade on user/community, SetNull on actor/recipe |
+| NotificationPreference | id, userId, communityId?(null=global), category(NotificationCategory), enabled(default true), updatedAt | @@unique(userId,communityId,category). Remplace ModeratorNotificationPreference |
 
 ### Analytics (2 models - futur)
 | Model | Champs cles | Notes |
@@ -72,6 +77,8 @@ TagSuggestionStatus: PENDING_OWNER | PENDING_MODERATOR | APPROVED | REJECTED
 UnitCategory: WEIGHT | VOLUME | SPOON | COUNT | QUALITATIVE
 IngredientStatus: APPROVED | PENDING
 
+NotificationCategory: INVITATION | RECIPE_PROPOSAL | TAG | INGREDIENT | MODERATION
+
 AdminActionType: TAG_CREATED | TAG_UPDATED | TAG_DELETED | TAG_MERGED |
   INGREDIENT_CREATED | INGREDIENT_UPDATED | INGREDIENT_DELETED | INGREDIENT_MERGED |
   INGREDIENT_APPROVED | INGREDIENT_REJECTED |
@@ -96,7 +103,9 @@ User <-1:N-> Tag (createdById, relation "TagCreator")
 User <-1:N-> Ingredient (createdById, relation "IngredientCreator")
 User <-1:N-> TagSuggestion (suggestedById)
 User <-1:N-> UserCommunityTagPreference
-User <-1:N-> ModeratorNotificationPreference
+User <-1:N-> Notification (recipient, relation "NotificationRecipient")
+User <-1:N-> Notification (actor, relation "NotificationActor")
+User <-1:N-> NotificationPreference
 Recipe <-N:N-> Tag (via RecipeTag, cascade)
 Recipe <-N:N-> Ingredient (via RecipeIngredient, cascade)
 Recipe <-self-> Recipe (originRecipeId -> variantes/forks)
@@ -108,7 +117,9 @@ ProposalIngredient -> Unit? (unitId)
 Community <-1:N-> CommunityInvite
 Community <-1:N-> Tag (communityId)
 Community <-1:N-> UserCommunityTagPreference (cascade)
-Community <-1:N-> ModeratorNotificationPreference (cascade)
+Community <-1:N-> Notification (cascade)
+Community <-1:N-> NotificationPreference (cascade)
+Recipe <-1:N-> Notification (SetNull on delete)
 User <-1:N-> CommunityInvite (inviter + invitee)
 Community <-N:N-> Feature (via CommunityFeature, soft revoke)
 AdminUser <-1:N-> AdminActivityLog
@@ -119,5 +130,5 @@ AdminUser <-1:N-> AdminActivityLog
 | Type | Modeles | Methode |
 |------|---------|---------|
 | Soft delete (deletedAt) | User, Community, UserCommunity, Recipe, RecipeUpdateProposal, CommunityInvite | Applicatif (where deletedAt: null) |
-| Hard delete (Cascade) | RecipeTag, RecipeIngredient, ProposalIngredient, RecipeAnalytics, RecipeView, TagSuggestion (via Recipe), UserCommunityTagPreference, ModeratorNotificationPreference | DB cascade |
+| Hard delete (Cascade) | RecipeTag, RecipeIngredient, ProposalIngredient, RecipeAnalytics, RecipeView, TagSuggestion (via Recipe), UserCommunityTagPreference, Notification (via User/Community), NotificationPreference | DB cascade |
 | Soft revoke | CommunityFeature | revokedAt timestamp |

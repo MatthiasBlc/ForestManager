@@ -106,11 +106,20 @@ GET   /api/users/me/invites            # received invitations (?status=)
 GET   /api/users/me/activity           # personal activity feed (paginated)
 GET   /api/users/me/tag-preferences                            # tag visibility prefs per community
 PUT   /api/users/me/tag-preferences/:communityId               # toggle showTags (member)
-GET   /api/users/me/notification-preferences                   # moderator notification prefs
-PUT   /api/users/me/notification-preferences/tags              # toggle global tagNotifications (moderator)
-PUT   /api/users/me/notification-preferences/tags/:communityId # toggle per community (moderator)
 ```
 Controller: `controllers/users.ts`, `controllers/invites.ts`, `controllers/activity.ts`, `controllers/tagPreferences.ts` | Route: `routes/users.ts`
+
+## Notifications (/api/notifications) - requireAuth
+```
+GET   /api/notifications/                   # list paginated (page, limit, category, unreadOnly, grouped)
+GET   /api/notifications/unread-count       # total + by category
+PATCH /api/notifications/read               # batch mark as read (body: ids[])
+PATCH /api/notifications/read-all           # mark all as read (body: category?)
+PATCH /api/notifications/:id/read           # mark single as read
+GET   /api/notifications/preferences        # preferences (global + per community, 5 categories)
+PUT   /api/notifications/preferences        # update preference (category, enabled, communityId?)
+```
+Controller: `controllers/notifications.ts` | Route: `routes/notifications.ts`
 
 ## User Invitations
 ```
@@ -231,4 +240,4 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 | adminRateLimiter | middleware/security.ts | 30 req/min global admin |
 | authRateLimiter | routes config | 5/15min sur auth endpoints |
 
-## Total: 89 endpoints (55 user + 33 admin + 1 health)
+## Total: 93 endpoints (59 user + 33 admin + 1 health)

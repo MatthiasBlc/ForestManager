@@ -25,16 +25,30 @@ describe('NotificationPreferencesSection', () => {
     setUserAuthenticated(true);
   });
 
-  it('should display global toggle and community toggles for moderator', async () => {
+  it('should display all 5 category toggles', async () => {
     render(<TestApp />);
 
     await waitFor(() => {
-      expect(screen.getByText('Tag Notifications')).toBeInTheDocument();
+      expect(screen.getByText('Preferences de notifications')).toBeInTheDocument();
     });
 
-    expect(screen.getByLabelText('Global tag notifications')).toBeChecked();
-    expect(screen.getByText('Baking Club')).toBeInTheDocument();
-    expect(screen.getByLabelText('Tag notifications for Baking Club')).toBeChecked();
+    expect(screen.getByText('Invitations')).toBeInTheDocument();
+    expect(screen.getByText('Propositions de recettes')).toBeInTheDocument();
+    expect(screen.getByText('Tags')).toBeInTheDocument();
+    expect(screen.getByText('Ingredients')).toBeInTheDocument();
+    expect(screen.getByText('Moderation')).toBeInTheDocument();
+  });
+
+  it('should display global toggles with correct initial state', async () => {
+    render(<TestApp />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Preferences de notifications')).toBeInTheDocument();
+    });
+
+    // All global toggles should be checked (default true from MSW handler)
+    expect(screen.getByLabelText('Invitations (global)')).toBeChecked();
+    expect(screen.getByLabelText('Tags (global)')).toBeChecked();
   });
 
   it('should toggle global notification preference', async () => {
@@ -42,10 +56,10 @@ describe('NotificationPreferencesSection', () => {
     render(<TestApp />);
 
     await waitFor(() => {
-      expect(screen.getByText('Tag Notifications')).toBeInTheDocument();
+      expect(screen.getByText('Preferences de notifications')).toBeInTheDocument();
     });
 
-    const globalToggle = screen.getByLabelText('Global tag notifications');
+    const globalToggle = screen.getByLabelText('Invitations (global)');
     expect(globalToggle).toBeChecked();
 
     await user.click(globalToggle);
@@ -53,29 +67,10 @@ describe('NotificationPreferencesSection', () => {
     expect(globalToggle).not.toBeChecked();
   });
 
-  it('should toggle community notification preference', async () => {
-    const user = userEvent.setup();
-    render(<TestApp />);
-
-    await waitFor(() => {
-      expect(screen.getByText('Baking Club')).toBeInTheDocument();
-    });
-
-    const communityToggle = screen.getByLabelText('Tag notifications for Baking Club');
-    expect(communityToggle).toBeChecked();
-
-    await user.click(communityToggle);
-
-    expect(communityToggle).not.toBeChecked();
-  });
-
-  it('should hide section when not a moderator (empty communities)', async () => {
+  it('should hide section on error', async () => {
     server.use(
-      http.get('http://localhost:3001/api/users/me/notification-preferences', () => {
-        return HttpResponse.json({
-          global: { tagNotifications: false },
-          communities: [],
-        });
+      http.get('http://localhost:3001/api/notifications/preferences', () => {
+        return HttpResponse.json({ error: 'Server error' }, { status: 500 });
       }),
     );
 
@@ -85,13 +80,13 @@ describe('NotificationPreferencesSection', () => {
       expect(container.querySelector('.loading')).not.toBeInTheDocument();
     });
 
-    expect(screen.queryByText('Tag Notifications')).not.toBeInTheDocument();
+    expect(screen.queryByText('Preferences de notifications')).not.toBeInTheDocument();
   });
 
-  it('should hide section on 403 error (non-moderator)', async () => {
+  it('should hide section on 401 error', async () => {
     server.use(
-      http.get('http://localhost:3001/api/users/me/notification-preferences', () => {
-        return HttpResponse.json({ error: 'Forbidden' }, { status: 403 });
+      http.get('http://localhost:3001/api/notifications/preferences', () => {
+        return HttpResponse.json({ error: 'AUTH_001: Not authenticated' }, { status: 401 });
       }),
     );
 
@@ -101,6 +96,6 @@ describe('NotificationPreferencesSection', () => {
       expect(container.querySelector('.loading')).not.toBeInTheDocument();
     });
 
-    expect(screen.queryByText('Tag Notifications')).not.toBeInTheDocument();
+    expect(screen.queryByText('Preferences de notifications')).not.toBeInTheDocument();
   });
 });

@@ -83,16 +83,16 @@ services/
 ├── shareService.ts    # forkRecipe, publishRecipe, getRecipeFamilyCommunities
 ├── membershipService.ts # requireRecipeAccess, requireRecipeOwnership
 ├── orphanHandling.ts  # Gestion recettes orphelines (auto-reject proposals)
-├── notificationService.ts  # getModeratorIdsForTagNotification (filtre par prefs)
+├── notificationService.ts  # create, broadcast, preferences, templates, grouping
 ├── tagSuggestionService.ts # create, accept, reject tag suggestions
 ├── eventEmitter.ts    # AppEventEmitter singleton (emit activity events)
-└── socketServer.ts    # Socket.IO server init, auth middleware, room management
+└── socketServer.ts    # Socket.IO server init, auth, rooms, notification persistence
 ```
 
 ### Autres backend
 ```
 app.ts                 # Config Express, montage routes, sessions
-server.ts              # Entry point (listen)
+server.ts              # Entry point (listen + notification cleanup job)
 types/
 ├── express.d.ts       # Extension types Express
 └── session.d.ts       # Types session
@@ -103,6 +103,8 @@ util/
 ├── responseFormatters.ts # formatTags, formatIngredients
 ├── db.ts              # Prisma client singleton
 └── validateEnv.ts     # envalid env vars
+jobs/
+└── notificationCleanup.ts # Cron daily cleanup read notifications > 30 days
 scripts/
 └── createAdmin.ts     # CLI creation SuperAdmin
 ```
@@ -143,7 +145,12 @@ __tests__/
     ├── adminActivity.test.ts
     ├── proposals.test.ts
     ├── share.test.ts
-    └── variants.test.ts
+    ├── variants.test.ts
+    ├── notificationService.test.ts
+    ├── notifications.test.ts
+    ├── tagPreferences.test.ts
+    ├── websocket.test.ts
+    └── notificationCleanup.test.ts
 ```
 
 ---
@@ -163,6 +170,7 @@ pages/
 ├── CommunityDetailPage.tsx   # Detail communaute (icones + side panel)
 ├── CommunityEditPage.tsx     # Edition communaute (fallback route, edit inline via SidePanel)
 ├── InvitationsPage.tsx       # Invitations recues
+├── NotificationsPage.tsx     # Page notifications (filtres, pagination, groupement)
 ├── ProfilePage.tsx           # Profil utilisateur (edit username/email/password)
 ├── SignUpPage.tsx            # Inscription
 ├── PrivacyPage.tsx           # Politique confidentialite
@@ -186,7 +194,7 @@ components/
 │   └── Sidebar.tsx           # Sidebar navigation communautes
 ├── Navbar/
 │   ├── NavBar.tsx            # Barre navigation
-│   ├── NotificationDropdown.tsx # Dropdown notifications (invitations)
+│   ├── NotificationDropdown.tsx # Dropdown notifications (5 categories, grouping, auto-mark)
 │   ├── NavBarLoggedInView/   # Nav connecte (icone user + dropdown menu)
 │   └── NavBarLoggedOutView/  # Nav deconnecte
 ├── communities/
@@ -221,7 +229,7 @@ components/
 │   └── TagSuggestionsList.tsx # Liste suggestions de tags (owner view, accept/reject)
 ├── profile/
 │   ├── TagPreferencesSection.tsx     # Toggle tag visibility per community
-│   └── NotificationPreferencesSection.tsx # Toggle tag notifications (moderator)
+│   └── NotificationPreferencesSection.tsx # Notification preferences (5 categories, per-community overrides)
 ├── form/
 │   ├── TagSelector.tsx       # Multi-select tags (debounce, create on-the-fly)
 │   ├── IngredientSelector.tsx # Selecteur ingredients
@@ -258,7 +266,8 @@ models/
 ├── tag.ts                    # Tag types
 ├── tagSuggestion.ts          # TagSuggestion types
 ├── community.ts              # Community, Member, Invite types
-├── preferences.ts            # TagPreference, NotificationPreferences types
+├── preferences.ts            # TagPreference types
+├── notification.ts           # Notification, NotificationCategory, preferences types
 └── admin.ts                  # AdminUser types
 ```
 
@@ -274,7 +283,9 @@ hooks/
 ├── useRecipeActions.ts       # Recipe CRUD actions
 ├── useSocketEvent.ts         # Subscribe/unsubscribe to socket events
 ├── useCommunityRoom.ts       # Join/leave community socket room
-└── useNotificationToasts.ts  # Toast notifications from socket events
+├── useNotificationToasts.ts  # Toast notifications from notification:new socket event
+├── useNotifications.ts       # Paginated notifications with filters and mark as read
+└── useUnreadCount.ts         # Real-time unread count (REST init + WebSocket updates)
 utils/
 ├── format.Date.ts            # formatDate, formatDateShort
 └── communityEvents.ts        # Event bus for community refresh

@@ -27,8 +27,9 @@ async function seed() {
     { name: "selon besoin", abbreviation: "selon besoin", category: "QUALITATIVE", sortOrder: 3 },
   ];
 
+  const units = {};
   for (const unit of unitData) {
-    await prisma.unit.upsert({
+    units[unit.abbreviation] = await prisma.unit.upsert({
       where: { name: unit.name },
       update: { abbreviation: unit.abbreviation, category: unit.category, sortOrder: unit.sortOrder },
       create: unit,
@@ -230,12 +231,12 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: pizzaMargherita.id, ingredientId: ingredients["farine"].id, quantity: "300g", order: 1 },
-      { recipeId: pizzaMargherita.id, ingredientId: ingredients["tomate"].id, quantity: "200g sauce", order: 2 },
-      { recipeId: pizzaMargherita.id, ingredientId: ingredients["mozzarella"].id, quantity: "200g", order: 3 },
-      { recipeId: pizzaMargherita.id, ingredientId: ingredients["basilic"].id, quantity: "quelques feuilles", order: 4 },
-      { recipeId: pizzaMargherita.id, ingredientId: ingredients["huile d'olive"].id, quantity: "2 c.a.s", order: 5 },
-      { recipeId: pizzaMargherita.id, ingredientId: ingredients["sel"].id, quantity: "1 pincee", order: 6 },
+      { recipeId: pizzaMargherita.id, ingredientId: ingredients["farine"].id, quantity: 300, unitId: units["g"].id, order: 1 },
+      { recipeId: pizzaMargherita.id, ingredientId: ingredients["tomate"].id, quantity: 200, unitId: units["g"].id, order: 2 },
+      { recipeId: pizzaMargherita.id, ingredientId: ingredients["mozzarella"].id, quantity: 200, unitId: units["g"].id, order: 3 },
+      { recipeId: pizzaMargherita.id, ingredientId: ingredients["basilic"].id, quantity: 5, unitId: units["fle"].id, order: 4 },
+      { recipeId: pizzaMargherita.id, ingredientId: ingredients["huile d'olive"].id, quantity: 2, unitId: units["cas"].id, order: 5 },
+      { recipeId: pizzaMargherita.id, ingredientId: ingredients["sel"].id, quantity: 1, unitId: units["pincee"].id, order: 6 },
     ],
   });
 
@@ -256,10 +257,10 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: risottoChampignons.id, ingredientId: ingredients["riz"].id, quantity: "300g arborio", order: 1 },
-      { recipeId: risottoChampignons.id, ingredientId: ingredients["oignon"].id, quantity: "1", order: 2 },
-      { recipeId: risottoChampignons.id, ingredientId: ingredients["beurre"].id, quantity: "50g", order: 3 },
-      { recipeId: risottoChampignons.id, ingredientId: ingredients["parmesan"].id, quantity: "80g", order: 4 },
+      { recipeId: risottoChampignons.id, ingredientId: ingredients["riz"].id, quantity: 300, unitId: units["g"].id, order: 1 },
+      { recipeId: risottoChampignons.id, ingredientId: ingredients["oignon"].id, quantity: 1, unitId: units["pc"].id, order: 2 },
+      { recipeId: risottoChampignons.id, ingredientId: ingredients["beurre"].id, quantity: 50, unitId: units["g"].id, order: 3 },
+      { recipeId: risottoChampignons.id, ingredientId: ingredients["parmesan"].id, quantity: 80, unitId: units["g"].id, order: 4 },
     ],
   });
 
@@ -281,10 +282,10 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: saladeCaprese.id, ingredientId: ingredients["tomate"].id, quantity: "4 grosses", order: 1 },
-      { recipeId: saladeCaprese.id, ingredientId: ingredients["mozzarella"].id, quantity: "250g bufala", order: 2 },
-      { recipeId: saladeCaprese.id, ingredientId: ingredients["basilic"].id, quantity: "1 bouquet", order: 3 },
-      { recipeId: saladeCaprese.id, ingredientId: ingredients["huile d'olive"].id, quantity: "3 c.a.s", order: 4 },
+      { recipeId: saladeCaprese.id, ingredientId: ingredients["tomate"].id, quantity: 4, unitId: units["pc"].id, order: 1 },
+      { recipeId: saladeCaprese.id, ingredientId: ingredients["mozzarella"].id, quantity: 250, unitId: units["g"].id, order: 2 },
+      { recipeId: saladeCaprese.id, ingredientId: ingredients["basilic"].id, quantity: 1, unitId: units["bte"].id, order: 3 },
+      { recipeId: saladeCaprese.id, ingredientId: ingredients["huile d'olive"].id, quantity: 3, unitId: units["cas"].id, order: 4 },
     ],
   });
 
@@ -304,8 +305,8 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: painMaison.id, ingredientId: ingredients["farine"].id, quantity: "500g T65", order: 1 },
-      { recipeId: painMaison.id, ingredientId: ingredients["sel"].id, quantity: "10g", order: 2 },
+      { recipeId: painMaison.id, ingredientId: ingredients["farine"].id, quantity: 500, unitId: units["g"].id, order: 1 },
+      { recipeId: painMaison.id, ingredientId: ingredients["sel"].id, quantity: 10, unitId: units["g"].id, order: 2 },
     ],
   });
 
@@ -325,11 +326,11 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: quicheLorraine.id, ingredientId: ingredients["oeufs"].id, quantity: "4", order: 1 },
-      { recipeId: quicheLorraine.id, ingredientId: ingredients["creme fraiche"].id, quantity: "20cl", order: 2 },
-      { recipeId: quicheLorraine.id, ingredientId: ingredients["lait"].id, quantity: "10cl", order: 3 },
-      { recipeId: quicheLorraine.id, ingredientId: ingredients["farine"].id, quantity: "250g (pate)", order: 4 },
-      { recipeId: quicheLorraine.id, ingredientId: ingredients["beurre"].id, quantity: "125g (pate)", order: 5 },
+      { recipeId: quicheLorraine.id, ingredientId: ingredients["oeufs"].id, quantity: 4, unitId: units["pc"].id, order: 1 },
+      { recipeId: quicheLorraine.id, ingredientId: ingredients["creme fraiche"].id, quantity: 20, unitId: units["cl"].id, order: 2 },
+      { recipeId: quicheLorraine.id, ingredientId: ingredients["lait"].id, quantity: 10, unitId: units["cl"].id, order: 3 },
+      { recipeId: quicheLorraine.id, ingredientId: ingredients["farine"].id, quantity: 250, unitId: units["g"].id, order: 4 },
+      { recipeId: quicheLorraine.id, ingredientId: ingredients["beurre"].id, quantity: 125, unitId: units["g"].id, order: 5 },
     ],
   });
 
@@ -350,13 +351,13 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: padThai.id, ingredientId: ingredients["poulet"].id, quantity: "200g", order: 1 },
-      { recipeId: padThai.id, ingredientId: ingredients["riz"].id, quantity: "200g nouilles", order: 2 },
-      { recipeId: padThai.id, ingredientId: ingredients["sauce soja"].id, quantity: "3 c.a.s", order: 3 },
-      { recipeId: padThai.id, ingredientId: ingredients["citron"].id, quantity: "2", order: 4 },
-      { recipeId: padThai.id, ingredientId: ingredients["ail"].id, quantity: "3 gousses", order: 5 },
-      { recipeId: padThai.id, ingredientId: ingredients["gingembre"].id, quantity: "2cm", order: 6 },
-      { recipeId: padThai.id, ingredientId: ingredients["coriandre"].id, quantity: "1 bouquet", order: 7 },
+      { recipeId: padThai.id, ingredientId: ingredients["poulet"].id, quantity: 200, unitId: units["g"].id, order: 1 },
+      { recipeId: padThai.id, ingredientId: ingredients["riz"].id, quantity: 200, unitId: units["g"].id, order: 2 },
+      { recipeId: padThai.id, ingredientId: ingredients["sauce soja"].id, quantity: 3, unitId: units["cas"].id, order: 3 },
+      { recipeId: padThai.id, ingredientId: ingredients["citron"].id, quantity: 2, unitId: units["pc"].id, order: 4 },
+      { recipeId: padThai.id, ingredientId: ingredients["ail"].id, quantity: 3, unitId: units["gse"].id, order: 5 },
+      { recipeId: padThai.id, ingredientId: ingredients["gingembre"].id, quantity: 2, unitId: units["pc"].id, order: 6 },
+      { recipeId: padThai.id, ingredientId: ingredients["coriandre"].id, quantity: 1, unitId: units["bte"].id, order: 7 },
     ],
   });
 
@@ -378,14 +379,14 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["aubergine"].id, quantity: "1", order: 1 },
-      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["courgette"].id, quantity: "2", order: 2 },
-      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["poivron"].id, quantity: "1 rouge, 1 jaune", order: 3 },
-      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["tomate"].id, quantity: "4", order: 4 },
-      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["oignon"].id, quantity: "1", order: 5 },
-      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["ail"].id, quantity: "3 gousses", order: 6 },
-      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["thym"].id, quantity: "2 branches", order: 7 },
-      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["huile d'olive"].id, quantity: "3 c.a.s", order: 8 },
+      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["aubergine"].id, quantity: 1, unitId: units["pc"].id, order: 1 },
+      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["courgette"].id, quantity: 2, unitId: units["pc"].id, order: 2 },
+      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["poivron"].id, quantity: 2, unitId: units["pc"].id, order: 3 },
+      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["tomate"].id, quantity: 4, unitId: units["pc"].id, order: 4 },
+      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["oignon"].id, quantity: 1, unitId: units["pc"].id, order: 5 },
+      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["ail"].id, quantity: 3, unitId: units["gse"].id, order: 6 },
+      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["thym"].id, quantity: 2, unitId: units["brn"].id, order: 7 },
+      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["huile d'olive"].id, quantity: 3, unitId: units["cas"].id, order: 8 },
     ],
   });
 
@@ -406,11 +407,11 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: tarteAuCitron.id, ingredientId: ingredients["citron"].id, quantity: "4 (jus + zestes)", order: 1 },
-      { recipeId: tarteAuCitron.id, ingredientId: ingredients["sucre"].id, quantity: "200g", order: 2 },
-      { recipeId: tarteAuCitron.id, ingredientId: ingredients["oeufs"].id, quantity: "6 (3 entiers + 3 blancs)", order: 3 },
-      { recipeId: tarteAuCitron.id, ingredientId: ingredients["beurre"].id, quantity: "150g", order: 4 },
-      { recipeId: tarteAuCitron.id, ingredientId: ingredients["farine"].id, quantity: "250g", order: 5 },
+      { recipeId: tarteAuCitron.id, ingredientId: ingredients["citron"].id, quantity: 4, unitId: units["pc"].id, order: 1 },
+      { recipeId: tarteAuCitron.id, ingredientId: ingredients["sucre"].id, quantity: 200, unitId: units["g"].id, order: 2 },
+      { recipeId: tarteAuCitron.id, ingredientId: ingredients["oeufs"].id, quantity: 6, unitId: units["pc"].id, order: 3 },
+      { recipeId: tarteAuCitron.id, ingredientId: ingredients["beurre"].id, quantity: 150, unitId: units["g"].id, order: 4 },
+      { recipeId: tarteAuCitron.id, ingredientId: ingredients["farine"].id, quantity: 250, unitId: units["g"].id, order: 5 },
     ],
   });
 
@@ -431,11 +432,11 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: fondantChocolat.id, ingredientId: ingredients["chocolat"].id, quantity: "200g noir 70%", order: 1 },
-      { recipeId: fondantChocolat.id, ingredientId: ingredients["beurre"].id, quantity: "100g", order: 2 },
-      { recipeId: fondantChocolat.id, ingredientId: ingredients["oeufs"].id, quantity: "4", order: 3 },
-      { recipeId: fondantChocolat.id, ingredientId: ingredients["sucre"].id, quantity: "100g", order: 4 },
-      { recipeId: fondantChocolat.id, ingredientId: ingredients["farine"].id, quantity: "50g", order: 5 },
+      { recipeId: fondantChocolat.id, ingredientId: ingredients["chocolat"].id, quantity: 200, unitId: units["g"].id, order: 1 },
+      { recipeId: fondantChocolat.id, ingredientId: ingredients["beurre"].id, quantity: 100, unitId: units["g"].id, order: 2 },
+      { recipeId: fondantChocolat.id, ingredientId: ingredients["oeufs"].id, quantity: 4, unitId: units["pc"].id, order: 3 },
+      { recipeId: fondantChocolat.id, ingredientId: ingredients["sucre"].id, quantity: 100, unitId: units["g"].id, order: 4 },
+      { recipeId: fondantChocolat.id, ingredientId: ingredients["farine"].id, quantity: 50, unitId: units["g"].id, order: 5 },
     ],
   });
 
@@ -455,10 +456,10 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: cremeBrulee.id, ingredientId: ingredients["creme fraiche"].id, quantity: "50cl", order: 1 },
-      { recipeId: cremeBrulee.id, ingredientId: ingredients["oeufs"].id, quantity: "5 jaunes", order: 2 },
-      { recipeId: cremeBrulee.id, ingredientId: ingredients["sucre"].id, quantity: "100g + pour carameliser", order: 3 },
-      { recipeId: cremeBrulee.id, ingredientId: ingredients["vanille"].id, quantity: "1 gousse", order: 4 },
+      { recipeId: cremeBrulee.id, ingredientId: ingredients["creme fraiche"].id, quantity: 50, unitId: units["cl"].id, order: 1 },
+      { recipeId: cremeBrulee.id, ingredientId: ingredients["oeufs"].id, quantity: 5, unitId: units["pc"].id, order: 2 },
+      { recipeId: cremeBrulee.id, ingredientId: ingredients["sucre"].id, quantity: 100, unitId: units["g"].id, order: 3 },
+      { recipeId: cremeBrulee.id, ingredientId: ingredients["vanille"].id, quantity: 1, unitId: units["pc"].id, order: 4 },
     ],
   });
 
@@ -480,11 +481,11 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: bowlSaumon.id, ingredientId: ingredients["saumon"].id, quantity: "200g frais", order: 1 },
-      { recipeId: bowlSaumon.id, ingredientId: ingredients["riz"].id, quantity: "150g", order: 2 },
-      { recipeId: bowlSaumon.id, ingredientId: ingredients["sauce soja"].id, quantity: "2 c.a.s", order: 3 },
-      { recipeId: bowlSaumon.id, ingredientId: ingredients["gingembre"].id, quantity: "1cm", order: 4 },
-      { recipeId: bowlSaumon.id, ingredientId: ingredients["carotte"].id, quantity: "1", order: 5 },
+      { recipeId: bowlSaumon.id, ingredientId: ingredients["saumon"].id, quantity: 200, unitId: units["g"].id, order: 1 },
+      { recipeId: bowlSaumon.id, ingredientId: ingredients["riz"].id, quantity: 150, unitId: units["g"].id, order: 2 },
+      { recipeId: bowlSaumon.id, ingredientId: ingredients["sauce soja"].id, quantity: 2, unitId: units["cas"].id, order: 3 },
+      { recipeId: bowlSaumon.id, ingredientId: ingredients["gingembre"].id, quantity: 1, unitId: units["pc"].id, order: 4 },
+      { recipeId: bowlSaumon.id, ingredientId: ingredients["carotte"].id, quantity: 1, unitId: units["pc"].id, order: 5 },
     ],
   });
 
@@ -506,11 +507,11 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: gaspacho.id, ingredientId: ingredients["tomate"].id, quantity: "1kg bien mures", order: 1 },
-      { recipeId: gaspacho.id, ingredientId: ingredients["poivron"].id, quantity: "1 vert", order: 2 },
-      { recipeId: gaspacho.id, ingredientId: ingredients["ail"].id, quantity: "1 gousse", order: 3 },
-      { recipeId: gaspacho.id, ingredientId: ingredients["oignon"].id, quantity: "1/2", order: 4 },
-      { recipeId: gaspacho.id, ingredientId: ingredients["huile d'olive"].id, quantity: "4 c.a.s", order: 5 },
+      { recipeId: gaspacho.id, ingredientId: ingredients["tomate"].id, quantity: 1, unitId: units["kg"].id, order: 1 },
+      { recipeId: gaspacho.id, ingredientId: ingredients["poivron"].id, quantity: 1, unitId: units["pc"].id, order: 2 },
+      { recipeId: gaspacho.id, ingredientId: ingredients["ail"].id, quantity: 1, unitId: units["gse"].id, order: 3 },
+      { recipeId: gaspacho.id, ingredientId: ingredients["oignon"].id, quantity: 0.5, unitId: units["pc"].id, order: 4 },
+      { recipeId: gaspacho.id, ingredientId: ingredients["huile d'olive"].id, quantity: 4, unitId: units["cas"].id, order: 5 },
     ],
   });
 
