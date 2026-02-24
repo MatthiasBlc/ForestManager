@@ -107,6 +107,7 @@
 
 - [ ] Tests end-to-end du flux complet : creation evenement → notif DB → WebSocket → dropdown → mark as read
 - [ ] Test offline : deconnexion → evenements → reconnexion → notifs presentes
+- [ ] Générer les tests manuels
 - [ ] Nettoyage code mort (anciens hooks, composants, endpoints)
 - [ ] Mise a jour `.claude/context/` (API_MAP, DB_MODELS, FILE_MAP, TESTS, PROGRESS)
 - [ ] Mise a jour CLAUDE.md (codes erreur, phase courante)
