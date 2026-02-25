@@ -70,7 +70,7 @@ describe("Tag Suggestions API", () => {
     const recipeRes = await request(app)
       .post(`/api/communities/${community.id}/recipes`)
       .set("Cookie", ownerCookie)
-      .send({ title: "Test Recipe", content: "Some content" });
+      .send({ title: "Test Recipe", servings: 4, steps: [{ instruction: "Some content" }] });
     communityRecipeId = recipeRes.body.community.id;
   });
 
@@ -137,7 +137,7 @@ describe("Tag Suggestions API", () => {
       const personalRes = await request(app)
         .post("/api/recipes")
         .set("Cookie", ownerCookie)
-        .send({ title: "Personal", content: "content" });
+        .send({ title: "Personal", servings: 4, steps: [{ instruction: "content" }] });
 
       const res = await request(app)
         .post(`/api/recipes/${personalRes.body.id}/tag-suggestions`)

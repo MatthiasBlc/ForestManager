@@ -157,7 +157,7 @@ describe("WebSocket", () => {
 
     // Creer une recette pour le template
     const recipe = await testPrisma.recipe.create({
-      data: { title: "WS Test Recipe", content: "content", creator: { connect: { id: actor.id } } },
+      data: { title: "WS Test Recipe", servings: 4, creator: { connect: { id: actor.id } }, steps: { create: [{ order: 0, instruction: "content" }] } },
     });
 
     const memberCookie = await getSessionCookie(member.username, member.password);

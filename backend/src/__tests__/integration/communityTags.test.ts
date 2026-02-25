@@ -282,7 +282,7 @@ describe("Community Tags API", () => {
       const recipeRes = await request(app)
         .post(`/api/communities/${community.id}/recipes`)
         .set("Cookie", moderatorCookie)
-        .send({ title: "R", content: "c" });
+        .send({ title: "R", servings: 4, steps: [{ instruction: "c" }] });
       const recipeId = recipeRes.body.community.id;
 
       await testPrisma.recipeTag.create({
@@ -426,7 +426,7 @@ describe("Community Tags API", () => {
       const recipeRes = await request(app)
         .post(`/api/communities/${community.id}/recipes`)
         .set("Cookie", moderatorCookie)
-        .send({ title: "R", content: "c" });
+        .send({ title: "R", servings: 4, steps: [{ instruction: "c" }] });
       await testPrisma.recipeTag.create({
         data: { recipeId: recipeRes.body.community.id, tagId: tag.id },
       });

@@ -33,12 +33,12 @@ Phases 0 a 9.3 terminees.
 - **Roadmap** : `docs/features/recipe-rework-v2/ROADMAP.md`
 - **Branche** : `RecipePageV2`
 - **Sous-phase 13.1** : Migration DB & modeles Prisma - COMPLETE
-  - Migration `20260225093525_recipe_rework_v2` appliquee
-  - Nouveaux modeles : RecipeStep, ProposalStep
-  - Nouveaux champs Recipe : servings, prepTime, cookTime, restTime
-  - Nouveaux champs RecipeUpdateProposal : proposedServings, proposedPrepTime, proposedCookTime, proposedRestTime
-  - Donnees migrees : 12 recettes → 12 RecipeStep (content → step)
-  - Anciens champs supprimes : Recipe.content, RecipeUpdateProposal.proposedContent
+- **Sous-phase 13.2** : Backend services & helpers - COMPLETE
+- **Sous-phase 13.3** : Backend controllers & routes - COMPLETE
+- **Sous-phase 13.4** : Backend tests - COMPLETE (649 tests, 34 fichiers)
+  - Tests integration adaptes : recipes, communityRecipes, proposals, share, variants
+  - Tests auxiliaires adaptes : activity, members, communityTags, tagSuggestions, adminIngredients, adminUnits, notificationService, websocket
+  - Tests unitaires ajoutes : validateServings, validateTime, validateSteps, formatSteps
 
 ## Resume de reprise
 

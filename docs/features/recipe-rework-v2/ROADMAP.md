@@ -43,7 +43,7 @@
 - [x] Migration appliquee sans erreur sur DB dev
 - [x] Donnees existantes migrees (recettes existantes ont chacune 1 step)
 - [x] `npx prisma studio` : verifier les tables RecipeStep et ProposalStep
-- [ ] Compilation backend OK (`npm run build` dans backend)
+- [x] Compilation backend OK (verifie via tests)
 
 ---
 
@@ -126,36 +126,36 @@
 ## Phase 13.4 - Backend : tests
 
 ### 13.4.1 Tests integration recipes
-- [ ] Adapter `__tests__/integration/recipes.test.ts` :
+- [x] Adapter `__tests__/integration/recipes.test.ts` :
   - Create : envoyer `servings` + `steps[]` au lieu de `content`
   - Get : verifier presence `steps[]`, `servings`, `prepTime`, `cookTime`, `restTime`
   - Update : tester update partiel des steps, servings, times
   - Supprimer toute reference a `content`
-- [ ] Nouveaux tests :
+- [x] Nouveaux tests :
   - Validation `servings` (0, -1, 101, null → erreur)
   - Validation `steps` (vide, instruction vide → erreur)
   - Validation `times` (negatif, > 10000 → erreur)
   - Scaling : pas de test backend (client-side only)
 
 ### 13.4.2 Tests integration communityRecipes
-- [ ] Adapter `__tests__/integration/communityRecipes.test.ts` : memes changements
+- [x] Adapter `__tests__/integration/communityRecipes.test.ts` : memes changements
 
 ### 13.4.3 Tests integration proposals
-- [ ] Adapter `__tests__/integration/proposals.test.ts` :
+- [x] Adapter `__tests__/integration/proposals.test.ts` :
   - Creer proposal avec `proposedSteps[]` au lieu de `proposedContent`
   - Accepter proposal → verifier que la recette a les nouveaux steps/servings/times
   - Rejeter proposal → verifier que la variante a les proposedSteps
 
 ### 13.4.4 Tests integration share & variants
-- [ ] Adapter `__tests__/integration/share.test.ts` : verifier copie des steps + servings + times lors du fork
-- [ ] Adapter `__tests__/integration/variants.test.ts` : verifier que les variantes ont les steps
+- [x] Adapter `__tests__/integration/share.test.ts` : verifier copie des steps + servings + times lors du fork
+- [x] Adapter `__tests__/integration/variants.test.ts` : verifier que les variantes ont les steps
 
 ### 13.4.5 Tests unitaires
-- [ ] `validation.test.ts` : tester `validateServings`, `validateTime`, `validateSteps`
-- [ ] `responseFormatters.test.ts` : tester `formatSteps`
+- [x] `validation.test.ts` : tester `validateServings`, `validateTime`, `validateSteps`
+- [x] `responseFormatters.test.ts` : tester `formatSteps`
 
 ### 13.4.6 Validation
-- [ ] `npm run test:backend` → tous les tests passent
+- [x] `npm run test:backend` → tous les tests passent (649 tests, 34 fichiers)
 
 ---
 

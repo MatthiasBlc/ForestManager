@@ -78,10 +78,11 @@ admin/
 ```
 services/
 ├── tagService.ts      # Logique scope-aware tags (resolve, autocomplete, fork)
-├── recipeService.ts   # upsertTags, upsertIngredients, createRecipe, updateRecipe
+├── recipeService.ts   # upsertTags, upsertIngredients, upsertSteps, upsertProposalSteps, createRecipe, updateRecipe, syncLinkedRecipes
 ├── communityRecipeService.ts # createCommunityRecipe (perso + comm)
 ├── shareService.ts    # forkRecipe, publishRecipe, getRecipeFamilyCommunities
 ├── membershipService.ts # requireRecipeAccess, requireRecipeOwnership
+├── proposalService.ts # acceptProposal (steps/servings/times + sync), rejectProposal (variant with steps)
 ├── orphanHandling.ts  # Gestion recettes orphelines (auto-reject proposals)
 ├── notificationService.ts  # create, broadcast, preferences, templates, grouping
 ├── tagSuggestionService.ts # create, accept, reject tag suggestions
@@ -99,8 +100,9 @@ types/
 util/
 ├── logger.ts          # Logger Pino central (silent test, pretty dev, JSON prod)
 ├── pagination.ts      # parsePagination, buildPaginationMeta
-├── validation.ts      # normalizeNames, isValidHttpUrl, regex constants
-├── responseFormatters.ts # formatTags, formatIngredients
+├── validation.ts      # normalizeNames, isValidHttpUrl, regex constants, validateServings, validateTime, validateSteps
+├── responseFormatters.ts # formatTags, formatIngredients, formatSteps
+├── prismaSelects.ts   # RECIPE_TAGS_SELECT, RECIPE_STEPS_SELECT, PROPOSAL_STEPS_SELECT, PROPOSAL_INGREDIENTS_SELECT
 ├── db.ts              # Prisma client singleton
 └── validateEnv.ts     # envalid env vars
 jobs/
