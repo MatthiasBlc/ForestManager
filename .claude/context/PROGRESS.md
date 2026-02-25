@@ -27,6 +27,19 @@ Phases 0 a 9.3 terminees.
 - **Branche** : `NotificationsUpgrade`
 - **Tests** : 590 backend + 363 frontend = 953 total
 
+## Phase 13 - Recipe Rework v2 : EN COURS
+
+- **Spec** : `docs/features/recipe-rework-v2/SPEC_RECIPE_REWORK_V2.md`
+- **Roadmap** : `docs/features/recipe-rework-v2/ROADMAP.md`
+- **Branche** : `RecipePageV2`
+- **Sous-phase 13.1** : Migration DB & modeles Prisma - COMPLETE
+  - Migration `20260225093525_recipe_rework_v2` appliquee
+  - Nouveaux modeles : RecipeStep, ProposalStep
+  - Nouveaux champs Recipe : servings, prepTime, cookTime, restTime
+  - Nouveaux champs RecipeUpdateProposal : proposedServings, proposedPrepTime, proposedCookTime, proposedRestTime
+  - Donnees migrees : 12 recettes → 12 RecipeStep (content → step)
+  - Anciens champs supprimes : Recipe.content, RecipeUpdateProposal.proposedContent
+
 ## Resume de reprise
 
 Si une session precedente a ete interrompue, un fichier `.claude/context/RESUME.md` peut

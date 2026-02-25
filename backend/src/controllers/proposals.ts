@@ -7,19 +7,27 @@ import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import { requireMembership } from "../services/membershipService";
 import { acceptProposal as acceptProposalService, rejectProposal as rejectProposalService } from "../services/proposalService";
 import appEvents from "../services/eventEmitter";
-import { IngredientInput, upsertProposalIngredients } from "../services/recipeService";
-import { PROPOSAL_INGREDIENTS_SELECT } from "../util/prismaSelects";
+import { IngredientInput, upsertProposalIngredients, upsertProposalSteps } from "../services/recipeService";
+import { PROPOSAL_INGREDIENTS_SELECT, PROPOSAL_STEPS_SELECT } from "../util/prismaSelects";
+import { validateServings, validateTime, validateSteps, StepInput } from "../util/validation";
 
 interface CreateProposalBody {
   proposedTitle?: string;
-  proposedContent?: string;
+  proposedServings?: number | null;
+  proposedPrepTime?: number | null;
+  proposedCookTime?: number | null;
+  proposedRestTime?: number | null;
+  proposedSteps?: StepInput[];
   proposedIngredients?: IngredientInput[];
 }
 
 const PROPOSAL_RESPONSE_SELECT = {
   id: true,
   proposedTitle: true,
-  proposedContent: true,
+  proposedServings: true,
+  proposedPrepTime: true,
+  proposedCookTime: true,
+  proposedRestTime: true,
   status: true,
   createdAt: true,
   decidedAt: true,
@@ -31,6 +39,7 @@ const PROPOSAL_RESPONSE_SELECT = {
       username: true,
     },
   },
+  proposedSteps: PROPOSAL_STEPS_SELECT,
   proposedIngredients: PROPOSAL_INGREDIENTS_SELECT,
 };
 
@@ -44,7 +53,7 @@ export const createProposal: RequestHandler<
   CreateProposalBody,
   unknown
 > = async (req, res, next) => {
-  const { proposedTitle, proposedContent, proposedIngredients } = req.body;
+  const { proposedTitle, proposedServings, proposedPrepTime, proposedCookTime, proposedRestTime, proposedSteps, proposedIngredients } = req.body;
   const authenticatedUserId = req.session.userId;
   const { recipeId } = req.params;
 
@@ -55,8 +64,25 @@ export const createProposal: RequestHandler<
     if (!proposedTitle?.trim()) {
       throw createHttpError(400, "RECIPE_003: Title required");
     }
-    if (!proposedContent?.trim()) {
-      throw createHttpError(400, "RECIPE_004: Content required");
+
+    if (!validateSteps(proposedSteps)) {
+      throw createHttpError(400, "RECIPE_007: At least one step required, each instruction non-empty (max 5000 chars)");
+    }
+
+    if (proposedServings !== undefined && proposedServings !== null && !validateServings(proposedServings)) {
+      throw createHttpError(400, "RECIPE_006: Servings must be an integer between 1 and 100");
+    }
+
+    if (proposedPrepTime !== undefined && !validateTime(proposedPrepTime)) {
+      throw createHttpError(400, "RECIPE_008: Invalid prep time (integer 0-10000)");
+    }
+
+    if (proposedCookTime !== undefined && !validateTime(proposedCookTime)) {
+      throw createHttpError(400, "RECIPE_008: Invalid cook time (integer 0-10000)");
+    }
+
+    if (proposedRestTime !== undefined && !validateTime(proposedRestTime)) {
+      throw createHttpError(400, "RECIPE_008: Invalid rest time (integer 0-10000)");
     }
 
     // Validation du nombre d'ingredients
@@ -104,12 +130,18 @@ export const createProposal: RequestHandler<
       const newProposal = await tx.recipeUpdateProposal.create({
         data: {
           proposedTitle: proposedTitle.trim(),
-          proposedContent: proposedContent.trim(),
+          proposedServings: proposedServings ?? null,
+          proposedPrepTime: proposedPrepTime ?? null,
+          proposedCookTime: proposedCookTime ?? null,
+          proposedRestTime: proposedRestTime ?? null,
           recipeId,
           proposerId: authenticatedUserId,
         },
         select: { id: true },
       });
+
+      // Stocker les steps proposes
+      await upsertProposalSteps(tx, newProposal.id, proposedSteps);
 
       // Stocker les ingredients proposes
       if (proposedIngredients && proposedIngredients.length > 0) {
@@ -307,16 +339,23 @@ export const acceptProposal: RequestHandler<
       select: {
         id: true,
         proposedTitle: true,
-        proposedContent: true,
+        proposedServings: true,
+        proposedPrepTime: true,
+        proposedCookTime: true,
+        proposedRestTime: true,
         status: true,
         createdAt: true,
         recipeId: true,
         proposerId: true,
+        proposedSteps: PROPOSAL_STEPS_SELECT,
         recipe: {
           select: {
             id: true,
             title: true,
-            content: true,
+            servings: true,
+            prepTime: true,
+            cookTime: true,
+            restTime: true,
             imageUrl: true,
             communityId: true,
             creatorId: true,
@@ -399,15 +438,22 @@ export const rejectProposal: RequestHandler<
       select: {
         id: true,
         proposedTitle: true,
-        proposedContent: true,
+        proposedServings: true,
+        proposedPrepTime: true,
+        proposedCookTime: true,
+        proposedRestTime: true,
         status: true,
         recipeId: true,
         proposerId: true,
+        proposedSteps: PROPOSAL_STEPS_SELECT,
         recipe: {
           select: {
             id: true,
             title: true,
-            content: true,
+            servings: true,
+            prepTime: true,
+            cookTime: true,
+            restTime: true,
             imageUrl: true,
             communityId: true,
             creatorId: true,

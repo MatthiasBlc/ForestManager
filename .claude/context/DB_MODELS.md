@@ -3,7 +3,7 @@
 Source: `backend/prisma/schema.prisma`
 DB: PostgreSQL | ORM: Prisma
 
-## Models (28 total)
+## Models (30 total)
 
 ### Sessions (isolees)
 | Model | Champs cles | Notes |
@@ -27,11 +27,13 @@ DB: PostgreSQL | ORM: Prisma
 | UserCommunity | userId, communityId, role(MEMBER/MODERATOR), joinedAt, deletedAt? | Soft delete, @@unique(userId,communityId) |
 | CommunityInvite | communityId, inviterId, inviteeId, status(PENDING/ACCEPTED/REJECTED/CANCELLED), respondedAt? | Index composite(communityId,inviteeId,status) |
 
-### Recipes (8 models)
+### Recipes (10 models)
 | Model | Champs cles | Notes |
 |-------|-------------|-------|
-| Recipe | id, title, content, imageUrl?, isVariant, creatorId, communityId?, originRecipeId?, sharedFromCommunityId?, deletedAt? | Soft delete. communityId=null → perso |
-| RecipeUpdateProposal | recipeId, proposerId, proposedTitle, proposedContent, status(PENDING/ACCEPTED/REJECTED), deletedAt?, proposedIngredients[] | Soft delete |
+| Recipe | id, title, servings(default 4), prepTime?, cookTime?, restTime?, imageUrl?, isVariant, creatorId, communityId?, originRecipeId?, sharedFromCommunityId?, deletedAt? | Soft delete. communityId=null → perso. Phase 13: content → steps |
+| RecipeStep | id, recipeId(FK CASCADE), order, instruction | Index(recipeId, order). Phase 13 |
+| RecipeUpdateProposal | recipeId, proposerId, proposedTitle, proposedServings?, proposedPrepTime?, proposedCookTime?, proposedRestTime?, status(PENDING/ACCEPTED/REJECTED), deletedAt?, proposedSteps[], proposedIngredients[] | Soft delete. Phase 13: proposedContent → proposedSteps |
+| ProposalStep | id, proposalId(FK CASCADE), order, instruction | Index(proposalId, order). Phase 13 |
 | Tag | id, name, scope(GLOBAL/COMMUNITY), status(APPROVED/PENDING), communityId?, createdById?, createdAt, updatedAt | @@unique(name,communityId) + partial unique index global. Index name, communityId+status |
 | RecipeTag | recipeId, tagId | PK composite, **Cascade** delete |
 | Unit | id, name(unique), abbreviation(unique), category(UnitCategory), sortOrder | Index (category,sortOrder). Phase 11 |
@@ -109,7 +111,9 @@ User <-1:N-> NotificationPreference
 Recipe <-N:N-> Tag (via RecipeTag, cascade)
 Recipe <-N:N-> Ingredient (via RecipeIngredient, cascade)
 Recipe <-self-> Recipe (originRecipeId -> variantes/forks)
+Recipe <-1:N-> RecipeStep (cascade on delete)
 Recipe <-1:N-> TagSuggestion (cascade on delete)
+RecipeUpdateProposal <-1:N-> ProposalStep (cascade on delete)
 RecipeUpdateProposal <-1:N-> ProposalIngredient (cascade on delete)
 Ingredient -> Unit? (defaultUnitId)
 RecipeIngredient -> Unit? (unitId)
@@ -130,5 +134,5 @@ AdminUser <-1:N-> AdminActivityLog
 | Type | Modeles | Methode |
 |------|---------|---------|
 | Soft delete (deletedAt) | User, Community, UserCommunity, Recipe, RecipeUpdateProposal, CommunityInvite | Applicatif (where deletedAt: null) |
-| Hard delete (Cascade) | RecipeTag, RecipeIngredient, ProposalIngredient, RecipeAnalytics, RecipeView, TagSuggestion (via Recipe), UserCommunityTagPreference, Notification (via User/Community), NotificationPreference | DB cascade |
+| Hard delete (Cascade) | RecipeTag, RecipeIngredient, RecipeStep, ProposalIngredient, ProposalStep, RecipeAnalytics, RecipeView, TagSuggestion (via Recipe), UserCommunityTagPreference, Notification (via User/Community), NotificationPreference | DB cascade |
 | Soft revoke | CommunityFeature | revokedAt timestamp |

@@ -68,7 +68,10 @@ export const getVariants: RequestHandler<
       select: {
         id: true,
         title: true,
-        content: true,
+        servings: true,
+        prepTime: true,
+        cookTime: true,
+        restTime: true,
         imageUrl: true,
         createdAt: true,
         updatedAt: true,
@@ -100,7 +103,10 @@ export const getVariants: RequestHandler<
     const data = paginatedVariants.map((variant) => ({
       id: variant.id,
       title: variant.title,
-      content: variant.content,
+      servings: variant.servings,
+      prepTime: variant.prepTime,
+      cookTime: variant.cookTime,
+      restTime: variant.restTime,
       imageUrl: variant.imageUrl,
       createdAt: variant.createdAt,
       updatedAt: variant.updatedAt,

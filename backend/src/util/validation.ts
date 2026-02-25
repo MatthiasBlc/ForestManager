@@ -34,3 +34,31 @@ export function isValidHttpUrl(url: string | null | undefined): boolean {
     return false;
   }
 }
+
+// --- Recipe Rework v2 validators ---
+
+export function validateServings(value: unknown): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 100;
+}
+
+export function validateTime(value: unknown): value is number | null {
+  if (value === null || value === undefined) return true;
+  return typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= 10000;
+}
+
+export interface StepInput {
+  instruction: string;
+}
+
+export function validateSteps(steps: unknown): steps is StepInput[] {
+  if (!Array.isArray(steps) || steps.length === 0) return false;
+  return steps.every(
+    (s) =>
+      s &&
+      typeof s === "object" &&
+      "instruction" in s &&
+      typeof s.instruction === "string" &&
+      s.instruction.trim().length > 0 &&
+      s.instruction.trim().length <= 5000
+  );
+}

@@ -33,12 +33,12 @@ npx prisma studio              # DB GUI :5555
 ## Git
 
 - **Main**: master
-- **Branche courante**: NotificationsUpgrade
+- **Branche courante**: RecipePageV2
 - **Commits**: Ne JAMAIS ajouter de Co-Authored-By pour Claude
 
 ## Phase actuelle
 
-**Phase 12** - Rework Notifications : COMPLETE.
+**Phase 13** - Recipe Rework v2 : EN COURS (sous-phase 13.1 complete).
 Voir `.claude/context/PROGRESS.md` pour le detail et les liens vers spec/roadmap.
 
 ## Codes erreur
@@ -95,6 +95,9 @@ Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une 
 | **Feature : Ingredients Rework** | |
 | Spec Ingredients Rework | `docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md` |
 | Roadmap Ingredients Rework | `docs/features/ingredients-rework/ROADMAP.md` |
+| **Feature : Recipe Rework v2** | |
+| Spec Recipe Rework v2 | `docs/features/recipe-rework-v2/SPEC_RECIPE_REWORK_V2.md` |
+| Roadmap Recipe Rework v2 | `docs/features/recipe-rework-v2/ROADMAP.md` |
 | **Feature : Notifications Rework** | |
 | Spec Notifications Rework | `docs/features/notifications-rework/SPEC_NOTIFICATIONS_REWORK.md` |
 | Roadmap Notifications Rework | `docs/features/notifications-rework/ROADMAP.md` |

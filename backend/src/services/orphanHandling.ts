@@ -43,6 +43,10 @@ export async function handleOrphanedRecipes(
     select: {
       id: true,
       title: true,
+      servings: true,
+      prepTime: true,
+      cookTime: true,
+      restTime: true,
       imageUrl: true,
       proposals: {
         where: {
@@ -52,8 +56,15 @@ export async function handleOrphanedRecipes(
         select: {
           id: true,
           proposedTitle: true,
-          proposedContent: true,
+          proposedServings: true,
+          proposedPrepTime: true,
+          proposedCookTime: true,
+          proposedRestTime: true,
           proposerId: true,
+          proposedSteps: {
+            select: { order: true, instruction: true },
+            orderBy: { order: "asc" as const },
+          },
         },
       },
     },
@@ -65,6 +76,7 @@ export async function handleOrphanedRecipes(
     proposal: typeof recipes[0]["proposals"][0];
     recipeId: string;
     imageUrl: string | null;
+    recipe: typeof recipes[0];
   }[] = [];
 
   for (const recipe of recipes) {
@@ -74,6 +86,7 @@ export async function handleOrphanedRecipes(
         proposal,
         recipeId: recipe.id,
         imageUrl: recipe.imageUrl,
+        recipe,
       });
     }
   }
@@ -99,11 +112,14 @@ export async function handleOrphanedRecipes(
     metadata: Prisma.InputJsonValue;
   }[] = [];
 
-  for (const { proposal, recipeId, imageUrl } of variantDataList) {
+  for (const { proposal, recipeId, imageUrl, recipe } of variantDataList) {
     const variant = await client.recipe.create({
       data: {
         title: proposal.proposedTitle,
-        content: proposal.proposedContent,
+        servings: proposal.proposedServings ?? recipe.servings,
+        prepTime: proposal.proposedPrepTime !== null ? proposal.proposedPrepTime : recipe.prepTime,
+        cookTime: proposal.proposedCookTime !== null ? proposal.proposedCookTime : recipe.cookTime,
+        restTime: proposal.proposedRestTime !== null ? proposal.proposedRestTime : recipe.restTime,
         imageUrl,
         isVariant: true,
         creatorId: proposal.proposerId,
@@ -111,6 +127,19 @@ export async function handleOrphanedRecipes(
         originRecipeId: recipeId,
       },
     });
+
+    // Copier les steps proposes dans la variante
+    if (proposal.proposedSteps.length > 0) {
+      for (const ps of proposal.proposedSteps) {
+        await client.recipeStep.create({
+          data: {
+            recipeId: variant.id,
+            order: ps.order,
+            instruction: ps.instruction,
+          },
+        });
+      }
+    }
 
     activityLogData.push({
       type: "VARIANT_CREATED",

@@ -3,10 +3,10 @@ import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { Prisma } from "@prisma/client";
-import { isValidHttpUrl } from "../util/validation";
+import { isValidHttpUrl, validateServings, validateTime, validateSteps, StepInput } from "../util/validation";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import { RECIPE_TAGS_SELECT } from "../util/prismaSelects";
-import { formatTags, formatIngredients } from "../util/responseFormatters";
+import { formatTags, formatIngredients, formatSteps } from "../util/responseFormatters";
 import { createCommunityRecipe as createCommunityRecipeService } from "../services/communityRecipeService";
 import appEvents from "../services/eventEmitter";
 import { getModeratorIdsForTagNotification } from "../services/notificationService";
@@ -19,7 +19,11 @@ interface IngredientInput {
 
 interface CreateCommunityRecipeBody {
   title?: string;
-  content?: string;
+  servings?: number;
+  prepTime?: number | null;
+  cookTime?: number | null;
+  restTime?: number | null;
+  steps?: StepInput[];
   imageUrl?: string;
   tags?: string[];
   ingredients?: IngredientInput[];
@@ -31,7 +35,7 @@ export const createCommunityRecipe: RequestHandler<
   CreateCommunityRecipeBody,
   unknown
 > = async (req, res, next) => {
-  const { title, content, imageUrl, tags = [], ingredients = [] } = req.body;
+  const { title, servings, prepTime, cookTime, restTime, steps, imageUrl, tags = [], ingredients = [] } = req.body;
   const authenticatedUserId = req.session.userId;
   const communityId = req.params.communityId;
 
@@ -42,8 +46,24 @@ export const createCommunityRecipe: RequestHandler<
       throw createHttpError(400, "RECIPE_003: Title required");
     }
 
-    if (!content?.trim()) {
-      throw createHttpError(400, "RECIPE_004: Content required");
+    if (!validateServings(servings)) {
+      throw createHttpError(400, "RECIPE_006: Servings must be an integer between 1 and 100");
+    }
+
+    if (!validateSteps(steps)) {
+      throw createHttpError(400, "RECIPE_007: At least one step required, each instruction non-empty (max 5000 chars)");
+    }
+
+    if (!validateTime(prepTime)) {
+      throw createHttpError(400, "RECIPE_008: Invalid prep time (integer 0-10000)");
+    }
+
+    if (!validateTime(cookTime)) {
+      throw createHttpError(400, "RECIPE_008: Invalid cook time (integer 0-10000)");
+    }
+
+    if (!validateTime(restTime)) {
+      throw createHttpError(400, "RECIPE_008: Invalid rest time (integer 0-10000)");
     }
 
     if (!isValidHttpUrl(imageUrl)) {
@@ -51,7 +71,7 @@ export const createCommunityRecipe: RequestHandler<
     }
 
     const result = await createCommunityRecipeService(authenticatedUserId, communityId, {
-      title, content, imageUrl, tags, ingredients,
+      title, servings, prepTime, cookTime, restTime, steps, imageUrl, tags, ingredients,
     });
 
     if (!result.personal || !result.community) {
@@ -61,13 +81,17 @@ export const createCommunityRecipe: RequestHandler<
     const formatRecipe = (recipe: NonNullable<typeof result.personal>) => ({
       id: recipe.id,
       title: recipe.title,
-      content: recipe.content,
+      servings: recipe.servings,
+      prepTime: recipe.prepTime,
+      cookTime: recipe.cookTime,
+      restTime: recipe.restTime,
       imageUrl: recipe.imageUrl,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
       creatorId: recipe.creatorId,
       communityId: recipe.communityId,
       originRecipeId: recipe.originRecipeId,
+      steps: formatSteps(recipe.steps),
       tags: formatTags(recipe.tags),
       ingredients: formatIngredients(recipe.ingredients),
     });
@@ -184,6 +208,10 @@ export const getCommunityRecipes: RequestHandler<
         select: {
           id: true,
           title: true,
+          servings: true,
+          prepTime: true,
+          cookTime: true,
+          restTime: true,
           imageUrl: true,
           createdAt: true,
           updatedAt: true,
@@ -215,6 +243,10 @@ export const getCommunityRecipes: RequestHandler<
     const data = recipes.map((recipe) => ({
       id: recipe.id,
       title: recipe.title,
+      servings: recipe.servings,
+      prepTime: recipe.prepTime,
+      cookTime: recipe.cookTime,
+      restTime: recipe.restTime,
       imageUrl: recipe.imageUrl,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
