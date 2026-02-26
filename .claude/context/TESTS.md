@@ -40,7 +40,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~1012 tests)
+## Inventaire des tests (~1052 tests)
 
 ### Backend Integration (26 fichiers, ~590 tests)
 
@@ -86,7 +86,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | middleware/requireSuperAdmin.test.ts | requireSuperAdmin, requireAdminSession | 6 |
 | middleware/security.test.ts | requireHttps, rateLimiters, helmet | 5 |
 
-### Frontend Unit (57 fichiers, ~363 tests)
+### Frontend Unit (62 fichiers, ~403 tests)
 
 | Fichier | Composant | Tests |
 |---------|-----------|-------|
@@ -112,6 +112,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | TagSelector.test.tsx | Selecteur tags | 6 |
 | IngredientList.test.tsx | Liste ingredients (autocomplete, units, PENDING) | 8 |
 | UnitSelector.test.tsx | Selecteur unites par categorie | 7 |
+| form/StepEditor.test.tsx | Editeur etapes numerotees reorder/delete | 8 |
 | RecipesPage.test.tsx | Page recettes | 3 |
 | MainLayout.test.tsx | Layout principal | 6 |
 | Sidebar.test.tsx | Sidebar navigation | 10 |
@@ -126,6 +127,8 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | ShareRecipeModal.test.tsx | Modal partage recette | 7 |
 | recipes/SuggestTagModal.test.tsx | Modal suggestion tag | 5 |
 | recipes/TagSuggestionsList.test.tsx | Liste suggestions tags owner | 5 |
+| recipes/TimeBadges.test.tsx | Badges temps prep/cuisson/repos/total | 7 |
+| recipes/ServingsSelector.test.tsx | Selecteur portions -/input/+ | 6 |
 | profile/TagPreferencesSection.test.tsx | Toggle tag visibility per community | 5 |
 | profile/NotificationPreferencesSection.test.tsx | Notification preferences (5 categories, global toggles, error states) | 5 |
 | hooks/useClickOutside.test.ts | Hook click outside | 4 |
@@ -136,6 +139,8 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | hooks/useNotificationToasts.test.ts | Hook notification toasts (notification:new event) | 5 |
 | hooks/usePaginatedList.test.ts | Hook paginated list | 6 |
 | utils/formatDate.test.ts | Format date utils | 5 |
+| utils/formatDuration.test.ts | Format duree min → "1h30" | 4 |
+| utils/scaleQuantity.test.ts | Scale proportionnel arrondi 2 dec | 8 |
 | utils/communityEvents.test.ts | Community events bus | 2 |
 | pages/DashboardPage.test.tsx | Page dashboard user | 8 |
 | pages/ProfilePage.test.tsx | Page profil user | 8 |

@@ -451,22 +451,22 @@ Composants DaisyUI utilises :
 - [ ] Verifier recettes migrees (1 step, servings=4, pas de temps)
 
 ### 13.12.2 Tests complets suite
-- [ ] `npm test` → backend + frontend passent
+- [x] `npm test` → backend (649 tests, 34 fichiers) + frontend (403 tests, 62 fichiers) passent
 
 ### 13.12.3 Nettoyage
-- [ ] Supprimer le code mort (references a `content`, `proposedContent`)
-- [ ] Supprimer les interfaces legacy non utilisees (ex: `Recipe` avec `content`)
+- [x] Supprimer le code mort (references a `content`, `proposedContent`) — audit OK, aucun code mort trouve
+- [x] Supprimer les interfaces legacy non utilisees — audit OK, aucune interface legacy restante
 
 ### 13.12.4 Mise a jour contexte projet
-- [ ] `.claude/context/DB_MODELS.md` : ajouter RecipeStep, ProposalStep, nouveaux champs
-- [ ] `.claude/context/API_MAP.md` : mettre a jour les inputs/outputs des endpoints recettes et proposals
-- [ ] `.claude/context/FILE_MAP.md` : ajouter les nouveaux fichiers (composants, utils)
-- [ ] `.claude/context/TESTS.md` : ajouter les nouveaux tests
-- [ ] `.claude/context/PROGRESS.md` : marquer Phase 13 complete
+- [x] `.claude/context/DB_MODELS.md` : RecipeStep, ProposalStep, nouveaux champs (deja a jour depuis 13.1)
+- [x] `.claude/context/API_MAP.md` : inputs/outputs des endpoints recettes et proposals (deja a jour depuis 13.3)
+- [x] `.claude/context/FILE_MAP.md` : nouveaux fichiers (composants, utils, tests)
+- [x] `.claude/context/TESTS.md` : nouveaux tests ajoutes
+- [x] `.claude/context/PROGRESS.md` : Phase 13 marquee complete
 
 ### 13.12.5 Documentation
-- [ ] `docs/features/recipe-rework-v2/MANUAL_TESTS.md` : checklist tests manuels detailles
-- [ ] Mettre a jour `docs/0 - brainstorming futur.md` : marquer "Rework des pages recettes (v2)" comme DONE
+- [x] `docs/features/recipe-rework-v2/MANUAL_TESTS.md` : checklist tests manuels detailles
+- [x] `docs/0 - brainstorming futur.md` : "Rework des pages recettes (v2)" marque DONE
 
 ### 13.12.6 Brainstorm update
-- [ ] Marquer la feature comme DONE dans le brainstorming
+- [x] Feature marquee DONE dans le brainstorming

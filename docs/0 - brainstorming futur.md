@@ -14,19 +14,9 @@ Implemente : unites structurees, gouvernance PENDING/APPROVED, moderation admin,
 
 persistance, fonctionne y compris offline (je me connecte je dois voir les notifs reçues lorsque j'étais offline)
 
-# Rework des pages recettes (v2)
+# ~~Rework des pages recettes (v2)~~ DONE (Phase 13)
 
-nombre de personne pour les ingrédients,
-étapes claires et structurées
-temps de préparation, temps de cuisson, de repos,
--> temps total (calcul automatique)
-
-sélecteur du nombre de persones avec calcul automatique des quantités
-
-Voici une inspiration : (regarde la version mobile du site principalement, j'aime la structure séquentielle.)
-https://www.magimix.fr/recettes/brioche-a-la-praline-rose_c
-
-pour le desktop le site de marmiton peut être une bonne piste.
+Implemente : servings avec scaling dynamique des quantites, etapes structurees ordonnees, temps de prep/cuisson/repos avec total auto, propositions granulaires (servings/temps/steps), badges temps et servings sur les cartes.
 
 # audit refactorisation complete back + front
 

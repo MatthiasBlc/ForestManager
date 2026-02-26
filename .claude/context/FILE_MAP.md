@@ -226,6 +226,8 @@ components/
 │   ├── RecipeCard.tsx        # Carte recette (grille)
 │   ├── RecipeFilters.tsx     # Filtres search/tags (scope-aware via communityId)
 │   ├── RecipeListRow.tsx     # Ligne recette (liste)
+│   ├── TimeBadges.tsx        # Badges temps prep/cuisson/repos/total (Phase 13)
+│   ├── ServingsSelector.tsx  # Selecteur portions -/input/+ (Phase 13)
 │   ├── SuggestTagModal.tsx   # Modal suggestion de tag sur recette d'autrui
 │   ├── TagBadge.tsx          # Badge tag avec style pending/approved
 │   └── TagSuggestionsList.tsx # Liste suggestions de tags (owner view, accept/reject)
@@ -236,7 +238,8 @@ components/
 │   ├── TagSelector.tsx       # Multi-select tags (debounce, create on-the-fly)
 │   ├── IngredientSelector.tsx # Selecteur ingredients
 │   ├── IngredientList.tsx    # Liste ingredients dynamique (autocomplete, units, PENDING badge)
-│   └── UnitSelector.tsx      # Dropdown unites groupee par categorie
+│   ├── UnitSelector.tsx      # Dropdown unites groupee par categorie
+│   └── StepEditor.tsx        # Editeur etapes numerotees reorder/delete (Phase 13)
 ├── admin/
 │   ├── AdminLayout.tsx       # Layout admin (sidebar + header + outlet)
 │   └── AdminProtectedRoute.tsx # Guard admin
@@ -290,6 +293,8 @@ hooks/
 └── useUnreadCount.ts         # Real-time unread count (REST init + WebSocket updates)
 utils/
 ├── format.Date.ts            # formatDate, formatDateShort
+├── formatDuration.ts         # formatDuration: 45→"45 min", 90→"1h30" (Phase 13)
+├── scaleQuantity.ts          # scaleQuantity: proportionnel arrondi 2 dec (Phase 13)
 └── communityEvents.ts        # Event bus for community refresh
 errors/                       # Classes erreur
 assets/                       # Assets statiques
@@ -320,6 +325,8 @@ __tests__/
     │   └── usePaginatedList.test.ts
     ├── utils/
     │   ├── formatDate.test.ts
+    │   ├── formatDuration.test.ts       # Phase 13 (4 tests)
+    │   ├── scaleQuantity.test.ts        # Phase 13 (8 tests)
     │   └── communityEvents.test.ts
     ├── pages/
     │   ├── CommunitiesPage.test.tsx
@@ -355,6 +362,8 @@ __tests__/
         ├── recipes/
         │   ├── RecipeCard.test.tsx
         │   ├── RecipeFilters.test.tsx
+        │   ├── TimeBadges.test.tsx           # Phase 13 (7 tests)
+        │   ├── ServingsSelector.test.tsx     # Phase 13 (6 tests)
         │   ├── SuggestTagModal.test.tsx
         │   ├── TagBadge.test.tsx
         │   └── TagSuggestionsList.test.tsx
@@ -364,7 +373,8 @@ __tests__/
         ├── form/
         │   ├── TagSelector.test.tsx
         │   ├── IngredientList.test.tsx
-        │   └── UnitSelector.test.tsx
+        │   ├── UnitSelector.test.tsx
+        │   └── StepEditor.test.tsx          # Phase 13 (8 tests)
         ├── ActivityFeed.test.tsx
         ├── ErrorBoundary.test.tsx
         ├── InviteCard.test.tsx
