@@ -33,6 +33,7 @@ Phases 0 a 9.3 terminees.
 - **Roadmap** : `docs/features/recipe-rework-v2/ROADMAP.md`
 - **Branche** : `RecipePageV2`
 - **Tests** : 649 backend + 403 frontend = 1052 total
+- **TODO** : Mettre à jour le seed (`backend/prisma/seed.js`) pour qu'il corresponde au nouveau schéma Prisma (le champ `content` n'existe plus dans le modèle `Recipe`)
 
 ## Resume de reprise
 
