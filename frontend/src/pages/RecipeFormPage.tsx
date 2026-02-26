@@ -6,10 +6,10 @@ import { FaArrowLeft, FaSave } from "react-icons/fa";
 import APIManager, { RecipeInput } from "../network/api";
 import TagSelector from "../components/form/TagSelector";
 import IngredientList, { IngredientInput } from "../components/form/IngredientList";
+import StepEditor from "../components/form/StepEditor";
 
 interface FormData {
   title: string;
-  content: string; // TODO: Phase 13.8 - replace with steps/servings/times
   imageUrl: string;
 }
 
@@ -22,6 +22,12 @@ const RecipeFormPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [tags, setTags] = useState<string[]>([]);
   const [ingredients, setIngredients] = useState<IngredientInput[]>([]);
+  const [servings, setServings] = useState<number>(4);
+  const [prepTime, setPrepTime] = useState<string>("");
+  const [cookTime, setCookTime] = useState<string>("");
+  const [restTime, setRestTime] = useState<string>("");
+  const [steps, setSteps] = useState<{ instruction: string }[]>([{ instruction: "" }]);
+  const [stepsError, setStepsError] = useState<string | null>(null);
 
   const {
     register,
@@ -31,7 +37,6 @@ const RecipeFormPage = () => {
   } = useForm<FormData>({
     defaultValues: {
       title: "",
-      content: "",
       imageUrl: "",
     },
   });
@@ -46,9 +51,13 @@ const RecipeFormPage = () => {
         const recipe = await APIManager.getRecipe(id);
         reset({
           title: recipe.title,
-          content: recipe.steps.map((s) => s.instruction).join("\n\n"), // TODO: Phase 13.8 - use StepEditor
           imageUrl: recipe.imageUrl || "",
         });
+        setServings(recipe.servings);
+        setPrepTime(recipe.prepTime != null ? String(recipe.prepTime) : "");
+        setCookTime(recipe.cookTime != null ? String(recipe.cookTime) : "");
+        setRestTime(recipe.restTime != null ? String(recipe.restTime) : "");
+        setSteps(recipe.steps.map((s) => ({ instruction: s.instruction })));
         setTags(recipe.tags.map((t) => t.name));
         setIngredients(
           recipe.ingredients.map((ing) => ({
@@ -68,13 +77,28 @@ const RecipeFormPage = () => {
     loadRecipe();
   }, [id, reset]);
 
+  const parseOptionalTime = (value: string): number | undefined => {
+    if (value.trim() === "") return undefined;
+    const n = parseInt(value, 10);
+    return isNaN(n) ? undefined : n;
+  };
+
   const onSubmit = async (data: FormData) => {
+    const validSteps = steps.filter((s) => s.instruction.trim().length > 0);
+    if (validSteps.length === 0) {
+      setStepsError("At least one step is required");
+      return;
+    }
+    setStepsError(null);
+
     try {
-      // TODO: Phase 13.8 - use proper servings/times/steps fields
       const recipeData: RecipeInput = {
         title: data.title.trim(),
-        servings: 4,
-        steps: [{ instruction: data.content.trim() }],
+        servings,
+        prepTime: parseOptionalTime(prepTime),
+        cookTime: parseOptionalTime(cookTime),
+        restTime: parseOptionalTime(restTime),
+        steps: validSteps.map((s) => ({ instruction: s.instruction.trim() })),
         imageUrl: data.imageUrl.trim() || undefined,
         tags: tags,
         ingredients: ingredients
@@ -174,6 +198,73 @@ const RecipeFormPage = () => {
 
           <div className="form-control">
             <label className="label">
+              <span className="label-text font-medium">Servings *</span>
+            </label>
+            <input
+              type="number"
+              value={servings}
+              onChange={(e) => {
+                const v = parseInt(e.target.value, 10);
+                if (!isNaN(v) && v >= 1 && v <= 100) setServings(v);
+              }}
+              min={1}
+              max={100}
+              className="input input-bordered w-24"
+            />
+          </div>
+
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text font-medium">Times (optional, in minutes)</span>
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="label py-1">
+                  <span className="label-text text-sm">Prep</span>
+                </label>
+                <input
+                  type="number"
+                  value={prepTime}
+                  onChange={(e) => setPrepTime(e.target.value)}
+                  placeholder="min"
+                  min={0}
+                  max={10000}
+                  className="input input-bordered w-full"
+                />
+              </div>
+              <div>
+                <label className="label py-1">
+                  <span className="label-text text-sm">Cook</span>
+                </label>
+                <input
+                  type="number"
+                  value={cookTime}
+                  onChange={(e) => setCookTime(e.target.value)}
+                  placeholder="min"
+                  min={0}
+                  max={10000}
+                  className="input input-bordered w-full"
+                />
+              </div>
+              <div>
+                <label className="label py-1">
+                  <span className="label-text text-sm">Rest</span>
+                </label>
+                <input
+                  type="number"
+                  value={restTime}
+                  onChange={(e) => setRestTime(e.target.value)}
+                  placeholder="min"
+                  min={0}
+                  max={10000}
+                  className="input input-bordered w-full"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="form-control">
+            <label className="label">
               <span className="label-text font-medium">Tags</span>
             </label>
             <TagSelector value={tags} onChange={setTags} allowCreate={true} communityId={communityId} />
@@ -188,19 +279,12 @@ const RecipeFormPage = () => {
 
           <div className="form-control">
             <label className="label">
-              <span className="label-text font-medium">Instructions *</span>
+              <span className="label-text font-medium">Steps *</span>
             </label>
-            <textarea
-              {...register("content", { required: "Instructions are required" })}
-              placeholder="Write your recipe instructions here..."
-              rows={10}
-              className={`textarea textarea-bordered w-full ${
-                errors.content ? "textarea-error" : ""
-              }`}
-            />
-            {errors.content && (
+            <StepEditor value={steps} onChange={setSteps} />
+            {stepsError && (
               <label className="label">
-                <span className="label-text-alt text-error">{errors.content.message}</span>
+                <span className="label-text-alt text-error">{stepsError}</span>
               </label>
             )}
           </div>

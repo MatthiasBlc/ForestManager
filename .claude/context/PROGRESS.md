@@ -57,6 +57,12 @@ Phases 0 a 9.3 terminees.
   - TimeBadges apres date/meta, tags apres temps
   - ServingsSelector en en-tete ingredients + scaleQuantity dynamique
   - Steps en blocs numerotes (badge + instruction)
+- **Sous-phase 13.8** : Frontend RecipeFormPage rework - COMPLETE
+  - Supprime content textarea, remplace par StepEditor
+  - Champ servings obligatoire (input number 1-100)
+  - 3 inputs temps optionnels responsive (prep/cook/rest en min)
+  - loadRecipe pre-remplit tous les nouveaux champs en mode edition
+  - onSubmit envoie servings + times + steps[]
 
 ## Resume de reprise
 

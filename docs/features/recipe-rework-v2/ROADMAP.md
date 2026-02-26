@@ -365,20 +365,20 @@ Composants DaisyUI utilises :
 ## Phase 13.8 - Frontend : RecipeFormPage
 
 ### 13.8.1 Rework RecipeFormPage
-- [ ] Supprimer le champ `content` (textarea unique)
-- [ ] Ajouter champ `servings` (obligatoire) : `input input-bordered w-24` type number
-- [ ] Ajouter ligne de temps optionnels : 3 inputs en ligne (prep, cuisson, repos)
+- [x] Supprimer le champ `content` (textarea unique)
+- [x] Ajouter champ `servings` (obligatoire) : `input input-bordered w-24` type number
+- [x] Ajouter ligne de temps optionnels : 3 inputs en ligne (prep, cuisson, repos)
   - Labels clairs, placeholder "min", `input input-bordered w-24` chacun
   - Layout responsive : en ligne sur desktop, empile sur mobile
-- [ ] Remplacer le textarea instructions par le composant `StepEditor`
-- [ ] Mettre a jour le `onSubmit` : envoyer `servings`, `prepTime`, `cookTime`, `restTime`, `steps[]` au lieu de `content`
-- [ ] Mettre a jour le `loadRecipe` (mode edition) : charger et pre-remplir les nouveaux champs
+- [x] Remplacer le textarea instructions par le composant `StepEditor`
+- [x] Mettre a jour le `onSubmit` : envoyer `servings`, `prepTime`, `cookTime`, `restTime`, `steps[]` au lieu de `content`
+- [x] Mettre a jour le `loadRecipe` (mode edition) : charger et pre-remplir les nouveaux champs
 
 ### 13.8.2 Validation
-- [ ] Creation recette avec tous les champs → succes
-- [ ] Edition recette existante → pre-remplissage correct
-- [ ] Validation : servings vide → erreur, 0 steps → erreur
-- [ ] Test avec recette migree : 1 step pre-rempli, servings=4
+- [ ] Creation recette avec tous les champs → succes (tests manuels phase 13.12)
+- [ ] Edition recette existante → pre-remplissage correct (tests manuels phase 13.12)
+- [ ] Validation : servings vide → erreur, 0 steps → erreur (tests manuels phase 13.12)
+- [ ] Test avec recette migree : 1 step pre-rempli, servings=4 (tests manuels phase 13.12)
 
 ---
 
