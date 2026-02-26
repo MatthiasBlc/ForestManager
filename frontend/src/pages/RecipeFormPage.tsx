@@ -9,7 +9,7 @@ import IngredientList, { IngredientInput } from "../components/form/IngredientLi
 
 interface FormData {
   title: string;
-  content: string;
+  content: string; // TODO: Phase 13.8 - replace with steps/servings/times
   imageUrl: string;
 }
 
@@ -46,7 +46,7 @@ const RecipeFormPage = () => {
         const recipe = await APIManager.getRecipe(id);
         reset({
           title: recipe.title,
-          content: recipe.content,
+          content: recipe.steps.map((s) => s.instruction).join("\n\n"), // TODO: Phase 13.8 - use StepEditor
           imageUrl: recipe.imageUrl || "",
         });
         setTags(recipe.tags.map((t) => t.name));
@@ -70,9 +70,11 @@ const RecipeFormPage = () => {
 
   const onSubmit = async (data: FormData) => {
     try {
+      // TODO: Phase 13.8 - use proper servings/times/steps fields
       const recipeData: RecipeInput = {
         title: data.title.trim(),
-        content: data.content.trim(),
+        servings: 4,
+        steps: [{ instruction: data.content.trim() }],
         imageUrl: data.imageUrl.trim() || undefined,
         tags: tags,
         ingredients: ingredients

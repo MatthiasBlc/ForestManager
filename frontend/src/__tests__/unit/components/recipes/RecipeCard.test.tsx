@@ -9,6 +9,10 @@ const mockRecipe: RecipeListItem = {
   id: 'recipe-1',
   title: 'Test Recipe',
   imageUrl: 'https://example.com/image.jpg',
+  servings: 4,
+  prepTime: 15,
+  cookTime: 30,
+  restTime: null,
   createdAt: '2024-01-01T00:00:00.000Z',
   updatedAt: '2024-01-01T00:00:00.000Z',
   tags: [

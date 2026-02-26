@@ -39,6 +39,12 @@ Phases 0 a 9.3 terminees.
   - Tests integration adaptes : recipes, communityRecipes, proposals, share, variants
   - Tests auxiliaires adaptes : activity, members, communityTags, tagSuggestions, adminIngredients, adminUnits, notificationService, websocket
   - Tests unitaires ajoutes : validateServings, validateTime, validateSteps, formatSteps
+- **Sous-phase 13.5** : Frontend types & API client - COMPLETE
+  - Types mis a jour : RecipeStep, RecipeDetail, RecipeListItem, Proposal, ProposalInput, VariantListItem
+  - RecipeInput API : content → servings + steps[]
+  - Legacy Recipe interface supprimee
+  - Adaptations minimales pages/composants pour compilation (rework complet en 13.7-13.9)
+  - MSW handlers et tests mis a jour
 
 ## Resume de reprise
 

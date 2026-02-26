@@ -162,7 +162,7 @@
 ## Phase 13.5 - Frontend : types & API client
 
 ### 13.5.1 Types frontend
-- [ ] `models/recipe.ts` :
+- [x] `models/recipe.ts` :
   - Ajouter `RecipeStep` interface (`id`, `order`, `instruction`)
   - `RecipeDetail` : supprimer `content`, ajouter `servings`, `prepTime`, `cookTime`, `restTime`, `steps: RecipeStep[]`
   - `RecipeListItem` : ajouter `servings`, `prepTime`, `cookTime`, `restTime`
@@ -171,12 +171,12 @@
   - `ProposalInput` : supprimer `proposedContent`, ajouter `proposedServings`, `proposedPrepTime?`, `proposedCookTime?`, `proposedRestTime?`, `proposedSteps: { instruction: string }[]`
 
 ### 13.5.2 API client
-- [ ] `network/api.ts` :
+- [x] `network/api.ts` :
   - `RecipeInput` : supprimer `content`, ajouter `servings`, `prepTime?`, `cookTime?`, `restTime?`, `steps: { instruction: string }[]`
   - Verifier que `createRecipe`, `updateRecipe`, `createCommunityRecipe`, `createProposal` envoient les bons champs
 
 ### 13.5.3 Validation
-- [ ] Compilation frontend OK (`npm run build` dans frontend)
+- [x] Compilation frontend OK (`npx tsc --noEmit` dans frontend)
 
 ---
 

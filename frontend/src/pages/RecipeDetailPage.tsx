@@ -293,7 +293,15 @@ const RecipeDetailPage = () => {
 
           <div className="prose max-w-none">
             <h2 className="text-xl font-semibold mb-3">Instructions</h2>
-            <div className="whitespace-pre-wrap">{recipe.content}</div>
+            {/* TODO: Phase 13.7 - proper steps display with timeline */}
+            <div className="space-y-4">
+              {recipe.steps.map((step, i) => (
+                <div key={step.id} className="flex gap-4 items-start">
+                  <div className="badge badge-primary badge-lg">{i + 1}</div>
+                  <p className="flex-1 whitespace-pre-wrap">{step.instruction}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
           {isOwner && isCommunityRecipe && (
@@ -327,7 +335,11 @@ const RecipeDetailPage = () => {
         <ProposeModificationModal
           recipeId={recipe.id}
           currentTitle={recipe.title}
-          currentContent={recipe.content}
+          currentSteps={recipe.steps}
+          currentServings={recipe.servings}
+          currentPrepTime={recipe.prepTime}
+          currentCookTime={recipe.cookTime}
+          currentRestTime={recipe.restTime}
           currentIngredients={recipe.ingredients}
           onClose={() => setOpenModal(null)}
           onProposalSubmitted={handleProposalSubmitted}

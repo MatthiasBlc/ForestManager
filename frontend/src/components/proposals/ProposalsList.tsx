@@ -238,12 +238,19 @@ const ProposalsList = ({ recipeId, currentIngredients, refreshSignal, onProposal
                       <span className="font-medium">Proposed title:</span>
                       <p className="mt-1">{proposal.proposedTitle}</p>
                     </div>
-                    <div>
-                      <span className="font-medium">Proposed content:</span>
-                      <pre className="mt-1 whitespace-pre-wrap text-xs bg-base-200 p-2 rounded max-h-48 overflow-y-auto">
-                        {proposal.proposedContent}
-                      </pre>
-                    </div>
+                    {proposal.proposedSteps && proposal.proposedSteps.length > 0 && (
+                      <div>
+                        <span className="font-medium">Proposed steps:</span>
+                        <div className="mt-1 space-y-2 max-h-48 overflow-y-auto">
+                          {proposal.proposedSteps.map((step, i) => (
+                            <div key={step.id} className="flex gap-2 text-xs bg-base-200 p-2 rounded">
+                              <span className="badge badge-sm badge-neutral">{i + 1}</span>
+                              <span className="whitespace-pre-wrap">{step.instruction}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     {proposal.proposedIngredients && proposal.proposedIngredients.length > 0 && (
                       <div>
                         <span className="font-medium">Proposed ingredients:</span>

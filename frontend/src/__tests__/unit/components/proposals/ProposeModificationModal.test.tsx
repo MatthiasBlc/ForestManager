@@ -15,7 +15,11 @@ describe('ProposeModificationModal', () => {
   const defaultProps = {
     recipeId: 'test-recipe-id',
     currentTitle: 'Original Title',
-    currentContent: 'Original content',
+    currentSteps: [{ id: 'step-1', order: 0, instruction: 'Original content' }],
+    currentServings: 4,
+    currentPrepTime: 15 as number | null,
+    currentCookTime: 30 as number | null,
+    currentRestTime: null as number | null,
     currentIngredients: mockIngredients,
     onClose: vi.fn(),
     onProposalSubmitted: vi.fn(),

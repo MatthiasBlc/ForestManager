@@ -3,12 +3,16 @@ import { FaPaperPlane } from "react-icons/fa";
 import Modal from "../Modal";
 import APIManager from "../../network/api";
 import IngredientList, { IngredientInput } from "../form/IngredientList";
-import { RecipeIngredient } from "../../models/recipe";
+import { RecipeIngredient, RecipeStep } from "../../models/recipe";
 
 interface ProposeModificationModalProps {
   recipeId: string;
   currentTitle: string;
-  currentContent: string;
+  currentSteps: RecipeStep[];
+  currentServings: number;
+  currentPrepTime: number | null;
+  currentCookTime: number | null;
+  currentRestTime: number | null;
   currentIngredients: RecipeIngredient[];
   onClose: () => void;
   onProposalSubmitted: () => void;
@@ -23,15 +27,22 @@ function recipeIngredientsToInputs(ingredients: RecipeIngredient[]): IngredientI
   }));
 }
 
+// TODO: Phase 13.9 - full rework with StepEditor, ServingsSelector, times fields
 const ProposeModificationModal = ({
   recipeId,
   currentTitle,
-  currentContent,
+  currentSteps,
+  currentServings: _currentServings,
+  currentPrepTime: _currentPrepTime,
+  currentCookTime: _currentCookTime,
+  currentRestTime: _currentRestTime,
   currentIngredients,
   onClose,
   onProposalSubmitted,
 }: ProposeModificationModalProps) => {
   const [proposedTitle, setProposedTitle] = useState(currentTitle);
+  // Temporary: flatten steps into a single textarea for now
+  const currentContent = currentSteps.map((s) => s.instruction).join("\n\n");
   const [proposedContent, setProposedContent] = useState(currentContent);
   const [proposedIngredients, setProposedIngredients] = useState<IngredientInput[]>(
     () => recipeIngredientsToInputs(currentIngredients)
@@ -66,7 +77,7 @@ const ProposeModificationModal = ({
 
       await APIManager.createProposal(recipeId, {
         proposedTitle: proposedTitle.trim(),
-        proposedContent: proposedContent.trim(),
+        proposedSteps: [{ instruction: proposedContent.trim() }],
         proposedIngredients: filteredIngredients.length > 0 ? filteredIngredients : undefined,
       });
       onProposalSubmitted();
