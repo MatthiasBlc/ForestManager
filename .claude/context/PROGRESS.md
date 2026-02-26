@@ -53,6 +53,10 @@ Phases 0 a 9.3 terminees.
   - `StepEditor.tsx` : textareas numerotes avec reorder/delete
   - Tests unitaires : formatDuration (4 tests) + scaleQuantity (8 tests)
   - 375 tests frontend, 59 fichiers
+- **Sous-phase 13.7** : Frontend RecipeDetailPage rework - COMPLETE
+  - TimeBadges apres date/meta, tags apres temps
+  - ServingsSelector en en-tete ingredients + scaleQuantity dynamique
+  - Steps en blocs numerotes (badge + instruction)
 
 ## Resume de reprise
 

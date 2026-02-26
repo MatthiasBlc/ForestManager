@@ -313,14 +313,14 @@ Composants DaisyUI utilises :
 ## Phase 13.7 - Frontend : RecipeDetailPage
 
 ### 13.7.1 Rework RecipeDetailPage
-- [ ] Supprimer l'affichage de `recipe.content`
-- [ ] Ajouter section `TimeBadges` apres le titre et les meta-infos
-- [ ] Ajouter section tags (inchange, mais deplace apres les temps)
-- [ ] Ajouter `ServingsSelector` en en-tete de la section ingredients
+- [x] Supprimer l'affichage de `recipe.content`
+- [x] Ajouter section `TimeBadges` apres le titre et les meta-infos
+- [x] Ajouter section tags (inchange, mais deplace apres les temps)
+- [x] Ajouter `ServingsSelector` en en-tete de la section ingredients
   - Etat local `selectedServings` initialise a `recipe.servings`
   - Les quantites d'ingredients affichees utilisent `scaleQuantity()`
-- [ ] Section ingredients : quantites recalculees dynamiquement via `scaleQuantity`
-- [ ] Section etapes : affichage sequentiel numerote
+- [x] Section ingredients : quantites recalculees dynamiquement via `scaleQuantity`
+- [x] Section etapes : affichage sequentiel numerote
   - Chaque etape dans un bloc `bg-base-200 rounded-lg p-4` avec numero en badge
   - Ou utilisation du composant DaisyUI `timeline timeline-vertical` avec numero dans `timeline-middle` et instruction dans `timeline-end timeline-box`
 
@@ -355,10 +355,10 @@ Composants DaisyUI utilises :
 ```
 
 ### 13.7.2 Validation
-- [ ] Test visuel : verifier le layout sequentiel complet
-- [ ] Tester le scaling des quantites (changer le selecteur → les quantites changent)
-- [ ] Tester avec recette sans temps (pas de section temps affichee)
-- [ ] Tester avec recette migree (1 step, servings=4)
+- [ ] Test visuel : verifier le layout sequentiel complet (tests manuels phase 13.12)
+- [ ] Tester le scaling des quantites (tests manuels phase 13.12)
+- [ ] Tester avec recette sans temps (tests manuels phase 13.12)
+- [ ] Tester avec recette migree (tests manuels phase 13.12)
 
 ---
 
