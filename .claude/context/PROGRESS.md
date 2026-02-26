@@ -63,6 +63,9 @@ Phases 0 a 9.3 terminees.
   - 3 inputs temps optionnels responsive (prep/cook/rest en min)
   - loadRecipe pre-remplit tous les nouveaux champs en mode edition
   - onSubmit envoie servings + times + steps[]
+- **Sous-phase 13.9** : Frontend Proposals rework - COMPLETE
+  - ProposeModificationModal : StepEditor + servings + temps + detection changements granulaire
+  - ProposalsList : affiche steps proposes + badges servings/temps
 
 ## Resume de reprise
 

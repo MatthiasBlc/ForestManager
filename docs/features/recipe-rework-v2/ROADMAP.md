@@ -385,21 +385,21 @@ Composants DaisyUI utilises :
 ## Phase 13.9 - Frontend : Proposals
 
 ### 13.9.1 ProposeModificationModal
-- [ ] Supprimer le textarea `proposedContent`
-- [ ] Ajouter champ `proposedServings` (pre-rempli avec valeur actuelle)
-- [ ] Ajouter champs temps (pre-remplis avec valeurs actuelles)
-- [ ] Ajouter `StepEditor` pre-rempli avec les steps actuels de la recette
-- [ ] Mettre a jour la detection de changement (`hasChanges`) : comparer servings, temps, steps individuellement
-- [ ] Mettre a jour le `handleSubmit` : envoyer les nouveaux champs
+- [x] Supprimer le textarea `proposedContent`
+- [x] Ajouter champ `proposedServings` (pre-rempli avec valeur actuelle)
+- [x] Ajouter champs temps (pre-remplis avec valeurs actuelles)
+- [x] Ajouter `StepEditor` pre-rempli avec les steps actuels de la recette
+- [x] Mettre a jour la detection de changement (`hasChanges`) : comparer servings, temps, steps individuellement
+- [x] Mettre a jour le `handleSubmit` : envoyer les nouveaux champs
 
 ### 13.9.2 ProposalsList
-- [ ] Adapter l'affichage des proposals : montrer les steps proposes au lieu du texte
-- [ ] Afficher les changements de servings/temps proposes
+- [x] Adapter l'affichage des proposals : montrer les steps proposes au lieu du texte
+- [x] Afficher les changements de servings/temps proposes
 
 ### 13.9.3 Validation
-- [ ] Creer une proposition avec changements de steps → succes
-- [ ] Accepter → recette mise a jour avec les nouveaux steps
-- [ ] Rejeter → variante creee avec les steps proposes
+- [ ] Creer une proposition avec changements de steps → succes (tests manuels phase 13.12)
+- [ ] Accepter → recette mise a jour avec les nouveaux steps (tests manuels phase 13.12)
+- [ ] Rejeter → variante creee avec les steps proposes (tests manuels phase 13.12)
 
 ---
 
