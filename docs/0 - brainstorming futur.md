@@ -57,6 +57,8 @@ Base de données
 Ajouter imageUrl nullable sur Recipe et Community"
 
 Qu'en penses-tu ? est-ce que tu vois une meilleure option, mon projet étant (pour l'instant) petit, très indépendant et je voudrais éviter au maximum les investissements financiers ?
+Dans la mesure du possible je ne veux pas fournir de carte bancaire pour être certain de ne pas dépenser pour cette feature.
+Est-ce qu'il existe une solution en local ?
 Je cherche tout à de même à avoir une solution la plus professionnelle et sécurisée possible.
 
 ## Gestionnaire de planning de repas dans une communauté
