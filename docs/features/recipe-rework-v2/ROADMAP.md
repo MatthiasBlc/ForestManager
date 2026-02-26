@@ -406,16 +406,16 @@ Composants DaisyUI utilises :
 ## Phase 13.10 - Frontend : RecipeCard & listes
 
 ### 13.10.1 RecipeCard
-- [ ] Ajouter badges compacts : temps total + servings
+- [x] Ajouter badges compacts : temps total + servings
   - Sous les tags existants
   - `badge badge-ghost badge-sm gap-1` avec icone
 
 ### 13.10.2 RecipeListRow
-- [ ] Memes ajouts que RecipeCard si utilise en mode liste
+- [x] Memes ajouts que RecipeCard si utilise en mode liste
 
 ### 13.10.3 Validation
-- [ ] Verifier les cartes sur la page recettes perso
-- [ ] Verifier les cartes sur la page communaute
+- [ ] Verifier les cartes sur la page recettes perso (tests manuels phase 13.12)
+- [ ] Verifier les cartes sur la page communaute (tests manuels phase 13.12)
 
 ---
 

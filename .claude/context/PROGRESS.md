@@ -66,6 +66,9 @@ Phases 0 a 9.3 terminees.
 - **Sous-phase 13.9** : Frontend Proposals rework - COMPLETE
   - ProposeModificationModal : StepEditor + servings + temps + detection changements granulaire
   - ProposalsList : affiche steps proposes + badges servings/temps
+- **Sous-phase 13.10** : Frontend RecipeCard & listes - COMPLETE
+  - RecipeCard : badges ghost servings (FaUsers) + temps total (FaClock)
+  - RecipeListRow : idem en badge-xs
 
 ## Resume de reprise
 
