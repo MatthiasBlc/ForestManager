@@ -130,6 +130,32 @@ describe('RecipeCard', () => {
     expect(screen.getByText(/Updated:/)).toBeInTheDocument();
   });
 
+  it('should display servings badge', () => {
+    render(
+      <RecipeCard recipe={mockRecipe} onDelete={mockOnDelete} />
+    );
+
+    expect(screen.getByText('4')).toBeInTheDocument();
+  });
+
+  it('should display total time badge when times are defined', () => {
+    render(
+      <RecipeCard recipe={mockRecipe} onDelete={mockOnDelete} />
+    );
+
+    // prepTime 15 + cookTime 30 = 45 min
+    expect(screen.getByText('45 min')).toBeInTheDocument();
+  });
+
+  it('should not display time badge when all times are null', () => {
+    const recipeNoTimes = { ...mockRecipe, prepTime: null, cookTime: null, restTime: null };
+    render(
+      <RecipeCard recipe={recipeNoTimes} onDelete={mockOnDelete} />
+    );
+
+    expect(screen.queryByText(/min$/)).not.toBeInTheDocument();
+  });
+
   it('should render pending tags with warning style via TagBadge', () => {
     const recipeWithPending: RecipeListItem = {
       ...mockRecipe,

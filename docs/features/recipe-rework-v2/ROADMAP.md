@@ -422,18 +422,18 @@ Composants DaisyUI utilises :
 ## Phase 13.11 - Tests frontend
 
 ### 13.11.1 Tests composants nouveaux
-- [ ] `__tests__/unit/components/recipes/TimeBadges.test.tsx`
-- [ ] `__tests__/unit/components/recipes/ServingsSelector.test.tsx`
-- [ ] `__tests__/unit/components/form/StepEditor.test.tsx`
+- [x] `__tests__/unit/components/recipes/TimeBadges.test.tsx`
+- [x] `__tests__/unit/components/recipes/ServingsSelector.test.tsx`
+- [x] `__tests__/unit/components/form/StepEditor.test.tsx`
 
 ### 13.11.2 Tests pages adaptees
-- [ ] Adapter `__tests__/unit/pages/RecipeFormPage.test.tsx` : nouveau format formulaire
-- [ ] Adapter `__tests__/unit/components/proposals/ProposeModificationModal.test.tsx`
-- [ ] Adapter `__tests__/unit/components/recipes/RecipeCard.test.tsx` : nouveaux badges
-- [ ] Adapter MSW handlers (`mswHandlers.ts`) : retourner les nouveaux champs dans les mocks
+- [x] Adapter `__tests__/unit/pages/RecipeFormPage.test.tsx` : nouveau format formulaire
+- [x] Adapter `__tests__/unit/components/proposals/ProposeModificationModal.test.tsx`
+- [x] Adapter `__tests__/unit/components/recipes/RecipeCard.test.tsx` : nouveaux badges
+- [x] Adapter MSW handlers (`mswHandlers.ts`) : retourner les nouveaux champs dans les mocks
 
 ### 13.11.3 Validation
-- [ ] `npm run test:frontend` → tous les tests passent
+- [x] `npm run test:frontend` → tous les tests passent (403 tests, 62 fichiers)
 
 ---
 
