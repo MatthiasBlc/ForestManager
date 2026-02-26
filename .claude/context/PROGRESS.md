@@ -45,6 +45,14 @@ Phases 0 a 9.3 terminees.
   - Legacy Recipe interface supprimee
   - Adaptations minimales pages/composants pour compilation (rework complet en 13.7-13.9)
   - MSW handlers et tests mis a jour
+- **Sous-phase 13.6** : Frontend composants utilitaires - COMPLETE
+  - `formatDuration.ts` : 45→"45 min", 90→"1h30", 120→"2h"
+  - `scaleQuantity.ts` : proportionnel avec arrondi 2 decimales
+  - `TimeBadges.tsx` : badges prep/cuisson/repos/total avec icones
+  - `ServingsSelector.tsx` : join -/input/+ avec label "personnes"
+  - `StepEditor.tsx` : textareas numerotes avec reorder/delete
+  - Tests unitaires : formatDuration (4 tests) + scaleQuantity (8 tests)
+  - 375 tests frontend, 59 fichiers
 
 ## Resume de reprise
 

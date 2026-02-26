@@ -183,20 +183,20 @@
 ## Phase 13.6 - Frontend : composants utilitaires
 
 ### 13.6.1 Utilitaire formatDuration
-- [ ] `utils/formatDuration.ts` : fonction `formatDuration(minutes: number): string`
+- [x] `utils/formatDuration.ts` : fonction `formatDuration(minutes: number): string`
   - `45` → `"45 min"`
   - `90` → `"1h30"`
   - `120` → `"2h"`
   - `0` → `"0 min"`
 
 ### 13.6.2 Utilitaire scaleQuantity
-- [ ] `utils/scaleQuantity.ts` : fonction `scaleQuantity(baseQty: number | null, baseServings: number, selectedServings: number): number | null`
+- [x] `utils/scaleQuantity.ts` : fonction `scaleQuantity(baseQty: number | null, baseServings: number, selectedServings: number): number | null`
   - Retourne null si baseQty est null
   - Calcul : `baseQty * (selectedServings / baseServings)`
   - Arrondi 2 decimales, suppression zeros inutiles
 
 ### 13.6.3 Composant TimeBadges
-- [ ] `components/recipes/TimeBadges.tsx`
+- [x] `components/recipes/TimeBadges.tsx`
   - Props : `prepTime`, `cookTime`, `restTime` (tous `number | null`)
   - Affiche uniquement les temps definis (non null)
   - Utilise DaisyUI `stats` responsive (`stats-vertical` sur mobile via classe conditionnelle ou `stats` horizontal)
@@ -239,7 +239,7 @@ Composants DaisyUI utilises :
 ```
 
 ### 13.6.4 Composant ServingsSelector
-- [ ] `components/recipes/ServingsSelector.tsx`
+- [x] `components/recipes/ServingsSelector.tsx`
   - Props : `baseServings: number`, `value: number`, `onChange: (n: number) => void`
   - DaisyUI `join` pour grouper les elements : bouton `-` + input + bouton `+`
   - Input editable directement (type number, min 1, max 100)
@@ -266,7 +266,7 @@ Composants DaisyUI utilises :
 ```
 
 ### 13.6.5 Composant StepEditor (formulaire)
-- [ ] `components/form/StepEditor.tsx`
+- [x] `components/form/StepEditor.tsx`
   - Props : `value: { instruction: string }[]`, `onChange: (steps) => void`
   - Liste ordonnee de textareas numeros
   - Chaque step : numero badge + textarea DaisyUI `textarea textarea-bordered` + boutons reorder (haut/bas) + bouton supprimer
@@ -301,12 +301,12 @@ Composants DaisyUI utilises :
 ```
 
 ### 13.6.6 Tests unitaires utils
-- [ ] `__tests__/unit/utils/formatDuration.test.ts`
-- [ ] `__tests__/unit/utils/scaleQuantity.test.ts`
+- [x] `__tests__/unit/utils/formatDuration.test.ts`
+- [x] `__tests__/unit/utils/scaleQuantity.test.ts`
 
 ### 13.6.7 Validation
-- [ ] Compilation frontend OK
-- [ ] Tests frontend passent
+- [x] Compilation frontend OK
+- [x] Tests frontend passent (375 tests, 59 fichiers)
 
 ---
 
