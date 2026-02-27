@@ -5,6 +5,7 @@ import APIManager from "../../network/api";
 import { Proposal, ProposalIngredient, RecipeIngredient } from "../../models/recipe";
 import { ConflictError } from "../../errors/http_errors";
 import { formatDate } from "../../utils/format.Date";
+import { formatDuration } from "../../utils/formatDuration";
 
 interface ProposalsListProps {
   recipeId: string;
@@ -238,12 +239,35 @@ const ProposalsList = ({ recipeId, currentIngredients, refreshSignal, onProposal
                       <span className="font-medium">Proposed title:</span>
                       <p className="mt-1">{proposal.proposedTitle}</p>
                     </div>
-                    <div>
-                      <span className="font-medium">Proposed content:</span>
-                      <pre className="mt-1 whitespace-pre-wrap text-xs bg-base-200 p-2 rounded max-h-48 overflow-y-auto">
-                        {proposal.proposedContent}
-                      </pre>
-                    </div>
+                    {(proposal.proposedServings != null || proposal.proposedPrepTime != null || proposal.proposedCookTime != null || proposal.proposedRestTime != null) && (
+                      <div className="flex flex-wrap gap-2">
+                        {proposal.proposedServings != null && (
+                          <span className="badge badge-outline badge-sm">{proposal.proposedServings} pers.</span>
+                        )}
+                        {proposal.proposedPrepTime != null && (
+                          <span className="badge badge-outline badge-sm">Prep {formatDuration(proposal.proposedPrepTime)}</span>
+                        )}
+                        {proposal.proposedCookTime != null && (
+                          <span className="badge badge-outline badge-sm">Cuisson {formatDuration(proposal.proposedCookTime)}</span>
+                        )}
+                        {proposal.proposedRestTime != null && (
+                          <span className="badge badge-outline badge-sm">Repos {formatDuration(proposal.proposedRestTime)}</span>
+                        )}
+                      </div>
+                    )}
+                    {proposal.proposedSteps && proposal.proposedSteps.length > 0 && (
+                      <div>
+                        <span className="font-medium">Proposed steps:</span>
+                        <div className="mt-1 space-y-2 max-h-48 overflow-y-auto">
+                          {proposal.proposedSteps.map((step, i) => (
+                            <div key={step.id} className="flex gap-2 text-xs bg-base-200 p-2 rounded">
+                              <span className="badge badge-sm badge-neutral">{i + 1}</span>
+                              <span className="whitespace-pre-wrap">{step.instruction}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     {proposal.proposedIngredients && proposal.proposedIngredients.length > 0 && (
                       <div>
                         <span className="font-medium">Proposed ingredients:</span>

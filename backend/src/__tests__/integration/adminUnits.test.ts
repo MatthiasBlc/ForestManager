@@ -284,7 +284,7 @@ describe('Admin Units API', () => {
 
       // Creer une recette avec cet ingredient et cette unite
       const recipe = await testPrisma.recipe.create({
-        data: { title: 'Test', content: 'Test', creatorId: user.id },
+        data: { title: 'Test', servings: 4, creatorId: user.id, steps: { create: [{ order: 0, instruction: 'Test' }] } },
       });
       await testPrisma.recipeIngredient.create({
         data: { recipeId: recipe.id, ingredientId: ingredient.id, unitId: unit.id, quantity: 100 },

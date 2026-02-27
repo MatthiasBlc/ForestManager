@@ -5,8 +5,12 @@ import { FaArrowLeft, FaEdit, FaTrash, FaLightbulb, FaShare, FaCodeBranch, FaTag
 import APIManager from "../network/api";
 import { RecipeDetail } from "../models/recipe";
 import { useAuth } from "../contexts/AuthContext";
+import { useConfirm } from "../hooks/useConfirm";
 import TagBadge from "../components/recipes/TagBadge";
+import TimeBadges from "../components/recipes/TimeBadges";
+import ServingsSelector from "../components/recipes/ServingsSelector";
 import { formatDate } from "../utils/format.Date";
+import { scaleQuantity } from "../utils/scaleQuantity";
 import { ProposeModificationModal, ProposalsList, VariantsDropdown } from "../components/proposals";
 import { ShareRecipeModal, SharePersonalRecipeModal } from "../components/share";
 import SuggestTagModal from "../components/recipes/SuggestTagModal";
@@ -16,10 +20,12 @@ const RecipeDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const [recipe, setRecipe] = useState<RecipeDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedServings, setSelectedServings] = useState<number>(4);
   const [openModal, setOpenModal] = useState<"propose" | "share" | "publish" | "suggest-tag" | null>(null);
   const [proposalsRefresh, setProposalsRefresh] = useState(0);
   const [suggestionsRefresh, setSuggestionsRefresh] = useState(0);
@@ -37,6 +43,7 @@ const RecipeDetailPage = () => {
         setError(null);
         const data = await APIManager.getRecipe(id);
         setRecipe(data);
+        setSelectedServings(data.servings);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load recipe");
       } finally {
@@ -50,7 +57,7 @@ const RecipeDetailPage = () => {
   const handleDelete = async () => {
     if (!recipe) return;
 
-    if (window.confirm("Are you sure you want to delete this recipe?")) {
+    if (await confirm({ message: "Are you sure you want to delete this recipe?", confirmLabel: "Delete", confirmClass: "btn btn-error" })) {
       try {
         await APIManager.deleteRecipe(recipe.id);
         navigate(recipe.communityId ? `/communities/${recipe.communityId}` : "/recipes");
@@ -258,8 +265,14 @@ const RecipeDetailPage = () => {
 
           <p className="text-sm text-base-content/60 mb-4">{dateText}</p>
 
+          <TimeBadges
+            prepTime={recipe.prepTime}
+            cookTime={recipe.cookTime}
+            restTime={recipe.restTime}
+          />
+
           {recipe.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-6">
+            <div className="flex flex-wrap gap-2 mt-4 mb-6">
               {recipe.tags.map((tag) => (
                 <TagBadge
                   key={tag.id}
@@ -273,27 +286,43 @@ const RecipeDetailPage = () => {
 
           {recipe.ingredients.length > 0 && (
             <div className="mb-8">
-              <h2 className="text-xl font-semibold mb-3">Ingredients</h2>
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-xl font-semibold">Ingredients</h2>
+                <ServingsSelector
+                  value={selectedServings}
+                  onChange={setSelectedServings}
+                />
+              </div>
               <ul className="list-disc list-inside space-y-1 bg-base-200 p-4 rounded-lg">
-                {recipe.ingredients.map((ing) => (
-                  <li key={ing.id} className="text-base-content">
-                    <span className="font-medium">{ing.name}</span>
-                    {ing.quantity != null && (
-                      <span className="text-base-content/70">
-                        {" "}- {ing.quantity}{ing.unit ? ` ${ing.unit.abbreviation}` : ""}
-                      </span>
-                    )}
-                  </li>
-                ))}
+                {recipe.ingredients.map((ing) => {
+                  const scaledQty = scaleQuantity(ing.quantity, recipe.servings, selectedServings);
+                  return (
+                    <li key={ing.id} className="text-base-content">
+                      <span className="font-medium">{ing.name}</span>
+                      {scaledQty != null && (
+                        <span className="text-base-content/70">
+                          {" "}- {scaledQty}{ing.unit ? ` ${ing.unit.abbreviation}` : ""}
+                        </span>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
 
           <div className="divider" />
 
-          <div className="prose max-w-none">
-            <h2 className="text-xl font-semibold mb-3">Instructions</h2>
-            <div className="whitespace-pre-wrap">{recipe.content}</div>
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Instructions</h2>
+            <div className="space-y-4">
+              {recipe.steps.map((step) => (
+                <div key={step.id} className="flex gap-4 items-start">
+                  <div className="badge badge-primary badge-lg">{step.order}</div>
+                  <p className="flex-1 whitespace-pre-wrap">{step.instruction}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
           {isOwner && isCommunityRecipe && (
@@ -327,7 +356,11 @@ const RecipeDetailPage = () => {
         <ProposeModificationModal
           recipeId={recipe.id}
           currentTitle={recipe.title}
-          currentContent={recipe.content}
+          currentSteps={recipe.steps}
+          currentServings={recipe.servings}
+          currentPrepTime={recipe.prepTime}
+          currentCookTime={recipe.cookTime}
+          currentRestTime={recipe.restTime}
           currentIngredients={recipe.ingredients}
           onClose={() => setOpenModal(null)}
           onProposalSubmitted={handleProposalSubmitted}
@@ -352,6 +385,8 @@ const RecipeDetailPage = () => {
           onPublished={() => setOpenModal(null)}
         />
       )}
+
+      {ConfirmDialog}
     </div>
   );
 };

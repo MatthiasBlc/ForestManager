@@ -3,8 +3,8 @@ import createHttpError from "http-errors";
 import prisma from "../util/db";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { parsePagination } from "../util/pagination";
+import { validateTagName } from "../util/validation";
 import appEvents from "../services/eventEmitter";
-import { getModeratorIdsForTagNotification } from "../services/notificationService";
 
 /**
  * GET /api/communities/:communityId/tags
@@ -73,15 +73,7 @@ export const createCommunityTag: RequestHandler = async (req, res, next) => {
   try {
     assertIsDefine(userId);
 
-    if (!name || typeof name !== "string" || name.trim().length === 0) {
-      throw createHttpError(400, "TAG_001: Tag name is required");
-    }
-
-    const normalized = name.trim().toLowerCase();
-
-    if (normalized.length < 2 || normalized.length > 50) {
-      throw createHttpError(400, "TAG_001: Tag name must be between 2 and 50 characters");
-    }
+    const normalized = validateTagName(name);
 
     // Verifier qu'aucun tag GLOBAL n'a ce nom
     const existingGlobal = await prisma.tag.findFirst({
@@ -152,15 +144,7 @@ export const updateCommunityTag: RequestHandler = async (req, res, next) => {
     assertIsDefine(userId);
     assertIsDefine(tagId);
 
-    if (!name || typeof name !== "string" || name.trim().length === 0) {
-      throw createHttpError(400, "TAG_001: Tag name is required");
-    }
-
-    const normalized = name.trim().toLowerCase();
-
-    if (normalized.length < 2 || normalized.length > 50) {
-      throw createHttpError(400, "TAG_001: Tag name must be between 2 and 50 characters");
-    }
+    const normalized = validateTagName(name);
 
     const tag = await prisma.tag.findUnique({ where: { id: tagId } });
     if (!tag) {

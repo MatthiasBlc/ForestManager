@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
+import { validateTagName } from "../util/validation";
 import { requireMembership } from "../services/membershipService";
 import {
   createTagSuggestion as createTagSuggestionService,
@@ -37,14 +38,7 @@ export const createTagSuggestion: RequestHandler<
     assertIsDefine(authenticatedUserId);
 
     // Validation tagName
-    if (!tagName || typeof tagName !== "string" || tagName.trim().length === 0) {
-      throw createHttpError(400, "TAG_001: Tag name is required");
-    }
-
-    const normalized = tagName.trim().toLowerCase();
-    if (normalized.length < 2 || normalized.length > 50) {
-      throw createHttpError(400, "TAG_001: Tag name must be between 2 and 50 characters");
-    }
+    const normalized = validateTagName(tagName);
 
     // Recuperer la recette
     const recipe = await prisma.recipe.findFirst({
@@ -157,7 +151,7 @@ export const getTagSuggestions: RequestHandler<
 
     const validStatuses = ["PENDING_OWNER", "PENDING_MODERATOR", "APPROVED", "REJECTED"];
     if (statusFilter && validStatuses.includes(statusFilter)) {
-      whereClause.status = statusFilter as any;
+      whereClause.status = statusFilter as Prisma.TagSuggestionWhereInput["status"];
     }
 
     const [suggestions, total] = await Promise.all([

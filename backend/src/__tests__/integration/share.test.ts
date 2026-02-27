@@ -70,7 +70,10 @@ describe("Share Recipe API", () => {
       .set("Cookie", user1Cookie)
       .send({
         title: "Recipe to Share",
-        content: "This recipe will be shared",
+        servings: 4,
+        prepTime: 10,
+        cookTime: 20,
+        steps: [{ instruction: "This recipe will be shared" }],
         tags: ["sharing", "test"],
         ingredients: [{ name: "ingredient1", quantity: 100 }],
       });
@@ -95,7 +98,7 @@ describe("Share Recipe API", () => {
       expect(res.body.isVariant).toBe(false);
     });
 
-    it("should copy tags and ingredients to the fork", async () => {
+    it("should copy tags, ingredients, steps, servings and times to the fork", async () => {
       const res = await request(app)
         .post(`/api/recipes/${communityRecipeId}/share`)
         .set("Cookie", user1Cookie)
@@ -107,6 +110,11 @@ describe("Share Recipe API", () => {
       expect(res.body.tags.map((t: { name: string }) => t.name)).toContain("test");
       expect(res.body.ingredients).toHaveLength(1);
       expect(res.body.ingredients[0].name).toBe("ingredient1");
+      expect(res.body.servings).toBe(4);
+      expect(res.body.prepTime).toBe(10);
+      expect(res.body.cookTime).toBe(20);
+      expect(res.body.steps).toHaveLength(1);
+      expect(res.body.steps[0].instruction).toBe("This recipe will be shared");
     });
 
     it("should create activity logs in both communities", async () => {
@@ -155,7 +163,8 @@ describe("Share Recipe API", () => {
         .set("Cookie", user2Cookie)
         .send({
           title: "User2 Recipe",
-          content: "Created by user2",
+          servings: 4,
+          steps: [{ instruction: "Created by user2" }],
         });
       const user2RecipeId = recipeRes.body.community.id;
 
@@ -184,7 +193,8 @@ describe("Share Recipe API", () => {
         .set("Cookie", user1Cookie)
         .send({
           title: "Personal Recipe",
-          content: "This is personal",
+          servings: 4,
+          steps: [{ instruction: "This is personal" }],
         });
       const personalRecipeId = personalRes.body.id;
 
@@ -484,46 +494,59 @@ describe("Share Recipe API", () => {
     let personalRecipeId: string;
 
     beforeEach(async () => {
-      // The beforeEach already creates a community recipe via createCommunityRecipe,
-      // which also creates a personal copy. Find the personal recipe.
+      // Find the personal recipe from the community recipe
       const communityRecipe = await testPrisma.recipe.findUnique({
         where: { id: communityRecipeId },
       });
       personalRecipeId = communityRecipe!.originRecipeId!;
     });
 
-    it("should sync title/content from personal recipe to community copies", async () => {
+    it("should sync title/servings/steps from personal recipe to community copies", async () => {
       // Update the personal recipe
       const res = await request(app)
         .patch(`/api/recipes/${personalRecipeId}`)
         .set("Cookie", user1Cookie)
-        .send({ title: "Updated Title", content: "Updated Content" });
+        .send({
+          title: "Updated Title",
+          servings: 8,
+          steps: [{ instruction: "Updated step" }],
+        });
 
       expect(res.status).toBe(200);
 
       // Check community copy is synced
       const communityRecipe = await testPrisma.recipe.findUnique({
         where: { id: communityRecipeId },
+        include: { steps: { orderBy: { order: "asc" } } },
       });
       expect(communityRecipe?.title).toBe("Updated Title");
-      expect(communityRecipe?.content).toBe("Updated Content");
+      expect(communityRecipe?.servings).toBe(8);
+      expect(communityRecipe?.steps).toHaveLength(1);
+      expect(communityRecipe?.steps[0].instruction).toBe("Updated step");
     });
 
-    it("should sync title/content from community recipe to personal + other copies", async () => {
+    it("should sync title/servings/steps from community recipe to personal + other copies", async () => {
       // Update the community recipe
       const res = await request(app)
         .patch(`/api/recipes/${communityRecipeId}`)
         .set("Cookie", user1Cookie)
-        .send({ title: "Community Updated", content: "Community Content Updated" });
+        .send({
+          title: "Community Updated",
+          servings: 12,
+          steps: [{ instruction: "Community updated step" }],
+        });
 
       expect(res.status).toBe(200);
 
       // Check personal recipe is synced
       const personalRecipe = await testPrisma.recipe.findUnique({
         where: { id: personalRecipeId },
+        include: { steps: { orderBy: { order: "asc" } } },
       });
       expect(personalRecipe?.title).toBe("Community Updated");
-      expect(personalRecipe?.content).toBe("Community Content Updated");
+      expect(personalRecipe?.servings).toBe(12);
+      expect(personalRecipe?.steps).toHaveLength(1);
+      expect(personalRecipe?.steps[0].instruction).toBe("Community updated step");
     });
 
     it("should sync ingredients from personal recipe to community copies", async () => {
@@ -604,7 +627,9 @@ describe("Share Recipe API", () => {
         .set("Cookie", user1Cookie)
         .send({
           title: "Personal to Publish",
-          content: "Content to publish",
+          servings: 4,
+          prepTime: 5,
+          steps: [{ instruction: "Step to publish" }],
           tags: ["publish"],
           ingredients: [{ name: "flour", quantity: 200 }],
         });
@@ -674,7 +699,7 @@ describe("Share Recipe API", () => {
       expect(res.body.error).toContain("PUBLISH_001");
     });
 
-    it("should copy tags and ingredients to published copies", async () => {
+    it("should copy tags, ingredients, steps and servings to published copies", async () => {
       await request(app)
         .post(`/api/recipes/${personalRecipeId}/publish`)
         .set("Cookie", user1Cookie)
@@ -685,6 +710,7 @@ describe("Share Recipe API", () => {
         include: {
           tags: { include: { tag: true } },
           ingredients: { include: { ingredient: true } },
+          steps: { orderBy: { order: "asc" } },
         },
       });
 
@@ -692,6 +718,10 @@ describe("Share Recipe API", () => {
       expect(copy?.tags[0].tag.name).toBe("publish");
       expect(copy?.ingredients).toHaveLength(1);
       expect(copy?.ingredients[0].ingredient.name).toBe("flour");
+      expect(copy?.servings).toBe(4);
+      expect(copy?.prepTime).toBe(5);
+      expect(copy?.steps).toHaveLength(1);
+      expect(copy?.steps[0].instruction).toBe("Step to publish");
     });
   });
 
@@ -704,7 +734,7 @@ describe("Share Recipe API", () => {
       const recipeRes = await request(app)
         .post("/api/recipes")
         .set("Cookie", user1Cookie)
-        .send({ title: "Test Communities", content: "Content" });
+        .send({ title: "Test Communities", servings: 4, steps: [{ instruction: "Step" }] });
       const personalRecipeId = recipeRes.body.id;
 
       // Publish to source community

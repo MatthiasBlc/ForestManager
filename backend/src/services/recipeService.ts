@@ -1,7 +1,8 @@
 import prisma from "../util/db";
 import { PrismaClient } from "@prisma/client";
-import { RECIPE_TAGS_SELECT, RECIPE_INGREDIENTS_SELECT } from "../util/prismaSelects";
+import { RECIPE_TAGS_SELECT, RECIPE_INGREDIENTS_SELECT, RECIPE_STEPS_SELECT } from "../util/prismaSelects";
 import { resolveTagsForRecipe } from "./tagService";
+import { StepInput } from "../util/validation";
 
 type TransactionClient = Omit<
   PrismaClient,
@@ -110,25 +111,67 @@ export async function upsertProposalIngredients(
   }
 }
 
+// --- Helpers pour steps ---
+
+export async function upsertSteps(
+  tx: TransactionClient,
+  recipeId: string,
+  steps: StepInput[]
+) {
+  for (let i = 0; i < steps.length; i++) {
+    await tx.recipeStep.create({
+      data: {
+        recipeId,
+        order: i,
+        instruction: steps[i].instruction.trim(),
+      },
+    });
+  }
+}
+
+export async function upsertProposalSteps(
+  tx: TransactionClient,
+  proposalId: string,
+  steps: StepInput[]
+) {
+  for (let i = 0; i < steps.length; i++) {
+    await tx.proposalStep.create({
+      data: {
+        proposalId,
+        order: i,
+        instruction: steps[i].instruction.trim(),
+      },
+    });
+  }
+}
+
 // --- Select pour re-fetch apres create/update ---
 
 const RECIPE_RESULT_SELECT = {
   id: true,
   title: true,
-  content: true,
+  servings: true,
+  prepTime: true,
+  cookTime: true,
+  restTime: true,
   imageUrl: true,
   createdAt: true,
   updatedAt: true,
   creatorId: true,
   tags: RECIPE_TAGS_SELECT,
   ingredients: RECIPE_INGREDIENTS_SELECT,
+  steps: RECIPE_STEPS_SELECT,
 };
 
 // --- Service functions ---
 
 interface CreateRecipeData {
   title: string;
-  content: string;
+  servings: number;
+  prepTime?: number | null;
+  cookTime?: number | null;
+  restTime?: number | null;
+  steps: StepInput[];
   imageUrl?: string | null;
   tags: string[];
   ingredients: IngredientInput[];
@@ -139,11 +182,16 @@ export async function createRecipe(userId: string, data: CreateRecipeData) {
     const recipe = await tx.recipe.create({
       data: {
         title: data.title.trim(),
-        content: data.content.trim(),
+        servings: data.servings,
+        prepTime: data.prepTime ?? null,
+        cookTime: data.cookTime ?? null,
+        restTime: data.restTime ?? null,
         imageUrl: data.imageUrl?.trim() || null,
         creatorId: userId,
       },
     });
+
+    await upsertSteps(tx, recipe.id, data.steps);
 
     if (data.tags.length > 0) {
       await upsertTags(tx, recipe.id, data.tags, userId, null);
@@ -162,7 +210,11 @@ export async function createRecipe(userId: string, data: CreateRecipeData) {
 
 interface UpdateRecipeData {
   title?: string;
-  content?: string;
+  servings?: number;
+  prepTime?: number | null;
+  cookTime?: number | null;
+  restTime?: number | null;
+  steps?: StepInput[];
   imageUrl?: string;
   tags?: string[];
   ingredients?: IngredientInput[];
@@ -189,10 +241,19 @@ export async function updateRecipe(
       where: { id: recipeId },
       data: {
         ...(data.title !== undefined && { title: data.title.trim() }),
-        ...(data.content !== undefined && { content: data.content.trim() }),
+        ...(data.servings !== undefined && { servings: data.servings }),
+        ...(data.prepTime !== undefined && { prepTime: data.prepTime }),
+        ...(data.cookTime !== undefined && { cookTime: data.cookTime }),
+        ...(data.restTime !== undefined && { restTime: data.restTime }),
         ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl?.trim() || null }),
       },
     });
+
+    // Remplacer steps si fournis
+    if (data.steps !== undefined) {
+      await tx.recipeStep.deleteMany({ where: { recipeId } });
+      await upsertSteps(tx, recipeId, data.steps);
+    }
 
     // Remplacer tags si fournis
     if (data.tags !== undefined) {
@@ -232,10 +293,13 @@ async function syncLinkedRecipes(
 ) {
   const syncData: Record<string, unknown> = {};
   if (data.title !== undefined) syncData.title = data.title.trim();
-  if (data.content !== undefined) syncData.content = data.content.trim();
+  if (data.servings !== undefined) syncData.servings = data.servings;
+  if (data.prepTime !== undefined) syncData.prepTime = data.prepTime;
+  if (data.cookTime !== undefined) syncData.cookTime = data.cookTime;
+  if (data.restTime !== undefined) syncData.restTime = data.restTime;
   if (data.imageUrl !== undefined) syncData.imageUrl = data.imageUrl?.trim() || null;
 
-  const hasSyncableFields = Object.keys(syncData).length > 0 || data.ingredients !== undefined;
+  const hasSyncableFields = Object.keys(syncData).length > 0 || data.ingredients !== undefined || data.steps !== undefined;
   if (!hasSyncableFields) return;
 
   // Trouver les recettes liees a synchroniser
@@ -279,6 +343,14 @@ async function syncLinkedRecipes(
       where: { id: { in: linkedRecipeIds } },
       data: syncData,
     });
+  }
+
+  // Synchroniser les steps
+  if (data.steps !== undefined) {
+    for (const linkedId of linkedRecipeIds) {
+      await tx.recipeStep.deleteMany({ where: { recipeId: linkedId } });
+      await upsertSteps(tx, linkedId, data.steps);
+    }
   }
 
   // Synchroniser les ingredients

@@ -1,4 +1,5 @@
 import { RequestHandler } from "express";
+import createHttpError from "http-errors";
 import prisma from "../util/db";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { parsePagination } from "../util/pagination";
@@ -80,7 +81,7 @@ export const getSuggestedUnit: RequestHandler<{ id: string }> = async (req, res,
     });
 
     if (!ingredient) {
-      return res.status(404).json({ error: "Ingredient not found" });
+      throw createHttpError(404, "Ingredient not found");
     }
 
     // 1. Si defaultUnitId existe (defini par admin) → utiliser

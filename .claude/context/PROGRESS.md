@@ -27,6 +27,21 @@ Phases 0 a 9.3 terminees.
 - **Branche** : `NotificationsUpgrade`
 - **Tests** : 590 backend + 363 frontend = 953 total
 
+## Phase 13 - Recipe Rework v2 : COMPLETE
+
+- **Spec** : `docs/features/recipe-rework-v2/SPEC_RECIPE_REWORK_V2.md`
+- **Roadmap** : `docs/features/recipe-rework-v2/ROADMAP.md`
+- **Branche** : `RecipePageV2`
+- **Tests** : 649 backend + 403 frontend = 1052 total
+- **Seed** : Mis a jour pour le nouveau schema (steps, servings, temps au lieu de content)
+
+## Audit Refactorisation (post Phase 13) : COMPLETE
+
+- **Branche** : `RecipePageV2`
+- Corrections backend : error handling, validation tag partagee, pagination admin, type safety, tri DB-side variants
+- Corrections frontend : window.confirm → useConfirm, debounce hook, step.order
+- **Tests** : 649 backend + 403 frontend = 1052 total (inchanges)
+
 ## Resume de reprise
 
 Si une session precedente a ete interrompue, un fichier `.claude/context/RESUME.md` peut

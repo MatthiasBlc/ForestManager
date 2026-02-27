@@ -70,7 +70,11 @@ function handleApiErrorWith(
 
 export interface RecipeInput {
   title: string;
-  content: string;
+  servings: number;
+  prepTime?: number | null;
+  cookTime?: number | null;
+  restTime?: number | null;
+  steps: { instruction: string }[];
   imageUrl?: string;
   tags?: string[];
   ingredients?: { name: string; quantity?: number; unitId?: string }[];

@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { FaSearch, FaTimes } from "react-icons/fa";
+import { useDebouncedEffect } from "../../hooks/useDebouncedEffect";
 import TagSelector from "../form/TagSelector";
 import IngredientSelector from "../form/IngredientSelector";
 
@@ -25,29 +26,16 @@ const RecipeFilters = ({
   communityId,
 }: RecipeFiltersProps) => {
   const [localSearch, setLocalSearch] = useState(search);
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     setLocalSearch(search);
   }, [search]);
 
-  useEffect(() => {
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
+  useDebouncedEffect(() => {
+    if (localSearch !== search) {
+      onSearchChange(localSearch);
     }
-
-    debounceRef.current = setTimeout(() => {
-      if (localSearch !== search) {
-        onSearchChange(localSearch);
-      }
-    }, 300);
-
-    return () => {
-      if (debounceRef.current) {
-        clearTimeout(debounceRef.current);
-      }
-    };
-  }, [localSearch, search, onSearchChange]);
+  }, 300, [localSearch, search, onSearchChange]);
 
   const hasFilters = search || tags.length > 0 || ingredients.length > 0;
 

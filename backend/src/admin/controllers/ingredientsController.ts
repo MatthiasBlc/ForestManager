@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import prisma from "../../util/db";
 import { assertIsDefine } from "../../util/assertIsDefine";
+import { parsePagination, buildPaginationMeta } from "../../util/pagination";
 import appEvents from "../../services/eventEmitter";
 
 /**
@@ -12,6 +13,7 @@ import appEvents from "../../services/eventEmitter";
 export const getAll: RequestHandler = async (req, res, next) => {
   try {
     const { search, status } = req.query;
+    const { limit, offset } = parsePagination(req.query as Record<string, string>, 100);
 
     const where: Record<string, unknown> = {};
 
@@ -23,15 +25,20 @@ export const getAll: RequestHandler = async (req, res, next) => {
       where.status = status;
     }
 
-    const ingredients = await prisma.ingredient.findMany({
-      where,
-      include: {
-        _count: { select: { recipes: true, proposals: true } },
-        createdBy: { select: { id: true, username: true } },
-        defaultUnit: { select: { id: true, name: true, abbreviation: true } },
-      },
-      orderBy: { name: "asc" },
-    });
+    const [ingredients, total] = await Promise.all([
+      prisma.ingredient.findMany({
+        where,
+        include: {
+          _count: { select: { recipes: true, proposals: true } },
+          createdBy: { select: { id: true, username: true } },
+          defaultUnit: { select: { id: true, name: true, abbreviation: true } },
+        },
+        orderBy: { name: "asc" },
+        skip: offset,
+        take: limit,
+      }),
+      prisma.ingredient.count({ where }),
+    ]);
 
     res.status(200).json({
       ingredients: ingredients.map((i) => ({
@@ -44,6 +51,7 @@ export const getAll: RequestHandler = async (req, res, next) => {
         proposalCount: i._count.proposals,
         createdAt: i.createdAt,
       })),
+      pagination: buildPaginationMeta(total, limit, offset, ingredients.length),
     });
   } catch (error) {
     next(error);

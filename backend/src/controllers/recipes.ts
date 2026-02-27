@@ -3,11 +3,11 @@ import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { Prisma } from "@prisma/client";
-import { isValidHttpUrl } from "../util/validation";
+import { isValidHttpUrl, validateServings, validateTime, validateSteps, StepInput } from "../util/validation";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
-import { RECIPE_TAGS_SELECT } from "../util/prismaSelects";
+import { RECIPE_TAGS_SELECT, RECIPE_STEPS_SELECT } from "../util/prismaSelects";
 import { requireRecipeAccess, requireRecipeOwnership } from "../services/membershipService";
-import { formatTags, formatIngredients } from "../util/responseFormatters";
+import { formatTags, formatIngredients, formatSteps } from "../util/responseFormatters";
 import { createRecipe as createRecipeService, updateRecipe as updateRecipeService } from "../services/recipeService";
 import appEvents from "../services/eventEmitter";
 import { getModeratorIdsForTagNotification } from "../services/notificationService";
@@ -79,6 +79,10 @@ export const getRecipes: RequestHandler<unknown, unknown, unknown, GetRecipesQue
         select: {
           id: true,
           title: true,
+          servings: true,
+          prepTime: true,
+          cookTime: true,
+          restTime: true,
           imageUrl: true,
           createdAt: true,
           updatedAt: true,
@@ -96,6 +100,10 @@ export const getRecipes: RequestHandler<unknown, unknown, unknown, GetRecipesQue
     const data = recipes.map((recipe) => ({
       id: recipe.id,
       title: recipe.title,
+      servings: recipe.servings,
+      prepTime: recipe.prepTime,
+      cookTime: recipe.cookTime,
+      restTime: recipe.restTime,
       imageUrl: recipe.imageUrl,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
@@ -126,7 +134,10 @@ export const getRecipe: RequestHandler = async (req, res, next) => {
       select: {
         id: true,
         title: true,
-        content: true,
+        servings: true,
+        prepTime: true,
+        cookTime: true,
+        restTime: true,
         imageUrl: true,
         createdAt: true,
         updatedAt: true,
@@ -153,6 +164,7 @@ export const getRecipe: RequestHandler = async (req, res, next) => {
             name: true,
           },
         },
+        steps: RECIPE_STEPS_SELECT,
         tags: RECIPE_TAGS_SELECT,
         ingredients: {
           select: {
@@ -182,7 +194,10 @@ export const getRecipe: RequestHandler = async (req, res, next) => {
     const responseData = {
       id: recipe.id,
       title: recipe.title,
-      content: recipe.content,
+      servings: recipe.servings,
+      prepTime: recipe.prepTime,
+      cookTime: recipe.cookTime,
+      restTime: recipe.restTime,
       imageUrl: recipe.imageUrl,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
@@ -194,6 +209,7 @@ export const getRecipe: RequestHandler = async (req, res, next) => {
       isVariant: recipe.isVariant,
       sharedFromCommunityId: recipe.sharedFromCommunityId,
       sharedFromCommunity: recipe.sharedFromCommunity,
+      steps: formatSteps(recipe.steps),
       tags: formatTags(recipe.tags),
       ingredients: formatIngredients(recipe.ingredients),
     };
@@ -212,14 +228,18 @@ interface IngredientInput {
 
 interface CreateRecipeBody {
   title?: string;
-  content?: string;
+  servings?: number;
+  prepTime?: number | null;
+  cookTime?: number | null;
+  restTime?: number | null;
+  steps?: StepInput[];
   imageUrl?: string;
   tags?: string[];
   ingredients?: IngredientInput[];
 }
 
 export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeBody, unknown> = async (req, res, next) => {
-  const { title, content, imageUrl, tags = [], ingredients = [] } = req.body;
+  const { title, servings, prepTime, cookTime, restTime, steps, imageUrl, tags = [], ingredients = [] } = req.body;
   const authenticatedUserId = req.session.userId;
 
   try {
@@ -229,8 +249,24 @@ export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeBody, un
       throw createHttpError(400, "RECIPE_003: Title required");
     }
 
-    if (!content?.trim()) {
-      throw createHttpError(400, "RECIPE_004: Content required");
+    if (!validateServings(servings)) {
+      throw createHttpError(400, "RECIPE_006: Servings must be an integer between 1 and 100");
+    }
+
+    if (!validateSteps(steps)) {
+      throw createHttpError(400, "RECIPE_007: At least one step required, each instruction non-empty (max 5000 chars)");
+    }
+
+    if (!validateTime(prepTime)) {
+      throw createHttpError(400, "RECIPE_008: Invalid prep time (integer 0-10000)");
+    }
+
+    if (!validateTime(cookTime)) {
+      throw createHttpError(400, "RECIPE_008: Invalid cook time (integer 0-10000)");
+    }
+
+    if (!validateTime(restTime)) {
+      throw createHttpError(400, "RECIPE_008: Invalid rest time (integer 0-10000)");
     }
 
     if (!isValidHttpUrl(imageUrl)) {
@@ -238,7 +274,7 @@ export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeBody, un
     }
 
     const newRecipe = await createRecipeService(authenticatedUserId, {
-      title, content, imageUrl, tags, ingredients,
+      title, servings, prepTime, cookTime, restTime, steps, imageUrl, tags, ingredients,
     });
 
     if (!newRecipe) {
@@ -248,11 +284,15 @@ export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeBody, un
     const responseData = {
       id: newRecipe.id,
       title: newRecipe.title,
-      content: newRecipe.content,
+      servings: newRecipe.servings,
+      prepTime: newRecipe.prepTime,
+      cookTime: newRecipe.cookTime,
+      restTime: newRecipe.restTime,
       imageUrl: newRecipe.imageUrl,
       createdAt: newRecipe.createdAt,
       updatedAt: newRecipe.updatedAt,
       creatorId: newRecipe.creatorId,
+      steps: formatSteps(newRecipe.steps),
       tags: formatTags(newRecipe.tags),
       ingredients: formatIngredients(newRecipe.ingredients),
     };
@@ -269,7 +309,11 @@ interface UpdateRecipeParams {
 
 interface UpdateRecipeBody {
   title?: string;
-  content?: string;
+  servings?: number;
+  prepTime?: number | null;
+  cookTime?: number | null;
+  restTime?: number | null;
+  steps?: StepInput[];
   imageUrl?: string;
   tags?: string[];
   ingredients?: IngredientInput[];
@@ -277,7 +321,7 @@ interface UpdateRecipeBody {
 
 export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRecipeBody, unknown> = async (req, res, next) => {
   const recipeId = req.params.recipeId;
-  const { title, content, imageUrl, tags, ingredients } = req.body;
+  const { title, servings, prepTime, cookTime, restTime, steps, imageUrl, tags, ingredients } = req.body;
   const authenticatedUserId = req.session.userId;
 
   try {
@@ -287,8 +331,24 @@ export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRec
       throw createHttpError(400, "RECIPE_003: Title required");
     }
 
-    if (content !== undefined && !content?.trim()) {
-      throw createHttpError(400, "RECIPE_004: Content required");
+    if (servings !== undefined && !validateServings(servings)) {
+      throw createHttpError(400, "RECIPE_006: Servings must be an integer between 1 and 100");
+    }
+
+    if (steps !== undefined && !validateSteps(steps)) {
+      throw createHttpError(400, "RECIPE_007: At least one step required, each instruction non-empty (max 5000 chars)");
+    }
+
+    if (prepTime !== undefined && !validateTime(prepTime)) {
+      throw createHttpError(400, "RECIPE_008: Invalid prep time (integer 0-10000)");
+    }
+
+    if (cookTime !== undefined && !validateTime(cookTime)) {
+      throw createHttpError(400, "RECIPE_008: Invalid cook time (integer 0-10000)");
+    }
+
+    if (restTime !== undefined && !validateTime(restTime)) {
+      throw createHttpError(400, "RECIPE_008: Invalid rest time (integer 0-10000)");
     }
 
     const recipe = await prisma.recipe.findUnique({
@@ -306,7 +366,7 @@ export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRec
     }
 
     const { result: updatedRecipe, pendingTagIds } = await updateRecipeService(recipeId, {
-      title, content, imageUrl, tags, ingredients,
+      title, servings, prepTime, cookTime, restTime, steps, imageUrl, tags, ingredients,
     }, recipe, authenticatedUserId);
 
     if (!updatedRecipe) {
@@ -331,11 +391,15 @@ export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRec
     const responseData = {
       id: updatedRecipe.id,
       title: updatedRecipe.title,
-      content: updatedRecipe.content,
+      servings: updatedRecipe.servings,
+      prepTime: updatedRecipe.prepTime,
+      cookTime: updatedRecipe.cookTime,
+      restTime: updatedRecipe.restTime,
       imageUrl: updatedRecipe.imageUrl,
       createdAt: updatedRecipe.createdAt,
       updatedAt: updatedRecipe.updatedAt,
       creatorId: updatedRecipe.creatorId,
+      steps: formatSteps(updatedRecipe.steps),
       tags: formatTags(updatedRecipe.tags),
       ingredients: formatIngredients(updatedRecipe.ingredients),
     };

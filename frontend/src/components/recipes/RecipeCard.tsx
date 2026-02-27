@@ -1,7 +1,8 @@
-import { FaEdit, FaTrash, FaCodeBranch, FaShare } from "react-icons/fa";
+import { FaEdit, FaTrash, FaCodeBranch, FaShare, FaClock, FaUsers } from "react-icons/fa";
 import { RecipeListItem, CommunityRecipeListItem } from "../../models/recipe";
 import { useRecipeActions } from "../../hooks/useRecipeActions";
 import TagBadge from "./TagBadge";
+import { formatDuration } from "../../utils/formatDuration";
 
 interface RecipeCardProps {
   recipe: RecipeListItem | CommunityRecipeListItem;
@@ -20,6 +21,8 @@ const RecipeCard = ({ recipe, onDelete, onTagClick, onShare, showCreator = false
     handleClick, handleEdit, handleDelete, handleTagClick, handleShare,
     ConfirmDialog,
   } = useRecipeActions({ recipe, onDelete, onTagClick, onShare });
+
+  const totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0) + (recipe.restTime ?? 0);
 
   return (
     <div
@@ -62,6 +65,17 @@ const RecipeCard = ({ recipe, onDelete, onTagClick, onShare, showCreator = false
             )}
           </div>
         )}
+
+        <div className="flex flex-wrap gap-1 mt-1">
+          <span className="badge badge-ghost badge-sm gap-1">
+            <FaUsers className="w-2.5 h-2.5" /> {recipe.servings}
+          </span>
+          {totalTime > 0 && (
+            <span className="badge badge-ghost badge-sm gap-1">
+              <FaClock className="w-2.5 h-2.5" /> {formatDuration(totalTime)}
+            </span>
+          )}
+        </div>
 
         <p className="text-sm text-base-content/60 mt-2">{dateText}</p>
 

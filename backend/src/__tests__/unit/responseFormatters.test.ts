@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatTags, formatIngredients } from "../../util/responseFormatters";
+import { formatTags, formatIngredients, formatSteps } from "../../util/responseFormatters";
 
 describe("formatTags", () => {
   it("should extract tags from pivot format", () => {
@@ -57,5 +57,23 @@ describe("formatIngredients", () => {
 
   it("should return empty array for empty input", () => {
     expect(formatIngredients([])).toEqual([]);
+  });
+});
+
+describe("formatSteps", () => {
+  it("should map step fields correctly", () => {
+    const raw = [
+      { id: "s1", order: 0, instruction: "Preparer les ingredients" },
+      { id: "s2", order: 1, instruction: "Melanger et cuire" },
+    ];
+
+    expect(formatSteps(raw)).toEqual([
+      { id: "s1", order: 0, instruction: "Preparer les ingredients" },
+      { id: "s2", order: 1, instruction: "Melanger et cuire" },
+    ]);
+  });
+
+  it("should return empty array for empty input", () => {
+    expect(formatSteps([])).toEqual([]);
   });
 });

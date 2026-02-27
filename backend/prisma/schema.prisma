@@ -294,7 +294,10 @@ enum InviteStatus {
 model Recipe {
   id                    String    @id @default(uuid())
   title                 String
-  content               String    // Markdown ou rich text
+  servings              Int       @default(4)
+  prepTime              Int?
+  cookTime              Int?
+  restTime              Int?
   imageUrl              String?   // Optionnel - stockage differe a V1
   isVariant             Boolean   @default(false)
   createdAt             DateTime  @default(now())
@@ -319,6 +322,7 @@ model Recipe {
   sharedFromCommunity   Community? @relation("SharedFromCommunity", fields: [sharedFromCommunityId], references: [id])
 
   // Relations - Other
+  steps                 RecipeStep[]
   tags                  RecipeTag[]
   ingredients           RecipeIngredient[]
   proposals             RecipeUpdateProposal[]
@@ -335,18 +339,35 @@ model Recipe {
 }
 
 // =============================================================================
+// RECIPE STEP (Etapes structurees d'une recette)
+// =============================================================================
+
+model RecipeStep {
+  id          String @id @default(uuid())
+  recipeId    String
+  recipe      Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  order       Int
+  instruction String
+
+  @@index([recipeId, order])
+}
+
+// =============================================================================
 // RECIPE UPDATE PROPOSAL
 // Note: Soft delete gere cote applicatif
 // =============================================================================
 
 model RecipeUpdateProposal {
-  id              String         @id @default(uuid())
-  proposedTitle   String
-  proposedContent String
-  status          ProposalStatus @default(PENDING)
-  createdAt       DateTime       @default(now())
-  decidedAt       DateTime?
-  deletedAt       DateTime?
+  id               String         @id @default(uuid())
+  proposedTitle    String
+  proposedServings Int?
+  proposedPrepTime Int?
+  proposedCookTime Int?
+  proposedRestTime Int?
+  status           ProposalStatus @default(PENDING)
+  createdAt        DateTime       @default(now())
+  decidedAt        DateTime?
+  deletedAt        DateTime?
 
   // Relations
   recipeId        String
@@ -355,12 +376,27 @@ model RecipeUpdateProposal {
   proposerId      String
   proposer        User           @relation("ProposalProposer", fields: [proposerId], references: [id])
 
+  proposedSteps       ProposalStep[]
   proposedIngredients ProposalIngredient[]
 
   @@index([recipeId])
   @@index([proposerId])
   @@index([status])
   @@index([deletedAt])
+}
+
+// =============================================================================
+// PROPOSAL STEP (Etapes structurees d'une proposition)
+// =============================================================================
+
+model ProposalStep {
+  id          String               @id @default(uuid())
+  proposalId  String
+  proposal    RecipeUpdateProposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  order       Int
+  instruction String
+
+  @@index([proposalId, order])
 }
 
 enum ProposalStatus {
