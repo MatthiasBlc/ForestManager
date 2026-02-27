@@ -5,6 +5,7 @@ import { FaArrowLeft, FaEdit, FaTrash, FaLightbulb, FaShare, FaCodeBranch, FaTag
 import APIManager from "../network/api";
 import { RecipeDetail } from "../models/recipe";
 import { useAuth } from "../contexts/AuthContext";
+import { useConfirm } from "../hooks/useConfirm";
 import TagBadge from "../components/recipes/TagBadge";
 import TimeBadges from "../components/recipes/TimeBadges";
 import ServingsSelector from "../components/recipes/ServingsSelector";
@@ -19,6 +20,7 @@ const RecipeDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const [recipe, setRecipe] = useState<RecipeDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -55,7 +57,7 @@ const RecipeDetailPage = () => {
   const handleDelete = async () => {
     if (!recipe) return;
 
-    if (window.confirm("Are you sure you want to delete this recipe?")) {
+    if (await confirm({ message: "Are you sure you want to delete this recipe?", confirmLabel: "Delete", confirmClass: "btn btn-error" })) {
       try {
         await APIManager.deleteRecipe(recipe.id);
         navigate(recipe.communityId ? `/communities/${recipe.communityId}` : "/recipes");
@@ -287,7 +289,6 @@ const RecipeDetailPage = () => {
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-xl font-semibold">Ingredients</h2>
                 <ServingsSelector
-                  baseServings={recipe.servings}
                   value={selectedServings}
                   onChange={setSelectedServings}
                 />
@@ -315,9 +316,9 @@ const RecipeDetailPage = () => {
           <div>
             <h2 className="text-xl font-semibold mb-4">Instructions</h2>
             <div className="space-y-4">
-              {recipe.steps.map((step, i) => (
+              {recipe.steps.map((step) => (
                 <div key={step.id} className="flex gap-4 items-start">
-                  <div className="badge badge-primary badge-lg">{i + 1}</div>
+                  <div className="badge badge-primary badge-lg">{step.order}</div>
                   <p className="flex-1 whitespace-pre-wrap">{step.instruction}</p>
                 </div>
               ))}
@@ -384,6 +385,8 @@ const RecipeDetailPage = () => {
           onPublished={() => setOpenModal(null)}
         />
       )}
+
+      {ConfirmDialog}
     </div>
   );
 };

@@ -62,45 +62,40 @@ export const getVariants: RequestHandler<
       whereClause.communityId = recipe.communityId;
     }
 
-    // Recuperer les variantes
-    const variants = await prisma.recipe.findMany({
-      where: whereClause,
-      select: {
-        id: true,
-        title: true,
-        servings: true,
-        prepTime: true,
-        cookTime: true,
-        restTime: true,
-        imageUrl: true,
-        createdAt: true,
-        updatedAt: true,
-        creatorId: true,
-        communityId: true,
-        originRecipeId: true,
-        isVariant: true,
-        creator: {
-          select: {
-            id: true,
-            username: true,
+    // Compter le total et recuperer les variantes paginées
+    const [variants, total] = await Promise.all([
+      prisma.recipe.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          title: true,
+          servings: true,
+          prepTime: true,
+          cookTime: true,
+          restTime: true,
+          imageUrl: true,
+          createdAt: true,
+          updatedAt: true,
+          creatorId: true,
+          communityId: true,
+          originRecipeId: true,
+          isVariant: true,
+          creator: {
+            select: {
+              id: true,
+              username: true,
+            },
           },
+          tags: RECIPE_TAGS_SELECT,
         },
-        tags: RECIPE_TAGS_SELECT,
-      },
-    });
+        orderBy: { updatedAt: "desc" },
+        skip: offset,
+        take: limit,
+      }),
+      prisma.recipe.count({ where: whereClause }),
+    ]);
 
-    // Trier par MAX(createdAt, updatedAt) DESC
-    const sortedVariants = variants.sort((a, b) => {
-      const maxA = a.updatedAt > a.createdAt ? a.updatedAt : a.createdAt;
-      const maxB = b.updatedAt > b.createdAt ? b.updatedAt : b.createdAt;
-      return maxB.getTime() - maxA.getTime();
-    });
-
-    // Appliquer pagination
-    const total = sortedVariants.length;
-    const paginatedVariants = sortedVariants.slice(offset, offset + limit);
-
-    const data = paginatedVariants.map((variant) => ({
+    const data = variants.map((variant) => ({
       id: variant.id,
       title: variant.title,
       servings: variant.servings,
@@ -120,7 +115,7 @@ export const getVariants: RequestHandler<
 
     res.status(200).json({
       data,
-      pagination: buildPaginationMeta(total, limit, offset, paginatedVariants.length),
+      pagination: buildPaginationMeta(total, limit, offset, variants.length),
     });
   } catch (error) {
     next(error);

@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import prisma from "../../util/db";
 import { assertIsDefine } from "../../util/assertIsDefine";
+import { parsePagination, buildPaginationMeta } from "../../util/pagination";
 
 /**
  * GET /api/admin/communities
@@ -10,28 +11,36 @@ import { assertIsDefine } from "../../util/assertIsDefine";
 export const getAll: RequestHandler = async (req, res, next) => {
   try {
     const { search, includeDeleted } = req.query;
+    const { limit, offset } = parsePagination(req.query as Record<string, string>, 100);
 
-    const communities = await prisma.community.findMany({
-      where: {
-        ...(search
-          ? { name: { contains: String(search), mode: "insensitive" } }
-          : {}),
-        ...(includeDeleted !== "true" ? { deletedAt: null } : {}),
-      },
-      include: {
-        _count: {
-          select: {
-            members: true,
-            recipes: true,
+    const where = {
+      ...(search
+        ? { name: { contains: String(search), mode: "insensitive" as const } }
+        : {}),
+      ...(includeDeleted !== "true" ? { deletedAt: null } : {}),
+    };
+
+    const [communities, total] = await Promise.all([
+      prisma.community.findMany({
+        where,
+        include: {
+          _count: {
+            select: {
+              members: true,
+              recipes: true,
+            },
+          },
+          features: {
+            where: { revokedAt: null },
+            include: { feature: true },
           },
         },
-        features: {
-          where: { revokedAt: null },
-          include: { feature: true },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+        orderBy: { createdAt: "desc" },
+        skip: offset,
+        take: limit,
+      }),
+      prisma.community.count({ where }),
+    ]);
 
     res.status(200).json({
       communities: communities.map((c) => ({
@@ -45,6 +54,7 @@ export const getAll: RequestHandler = async (req, res, next) => {
         createdAt: c.createdAt,
         deletedAt: c.deletedAt,
       })),
+      pagination: buildPaginationMeta(total, limit, offset, communities.length),
     });
   } catch (error) {
     next(error);

@@ -1,10 +1,9 @@
 interface ServingsSelectorProps {
-  baseServings: number;
   value: number;
   onChange: (n: number) => void;
 }
 
-const ServingsSelector = ({ baseServings: _baseServings, value, onChange }: ServingsSelectorProps) => {
+const ServingsSelector = ({ value, onChange }: ServingsSelectorProps) => {
   const decrement = () => {
     if (value > 1) onChange(value - 1);
   };

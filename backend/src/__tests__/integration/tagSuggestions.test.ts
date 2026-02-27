@@ -8,7 +8,7 @@ const uniqueSuffix = () =>
   `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 
 describe("Tag Suggestions API", () => {
-  let moderator: { id: string };
+  let _moderator: { id: string };
   let moderatorCookie: string;
   let owner: { id: string };
   let ownerCookie: string;
@@ -27,7 +27,7 @@ describe("Tag Suggestions API", () => {
       password: "Test123!Password",
     });
     moderatorCookie = extractSessionCookie(modSignup)!;
-    moderator = (await testPrisma.user.findFirst({
+    _moderator = (await testPrisma.user.findFirst({
       where: { email: `tsmod_${suffix}@example.com` },
     }))!;
 

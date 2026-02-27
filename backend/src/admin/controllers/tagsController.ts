@@ -2,6 +2,8 @@ import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import prisma from "../../util/db";
 import { assertIsDefine } from "../../util/assertIsDefine";
+import { parsePagination, buildPaginationMeta } from "../../util/pagination";
+import { validateTagName } from "../../util/validation";
 
 /**
  * GET /api/admin/tags
@@ -10,6 +12,7 @@ import { assertIsDefine } from "../../util/assertIsDefine";
 export const getAll: RequestHandler = async (req, res, next) => {
   try {
     const { search, scope } = req.query;
+    const { limit, offset } = parsePagination(req.query as Record<string, string>, 100);
 
     const where: Record<string, unknown> = {};
 
@@ -23,14 +26,19 @@ export const getAll: RequestHandler = async (req, res, next) => {
       where.scope = "COMMUNITY";
     }
 
-    const tags = await prisma.tag.findMany({
-      where,
-      include: {
-        _count: { select: { recipes: true } },
-        community: { select: { id: true, name: true } },
-      },
-      orderBy: { name: "asc" },
-    });
+    const [tags, total] = await Promise.all([
+      prisma.tag.findMany({
+        where,
+        include: {
+          _count: { select: { recipes: true } },
+          community: { select: { id: true, name: true } },
+        },
+        orderBy: { name: "asc" },
+        skip: offset,
+        take: limit,
+      }),
+      prisma.tag.count({ where }),
+    ]);
 
     res.status(200).json({
       tags: tags.map((t) => ({
@@ -42,6 +50,7 @@ export const getAll: RequestHandler = async (req, res, next) => {
         community: t.community,
         recipeCount: t._count.recipes,
       })),
+      pagination: buildPaginationMeta(total, limit, offset, tags.length),
     });
   } catch (error) {
     next(error);
@@ -58,11 +67,7 @@ export const create: RequestHandler = async (req, res, next) => {
     const adminId = req.session.adminId;
     assertIsDefine(adminId);
 
-    if (!name || typeof name !== "string" || name.trim().length === 0) {
-      throw createHttpError(400, "ADMIN_TAG_001: Name is required");
-    }
-
-    const normalized = name.trim().toLowerCase();
+    const normalized = validateTagName(name, "ADMIN_TAG_001");
 
     const existing = await prisma.tag.findFirst({
       where: { name: normalized, communityId: null },
@@ -103,16 +108,12 @@ export const update: RequestHandler = async (req, res, next) => {
     const adminId = req.session.adminId;
     assertIsDefine(adminId);
 
-    if (!name || typeof name !== "string" || name.trim().length === 0) {
-      throw createHttpError(400, "ADMIN_TAG_001: Name is required");
-    }
+    const normalized = validateTagName(name, "ADMIN_TAG_001");
 
     const tag = await prisma.tag.findUnique({ where: { id } });
     if (!tag) {
       throw createHttpError(404, "ADMIN_TAG_003: Tag not found");
     }
-
-    const normalized = name.trim().toLowerCase();
 
     if (normalized !== tag.name) {
       // Verifier unicite dans le meme scope

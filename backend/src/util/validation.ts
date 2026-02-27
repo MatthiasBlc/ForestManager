@@ -1,3 +1,5 @@
+import createHttpError from "http-errors";
+
 // Validation constants et utilitaires partages
 
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -33,6 +35,26 @@ export function isValidHttpUrl(url: string | null | undefined): boolean {
   } catch {
     return false;
   }
+}
+
+// --- Tag validation ---
+
+/**
+ * Valide et normalise un nom de tag : trim, lowercase, longueur 2-50.
+ * Retourne le nom normalise ou throw createHttpError.
+ */
+export function validateTagName(name: unknown, errorPrefix = "TAG_001"): string {
+  if (!name || typeof name !== "string" || name.trim().length === 0) {
+    throw createHttpError(400, `${errorPrefix}: Tag name is required`);
+  }
+
+  const normalized = name.trim().toLowerCase();
+
+  if (normalized.length < 2 || normalized.length > 50) {
+    throw createHttpError(400, `${errorPrefix}: Tag name must be between 2 and 50 characters`);
+  }
+
+  return normalized;
 }
 
 // --- Recipe Rework v2 validators ---

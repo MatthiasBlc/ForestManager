@@ -1,6 +1,12 @@
+import { PrismaClient } from "@prisma/client";
 import prisma from "../util/db";
 import { RECIPE_TAGS_SELECT, RECIPE_INGREDIENTS_SELECT, RECIPE_STEPS_SELECT } from "../util/prismaSelects";
 import { resolveTagsForFork } from "./tagService";
+
+type TransactionClient = Omit<
+  PrismaClient,
+  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
 
 interface SourceRecipeForShare {
   id: string;
@@ -309,8 +315,7 @@ export async function getRecipeFamilyCommunities(recipeId: string) {
 
 // --- Helper interne ---
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function updateAncestorAnalytics(tx: any, sourceRecipeId: string) {
+async function updateAncestorAnalytics(tx: TransactionClient, sourceRecipeId: string) {
   const recipesToUpdate: string[] = [sourceRecipeId];
   let currentRecipeId: string | null = sourceRecipeId;
 

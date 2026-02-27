@@ -33,7 +33,14 @@ Phases 0 a 9.3 terminees.
 - **Roadmap** : `docs/features/recipe-rework-v2/ROADMAP.md`
 - **Branche** : `RecipePageV2`
 - **Tests** : 649 backend + 403 frontend = 1052 total
-- **TODO** : Mettre à jour le seed (`backend/prisma/seed.js`) pour qu'il corresponde au nouveau schéma Prisma (le champ `content` n'existe plus dans le modèle `Recipe`)
+- **Seed** : Mis a jour pour le nouveau schema (steps, servings, temps au lieu de content)
+
+## Audit Refactorisation (post Phase 13) : COMPLETE
+
+- **Branche** : `RecipePageV2`
+- Corrections backend : error handling, validation tag partagee, pagination admin, type safety, tri DB-side variants
+- Corrections frontend : window.confirm → useConfirm, debounce hook, step.order
+- **Tests** : 649 backend + 403 frontend = 1052 total (inchanges)
 
 ## Resume de reprise
 
