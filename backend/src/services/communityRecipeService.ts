@@ -1,10 +1,15 @@
 import prisma from "../util/db";
-import { RECIPE_TAGS_SELECT, RECIPE_INGREDIENTS_SELECT } from "../util/prismaSelects";
-import { IngredientInput, upsertTags, upsertIngredients } from "./recipeService";
+import { RECIPE_TAGS_SELECT, RECIPE_INGREDIENTS_SELECT, RECIPE_STEPS_SELECT } from "../util/prismaSelects";
+import { IngredientInput, upsertTags, upsertIngredients, upsertSteps } from "./recipeService";
+import { StepInput } from "../util/validation";
 
 interface CreateCommunityRecipeData {
   title: string;
-  content: string;
+  servings: number;
+  prepTime?: number | null;
+  cookTime?: number | null;
+  restTime?: number | null;
+  steps: StepInput[];
   imageUrl?: string | null;
   tags: string[];
   ingredients: IngredientInput[];
@@ -13,7 +18,10 @@ interface CreateCommunityRecipeData {
 const COMMUNITY_RECIPE_SELECT = {
   id: true,
   title: true,
-  content: true,
+  servings: true,
+  prepTime: true,
+  cookTime: true,
+  restTime: true,
   imageUrl: true,
   createdAt: true,
   updatedAt: true,
@@ -22,6 +30,7 @@ const COMMUNITY_RECIPE_SELECT = {
   originRecipeId: true,
   tags: RECIPE_TAGS_SELECT,
   ingredients: RECIPE_INGREDIENTS_SELECT,
+  steps: RECIPE_STEPS_SELECT,
 };
 
 /**
@@ -40,7 +49,10 @@ export async function createCommunityRecipe(
     const personalRecipe = await tx.recipe.create({
       data: {
         title: data.title.trim(),
-        content: data.content.trim(),
+        servings: data.servings,
+        prepTime: data.prepTime ?? null,
+        cookTime: data.cookTime ?? null,
+        restTime: data.restTime ?? null,
         imageUrl: data.imageUrl?.trim() || null,
         creatorId: userId,
         communityId: null,
@@ -51,7 +63,10 @@ export async function createCommunityRecipe(
     const communityRecipe = await tx.recipe.create({
       data: {
         title: data.title.trim(),
-        content: data.content.trim(),
+        servings: data.servings,
+        prepTime: data.prepTime ?? null,
+        cookTime: data.cookTime ?? null,
+        restTime: data.restTime ?? null,
         imageUrl: data.imageUrl?.trim() || null,
         creatorId: userId,
         communityId,
@@ -59,7 +74,9 @@ export async function createCommunityRecipe(
       },
     });
 
-    // 3. Gerer tags/ingredients sur les DEUX recettes
+    // 3. Gerer steps/tags/ingredients sur les DEUX recettes
+    await upsertSteps(tx, personalRecipe.id, data.steps);
+    await upsertSteps(tx, communityRecipe.id, data.steps);
     // IMPORTANT: traiter la recette communautaire EN PREMIER pour que les tags
     // inconnus deviennent COMMUNITY PENDING (et non GLOBAL APPROVED via le perso)
     if (data.tags.length > 0) {

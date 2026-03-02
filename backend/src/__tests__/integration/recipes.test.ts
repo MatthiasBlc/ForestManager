@@ -23,28 +23,38 @@ describe('Recipes API', () => {
   // POST /api/recipes
   // =====================================
   describe('POST /api/recipes', () => {
-    it('should create recipe with minimal data (title + content)', async () => {
+    it('should create recipe with minimal data (title + servings + steps)', async () => {
       const res = await request(app)
         .post('/api/recipes')
         .set('Cookie', sessionCookie!)
         .send({
           title: 'Ma recette',
-          content: 'Contenu de la recette',
+          servings: 4,
+          steps: [{ instruction: 'Etape 1' }],
         });
 
       expect(res.status).toBe(201);
       expect(res.body.title).toBe('Ma recette');
-      expect(res.body.content).toBe('Contenu de la recette');
+      expect(res.body.servings).toBe(4);
+      expect(res.body.steps).toHaveLength(1);
+      expect(res.body.steps[0].instruction).toBe('Etape 1');
       expect(res.body.id).toBeDefined();
     });
 
-    it('should create recipe with tags and ingredients', async () => {
+    it('should create recipe with all fields', async () => {
       const res = await request(app)
         .post('/api/recipes')
         .set('Cookie', sessionCookie!)
         .send({
           title: 'Recette complete',
-          content: 'Contenu',
+          servings: 6,
+          prepTime: 15,
+          cookTime: 30,
+          restTime: 10,
+          steps: [
+            { instruction: 'Preparer les ingredients' },
+            { instruction: 'Melanger' },
+          ],
           tags: ['dessert', 'rapide'],
           ingredients: [
             { name: 'sucre', quantity: 100 },
@@ -53,6 +63,11 @@ describe('Recipes API', () => {
         });
 
       expect(res.status).toBe(201);
+      expect(res.body.servings).toBe(6);
+      expect(res.body.prepTime).toBe(15);
+      expect(res.body.cookTime).toBe(30);
+      expect(res.body.restTime).toBe(10);
+      expect(res.body.steps).toHaveLength(2);
       expect(res.body.tags).toHaveLength(2);
       expect(res.body.ingredients).toHaveLength(2);
     });
@@ -62,23 +77,157 @@ describe('Recipes API', () => {
         .post('/api/recipes')
         .set('Cookie', sessionCookie!)
         .send({
-          content: 'Contenu',
+          servings: 4,
+          steps: [{ instruction: 'Step' }],
         });
 
       expect(res.status).toBe(400);
       expect(res.body.error).toContain('RECIPE_003');
     });
 
-    it('should return 400 when content is missing', async () => {
+    it('should return 400 when servings is missing', async () => {
       const res = await request(app)
         .post('/api/recipes')
         .set('Cookie', sessionCookie!)
         .send({
           title: 'Titre',
+          steps: [{ instruction: 'Step' }],
         });
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain('RECIPE_004');
+      expect(res.body.error).toContain('RECIPE_006');
+    });
+
+    it('should return 400 when servings is 0', async () => {
+      const res = await request(app)
+        .post('/api/recipes')
+        .set('Cookie', sessionCookie!)
+        .send({
+          title: 'Titre',
+          servings: 0,
+          steps: [{ instruction: 'Step' }],
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('RECIPE_006');
+    });
+
+    it('should return 400 when servings is negative', async () => {
+      const res = await request(app)
+        .post('/api/recipes')
+        .set('Cookie', sessionCookie!)
+        .send({
+          title: 'Titre',
+          servings: -1,
+          steps: [{ instruction: 'Step' }],
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('RECIPE_006');
+    });
+
+    it('should return 400 when servings exceeds 100', async () => {
+      const res = await request(app)
+        .post('/api/recipes')
+        .set('Cookie', sessionCookie!)
+        .send({
+          title: 'Titre',
+          servings: 101,
+          steps: [{ instruction: 'Step' }],
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('RECIPE_006');
+    });
+
+    it('should return 400 when steps is missing', async () => {
+      const res = await request(app)
+        .post('/api/recipes')
+        .set('Cookie', sessionCookie!)
+        .send({
+          title: 'Titre',
+          servings: 4,
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('RECIPE_007');
+    });
+
+    it('should return 400 when steps is empty array', async () => {
+      const res = await request(app)
+        .post('/api/recipes')
+        .set('Cookie', sessionCookie!)
+        .send({
+          title: 'Titre',
+          servings: 4,
+          steps: [],
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('RECIPE_007');
+    });
+
+    it('should return 400 when step instruction is empty', async () => {
+      const res = await request(app)
+        .post('/api/recipes')
+        .set('Cookie', sessionCookie!)
+        .send({
+          title: 'Titre',
+          servings: 4,
+          steps: [{ instruction: '   ' }],
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('RECIPE_007');
+    });
+
+    it('should return 400 when time is negative', async () => {
+      const res = await request(app)
+        .post('/api/recipes')
+        .set('Cookie', sessionCookie!)
+        .send({
+          title: 'Titre',
+          servings: 4,
+          steps: [{ instruction: 'Step' }],
+          prepTime: -5,
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('RECIPE_008');
+    });
+
+    it('should return 400 when time exceeds 10000', async () => {
+      const res = await request(app)
+        .post('/api/recipes')
+        .set('Cookie', sessionCookie!)
+        .send({
+          title: 'Titre',
+          servings: 4,
+          steps: [{ instruction: 'Step' }],
+          cookTime: 10001,
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('RECIPE_008');
+    });
+
+    it('should allow null times', async () => {
+      const res = await request(app)
+        .post('/api/recipes')
+        .set('Cookie', sessionCookie!)
+        .send({
+          title: 'Titre',
+          servings: 4,
+          steps: [{ instruction: 'Step' }],
+          prepTime: null,
+          cookTime: null,
+          restTime: null,
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.prepTime).toBeNull();
+      expect(res.body.cookTime).toBeNull();
+      expect(res.body.restTime).toBeNull();
     });
 
     it('should deduplicate tags (case insensitive)', async () => {
@@ -87,7 +236,8 @@ describe('Recipes API', () => {
         .set('Cookie', sessionCookie!)
         .send({
           title: 'Recette',
-          content: 'Contenu',
+          servings: 4,
+          steps: [{ instruction: 'Step' }],
           tags: ['Dessert', 'dessert', 'DESSERT'],
         });
 
@@ -103,7 +253,8 @@ describe('Recipes API', () => {
         .set('Cookie', sessionCookie!)
         .send({
           title: 'Recette',
-          content: 'Contenu',
+          servings: 4,
+          steps: [{ instruction: 'Step' }],
           tags: [uniqueTag],
         });
 
@@ -117,7 +268,8 @@ describe('Recipes API', () => {
         .post('/api/recipes')
         .send({
           title: 'Recette',
-          content: 'Contenu',
+          servings: 4,
+          steps: [{ instruction: 'Step' }],
         });
 
       expect(res.status).toBe(401);
@@ -143,6 +295,19 @@ describe('Recipes API', () => {
       expect(res.status).toBe(200);
       expect(res.body.data).toHaveLength(3);
       expect(res.body.pagination.limit).toBe(20);
+    });
+
+    it('should include servings and times in list response', async () => {
+      const res = await request(app)
+        .get('/api/recipes')
+        .set('Cookie', sessionCookie!);
+
+      expect(res.status).toBe(200);
+      const recipe = res.body.data[0];
+      expect(recipe).toHaveProperty('servings');
+      expect(recipe).toHaveProperty('prepTime');
+      expect(recipe).toHaveProperty('cookTime');
+      expect(recipe).toHaveProperty('restTime');
     });
 
     it('should respect limit parameter', async () => {
@@ -224,10 +389,13 @@ describe('Recipes API', () => {
   // GET /api/recipes/:id
   // =====================================
   describe('GET /api/recipes/:id', () => {
-    it('should return recipe details', async () => {
+    it('should return recipe details with steps and servings', async () => {
       const recipe = await createTestRecipe(testUser.id, {
         title: 'Ma recette',
-        content: 'Mon contenu',
+        servings: 6,
+        prepTime: 10,
+        cookTime: 20,
+        steps: [{ instruction: 'Etape 1' }, { instruction: 'Etape 2' }],
         tags: ['tag1'],
         ingredients: [{ name: 'ingredient1', quantity: 100 }],
       });
@@ -238,7 +406,13 @@ describe('Recipes API', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.title).toBe('Ma recette');
-      expect(res.body.content).toBe('Mon contenu');
+      expect(res.body.servings).toBe(6);
+      expect(res.body.prepTime).toBe(10);
+      expect(res.body.cookTime).toBe(20);
+      expect(res.body.restTime).toBeNull();
+      expect(res.body.steps).toHaveLength(2);
+      expect(res.body.steps[0].instruction).toBe('Etape 1');
+      expect(res.body.steps[1].instruction).toBe('Etape 2');
       expect(res.body.tags).toBeDefined();
       expect(res.body.ingredients).toBeDefined();
     });
@@ -282,16 +456,44 @@ describe('Recipes API', () => {
       expect(res.body.title).toBe('Nouveau titre');
     });
 
-    it('should update recipe content', async () => {
-      const recipe = await createTestRecipe(testUser.id, { content: 'Ancien contenu' });
+    it('should update recipe servings', async () => {
+      const recipe = await createTestRecipe(testUser.id, { servings: 4 });
 
       const res = await request(app)
         .patch(`/api/recipes/${recipe.id}`)
         .set('Cookie', sessionCookie!)
-        .send({ content: 'Nouveau contenu' });
+        .send({ servings: 8 });
 
       expect(res.status).toBe(200);
-      expect(res.body.content).toBe('Nouveau contenu');
+      expect(res.body.servings).toBe(8);
+    });
+
+    it('should update recipe steps', async () => {
+      const recipe = await createTestRecipe(testUser.id);
+
+      const res = await request(app)
+        .patch(`/api/recipes/${recipe.id}`)
+        .set('Cookie', sessionCookie!)
+        .send({ steps: [{ instruction: 'New step 1' }, { instruction: 'New step 2' }] });
+
+      expect(res.status).toBe(200);
+      expect(res.body.steps).toHaveLength(2);
+      expect(res.body.steps[0].instruction).toBe('New step 1');
+      expect(res.body.steps[1].instruction).toBe('New step 2');
+    });
+
+    it('should update recipe times', async () => {
+      const recipe = await createTestRecipe(testUser.id);
+
+      const res = await request(app)
+        .patch(`/api/recipes/${recipe.id}`)
+        .set('Cookie', sessionCookie!)
+        .send({ prepTime: 15, cookTime: 45, restTime: 10 });
+
+      expect(res.status).toBe(200);
+      expect(res.body.prepTime).toBe(15);
+      expect(res.body.cookTime).toBe(45);
+      expect(res.body.restTime).toBe(10);
     });
 
     it('should replace tags completely', async () => {
@@ -337,16 +539,40 @@ describe('Recipes API', () => {
       expect(res.body.error).toContain('RECIPE_003');
     });
 
-    it('should return 400 for empty content', async () => {
+    it('should return 400 for invalid servings on update', async () => {
       const recipe = await createTestRecipe(testUser.id);
 
       const res = await request(app)
         .patch(`/api/recipes/${recipe.id}`)
         .set('Cookie', sessionCookie!)
-        .send({ content: '   ' });
+        .send({ servings: 0 });
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain('RECIPE_004');
+      expect(res.body.error).toContain('RECIPE_006');
+    });
+
+    it('should return 400 for empty steps on update', async () => {
+      const recipe = await createTestRecipe(testUser.id);
+
+      const res = await request(app)
+        .patch(`/api/recipes/${recipe.id}`)
+        .set('Cookie', sessionCookie!)
+        .send({ steps: [] });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('RECIPE_007');
+    });
+
+    it('should return 400 for invalid time on update', async () => {
+      const recipe = await createTestRecipe(testUser.id);
+
+      const res = await request(app)
+        .patch(`/api/recipes/${recipe.id}`)
+        .set('Cookie', sessionCookie!)
+        .send({ prepTime: -1 });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('RECIPE_008');
     });
 
     it('should return 404 for non-existent recipe', async () => {

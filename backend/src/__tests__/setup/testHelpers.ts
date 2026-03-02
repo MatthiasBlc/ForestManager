@@ -22,7 +22,7 @@ interface TestAdmin {
 interface TestRecipe {
   id: string;
   title: string;
-  content: string;
+  servings: number;
   imageUrl: string | null;
   creatorId: string;
 }
@@ -130,7 +130,11 @@ export async function createTestRecipe(
   creatorId: string,
   data?: Partial<{
     title: string;
-    content: string;
+    servings: number;
+    prepTime: number | null;
+    cookTime: number | null;
+    restTime: number | null;
+    steps: Array<{ instruction: string }>;
     imageUrl: string | null;
     tags: string[];
     ingredients: Array<{ name: string; quantity?: number }>;
@@ -152,9 +156,18 @@ export async function createTestRecipe(
   const recipe = await testPrisma.recipe.create({
     data: {
       title: data?.title ?? `Test Recipe ${Date.now()}`,
-      content: data?.content ?? 'Test recipe content',
+      servings: data?.servings ?? 4,
+      prepTime: data?.prepTime ?? undefined,
+      cookTime: data?.cookTime ?? undefined,
+      restTime: data?.restTime ?? undefined,
       imageUrl: data?.imageUrl ?? null,
       creatorId,
+      steps: {
+        create: (data?.steps ?? [{ instruction: 'Test step' }]).map((step, index) => ({
+          order: index,
+          instruction: step.instruction,
+        })),
+      },
       tags: tagIds.length > 0 ? {
         create: tagIds.map(tagId => ({ tagId })),
       } : undefined,
@@ -176,7 +189,7 @@ export async function createTestRecipe(
   return {
     id: recipe.id,
     title: recipe.title,
-    content: recipe.content,
+    servings: recipe.servings,
     imageUrl: recipe.imageUrl,
     creatorId: recipe.creatorId,
   };

@@ -77,7 +77,7 @@ describe('ProposalsList', () => {
     await user.click(screen.getByText('Show changes'));
 
     expect(screen.getByText('Proposed title:')).toBeInTheDocument();
-    expect(screen.getByText('Proposed content:')).toBeInTheDocument();
+    expect(screen.getByText('Proposed steps:')).toBeInTheDocument();
     expect(screen.getByText('Proposed ingredients:')).toBeInTheDocument();
   });
 

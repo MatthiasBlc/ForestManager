@@ -5,6 +5,9 @@ import {
   EMAIL_REGEX,
   USERNAME_REGEX,
   COMMUNITY_VALIDATION,
+  validateServings,
+  validateTime,
+  validateSteps,
 } from "../../util/validation";
 
 describe("normalizeNames", () => {
@@ -80,5 +83,104 @@ describe("Validation constants", () => {
     expect(COMMUNITY_VALIDATION.NAME_MIN).toBe(3);
     expect(COMMUNITY_VALIDATION.NAME_MAX).toBe(100);
     expect(COMMUNITY_VALIDATION.DESCRIPTION_MAX).toBe(1000);
+  });
+});
+
+describe("validateServings", () => {
+  it("should accept valid servings (1-100)", () => {
+    expect(validateServings(1)).toBe(true);
+    expect(validateServings(4)).toBe(true);
+    expect(validateServings(100)).toBe(true);
+  });
+
+  it("should reject 0", () => {
+    expect(validateServings(0)).toBe(false);
+  });
+
+  it("should reject negative values", () => {
+    expect(validateServings(-1)).toBe(false);
+  });
+
+  it("should reject values above 100", () => {
+    expect(validateServings(101)).toBe(false);
+  });
+
+  it("should reject non-integer values", () => {
+    expect(validateServings(3.5)).toBe(false);
+  });
+
+  it("should reject null/undefined/string", () => {
+    expect(validateServings(null)).toBe(false);
+    expect(validateServings(undefined)).toBe(false);
+    expect(validateServings("4")).toBe(false);
+  });
+});
+
+describe("validateTime", () => {
+  it("should accept null and undefined (optional)", () => {
+    expect(validateTime(null)).toBe(true);
+    expect(validateTime(undefined)).toBe(true);
+  });
+
+  it("should accept 0", () => {
+    expect(validateTime(0)).toBe(true);
+  });
+
+  it("should accept valid times", () => {
+    expect(validateTime(45)).toBe(true);
+    expect(validateTime(10000)).toBe(true);
+  });
+
+  it("should reject negative values", () => {
+    expect(validateTime(-1)).toBe(false);
+  });
+
+  it("should reject values above 10000", () => {
+    expect(validateTime(10001)).toBe(false);
+  });
+
+  it("should reject non-integer values", () => {
+    expect(validateTime(3.5)).toBe(false);
+  });
+
+  it("should reject strings", () => {
+    expect(validateTime("10" as unknown)).toBe(false);
+  });
+});
+
+describe("validateSteps", () => {
+  it("should accept valid steps", () => {
+    expect(validateSteps([{ instruction: "Step 1" }])).toBe(true);
+    expect(validateSteps([{ instruction: "Step 1" }, { instruction: "Step 2" }])).toBe(true);
+  });
+
+  it("should reject empty array", () => {
+    expect(validateSteps([])).toBe(false);
+  });
+
+  it("should reject non-array", () => {
+    expect(validateSteps(null)).toBe(false);
+    expect(validateSteps(undefined)).toBe(false);
+    expect(validateSteps("step")).toBe(false);
+  });
+
+  it("should reject steps with empty instruction", () => {
+    expect(validateSteps([{ instruction: "" }])).toBe(false);
+    expect(validateSteps([{ instruction: "   " }])).toBe(false);
+  });
+
+  it("should reject steps without instruction field", () => {
+    expect(validateSteps([{ text: "Step" }])).toBe(false);
+    expect(validateSteps([{}])).toBe(false);
+  });
+
+  it("should reject steps with instruction exceeding 5000 chars", () => {
+    const longInstruction = "a".repeat(5001);
+    expect(validateSteps([{ instruction: longInstruction }])).toBe(false);
+  });
+
+  it("should accept steps with instruction at 5000 chars", () => {
+    const maxInstruction = "a".repeat(5000);
+    expect(validateSteps([{ instruction: maxInstruction }])).toBe(true);
   });
 });

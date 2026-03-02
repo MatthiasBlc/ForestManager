@@ -18,14 +18,14 @@ Controller: `controllers/auth.ts` | Route: `routes/auth.ts`
 
 ## Recipes (/api/recipes) - requireAuth
 ```
-GET    /api/recipes/            # list (paginated, filter by tags, search)
-GET    /api/recipes/:recipeId   # detail (owner or community member)
-POST   /api/recipes/            # create (title, content, tags[], ingredients[])
-PATCH  /api/recipes/:recipeId   # update (owner, +membership for community recipes)
+GET    /api/recipes/            # list (paginated, filter by tags, search) → includes servings, prepTime, cookTime, restTime
+GET    /api/recipes/:recipeId   # detail (owner or community member) → includes steps[], servings, times
+POST   /api/recipes/            # create (title, servings, steps[], prepTime?, cookTime?, restTime?, tags[], ingredients[])
+PATCH  /api/recipes/:recipeId   # update (owner, +membership for community recipes) → partial: title?, servings?, steps[]?, times?, tags?, ingredients?
 DELETE /api/recipes/:recipeId   # soft delete (owner, +membership for community recipes)
-GET    /api/recipes/:recipeId/variants   # list variants (isVariant=true, same community)
-POST   /api/recipes/:recipeId/share     # fork to another community
-POST   /api/recipes/:recipeId/publish   # publish personal recipe to communities
+GET    /api/recipes/:recipeId/variants   # list variants (isVariant=true, same community) → includes servings, times
+POST   /api/recipes/:recipeId/share     # fork to another community (copies steps, servings, times)
+POST   /api/recipes/:recipeId/publish   # publish personal recipe to communities (copies steps, servings, times)
 GET    /api/recipes/:recipeId/communities  # list communities where recipe has copies
 ```
 Controller: `controllers/recipes.ts` | Route: `routes/recipes.ts`
@@ -130,16 +130,16 @@ Controller: `controllers/invites.ts` | Route: `routes/invites.ts`
 
 ## Proposals (/api/proposals) - requireAuth
 ```
-GET  /api/proposals/:proposalId         # detail proposition
-POST /api/proposals/:proposalId/accept  # accepter (createur recette)
-POST /api/proposals/:proposalId/reject  # refuser + creer variante
+GET  /api/proposals/:proposalId         # detail proposition → includes proposedSteps[], proposedServings, proposedTimes, proposedIngredients[]
+POST /api/proposals/:proposalId/accept  # accepter (createur recette) → applique steps/servings/times + sync
+POST /api/proposals/:proposalId/reject  # refuser + creer variante (avec proposedSteps/servings/times)
 ```
 Controller: `controllers/proposals.ts` | Route: `routes/proposals.ts`
 
 ### Proposals (nested under /api/recipes/:recipeId)
 ```
-GET  /api/recipes/:recipeId/proposals   # list propositions (?status=)
-POST /api/recipes/:recipeId/proposals   # creer proposition
+GET  /api/recipes/:recipeId/proposals   # list propositions (?status=) → includes proposedSteps[], proposedServings, proposedTimes
+POST /api/recipes/:recipeId/proposals   # creer proposition (proposedTitle, proposedSteps[], proposedServings?, proposedTimes?, proposedIngredients?)
 ```
 Controller: `controllers/proposals.ts` | Route: `routes/recipes.ts`
 

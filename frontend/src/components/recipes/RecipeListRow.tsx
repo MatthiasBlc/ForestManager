@@ -1,7 +1,8 @@
-import { FaEdit, FaTrash, FaCodeBranch, FaShare } from "react-icons/fa";
+import { FaEdit, FaTrash, FaCodeBranch, FaShare, FaClock, FaUsers } from "react-icons/fa";
 import { RecipeListItem, CommunityRecipeListItem } from "../../models/recipe";
 import { useRecipeActions } from "../../hooks/useRecipeActions";
 import TagBadge from "./TagBadge";
+import { formatDuration } from "../../utils/formatDuration";
 
 interface RecipeListRowProps {
   recipe: RecipeListItem | CommunityRecipeListItem;
@@ -20,6 +21,8 @@ const RecipeListRow = ({ recipe, onDelete, onTagClick, onShare, showCreator = fa
     handleClick, handleEdit, handleDelete, handleTagClick, handleShare,
     ConfirmDialog,
   } = useRecipeActions({ recipe, onDelete, onTagClick, onShare });
+
+  const totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0) + (recipe.restTime ?? 0);
 
   return (
     <div
@@ -49,7 +52,17 @@ const RecipeListRow = ({ recipe, onDelete, onTagClick, onShare, showCreator = fa
             </span>
           )}
         </div>
-        <p className="text-sm text-base-content/60">{dateText}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm text-base-content/60">{dateText}</p>
+          <span className="badge badge-ghost badge-xs gap-1">
+            <FaUsers className="w-2 h-2" /> {recipe.servings}
+          </span>
+          {totalTime > 0 && (
+            <span className="badge badge-ghost badge-xs gap-1">
+              <FaClock className="w-2 h-2" /> {formatDuration(totalTime)}
+            </span>
+          )}
+        </div>
       </div>
 
       {tags.length > 0 && (

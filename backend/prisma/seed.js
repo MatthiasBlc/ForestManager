@@ -218,8 +218,20 @@ async function seed() {
   const pizzaMargherita = await prisma.recipe.create({
     data: {
       title: "Pizza Margherita",
-      content: "# Pizza Margherita\n\nLa classique napolitaine. Etaler la pate finement, napper de sauce tomate, disposer la mozzarella en morceaux. Cuire au four a 250C pendant 8-10 minutes. Ajouter le basilic frais a la sortie du four.",
+      servings: 4,
+      prepTime: 30,
+      cookTime: 10,
+      restTime: 60,
       creatorId: alice.id,
+      steps: {
+        create: [
+          { order: 0, instruction: "Melanger la farine, le sel et la levure. Ajouter l'eau tiede et petrir 10 minutes jusqu'a obtenir une pate lisse et elastique." },
+          { order: 1, instruction: "Laisser reposer la pate 1h sous un linge humide." },
+          { order: 2, instruction: "Etaler la pate finement sur un plan farine." },
+          { order: 3, instruction: "Napper de sauce tomate, disposer la mozzarella en morceaux et arroser d'un filet d'huile d'olive." },
+          { order: 4, instruction: "Cuire au four a 250C pendant 8-10 minutes. Ajouter le basilic frais et une pincee de sel a la sortie du four." },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -243,8 +255,19 @@ async function seed() {
   const risottoChampignons = await prisma.recipe.create({
     data: {
       title: "Risotto aux champignons",
-      content: "# Risotto aux champignons\n\nFaire revenir l'oignon emince dans le beurre. Ajouter le riz et nacrer 2 minutes. Deglace au vin blanc. Ajouter le bouillon louche par louche en remuant. A mi-cuisson, ajouter les champignons sautes. Terminer avec le parmesan et une noix de beurre.",
+      servings: 4,
+      prepTime: 15,
+      cookTime: 30,
       creatorId: alice.id,
+      steps: {
+        create: [
+          { order: 0, instruction: "Faire revenir l'oignon emince dans le beurre a feu moyen jusqu'a ce qu'il soit translucide." },
+          { order: 1, instruction: "Ajouter le riz et nacrer 2 minutes en remuant." },
+          { order: 2, instruction: "Deglacer au vin blanc et laisser absorber." },
+          { order: 3, instruction: "Ajouter le bouillon louche par louche en remuant regulierement. A mi-cuisson, ajouter les champignons sautes." },
+          { order: 4, instruction: "Terminer avec le parmesan rape et une noix de beurre. Servir immediatement." },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -267,8 +290,16 @@ async function seed() {
   const saladeCaprese = await prisma.recipe.create({
     data: {
       title: "Salade Caprese",
-      content: "# Salade Caprese\n\nAlterner les tranches de tomates et de mozzarella dans un plat. Parsemer de feuilles de basilic. Arroser d'huile d'olive, saler et poivrer. Servir frais.",
+      servings: 2,
+      prepTime: 10,
       creatorId: alice.id,
+      steps: {
+        create: [
+          { order: 0, instruction: "Couper les tomates et la mozzarella en tranches regulieres." },
+          { order: 1, instruction: "Alterner les tranches de tomates et de mozzarella dans un plat de service." },
+          { order: 2, instruction: "Parsemer de feuilles de basilic frais, arroser d'huile d'olive, saler et poivrer. Servir frais." },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -293,8 +324,20 @@ async function seed() {
   const painMaison = await prisma.recipe.create({
     data: {
       title: "Pain maison",
-      content: "# Pain maison\n\nMelanger farine, sel et levure. Ajouter l'eau tiede et petrir 10 minutes. Laisser lever 1h. Faconner, laisser lever 30min. Cuire a 230C pendant 25 minutes avec un bol d'eau dans le four pour la croute.",
+      servings: 6,
+      prepTime: 20,
+      cookTime: 25,
+      restTime: 90,
       creatorId: bob.id,
+      steps: {
+        create: [
+          { order: 0, instruction: "Melanger la farine, le sel et la levure dans un grand saladier." },
+          { order: 1, instruction: "Ajouter l'eau tiede et petrir 10 minutes jusqu'a obtenir une pate souple." },
+          { order: 2, instruction: "Couvrir d'un linge et laisser lever 1h a temperature ambiante." },
+          { order: 3, instruction: "Degazer, faconner le pain et laisser lever encore 30 minutes." },
+          { order: 4, instruction: "Cuire a 230C pendant 25 minutes avec un bol d'eau dans le four pour une belle croute." },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -313,8 +356,19 @@ async function seed() {
   const quicheLorraine = await prisma.recipe.create({
     data: {
       title: "Quiche Lorraine",
-      content: "# Quiche Lorraine\n\nEtaler la pate dans un moule. Faire revenir les lardons. Battre les oeufs avec la creme et le lait, saler, poivrer, muscade. Disposer les lardons sur la pate, verser l'appareil. Cuire 35 minutes a 180C.",
+      servings: 6,
+      prepTime: 20,
+      cookTime: 35,
       creatorId: bob.id,
+      steps: {
+        create: [
+          { order: 0, instruction: "Etaler la pate brisee dans un moule a tarte beurre." },
+          { order: 1, instruction: "Faire revenir les lardons a la poele sans matiere grasse." },
+          { order: 2, instruction: "Battre les oeufs avec la creme fraiche et le lait. Saler, poivrer, ajouter une pincee de muscade." },
+          { order: 3, instruction: "Disposer les lardons sur le fond de tarte, verser l'appareil par-dessus." },
+          { order: 4, instruction: "Cuire 35 minutes a 180C jusqu'a ce que la quiche soit bien doree." },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -338,8 +392,18 @@ async function seed() {
   const padThai = await prisma.recipe.create({
     data: {
       title: "Pad Thai express",
-      content: "# Pad Thai express\n\nFaire tremper les nouilles de riz. Sauter le poulet emince avec l'ail et le gingembre. Ajouter les nouilles egouttees, la sauce soja, le jus de citron et le sucre. Servir avec cacahuetes concassees et coriandre.",
+      servings: 2,
+      prepTime: 10,
+      cookTime: 10,
       creatorId: charlie.id,
+      steps: {
+        create: [
+          { order: 0, instruction: "Faire tremper les nouilles de riz dans l'eau chaude selon les instructions du paquet." },
+          { order: 1, instruction: "Faire sauter le poulet emince avec l'ail et le gingembre dans un wok bien chaud." },
+          { order: 2, instruction: "Ajouter les nouilles egouttees, la sauce soja, le jus de citron et le sucre. Bien melanger." },
+          { order: 3, instruction: "Servir avec cacahuetes concassees et coriandre fraiche." },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -364,8 +428,19 @@ async function seed() {
   const ratatouilleExpress = await prisma.recipe.create({
     data: {
       title: "Ratatouille express",
-      content: "# Ratatouille express\n\nCouper tous les legumes en des. Faire revenir l'oignon et l'ail dans l'huile d'olive. Ajouter aubergine et poivron, cuire 5min. Ajouter courgette et tomate. Assaisonner avec thym et romarin. Laisser mijoter 20 minutes.",
+      servings: 4,
+      prepTime: 15,
+      cookTime: 25,
       creatorId: charlie.id,
+      steps: {
+        create: [
+          { order: 0, instruction: "Couper tous les legumes en des de taille reguliere." },
+          { order: 1, instruction: "Faire revenir l'oignon et l'ail dans l'huile d'olive a feu moyen." },
+          { order: 2, instruction: "Ajouter l'aubergine et le poivron, cuire 5 minutes en remuant." },
+          { order: 3, instruction: "Ajouter la courgette et la tomate. Assaisonner avec le thym et le romarin." },
+          { order: 4, instruction: "Laisser mijoter 20 minutes a feu doux. Rectifier l'assaisonnement avant de servir." },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -394,8 +469,20 @@ async function seed() {
   const tarteAuCitron = await prisma.recipe.create({
     data: {
       title: "Tarte au citron meringuee",
-      content: "# Tarte au citron meringuee\n\nPreparer une pate sucree (farine, beurre, sucre, oeuf). Cuire a blanc 15min. Preparer la creme citron : jus de citron, sucre, oeufs, beurre au bain-marie. Verser sur le fond de tarte. Monter les blancs en neige ferme avec sucre, dresser a la poche. Carameliser au chalumeau.",
+      servings: 8,
+      prepTime: 40,
+      cookTime: 30,
+      restTime: 120,
       creatorId: diana.id,
+      steps: {
+        create: [
+          { order: 0, instruction: "Preparer la pate sucree : melanger farine, beurre pommade, sucre et oeuf. Fraiser et filmer, refrigerer 30 minutes." },
+          { order: 1, instruction: "Etaler la pate, foncer le moule et cuire a blanc 15 minutes a 180C." },
+          { order: 2, instruction: "Preparer la creme citron : chauffer au bain-marie le jus de citron, le sucre, les oeufs et le beurre en remuant jusqu'a epaississement." },
+          { order: 3, instruction: "Verser la creme citron sur le fond de tarte. Laisser refroidir completement." },
+          { order: 4, instruction: "Monter les blancs en neige ferme avec le sucre, dresser a la poche sur la tarte et carameliser au chalumeau." },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -418,8 +505,19 @@ async function seed() {
   const fondantChocolat = await prisma.recipe.create({
     data: {
       title: "Fondant au chocolat",
-      content: "# Fondant au chocolat\n\nFondre le chocolat avec le beurre. Battre les oeufs avec le sucre jusqu'a blanchiment. Incorporer le chocolat fondu puis la farine. Verser dans des moules beurres. Cuire 12 minutes a 200C. Le coeur doit rester coulant.",
+      servings: 4,
+      prepTime: 15,
+      cookTime: 12,
       creatorId: diana.id,
+      steps: {
+        create: [
+          { order: 0, instruction: "Fondre le chocolat avec le beurre au bain-marie ou au micro-ondes." },
+          { order: 1, instruction: "Battre les oeufs avec le sucre jusqu'a blanchiment du melange." },
+          { order: 2, instruction: "Incorporer le chocolat fondu puis la farine tamisee delicatement." },
+          { order: 3, instruction: "Verser dans des moules individuels beurres et farine." },
+          { order: 4, instruction: "Cuire 12 minutes a 200C. Le coeur doit rester coulant. Demouler aussitot." },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -443,8 +541,20 @@ async function seed() {
   const cremeBrulee = await prisma.recipe.create({
     data: {
       title: "Creme brulee a la vanille",
-      content: "# Creme brulee a la vanille\n\nChauffer la creme avec la gousse de vanille fendue. Battre les jaunes d'oeufs avec le sucre. Verser la creme chaude sur les jaunes en fouettant. Repartir dans les ramequins. Cuire au bain-marie 45min a 150C. Refroidir puis carameliser le sucre au chalumeau.",
+      servings: 4,
+      prepTime: 15,
+      cookTime: 45,
+      restTime: 180,
       creatorId: diana.id,
+      steps: {
+        create: [
+          { order: 0, instruction: "Chauffer la creme avec la gousse de vanille fendue et grattee. Porter presque a ebullition puis retirer du feu." },
+          { order: 1, instruction: "Battre les jaunes d'oeufs avec le sucre jusqu'a ce que le melange blanchisse." },
+          { order: 2, instruction: "Verser la creme chaude sur les jaunes en fouettant energiquement. Filtrer la preparation." },
+          { order: 3, instruction: "Repartir dans les ramequins. Cuire au bain-marie 45 minutes a 150C." },
+          { order: 4, instruction: "Laisser refroidir puis refrigerer au moins 3h. Avant de servir, saupoudrer de sucre et carameliser au chalumeau." },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -467,8 +577,19 @@ async function seed() {
   const bowlSaumon = await prisma.recipe.create({
     data: {
       title: "Poke bowl au saumon",
-      content: "# Poke bowl au saumon\n\nCuire le riz et laisser refroidir. Couper le saumon frais en cubes. Preparer la marinade : sauce soja, huile de sesame, gingembre rape. Assembler : riz, saumon marine, avocat, edamame, carotte rapee, graines de sesame.",
+      servings: 2,
+      prepTime: 20,
+      cookTime: 15,
       creatorId: eve.id,
+      steps: {
+        create: [
+          { order: 0, instruction: "Cuire le riz selon les instructions du paquet et laisser refroidir." },
+          { order: 1, instruction: "Couper le saumon frais en cubes de 2 cm." },
+          { order: 2, instruction: "Preparer la marinade : melanger sauce soja, huile de sesame et gingembre rape. Mariner le saumon 10 minutes." },
+          { order: 3, instruction: "Assembler les bowls : repartir le riz, le saumon marine, la carotte rapee dans les bols." },
+          { order: 4, instruction: "Parsemer de graines de sesame et servir frais." },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -492,8 +613,18 @@ async function seed() {
   const gaspacho = await prisma.recipe.create({
     data: {
       title: "Gaspacho andalou",
-      content: "# Gaspacho andalou\n\nMixer les tomates bien mures, le concombre, le poivron, l'ail et l'oignon. Ajouter l'huile d'olive, le vinaigre, sel et poivre. Mixer finement. Refrigerer au moins 2h. Servir tres frais avec des croutons.",
+      servings: 4,
+      prepTime: 15,
+      restTime: 120,
       creatorId: eve.id,
+      steps: {
+        create: [
+          { order: 0, instruction: "Laver et couper grossierement les tomates, le concombre, le poivron, l'ail et l'oignon." },
+          { order: 1, instruction: "Mixer le tout finement au blender." },
+          { order: 2, instruction: "Ajouter l'huile d'olive, le vinaigre, saler et poivrer. Mixer a nouveau." },
+          { order: 3, instruction: "Refrigerer au moins 2h. Servir tres frais avec des croutons." },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({

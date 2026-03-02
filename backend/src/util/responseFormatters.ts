@@ -32,3 +32,14 @@ export function formatIngredients(ingredients: RawIngredient[]) {
     order: ri.order,
   }));
 }
+
+type RawStep = { id: string; order: number; instruction: string };
+
+/** Formate les etapes depuis le format Prisma */
+export function formatSteps(steps: RawStep[]) {
+  return steps.map((s) => ({
+    id: s.id,
+    order: s.order,
+    instruction: s.instruction,
+  }));
+}

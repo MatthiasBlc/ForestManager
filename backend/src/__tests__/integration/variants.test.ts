@@ -75,7 +75,8 @@ describe("Variants API", () => {
       .set("Cookie", recipeCreatorCookie)
       .send({
         title: "Original Recipe",
-        content: "Original content for the recipe",
+        servings: 4,
+        steps: [{ instruction: "Original step for the recipe" }],
       });
     communityRecipeId = recipeRes.body.community.id;
   });
@@ -101,7 +102,7 @@ describe("Variants API", () => {
         .set("Cookie", memberCookie)
         .send({
           proposedTitle: "Variant Title",
-          proposedContent: "Variant content",
+          proposedSteps: [{ instruction: "Variant step" }],
         });
 
       // Reject the proposal (creates a variant)
@@ -129,7 +130,7 @@ describe("Variants API", () => {
         .set("Cookie", memberCookie)
         .send({
           proposedTitle: "Variant with Creator",
-          proposedContent: "Content",
+          proposedSteps: [{ instruction: "Step" }],
         });
 
       await request(app)
@@ -146,6 +147,33 @@ describe("Variants API", () => {
       expect(res.body.data[0].creator.username).toBeDefined();
     });
 
+    it("should include servings and times in variant response", async () => {
+      // Create and reject a proposal with servings/times
+      const proposalRes = await request(app)
+        .post(`/api/recipes/${communityRecipeId}/proposals`)
+        .set("Cookie", memberCookie)
+        .send({
+          proposedTitle: "Variant with times",
+          proposedServings: 8,
+          proposedPrepTime: 15,
+          proposedSteps: [{ instruction: "Step" }],
+        });
+
+      await request(app)
+        .post(`/api/proposals/${proposalRes.body.id}/reject`)
+        .set("Cookie", recipeCreatorCookie);
+
+      const res = await request(app)
+        .get(`/api/recipes/${communityRecipeId}/variants`)
+        .set("Cookie", recipeCreatorCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data[0]).toHaveProperty("servings");
+      expect(res.body.data[0]).toHaveProperty("prepTime");
+      expect(res.body.data[0]).toHaveProperty("cookTime");
+      expect(res.body.data[0]).toHaveProperty("restTime");
+    });
+
     it("should allow any community member to view variants", async () => {
       // Create and reject a proposal
       const proposalRes = await request(app)
@@ -153,7 +181,7 @@ describe("Variants API", () => {
         .set("Cookie", memberCookie)
         .send({
           proposedTitle: "Member Visible Variant",
-          proposedContent: "Content",
+          proposedSteps: [{ instruction: "Step" }],
         });
 
       await request(app)
@@ -201,7 +229,7 @@ describe("Variants API", () => {
         .set("Cookie", memberCookie)
         .send({
           proposedTitle: "First Variant",
-          proposedContent: "Content 1",
+          proposedSteps: [{ instruction: "Step 1" }],
         });
 
       await request(app)
@@ -214,7 +242,7 @@ describe("Variants API", () => {
         .set("Cookie", memberCookie)
         .send({
           proposedTitle: "Second Variant",
-          proposedContent: "Content 2",
+          proposedSteps: [{ instruction: "Step 2" }],
         });
 
       await request(app)
@@ -240,7 +268,7 @@ describe("Variants API", () => {
           .set("Cookie", memberCookie)
           .send({
             proposedTitle: `Variant ${i}`,
-            proposedContent: `Content ${i}`,
+            proposedSteps: [{ instruction: `Step ${i}` }],
           });
 
         await request(app)
@@ -284,7 +312,7 @@ describe("Variants API", () => {
         .set("Cookie", memberCookie)
         .send({
           proposedTitle: "Community 1 Variant",
-          proposedContent: "Content",
+          proposedSteps: [{ instruction: "Step" }],
         });
 
       await request(app)
@@ -295,11 +323,14 @@ describe("Variants API", () => {
       await testPrisma.recipe.create({
         data: {
           title: "Community 2 Variant",
-          content: "Different community content",
+          servings: 4,
           creatorId: recipeCreator.id,
           communityId: community2.id,
           originRecipeId: communityRecipeId,
           isVariant: true,
+          steps: {
+            create: [{ order: 0, instruction: "Different community step" }],
+          },
         },
       });
 

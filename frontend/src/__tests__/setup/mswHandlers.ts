@@ -18,7 +18,11 @@ export const mockAdmin = {
 export const mockRecipe = {
   id: 'test-recipe-id',
   title: 'Test Recipe',
-  content: 'Test recipe content',
+  servings: 4,
+  prepTime: 15,
+  cookTime: 30,
+  restTime: null,
+  steps: [{ id: 'step-1', order: 0, instruction: 'Test recipe content' }],
   imageUrl: null,
   creatorId: 'test-user-id',
   creator: { id: 'test-user-id', username: 'testuser' },
@@ -493,9 +497,9 @@ export const handlers = [
       );
     }
 
-    if (!body.content) {
+    if (!body.steps) {
       return HttpResponse.json(
-        { error: 'RECIPE_004: Content is required' },
+        { error: 'RECIPE_007: Steps are required' },
         { status: 400 }
       );
     }
@@ -504,7 +508,8 @@ export const handlers = [
       ...mockRecipe,
       id: `recipe-${Date.now()}`,
       title: body.title as string,
-      content: body.content as string,
+      servings: (body.servings as number) || 4,
+      steps: (body.steps as { instruction: string }[]).map((s, i) => ({ id: `step-${i}`, order: i, instruction: s.instruction })),
     };
 
     return HttpResponse.json(newRecipe, { status: 201 });
@@ -577,7 +582,11 @@ export const handlers = [
       {
         id: 'proposal-1',
         proposedTitle: 'Updated Recipe Title',
-        proposedContent: 'Updated recipe content with new instructions',
+        proposedServings: 6,
+        proposedPrepTime: 20,
+        proposedCookTime: 45,
+        proposedRestTime: null,
+        proposedSteps: [{ id: 'ps-1', order: 0, instruction: 'Updated recipe content with new instructions' }],
         status: 'PENDING',
         createdAt: new Date().toISOString(),
         decidedAt: null,
@@ -623,9 +632,9 @@ export const handlers = [
 
     const body = await request.json() as Record<string, unknown>;
 
-    if (!body.proposedTitle || !body.proposedContent) {
+    if (!body.proposedTitle) {
       return HttpResponse.json(
-        { error: 'RECIPE_003: Title and content required' },
+        { error: 'RECIPE_003: Title is required' },
         { status: 400 }
       );
     }
@@ -633,7 +642,11 @@ export const handlers = [
     return HttpResponse.json({
       id: `proposal-${Date.now()}`,
       proposedTitle: body.proposedTitle,
-      proposedContent: body.proposedContent,
+      proposedServings: body.proposedServings || null,
+      proposedPrepTime: body.proposedPrepTime ?? null,
+      proposedCookTime: body.proposedCookTime ?? null,
+      proposedRestTime: body.proposedRestTime ?? null,
+      proposedSteps: ((body.proposedSteps as { instruction: string }[]) || []).map((s, i) => ({ id: `ps-${i}`, order: i, instruction: s.instruction })),
       proposedIngredients: body.proposedIngredients || [],
       status: 'PENDING',
       createdAt: new Date().toISOString(),
@@ -1984,7 +1997,11 @@ export const handlers = [
     const newRecipe = {
       id: `shared-recipe-${Date.now()}`,
       title: 'Shared Recipe',
-      content: 'Shared recipe content',
+      servings: 4,
+      prepTime: null,
+      cookTime: null,
+      restTime: null,
+      steps: [{ id: 'step-shared-1', order: 0, instruction: 'Shared recipe content' }],
       imageUrl: null,
       creatorId: mockUser.id,
       creator: mockUser,

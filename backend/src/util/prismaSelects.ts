@@ -56,10 +56,35 @@ export const RECIPE_INGREDIENTS_SELECT = {
   },
 };
 
-/** Select complet pour le detail d'une recette (tags + ingredients + creator) */
+/** Select pour les etapes d'une recette, triees par ordre */
+export const RECIPE_STEPS_SELECT = {
+  select: {
+    id: true,
+    order: true,
+    instruction: true,
+  },
+  orderBy: {
+    order: "asc" as const,
+  },
+};
+
+/** Select pour les etapes proposees dans une proposal, triees par ordre */
+export const PROPOSAL_STEPS_SELECT = {
+  select: {
+    id: true,
+    order: true,
+    instruction: true,
+  },
+  orderBy: {
+    order: "asc" as const,
+  },
+};
+
+/** Select complet pour le detail d'une recette (tags + ingredients + steps + creator) */
 export const RECIPE_DETAIL_INCLUDE = {
   tags: RECIPE_TAGS_SELECT,
   ingredients: RECIPE_INGREDIENTS_SELECT,
+  steps: RECIPE_STEPS_SELECT,
   creator: {
     select: {
       id: true,

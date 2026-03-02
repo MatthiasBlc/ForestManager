@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import request from 'supertest';
 import app from '../../app';
 import {
@@ -300,14 +300,14 @@ describe('Admin Ingredients API', () => {
 
       // Creer une recette et une proposal avec le source ingredient
       const recipe = await testPrisma.recipe.create({
-        data: { title: 'Test', content: 'Test', creatorId: user.id },
+        data: { title: 'Test', servings: 4, creatorId: user.id, steps: { create: [{ order: 0, instruction: 'Test' }] } },
       });
       const proposal = await testPrisma.recipeUpdateProposal.create({
         data: {
           recipeId: recipe.id,
           proposerId: user.id,
           proposedTitle: 'Updated',
-          proposedContent: 'Updated content',
+          proposedSteps: { create: [{ order: 0, instruction: 'Updated content' }] },
         },
       });
       await testPrisma.proposalIngredient.create({
@@ -447,7 +447,7 @@ describe('Admin Ingredients API', () => {
 
       // Creer une recette avec cet ingredient
       const recipe = await testPrisma.recipe.create({
-        data: { title: 'Test', content: 'Test', creatorId: user.id },
+        data: { title: 'Test', servings: 4, creatorId: user.id, steps: { create: [{ order: 0, instruction: 'Test' }] } },
       });
       await testPrisma.recipeIngredient.create({
         data: { recipeId: recipe.id, ingredientId: ingredient.id, quantity: 50 },

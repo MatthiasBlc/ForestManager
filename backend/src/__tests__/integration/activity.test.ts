@@ -80,7 +80,8 @@ describe("Activity Feed API", () => {
         .set("Cookie", creatorCookie)
         .send({
           title: "Test Recipe for Activity",
-          content: "Recipe content",
+          servings: 4,
+          steps: [{ instruction: "Recipe content" }],
         });
 
       const res = await request(app)
@@ -107,7 +108,8 @@ describe("Activity Feed API", () => {
         .set("Cookie", creatorCookie)
         .send({
           title: "Recipe With Full Info",
-          content: "Content here",
+          servings: 4,
+          steps: [{ instruction: "Content here" }],
         });
 
       const res = await request(app)
@@ -134,7 +136,8 @@ describe("Activity Feed API", () => {
         .set("Cookie", creatorCookie)
         .send({
           title: "Recipe for Member View",
-          content: "Content",
+          servings: 4,
+          steps: [{ instruction: "Content" }],
         });
 
       // Member should see the activity
@@ -170,7 +173,8 @@ describe("Activity Feed API", () => {
           .set("Cookie", creatorCookie)
           .send({
             title: `Recipe ${i} for Pagination`,
-            content: `Content ${i}`,
+            servings: 4,
+            steps: [{ instruction: `Content ${i}` }],
           });
       }
 
@@ -203,7 +207,8 @@ describe("Activity Feed API", () => {
           .set("Cookie", creatorCookie)
           .send({
             title: `Recipe ${i} Sort Test`,
-            content: `Content ${i}`,
+            servings: 4,
+            steps: [{ instruction: `Content ${i}` }],
           });
       }
 
@@ -280,7 +285,8 @@ describe("Activity Feed API", () => {
         .set("Cookie", user1Cookie)
         .send({
           title: "User1 Recipe",
-          content: "Recipe content for testing",
+          servings: 4,
+          steps: [{ instruction: "Recipe content for testing" }],
         });
       communityRecipeId = recipeRes.body.community.id;
     });
@@ -309,7 +315,7 @@ describe("Activity Feed API", () => {
         .set("Cookie", user2Cookie)
         .send({
           proposedTitle: "Proposed Changes",
-          proposedContent: "Better content",
+          proposedSteps: [{ instruction: "Better content" }],
         });
 
       // User1 should see this in their activity
@@ -334,7 +340,8 @@ describe("Activity Feed API", () => {
         .set("Cookie", user2Cookie)
         .send({
           title: "User2 Own Recipe",
-          content: "User2 content",
+          servings: 4,
+          steps: [{ instruction: "User2 content" }],
         });
 
       // User1's activity should NOT include user2's recipe creation
@@ -366,7 +373,8 @@ describe("Activity Feed API", () => {
           .set("Cookie", user1Cookie)
           .send({
             title: `My Recipe ${i}`,
-            content: `Content ${i}`,
+            servings: 4,
+            steps: [{ instruction: `Content ${i}` }],
           });
       }
 
@@ -402,7 +410,7 @@ describe("Activity Feed API", () => {
         .set("Cookie", user2Cookie)
         .send({
           proposedTitle: "Proposal on User1 Recipe",
-          proposedContent: "This is a proposal",
+          proposedSteps: [{ instruction: "This is a proposal" }],
         });
 
       // User1 should see VARIANT_PROPOSED in their activity
@@ -427,7 +435,7 @@ describe("Activity Feed API", () => {
         .set("Cookie", user2Cookie)
         .send({
           proposedTitle: "Proposal to Accept",
-          proposedContent: "This will be accepted",
+          proposedSteps: [{ instruction: "This will be accepted" }],
         });
 
       // User1 accepts the proposal

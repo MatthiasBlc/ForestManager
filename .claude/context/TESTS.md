@@ -40,53 +40,53 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~953 tests)
+## Inventaire des tests (~1052 tests)
 
-### Backend Integration (26 fichiers, ~539 tests)
+### Backend Integration (26 fichiers, ~590 tests)
 
 | Fichier | Module | Tests |
 |---------|--------|-------|
 | activity.test.ts | Activity feed (community + personal) | 15 |
 | auth.test.ts | User signup/login/logout/me | 16 |
-| recipes.test.ts | CRUD recettes (perso + community access) | 32 |
-| communityRecipes.test.ts | CRUD recettes communautaires (+ tags scope-aware) | 33 |
-| proposals.test.ts | Propositions modifications (+ proposedIngredients) | 38 |
-| variants.test.ts | Liste variantes recettes | 10 |
+| recipes.test.ts | CRUD recettes (perso, steps/servings/times + validation) | 46 |
+| communityRecipes.test.ts | CRUD recettes communautaires (+ tags scope-aware) | 35 |
+| proposals.test.ts | Propositions modifications (steps/servings/times + proposedIngredients) | 45 |
+| variants.test.ts | Liste variantes recettes (+ servings/times) | 11 |
 | tags.test.ts | Autocomplete tags (scope-aware) | 9 |
-| ingredients.test.ts | Autocomplete ingredients + suggested-unit | 8 |
+| ingredients.test.ts | Autocomplete ingredients + suggested-unit | 5 |
 | communities.test.ts | CRUD communautes | 27 |
 | invitations.test.ts | Workflow invitations | 35 |
 | members.test.ts | Membres: list, promote, kick, orphan handling | 26 |
-| adminAuth.test.ts | Auth 2FA admin | 14 |
-| adminTags.test.ts | CRUD tags admin (+ scope filter) | 15 |
+| adminAuth.test.ts | Auth 2FA admin | 13 |
+| adminTags.test.ts | CRUD tags admin (+ scope filter) | 17 |
 | adminIngredients.test.ts | CRUD + approve/reject/merge ingredients admin + notifications | 35 |
 | adminUnits.test.ts | CRUD units admin + user endpoint | 25 |
-| adminFeatures.test.ts | Features grant/revoke | 10 |
-| adminCommunities.test.ts | Communities admin | 8 |
+| adminFeatures.test.ts | Features grant/revoke | 13 |
+| adminCommunities.test.ts | Communities admin | 12 |
 | adminDashboard.test.ts | Stats dashboard | 4 |
 | adminActivity.test.ts | Logs activite | 4 |
-| share.test.ts | Partage inter-communautes + publish + sync + fork tags | 31 |
+| share.test.ts | Partage inter-communautes + publish + sync steps/servings + fork tags | 31 |
 | communityTags.test.ts | CRUD + approve/reject tags communaute (moderateur) | 26 |
+| tagSuggestions.test.ts | Suggestions de tags | 29 |
 | tagPreferences.test.ts | Tag visibility + notification preferences + getModeratorIds | 23 |
 | notificationService.test.ts | Notification service (create, broadcast, preferences, templates) | 30 |
 | notifications.test.ts | Notifications API (CRUD, grouping, batch, preferences) | 27 |
 | websocket.test.ts | WebSocket (auth, rooms, notification:new, notification:count, persistence) | 8 |
 | notificationCleanup.test.ts | Notification cleanup job (retention, batch, edge cases) | 6 |
 
-### Backend Unit (7 fichiers, ~51 tests)
-
+### Backend Unit (7 fichiers, ~59 tests)
 
 | Fichier | Module | Tests |
 |---------|--------|-------|
 | eventEmitter.test.ts | Event emitter | 3 |
 | pagination.test.ts | parsePagination, buildPaginationMeta | 14 |
-| validation.test.ts | normalizeNames, isValidHttpUrl, constants | 17 |
-| responseFormatters.test.ts | formatTags, formatIngredients | 5 |
+| validation.test.ts | normalizeNames, isValidHttpUrl, constants, validateServings, validateTime, validateSteps | 37 |
+| responseFormatters.test.ts | formatTags, formatIngredients, formatSteps | 7 |
 | middleware/auth.test.ts | requireAuth | 4 |
 | middleware/requireSuperAdmin.test.ts | requireSuperAdmin, requireAdminSession | 6 |
 | middleware/security.test.ts | requireHttps, rateLimiters, helmet | 5 |
 
-### Frontend Unit (57 fichiers, ~363 tests)
+### Frontend Unit (62 fichiers, ~403 tests)
 
 | Fichier | Composant | Tests |
 |---------|-----------|-------|
@@ -112,6 +112,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | TagSelector.test.tsx | Selecteur tags | 6 |
 | IngredientList.test.tsx | Liste ingredients (autocomplete, units, PENDING) | 8 |
 | UnitSelector.test.tsx | Selecteur unites par categorie | 7 |
+| form/StepEditor.test.tsx | Editeur etapes numerotees reorder/delete | 8 |
 | RecipesPage.test.tsx | Page recettes | 3 |
 | MainLayout.test.tsx | Layout principal | 6 |
 | Sidebar.test.tsx | Sidebar navigation | 10 |
@@ -126,6 +127,8 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | ShareRecipeModal.test.tsx | Modal partage recette | 7 |
 | recipes/SuggestTagModal.test.tsx | Modal suggestion tag | 5 |
 | recipes/TagSuggestionsList.test.tsx | Liste suggestions tags owner | 5 |
+| recipes/TimeBadges.test.tsx | Badges temps prep/cuisson/repos/total | 7 |
+| recipes/ServingsSelector.test.tsx | Selecteur portions -/input/+ | 6 |
 | profile/TagPreferencesSection.test.tsx | Toggle tag visibility per community | 5 |
 | profile/NotificationPreferencesSection.test.tsx | Notification preferences (5 categories, global toggles, error states) | 5 |
 | hooks/useClickOutside.test.ts | Hook click outside | 4 |
@@ -136,6 +139,8 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | hooks/useNotificationToasts.test.ts | Hook notification toasts (notification:new event) | 5 |
 | hooks/usePaginatedList.test.ts | Hook paginated list | 6 |
 | utils/formatDate.test.ts | Format date utils | 5 |
+| utils/formatDuration.test.ts | Format duree min → "1h30" | 4 |
+| utils/scaleQuantity.test.ts | Scale proportionnel arrondi 2 dec | 8 |
 | utils/communityEvents.test.ts | Community events bus | 2 |
 | pages/DashboardPage.test.tsx | Page dashboard user | 8 |
 | pages/ProfilePage.test.tsx | Page profil user | 8 |

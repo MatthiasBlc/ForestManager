@@ -76,7 +76,8 @@ describe("Proposals API", () => {
       .set("Cookie", recipeCreatorCookie)
       .send({
         title: "Original Recipe",
-        content: "Original content for the recipe",
+        servings: 4,
+        steps: [{ instruction: "Original step for the recipe" }],
       });
     communityRecipeId = recipeRes.body.community.id;
     personalRecipeId = recipeRes.body.personal.id;
@@ -92,15 +93,36 @@ describe("Proposals API", () => {
         .set("Cookie", proposerCookie)
         .send({
           proposedTitle: "Improved Recipe",
-          proposedContent: "Better content for the recipe",
+          proposedSteps: [{ instruction: "Better step for the recipe" }],
         });
 
       expect(res.status).toBe(201);
       expect(res.body.proposedTitle).toBe("Improved Recipe");
-      expect(res.body.proposedContent).toBe("Better content for the recipe");
+      expect(res.body.proposedSteps).toHaveLength(1);
+      expect(res.body.proposedSteps[0].instruction).toBe("Better step for the recipe");
       expect(res.body.status).toBe("PENDING");
       expect(res.body.proposerId).toBe(proposer.id);
       expect(res.body.recipeId).toBe(communityRecipeId);
+    });
+
+    it("should create proposal with servings and times", async () => {
+      const res = await request(app)
+        .post(`/api/recipes/${communityRecipeId}/proposals`)
+        .set("Cookie", proposerCookie)
+        .send({
+          proposedTitle: "With servings",
+          proposedServings: 8,
+          proposedPrepTime: 15,
+          proposedCookTime: 30,
+          proposedRestTime: 10,
+          proposedSteps: [{ instruction: "Step" }],
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.proposedServings).toBe(8);
+      expect(res.body.proposedPrepTime).toBe(15);
+      expect(res.body.proposedCookTime).toBe(30);
+      expect(res.body.proposedRestTime).toBe(10);
     });
 
     it("should return 403 when user is not a member", async () => {
@@ -109,7 +131,7 @@ describe("Proposals API", () => {
         .set("Cookie", nonMemberCookie)
         .send({
           proposedTitle: "Hacked Recipe",
-          proposedContent: "Hacked content",
+          proposedSteps: [{ instruction: "Hacked step" }],
         });
 
       expect(res.status).toBe(403);
@@ -122,7 +144,7 @@ describe("Proposals API", () => {
         .set("Cookie", recipeCreatorCookie)
         .send({
           proposedTitle: "Self improvement",
-          proposedContent: "Self content",
+          proposedSteps: [{ instruction: "Self step" }],
         });
 
       expect(res.status).toBe(400);
@@ -135,7 +157,7 @@ describe("Proposals API", () => {
         .set("Cookie", proposerCookie)
         .send({
           proposedTitle: "Proposal on personal",
-          proposedContent: "Content for personal",
+          proposedSteps: [{ instruction: "Step for personal" }],
         });
 
       expect(res.status).toBe(400);
@@ -148,7 +170,7 @@ describe("Proposals API", () => {
         .set("Cookie", proposerCookie)
         .send({
           proposedTitle: "Ghost Recipe",
-          proposedContent: "Ghost content",
+          proposedSteps: [{ instruction: "Ghost step" }],
         });
 
       expect(res.status).toBe(404);
@@ -160,23 +182,23 @@ describe("Proposals API", () => {
         .post(`/api/recipes/${communityRecipeId}/proposals`)
         .set("Cookie", proposerCookie)
         .send({
-          proposedContent: "Content without title",
+          proposedSteps: [{ instruction: "Step without title" }],
         });
 
       expect(res.status).toBe(400);
       expect(res.body.error).toContain("RECIPE_003");
     });
 
-    it("should return 400 when content is missing", async () => {
+    it("should return 400 when steps is missing", async () => {
       const res = await request(app)
         .post(`/api/recipes/${communityRecipeId}/proposals`)
         .set("Cookie", proposerCookie)
         .send({
-          proposedTitle: "Title without content",
+          proposedTitle: "Title without steps",
         });
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain("RECIPE_004");
+      expect(res.body.error).toContain("RECIPE_007");
     });
 
     it("should return 401 when not authenticated", async () => {
@@ -184,7 +206,7 @@ describe("Proposals API", () => {
         .post(`/api/recipes/${communityRecipeId}/proposals`)
         .send({
           proposedTitle: "Unauthorized",
-          proposedContent: "Content",
+          proposedSteps: [{ instruction: "Step" }],
         });
 
       expect(res.status).toBe(401);
@@ -196,7 +218,7 @@ describe("Proposals API", () => {
         .set("Cookie", proposerCookie)
         .send({
           proposedTitle: "Logged Proposal",
-          proposedContent: "Logged content",
+          proposedSteps: [{ instruction: "Logged step" }],
         });
 
       expect(res.status).toBe(201);
@@ -226,7 +248,7 @@ describe("Proposals API", () => {
         .set("Cookie", proposerCookie)
         .send({
           proposedTitle: "Proposal 1",
-          proposedContent: "Content 1",
+          proposedSteps: [{ instruction: "Step 1" }],
         });
 
       await request(app)
@@ -234,7 +256,7 @@ describe("Proposals API", () => {
         .set("Cookie", proposerCookie)
         .send({
           proposedTitle: "Proposal 2",
-          proposedContent: "Content 2",
+          proposedSteps: [{ instruction: "Step 2" }],
         });
     });
 
@@ -287,7 +309,7 @@ describe("Proposals API", () => {
         .set("Cookie", proposerCookie)
         .send({
           proposedTitle: "Detail Proposal",
-          proposedContent: "Detail content",
+          proposedSteps: [{ instruction: "Detail step" }],
         });
       proposalId = createRes.body.id;
     });
@@ -300,6 +322,7 @@ describe("Proposals API", () => {
       expect(res.status).toBe(200);
       expect(res.body.id).toBe(proposalId);
       expect(res.body.proposedTitle).toBe("Detail Proposal");
+      expect(res.body.proposedSteps).toHaveLength(1);
       expect(res.body.proposer).toBeDefined();
       expect(res.body.recipe).toBeDefined();
     });
@@ -333,7 +356,9 @@ describe("Proposals API", () => {
         .set("Cookie", proposerCookie)
         .send({
           proposedTitle: "Accepted Proposal",
-          proposedContent: "Accepted content",
+          proposedServings: 6,
+          proposedPrepTime: 10,
+          proposedSteps: [{ instruction: "Accepted step" }],
         });
       proposalId = createRes.body.id;
     });
@@ -353,7 +378,10 @@ describe("Proposals API", () => {
         .set("Cookie", recipeCreatorCookie);
 
       expect(recipeRes.body.title).toBe("Accepted Proposal");
-      expect(recipeRes.body.content).toBe("Accepted content");
+      expect(recipeRes.body.servings).toBe(6);
+      expect(recipeRes.body.prepTime).toBe(10);
+      expect(recipeRes.body.steps).toHaveLength(1);
+      expect(recipeRes.body.steps[0].instruction).toBe("Accepted step");
     });
 
     it("should cascade to personal recipe", async () => {
@@ -367,7 +395,9 @@ describe("Proposals API", () => {
         .set("Cookie", recipeCreatorCookie);
 
       expect(personalRes.body.title).toBe("Accepted Proposal");
-      expect(personalRes.body.content).toBe("Accepted content");
+      expect(personalRes.body.servings).toBe(6);
+      expect(personalRes.body.steps).toHaveLength(1);
+      expect(personalRes.body.steps[0].instruction).toBe("Accepted step");
     });
 
     it("should cascade to other community copies", async () => {
@@ -384,10 +414,13 @@ describe("Proposals API", () => {
       const recipe2 = await testPrisma.recipe.create({
         data: {
           title: "Original Recipe",
-          content: "Original content for the recipe",
+          servings: 4,
           creatorId: recipeCreator.id,
           communityId: community2.id,
           originRecipeId: personalRecipeId,
+          steps: {
+            create: [{ order: 0, instruction: "Original step for the recipe" }],
+          },
         },
       });
 
@@ -399,10 +432,13 @@ describe("Proposals API", () => {
       // Verify the second community recipe was also updated
       const recipe2Updated = await testPrisma.recipe.findUnique({
         where: { id: recipe2.id },
+        include: { steps: { orderBy: { order: "asc" } } },
       });
 
       expect(recipe2Updated?.title).toBe("Accepted Proposal");
-      expect(recipe2Updated?.content).toBe("Accepted content");
+      expect(recipe2Updated?.servings).toBe(6);
+      expect(recipe2Updated?.steps).toHaveLength(1);
+      expect(recipe2Updated?.steps[0].instruction).toBe("Accepted step");
     });
 
     it("should return 403 when user is not the recipe creator", async () => {
@@ -483,7 +519,8 @@ describe("Proposals API", () => {
         .set("Cookie", proposerCookie)
         .send({
           proposedTitle: "Rejected Proposal",
-          proposedContent: "Rejected content",
+          proposedServings: 8,
+          proposedSteps: [{ instruction: "Rejected step" }],
         });
       proposalId = createRes.body.id;
     });
@@ -499,7 +536,15 @@ describe("Proposals API", () => {
       expect(res.body.variant).toBeDefined();
       expect(res.body.variant.isVariant).toBe(true);
       expect(res.body.variant.title).toBe("Rejected Proposal");
-      expect(res.body.variant.content).toBe("Rejected content");
+      expect(res.body.variant.servings).toBe(8);
+
+      // Verify the variant has the proposed steps
+      const variantSteps = await testPrisma.recipeStep.findMany({
+        where: { recipeId: res.body.variant.id },
+        orderBy: { order: "asc" },
+      });
+      expect(variantSteps).toHaveLength(1);
+      expect(variantSteps[0].instruction).toBe("Rejected step");
     });
 
     it("should set the variant creatorId to the proposer", async () => {
@@ -584,7 +629,7 @@ describe("Proposals API", () => {
           .set("Cookie", proposerCookie)
           .send({
             proposedTitle: "Recipe with ingredients",
-            proposedContent: "Content with ingredients",
+            proposedSteps: [{ instruction: "Step with ingredients" }],
             proposedIngredients: [
               { name: "Farine", quantity: 200 },
               { name: "Sucre", quantity: 100 },
@@ -608,7 +653,7 @@ describe("Proposals API", () => {
           .set("Cookie", proposerCookie)
           .send({
             proposedTitle: "Recipe with new ingredient",
-            proposedContent: "Content",
+            proposedSteps: [{ instruction: "Step" }],
             proposedIngredients: [{ name: newIngredientName, quantity: 1 }],
           });
 
@@ -636,7 +681,7 @@ describe("Proposals API", () => {
           .set("Cookie", proposerCookie)
           .send({
             proposedTitle: "Recipe reusing ingredient",
-            proposedContent: "Content",
+            proposedSteps: [{ instruction: "Step" }],
             proposedIngredients: [
               { name: existingIngredient.name, quantity: 3 },
             ],
@@ -660,7 +705,7 @@ describe("Proposals API", () => {
           .set("Cookie", proposerCookie)
           .send({
             proposedTitle: "Too many ingredients",
-            proposedContent: "Content",
+            proposedSteps: [{ instruction: "Step" }],
             proposedIngredients: tooManyIngredients,
           });
 
@@ -674,7 +719,7 @@ describe("Proposals API", () => {
           .set("Cookie", proposerCookie)
           .send({
             proposedTitle: "No ingredients",
-            proposedContent: "Content",
+            proposedSteps: [{ instruction: "Step" }],
           });
 
         expect(res.status).toBe(201);
@@ -697,7 +742,7 @@ describe("Proposals API", () => {
           .set("Cookie", proposerCookie)
           .send({
             proposedTitle: "Recipe with unit",
-            proposedContent: "Content",
+            proposedSteps: [{ instruction: "Step" }],
             proposedIngredients: [
               { name: "Chocolat", quantity: 150, unitId: unit.id },
             ],
@@ -718,7 +763,7 @@ describe("Proposals API", () => {
           .set("Cookie", proposerCookie)
           .send({
             proposedTitle: "Recipe with new ingredients",
-            proposedContent: "New content with ingredients",
+            proposedSteps: [{ instruction: "New step with ingredients" }],
             proposedIngredients: [
               { name: "Oeuf", quantity: 3 },
               { name: "Beurre", quantity: 50 },
@@ -784,11 +829,10 @@ describe("Proposals API", () => {
           .set("Cookie", proposerCookie)
           .send({
             proposedTitle: "Only title change",
-            proposedContent: "Only content change",
+            proposedSteps: [{ instruction: "Only step change" }],
           });
 
-        // Modifier la recette pour qu'elle soit plus recente que le proposal...
-        // On doit contourner la contrainte updatedAt > createdAt en creant directement
+        // Contourner la contrainte updatedAt > createdAt
         await testPrisma.recipeUpdateProposal.update({
           where: { id: proposalRes.body.id },
           data: { createdAt: new Date(Date.now() + 1000) },
@@ -817,7 +861,7 @@ describe("Proposals API", () => {
           .set("Cookie", proposerCookie)
           .send({
             proposedTitle: "Rejected with ingredients",
-            proposedContent: "Content",
+            proposedSteps: [{ instruction: "Step" }],
             proposedIngredients: [
               { name: "Carotte", quantity: 2 },
               { name: "Poireau", quantity: 1 },
@@ -851,7 +895,7 @@ describe("Proposals API", () => {
           .set("Cookie", proposerCookie)
           .send({
             proposedTitle: "No ingredients proposal",
-            proposedContent: "Content",
+            proposedSteps: [{ instruction: "Step" }],
           });
 
         const rejectRes = await request(app)
@@ -878,7 +922,7 @@ describe("Proposals API", () => {
           .set("Cookie", proposerCookie)
           .send({
             proposedTitle: "Proposal with ingredients",
-            proposedContent: "Content",
+            proposedSteps: [{ instruction: "Step" }],
             proposedIngredients: [{ name: "Tomate", quantity: 4 }],
           });
         proposalId = res.body.id;

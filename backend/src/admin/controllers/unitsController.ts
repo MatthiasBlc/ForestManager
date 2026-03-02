@@ -1,6 +1,5 @@
 import { RequestHandler } from "express";
 import createHttpError from "http-errors";
-import { Prisma } from "@prisma/client";
 import prisma from "../../util/db";
 import { assertIsDefine } from "../../util/assertIsDefine";
 

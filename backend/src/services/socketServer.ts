@@ -81,8 +81,7 @@ export function initSocketServer(
     const res = {} as Parameters<RequestHandler>[1];
     userSessionMiddleware(req, res, (err?: unknown) => {
       if (err) return next(new Error("Session error"));
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const userId = (req as any).session?.userId;
+      const userId = req.session?.userId;
       if (!userId) {
         return next(new Error("Authentication required"));
       }

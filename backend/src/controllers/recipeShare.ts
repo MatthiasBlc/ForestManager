@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
-import { formatTags, formatIngredients } from "../util/responseFormatters";
+import { formatTags, formatIngredients, formatSteps } from "../util/responseFormatters";
 import {
   forkRecipe,
   publishRecipe,
@@ -42,13 +42,20 @@ export const shareRecipe: RequestHandler<
       select: {
         id: true,
         title: true,
-        content: true,
+        servings: true,
+        prepTime: true,
+        cookTime: true,
+        restTime: true,
         imageUrl: true,
         communityId: true,
         creatorId: true,
         tags: { select: { tagId: true, tag: { select: { id: true, name: true, scope: true, communityId: true } } } },
         ingredients: {
           select: { ingredientId: true, quantity: true, order: true },
+          orderBy: { order: "asc" },
+        },
+        steps: {
+          select: { order: true, instruction: true },
           orderBy: { order: "asc" },
         },
       },
@@ -128,7 +135,10 @@ export const shareRecipe: RequestHandler<
     const responseData = {
       id: forkResult.id,
       title: forkResult.title,
-      content: forkResult.content,
+      servings: forkResult.servings,
+      prepTime: forkResult.prepTime,
+      cookTime: forkResult.cookTime,
+      restTime: forkResult.restTime,
       imageUrl: forkResult.imageUrl,
       createdAt: forkResult.createdAt,
       updatedAt: forkResult.updatedAt,
@@ -138,6 +148,7 @@ export const shareRecipe: RequestHandler<
       originRecipeId: forkResult.originRecipeId,
       sharedFromCommunityId: forkResult.sharedFromCommunityId,
       isVariant: forkResult.isVariant,
+      steps: formatSteps(forkResult.steps),
       tags: formatTags(forkResult.tags),
       ingredients: formatIngredients(forkResult.ingredients),
     };
@@ -207,13 +218,20 @@ export const publishToCommunities: RequestHandler<
       select: {
         id: true,
         title: true,
-        content: true,
+        servings: true,
+        prepTime: true,
+        cookTime: true,
+        restTime: true,
         imageUrl: true,
         creatorId: true,
         communityId: true,
         tags: { select: { tagId: true } },
         ingredients: {
           select: { ingredientId: true, quantity: true, order: true },
+          orderBy: { order: "asc" },
+        },
+        steps: {
+          select: { order: true, instruction: true },
           orderBy: { order: "asc" },
         },
       },

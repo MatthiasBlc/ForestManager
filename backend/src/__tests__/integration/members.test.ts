@@ -546,9 +546,10 @@ describe("Members API", () => {
       const recipe = await testPrisma.recipe.create({
         data: {
           title: `Community Recipe ${suffix}`,
-          content: "Test content",
+          servings: 4,
           creatorId: moderator.id,
           communityId: community.id,
+          steps: { create: [{ order: 0, instruction: "Test content" }] },
         },
       });
 
@@ -765,9 +766,10 @@ describe("Members API", () => {
         const recipe = await testPrisma.recipe.create({
           data: {
             title: `Orphan Recipe ${suffix}`,
-            content: "Original content",
+            servings: 4,
             creatorId: owner.id,
             communityId: community.id,
+            steps: { create: [{ order: 0, instruction: "Original content" }] },
           },
         });
 
@@ -775,10 +777,10 @@ describe("Members API", () => {
         const proposal = await testPrisma.recipeUpdateProposal.create({
           data: {
             proposedTitle: `Modified Title ${suffix}`,
-            proposedContent: "Modified content",
             status: "PENDING",
             recipeId: recipe.id,
             proposerId: proposer.id,
+            proposedSteps: { create: [{ order: 0, instruction: "Modified content" }] },
           },
         });
 
@@ -806,7 +808,6 @@ describe("Members API", () => {
         });
         expect(variant).not.toBeNull();
         expect(variant!.title).toBe(`Modified Title ${suffix}`);
-        expect(variant!.content).toBe("Modified content");
         expect(variant!.communityId).toBe(community.id);
 
         // Verify ActivityLog VARIANT_CREATED
@@ -876,45 +877,49 @@ describe("Members API", () => {
         const recipe1 = await testPrisma.recipe.create({
           data: {
             title: `Recipe 1 ${suffix}`,
-            content: "Content 1",
+            servings: 4,
             creatorId: owner.id,
             communityId: community.id,
+            steps: { create: [{ order: 0, instruction: "Content 1" }] },
           },
         });
         const recipe2 = await testPrisma.recipe.create({
           data: {
             title: `Recipe 2 ${suffix}`,
-            content: "Content 2",
+            servings: 4,
             creatorId: owner.id,
             communityId: community.id,
+            steps: { create: [{ order: 0, instruction: "Content 2" }] },
           },
         });
 
         // Create proposals
-        await testPrisma.recipeUpdateProposal.createMany({
-          data: [
-            {
-              proposedTitle: "Prop 1",
-              proposedContent: "Prop content 1",
-              status: "PENDING",
-              recipeId: recipe1.id,
-              proposerId: proposer1.id,
-            },
-            {
-              proposedTitle: "Prop 2",
-              proposedContent: "Prop content 2",
-              status: "PENDING",
-              recipeId: recipe1.id,
-              proposerId: proposer2.id,
-            },
-            {
-              proposedTitle: "Prop 3",
-              proposedContent: "Prop content 3",
-              status: "PENDING",
-              recipeId: recipe2.id,
-              proposerId: proposer1.id,
-            },
-          ],
+        await testPrisma.recipeUpdateProposal.create({
+          data: {
+            proposedTitle: "Prop 1",
+            status: "PENDING",
+            recipeId: recipe1.id,
+            proposerId: proposer1.id,
+            proposedSteps: { create: [{ order: 0, instruction: "Prop content 1" }] },
+          },
+        });
+        await testPrisma.recipeUpdateProposal.create({
+          data: {
+            proposedTitle: "Prop 2",
+            status: "PENDING",
+            recipeId: recipe1.id,
+            proposerId: proposer2.id,
+            proposedSteps: { create: [{ order: 0, instruction: "Prop content 2" }] },
+          },
+        });
+        await testPrisma.recipeUpdateProposal.create({
+          data: {
+            proposedTitle: "Prop 3",
+            status: "PENDING",
+            recipeId: recipe2.id,
+            proposerId: proposer1.id,
+            proposedSteps: { create: [{ order: 0, instruction: "Prop content 3" }] },
+          },
         });
 
         // Owner leaves
@@ -992,9 +997,10 @@ describe("Members API", () => {
         const recipe = await testPrisma.recipe.create({
           data: {
             title: `Decided Recipe ${suffix}`,
-            content: "Original",
+            servings: 4,
             creatorId: owner.id,
             communityId: community.id,
+            steps: { create: [{ order: 0, instruction: "Original" }] },
           },
         });
 
@@ -1002,11 +1008,11 @@ describe("Members API", () => {
         const acceptedProposal = await testPrisma.recipeUpdateProposal.create({
           data: {
             proposedTitle: "Accepted",
-            proposedContent: "Accepted content",
             status: "ACCEPTED",
             decidedAt: new Date(),
             recipeId: recipe.id,
             proposerId: proposer.id,
+            proposedSteps: { create: [{ order: 0, instruction: "Accepted content" }] },
           },
         });
 
@@ -1081,9 +1087,10 @@ describe("Members API", () => {
         const recipe = await testPrisma.recipe.create({
           data: {
             title: `Kick Orphan Recipe ${suffix}`,
-            content: "Original content",
+            servings: 4,
             creatorId: member.id,
             communityId: community.id,
+            steps: { create: [{ order: 0, instruction: "Original content" }] },
           },
         });
 
@@ -1091,10 +1098,10 @@ describe("Members API", () => {
         const proposal = await testPrisma.recipeUpdateProposal.create({
           data: {
             proposedTitle: `Kick Modified ${suffix}`,
-            proposedContent: "Kick modified content",
             status: "PENDING",
             recipeId: recipe.id,
             proposerId: proposer.id,
+            proposedSteps: { create: [{ order: 0, instruction: "Kick modified content" }] },
           },
         });
 

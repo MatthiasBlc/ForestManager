@@ -15,7 +15,11 @@ describe('ProposeModificationModal', () => {
   const defaultProps = {
     recipeId: 'test-recipe-id',
     currentTitle: 'Original Title',
-    currentContent: 'Original content',
+    currentSteps: [{ id: 'step-1', order: 0, instruction: 'Original content' }],
+    currentServings: 4,
+    currentPrepTime: 15 as number | null,
+    currentCookTime: 30 as number | null,
+    currentRestTime: null as number | null,
     currentIngredients: mockIngredients,
     onClose: vi.fn(),
     onProposalSubmitted: vi.fn(),
@@ -27,13 +31,16 @@ describe('ProposeModificationModal', () => {
     vi.clearAllMocks();
   });
 
-  it('should render modal with title, content and ingredients sections', () => {
+  it('should render modal with title, servings, steps and ingredients sections', () => {
     render(<ProposeModificationModal {...defaultProps} />);
 
     expect(screen.getByText('Propose a modification')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Original Title')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('4')).toBeInTheDocument();
     expect(screen.getByDisplayValue('Original content')).toBeInTheDocument();
     expect(screen.getByText('Ingredients')).toBeInTheDocument();
+    expect(screen.getByText('Steps')).toBeInTheDocument();
+    expect(screen.getByText('Servings')).toBeInTheDocument();
   });
 
   it('should pre-fill ingredients from current recipe', () => {
@@ -43,6 +50,13 @@ describe('ProposeModificationModal', () => {
     expect(screen.getByDisplayValue('flour')).toBeInTheDocument();
     expect(screen.getByDisplayValue('100')).toBeInTheDocument();
     expect(screen.getByDisplayValue('200')).toBeInTheDocument();
+  });
+
+  it('should pre-fill times from current recipe', () => {
+    render(<ProposeModificationModal {...defaultProps} />);
+
+    expect(screen.getByDisplayValue('15')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('30')).toBeInTheDocument();
   });
 
   it('should disable submit when no changes are made', () => {
@@ -65,13 +79,13 @@ describe('ProposeModificationModal', () => {
     expect(submitButton).not.toBeDisabled();
   });
 
-  it('should enable submit when content is changed', async () => {
+  it('should enable submit when step content is changed', async () => {
     const user = userEvent.setup();
     render(<ProposeModificationModal {...defaultProps} />);
 
-    const contentTextarea = screen.getByDisplayValue('Original content');
-    await user.clear(contentTextarea);
-    await user.type(contentTextarea, 'New content');
+    const stepTextarea = screen.getByDisplayValue('Original content');
+    await user.clear(stepTextarea);
+    await user.type(stepTextarea, 'New content');
 
     const submitButton = screen.getByText('Submit proposal');
     expect(submitButton).not.toBeDisabled();

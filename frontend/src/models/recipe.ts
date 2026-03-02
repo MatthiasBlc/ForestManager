@@ -43,10 +43,20 @@ export interface ProposalIngredient {
   order: number;
 }
 
+export interface RecipeStep {
+  id: string;
+  order: number;
+  instruction: string;
+}
+
 export interface RecipeListItem {
   id: string;
   title: string;
   imageUrl: string | null;
+  servings: number;
+  prepTime: number | null;
+  cookTime: number | null;
+  restTime: number | null;
   createdAt: string;
   updatedAt: string;
   tags: Tag[];
@@ -62,8 +72,12 @@ export interface CommunityRecipeListItem extends RecipeListItem {
 export interface RecipeDetail {
   id: string;
   title: string;
-  content: string;
   imageUrl: string | null;
+  servings: number;
+  prepTime: number | null;
+  cookTime: number | null;
+  restTime: number | null;
+  steps: RecipeStep[];
   createdAt: string;
   updatedAt: string;
   creatorId: string;
@@ -116,24 +130,23 @@ export interface IngredientSearchResult {
   status?: IngredientStatus;
 }
 
-// Legacy interface for backwards compatibility
-export interface Recipe {
-  id: string;
-  title: string;
-  content: string;
-  createdAt: string;
-  updatedAt: string;
-  creatorId: string;
-  communityId?: string | null;
-}
-
 // Proposals
 export type ProposalStatus = "PENDING" | "ACCEPTED" | "REJECTED";
+
+export interface ProposalStep {
+  id: string;
+  order: number;
+  instruction: string;
+}
 
 export interface Proposal {
   id: string;
   proposedTitle: string;
-  proposedContent: string;
+  proposedServings: number | null;
+  proposedPrepTime: number | null;
+  proposedCookTime: number | null;
+  proposedRestTime: number | null;
+  proposedSteps: ProposalStep[];
   status: ProposalStatus;
   createdAt: string;
   decidedAt: string | null;
@@ -170,7 +183,11 @@ export interface ProposalIngredientInput {
 
 export interface ProposalInput {
   proposedTitle: string;
-  proposedContent: string;
+  proposedServings?: number;
+  proposedPrepTime?: number | null;
+  proposedCookTime?: number | null;
+  proposedRestTime?: number | null;
+  proposedSteps?: { instruction: string }[];
   proposedIngredients?: ProposalIngredientInput[];
 }
 
@@ -178,8 +195,11 @@ export interface ProposalInput {
 export interface VariantListItem {
   id: string;
   title: string;
-  content: string;
   imageUrl: string | null;
+  servings: number;
+  prepTime: number | null;
+  cookTime: number | null;
+  restTime: number | null;
   createdAt: string;
   updatedAt: string;
   creatorId: string;

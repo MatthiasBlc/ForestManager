@@ -1,11 +1,14 @@
 import { ActivityType } from "@prisma/client";
 import prisma from "../util/db";
-import { PROPOSAL_INGREDIENTS_SELECT } from "../util/prismaSelects";
+import { PROPOSAL_INGREDIENTS_SELECT, PROPOSAL_STEPS_SELECT } from "../util/prismaSelects";
 
 const PROPOSAL_SELECT = {
   id: true,
   proposedTitle: true,
-  proposedContent: true,
+  proposedServings: true,
+  proposedPrepTime: true,
+  proposedCookTime: true,
+  proposedRestTime: true,
   status: true,
   createdAt: true,
   decidedAt: true,
@@ -17,21 +20,29 @@ const PROPOSAL_SELECT = {
       username: true,
     },
   },
+  proposedSteps: PROPOSAL_STEPS_SELECT,
   proposedIngredients: PROPOSAL_INGREDIENTS_SELECT,
 };
 
 interface ProposalWithRecipe {
   id: string;
   proposedTitle: string;
-  proposedContent: string;
+  proposedServings: number | null;
+  proposedPrepTime: number | null;
+  proposedCookTime: number | null;
+  proposedRestTime: number | null;
   status: string;
   createdAt: Date;
   recipeId: string;
   proposerId: string;
+  proposedSteps: { order: number; instruction: string }[];
   recipe: {
     id: string;
     title: string;
-    content: string;
+    servings: number;
+    prepTime: number | null;
+    cookTime: number | null;
+    restTime: number | null;
     imageUrl: string | null;
     communityId: string | null;
     creatorId: string;
@@ -40,12 +51,14 @@ interface ProposalWithRecipe {
   };
 }
 
+type TxClient = Omit<typeof prisma, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">;
+
 /**
  * Copie les ProposalIngredients vers les RecipeIngredients d'une recette cible.
  * Supprime d'abord les RecipeIngredients existants.
  */
 async function applyProposalIngredients(
-  tx: Omit<typeof prisma, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">,
+  tx: TxClient,
   recipeId: string,
   proposalIngredients: Array<{ ingredientId: string; quantity: number | null; unitId: string | null; order: number }>
 ) {
@@ -58,6 +71,27 @@ async function applyProposalIngredients(
         quantity: pi.quantity,
         unitId: pi.unitId,
         order: pi.order,
+      },
+    });
+  }
+}
+
+/**
+ * Copie les ProposalSteps vers les RecipeSteps d'une recette cible.
+ * Supprime d'abord les RecipeSteps existants.
+ */
+async function applyProposalSteps(
+  tx: TxClient,
+  recipeId: string,
+  proposalSteps: Array<{ order: number; instruction: string }>
+) {
+  await tx.recipeStep.deleteMany({ where: { recipeId } });
+  for (const ps of proposalSteps) {
+    await tx.recipeStep.create({
+      data: {
+        recipeId,
+        order: ps.order,
+        instruction: ps.instruction,
       },
     });
   }
@@ -88,16 +122,27 @@ export async function acceptProposal(
     });
 
     const hasProposedIngredients = proposalIngredients.length > 0;
+    const hasProposedSteps = proposal.proposedSteps.length > 0;
 
-    // 1. Mettre a jour la recette communautaire (titre + contenu)
+    // Build scalar update data
+    const recipeUpdateData: Record<string, unknown> = {
+      title: proposal.proposedTitle,
+      updatedAt: now,
+    };
+    if (proposal.proposedServings !== null) recipeUpdateData.servings = proposal.proposedServings;
+    if (proposal.proposedPrepTime !== null) recipeUpdateData.prepTime = proposal.proposedPrepTime;
+    if (proposal.proposedCookTime !== null) recipeUpdateData.cookTime = proposal.proposedCookTime;
+    if (proposal.proposedRestTime !== null) recipeUpdateData.restTime = proposal.proposedRestTime;
+
+    // 1. Mettre a jour la recette communautaire
     await tx.recipe.update({
       where: { id: proposal.recipe.id },
-      data: {
-        title: proposal.proposedTitle,
-        content: proposal.proposedContent,
-        updatedAt: now,
-      },
+      data: recipeUpdateData,
     });
+
+    if (hasProposedSteps) {
+      await applyProposalSteps(tx, proposal.recipe.id, proposal.proposedSteps);
+    }
 
     // Remplacer les ingredients sur la recette communautaire
     if (hasProposedIngredients) {
@@ -118,12 +163,12 @@ export async function acceptProposal(
         // Mettre a jour la recette personnelle
         await tx.recipe.update({
           where: { id: originRecipe.id },
-          data: {
-            title: proposal.proposedTitle,
-            content: proposal.proposedContent,
-            updatedAt: now,
-          },
+          data: recipeUpdateData,
         });
+
+        if (hasProposedSteps) {
+          await applyProposalSteps(tx, originRecipe.id, proposal.proposedSteps);
+        }
 
         if (hasProposedIngredients) {
           await applyProposalIngredients(tx, originRecipe.id, proposalIngredients);
@@ -142,12 +187,14 @@ export async function acceptProposal(
         if (otherCommunityRecipes.length > 0) {
           await tx.recipe.updateMany({
             where: { id: { in: otherCommunityRecipes.map((r) => r.id) } },
-            data: {
-              title: proposal.proposedTitle,
-              content: proposal.proposedContent,
-              updatedAt: now,
-            },
+            data: recipeUpdateData,
           });
+
+          if (hasProposedSteps) {
+            for (const linked of otherCommunityRecipes) {
+              await applyProposalSteps(tx, linked.id, proposal.proposedSteps);
+            }
+          }
 
           if (hasProposedIngredients) {
             for (const linked of otherCommunityRecipes) {
@@ -198,10 +245,18 @@ export async function acceptProposal(
 interface ProposalForReject {
   id: string;
   proposedTitle: string;
-  proposedContent: string;
+  proposedServings: number | null;
+  proposedPrepTime: number | null;
+  proposedCookTime: number | null;
+  proposedRestTime: number | null;
   proposerId: string;
+  proposedSteps: { order: number; instruction: string }[];
   recipe: {
     id: string;
+    servings: number;
+    prepTime: number | null;
+    cookTime: number | null;
+    restTime: number | null;
     imageUrl: string | null;
     communityId: string | null;
   };
@@ -234,7 +289,10 @@ export async function rejectProposal(
     const variant = await tx.recipe.create({
       data: {
         title: proposal.proposedTitle,
-        content: proposal.proposedContent,
+        servings: proposal.proposedServings ?? proposal.recipe.servings,
+        prepTime: proposal.proposedPrepTime !== null ? proposal.proposedPrepTime : proposal.recipe.prepTime,
+        cookTime: proposal.proposedCookTime !== null ? proposal.proposedCookTime : proposal.recipe.cookTime,
+        restTime: proposal.proposedRestTime !== null ? proposal.proposedRestTime : proposal.recipe.restTime,
         imageUrl: proposal.recipe.imageUrl,
         isVariant: true,
         creatorId: proposal.proposerId,
@@ -244,7 +302,10 @@ export async function rejectProposal(
       select: {
         id: true,
         title: true,
-        content: true,
+        servings: true,
+        prepTime: true,
+        cookTime: true,
+        restTime: true,
         imageUrl: true,
         isVariant: true,
         creatorId: true,
@@ -253,6 +314,11 @@ export async function rejectProposal(
         createdAt: true,
       },
     });
+
+    // Copier les steps proposes dans la variante
+    if (proposal.proposedSteps.length > 0) {
+      await applyProposalSteps(tx, variant.id, proposal.proposedSteps);
+    }
 
     // Copier les ingredients proposes dans la variante
     if (proposalIngredients.length > 0) {

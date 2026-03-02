@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { FaTimes, FaPlus } from "react-icons/fa";
 import { CommunityInvite } from "../../models/community";
 import APIManager from "../../network/api";
+import { useConfirm } from "../../hooks/useConfirm";
 import InviteUserModal from "./InviteUserModal";
 
 interface SentInvitesListProps {
@@ -15,6 +16,7 @@ const SentInvitesList = ({ communityId }: SentInvitesListProps) => {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const loadInvites = async () => {
     try {
@@ -35,7 +37,7 @@ const SentInvitesList = ({ communityId }: SentInvitesListProps) => {
   }, [communityId, statusFilter]);
 
   const handleCancel = async (inviteId: string) => {
-    if (!window.confirm("Cancel this invitation?")) return;
+    if (!await confirm({ message: "Cancel this invitation?", confirmLabel: "Cancel invitation", confirmClass: "btn btn-error" })) return;
 
     try {
       setCancellingId(inviteId);
@@ -154,6 +156,8 @@ const SentInvitesList = ({ communityId }: SentInvitesListProps) => {
           onInviteSent={handleInviteSent}
         />
       )}
+
+      {ConfirmDialog}
     </div>
   );
 };

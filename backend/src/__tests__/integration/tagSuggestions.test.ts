@@ -8,7 +8,7 @@ const uniqueSuffix = () =>
   `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 
 describe("Tag Suggestions API", () => {
-  let moderator: { id: string };
+  let _moderator: { id: string };
   let moderatorCookie: string;
   let owner: { id: string };
   let ownerCookie: string;
@@ -27,7 +27,7 @@ describe("Tag Suggestions API", () => {
       password: "Test123!Password",
     });
     moderatorCookie = extractSessionCookie(modSignup)!;
-    moderator = (await testPrisma.user.findFirst({
+    _moderator = (await testPrisma.user.findFirst({
       where: { email: `tsmod_${suffix}@example.com` },
     }))!;
 
@@ -70,7 +70,7 @@ describe("Tag Suggestions API", () => {
     const recipeRes = await request(app)
       .post(`/api/communities/${community.id}/recipes`)
       .set("Cookie", ownerCookie)
-      .send({ title: "Test Recipe", content: "Some content" });
+      .send({ title: "Test Recipe", servings: 4, steps: [{ instruction: "Some content" }] });
     communityRecipeId = recipeRes.body.community.id;
   });
 
@@ -137,7 +137,7 @@ describe("Tag Suggestions API", () => {
       const personalRes = await request(app)
         .post("/api/recipes")
         .set("Cookie", ownerCookie)
-        .send({ title: "Personal", content: "content" });
+        .send({ title: "Personal", servings: 4, steps: [{ instruction: "content" }] });
 
       const res = await request(app)
         .post(`/api/recipes/${personalRes.body.id}/tag-suggestions`)

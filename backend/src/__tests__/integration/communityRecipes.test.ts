@@ -81,7 +81,8 @@ describe("Community Recipes API", () => {
         .set("Cookie", memberCookie)
         .send({
           title: "Tarte aux pommes",
-          content: "Faire une tarte avec des pommes",
+          servings: 4,
+          steps: [{ instruction: "Faire une tarte avec des pommes" }],
         });
 
       expect(res.status).toBe(201);
@@ -106,7 +107,8 @@ describe("Community Recipes API", () => {
         .set("Cookie", memberCookie)
         .send({
           title: "Recette complete",
-          content: "Contenu detaille",
+          servings: 6,
+          steps: [{ instruction: "Contenu detaille" }],
           tags: ["dessert", "rapide"],
           ingredients: [
             { name: "sucre", quantity: 100 },
@@ -131,7 +133,8 @@ describe("Community Recipes API", () => {
         .set("Cookie", moderatorCookie)
         .send({
           title: "Recette du mod",
-          content: "Contenu du mod",
+          servings: 4,
+          steps: [{ instruction: "Contenu du mod" }],
         });
 
       expect(res.status).toBe(201);
@@ -143,23 +146,38 @@ describe("Community Recipes API", () => {
         .post(`/api/communities/${community.id}/recipes`)
         .set("Cookie", memberCookie)
         .send({
-          content: "Contenu",
+          servings: 4,
+          steps: [{ instruction: "Contenu" }],
         });
 
       expect(res.status).toBe(400);
       expect(res.body.error).toContain("RECIPE_003");
     });
 
-    it("should return 400 when content is missing", async () => {
+    it("should return 400 when steps is missing", async () => {
       const res = await request(app)
         .post(`/api/communities/${community.id}/recipes`)
         .set("Cookie", memberCookie)
         .send({
           title: "Titre",
+          servings: 4,
         });
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain("RECIPE_004");
+      expect(res.body.error).toContain("RECIPE_007");
+    });
+
+    it("should return 400 when servings is missing", async () => {
+      const res = await request(app)
+        .post(`/api/communities/${community.id}/recipes`)
+        .set("Cookie", memberCookie)
+        .send({
+          title: "Titre",
+          steps: [{ instruction: "Step" }],
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain("RECIPE_006");
     });
 
     it("should return 403 for non-member", async () => {
@@ -168,7 +186,8 @@ describe("Community Recipes API", () => {
         .set("Cookie", nonMemberCookie)
         .send({
           title: "Recette",
-          content: "Contenu",
+          servings: 4,
+          steps: [{ instruction: "Contenu" }],
         });
 
       expect(res.status).toBe(403);
@@ -179,7 +198,8 @@ describe("Community Recipes API", () => {
         .post(`/api/communities/${community.id}/recipes`)
         .send({
           title: "Recette",
-          content: "Contenu",
+          servings: 4,
+          steps: [{ instruction: "Contenu" }],
         });
 
       expect(res.status).toBe(401);
@@ -191,7 +211,8 @@ describe("Community Recipes API", () => {
         .set("Cookie", memberCookie)
         .send({
           title: "Recette avec log",
-          content: "Contenu",
+          servings: 4,
+          steps: [{ instruction: "Contenu" }],
         });
 
       expect(res.status).toBe(201);
@@ -218,13 +239,13 @@ describe("Community Recipes API", () => {
       await request(app)
         .post("/api/recipes")
         .set("Cookie", memberCookie)
-        .send({ title: "Perso", content: "c", tags: ["existing_global"] });
+        .send({ title: "Perso", servings: 4, steps: [{ instruction: "c" }], tags: ["existing_global"] });
 
       // Creer recette communautaire avec le meme tag
       const res = await request(app)
         .post(`/api/communities/${community.id}/recipes`)
         .set("Cookie", memberCookie)
-        .send({ title: "Comm", content: "c", tags: ["existing_global"] });
+        .send({ title: "Comm", servings: 4, steps: [{ instruction: "c" }], tags: ["existing_global"] });
 
       expect(res.status).toBe(201);
       const communityTags = res.body.community.tags;
@@ -238,7 +259,7 @@ describe("Community Recipes API", () => {
       const res = await request(app)
         .post(`/api/communities/${community.id}/recipes`)
         .set("Cookie", memberCookie)
-        .send({ title: "Recette", content: "c", tags: ["brand_new_tag"] });
+        .send({ title: "Recette", servings: 4, steps: [{ instruction: "c" }], tags: ["brand_new_tag"] });
 
       expect(res.status).toBe(201);
 
@@ -272,7 +293,7 @@ describe("Community Recipes API", () => {
       const res = await request(app)
         .post(`/api/communities/${community.id}/recipes`)
         .set("Cookie", memberCookie)
-        .send({ title: "R", content: "c", tags: ["approved_comm_tag"] });
+        .send({ title: "R", servings: 4, steps: [{ instruction: "c" }], tags: ["approved_comm_tag"] });
 
       expect(res.status).toBe(201);
       const communityTags = res.body.community.tags;
@@ -298,7 +319,7 @@ describe("Community Recipes API", () => {
       const res = await request(app)
         .post(`/api/communities/${community.id}/recipes`)
         .set("Cookie", memberCookie)
-        .send({ title: "R2", content: "c", tags: ["pending_reuse"] });
+        .send({ title: "R2", servings: 4, steps: [{ instruction: "c" }], tags: ["pending_reuse"] });
 
       expect(res.status).toBe(201);
       const communityTags = res.body.community.tags;
@@ -319,7 +340,7 @@ describe("Community Recipes API", () => {
       const res = await request(app)
         .post(`/api/communities/${community.id}/recipes`)
         .set("Cookie", memberCookie)
-        .send({ title: "Too many tags", content: "c", tags });
+        .send({ title: "Too many tags", servings: 4, steps: [{ instruction: "c" }], tags });
 
       expect(res.status).toBe(400);
       expect(res.body.error).toContain("TAG_003");
@@ -335,14 +356,15 @@ describe("Community Recipes API", () => {
       await request(app)
         .post(`/api/communities/${community.id}/recipes`)
         .set("Cookie", memberCookie)
-        .send({ title: "Recette 1", content: "Contenu 1" });
+        .send({ title: "Recette 1", servings: 4, steps: [{ instruction: "Contenu 1" }] });
 
       await request(app)
         .post(`/api/communities/${community.id}/recipes`)
         .set("Cookie", memberCookie)
         .send({
           title: "Recette 2",
-          content: "Contenu 2",
+          servings: 4,
+          steps: [{ instruction: "Contenu 2" }],
           tags: ["dessert"],
         });
 
@@ -351,7 +373,8 @@ describe("Community Recipes API", () => {
         .set("Cookie", moderatorCookie)
         .send({
           title: "Gateau chocolat",
-          content: "Contenu 3",
+          servings: 4,
+          steps: [{ instruction: "Contenu 3" }],
           tags: ["dessert", "chocolat"],
         });
     });
@@ -378,6 +401,19 @@ describe("Community Recipes API", () => {
       expect(recipe.creator).toBeDefined();
       expect(recipe.creator.id).toBeDefined();
       expect(recipe.creator.username).toBeDefined();
+    });
+
+    it("should include servings and times in list response", async () => {
+      const res = await request(app)
+        .get(`/api/communities/${community.id}/recipes`)
+        .set("Cookie", memberCookie);
+
+      expect(res.status).toBe(200);
+      const recipe = res.body.data[0];
+      expect(recipe).toHaveProperty("servings");
+      expect(recipe).toHaveProperty("prepTime");
+      expect(recipe).toHaveProperty("cookTime");
+      expect(recipe).toHaveProperty("restTime");
     });
 
     it("should respect limit parameter", async () => {
@@ -438,7 +474,8 @@ describe("Community Recipes API", () => {
         .set("Cookie", memberCookie)
         .send({
           title: "Recette detail",
-          content: "Contenu detail",
+          servings: 4,
+          steps: [{ instruction: "Contenu detail" }],
           tags: ["tag1"],
           ingredients: [{ name: "ingredient1", quantity: 50 }],
         });
@@ -490,7 +527,8 @@ describe("Community Recipes API", () => {
         .set("Cookie", memberCookie)
         .send({
           title: "Recette a modifier",
-          content: "Contenu original",
+          servings: 4,
+          steps: [{ instruction: "Contenu original" }],
         });
       communityRecipeId = createRes.body.community.id;
     });
@@ -556,7 +594,8 @@ describe("Community Recipes API", () => {
         .set("Cookie", memberCookie)
         .send({
           title: "Recette a supprimer",
-          content: "Contenu",
+          servings: 4,
+          steps: [{ instruction: "Contenu" }],
         });
       communityRecipeId = createRes.body.community.id;
       personalRecipeId = createRes.body.personal.id;

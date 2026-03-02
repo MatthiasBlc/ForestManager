@@ -14,19 +14,9 @@ Implemente : unites structurees, gouvernance PENDING/APPROVED, moderation admin,
 
 persistance, fonctionne y compris offline (je me connecte je dois voir les notifs reçues lorsque j'étais offline)
 
-# Rework des pages recettes (v2)
+# ~~Rework des pages recettes (v2)~~ DONE (Phase 13)
 
-nombre de personne pour les ingrédients,
-étapes claires et structurées
-temps de préparation, temps de cuisson, de repos,
--> temps total (calcul automatique)
-
-sélecteur du nombre de persones avec calcul automatique des quantités
-
-Voici une inspiration : (regarde la version mobile du site principalement, j'aime la structure séquentielle.)
-https://www.magimix.fr/recettes/brioche-a-la-praline-rose_c
-
-pour le desktop le site de marmiton peut être une bonne piste.
+Implemente : servings avec scaling dynamique des quantites, etapes structurees ordonnees, temps de prep/cuisson/repos avec total auto, propositions granulaires (servings/temps/steps), badges temps et servings sur les cartes.
 
 # audit refactorisation complete back + front
 
@@ -67,14 +57,20 @@ Base de données
 Ajouter imageUrl nullable sur Recipe et Community"
 
 Qu'en penses-tu ? est-ce que tu vois une meilleure option, mon projet étant (pour l'instant) petit, très indépendant et je voudrais éviter au maximum les investissements financiers ?
+Dans la mesure du possible je ne veux pas fournir de carte bancaire pour être certain de ne pas dépenser pour cette feature.
+Est-ce qu'il existe une solution en local ?
 Je cherche tout à de même à avoir une solution la plus professionnelle et sécurisée possible.
 
 ## Gestionnaire de planning de repas dans une communauté
 
 automatique + drag and drop (à a Trello ? )
-possibilité de créer des règles d'automatisation selon des tags, cooldown avant qu'une recette ne revienne, repas du midi, repas du soir, pouvoir mettre des poids sur les recettes afin de favoriser ou non leur récurence etc pouvoir faire plusieurs template de génération (par saison par exemple)etc.
+Sur chaques cartes, il doit y avoir un bouton (qui demande confirmation au clic) pour remplacer le repas proposé un autre tout en conservant les critères de génération.
+possibilité de créer des règles d'automatisation selon des tags (possibilité avancée de mettre des poids sur les tags), cooldown avant qu'une recette ne revienne, repas du midi, repas du soir, pouvoir mettre des poids sur les recettes afin de favoriser ou non leur récurence etc pouvoir faire plusieurs template de génération (par saison par exemple)etc.
 
 Il faut pouvoir modifier le planning à tout moment, soit en drag and drop des menus d'un repas sur l'autre afin de réorganiser le planning à tout moment dans la semaine, soit en modifiant directement le menu d'un repas.
+
+Pouvoir ajouter une liste de recettes (le nom pourrait être suffisant) / d'idée et de pouvoir faire en sorte que le générateur de planning puisse les utiliser.
+De fait cela permet d'ajouter de nouvelles idées qui peuvent devenir des recettes au fur et à mesure du temps afin de générer de nouvelles recettes.
 
 ### Brique liste de courses
 
