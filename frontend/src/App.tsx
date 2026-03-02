@@ -8,7 +8,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { SocketProvider } from "./contexts/SocketContext";
 import { useNotificationToasts } from "./hooks/useNotificationToasts";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import RecipesPage from "./pages/RecipesPage";
 import RecipeDetailPage from "./pages/RecipeDetailPage";
@@ -40,6 +40,240 @@ function NotificationHandler() {
   return null;
 }
 
+function AppContent() {
+  const location = useLocation();
+  const isAdmin = location.pathname.startsWith("/admin");
+
+  return isAdmin ? (
+    <>
+      <ErrorBoundary>
+        <Routes>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route path="login" element={<AdminLoginPage />} />
+            <Route
+              path="dashboard"
+              element={
+                <AdminProtectedRoute>
+                  <AdminDashboardPage />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="tags"
+              element={
+                <AdminProtectedRoute>
+                  <AdminTagsPage />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="ingredients"
+              element={
+                <AdminProtectedRoute>
+                  <AdminIngredientsPage />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="units"
+              element={
+                <AdminProtectedRoute>
+                  <AdminUnitsPage />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="features"
+              element={
+                <AdminProtectedRoute>
+                  <AdminFeaturesPage />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="communities"
+              element={
+                <AdminProtectedRoute>
+                  <AdminCommunitiesPage />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="activity"
+              element={
+                <AdminProtectedRoute>
+                  <AdminActivityPage />
+                </AdminProtectedRoute>
+              }
+            />
+          </Route>
+        </Routes>
+      </ErrorBoundary>
+      <Toaster position="top-right" />
+    </>
+  ) : (
+    <div className="min-h-screen flex flex-col">
+      <NavBar />
+      <ErrorBoundary>
+        <div className="flex-1 flex flex-col">
+          <Routes>
+            {/* Public routes - no sidebar */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/signup" element={<SignUpPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+
+            {/* Dashboard - authenticated home page */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <DashboardPage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Protected user routes - with sidebar layout */}
+            <Route
+              path="/recipes"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <RecipesPage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/recipes/new"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <RecipeFormPage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/recipes/:id"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <RecipeDetailPage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/recipes/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <RecipeFormPage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Community routes - with sidebar layout */}
+            <Route
+              path="/communities"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <CommunitiesPage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/communities/create"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <CommunityCreatePage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/communities/:id"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <CommunityDetailPage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/communities/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <CommunityEditPage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/communities/:communityId/recipes/new"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <RecipeFormPage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Profile route */}
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <ProfilePage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Notifications route */}
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <NotificationsPage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Invitations route - with sidebar layout */}
+            <Route
+              path="/invitations"
+              element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <InvitationsPage />
+                  </MainLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route path="/*" element={<NotFoundPage />} />
+          </Routes>
+        </div>
+      </ErrorBoundary>
+      <LoginModal />
+      <Toaster position="top-right" />
+    </div>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider>
@@ -47,226 +281,7 @@ function App() {
       <AuthProvider>
         <SocketProvider>
         <NotificationHandler />
-        <div className="min-h-screen flex flex-col">
-          <NavBar />
-          <ErrorBoundary>
-          <div className="flex-1 flex flex-col">
-            <Routes>
-              {/* Public routes - no sidebar */}
-              <Route path="/" element={<HomePage />} />
-              <Route path="/signup" element={<SignUpPage />} />
-              <Route path="/privacy" element={<PrivacyPage />} />
-
-              {/* Dashboard - authenticated home page */}
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <DashboardPage />
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* Protected user routes - with sidebar layout */}
-              <Route
-                path="/recipes"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <RecipesPage />
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/recipes/new"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <RecipeFormPage />
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/recipes/:id"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <RecipeDetailPage />
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/recipes/:id/edit"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <RecipeFormPage />
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* Community routes - with sidebar layout */}
-              <Route
-                path="/communities"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <CommunitiesPage />
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/communities/create"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <CommunityCreatePage />
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/communities/:id"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <CommunityDetailPage />
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/communities/:id/edit"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <CommunityEditPage />
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/communities/:communityId/recipes/new"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <RecipeFormPage />
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* Profile route */}
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <ProfilePage />
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* Notifications route */}
-              <Route
-                path="/notifications"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <NotificationsPage />
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* Invitations route - with sidebar layout */}
-              <Route
-                path="/invitations"
-                element={
-                  <ProtectedRoute>
-                    <MainLayout>
-                      <InvitationsPage />
-                    </MainLayout>
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* Admin routes - isolated auth context */}
-              <Route path="/admin" element={<AdminLayout />}>
-                <Route path="login" element={<AdminLoginPage />} />
-                <Route
-                  path="dashboard"
-                  element={
-                    <AdminProtectedRoute>
-                      <AdminDashboardPage />
-                    </AdminProtectedRoute>
-                  }
-                />
-                <Route
-                  path="tags"
-                  element={
-                    <AdminProtectedRoute>
-                      <AdminTagsPage />
-                    </AdminProtectedRoute>
-                  }
-                />
-                <Route
-                  path="ingredients"
-                  element={
-                    <AdminProtectedRoute>
-                      <AdminIngredientsPage />
-                    </AdminProtectedRoute>
-                  }
-                />
-                <Route
-                  path="units"
-                  element={
-                    <AdminProtectedRoute>
-                      <AdminUnitsPage />
-                    </AdminProtectedRoute>
-                  }
-                />
-                <Route
-                  path="features"
-                  element={
-                    <AdminProtectedRoute>
-                      <AdminFeaturesPage />
-                    </AdminProtectedRoute>
-                  }
-                />
-                <Route
-                  path="communities"
-                  element={
-                    <AdminProtectedRoute>
-                      <AdminCommunitiesPage />
-                    </AdminProtectedRoute>
-                  }
-                />
-                <Route
-                  path="activity"
-                  element={
-                    <AdminProtectedRoute>
-                      <AdminActivityPage />
-                    </AdminProtectedRoute>
-                  }
-                />
-              </Route>
-
-              <Route path="/*" element={<NotFoundPage />} />
-            </Routes>
-          </div>
-          </ErrorBoundary>
-          <LoginModal />
-          <Toaster position="top-right" />
-        </div>
+        <AppContent />
         </SocketProvider>
       </AuthProvider>
     </BrowserRouter>

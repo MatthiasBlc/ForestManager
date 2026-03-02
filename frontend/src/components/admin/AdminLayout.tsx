@@ -32,7 +32,7 @@ function AdminShell() {
   }
 
   return (
-    <div className="h-full flex overflow-hidden bg-base-200">
+    <div className="h-screen flex overflow-hidden bg-base-200">
       {/* Sidebar */}
       <aside className="w-64 bg-base-100 border-r border-base-300 flex flex-col shrink-0 overflow-y-auto">
         <div className="p-4 border-b border-base-300">
