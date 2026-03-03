@@ -10,8 +10,8 @@
 
 ## 1. Units (user)
 
-- [ ] GET /api/units retourne les unites groupees par categorie (WEIGHT, VOLUME, SPOON, COUNT, QUALITATIVE)
-- [ ] Les unites sont triees par sortOrder dans chaque categorie
+- [x] GET /api/units retourne les unites groupees par categorie (WEIGHT, VOLUME, SPOON, COUNT, QUALITATIVE)
+- [x] Les unites sont triees par sortOrder dans chaque categorie
 
 ## 2. Ingredients - autocomplete & creation
 
