@@ -69,6 +69,17 @@ RUN echo 'server { \
         proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto; \
         proxy_set_header X-Forwarded-Host $host; \
     } \
+    location /socket.io/ { \
+        proxy_pass http://forestmanager-backend:3001/socket.io/; \
+        proxy_http_version 1.1; \
+        proxy_set_header Upgrade $http_upgrade; \
+        proxy_set_header Connection "upgrade"; \
+        proxy_set_header Host $host; \
+        proxy_set_header X-Real-IP $remote_addr; \
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; \
+        proxy_set_header X-Forwarded-Proto $http_x_forwarded_proto; \
+        proxy_set_header X-Forwarded-Host $host; \
+    } \
 }' > /etc/nginx/conf.d/default.conf
 
 # Install wget for health checks
