@@ -17,26 +17,28 @@ describe('SuggestTagModal', () => {
     setUserAuthenticated(true);
   });
 
-  it('should render modal with input and buttons', () => {
+  it('should render modal with tag selector and buttons', () => {
     render(<SuggestTagModal {...defaultProps} />);
 
     expect(screen.getByText('Suggest a tag')).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Enter tag name')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Search or create a tag...')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /suggest tag/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
   });
 
-  it('should disable submit when input is empty', () => {
+  it('should disable submit when no tag selected', () => {
     render(<SuggestTagModal {...defaultProps} />);
 
     expect(screen.getByRole('button', { name: /suggest tag/i })).toBeDisabled();
   });
 
-  it('should enable submit when input has value', async () => {
+  it('should enable submit when a tag is added', async () => {
     const user = userEvent.setup();
     render(<SuggestTagModal {...defaultProps} />);
 
-    await user.type(screen.getByPlaceholderText('Enter tag name'), 'vegan');
+    const input = screen.getByPlaceholderText('Search or create a tag...');
+    await user.type(input, 'vegan{Enter}');
+
     expect(screen.getByRole('button', { name: /suggest tag/i })).toBeEnabled();
   });
 
@@ -44,7 +46,8 @@ describe('SuggestTagModal', () => {
     const user = userEvent.setup();
     render(<SuggestTagModal {...defaultProps} />);
 
-    await user.type(screen.getByPlaceholderText('Enter tag name'), 'vegan');
+    const input = screen.getByPlaceholderText('Search or create a tag...');
+    await user.type(input, 'vegan{Enter}');
     await user.click(screen.getByRole('button', { name: /suggest tag/i }));
 
     await waitFor(() => {
@@ -56,7 +59,8 @@ describe('SuggestTagModal', () => {
     const user = userEvent.setup();
     render(<SuggestTagModal {...defaultProps} />);
 
-    await user.type(screen.getByPlaceholderText('Enter tag name'), 'duplicate');
+    const input = screen.getByPlaceholderText('Search or create a tag...');
+    await user.type(input, 'duplicate{Enter}');
     await user.click(screen.getByRole('button', { name: /suggest tag/i }));
 
     await waitFor(() => {
