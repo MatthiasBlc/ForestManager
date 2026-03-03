@@ -263,7 +263,7 @@ const RecipeDetailPage = () => {
             </div>
           </div>
 
-          <p className="text-sm text-base-content/60 mb-4">
+          <p className="text-sm text-base-content/60 mb-6">
             {recipe.creator && (
               <>
                 <span className="font-medium text-base-content/80">{recipe.creator.username}</span>
@@ -273,14 +273,8 @@ const RecipeDetailPage = () => {
             {dateText}
           </p>
 
-          <TimeBadges
-            prepTime={recipe.prepTime}
-            cookTime={recipe.cookTime}
-            restTime={recipe.restTime}
-          />
-
           {recipe.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-4 mb-6">
+            <div className="flex flex-wrap gap-2 mb-6">
               {recipe.tags.map((tag) => (
                 <TagBadge
                   key={tag.id}
@@ -292,24 +286,34 @@ const RecipeDetailPage = () => {
             </div>
           )}
 
+          {(recipe.prepTime != null || recipe.cookTime != null || recipe.restTime != null) && (
+            <div className="bg-base-200 rounded-lg p-4 mb-6">
+              <TimeBadges
+                prepTime={recipe.prepTime}
+                cookTime={recipe.cookTime}
+                restTime={recipe.restTime}
+              />
+            </div>
+          )}
+
           {recipe.ingredients.length > 0 && (
-            <div className="mb-8">
+            <div className="bg-base-200 rounded-lg p-4 mb-6">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-xl font-semibold">Ingredients</h2>
+                <h2 className="text-lg font-semibold">Ingredients</h2>
                 <ServingsSelector
                   value={selectedServings}
                   onChange={setSelectedServings}
                 />
               </div>
-              <ul className="list-disc list-inside space-y-1 bg-base-200 p-4 rounded-lg">
+              <ul className="space-y-2">
                 {recipe.ingredients.map((ing) => {
                   const scaledQty = scaleQuantity(ing.quantity, recipe.servings, selectedServings);
                   return (
-                    <li key={ing.id} className="text-base-content">
+                    <li key={ing.id} className="flex justify-between items-center">
                       <span className="font-medium">{ing.name}</span>
                       {scaledQty != null && (
-                        <span className="text-base-content/70">
-                          {" "}- {scaledQty}{ing.unit ? ` ${ing.unit.abbreviation}` : ""}
+                        <span className="text-base-content/70 text-sm">
+                          {scaledQty}{ing.unit ? ` ${ing.unit.abbreviation}` : ""}
                         </span>
                       )}
                     </li>
@@ -318,8 +322,6 @@ const RecipeDetailPage = () => {
               </ul>
             </div>
           )}
-
-          <div className="divider" />
 
           <div>
             <h2 className="text-xl font-semibold mb-4">Instructions</h2>
