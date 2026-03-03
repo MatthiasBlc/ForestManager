@@ -503,13 +503,13 @@ d'utiliser un callback fonctionnel dans updateIngredient ou un ref. Changeons l'
 
 Continue le travail et termine ce point avant de passer à un autre point ci-dessous
 
-# Dans Proposals avec ingredients
+[FAIT] Dans Proposals avec ingredients
 
 organise les blocs dans le même ordre que pour la création d'une nouvelle recette. L'ordre actuel (ingrédients à la fin) n'est pas cohérent
 
 Les ingrédients n'ont pas leur unité associée (il y a "unit" dans le champ en question - exemple de test, recette de la quiche loraine du seed en preprod)
 
-# RecipeDetail - affichage ingredients
+[FAIT] RecipeDetail - affichage ingredients
 
 Je vois les ingrédients, les quantité mais pas les unités. (exemple de test, recette de la quiche loraine du seed en preprod)
 
@@ -519,13 +519,15 @@ ingrédient2: X unité
 ingrédient3: X unité
 ingrédient4: X unité
 
-# Admin - Ingredients enrichis
+[FAIT - comportement attendu + amelioration] Admin - Ingredients enrichis
 
 defaultUnit est toujours vide, pourquoi ? (seed exemple quiche loraine sur la preprod)
+-> Le seed ne definit pas de defaultUnitId pour les ingredients. C'est une config admin a faire manuellement.
+-> AJOUT: Nouvelle colonne "Popular Unit" qui affiche l'unite la plus utilisee avec le nombre d'utilisations (calculee dynamiquement).
 
-# Admin, merge
+[FAIT] Admin, merge
 
 Pour les différentes merge admin, il faudrait aussi avoir un moteur de recherche pour trouver la merge de destination plus vite que la liste
 (on peut aussi conserver la liste pour plus de flexibilité)
 
-# dans Admin,ajouter la possibilité de trier en cliquant sur les entetes des colonnes pour les diverses pages
+[FAIT] dans Admin, ajouter la possibilité de trier en cliquant sur les entetes des colonnes pour les diverses pages
