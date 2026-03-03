@@ -347,6 +347,7 @@ const RecipeDetailPage = () => {
       {openModal === "suggest-tag" && (
         <SuggestTagModal
           recipeId={recipe.id}
+          communityId={recipe.communityId ?? undefined}
           onClose={() => setOpenModal(null)}
           onSuggestionSubmitted={handleSuggestionSubmitted}
         />

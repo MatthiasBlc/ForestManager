@@ -1,25 +1,37 @@
 import { useState } from "react";
 import { FaPaperPlane } from "react-icons/fa";
 import Modal from "../Modal";
+import TagSelector from "../form/TagSelector";
 import APIManager from "../../network/api";
 import { ConflictError } from "../../errors/http_errors";
 
 interface SuggestTagModalProps {
   recipeId: string;
+  communityId?: string;
   onClose: () => void;
   onSuggestionSubmitted: () => void;
 }
 
 const SuggestTagModal = ({
   recipeId,
+  communityId,
   onClose,
   onSuggestionSubmitted,
 }: SuggestTagModalProps) => {
-  const [tagName, setTagName] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isValid = tagName.trim().length > 0;
+  const isValid = tags.length === 1;
+
+  const handleTagChange = (newTags: string[]) => {
+    // Limiter a un seul tag
+    if (newTags.length > 1) {
+      setTags([newTags[newTags.length - 1]]);
+    } else {
+      setTags(newTags);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +40,7 @@ const SuggestTagModal = ({
     try {
       setIsSubmitting(true);
       setError(null);
-      await APIManager.createTagSuggestion(recipeId, tagName.trim());
+      await APIManager.createTagSuggestion(recipeId, tags[0]);
       onSuggestionSubmitted();
     } catch (err) {
       if (err instanceof ConflictError) {
@@ -53,14 +65,12 @@ const SuggestTagModal = ({
           <label className="label">
             <span className="label-text">Tag name</span>
           </label>
-          <input
-            type="text"
-            value={tagName}
-            onChange={(e) => setTagName(e.target.value)}
-            placeholder="Enter tag name"
-            className="input input-bordered w-full"
-            disabled={isSubmitting}
-            autoFocus
+          <TagSelector
+            value={tags}
+            onChange={handleTagChange}
+            placeholder="Search or create a tag..."
+            allowCreate
+            communityId={communityId}
           />
         </div>
 
