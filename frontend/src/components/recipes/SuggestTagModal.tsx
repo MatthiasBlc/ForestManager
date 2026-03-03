@@ -54,15 +54,15 @@ const SuggestTagModal = ({
   };
 
   return (
-    <Modal onClose={onClose} disableClickOutside={isSubmitting}>
-      <h3 className="font-bold text-lg mb-4">Suggest a tag</h3>
-      <p className="text-sm text-base-content/70 mb-4">
+    <Modal onClose={onClose} disableClickOutside={isSubmitting} className="overflow-visible w-11/12 max-w-lg p-8">
+      <h3 className="font-bold text-lg mb-2">Suggest a tag</h3>
+      <p className="text-sm text-base-content/70 mb-6">
         Suggest a tag to add to this recipe. The owner will review your suggestion.
       </p>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div className="form-control">
-          <label className="label">
+          <label className="label mb-1">
             <span className="label-text">Tag name</span>
           </label>
           <TagSelector
@@ -80,7 +80,7 @@ const SuggestTagModal = ({
           </div>
         )}
 
-        <div className="modal-action">
+        <div className="modal-action pt-2">
           <button
             type="button"
             className="btn btn-ghost"
