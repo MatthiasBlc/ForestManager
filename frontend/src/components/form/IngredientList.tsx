@@ -50,8 +50,11 @@ const IngredientRow = ({ ingredient, index, units, onUpdate, onRemove }: Ingredi
 
   const selectSuggestion = async (suggestion: IngredientSearchResult) => {
     setShowDropdown(false);
-    let unitId = ingredient.unitId;
 
+    // Mise a jour immediate (nom + id) pour eviter le flash
+    onUpdate(index, { ...ingredient, name: suggestion.name, ingredientId: suggestion.id });
+
+    let unitId: string | undefined;
     try {
       const suggested = await APIManager.getSuggestedUnit(suggestion.id);
       if (suggested.suggestedUnitId) {
@@ -61,7 +64,9 @@ const IngredientRow = ({ ingredient, index, units, onUpdate, onRemove }: Ingredi
       // Ignore pre-selection errors
     }
 
-    onUpdate(index, { ...ingredient, name: suggestion.name, ingredientId: suggestion.id, unitId });
+    if (unitId) {
+      onUpdate(index, { name: suggestion.name, ingredientId: suggestion.id, unitId });
+    }
   };
 
   return (
@@ -90,17 +95,12 @@ const IngredientRow = ({ ingredient, index, units, onUpdate, onRemove }: Ingredi
                   key={suggestion.id}
                   type="button"
                   onClick={() => selectSuggestion(suggestion)}
-                  className="w-full px-3 py-2 text-left hover:bg-base-200 flex justify-between items-center"
+                  className="w-full px-3 py-2 text-left hover:bg-base-200 flex items-center gap-2"
                 >
-                  <span className="flex items-center gap-2">
-                    {suggestion.name}
-                    {suggestion.status === "PENDING" && (
-                      <span className="badge badge-warning badge-xs">nouveau</span>
-                    )}
-                  </span>
-                  <span className="text-xs text-base-content/60">
-                    {suggestion.recipeCount} recipe{suggestion.recipeCount !== 1 ? "s" : ""}
-                  </span>
+                  {suggestion.name}
+                  {suggestion.status === "PENDING" && (
+                    <span className="badge badge-warning badge-xs">nouveau</span>
+                  )}
                 </button>
               ))
             ) : (
@@ -146,6 +146,8 @@ const IngredientList = ({ value, onChange }: IngredientListProps) => {
     value.map(() => nextId.current++)
   );
   const [units, setUnits] = useState<UnitsByCategory>({});
+  const valueRef = useRef(value);
+  valueRef.current = value;
 
   // Charge les unites une seule fois au montage
   useEffect(() => {
@@ -167,7 +169,7 @@ const IngredientList = ({ value, onChange }: IngredientListProps) => {
   };
 
   const updateIngredient = (index: number, ingredient: IngredientInput) => {
-    const updated = [...value];
+    const updated = [...valueRef.current];
     updated[index] = ingredient;
     onChange(updated);
   };

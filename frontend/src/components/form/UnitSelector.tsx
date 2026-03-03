@@ -24,7 +24,7 @@ const UnitSelector = ({ value, onChange, units, disabled }: UnitSelectorProps) =
     <select
       value={value ?? ""}
       onChange={(e) => onChange(e.target.value || null)}
-      className="select select-bordered select-sm w-28"
+      className="select select-bordered w-28"
       disabled={disabled || !hasUnits}
       aria-label="Unit"
     >
