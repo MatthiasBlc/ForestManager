@@ -461,8 +461,16 @@ npm run docker:up:build
 - [x] T6 - Fork inter-communaute : global, connu, inconnu
 - [x] T7 - Affichage et styles : TagBadge, filtres
 - [x] T8 - Administration tags communaute : panneau moderateur
-- [ ] T9 - Preferences : visibilite tags, notifications moderateur
-- [ ] T10 - Notifications WebSocket temps reel
+- [-] T9 - Preferences : visibilite tags, notifications moderateur
+- [-] T10 - Notifications WebSocket temps reel
 - [ ] T11 - Recettes orphelines et tags
-- [ ] T12 - Limites et validation
-- [ ] T13 - Permissions et securite
+- [x] T12 - Limites et validation
+- [-] T13 - Permissions et securite
+
+Autre
+Dans le centre de notification, les liens de type communities/id/ ne semblent toujours pas fonctionner correctement.
+Il faut à tout prix que les notifications renvoient vers une page ou ne soient pas cliquables s'il n'y a pas de destination logique (ou qu'elle n'existe plus par design).
+
+T13: doit être couvert par les tests, complexe à faire manuellement
+
+Pour le dark mode remplace le theme daisy UI Forest par Coffee
