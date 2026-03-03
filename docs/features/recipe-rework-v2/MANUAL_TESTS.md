@@ -11,7 +11,7 @@
 
 ## 1. Creation de recette
 
-- [ ] Formulaire affiche : titre, servings (defaut 4), temps (prep/cook/rest), steps, ingredients, tags
+- [x] Formulaire affiche : titre, servings (defaut 4), temps (prep/cook/rest), steps, ingredients, tags
 - [ ] Champ servings accepte uniquement 1-100
 - [ ] Champs temps sont optionnels (peuvent rester vides)
 - [ ] StepEditor : ajouter/supprimer/reordonner des etapes
