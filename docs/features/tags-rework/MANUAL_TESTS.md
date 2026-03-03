@@ -421,33 +421,37 @@ npm run docker:up:build
 
 ## T13 - Permissions et securite
 
-### T13.1 - MEMBER ne peut pas administrer les tags
+> **AUTOMATISE** : T13.1, T13.2, T13.3 couverts par `communityTags.test.ts` (8 tests)
+
+### T13.1 - MEMBER ne peut pas administrer les tags [AUTO]
 
 | #   | Action                                                             | Resultat attendu |
 | --- | ------------------------------------------------------------------ | ---------------- |
-| 1   | UserB (MEMBER) essaie d'approuver un tag pending (via API directe) | 403 TAG_004      |
-| 2   | UserB essaie de creer un tag communaute (via API directe)          | 403 TAG_004      |
-| 3   | UserB essaie de supprimer un tag (via API directe)                 | 403 TAG_004      |
+| 1   | UserB (MEMBER) essaie d'approuver un tag pending (via API directe) | 403              |
+| 2   | UserB essaie de creer un tag communaute (via API directe)          | 403              |
+| 3   | UserB essaie de supprimer un tag (via API directe)                 | 403              |
 
-### T13.2 - Moderateur ne peut pas toucher aux tags globaux
+### T13.2 - Moderateur ne peut pas toucher aux tags globaux [AUTO]
 
 | #   | Action                                                              | Resultat attendu |
 | --- | ------------------------------------------------------------------- | ---------------- |
 | 1   | UserA (MODERATOR) essaie de renommer tag global "dessert" (via API) | 403 TAG_005      |
 | 2   | UserA essaie de supprimer tag global (via API)                      | 403 TAG_005      |
 
-### T13.3 - Moderateur ne peut agir que sur sa communaute
+### T13.3 - Moderateur ne peut agir que sur sa communaute [AUTO]
 
 | #   | Action                                                              | Resultat attendu                  |
 | --- | ------------------------------------------------------------------- | --------------------------------- |
-| 1   | UserA (MODERATOR Alpha) essaie d'administrer tags de Beta (via API) | 403 : pas membre / pas moderateur |
+| 1   | UserA (MODERATOR Alpha) essaie de lister tags de Beta (via API)     | 403 : pas membre / pas moderateur |
+| 2   | UserA essaie de creer un tag dans Beta                              | 403 : pas membre / pas moderateur |
+| 3   | UserA essaie de renommer un tag de Beta                             | 403 : pas membre / pas moderateur |
+| 4   | UserA essaie de supprimer un tag de Beta                            | 403 : pas membre / pas moderateur |
+| 5   | UserA essaie d'approuver un tag de Beta                             | 403 : pas membre / pas moderateur |
+| 6   | UserA essaie de rejeter un tag de Beta                              | 403 : pas membre / pas moderateur |
 
 ### T13.4 - Notification preferences (non-moderateur)
 
-| #   | Action                                                                     | Resultat attendu                   |
-| --- | -------------------------------------------------------------------------- | ---------------------------------- |
-| 1   | UserB (MEMBER) essaie PUT notification-preferences/tags (via API)          | 403 : non moderateur               |
-| 2   | GET notification-preferences retourne communities vide pour non-moderateur | `{ global: ..., communities: [] }` |
+> **NOTE** : L'endpoint `notification-preferences/tags` n'existe pas. Les preferences de notification sont gerees via `PUT /api/notifications/preferences` (accessible a tous les membres) et `PUT /api/users/me/tag-preferences/:communityId` (preferences de visibilite tags, accessible a tous les membres). Ces endpoints sont couverts par `tagPreferences.test.ts`.
 
 ---
 
@@ -465,12 +469,10 @@ npm run docker:up:build
 - [-] T10 - Notifications WebSocket temps reel
 - [ ] T11 - Recettes orphelines et tags
 - [x] T12 - Limites et validation
-- [-] T13 - Permissions et securite
+- [x] T13 - Permissions et securite (T13.1-3 automatises, T13.4 N/A)
 
 Autre
 Dans le centre de notification, les liens de type communities/id/ ne semblent toujours pas fonctionner correctement.
 Il faut à tout prix que les notifications renvoient vers une page ou ne soient pas cliquables s'il n'y a pas de destination logique (ou qu'elle n'existe plus par design).
-
-T13: doit être couvert par les tests, complexe à faire manuellement
 
 Pour le dark mode remplace le theme daisy UI Forest par Coffee

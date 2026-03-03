@@ -67,7 +67,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | adminDashboard.test.ts | Stats dashboard | 4 |
 | adminActivity.test.ts | Logs activite | 4 |
 | share.test.ts | Partage inter-communautes + publish + sync steps/servings + fork tags | 31 |
-| communityTags.test.ts | CRUD + approve/reject tags communaute (moderateur) | 26 |
+| communityTags.test.ts | CRUD + approve/reject tags communaute + permissions (T13) | 34 |
 | tagSuggestions.test.ts | Suggestions de tags | 29 |
 | tagPreferences.test.ts | Tag visibility + notification preferences + getModeratorIds | 23 |
 | notificationService.test.ts | Notification service (create, broadcast, preferences, templates) | 30 |

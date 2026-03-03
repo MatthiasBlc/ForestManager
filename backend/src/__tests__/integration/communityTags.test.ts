@@ -491,4 +491,126 @@ describe("Community Tags API", () => {
       expect(res.status).toBe(403);
     });
   });
+
+  // =====================================
+  // T13.2 - Moderateur ne peut pas toucher aux tags globaux
+  // =====================================
+  describe("T13.2 - Moderator cannot modify global tags", () => {
+    it("should return 403 TAG_005 when renaming a global tag", async () => {
+      const globalTag = await testPrisma.tag.create({
+        data: { name: "dessert", scope: "GLOBAL", status: "APPROVED" },
+      });
+
+      const res = await request(app)
+        .patch(`/api/communities/${community.id}/tags/${globalTag.id}`)
+        .set("Cookie", moderatorCookie)
+        .send({ name: "renamed_dessert" });
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toContain("TAG_005");
+
+      // Verifier que le tag n'a pas ete modifie
+      const unchanged = await testPrisma.tag.findUnique({ where: { id: globalTag.id } });
+      expect(unchanged?.name).toBe("dessert");
+    });
+
+    it("should return 403 TAG_005 when deleting a global tag", async () => {
+      const globalTag = await testPrisma.tag.create({
+        data: { name: "global_nodelete", scope: "GLOBAL", status: "APPROVED" },
+      });
+
+      const res = await request(app)
+        .delete(`/api/communities/${community.id}/tags/${globalTag.id}`)
+        .set("Cookie", moderatorCookie);
+
+      expect(res.status).toBe(403);
+      expect(res.body.error).toContain("TAG_005");
+
+      // Verifier que le tag existe toujours
+      const stillExists = await testPrisma.tag.findUnique({ where: { id: globalTag.id } });
+      expect(stillExists).not.toBeNull();
+    });
+  });
+
+  // =====================================
+  // T13.3 - Moderateur ne peut agir que sur sa communaute
+  // =====================================
+  describe("T13.3 - Moderator cannot manage tags of another community", () => {
+    let otherCommunity: { id: string };
+    let otherModeratorCookie: string;
+    let communityTag: { id: string };
+
+    beforeEach(async () => {
+      const suffix = uniqueSuffix();
+
+      // Creer un autre utilisateur moderateur d'une autre communaute
+      const otherModSignup = await request(app).post("/api/auth/signup").send({
+        username: `othermod_${suffix}`,
+        email: `othermod_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
+      otherModeratorCookie = extractSessionCookie(otherModSignup)!;
+
+      const otherRes = await request(app)
+        .post("/api/communities")
+        .set("Cookie", otherModeratorCookie)
+        .send({ name: `Other Community ${suffix}` });
+      otherCommunity = otherRes.body;
+
+      // Creer un tag dans la communaute principale
+      communityTag = await testPrisma.tag.create({
+        data: { name: `tag_${suffix}`, scope: "COMMUNITY", status: "PENDING", communityId: community.id },
+      });
+    });
+
+    it("should return 403 when listing tags of a community where not a member", async () => {
+      const res = await request(app)
+        .get(`/api/communities/${community.id}/tags`)
+        .set("Cookie", otherModeratorCookie);
+
+      expect(res.status).toBe(403);
+    });
+
+    it("should return 403 when creating a tag in a community where not a member", async () => {
+      const res = await request(app)
+        .post(`/api/communities/${community.id}/tags`)
+        .set("Cookie", otherModeratorCookie)
+        .send({ name: "hijack_tag" });
+
+      expect(res.status).toBe(403);
+    });
+
+    it("should return 403 when renaming a tag in a community where not a member", async () => {
+      const res = await request(app)
+        .patch(`/api/communities/${community.id}/tags/${communityTag.id}`)
+        .set("Cookie", otherModeratorCookie)
+        .send({ name: "hijack_rename" });
+
+      expect(res.status).toBe(403);
+    });
+
+    it("should return 403 when deleting a tag in a community where not a member", async () => {
+      const res = await request(app)
+        .delete(`/api/communities/${community.id}/tags/${communityTag.id}`)
+        .set("Cookie", otherModeratorCookie);
+
+      expect(res.status).toBe(403);
+    });
+
+    it("should return 403 when approving a tag in a community where not a member", async () => {
+      const res = await request(app)
+        .post(`/api/communities/${community.id}/tags/${communityTag.id}/approve`)
+        .set("Cookie", otherModeratorCookie);
+
+      expect(res.status).toBe(403);
+    });
+
+    it("should return 403 when rejecting a tag in a community where not a member", async () => {
+      const res = await request(app)
+        .post(`/api/communities/${community.id}/tags/${communityTag.id}/reject`)
+        .set("Cookie", otherModeratorCookie);
+
+      expect(res.status).toBe(403);
+    });
+  });
 });

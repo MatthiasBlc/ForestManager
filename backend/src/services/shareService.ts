@@ -163,7 +163,7 @@ interface SourceRecipeForPublish {
   cookTime: number | null;
   restTime: number | null;
   imageUrl: string | null;
-  tags: { tagId: string }[];
+  tags: { tagId: string; tag: { id: string; name: string; scope: string; communityId: string | null } }[];
   ingredients: { ingredientId: string; quantity: number | null; order: number }[];
   steps: { order: number; instruction: string }[];
 }
@@ -178,6 +178,7 @@ export async function publishRecipe(
 ) {
   return prisma.$transaction(async (tx) => {
     const results = [];
+    const allPendingTagIds: string[] = [];
 
     for (const communityId of communityIds) {
       const communityRecipe = await tx.recipe.create({
@@ -205,13 +206,21 @@ export async function publishRecipe(
         });
       }
 
+      // Copier les tags (scope-aware via resolveTagsForFork)
       if (sourceRecipe.tags.length > 0) {
-        await tx.recipeTag.createMany({
-          data: sourceRecipe.tags.map((rt) => ({
-            recipeId: communityRecipe.id,
-            tagId: rt.tagId,
-          })),
-        });
+        const sourceTags = sourceRecipe.tags.map((rt) => ({
+          id: rt.tag.id,
+          name: rt.tag.name,
+          scope: rt.tag.scope,
+          communityId: rt.tag.communityId,
+        }));
+        const { tagIds, pendingTagIds } = await resolveTagsForFork(tx, sourceTags, communityId, userId);
+        allPendingTagIds.push(...pendingTagIds);
+        if (tagIds.length > 0) {
+          await tx.recipeTag.createMany({
+            data: tagIds.map((tagId) => ({ recipeId: communityRecipe.id, tagId })),
+          });
+        }
       }
 
       if (sourceRecipe.ingredients.length > 0) {
@@ -237,7 +246,7 @@ export async function publishRecipe(
       results.push(communityRecipe);
     }
 
-    return Promise.all(
+    const recipes = await Promise.all(
       results.map((r) =>
         tx.recipe.findUnique({
           where: { id: r.id },
@@ -251,6 +260,8 @@ export async function publishRecipe(
         })
       )
     );
+
+    return { recipes, pendingTagIds: allPendingTagIds };
   });
 }
 

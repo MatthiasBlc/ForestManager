@@ -225,7 +225,7 @@ export const publishToCommunities: RequestHandler<
         imageUrl: true,
         creatorId: true,
         communityId: true,
-        tags: { select: { tagId: true } },
+        tags: { select: { tagId: true, tag: { select: { id: true, name: true, scope: true, communityId: true } } } },
         ingredients: {
           select: { ingredientId: true, quantity: true, order: true },
           orderBy: { order: "asc" },
@@ -274,7 +274,24 @@ export const publishToCommunities: RequestHandler<
       return;
     }
 
-    const createdRecipes = await publishRecipe(authenticatedUserId, sourceRecipe, newCommunityIds);
+    const { recipes: createdRecipes, pendingTagIds } = await publishRecipe(authenticatedUserId, sourceRecipe, newCommunityIds);
+
+    // Notifier les moderateurs si des tags PENDING ont ete crees
+    if (pendingTagIds.length > 0) {
+      for (const cid of newCommunityIds) {
+        const moderatorIds = await getModeratorIdsForTagNotification(cid);
+        if (moderatorIds.length > 0) {
+          appEvents.emitActivity({
+            type: "tag:pending",
+            userId: authenticatedUserId,
+            communityId: cid,
+            recipeId: recipeId,
+            targetUserIds: moderatorIds,
+            metadata: { pendingTagIds },
+          });
+        }
+      }
+    }
 
     res.status(201).json({ data: createdRecipes.filter(Boolean) });
   } catch (error) {

@@ -34,7 +34,13 @@ export const getCommunityTags: RequestHandler = async (req, res, next) => {
       prisma.tag.findMany({
         where,
         include: {
-          _count: { select: { recipes: true } },
+          _count: {
+            select: {
+              recipes: {
+                where: { recipe: { communityId, deletedAt: null } },
+              },
+            },
+          },
           createdBy: { select: { id: true, username: true } },
         },
         orderBy: { name: "asc" },
