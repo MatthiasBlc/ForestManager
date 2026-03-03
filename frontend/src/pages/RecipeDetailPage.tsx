@@ -263,7 +263,15 @@ const RecipeDetailPage = () => {
             </div>
           </div>
 
-          <p className="text-sm text-base-content/60 mb-4">{dateText}</p>
+          <p className="text-sm text-base-content/60 mb-4">
+            {recipe.creator && (
+              <>
+                <span className="font-medium text-base-content/80">{recipe.creator.username}</span>
+                {" · "}
+              </>
+            )}
+            {dateText}
+          </p>
 
           <TimeBadges
             prepTime={recipe.prepTime}
