@@ -27,11 +27,26 @@ const CommunityDetailPage = () => {
   const [members, setMembers] = useState<CommunityMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [panelContent, setPanelContent] = useState<PanelContent | null>(null);
+  const VALID_PANELS: PanelContent[] = ["members", "activity", "invitations", "edit", "tags"];
+  const panelParam = searchParams.get("panel");
+  const initialPanel = panelParam && VALID_PANELS.includes(panelParam as PanelContent)
+    ? (panelParam as PanelContent)
+    : null;
+
+  const [panelContent, setPanelContent] = useState<PanelContent | null>(initialPanel);
   const [panelWidth, setPanelWidth] = useState<number>(() => {
     const saved = localStorage.getItem(PANEL_WIDTH_KEY);
     return saved ? parseInt(saved, 10) : DEFAULT_PANEL_WIDTH;
   });
+
+  // Synchroniser le panel avec le query param (navigation depuis notification)
+  useEffect(() => {
+    const p = searchParams.get("panel");
+    if (p && VALID_PANELS.includes(p as PanelContent)) {
+      setPanelContent(p as PanelContent);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Lire les filtres tags depuis les query params
   const initialTags = searchParams.get("tags");

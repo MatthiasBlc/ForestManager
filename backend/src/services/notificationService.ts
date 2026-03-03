@@ -138,13 +138,13 @@ const templates: Record<string, NotificationTemplate> = {
   "tag-suggestion:pending-mod": {
     title: "Tag en attente",
     message: (v) => `Un tag suggere attend votre validation dans ${v.communityName}`,
-    actionUrl: (v) => `/communities/${v.communityId}`,
+    actionUrl: (v) => `/communities/${v.communityId}?panel=tags`,
     groupKey: null,
   },
   "tag:pending": {
     title: "Tag en attente",
     message: (v) => `Un nouveau tag attend validation dans ${v.communityName}`,
-    actionUrl: (v) => `/communities/${v.communityId}`,
+    actionUrl: (v) => `/communities/${v.communityId}?panel=tags`,
     groupKey: null,
   },
   "tag:approved": {

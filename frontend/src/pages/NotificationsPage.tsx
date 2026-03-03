@@ -179,7 +179,11 @@ const NotificationsPage = () => {
               <div key={notif.id}>
                 {/* Main notification card */}
                 <div
-                  className={`card card-compact bg-base-100 shadow-sm border cursor-pointer transition-colors hover:bg-base-200 ${
+                  className={`card card-compact bg-base-100 shadow-sm border transition-colors ${
+                    isGroup || notif.actionUrl
+                      ? "cursor-pointer hover:bg-base-200"
+                      : "cursor-default"
+                  } ${
                     !notif.readAt
                       ? "border-l-4 border-l-primary"
                       : "border-base-300"

@@ -26,6 +26,7 @@ interface NotificationItemProps {
 
 const NotificationItem = ({ notification, onClick }: NotificationItemProps) => {
   const isUnread = notification.readAt === null;
+  const hasAction = !!notification.actionUrl;
   const config = CATEGORY_CONFIG[notification.category];
   const Icon = config?.icon ?? FaBell;
   const iconColor = config?.color ?? "text-base-content";
@@ -33,9 +34,9 @@ const NotificationItem = ({ notification, onClick }: NotificationItemProps) => {
   return (
     <li>
       <button
-        className={`w-full text-left px-4 py-3 flex gap-3 items-start hover:bg-base-200 transition-colors cursor-pointer ${
-          isUnread ? "bg-base-200/50" : ""
-        }`}
+        className={`w-full text-left px-4 py-3 flex gap-3 items-start transition-colors ${
+          hasAction ? "hover:bg-base-200 cursor-pointer" : "cursor-default"
+        } ${isUnread ? "bg-base-200/50" : ""}`}
         onClick={() => onClick(notification)}
       >
         {/* Category icon */}
