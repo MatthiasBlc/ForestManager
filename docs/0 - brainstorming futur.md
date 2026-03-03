@@ -73,6 +73,8 @@ Le changelog représente des blocs de texte type "blog" du plus récent au plus 
 L'idée est d'avoir un véritable changelog automatisé. Pas besoin de retranscrire tout ce qui touche au tests, déploiement, update de docs etc. Il faut retranscrire uniquement ce qui impacte une correction ou une évolution de l'expérience utilisateur.
 Dans l'interface admin, il faut pouvoir modifier et supprimer ces message (toujours avec une confirmation de validation)
 
+- Mise en place d'un système de version propre pour suivre les patch du changelog ?
+
 ## Gestionnaire de planning de repas dans une communauté
 
 automatique + drag and drop (à a Trello ? )
