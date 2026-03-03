@@ -66,6 +66,13 @@ Je cherche tout à de même à avoir une solution la plus professionnelle et sé
 Je ne sais pas si c'est vraiment nécessaire, mais il serait bien pratique de pouvoir importer des recettes depuis un copier coller. Le problème est que le format d'origine varie beaucoup. Un LLM pourrait aider à parser le format d'origine et à le convertir en format interne mais je ne veux pas de solution payante. Dans un monde idéal j'aimerais pouvoir coller un texte ou un lien, que le llm préremplit le formulaire de recette, l'utilisateur vérifie, ajuste et valide.
 S'il existe une solution autre qu'un LLM c'est l'idéal mais pour le coup je ne maitrise pas du tout le sujet. Que peux-tu me proposer comme solutions ? Si c'est trop complexe, je suis ouvert à des solutions moins sophistiquées, et je suis également ouvert à ne pas réaliser cette fonctionnalité.
 
+## système + page de changelog automatique
+
+(Bouton à ajouter dans le footer du menu sidebar lorsqu'un user est connecté)
+Le changelog représente des blocs de texte type "blog" du plus récent au plus ancien. Lorsqu'une merge à Master est faite et validée, lors de la phase de "deploy_prod", un résumé de tout les commits de manière organisé (Nouvelle feature, updates, bug) doit être généré et stocké en base.
+L'idée est d'avoir un véritable changelog automatisé. Pas besoin de retranscrire tout ce qui touche au tests, déploiement, update de docs etc. Il faut retranscrire uniquement ce qui impacte une correction ou une évolution de l'expérience utilisateur.
+Dans l'interface admin, il faut pouvoir modifier et supprimer ces message (toujours avec une confirmation de validation)
+
 ## Gestionnaire de planning de repas dans une communauté
 
 automatique + drag and drop (à a Trello ? )
