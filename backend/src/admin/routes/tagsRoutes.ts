@@ -1,5 +1,6 @@
 import express from "express";
 import * as tagsController from "../controllers/tagsController";
+import * as recipesController from "../controllers/recipesController";
 
 const router = express.Router();
 
@@ -14,6 +15,9 @@ router.patch("/:id", tagsController.update);
 
 // DELETE /api/admin/tags/:id - Supprime un tag
 router.delete("/:id", tagsController.remove);
+
+// GET /api/admin/tags/:id/recipes - Liste les recettes d'un tag
+router.get("/:id/recipes", recipesController.getTagRecipes);
 
 // POST /api/admin/tags/:id/merge - Fusionne un tag dans un autre
 router.post("/:id/merge", tagsController.merge);

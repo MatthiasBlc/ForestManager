@@ -175,8 +175,18 @@ POST   /api/admin/tags/             # create (GLOBAL only)
 PATCH  /api/admin/tags/:id          # update (any tag)
 DELETE /api/admin/tags/:id          # delete (any tag)
 POST   /api/admin/tags/:id/merge    # merge into another
+GET    /api/admin/tags/:id/recipes  # list recipes for tag (?includeDeleted=true)
 ```
-Controller: `admin/controllers/tagsController.ts` | Route: `admin/routes/tagsRoutes.ts`
+Controller: `admin/controllers/tagsController.ts` + `recipesController.ts` | Route: `admin/routes/tagsRoutes.ts`
+
+## Admin Recipes (/api/admin/recipes) - requireSuperAdmin
+```
+GET    /api/admin/recipes/:recipeId    # full detail (tags, ingredients, steps, creator, community)
+PATCH  /api/admin/recipes/:recipeId    # update scalar fields (title, servings, times)
+DELETE /api/admin/recipes/:recipeId    # soft delete (deletedAt)
+```
+Controller: `admin/controllers/recipesController.ts` | Route: `admin/routes/recipesRoutes.ts`
+Error codes: ADMIN_REC_001-003
 
 ## Admin Ingredients (/api/admin/ingredients) - requireSuperAdmin
 ```

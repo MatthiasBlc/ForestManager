@@ -150,6 +150,10 @@ enum AdminActionType {
   FEATURE_GRANTED
   FEATURE_REVOKED
 
+  // Recipes
+  RECIPE_UPDATED
+  RECIPE_DELETED
+
   // Admin auth
   ADMIN_LOGIN
   ADMIN_LOGOUT

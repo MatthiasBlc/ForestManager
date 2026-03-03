@@ -2,7 +2,7 @@ import axios, { AxiosError } from "axios";
 import { RecipeDetail, RecipesResponse, CommunityRecipesResponse, TagSearchResult, IngredientSearchResult, Proposal, ProposalsResponse, ProposalInput, VariantsResponse, RejectProposalResponse, UnitsByCategory, SuggestedUnit } from "../models/recipe";
 import { ActivityResponse } from "../models/activity";
 import { User } from "../models/user";
-import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats, AdminTag, AdminIngredient, AdminUnit, AdminFeature, AdminCommunity, AdminCommunityDetail, AdminActivityResponse } from "../models/admin";
+import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats, AdminTag, AdminIngredient, AdminUnit, AdminFeature, AdminCommunity, AdminCommunityDetail, AdminActivityResponse, AdminRecipeListItem, AdminRecipeDetail, AdminRecipeUpdateInput } from "../models/admin";
 import { CommunityTag } from "../models/tag";
 import { TagSuggestion, TagSuggestionsResponse } from "../models/tagSuggestion";
 import { TagPreference } from "../models/preferences";
@@ -566,6 +566,28 @@ export default class APIManager {
 
   static async mergeAdminTags(sourceId: string, targetId: string): Promise<void> {
     await API.post(`/api/admin/tags/${sourceId}/merge`, JSON.stringify({ targetId })).catch(handleApiError);
+  }
+
+
+  // --------------- Admin Recipes ---------------
+
+  static async getAdminTagRecipes(tagId: string, includeDeleted?: boolean): Promise<{ recipes: AdminRecipeListItem[]; pagination: { total: number; hasMore: boolean } }> {
+    const qs = buildQueryString({ includeDeleted: includeDeleted ? "true" : undefined });
+    const response = await API.get(`/api/admin/tags/${tagId}/recipes${qs}`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async getAdminRecipe(recipeId: string): Promise<AdminRecipeDetail> {
+    const response = await API.get(`/api/admin/recipes/${recipeId}`).catch(handleApiError);
+    return response.data.recipe;
+  }
+
+  static async updateAdminRecipe(recipeId: string, data: AdminRecipeUpdateInput): Promise<void> {
+    await API.patch(`/api/admin/recipes/${recipeId}`, JSON.stringify(data)).catch(handleApiError);
+  }
+
+  static async deleteAdminRecipe(recipeId: string): Promise<void> {
+    await API.delete(`/api/admin/recipes/${recipeId}`).catch(handleApiError);
   }
 
 

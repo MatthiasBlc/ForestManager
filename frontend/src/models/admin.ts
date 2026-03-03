@@ -126,6 +126,48 @@ export interface AdminActivityResponse {
   };
 }
 
+// --------------- Admin Recipe Types ---------------
+
+export interface AdminRecipeListItem {
+  id: string;
+  title: string;
+  createdAt: string;
+  deletedAt: string | null;
+  creator: { id: string; username: string };
+  community: { id: string; name: string } | null;
+}
+
+export interface AdminRecipeDetail {
+  id: string;
+  title: string;
+  servings: number;
+  prepTime: number | null;
+  cookTime: number | null;
+  restTime: number | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  creator: { id: string; username: string };
+  community: { id: string; name: string } | null;
+  tags: { tag: { id: string; name: string; scope: string; status: string; communityId: string | null } }[];
+  ingredients: {
+    id: string;
+    quantity: number | null;
+    order: number;
+    ingredient: { id: string; name: string };
+    unit: { id: string; abbreviation: string } | null;
+  }[];
+  steps: { id: string; order: number; instruction: string }[];
+}
+
+export interface AdminRecipeUpdateInput {
+  title?: string;
+  servings?: number;
+  prepTime?: number | null;
+  cookTime?: number | null;
+  restTime?: number | null;
+}
+
 // --------------- Dashboard Types ---------------
 
 export interface DashboardStats {

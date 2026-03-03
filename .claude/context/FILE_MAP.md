@@ -56,6 +56,7 @@ admin/
 │   ├── communitiesController.ts  # list, detail, update, delete, grant/revoke feature
 │   ├── membersController.ts      # admin member management
 │   ├── tagsController.ts         # CRUD + merge tags
+│   ├── recipesController.ts     # tag recipes list, detail, update, soft delete
 │   ├── ingredientsController.ts  # CRUD + merge + approve/reject ingredients
 │   ├── unitsController.ts        # CRUD units (+ usage protection)
 │   ├── featuresController.ts     # CRUD features
@@ -64,7 +65,8 @@ admin/
 ├── routes/
 │   ├── authRoutes.ts
 │   ├── communitiesRoutes.ts
-│   ├── tagsRoutes.ts
+│   ├── tagsRoutes.ts             # + GET /:id/recipes
+│   ├── recipesRoutes.ts
 │   ├── ingredientsRoutes.ts
 │   ├── unitsRoutes.ts
 │   ├── featuresRoutes.ts

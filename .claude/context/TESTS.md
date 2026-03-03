@@ -62,6 +62,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | adminIngredients.test.ts | CRUD + approve/reject/merge ingredients admin + notifications | 35 |
 | adminUnits.test.ts | CRUD units admin + user endpoint | 25 |
 | adminFeatures.test.ts | Features grant/revoke | 13 |
+| adminRecipes.test.ts | Recipes admin (tag recipes, detail, update, delete) | 17 |
 | adminCommunities.test.ts | Communities admin | 12 |
 | adminDashboard.test.ts | Stats dashboard | 4 |
 | adminActivity.test.ts | Logs activite | 4 |

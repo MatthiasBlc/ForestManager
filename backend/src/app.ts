@@ -18,6 +18,7 @@ import adminFeaturesRoutes from "./admin/routes/featuresRoutes";
 import adminDashboardRoutes from "./admin/routes/dashboardRoutes";
 import adminActivityRoutes from "./admin/routes/activityRoutes";
 import adminUnitsRoutes from "./admin/routes/unitsRoutes";
+import adminRecipesRoutes from "./admin/routes/recipesRoutes";
 import createHttpError, { isHttpError } from "http-errors";
 import { httpLogger } from "./middleware/httpLogger";
 import logger from "./util/logger";
@@ -121,6 +122,7 @@ app.use("/api/admin/features", adminSession, requireSuperAdmin, adminFeaturesRou
 app.use("/api/admin/dashboard", adminSession, requireSuperAdmin, adminDashboardRoutes);
 app.use("/api/admin/activity", adminSession, requireSuperAdmin, adminActivityRoutes);
 app.use("/api/admin/units", adminSession, requireSuperAdmin, adminUnitsRoutes);
+app.use("/api/admin/recipes", adminSession, requireSuperAdmin, adminRecipesRoutes);
 
 app.use((req, res, next) => {
   next(createHttpError(404, "Endpoint not found"));
