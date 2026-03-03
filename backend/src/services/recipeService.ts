@@ -35,6 +35,22 @@ export async function upsertTags(
   return pendingTagIds;
 }
 
+/**
+ * Lie des tagIds deja resolus a une recette (sans re-resoudre les noms).
+ * Utilise pour la copie perso d'une recette communautaire.
+ */
+export async function linkTagsToRecipe(
+  tx: TransactionClient,
+  recipeId: string,
+  tagIds: string[]
+): Promise<void> {
+  for (const tagId of tagIds) {
+    await tx.recipeTag.create({
+      data: { recipeId, tagId },
+    });
+  }
+}
+
 export async function upsertIngredients(
   tx: TransactionClient,
   recipeId: string,

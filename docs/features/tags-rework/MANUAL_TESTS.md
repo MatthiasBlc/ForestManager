@@ -454,9 +454,9 @@ npm run docker:up:build
 ## Checklist de validation finale
 
 - [x] T1 - Tags globaux (SuperAdmin) : CRUD, fusion, filtre scope
-- [ ] T2 - Tags communaute (Moderateur) : CRUD, isolation inter-communautes
-- [ ] T3 - Tags pending : creation, reutilisation, notification, approve, reject
-- [ ] T4 - Autocomplete scope-aware : communaute et catalogue perso
+- [x] T2 - Tags communaute (Moderateur) : CRUD, isolation inter-communautes
+- [x] T3 - Tags pending : creation, reutilisation, notification, approve, reject
+- [x] T4 - Autocomplete scope-aware : communaute et catalogue perso
 - [ ] T5 - Tag suggestions : existant, inconnu, rejet owner, rejet moderateur, cas limites
 - [ ] T6 - Fork inter-communaute : global, connu, inconnu
 - [ ] T7 - Affichage et styles : TagBadge, filtres

@@ -1,6 +1,6 @@
 import prisma from "../util/db";
 import { RECIPE_TAGS_SELECT, RECIPE_INGREDIENTS_SELECT, RECIPE_STEPS_SELECT } from "../util/prismaSelects";
-import { IngredientInput, upsertTags, upsertIngredients, upsertSteps } from "./recipeService";
+import { IngredientInput, upsertTags, linkTagsToRecipe, upsertIngredients, upsertSteps } from "./recipeService";
 import { StepInput } from "../util/validation";
 
 interface CreateCommunityRecipeData {
@@ -77,11 +77,16 @@ export async function createCommunityRecipe(
     // 3. Gerer steps/tags/ingredients sur les DEUX recettes
     await upsertSteps(tx, personalRecipe.id, data.steps);
     await upsertSteps(tx, communityRecipe.id, data.steps);
-    // IMPORTANT: traiter la recette communautaire EN PREMIER pour que les tags
-    // inconnus deviennent COMMUNITY PENDING (et non GLOBAL APPROVED via le perso)
+    // Resoudre les tags pour la recette communautaire, puis lier les memes
+    // tagIds a la copie perso (evite de creer des tags GLOBAL en doublon)
     if (data.tags.length > 0) {
       pendingTagIds = await upsertTags(tx, communityRecipe.id, data.tags, userId, communityId);
-      await upsertTags(tx, personalRecipe.id, data.tags, userId, null);
+      // Recuperer les tagIds resolus pour les lier a la copie perso
+      const communityRecipeTags = await tx.recipeTag.findMany({
+        where: { recipeId: communityRecipe.id },
+        select: { tagId: true },
+      });
+      await linkTagsToRecipe(tx, personalRecipe.id, communityRecipeTags.map(rt => rt.tagId));
     }
 
     if (data.ingredients.length > 0) {
