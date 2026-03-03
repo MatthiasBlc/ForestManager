@@ -9,6 +9,7 @@ type RawIngredient = {
   quantity: number | null;
   order: number;
   ingredient: { id: string; name: string };
+  unit?: { id: string; abbreviation: string } | null;
 };
 
 /** Extrait les tags depuis le format Prisma pivot */
@@ -29,6 +30,8 @@ export function formatIngredients(ingredients: RawIngredient[]) {
     name: ri.ingredient.name,
     ingredientId: ri.ingredient.id,
     quantity: ri.quantity,
+    unitId: ri.unit?.id ?? null,
+    unit: ri.unit ?? null,
     order: ri.order,
   }));
 }

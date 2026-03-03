@@ -1,10 +1,13 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { FaSortUp, FaSortDown, FaSort } from "react-icons/fa";
 import { AdminIngredient, AdminUnit } from "../../models/admin";
 import APIManager from "../../network/api";
 import { useConfirm } from "../../hooks/useConfirm";
 import toast from "react-hot-toast";
 
 type StatusFilter = "" | "APPROVED" | "PENDING";
+type SortColumn = "name" | "status" | "defaultUnit" | "popularUnit" | "createdBy" | "recipeCount";
+type SortDirection = "asc" | "desc";
 
 function AdminIngredientsPage() {
   const [ingredients, setIngredients] = useState<AdminIngredient[]>([]);
@@ -12,6 +15,8 @@ function AdminIngredientsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("");
+  const [sortColumn, setSortColumn] = useState<SortColumn>("name");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
   // Create/Edit modal
   const [modalOpen, setModalOpen] = useState(false);
@@ -23,6 +28,7 @@ function AdminIngredientsPage() {
   // Merge modal
   const [mergeSource, setMergeSource] = useState<AdminIngredient | null>(null);
   const [mergeModalOpen, setMergeModalOpen] = useState(false);
+  const [mergeSearch, setMergeSearch] = useState("");
 
   // Approve with rename modal
   const [approveItem, setApproveItem] = useState<AdminIngredient | null>(null);
@@ -59,6 +65,60 @@ function AdminIngredientsPage() {
   useEffect(() => {
     APIManager.getAdminUnits().then(setUnits).catch(() => {});
   }, []);
+
+  // --- Sorting ---
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  const sortedIngredients = useMemo(() => {
+    const sorted = [...ingredients].sort((a, b) => {
+      let aVal: string | number = "";
+      let bVal: string | number = "";
+
+      switch (sortColumn) {
+        case "name":
+          aVal = a.name.toLowerCase();
+          bVal = b.name.toLowerCase();
+          break;
+        case "status":
+          aVal = a.status;
+          bVal = b.status;
+          break;
+        case "defaultUnit":
+          aVal = a.defaultUnit?.abbreviation?.toLowerCase() ?? "";
+          bVal = b.defaultUnit?.abbreviation?.toLowerCase() ?? "";
+          break;
+        case "popularUnit":
+          aVal = a.popularUnit?.useCount ?? 0;
+          bVal = b.popularUnit?.useCount ?? 0;
+          break;
+        case "createdBy":
+          aVal = a.createdBy?.username?.toLowerCase() ?? "";
+          bVal = b.createdBy?.username?.toLowerCase() ?? "";
+          break;
+        case "recipeCount":
+          aVal = a.recipeCount;
+          bVal = b.recipeCount;
+          break;
+      }
+
+      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  }, [ingredients, sortColumn, sortDirection]);
+
+  const SortIcon = ({ column }: { column: SortColumn }) => {
+    if (sortColumn !== column) return <FaSort className="ml-1 opacity-30" />;
+    return sortDirection === "asc" ? <FaSortUp className="ml-1" /> : <FaSortDown className="ml-1" />;
+  };
 
   // --- Create / Edit ---
   function openCreate() {
@@ -119,6 +179,7 @@ function AdminIngredientsPage() {
   // --- Merge ---
   function openMerge(item: AdminIngredient) {
     setMergeSource(item);
+    setMergeSearch("");
     setMergeModalOpen(true);
   }
 
@@ -232,17 +293,30 @@ function AdminIngredientsPage() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Status</th>
-                  <th>Default Unit</th>
-                  <th>Created By</th>
-                  <th className="text-right">Recipes</th>
+                  <th className="cursor-pointer select-none" onClick={() => handleSort("name")}>
+                    <span className="flex items-center">Name<SortIcon column="name" /></span>
+                  </th>
+                  <th className="cursor-pointer select-none" onClick={() => handleSort("status")}>
+                    <span className="flex items-center">Status<SortIcon column="status" /></span>
+                  </th>
+                  <th className="cursor-pointer select-none" onClick={() => handleSort("defaultUnit")}>
+                    <span className="flex items-center">Default Unit<SortIcon column="defaultUnit" /></span>
+                  </th>
+                  <th className="cursor-pointer select-none" onClick={() => handleSort("popularUnit")}>
+                    <span className="flex items-center">Popular Unit<SortIcon column="popularUnit" /></span>
+                  </th>
+                  <th className="cursor-pointer select-none" onClick={() => handleSort("createdBy")}>
+                    <span className="flex items-center">Created By<SortIcon column="createdBy" /></span>
+                  </th>
+                  <th className="cursor-pointer select-none text-right" onClick={() => handleSort("recipeCount")}>
+                    <span className="flex items-center justify-end">Recipes<SortIcon column="recipeCount" /></span>
+                  </th>
                   <th className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {ingredients.length > 0 ? (
-                  ingredients.map((item) => (
+                {sortedIngredients.length > 0 ? (
+                  sortedIngredients.map((item) => (
                     <tr key={item.id}>
                       <td className="font-medium">{item.name}</td>
                       <td>
@@ -255,6 +329,16 @@ function AdminIngredientsPage() {
                       <td>
                         {item.defaultUnit ? (
                           <span className="text-sm">{item.defaultUnit.abbreviation}</span>
+                        ) : (
+                          <span className="text-base-content/30">-</span>
+                        )}
+                      </td>
+                      <td>
+                        {item.popularUnit ? (
+                          <span className="text-sm text-base-content/70">
+                            {item.popularUnit.abbreviation}
+                            <span className="text-xs ml-1">({item.popularUnit.useCount})</span>
+                          </span>
                         ) : (
                           <span className="text-base-content/30">-</span>
                         )}
@@ -285,7 +369,7 @@ function AdminIngredientsPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="text-center text-base-content/50">No ingredients found</td>
+                    <td colSpan={7} className="text-center text-base-content/50">No ingredients found</td>
                   </tr>
                 )}
               </tbody>
@@ -339,16 +423,26 @@ function AdminIngredientsPage() {
           <div className="modal-box">
             <h3 className="font-bold text-lg">Merge &quot;{mergeSource.name}&quot; into...</h3>
             <p className="text-sm text-base-content/70 mt-2">Select the target ingredient. All recipes will be moved to the target.</p>
-            <div className="mt-4 max-h-60 overflow-y-auto">
-              {ingredients.filter((i) => i.id !== mergeSource.id).map((item) => (
-                <button
-                  key={item.id}
-                  className="btn btn-ghost btn-sm w-full justify-start mb-1"
-                  onClick={() => handleMerge(item)}
-                >
-                  {item.name} ({item.recipeCount} recipes)
-                </button>
-              ))}
+            <input
+              type="text"
+              placeholder="Search target ingredient..."
+              className="input input-bordered input-sm w-full mt-3"
+              value={mergeSearch}
+              onChange={(e) => setMergeSearch(e.target.value)}
+              autoFocus
+            />
+            <div className="mt-3 max-h-60 overflow-y-auto">
+              {ingredients
+                .filter((i) => i.id !== mergeSource.id && i.name.toLowerCase().includes(mergeSearch.toLowerCase()))
+                .map((item) => (
+                  <button
+                    key={item.id}
+                    className="btn btn-ghost btn-sm w-full justify-start mb-1"
+                    onClick={() => handleMerge(item)}
+                  >
+                    {item.name} ({item.recipeCount} recipes)
+                  </button>
+                ))}
             </div>
             <div className="modal-action">
               <button className="btn btn-ghost" onClick={() => { setMergeModalOpen(false); setMergeSource(null); }}>Cancel</button>

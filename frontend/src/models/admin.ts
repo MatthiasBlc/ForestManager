@@ -34,6 +34,7 @@ export interface AdminIngredient {
   status: "APPROVED" | "PENDING";
   createdBy: { id: string; username: string } | null;
   defaultUnit: { id: string; name: string; abbreviation: string } | null;
+  popularUnit: { id: string; abbreviation: string; useCount: number } | null;
   recipeCount: number;
   proposalCount: number;
   createdAt: string;

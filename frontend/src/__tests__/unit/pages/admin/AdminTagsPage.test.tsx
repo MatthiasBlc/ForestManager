@@ -135,8 +135,11 @@ describe('AdminTagsPage', () => {
       expect(screen.getByText('dessert')).toBeInTheDocument();
     });
 
-    const mergeButtons = screen.getAllByText('Merge');
-    await user.click(mergeButtons[0]);
+    // Find the row containing "dessert" and click its Merge button
+    const dessertRow = screen.getByText('dessert').closest('tr');
+    const mergeButton = dessertRow?.querySelector('button:nth-child(2)'); // Merge is 2nd button
+    expect(mergeButton).toBeInTheDocument();
+    await user.click(mergeButton!);
 
     await waitFor(() => {
       expect(screen.getByText(/Merge "dessert" into/)).toBeInTheDocument();

@@ -5,7 +5,7 @@ import { assertIsDefine } from "../util/assertIsDefine";
 import { Prisma } from "@prisma/client";
 import { isValidHttpUrl, validateServings, validateTime, validateSteps, StepInput } from "../util/validation";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
-import { RECIPE_TAGS_SELECT, RECIPE_STEPS_SELECT } from "../util/prismaSelects";
+import { RECIPE_TAGS_SELECT, RECIPE_STEPS_SELECT, RECIPE_INGREDIENTS_SELECT } from "../util/prismaSelects";
 import { requireRecipeAccess, requireRecipeOwnership } from "../services/membershipService";
 import { formatTags, formatIngredients, formatSteps } from "../util/responseFormatters";
 import { createRecipe as createRecipeService, updateRecipe as updateRecipeService } from "../services/recipeService";
@@ -166,22 +166,7 @@ export const getRecipe: RequestHandler = async (req, res, next) => {
         },
         steps: RECIPE_STEPS_SELECT,
         tags: RECIPE_TAGS_SELECT,
-        ingredients: {
-          select: {
-            id: true,
-            quantity: true,
-            order: true,
-            ingredient: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-          orderBy: {
-            order: "asc",
-          },
-        },
+        ingredients: RECIPE_INGREDIENTS_SELECT,
       },
     });
 

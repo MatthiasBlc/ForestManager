@@ -211,19 +211,19 @@ const ProposeModificationModal = ({
 
         <div className="form-control">
           <label className="label">
-            <span className="label-text">Steps</span>
-          </label>
-          <StepEditor value={proposedSteps} onChange={setProposedSteps} />
-        </div>
-
-        <div className="form-control">
-          <label className="label">
             <span className="label-text">Ingredients</span>
           </label>
           <IngredientList
             value={proposedIngredients}
             onChange={setProposedIngredients}
           />
+        </div>
+
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text">Steps</span>
+          </label>
+          <StepEditor value={proposedSteps} onChange={setProposedSteps} />
         </div>
 
         {!hasChanges && (

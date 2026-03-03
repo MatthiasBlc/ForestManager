@@ -14,9 +14,10 @@ interface ProposalsListProps {
   onProposalDecided: () => void;
 }
 
-function formatIngredient(ing: { name: string; quantity?: number | null }): string {
+function formatIngredient(ing: { name: string; quantity?: number | null; unit?: { abbreviation: string } | null }): string {
   if (ing.quantity != null) {
-    return `${ing.name} (${ing.quantity})`;
+    const unitStr = ing.unit?.abbreviation ? ` ${ing.unit.abbreviation}` : "";
+    return `${ing.name} (${ing.quantity}${unitStr})`;
   }
   return ing.name;
 }
@@ -54,7 +55,7 @@ function IngredientsComparison({
           <ul className="list-disc list-inside text-sm ml-2">
             {added.map((i) => (
               <li key={i.id} className="text-success">
-                {formatIngredient({ name: i.ingredient.name, quantity: i.quantity })}
+                {formatIngredient({ name: i.ingredient.name, quantity: i.quantity, unit: i.unit })}
               </li>
             ))}
           </ul>
@@ -66,7 +67,7 @@ function IngredientsComparison({
           <ul className="list-disc list-inside text-sm ml-2">
             {removed.map((i) => (
               <li key={i.id} className="text-error line-through">
-                {formatIngredient(i)}
+                {formatIngredient({ name: i.name, quantity: i.quantity, unit: i.unit })}
               </li>
             ))}
           </ul>
@@ -81,9 +82,9 @@ function IngredientsComparison({
               const qtyChanged = ci && ci.quantity !== i.quantity;
               return (
                 <li key={i.id} className={qtyChanged ? "text-warning" : "text-base-content/70"}>
-                  {formatIngredient({ name: i.ingredient.name, quantity: i.quantity })}
+                  {formatIngredient({ name: i.ingredient.name, quantity: i.quantity, unit: i.unit })}
                   {qtyChanged && ci && (
-                    <span className="text-xs"> (was {ci.quantity ?? "no qty"})</span>
+                    <span className="text-xs"> (was {ci.quantity ?? "no qty"}{ci.unit?.abbreviation ? ` ${ci.unit.abbreviation}` : ""})</span>
                   )}
                 </li>
               );
@@ -255,6 +256,17 @@ const ProposalsList = ({ recipeId, currentIngredients, refreshSignal, onProposal
                         )}
                       </div>
                     )}
+                    {proposal.proposedIngredients && proposal.proposedIngredients.length > 0 && (
+                      <div>
+                        <span className="font-medium">Proposed ingredients:</span>
+                        <div className="mt-1">
+                          <IngredientsComparison
+                            current={currentIngredients}
+                            proposed={proposal.proposedIngredients}
+                          />
+                        </div>
+                      </div>
+                    )}
                     {proposal.proposedSteps && proposal.proposedSteps.length > 0 && (
                       <div>
                         <span className="font-medium">Proposed steps:</span>
@@ -265,17 +277,6 @@ const ProposalsList = ({ recipeId, currentIngredients, refreshSignal, onProposal
                               <span className="whitespace-pre-wrap">{step.instruction}</span>
                             </div>
                           ))}
-                        </div>
-                      </div>
-                    )}
-                    {proposal.proposedIngredients && proposal.proposedIngredients.length > 0 && (
-                      <div>
-                        <span className="font-medium">Proposed ingredients:</span>
-                        <div className="mt-1">
-                          <IngredientsComparison
-                            current={currentIngredients}
-                            proposed={proposal.proposedIngredients}
-                          />
                         </div>
                       </div>
                     )}

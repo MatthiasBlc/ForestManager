@@ -36,9 +36,25 @@ describe("formatIngredients", () => {
     ];
 
     expect(formatIngredients(raw)).toEqual([
-      { id: "ri1", name: "sugar", ingredientId: "i1", quantity: 100, order: 0 },
-      { id: "ri2", name: "milk", ingredientId: "i2", quantity: 200, order: 1 },
+      { id: "ri1", name: "sugar", ingredientId: "i1", quantity: 100, unitId: null, unit: null, order: 0 },
+      { id: "ri2", name: "milk", ingredientId: "i2", quantity: 200, unitId: null, unit: null, order: 1 },
     ]);
+  });
+
+  it("should include unit when present", () => {
+    const raw = [
+      {
+        id: "ri1",
+        quantity: 100,
+        order: 0,
+        ingredient: { id: "i1", name: "flour" },
+        unit: { id: "u1", abbreviation: "g" },
+      },
+    ];
+
+    const result = formatIngredients(raw);
+    expect(result[0].unitId).toBe("u1");
+    expect(result[0].unit).toEqual({ id: "u1", abbreviation: "g" });
   });
 
   it("should handle null quantity", () => {

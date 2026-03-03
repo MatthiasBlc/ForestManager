@@ -32,6 +32,12 @@ export const PROPOSAL_INGREDIENTS_SELECT = {
         status: true,
       },
     },
+    unit: {
+      select: {
+        id: true,
+        abbreviation: true,
+      },
+    },
   },
   orderBy: {
     order: "asc" as const,

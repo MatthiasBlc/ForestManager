@@ -40,6 +40,10 @@ export const getAll: RequestHandler = async (req, res, next) => {
       prisma.ingredient.count({ where }),
     ]);
 
+    // Calculer l'unite populaire pour chaque ingredient
+    const ingredientIds = ingredients.map((i) => i.id);
+    const popularUnits = await getPopularUnitsForIngredients(ingredientIds);
+
     res.status(200).json({
       ingredients: ingredients.map((i) => ({
         id: i.id,
@@ -47,6 +51,7 @@ export const getAll: RequestHandler = async (req, res, next) => {
         status: i.status,
         createdBy: i.createdBy,
         defaultUnit: i.defaultUnit,
+        popularUnit: popularUnits[i.id] || null,
         recipeCount: i._count.recipes,
         proposalCount: i._count.proposals,
         createdAt: i.createdAt,
@@ -57,6 +62,43 @@ export const getAll: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Calcule l'unite la plus utilisee pour chaque ingredient
+ */
+async function getPopularUnitsForIngredients(ingredientIds: string[]): Promise<Record<string, { id: string; abbreviation: string; useCount: number }>> {
+  if (ingredientIds.length === 0) return {};
+
+  // Requete raw pour obtenir l'unite la plus utilisee par ingredient
+  const results = await prisma.$queryRaw<Array<{
+    ingredientId: string;
+    unitId: string;
+    abbreviation: string;
+    useCount: bigint;
+  }>>`
+    SELECT DISTINCT ON (ri."ingredientId")
+      ri."ingredientId",
+      ri."unitId",
+      u."abbreviation",
+      COUNT(*) as "useCount"
+    FROM "RecipeIngredient" ri
+    JOIN "Unit" u ON u.id = ri."unitId"
+    WHERE ri."ingredientId" = ANY(${ingredientIds})
+      AND ri."unitId" IS NOT NULL
+    GROUP BY ri."ingredientId", ri."unitId", u."abbreviation"
+    ORDER BY ri."ingredientId", COUNT(*) DESC
+  `;
+
+  const map: Record<string, { id: string; abbreviation: string; useCount: number }> = {};
+  for (const row of results) {
+    map[row.ingredientId] = {
+      id: row.unitId,
+      abbreviation: row.abbreviation,
+      useCount: Number(row.useCount),
+    };
+  }
+  return map;
+}
 
 /**
  * POST /api/admin/ingredients

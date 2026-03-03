@@ -1,8 +1,12 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { FaSortUp, FaSortDown, FaSort } from "react-icons/fa";
 import { AdminUnit } from "../../models/admin";
 import APIManager from "../../network/api";
 import { useConfirm } from "../../hooks/useConfirm";
 import toast from "react-hot-toast";
+
+type UnitSortColumn = "name" | "abbreviation" | "category" | "sortOrder" | "usageCount";
+type SortDirection = "asc" | "desc";
 
 const CATEGORIES = ["WEIGHT", "VOLUME", "SPOON", "COUNT", "QUALITATIVE"] as const;
 const CATEGORY_LABELS: Record<string, string> = {
@@ -25,6 +29,8 @@ function AdminUnitsPage() {
   const [formCategory, setFormCategory] = useState<string>("WEIGHT");
   const [formSortOrder, setFormSortOrder] = useState(0);
   const [saving, setSaving] = useState(false);
+  const [sortColumn, setSortColumn] = useState<UnitSortColumn>("category");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const { confirm, ConfirmDialog } = useConfirm();
 
   const loadUnits = useCallback(async () => {
@@ -42,6 +48,56 @@ function AdminUnitsPage() {
     setIsLoading(true);
     loadUnits();
   }, [loadUnits]);
+
+  // --- Sorting ---
+  const handleSort = (column: UnitSortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  const sortedUnits = useMemo(() => {
+    const sorted = [...units].sort((a, b) => {
+      let aVal: string | number = "";
+      let bVal: string | number = "";
+
+      switch (sortColumn) {
+        case "name":
+          aVal = a.name.toLowerCase();
+          bVal = b.name.toLowerCase();
+          break;
+        case "abbreviation":
+          aVal = a.abbreviation.toLowerCase();
+          bVal = b.abbreviation.toLowerCase();
+          break;
+        case "category":
+          aVal = a.category;
+          bVal = b.category;
+          break;
+        case "sortOrder":
+          aVal = a.sortOrder;
+          bVal = b.sortOrder;
+          break;
+        case "usageCount":
+          aVal = a.usageCount;
+          bVal = b.usageCount;
+          break;
+      }
+
+      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  }, [units, sortColumn, sortDirection]);
+
+  const SortIcon = ({ column }: { column: UnitSortColumn }) => {
+    if (sortColumn !== column) return <FaSort className="ml-1 opacity-30" />;
+    return sortDirection === "asc" ? <FaSortUp className="ml-1" /> : <FaSortDown className="ml-1" />;
+  };
 
   function openCreate() {
     setEditingItem(null);
@@ -148,17 +204,27 @@ function AdminUnitsPage() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Abbreviation</th>
-                  <th>Category</th>
-                  <th className="text-right">Order</th>
-                  <th className="text-right">Usage</th>
+                  <th className="cursor-pointer select-none" onClick={() => handleSort("name")}>
+                    <span className="flex items-center">Name<SortIcon column="name" /></span>
+                  </th>
+                  <th className="cursor-pointer select-none" onClick={() => handleSort("abbreviation")}>
+                    <span className="flex items-center">Abbreviation<SortIcon column="abbreviation" /></span>
+                  </th>
+                  <th className="cursor-pointer select-none" onClick={() => handleSort("category")}>
+                    <span className="flex items-center">Category<SortIcon column="category" /></span>
+                  </th>
+                  <th className="cursor-pointer select-none text-right" onClick={() => handleSort("sortOrder")}>
+                    <span className="flex items-center justify-end">Order<SortIcon column="sortOrder" /></span>
+                  </th>
+                  <th className="cursor-pointer select-none text-right" onClick={() => handleSort("usageCount")}>
+                    <span className="flex items-center justify-end">Usage<SortIcon column="usageCount" /></span>
+                  </th>
                   <th className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {units.length > 0 ? (
-                  units.map((item) => (
+                {sortedUnits.length > 0 ? (
+                  sortedUnits.map((item) => (
                     <tr key={item.id}>
                       <td className="font-medium">{item.name}</td>
                       <td>{item.abbreviation}</td>

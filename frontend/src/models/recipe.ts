@@ -40,6 +40,7 @@ export interface ProposalIngredient {
   ingredient: { id: string; name: string; status: IngredientStatus };
   quantity: number | null;
   unitId: string | null;
+  unit?: { id: string; abbreviation: string } | null;
   order: number;
 }
 

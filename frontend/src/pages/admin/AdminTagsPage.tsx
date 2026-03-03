@@ -1,10 +1,13 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
+import { FaSortUp, FaSortDown, FaSort } from "react-icons/fa";
 import { AdminTag, AdminRecipeListItem, AdminRecipeDetail, AdminRecipeUpdateInput } from "../../models/admin";
 import APIManager from "../../network/api";
 import { useConfirm } from "../../hooks/useConfirm";
 import toast from "react-hot-toast";
 
 type ScopeFilter = "ALL" | "GLOBAL" | "COMMUNITY";
+type TagSortColumn = "name" | "scope" | "status" | "recipeCount";
+type SortDirection = "asc" | "desc";
 
 function AdminTagsPage() {
   const [tags, setTags] = useState<AdminTag[]>([]);
@@ -17,6 +20,9 @@ function AdminTagsPage() {
   const [saving, setSaving] = useState(false);
   const [mergeSource, setMergeSource] = useState<AdminTag | null>(null);
   const [mergeModalOpen, setMergeModalOpen] = useState(false);
+  const [mergeSearch, setMergeSearch] = useState("");
+  const [sortColumn, setSortColumn] = useState<TagSortColumn>("name");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const { confirm, ConfirmDialog } = useConfirm();
 
   // Recipe list modal state
@@ -48,6 +54,52 @@ function AdminTagsPage() {
     setIsLoading(true);
     loadTags();
   }, [loadTags]);
+
+  // --- Sorting ---
+  const handleSort = (column: TagSortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
+
+  const sortedTags = useMemo(() => {
+    const sorted = [...tags].sort((a, b) => {
+      let aVal: string | number = "";
+      let bVal: string | number = "";
+
+      switch (sortColumn) {
+        case "name":
+          aVal = a.name.toLowerCase();
+          bVal = b.name.toLowerCase();
+          break;
+        case "scope":
+          aVal = a.scope;
+          bVal = b.scope;
+          break;
+        case "status":
+          aVal = a.status;
+          bVal = b.status;
+          break;
+        case "recipeCount":
+          aVal = a.recipeCount;
+          bVal = b.recipeCount;
+          break;
+      }
+
+      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  }, [tags, sortColumn, sortDirection]);
+
+  const SortIcon = ({ column }: { column: TagSortColumn }) => {
+    if (sortColumn !== column) return <FaSort className="ml-1 opacity-30" />;
+    return sortDirection === "asc" ? <FaSortUp className="ml-1" /> : <FaSortDown className="ml-1" />;
+  };
 
   function openCreate() {
     setEditingTag(null);
@@ -100,6 +152,7 @@ function AdminTagsPage() {
 
   function openMerge(tag: AdminTag) {
     setMergeSource(tag);
+    setMergeSearch("");
     setMergeModalOpen(true);
   }
 
@@ -281,16 +334,22 @@ function AdminTagsPage() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Scope</th>
+                  <th className="cursor-pointer select-none" onClick={() => handleSort("name")}>
+                    <span className="flex items-center">Name<SortIcon column="name" /></span>
+                  </th>
+                  <th className="cursor-pointer select-none" onClick={() => handleSort("scope")}>
+                    <span className="flex items-center">Scope<SortIcon column="scope" /></span>
+                  </th>
                   <th>Community</th>
-                  <th className="text-right">Recipes</th>
+                  <th className="cursor-pointer select-none text-right" onClick={() => handleSort("recipeCount")}>
+                    <span className="flex items-center justify-end">Recipes<SortIcon column="recipeCount" /></span>
+                  </th>
                   <th className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {tags.length > 0 ? (
-                  tags.map((tag) => (
+                {sortedTags.length > 0 ? (
+                  sortedTags.map((tag) => (
                     <tr key={tag.id}>
                       <td className="font-medium">{tag.name}</td>
                       <td>
@@ -365,16 +424,26 @@ function AdminTagsPage() {
           <div className="modal-box">
             <h3 className="font-bold text-lg">Merge &quot;{mergeSource.name}&quot; into...</h3>
             <p className="text-sm text-base-content/70 mt-2">Select the target tag. All recipes will be moved to the target.</p>
-            <div className="mt-4 max-h-60 overflow-y-auto">
-              {tags.filter((t) => t.id !== mergeSource.id).map((tag) => (
-                <button
-                  key={tag.id}
-                  className="btn btn-ghost btn-sm w-full justify-start mb-1"
-                  onClick={() => handleMerge(tag)}
-                >
-                  {tag.name} ({tag.recipeCount} recipes)
-                </button>
-              ))}
+            <input
+              type="text"
+              placeholder="Search target tag..."
+              className="input input-bordered input-sm w-full mt-3"
+              value={mergeSearch}
+              onChange={(e) => setMergeSearch(e.target.value)}
+              autoFocus
+            />
+            <div className="mt-3 max-h-60 overflow-y-auto">
+              {tags
+                .filter((t) => t.id !== mergeSource.id && t.name.toLowerCase().includes(mergeSearch.toLowerCase()))
+                .map((tag) => (
+                  <button
+                    key={tag.id}
+                    className="btn btn-ghost btn-sm w-full justify-start mb-1"
+                    onClick={() => handleMerge(tag)}
+                  >
+                    {tag.name} ({tag.recipeCount} recipes)
+                  </button>
+                ))}
             </div>
             <div className="modal-action">
               <button className="btn btn-ghost" onClick={() => { setMergeModalOpen(false); setMergeSource(null); }}>Cancel</button>

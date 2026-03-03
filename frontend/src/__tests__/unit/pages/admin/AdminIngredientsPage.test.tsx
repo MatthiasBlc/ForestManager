@@ -62,7 +62,9 @@ describe('AdminIngredientsPage', () => {
     render(<TestApp />);
 
     await waitFor(() => {
-      expect(screen.getByText('g')).toBeInTheDocument();
+      // 'g' appears in both Default Unit and Popular Unit columns
+      const gElements = screen.getAllByText('g');
+      expect(gElements.length).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -175,8 +177,11 @@ describe('AdminIngredientsPage', () => {
       expect(screen.getByText('sugar')).toBeInTheDocument();
     });
 
-    const mergeButtons = screen.getAllByText('Merge');
-    await user.click(mergeButtons[0]);
+    // Find the row containing "sugar" and click its Merge button
+    const sugarRow = screen.getByText('sugar').closest('tr');
+    const mergeButton = sugarRow?.querySelector('button:nth-child(2)'); // Merge is 2nd button after Edit
+    expect(mergeButton).toBeInTheDocument();
+    await user.click(mergeButton!);
 
     await waitFor(() => {
       expect(screen.getByText(/Merge "sugar" into/)).toBeInTheDocument();

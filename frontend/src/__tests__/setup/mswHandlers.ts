@@ -45,16 +45,19 @@ export const mockAdminIngredients = [
   {
     id: 'ing-1', name: 'sugar', recipeCount: 10, status: 'APPROVED',
     createdBy: null, defaultUnit: { id: 'unit-1', name: 'gramme', abbreviation: 'g' },
+    popularUnit: { id: 'unit-1', abbreviation: 'g', useCount: 8 },
     proposalCount: 0, createdAt: new Date().toISOString(),
   },
   {
     id: 'ing-2', name: 'flour', recipeCount: 8, status: 'APPROVED',
     createdBy: null, defaultUnit: null,
+    popularUnit: { id: 'unit-1', abbreviation: 'g', useCount: 6 },
     proposalCount: 1, createdAt: new Date().toISOString(),
   },
   {
     id: 'ing-3', name: 'butter', recipeCount: 5, status: 'PENDING',
     createdBy: { id: 'user-1', username: 'alice' }, defaultUnit: null,
+    popularUnit: null,
     proposalCount: 0, createdAt: new Date().toISOString(),
   },
 ];
