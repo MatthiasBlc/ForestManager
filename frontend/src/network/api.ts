@@ -268,7 +268,7 @@ export default class APIManager {
 
   static async getUnits(): Promise<UnitsByCategory> {
     const response = await API.get("/api/units").catch(handleApiError);
-    return response.data;
+    return response.data.data;
   }
 
   static async getSuggestedUnit(ingredientId: string): Promise<SuggestedUnit> {

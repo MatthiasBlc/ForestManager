@@ -15,7 +15,7 @@
 
 ## 2. Ingredients - autocomplete & creation
 
-- [ ] Creer une recette : taper un ingredient existant → autocomplete affiche les suggestions
+- [x] Creer une recette : taper un ingredient existant → autocomplete affiche les suggestions
 - [ ] Selectionner un ingredient approuve → l'unite est pre-selectionnee (suggested-unit)
 - [ ] Taper un ingredient inconnu → "New ingredient" affiche, creation en PENDING a la soumission
 - [ ] Les ingredients PENDING affichent un badge "nouveau" dans l'autocomplete
