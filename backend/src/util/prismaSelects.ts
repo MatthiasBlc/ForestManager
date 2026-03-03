@@ -50,6 +50,12 @@ export const RECIPE_INGREDIENTS_SELECT = {
         name: true,
       },
     },
+    unit: {
+      select: {
+        id: true,
+        abbreviation: true,
+      },
+    },
   },
   orderBy: {
     order: "asc" as const,
