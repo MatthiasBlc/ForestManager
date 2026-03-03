@@ -527,3 +527,5 @@ defaultUnit est toujours vide, pourquoi ? (seed exemple quiche loraine sur la pr
 
 Pour les différentes merge admin, il faudrait aussi avoir un moteur de recherche pour trouver la merge de destination plus vite que la liste
 (on peut aussi conserver la liste pour plus de flexibilité)
+
+# dans Admin,ajouter la possibilité de trier en cliquant sur les entetes des colonnes pour les diverses pages

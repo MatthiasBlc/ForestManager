@@ -18,8 +18,6 @@ persistance, fonctionne y compris offline (je me connecte je dois voir les notif
 
 Implemente : servings avec scaling dynamique des quantites, etapes structurees ordonnees, temps de prep/cuisson/repos avec total auto, propositions granulaires (servings/temps/steps), badges temps et servings sur les cartes.
 
-# dans Admin, possibilité de trier en cliquant sur les entetes des colonnes pour les diverses pages
-
 # audit refactorisation complete back + front
 
 # Système d'upload de photos
