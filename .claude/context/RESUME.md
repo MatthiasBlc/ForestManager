@@ -1,4 +1,4 @@
-Voici notre dernière conversation qui n'a pas été terminée en raison d'un problème de manque de token :
+# Voici notre dernière conversation qui n'a pas été terminée en raison d'un problème de manque de token :
 
 "❯ lors de la création d'une nouvelle recette, je tappe un ingrédient existant, l'auto  
  complete affiche des suggestion.  
@@ -95,11 +95,12 @@ apping
 ❯ j'ai des erreurs de tests sur le front
 
 ● Bash(npm run test:frontend 2>&1 | tail -80)  
- ⎿ - The error was thrown, while Vitest was running this test.  
- - If the error occurred after the test had been completed, this was the last docu  
- mented test before it was thrown.  
- … +60 lines (ctrl+o to expand)  
- ⎿ (timeout 2m)
+ ⎿ - The error was thrown, while Vitest was running this test.
+
+- If the error occurred after the test had been completed, this was the last docu  
+  mented test before it was thrown.  
+  … +60 lines (ctrl+o to expand)  
+  ⎿ (timeout 2m)
 
 ● Le probleme est que les tests mockent getUnits pour retourner { data: grouped } (l'ancien
 format). Maintenant que getUnits fait response.data.data, le mock doit retourner  
@@ -189,8 +190,7 @@ le "bouton" menu déroulant est plus petit en hauteur que les cases du name et d
 
 - Beurre : utilise dans 4 recettes (risotto, quiche, tarte citron, fondant), toujours en
   g → le getSuggestedUnit (source "popular") retourne g
-- Lait : utilise dans 1 seule recette (quiche), en cl → devrait retourner cl  
-
+- Lait : utilise dans 1 seule recette (quiche), en cl → devrait retourner cl
 
 Le fait que "lait" reste sur "Unit" est surprenant. Soit le groupBy ne trouve pas le
 lien, soit il y a un souci. Mais verifions d'abord -- c'est peut-etre que le lait du seed
@@ -246,28 +246,29 @@ Pour retirer le "x recipe(s)" :
  91 type="button"  
  92 onClick={() => selectSuggestion(suggestion)}  
  93 - className="w-full px-3 py-2 text-left hover:bg-base-200 - flex justify-between items-center"  
- 93 + className="w-full px-3 py-2 text-left hover:bg-base-200  
- + flex items-center gap-2"  
- 94 >
-95 - <span className="flex items-center gap-2">  
- 96 - {suggestion.name}  
- 97 - {suggestion.status === "PENDING" && (  
- 98 - <span className="badge badge-warning               
-          -badge-xs">nouveau</span>  
- 99 - )}  
- 100 - </span>  
- 101 - <span className="text-xs text-base-content/60">  
- 102 - {suggestion.recipeCount}  
- -recipe{suggestion.recipeCount !== 1 ? "s" : ""}  
- 103 - </span>  
- 95 + {suggestion.name}  
- 96 + {suggestion.status === "PENDING" && (  
- 97 + <span className="badge badge-warning                 
-          +badge-xs">nouveau</span>  
- 98 + )}  
- 99 </button>
-100 ))
-101 ) : (
+ 93 + className="w-full px-3 py-2 text-left hover:bg-base-200
+
+- flex items-center gap-2"  
+   94 >
+  95 - <span className="flex items-center gap-2">  
+   96 - {suggestion.name}  
+   97 - {suggestion.status === "PENDING" && (  
+   98 - <span className="badge badge-warning               
+            -badge-xs">nouveau</span>  
+   99 - )}  
+   100 - </span>  
+   101 - <span className="text-xs text-base-content/60">  
+   102 - {suggestion.recipeCount}  
+   -recipe{suggestion.recipeCount !== 1 ? "s" : ""}  
+   103 - </span>  
+   95 + {suggestion.name}  
+   96 + {suggestion.status === "PENDING" && (  
+   97 + <span className="badge badge-warning                 
+            +badge-xs">nouveau</span>  
+   98 + )}  
+   99 </button>
+  100 ))
+  101 ) : (
 
 ● C'est fait -- le compteur "x recipe(s)" est retire de l'autocomplete ingredients.
 
@@ -325,7 +326,6 @@ const { PrismaClient } = require('@prisma/client');…)
  Error response from daemon: No such container: forestmanager-backend-1
 
      Error response from daemon: No such container: forestmanager-backend-1
-
 
 ● Bash(docker ps --format '{{.Names}}' | head -10)
 ⎿ forestmanager-backend  
@@ -501,4 +501,29 @@ d'utiliser un callback fonctionnel dans updateIngredient ou un ref. Changeons l'
 173 };
 ⎿ You're out of extra usage · resets 6pm (Europe/Paris)"
 
-Continue le travail
+Continue le travail et termine ce point avant de passer à un autre point ci-dessous
+
+# Dans Proposals avec ingredients
+
+organise les blocs dans le même ordre que pour la création d'une nouvelle recette. L'ordre actuel (ingrédients à la fin) n'est pas cohérent
+
+Les ingrédients n'ont pas leur unité associée (il y a "unit" dans le champ en question - exemple de test, recette de la quiche loraine du seed en preprod)
+
+# RecipeDetail - affichage ingredients
+
+Je vois les ingrédients, les quantité mais pas les unités. (exemple de test, recette de la quiche loraine du seed en preprod)
+
+Je devrais avoir :
+ingrédient1: X unité
+ingrédient2: X unité
+ingrédient3: X unité
+ingrédient4: X unité
+
+# Admin - Ingredients enrichis
+
+defaultUnit est toujours vide, pourquoi ? (seed exemple quiche loraine sur la preprod)
+
+# Admin, merge
+
+Pour les différentes merge admin, il faudrait aussi avoir un moteur de recherche pour trouver la merge de destination plus vite que la liste
+(on peut aussi conserver la liste pour plus de flexibilité)
