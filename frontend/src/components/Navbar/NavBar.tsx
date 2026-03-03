@@ -40,9 +40,9 @@ const NavBar = () => {
         <button
           className="btn btn-ghost btn-circle"
           onClick={toggleTheme}
-          aria-label={theme === "forest" ? "Switch to light mode" : "Switch to dark mode"}
+          aria-label={theme === "coffee" ? "Switch to light mode" : "Switch to dark mode"}
         >
-          {theme === "forest" ? <SunIcon /> : <MoonIcon />}
+          {theme === "coffee" ? <SunIcon /> : <MoonIcon />}
         </button>
         {user ? (
           <>

@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 
-type Theme = "forest" | "winter";
+type Theme = "coffee" | "winter";
 
 interface ThemeContextType {
   theme: Theme;
@@ -13,8 +13,8 @@ const STORAGE_KEY = "forestmanager-theme";
 
 function getInitialTheme(): Theme {
   const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === "forest" || stored === "winter") return stored;
-  return window.matchMedia("(prefers-color-scheme: light)").matches ? "winter" : "forest";
+  if (stored === "coffee" || stored === "winter") return stored;
+  return window.matchMedia("(prefers-color-scheme: light)").matches ? "winter" : "coffee";
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -26,7 +26,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme]);
 
   const toggleTheme = useCallback(() => {
-    setTheme((prev) => (prev === "forest" ? "winter" : "forest"));
+    setTheme((prev) => (prev === "coffee" ? "winter" : "coffee"));
   }, []);
 
   return (

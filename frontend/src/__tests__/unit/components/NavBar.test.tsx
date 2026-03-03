@@ -57,7 +57,7 @@ describe('NavBar', () => {
   });
 
   it('should toggle theme on click', async () => {
-    localStorage.setItem('forestmanager-theme', 'forest');
+    localStorage.setItem('forestmanager-theme', 'coffee');
     const user = userEvent.setup();
     renderWithUserAuth(<NavBar />);
 
