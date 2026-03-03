@@ -15,6 +15,9 @@ import {
   FaStar,
   FaEnvelope,
   FaEnvelopeOpen,
+  FaTag,
+  FaThumbsUp,
+  FaThumbsDown,
 } from "react-icons/fa";
 import { ActivityItem, ActivityType } from "../../models/activity";
 import APIManager from "../../network/api";
@@ -46,6 +49,13 @@ const activityConfig: Record<
   INVITE_ACCEPTED: { icon: FaEnvelopeOpen, color: "text-success", label: "accepted an invitation" },
   INVITE_REJECTED: { icon: FaEnvelopeOpen, color: "text-error", label: "declined an invitation" },
   INVITE_CANCELLED: { icon: FaTimes, color: "text-warning", label: "cancelled an invitation" },
+  TAG_CREATED: { icon: FaTag, color: "text-success", label: "created a tag" },
+  TAG_UPDATED: { icon: FaTag, color: "text-info", label: "updated a tag" },
+  TAG_DELETED: { icon: FaTag, color: "text-error", label: "deleted a tag" },
+  TAG_APPROVED: { icon: FaThumbsUp, color: "text-success", label: "approved a tag" },
+  TAG_REJECTED: { icon: FaThumbsDown, color: "text-error", label: "rejected a tag" },
+  TAG_SUGGESTION_ACCEPTED: { icon: FaCheck, color: "text-success", label: "accepted a tag suggestion" },
+  TAG_SUGGESTION_REJECTED: { icon: FaTimes, color: "text-error", label: "rejected a tag suggestion" },
 };
 
 const ActivityFeed = ({ communityId, personal = false, limit = 20 }: ActivityFeedProps) => {
@@ -119,6 +129,7 @@ const ActivityFeed = ({ communityId, personal = false, limit = 20 }: ActivityFee
 
   const renderActivityContent = (activity: ActivityItem) => {
     const config = activityConfig[activity.type];
+    if (!config) return null;
     const Icon = config.icon;
 
     return (
