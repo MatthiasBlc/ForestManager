@@ -458,9 +458,9 @@ npm run docker:up:build
 - [x] T3 - Tags pending : creation, reutilisation, notification, approve, reject
 - [x] T4 - Autocomplete scope-aware : communaute et catalogue perso
 - [x] T5 - Tag suggestions : existant, inconnu, rejet owner, rejet moderateur, cas limites
-- [ ] T6 - Fork inter-communaute : global, connu, inconnu
-- [ ] T7 - Affichage et styles : TagBadge, filtres
-- [ ] T8 - Administration tags communaute : panneau moderateur
+- [x] T6 - Fork inter-communaute : global, connu, inconnu
+- [x] T7 - Affichage et styles : TagBadge, filtres
+- [x] T8 - Administration tags communaute : panneau moderateur
 - [ ] T9 - Preferences : visibilite tags, notifications moderateur
 - [ ] T10 - Notifications WebSocket temps reel
 - [ ] T11 - Recettes orphelines et tags
