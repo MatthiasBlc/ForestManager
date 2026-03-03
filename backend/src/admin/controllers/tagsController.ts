@@ -30,7 +30,15 @@ export const getAll: RequestHandler = async (req, res, next) => {
       prisma.tag.findMany({
         where,
         include: {
-          _count: { select: { recipes: true } },
+          _count: {
+            select: {
+              recipes: {
+                where: {
+                  recipe: { deletedAt: null },
+                },
+              },
+            },
+          },
           community: { select: { id: true, name: true } },
         },
         orderBy: { name: "asc" },
@@ -40,6 +48,23 @@ export const getAll: RequestHandler = async (req, res, next) => {
       prisma.tag.count({ where }),
     ]);
 
+    // Pour les tags COMMUNITY, ne compter que les recettes dans la communaute
+    const tagIds = tags.filter((t) => t.communityId).map((t) => t.id);
+    const communityCountsRaw = tagIds.length > 0
+      ? await prisma.recipeTag.groupBy({
+          by: ["tagId"],
+          where: {
+            tagId: { in: tagIds },
+            recipe: {
+              deletedAt: null,
+              communityId: { not: null },
+            },
+          },
+          _count: { tagId: true },
+        })
+      : [];
+    const communityCountMap = new Map(communityCountsRaw.map((c) => [c.tagId, c._count.tagId]));
+
     res.status(200).json({
       tags: tags.map((t) => ({
         id: t.id,
@@ -48,7 +73,9 @@ export const getAll: RequestHandler = async (req, res, next) => {
         status: t.status,
         communityId: t.communityId,
         community: t.community,
-        recipeCount: t._count.recipes,
+        recipeCount: t.communityId
+          ? (communityCountMap.get(t.id) ?? 0)
+          : t._count.recipes,
       })),
       pagination: buildPaginationMeta(total, limit, offset, tags.length),
     });
