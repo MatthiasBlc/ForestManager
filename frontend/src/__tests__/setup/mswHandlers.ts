@@ -743,7 +743,7 @@ export const handlers = [
         { status: 401 }
       );
     }
-    return HttpResponse.json(mockUnits);
+    return HttpResponse.json({ data: mockUnits });
   }),
 
   // GET /api/ingredients/:id/suggested-unit
