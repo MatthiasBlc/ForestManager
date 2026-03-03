@@ -88,31 +88,31 @@ const templates: Record<string, NotificationTemplate> = {
   VARIANT_PROPOSED: {
     title: "Nouvelle proposal",
     message: (v) => `${v.actorName} propose une modification sur '${v.recipeName}'`,
-    actionUrl: (v) => `/communities/${v.communityId}/recipes/${v.recipeId}`,
+    actionUrl: (v) => `/recipes/${v.recipeId}`,
     groupKey: null,
   },
   PROPOSAL_ACCEPTED: {
     title: "Proposal acceptee",
     message: (v) => `Votre proposal sur '${v.recipeName}' a ete acceptee`,
-    actionUrl: (v) => `/communities/${v.communityId}/recipes/${v.recipeId}`,
+    actionUrl: (v) => `/recipes/${v.recipeId}`,
     groupKey: null,
   },
   PROPOSAL_REJECTED: {
     title: "Proposal refusee",
     message: (v) => `Votre proposal sur '${v.recipeName}' a ete refusee`,
-    actionUrl: (v) => `/communities/${v.communityId}/recipes/${v.recipeId}`,
+    actionUrl: (v) => `/recipes/${v.recipeId}`,
     groupKey: null,
   },
   RECIPE_CREATED: {
     title: "Nouvelle recette",
     message: (v) => `${v.actorName} a cree '${v.recipeName}' dans ${v.communityName}`,
-    actionUrl: (v) => `/communities/${v.communityId}/recipes/${v.recipeId}`,
+    actionUrl: (v) => `/recipes/${v.recipeId}`,
     groupKey: (v) => `community:${v.communityId}:RECIPE_CREATED`,
   },
   RECIPE_SHARED: {
     title: "Recette partagee",
     message: (v) => `${v.actorName} a partage '${v.recipeName}' dans ${v.communityName}`,
-    actionUrl: (v) => `/communities/${v.communityId}/recipes/${v.recipeId}`,
+    actionUrl: (v) => `/recipes/${v.recipeId}`,
     groupKey: (v) => `community:${v.communityId}:RECIPE_SHARED`,
   },
 
@@ -120,31 +120,31 @@ const templates: Record<string, NotificationTemplate> = {
   TAG_SUGGESTION_CREATED: {
     title: "Suggestion de tag",
     message: (v) => `${v.actorName} suggere le tag '${v.tagName}' sur '${v.recipeName}'`,
-    actionUrl: (v) => `/communities/${v.communityId}/recipes/${v.recipeId}`,
+    actionUrl: (v) => `/recipes/${v.recipeId}`,
     groupKey: null,
   },
   TAG_SUGGESTION_ACCEPTED: {
     title: "Suggestion acceptee",
     message: (v) => `Votre suggestion de tag '${v.tagName}' a ete acceptee`,
-    actionUrl: (v) => `/communities/${v.communityId}/recipes/${v.recipeId}`,
+    actionUrl: (v) => `/recipes/${v.recipeId}`,
     groupKey: null,
   },
   TAG_SUGGESTION_REJECTED: {
     title: "Suggestion refusee",
     message: (v) => `Votre suggestion de tag '${v.tagName}' a ete refusee`,
-    actionUrl: (v) => `/communities/${v.communityId}/recipes/${v.recipeId}`,
+    actionUrl: (v) => `/recipes/${v.recipeId}`,
     groupKey: null,
   },
   "tag-suggestion:pending-mod": {
     title: "Tag en attente",
     message: (v) => `Un tag suggere attend votre validation dans ${v.communityName}`,
-    actionUrl: (v) => `/communities/${v.communityId}/tags`,
+    actionUrl: (v) => `/communities/${v.communityId}`,
     groupKey: null,
   },
   "tag:pending": {
     title: "Tag en attente",
     message: (v) => `Un nouveau tag attend validation dans ${v.communityName}`,
-    actionUrl: (v) => `/communities/${v.communityId}/tags`,
+    actionUrl: (v) => `/communities/${v.communityId}`,
     groupKey: null,
   },
   "tag:approved": {
