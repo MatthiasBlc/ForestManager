@@ -271,12 +271,12 @@ describe("Community Recipes API", () => {
       expect(communityTags[0].status).toBe("PENDING");
       expect(communityTags[0].communityId).toBe(community.id);
 
-      // La recette perso doit avoir un tag GLOBAL APPROVED (creation libre)
+      // La recette perso reutilise le meme tag COMMUNITY PENDING (pas de doublon global)
       const personalTags = res.body.personal.tags;
       expect(personalTags).toHaveLength(1);
       expect(personalTags[0].name).toBe("brand_new_tag");
-      expect(personalTags[0].scope).toBe("GLOBAL");
-      expect(personalTags[0].status).toBe("APPROVED");
+      expect(personalTags[0].scope).toBe("COMMUNITY");
+      expect(personalTags[0].status).toBe("PENDING");
     });
 
     it("should reuse existing COMMUNITY APPROVED tag", async () => {
