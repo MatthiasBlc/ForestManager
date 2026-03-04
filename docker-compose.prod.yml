@@ -46,6 +46,7 @@ services:
       - ADMIN_SESSION_SECRET=${ADMIN_SESSION_SECRET}
       - TRUST_PROXY=1
       - NODE_OPTIONS=--max-old-space-size=1024
+      - SEED_MODE=prod
     volumes:
       - backend-logs:/app/logs
     networks:
