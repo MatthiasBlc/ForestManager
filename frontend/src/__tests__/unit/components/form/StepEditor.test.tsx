@@ -79,6 +79,17 @@ describe("StepEditor", () => {
     expect(moveUpButtons[1]).not.toBeDisabled();
   });
 
+  it("should render drag handles for each step", () => {
+    render(
+      <StepEditor
+        value={[{ instruction: "A" }, { instruction: "B" }]}
+        onChange={vi.fn()}
+      />
+    );
+    const dragHandles = screen.getAllByLabelText("Drag to reorder");
+    expect(dragHandles).toHaveLength(2);
+  });
+
   it("should swap steps when moving down", async () => {
     const onChange = vi.fn();
     const user = userEvent.setup();
