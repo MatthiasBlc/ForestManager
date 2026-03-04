@@ -25,17 +25,17 @@
 ## 3. Proposals avec ingredients
 
 - [x] Ouvrir "Propose changes" sur une recette communautaire → le formulaire pre-remplit les ingredients actuels
-- [ ] Modifier un ingredient (changer quantite, unite, supprimer, ajouter) → le bouton Submit s'active
-- [ ] Soumettre la proposition → succes, le proprietaire voit la proposition dans "Pending Proposals"
-- [ ] Cliquer "Show changes" → le diff ingredients affiche : ajoutes (vert), supprimes (rouge barre), gardes/modifies
-- [ ] Accepter la proposition → les ingredients de la recette sont mis a jour
-- [ ] Rejeter la proposition → une variante est creee avec les ingredients proposes
+- [x] Modifier un ingredient (changer quantite, unite, supprimer, ajouter) → le bouton Submit s'active
+- [x] Soumettre la proposition → succes, le proprietaire voit la proposition dans "Pending Proposals"
+- [x] Cliquer "Show changes" → le diff ingredients affiche : ajoutes (vert), supprimes (rouge barre), gardes/modifies
+- [x] Accepter la proposition → les ingredients de la recette sont mis a jour
+- [x] Rejeter la proposition → une variante est creee avec les ingredients proposes
 
 ## 4. RecipeDetail - affichage ingredients
 
-- [ ] Les ingredients affichent la quantite et l'abbreviation de l'unite (ex: "100 g")
-- [ ] Les ingredients sans quantite affichent uniquement le nom
-- [ ] Les ingredients sans unite affichent uniquement la quantite
+- [x] Les ingredients affichent la quantite et l'abbreviation de l'unite (ex: "100 g")
+- [x] Les ingredients sans quantite affichent uniquement le nom
+- [x] Les ingredients sans unite affichent uniquement la quantite
 
 ## 5. Admin - Units CRUD
 
@@ -49,7 +49,7 @@
 
 ## 6. Admin - Ingredients enrichis
 
-- [ ] Page /admin/ingredients : affiche status (badge Approved/Pending), defaultUnit, createdBy, recipeCount
+- [x] Page /admin/ingredients : affiche status (badge Approved/Pending), defaultUnit, createdBy, recipeCount
 - [x] Filtre par status (All / Approved / Pending)
 - [x] Approuver un ingredient PENDING → passe en APPROVED, notification WebSocket au createur
 - [x] Approuver + renommer → ingredient approuve avec nouveau nom

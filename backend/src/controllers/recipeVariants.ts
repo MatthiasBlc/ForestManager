@@ -31,7 +31,7 @@ export const getVariants: RequestHandler<
   try {
     assertIsDefine(authenticatedUserId);
 
-    // Recuperer la recette parent
+    // Recuperer la recette courante
     const recipe = await prisma.recipe.findFirst({
       where: {
         id: recipeId,
@@ -41,6 +41,8 @@ export const getVariants: RequestHandler<
         id: true,
         communityId: true,
         creatorId: true,
+        isVariant: true,
+        originRecipeId: true,
       },
     });
 
@@ -50,14 +52,20 @@ export const getVariants: RequestHandler<
 
     await requireRecipeAccess(authenticatedUserId, recipe);
 
-    // Construire la clause where pour les variantes
+    // Remonter a la recette originale si on est sur une variante
+    const rootId = recipe.isVariant && recipe.originRecipeId ? recipe.originRecipeId : recipe.id;
+
+    // Lister toute la famille (original + variantes) sauf la recette courante
     const whereClause: Prisma.RecipeWhereInput = {
-      originRecipeId: recipeId,
-      isVariant: true,
       deletedAt: null,
+      id: { not: recipeId },
+      OR: [
+        { id: rootId },
+        { originRecipeId: rootId, isVariant: true },
+      ],
     };
 
-    // Si c'est une recette communautaire, ne retourner que les variantes de la meme communaute
+    // Si c'est une recette communautaire, ne retourner que celles de la meme communaute
     if (recipe.communityId !== null) {
       whereClause.communityId = recipe.communityId;
     }
