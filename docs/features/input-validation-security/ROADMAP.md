@@ -47,23 +47,23 @@
 
 ### B.1 - auth.ts : signup + login
 
-- [ ] `signup` : assertString sur username, email, password
-- [ ] `signup` : validateStringLength password (8, 128)
-- [ ] `signup` : validateStringLength username (3, 30)
-- [ ] `login` : assertString sur username, password
+- [x] `signup` : assertString sur username, email, password
+- [x] `signup` : validateStringLength password (8, 128)
+- [x] `signup` : validateStringLength username (3, 30)
+- [x] `login` : assertString sur username, password
 - [ ] Tests : envoyer des payloads avec types incorrects (number, object, array) → 400
 
 ### B.2 - users.ts : update profil + change password
 
-- [ ] `updateProfile` : assertString sur username, email si presentes
-- [ ] `updateProfile` : validateStringLength username (3, 30)
-- [ ] `changePassword` : assertString sur currentPassword, newPassword
-- [ ] `changePassword` : validateStringLength newPassword (8, 128)
+- [x] `updateProfile` : assertOptionalString sur username, email, currentPassword, newPassword
+- [x] `updateProfile` : validateStringLength username (3, 30)
+- [x] `changePassword` : assertString sur currentPassword, newPassword
+- [x] `changePassword` : validateStringLength newPassword (8, 128)
 - [ ] Tests : payloads types incorrects
 
 ### B.3 - invites.ts : validation email
 
-- [ ] Ajouter validation format email (reutiliser EMAIL_REGEX) sur `POST /invites`
+- [x] Ajouter validation format email (reutiliser EMAIL_REGEX) sur `POST /invites`
 - [ ] Test : email invalide → 400
 
 ---
