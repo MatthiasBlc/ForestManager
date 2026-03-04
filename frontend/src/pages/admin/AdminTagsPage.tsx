@@ -76,12 +76,12 @@ function AdminTagsPage() {
           bVal = b.name.toLowerCase();
           break;
         case "scope":
-          aVal = a.scope;
-          bVal = b.scope;
+          aVal = a.scope ?? "";
+          bVal = b.scope ?? "";
           break;
         case "status":
-          aVal = a.status;
-          bVal = b.status;
+          aVal = a.status ?? "";
+          bVal = b.status ?? "";
           break;
         case "recipeCount":
           aVal = a.recipeCount;
