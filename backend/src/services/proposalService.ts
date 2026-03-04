@@ -335,6 +335,20 @@ export async function rejectProposal(
       }
     }
 
+    // Copier les tags de la recette originale vers la variante
+    const originalTags = await tx.recipeTag.findMany({
+      where: { recipeId: proposal.recipe.id },
+      select: { tagId: true },
+    });
+    if (originalTags.length > 0) {
+      await tx.recipeTag.createMany({
+        data: originalTags.map((rt) => ({
+          recipeId: variant.id,
+          tagId: rt.tagId,
+        })),
+      });
+    }
+
     // 2. Mettre a jour la proposition
     const updatedProposal = await tx.recipeUpdateProposal.update({
       where: { id: proposalId },

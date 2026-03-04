@@ -159,6 +159,7 @@ export const getCommunityRecipes: RequestHandler<
     const whereClause: Prisma.RecipeWhereInput = {
       communityId,
       deletedAt: null,
+      isVariant: false,
     };
 
     if (searchFilter) {
