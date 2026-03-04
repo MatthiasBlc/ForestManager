@@ -14,7 +14,7 @@
 - [x] Formulaire affiche : titre, servings (defaut 4), temps (prep/cook/rest), steps, ingredients, tags
 - [x] Champ servings accepte uniquement 1-100
 - [x] Champs temps sont optionnels (peuvent rester vides)
-- [ ] StepEditor : ajouter/supprimer/reordonner des etapes -> possible d'ajouter un drag and drop ?
+- [x] StepEditor : ajouter/supprimer/reordonner des etapes -> possible d'ajouter un drag and drop ?
 - [x] Au moins 1 step non vide requis pour soumettre
 - [x] Soumission reussie avec tous les champs remplis
 - [x] Recette creee visible dans la liste avec badges servings + temps total
@@ -29,8 +29,8 @@
 ## 3. Detail de recette
 
 - [x] TimeBadges affiches (prep, cuisson, repos, total) quand definis
-- [ ] Pas de badges temps quand tous les temps sont null −> impossible en édition de mettre les temps à 0, ça ne sauvegarde pas
-- [x] ServingsSelector affiche et fonctionne (+/- et saisie directe)
+- [x] Pas de badges temps quand tous les temps sont null −> impossible en édition de mettre les temps à 0, ça ne sauvegarde pas
+- [x] ServingsSelector affiche et fonct ionne (+/- et saisie directe)
 - [x] Scaling des quantites d'ingredients dynamique selon servings selectionnes
 - [x] Steps affiches en blocs numerotes sequentiels
 - [x] Recette migree : affiche correctement 1 step, servings=4
@@ -39,7 +39,7 @@
 
 - [x] RecipeCard affiche badge servings (icone personne + nombre)
 - [x] RecipeCard affiche badge temps total (icone horloge + duree)
-- [ ] Pas de badge temps quand tous les temps sont null
+- [x] Pas de badge temps quand tous les temps sont null
 - [x] RecipeListRow affiche les memes badges en taille xs
 
 ## 5. Propositions
