@@ -67,11 +67,13 @@ async function seed() {
   ];
   const tags = {};
   for (const name of tagNames) {
-    tags[name] = await prisma.tag.upsert({
-      where: { name },
-      update: {},
-      create: { name },
+    let tag = await prisma.tag.findFirst({
+      where: { name, communityId: null },
     });
+    if (!tag) {
+      tag = await prisma.tag.create({ data: { name } });
+    }
+    tags[name] = tag;
   }
   console.log("Tags seeded:", tagNames.length);
 
