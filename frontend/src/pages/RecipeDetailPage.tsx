@@ -309,11 +309,11 @@ const RecipeDetailPage = () => {
                 {recipe.ingredients.map((ing) => {
                   const scaledQty = scaleQuantity(ing.quantity, recipe.servings, selectedServings);
                   return (
-                    <li key={ing.id} className="flex justify-between items-center">
+                    <li key={ing.id}>
                       <span className="font-medium">{ing.name}</span>
                       {scaledQty != null && (
                         <span className="text-base-content/70 text-sm">
-                          {scaledQty}{ing.unit ? ` ${ing.unit.abbreviation}` : ""}
+                          {" : "}{scaledQty}{ing.unit ? ` ${ing.unit.abbreviation}` : ""}
                         </span>
                       )}
                     </li>

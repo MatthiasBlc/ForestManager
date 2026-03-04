@@ -51,7 +51,7 @@ export const shareRecipe: RequestHandler<
         creatorId: true,
         tags: { select: { tagId: true, tag: { select: { id: true, name: true, scope: true, communityId: true } } } },
         ingredients: {
-          select: { ingredientId: true, quantity: true, order: true },
+          select: { ingredientId: true, quantity: true, unitId: true, order: true },
           orderBy: { order: "asc" },
         },
         steps: {
@@ -227,7 +227,7 @@ export const publishToCommunities: RequestHandler<
         communityId: true,
         tags: { select: { tagId: true, tag: { select: { id: true, name: true, scope: true, communityId: true } } } },
         ingredients: {
-          select: { ingredientId: true, quantity: true, order: true },
+          select: { ingredientId: true, quantity: true, unitId: true, order: true },
           orderBy: { order: "asc" },
         },
         steps: {

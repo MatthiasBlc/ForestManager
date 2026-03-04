@@ -18,7 +18,7 @@ interface SourceRecipeForShare {
   imageUrl: string | null;
   communityId: string;
   tags: { tagId: string; tag: { id: string; name: string; scope: string; communityId: string | null } }[];
-  ingredients: { ingredientId: string; quantity: number | null; order: number }[];
+  ingredients: { ingredientId: string; quantity: number | null; unitId: string | null; order: number }[];
   steps: { order: number; instruction: string }[];
 }
 
@@ -89,6 +89,7 @@ export async function forkRecipe(
           recipeId: forkedRecipe.id,
           ingredientId: ri.ingredientId,
           quantity: ri.quantity,
+          unitId: ri.unitId,
           order: ri.order,
         })),
       });
@@ -164,7 +165,7 @@ interface SourceRecipeForPublish {
   restTime: number | null;
   imageUrl: string | null;
   tags: { tagId: string; tag: { id: string; name: string; scope: string; communityId: string | null } }[];
-  ingredients: { ingredientId: string; quantity: number | null; order: number }[];
+  ingredients: { ingredientId: string; quantity: number | null; unitId: string | null; order: number }[];
   steps: { order: number; instruction: string }[];
 }
 
@@ -229,6 +230,7 @@ export async function publishRecipe(
             recipeId: communityRecipe.id,
             ingredientId: ri.ingredientId,
             quantity: ri.quantity,
+            unitId: ri.unitId,
             order: ri.order,
           })),
         });
