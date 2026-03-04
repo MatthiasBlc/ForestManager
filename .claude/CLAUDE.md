@@ -33,17 +33,17 @@ npx prisma studio              # DB GUI :5555
 ## Git
 
 - **Main**: master
-- **Branche courante**: RecipePageV2
+- **Branche courante**: Developement
 - **Commits**: Ne JAMAIS ajouter de Co-Authored-By pour Claude
 
 ## Phase actuelle
 
-**Phase 13** - Recipe Rework v2 : EN COURS (sous-phase 13.1 complete).
+**Phase 14** - Input Validation & Security Hardening : EN COURS.
 Voir `.claude/context/PROGRESS.md` pour le detail et les liens vers spec/roadmap.
 
 ## Codes erreur
 
-AUTH_001-002 | COMMUNITY_001-006 | RECIPE_001-005 | INVITE_001-003 | ADMIN_001-012 | PROPOSAL_001-003 | SHARE_001-003 | TAG_001-007 | ADMIN_ING_001-009 | ADMIN_UNIT_001-007 | NOTIF_001-005 | ADMIN_REC_001-003
+AUTH_001-002 | COMMUNITY_001-006 | RECIPE_001-005 | INVITE_001-003 | ADMIN_001-012 | PROPOSAL_001-003 | SHARE_001-003 | TAG_001-007 | ADMIN_ING_001-009 | ADMIN_UNIT_001-007 | NOTIF_001-005 | ADMIN_REC_001-003 | VALIDATION_001
 
 ## Regle: maintenir `.claude/` a jour
 
@@ -76,6 +76,9 @@ docs/
       SPEC_NOTIFICATIONS_REWORK.md
       ROADMAP.md
       MANUAL_TESTS.md
+    input-validation-security/
+      SPEC_INPUT_VALIDATION.md
+      ROADMAP.md
 ```
 
 Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une spec et une roadmap.
@@ -98,6 +101,9 @@ Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une 
 | **Feature : Recipe Rework v2** | |
 | Spec Recipe Rework v2 | `docs/features/recipe-rework-v2/SPEC_RECIPE_REWORK_V2.md` |
 | Roadmap Recipe Rework v2 | `docs/features/recipe-rework-v2/ROADMAP.md` |
+| **Feature : Input Validation** | |
+| Spec Input Validation | `docs/features/input-validation-security/SPEC_INPUT_VALIDATION.md` |
+| Roadmap Input Validation | `docs/features/input-validation-security/ROADMAP.md` |
 | **Feature : Notifications Rework** | |
 | Spec Notifications Rework | `docs/features/notifications-rework/SPEC_NOTIFICATIONS_REWORK.md` |
 | Roadmap Notifications Rework | `docs/features/notifications-rework/ROADMAP.md` |

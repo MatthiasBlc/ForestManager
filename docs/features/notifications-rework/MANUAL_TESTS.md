@@ -11,30 +11,30 @@
 
 ## 1. Notification dropdown (bell icon)
 
-- [ ] Bell icon visible dans la navbar pour les utilisateurs connectes
-- [ ] Badge numerique affiche le nombre de notifications non lues
-- [ ] Badge affiche "99+" quand le compteur depasse 99
-- [ ] Cliquer la bell ouvre le dropdown avec les 10 dernieres notifications
-- [ ] Les notifications non lues ont un fond plus sombre et un dot bleu
-- [ ] Chaque notification affiche : icone categorie, titre, message tronque, temps relatif
-- [ ] Cliquer une notification → marque comme lue + ferme le dropdown + navigue vers actionUrl
-- [ ] Bouton "Tout marquer comme lu" visible quand il y a des non lues
-- [ ] Cliquer "Tout marquer comme lu" → toutes les notifications sont marquees lues, badge disparait
-- [ ] Bouton "Voir tout" → navigue vers /notifications
+- [x] Bell icon visible dans la navbar pour les utilisateurs connectes
+- [x] Badge numerique affiche le nombre de notifications non lues
+- [x] Badge affiche "99+" quand le compteur depasse 99
+- [x] Cliquer la bell ouvre le dropdown avec les 10 dernieres notifications
+- [x] Les notifications non lues ont un fond plus sombre et un dot bleu
+- [x] Chaque notification affiche : icone categorie, titre, message tronque, temps relatif
+- [x] Cliquer une notification → marque comme lue + ferme le dropdown + navigue vers actionUrl
+- [x] Bouton "Tout marquer comme lu" visible quand il y a des non lues
+- [x] Cliquer "Tout marquer comme lu" → toutes les notifications sont marquees lues, badge disparait
+- [x] Bouton "Voir tout" → navigue vers /notifications
 - [ ] Laisser le dropdown ouvert 3 secondes → les notifications visibles sont auto-marquees comme lues
-- [ ] Cliquer en dehors du dropdown → il se ferme
+- [x] Cliquer en dehors du dropdown → il se ferme
 
 ## 2. Page notifications (/notifications)
 
-- [ ] Page accessible via la route /notifications
-- [ ] Affiche la liste paginee de toutes les notifications
-- [ ] Chips de filtre par categorie : Toutes, Invitations, Propositions de recettes, Tags, Ingredients, Moderation
-- [ ] Toggle "Non lues uniquement" filtre les notifications
+- [x] Page accessible via la route /notifications
+- [x] Affiche la liste paginee de toutes les notifications
+- [x] Chips de filtre par categorie : Toutes, Invitations, Propositions de recettes, Tags, Ingredients, Moderation
+- [x] Toggle "Non lues uniquement" filtre les notifications
 - [ ] Bouton "Charger plus" affiche les notifications suivantes
-- [ ] Cliquer une notification → marque comme lue + navigue vers actionUrl
-- [ ] Bouton "Tout marquer comme lu" fonctionne (global)
-- [ ] Etat vide : "Aucune notification" affiche quand il n'y a pas de notifications
-- [ ] Les badges sur les chips affichent le compteur non lu par categorie
+- [x] Cliquer une notification → marque comme lue + navigue vers actionUrl
+- [x] Bouton "Tout marquer comme lu" fonctionne (global)
+- [x] Etat vide : "Aucune notification" affiche quand il n'y a pas de notifications
+- [x] Les badges sur les chips affichent le compteur non lu par categorie
 
 ## 3. Notifications groupees
 
@@ -66,26 +66,31 @@
 ## 6. Categories de notifications
 
 ### INVITATION
+
 - [ ] User A invite User B → notification "Nouvelle invitation" pour User B
 - [ ] User B accepte → notification pour User A
 - [ ] User B rejette → notification pour User A
 
 ### RECIPE_PROPOSAL
+
 - [ ] User B propose une modification → notification pour User A (proprietaire)
 - [ ] User A accepte la proposition → notification pour User B
 - [ ] User A rejette la proposition → notification pour User B
 
 ### TAG
+
 - [ ] User B cree un tag PENDING → notification pour les moderateurs
 - [ ] Moderateur approuve le tag → notification pour le createur
 - [ ] Moderateur rejette le tag → notification pour le createur
 - [ ] Suggestion de tag sur une recette → notification pour le proprietaire
 
 ### INGREDIENT
+
 - [ ] Admin approuve un ingredient PENDING → notification pour le createur
 - [ ] Admin rejette un ingredient PENDING → notification pour le createur
 
 ### MODERATION
+
 - [ ] User A (moderateur) kick User B → notification pour User B (non desactivable)
 
 ## 7. Icones et couleurs par categorie

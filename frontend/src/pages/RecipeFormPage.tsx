@@ -77,10 +77,10 @@ const RecipeFormPage = () => {
     loadRecipe();
   }, [id, reset]);
 
-  const parseOptionalTime = (value: string): number | undefined => {
-    if (value.trim() === "") return undefined;
+  const parseOptionalTime = (value: string): number | null => {
+    if (value.trim() === "") return null;
     const n = parseInt(value, 10);
-    return isNaN(n) ? undefined : n;
+    return isNaN(n) ? null : n;
   };
 
   const onSubmit = async (data: FormData) => {

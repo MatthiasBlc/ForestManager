@@ -18,8 +18,6 @@ persistance, fonctionne y compris offline (je me connecte je dois voir les notif
 
 Implemente : servings avec scaling dynamique des quantites, etapes structurees ordonnees, temps de prep/cuisson/repos avec total auto, propositions granulaires (servings/temps/steps), badges temps et servings sur les cartes.
 
-# audit refactorisation complete back + front
-
 # Système d'upload de photos
 
 usage :
@@ -58,6 +56,7 @@ Ajouter imageUrl nullable sur Recipe et Community"
 
 Qu'en penses-tu ? est-ce que tu vois une meilleure option, mon projet étant (pour l'instant) petit, très indépendant et je voudrais éviter au maximum les investissements financiers ?
 Dans la mesure du possible je ne veux pas fournir de carte bancaire pour être certain de ne pas dépenser pour cette feature.
+Si je n'ai pas le choix comment faire pour m'assurer à 100% que je ne dépasserai pas ?
 Est-ce qu'il existe une solution en local ?
 Je cherche tout à de même à avoir une solution la plus professionnelle et sécurisée possible.
 
@@ -65,6 +64,10 @@ Je cherche tout à de même à avoir une solution la plus professionnelle et sé
 
 Je ne sais pas si c'est vraiment nécessaire, mais il serait bien pratique de pouvoir importer des recettes depuis un copier coller. Le problème est que le format d'origine varie beaucoup. Un LLM pourrait aider à parser le format d'origine et à le convertir en format interne mais je ne veux pas de solution payante. Dans un monde idéal j'aimerais pouvoir coller un texte ou un lien, que le llm préremplit le formulaire de recette, l'utilisateur vérifie, ajuste et valide.
 S'il existe une solution autre qu'un LLM c'est l'idéal mais pour le coup je ne maitrise pas du tout le sujet. Que peux-tu me proposer comme solutions ? Si c'est trop complexe, je suis ouvert à des solutions moins sophistiquées, et je suis également ouvert à ne pas réaliser cette fonctionnalité.
+
+# audit refactorisation complete back + front
+
+# Update des docs et petit ménage dans Progress.md ?
 
 ## système + page de changelog automatique
 
