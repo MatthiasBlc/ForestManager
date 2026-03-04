@@ -26,7 +26,7 @@ import { ValidationError } from "./util/validation";
 import cors from "cors";
 import session from "express-session";
 import env from "./util/validateEnv";
-import { PrismaSessionStore } from '@quixo3/prisma-session-store';
+import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import { requireAuth } from "./middleware/auth";
 import { requireSuperAdmin } from "./admin/middleware/requireSuperAdmin";
 import { helmetMiddleware, adminRateLimiter, requireHttps } from "./middleware/security";
@@ -54,7 +54,7 @@ app.use(express.json({ limit: "50kb" }));
 
 // User session middleware (cookie: connect.sid, duree: 1h)
 export const userSession = session({
-  name: "connect.sid",
+  name: "forestmanager_user_session",
   secret: env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
@@ -75,7 +75,7 @@ export const userSession = session({
 
 // Admin session middleware (cookie: admin.sid, duree: 30min)
 const adminSession = session({
-  name: "admin.sid",
+  name: "forestmanager_admin_session",
   secret: env.ADMIN_SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
