@@ -30,8 +30,8 @@ async function seed() {
   const units = {};
   for (const unit of unitData) {
     units[unit.abbreviation] = await prisma.unit.upsert({
-      where: { name: unit.name },
-      update: { abbreviation: unit.abbreviation, category: unit.category, sortOrder: unit.sortOrder },
+      where: { abbreviation: unit.abbreviation },
+      update: { name: unit.name, category: unit.category, sortOrder: unit.sortOrder },
       create: unit,
     });
   }
