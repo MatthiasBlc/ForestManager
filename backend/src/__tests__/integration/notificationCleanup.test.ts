@@ -1,12 +1,10 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../../app";
-import { extractSessionCookie } from "../setup/testHelpers";
+import { uniqueSuffix, extractSessionCookie } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
 import { cleanupReadNotifications } from "../../jobs/notificationCleanup";
 
-const uniqueSuffix = () =>
-  `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 
 describe("Notification Cleanup Job", () => {
   let user: { id: string };

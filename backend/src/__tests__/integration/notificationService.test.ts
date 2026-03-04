@@ -1,3 +1,4 @@
+import { uniqueSuffix } from "../setup/testHelpers";
 import { describe, it, expect, beforeEach } from "vitest";
 import { testPrisma } from "../setup/globalSetup";
 import {
@@ -10,8 +11,6 @@ import {
   getModeratorIdsForTagNotification,
 } from "../../services/notificationService";
 
-const uniqueSuffix = () =>
-  `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 
 // Helper pour creer un user en DB
 async function createUser(suffix: string) {

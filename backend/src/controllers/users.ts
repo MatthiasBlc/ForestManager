@@ -7,6 +7,11 @@ import {
   USERNAME_REGEX,
   MIN_USERNAME_LENGTH,
   MIN_PASSWORD_LENGTH,
+  MAX_USERNAME_LENGTH,
+  MAX_PASSWORD_LENGTH,
+  assertOptionalString,
+  assertString,
+  validateStringLength,
 } from "../util/validation";
 
 export const searchUsers: RequestHandler = async (req, res, next) => {
@@ -48,6 +53,12 @@ export const updateProfile: RequestHandler<unknown, unknown, UpdateProfileBody> 
 
     const { username, email, currentPassword, newPassword } = req.body;
 
+    // Type guards
+    assertOptionalString(username, "username");
+    assertOptionalString(email, "email");
+    assertOptionalString(currentPassword, "currentPassword");
+    assertOptionalString(newPassword, "newPassword");
+
     const user = await prisma.user.findUnique({
       where: { id: userId, deletedAt: null },
     });
@@ -56,8 +67,8 @@ export const updateProfile: RequestHandler<unknown, unknown, UpdateProfileBody> 
     const updates: { username?: string; email?: string; password?: string } = {};
 
     if (username && username !== user.username) {
-      if (username.length < MIN_USERNAME_LENGTH) {
-        throw createHttpError(400, `AUTH_004: Username must be at least ${MIN_USERNAME_LENGTH} characters`);
+      if (username.length < MIN_USERNAME_LENGTH || username.length > MAX_USERNAME_LENGTH) {
+        throw createHttpError(400, `AUTH_004: Username must be between ${MIN_USERNAME_LENGTH} and ${MAX_USERNAME_LENGTH} characters`);
       }
       if (!USERNAME_REGEX.test(username)) {
         throw createHttpError(400, "AUTH_004: Username can only contain letters, numbers, and underscores");
@@ -84,12 +95,13 @@ export const updateProfile: RequestHandler<unknown, unknown, UpdateProfileBody> 
       if (!currentPassword) {
         throw createHttpError(400, "AUTH_010: Current password is required to change password");
       }
+      assertString(currentPassword, "currentPassword");
       const passwordMatch = await bcrypt.compare(currentPassword, user.password);
       if (!passwordMatch) {
         throw createHttpError(401, "AUTH_011: Current password is incorrect");
       }
-      if (newPassword.length < MIN_PASSWORD_LENGTH) {
-        throw createHttpError(400, `AUTH_005: Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
+      if (newPassword.length < MIN_PASSWORD_LENGTH || newPassword.length > MAX_PASSWORD_LENGTH) {
+        throw createHttpError(400, `AUTH_005: Password must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters`);
       }
       updates.password = await bcrypt.hash(newPassword, 10);
     }

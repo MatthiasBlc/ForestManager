@@ -2,12 +2,11 @@ import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../../app";
 import {
+  uniqueSuffix,
   extractSessionCookie,
 } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
 
-const uniqueSuffix = () =>
-  `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 
 describe("Community Recipes API", () => {
   let moderator: { id: string; username: string; email: string };

@@ -7,6 +7,10 @@ import {
   USERNAME_REGEX,
   MIN_USERNAME_LENGTH,
   MIN_PASSWORD_LENGTH,
+  MAX_USERNAME_LENGTH,
+  MAX_PASSWORD_LENGTH,
+  assertString,
+  validateStringLength,
 } from "../util/validation";
 
 /**
@@ -63,22 +67,27 @@ export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = asy
       throw createHttpError(400, "AUTH_002: Missing required parameters");
     }
 
+    // Type guards (rejette number, object, array)
+    assertString(username, "username");
+    assertString(email, "email");
+    assertString(password, "password");
+
     // Validation email
     if (!EMAIL_REGEX.test(email)) {
       throw createHttpError(400, "AUTH_003: Invalid email format");
     }
 
     // Validation username format et longueur
-    if (username.length < MIN_USERNAME_LENGTH) {
-      throw createHttpError(400, `AUTH_004: Username must be at least ${MIN_USERNAME_LENGTH} characters`);
+    if (username.length < MIN_USERNAME_LENGTH || username.length > MAX_USERNAME_LENGTH) {
+      throw createHttpError(400, `AUTH_004: Username must be between ${MIN_USERNAME_LENGTH} and ${MAX_USERNAME_LENGTH} characters`);
     }
     if (!USERNAME_REGEX.test(username)) {
       throw createHttpError(400, "AUTH_004: Username can only contain letters, numbers, and underscores");
     }
 
     // Validation password longueur
-    if (password.length < MIN_PASSWORD_LENGTH) {
-      throw createHttpError(400, `AUTH_005: Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
+    if (password.length < MIN_PASSWORD_LENGTH || password.length > MAX_PASSWORD_LENGTH) {
+      throw createHttpError(400, `AUTH_005: Password must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters`);
     }
 
     // Verification username unique (excluant les comptes supprimes)
@@ -151,6 +160,10 @@ export const login: RequestHandler<unknown, unknown, LoginBody, unknown> = async
     if (!username || !password) {
       throw createHttpError(400, "AUTH_002: Missing required parameters");
     }
+
+    // Type guards
+    assertString(username, "username");
+    assertString(password, "password");
 
     const user = await prisma.user.findUnique({
       where: {

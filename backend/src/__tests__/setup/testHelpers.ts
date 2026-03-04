@@ -3,6 +3,13 @@ import bcrypt from 'bcrypt';
 import { testPrisma } from './globalSetup';
 import { generateSecret, generateSync } from 'otplib';
 
+/**
+ * Genere un suffix unique et court (max 12 chars) pour les noms de test.
+ * Permet de garder les usernames sous 30 caracteres.
+ */
+export const uniqueSuffix = () =>
+  `${Date.now().toString(36)}${Math.random().toString(36).substring(2, 5)}`;
+
 // Types pour les donnees de test
 interface TestUser {
   id: string;

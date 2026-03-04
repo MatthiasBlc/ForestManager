@@ -4,6 +4,7 @@ import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { InviteStatus } from "@prisma/client";
 import appEvents from "../services/eventEmitter";
+import { EMAIL_REGEX } from "../util/validation";
 
 // =====================================
 // Types
@@ -44,6 +45,11 @@ export const createInvite: RequestHandler<
 
     if (!userCommunity) {
       throw createHttpError(500, "Middleware memberOf required");
+    }
+
+    // Validate email format if provided
+    if (email && !EMAIL_REGEX.test(email)) {
+      throw createHttpError(400, "AUTH_003: Invalid email format");
     }
 
     // Validate that exactly one search field is provided
