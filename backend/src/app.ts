@@ -52,7 +52,7 @@ app.use(httpLogger);
 
 app.use(express.json({ limit: "50kb" }));
 
-// User session middleware (cookie: connect.sid, duree: 1h)
+// User session middleware (cookie: forestmanager_user_session, duree: 1h)
 export const userSession = session({
   name: "forestmanager_user_session",
   secret: env.SESSION_SECRET,
@@ -73,7 +73,7 @@ export const userSession = session({
   }),
 });
 
-// Admin session middleware (cookie: admin.sid, duree: 30min)
+// Admin session middleware (cookie: forestmanager_admin_session, duree: 30min)
 const adminSession = session({
   name: "forestmanager_admin_session",
   secret: env.ADMIN_SESSION_SECRET,
