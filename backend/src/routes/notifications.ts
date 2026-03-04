@@ -1,5 +1,6 @@
 import express from "express";
 import * as notificationsController from "../controllers/notifications";
+import { validateUUID } from "../middleware/validateUUID";
 
 const router = express.Router();
 
@@ -16,7 +17,7 @@ router.patch("/read", notificationsController.markBatchAsRead);
 router.patch("/read-all", notificationsController.markAllAsRead);
 
 // PATCH /api/notifications/:id/read
-router.patch("/:id/read", notificationsController.markAsRead);
+router.patch("/:id/read", validateUUID, notificationsController.markAsRead);
 
 // GET /api/notifications/preferences
 router.get("/preferences", notificationsController.getPreferences);

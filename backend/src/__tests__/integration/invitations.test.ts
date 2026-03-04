@@ -408,7 +408,7 @@ describe("Invitations API", () => {
 
     it("should return 404 when invite not found (INVITE_001)", async () => {
       const res = await request(app)
-        .delete(`/api/communities/${community.id}/invites/00000000-0000-0000-0000-000000000000`)
+        .delete(`/api/communities/${community.id}/invites/00000000-0000-4000-8000-000000000000`)
         .set("Cookie", moderatorCookie);
 
       expect(res.status).toBe(404);
@@ -622,7 +622,7 @@ describe("Invitations API", () => {
 
     it("should return 404 when invite not found (INVITE_001)", async () => {
       const res = await request(app)
-        .post("/api/invites/00000000-0000-0000-0000-000000000000/accept")
+        .post("/api/invites/00000000-0000-4000-8000-000000000000/accept")
         .set("Cookie", inviteeCookie);
 
       expect(res.status).toBe(404);

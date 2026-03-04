@@ -144,7 +144,7 @@ describe('Admin Features API', () => {
 
     it('should return 404 for non-existent feature', async () => {
       const res = await request(app)
-        .patch('/api/admin/features/00000000-0000-0000-0000-000000000000')
+        .patch('/api/admin/features/00000000-0000-4000-8000-000000000000')
         .set('Cookie', adminCookie)
         .send({ name: 'New Name' });
 
@@ -186,7 +186,7 @@ describe('Admin Features API', () => {
       const feature = await createTestFeature({ code: 'GRANT_404', name: 'Grant 404' });
 
       const res = await request(app)
-        .post(`/api/admin/communities/00000000-0000-0000-0000-000000000000/features/${feature.id}`)
+        .post(`/api/admin/communities/00000000-0000-4000-8000-000000000000/features/${feature.id}`)
         .set('Cookie', adminCookie);
 
       expect(res.status).toBe(404);

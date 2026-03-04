@@ -170,7 +170,7 @@ describe("Tag Suggestions API", () => {
 
     it("should return 404 for non-existent recipe", async () => {
       const res = await request(app)
-        .post("/api/recipes/00000000-0000-0000-0000-000000000000/tag-suggestions")
+        .post("/api/recipes/00000000-0000-4000-8000-000000000000/tag-suggestions")
         .set("Cookie", suggesterCookie)
         .send({ tagName: "nope" });
 
@@ -278,7 +278,7 @@ describe("Tag Suggestions API", () => {
 
     it("should return 404 for non-existent recipe", async () => {
       const res = await request(app)
-        .get("/api/recipes/00000000-0000-0000-0000-000000000000/tag-suggestions")
+        .get("/api/recipes/00000000-0000-4000-8000-000000000000/tag-suggestions")
         .set("Cookie", suggesterCookie);
 
       expect(res.status).toBe(404);
@@ -432,7 +432,7 @@ describe("Tag Suggestions API", () => {
 
     it("should return 404 for non-existent suggestion", async () => {
       const res = await request(app)
-        .post("/api/tag-suggestions/00000000-0000-0000-0000-000000000000/accept")
+        .post("/api/tag-suggestions/00000000-0000-4000-8000-000000000000/accept")
         .set("Cookie", ownerCookie);
 
       expect(res.status).toBe(404);
@@ -525,7 +525,7 @@ describe("Tag Suggestions API", () => {
 
     it("should return 404 for non-existent suggestion", async () => {
       const res = await request(app)
-        .post("/api/tag-suggestions/00000000-0000-0000-0000-000000000000/reject")
+        .post("/api/tag-suggestions/00000000-0000-4000-8000-000000000000/reject")
         .set("Cookie", ownerCookie);
 
       expect(res.status).toBe(404);

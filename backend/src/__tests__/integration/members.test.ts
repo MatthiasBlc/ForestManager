@@ -258,7 +258,7 @@ describe("Members API", () => {
     it("should return 404 when target is not a member", async () => {
       const res = await request(app)
         .patch(
-          `/api/communities/${community.id}/members/00000000-0000-0000-0000-000000000000`
+          `/api/communities/${community.id}/members/00000000-0000-4000-8000-000000000000`
         )
         .set("Cookie", moderatorCookie)
         .send({ role: "MODERATOR" });
@@ -694,7 +694,7 @@ describe("Members API", () => {
     it("should return 404 when target is not a member", async () => {
       const res = await request(app)
         .delete(
-          `/api/communities/${community.id}/members/00000000-0000-0000-0000-000000000000`
+          `/api/communities/${community.id}/members/00000000-0000-4000-8000-000000000000`
         )
         .set("Cookie", moderatorCookie);
 

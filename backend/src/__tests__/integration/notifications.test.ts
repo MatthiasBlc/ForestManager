@@ -311,7 +311,7 @@ describe("Notifications API", () => {
 
     it("should return 404 for non-existent notification", async () => {
       const res = await request(app)
-        .patch("/api/notifications/00000000-0000-0000-0000-000000000000/read")
+        .patch("/api/notifications/00000000-0000-4000-8000-000000000000/read")
         .set("Cookie", userCookie);
 
       expect(res.status).toBe(404);

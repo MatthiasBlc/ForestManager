@@ -157,7 +157,7 @@ describe('Admin Ingredients API', () => {
       const res = await request(app)
         .post('/api/admin/ingredients')
         .set('Cookie', adminCookie)
-        .send({ name: 'Bad Unit', defaultUnitId: '00000000-0000-0000-0000-000000000000' });
+        .send({ name: 'Bad Unit', defaultUnitId: '00000000-0000-4000-8000-000000000000' });
 
       expect(res.status).toBe(400);
       expect(res.body.error).toContain('ADMIN_ING_007');
@@ -208,7 +208,7 @@ describe('Admin Ingredients API', () => {
 
     it('should return 404 for non-existent ingredient', async () => {
       const res = await request(app)
-        .patch('/api/admin/ingredients/00000000-0000-0000-0000-000000000000')
+        .patch('/api/admin/ingredients/00000000-0000-4000-8000-000000000000')
         .set('Cookie', adminCookie)
         .send({ name: 'newname' });
 
@@ -252,7 +252,7 @@ describe('Admin Ingredients API', () => {
 
     it('should return 404 for non-existent ingredient', async () => {
       const res = await request(app)
-        .delete('/api/admin/ingredients/00000000-0000-0000-0000-000000000000')
+        .delete('/api/admin/ingredients/00000000-0000-4000-8000-000000000000')
         .set('Cookie', adminCookie);
 
       expect(res.status).toBe(404);

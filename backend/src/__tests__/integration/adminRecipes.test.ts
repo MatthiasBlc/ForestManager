@@ -92,7 +92,7 @@ describe('Admin Recipes API', () => {
 
     it('should return 404 for non-existent tag', async () => {
       const res = await request(app)
-        .get('/api/admin/tags/00000000-0000-0000-0000-000000000000/recipes')
+        .get('/api/admin/tags/00000000-0000-4000-8000-000000000000/recipes')
         .set('Cookie', adminCookie);
 
       expect(res.status).toBe(404);
@@ -101,7 +101,7 @@ describe('Admin Recipes API', () => {
 
     it('should return 401 without admin authentication', async () => {
       const res = await request(app)
-        .get('/api/admin/tags/00000000-0000-0000-0000-000000000000/recipes');
+        .get('/api/admin/tags/00000000-0000-4000-8000-000000000000/recipes');
 
       expect(res.status).toBe(401);
     });
@@ -139,7 +139,7 @@ describe('Admin Recipes API', () => {
 
     it('should return 404 for non-existent recipe', async () => {
       const res = await request(app)
-        .get('/api/admin/recipes/00000000-0000-0000-0000-000000000000')
+        .get('/api/admin/recipes/00000000-0000-4000-8000-000000000000')
         .set('Cookie', adminCookie);
 
       expect(res.status).toBe(404);
@@ -148,7 +148,7 @@ describe('Admin Recipes API', () => {
 
     it('should return 401 without admin authentication', async () => {
       const res = await request(app)
-        .get('/api/admin/recipes/00000000-0000-0000-0000-000000000000');
+        .get('/api/admin/recipes/00000000-0000-4000-8000-000000000000');
 
       expect(res.status).toBe(401);
     });
@@ -197,7 +197,7 @@ describe('Admin Recipes API', () => {
 
     it('should return 404 for non-existent recipe', async () => {
       const res = await request(app)
-        .patch('/api/admin/recipes/00000000-0000-0000-0000-000000000000')
+        .patch('/api/admin/recipes/00000000-0000-4000-8000-000000000000')
         .set('Cookie', adminCookie)
         .send({ title: 'Test' });
 
@@ -207,7 +207,7 @@ describe('Admin Recipes API', () => {
 
     it('should return 401 without admin authentication', async () => {
       const res = await request(app)
-        .patch('/api/admin/recipes/00000000-0000-0000-0000-000000000000')
+        .patch('/api/admin/recipes/00000000-0000-4000-8000-000000000000')
         .send({ title: 'Test' });
 
       expect(res.status).toBe(401);
@@ -269,7 +269,7 @@ describe('Admin Recipes API', () => {
 
     it('should return 404 for non-existent recipe', async () => {
       const res = await request(app)
-        .delete('/api/admin/recipes/00000000-0000-0000-0000-000000000000')
+        .delete('/api/admin/recipes/00000000-0000-4000-8000-000000000000')
         .set('Cookie', adminCookie);
 
       expect(res.status).toBe(404);
@@ -278,7 +278,7 @@ describe('Admin Recipes API', () => {
 
     it('should return 401 without admin authentication', async () => {
       const res = await request(app)
-        .delete('/api/admin/recipes/00000000-0000-0000-0000-000000000000');
+        .delete('/api/admin/recipes/00000000-0000-4000-8000-000000000000');
 
       expect(res.status).toBe(401);
     });

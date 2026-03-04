@@ -6,6 +6,7 @@ import * as InvitesController from "../controllers/invites";
 import * as MembersController from "../controllers/members";
 import * as ActivityController from "../controllers/activity";
 import { memberOf, requireCommunityRole } from "../middleware/community";
+import { validateUUID } from "../middleware/validateUUID";
 
 const router = express.Router();
 
@@ -16,11 +17,12 @@ router.get("/", CommunitiesController.getCommunities);
 router.post("/", CommunitiesController.createCommunity);
 
 // Get community details (requires membership)
-router.get("/:communityId", memberOf, CommunitiesController.getCommunity);
+router.get("/:communityId", validateUUID, memberOf, CommunitiesController.getCommunity);
 
 // Update community (requires MODERATOR role)
 router.patch(
   "/:communityId",
+  validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
   CommunitiesController.updateCommunity
@@ -31,21 +33,22 @@ router.patch(
 // =====================================
 
 // List community recipes
-router.get("/:communityId/recipes", memberOf, CommunityRecipesController.getCommunityRecipes);
+router.get("/:communityId/recipes", validateUUID, memberOf, CommunityRecipesController.getCommunityRecipes);
 
 // Create a community recipe
-router.post("/:communityId/recipes", memberOf, CommunityRecipesController.createCommunityRecipe);
+router.post("/:communityId/recipes", validateUUID, memberOf, CommunityRecipesController.createCommunityRecipe);
 
 // =====================================
 // Member routes
 // =====================================
 
 // List community members (any member)
-router.get("/:communityId/members", memberOf, MembersController.getMembers);
+router.get("/:communityId/members", validateUUID, memberOf, MembersController.getMembers);
 
 // Promote a member (MODERATOR only)
 router.patch(
   "/:communityId/members/:userId",
+  validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
   MembersController.promoteMember
@@ -54,6 +57,7 @@ router.patch(
 // Leave community (self) or kick member (MODERATOR)
 router.delete(
   "/:communityId/members/:userId",
+  validateUUID,
   memberOf,
   MembersController.removeMember
 );
@@ -65,6 +69,7 @@ router.delete(
 // List invitations for a community
 router.get(
   "/:communityId/invites",
+  validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
   InvitesController.getInvites
@@ -73,6 +78,7 @@ router.get(
 // Create an invitation
 router.post(
   "/:communityId/invites",
+  validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
   InvitesController.createInvite
@@ -81,6 +87,7 @@ router.post(
 // Cancel an invitation
 router.delete(
   "/:communityId/invites/:inviteId",
+  validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
   InvitesController.cancelInvite
@@ -93,6 +100,7 @@ router.delete(
 // List community tags (APPROVED + PENDING)
 router.get(
   "/:communityId/tags",
+  validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
   CommunityTagsController.getCommunityTags
@@ -101,6 +109,7 @@ router.get(
 // Create a community tag
 router.post(
   "/:communityId/tags",
+  validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
   CommunityTagsController.createCommunityTag
@@ -109,6 +118,7 @@ router.post(
 // Rename a community tag
 router.patch(
   "/:communityId/tags/:tagId",
+  validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
   CommunityTagsController.updateCommunityTag
@@ -117,6 +127,7 @@ router.patch(
 // Delete a community tag
 router.delete(
   "/:communityId/tags/:tagId",
+  validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
   CommunityTagsController.deleteCommunityTag
@@ -125,6 +136,7 @@ router.delete(
 // Approve a pending tag
 router.post(
   "/:communityId/tags/:tagId/approve",
+  validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
   CommunityTagsController.approveCommunityTag
@@ -133,6 +145,7 @@ router.post(
 // Reject a pending tag
 router.post(
   "/:communityId/tags/:tagId/reject",
+  validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
   CommunityTagsController.rejectCommunityTag
@@ -143,6 +156,6 @@ router.post(
 // =====================================
 
 // Get community activity feed (any member)
-router.get("/:communityId/activity", memberOf, ActivityController.getCommunityActivity);
+router.get("/:communityId/activity", validateUUID, memberOf, ActivityController.getCommunityActivity);
 
 export default router;

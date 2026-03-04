@@ -9,15 +9,15 @@
 
 ### A.1 - Middleware validation UUID
 
-- [ ] Creer `backend/src/middleware/validateUUID.ts`
+- [x] Creer `backend/src/middleware/validateUUID.ts`
   - Regex UUID v4
   - Retourne 400 `{ error: "Invalid UUID format", code: "VALIDATION_001" }`
-- [ ] Appliquer le middleware sur toutes les routes avec `:id`, `:communityId`, `:recipeId`, `:proposalId`, `:tagId`, `:inviteId`, `:ingredientId`, `:unitId`
-- [ ] Verifier que les tests existants passent toujours
+- [x] Appliquer le middleware sur toutes les routes avec `:id`, `:communityId`, `:recipeId`, `:proposalId`, `:tagId`, `:inviteId`, `:ingredientId`, `:unitId`
+- [x] Verifier que les tests existants passent toujours
 
 ### A.2 - Enrichir validation.ts (constantes + type guards + helpers)
 
-- [ ] Ajouter constantes maxLength :
+- [x] Ajouter constantes maxLength :
   - `MAX_USERNAME_LENGTH = 30`
   - `MAX_PASSWORD_LENGTH = 128`
   - `MAX_TITLE_LENGTH = 200`
@@ -26,20 +26,20 @@
   - `MAX_URL_LENGTH = 2048`
   - `MAX_FILTER_ITEMS = 20`
   - `MAX_TAGS_PER_RECIPE = 10` (deja existant, a reutiliser)
-- [ ] Ajouter type guards :
+- [x] Ajouter type guards :
   - `assertString(value, fieldName)` → throw ValidationError si pas string
   - `assertOptionalString(value, fieldName)` → null/undefined OK, sinon doit etre string
   - `assertArray(value, fieldName)` → throw si pas array
   - `assertNumber(value, fieldName)` → throw si pas number ou NaN/Infinity
   - `assertOptionalNumber(value, fieldName)` → null/undefined OK
-- [ ] Ajouter `validateQuantity(val)` : null OK, sinon > 0, <= 99999, isFinite, isNumber
-- [ ] Ajouter `validateStringLength(val, field, min, max)` : centralise les checks min/max
-- [ ] Creer classe `ValidationError` (ou reutiliser le pattern existant) pour retourner 400
+- [x] Ajouter `validateQuantity(val)` : null OK, sinon > 0, <= 99999, isFinite, isNumber
+- [x] Ajouter `validateStringLength(val, field, min, max)` : centralise les checks min/max
+- [x] Creer classe `ValidationError` (ou reutiliser le pattern existant) pour retourner 400
 
 ### A.3 - Error handler : catch ValidationError → 400
 
-- [ ] Mettre a jour le global error handler pour catcher `ValidationError` et retourner 400
-- [ ] Verifier qu'aucun autre type d'erreur n'est accidentellement converti en 400
+- [x] Mettre a jour le global error handler pour catcher `ValidationError` et retourner 400
+- [x] Verifier qu'aucun autre type d'erreur n'est accidentellement converti en 400
 
 ---
 

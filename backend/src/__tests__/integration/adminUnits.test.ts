@@ -237,7 +237,7 @@ describe('Admin Units API', () => {
 
     it('should return 404 for non-existent unit', async () => {
       const res = await request(app)
-        .patch('/api/admin/units/00000000-0000-0000-0000-000000000000')
+        .patch('/api/admin/units/00000000-0000-4000-8000-000000000000')
         .set('Cookie', adminCookie)
         .send({ name: 'anything' });
 
@@ -312,7 +312,7 @@ describe('Admin Units API', () => {
 
     it('should return 404 for non-existent unit', async () => {
       const res = await request(app)
-        .delete('/api/admin/units/00000000-0000-0000-0000-000000000000')
+        .delete('/api/admin/units/00000000-0000-4000-8000-000000000000')
         .set('Cookie', adminCookie);
 
       expect(res.status).toBe(404);

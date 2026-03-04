@@ -166,7 +166,7 @@ describe("Proposals API", () => {
 
     it("should return 404 when recipe not found", async () => {
       const res = await request(app)
-        .post(`/api/recipes/00000000-0000-0000-0000-000000000000/proposals`)
+        .post(`/api/recipes/00000000-0000-4000-8000-000000000000/proposals`)
         .set("Cookie", proposerCookie)
         .send({
           proposedTitle: "Ghost Recipe",
@@ -337,7 +337,7 @@ describe("Proposals API", () => {
 
     it("should return 404 when proposal not found", async () => {
       const res = await request(app)
-        .get(`/api/proposals/00000000-0000-0000-0000-000000000000`)
+        .get(`/api/proposals/00000000-0000-4000-8000-000000000000`)
         .set("Cookie", proposerCookie);
 
       expect(res.status).toBe(404);
@@ -500,7 +500,7 @@ describe("Proposals API", () => {
 
     it("should return 404 when proposal not found", async () => {
       const res = await request(app)
-        .post(`/api/proposals/00000000-0000-0000-0000-000000000000/accept`)
+        .post(`/api/proposals/00000000-0000-4000-8000-000000000000/accept`)
         .set("Cookie", recipeCreatorCookie);
 
       expect(res.status).toBe(404);
@@ -610,7 +610,7 @@ describe("Proposals API", () => {
 
     it("should return 404 when proposal not found", async () => {
       const res = await request(app)
-        .post(`/api/proposals/00000000-0000-0000-0000-000000000000/reject`)
+        .post(`/api/proposals/00000000-0000-4000-8000-000000000000/reject`)
         .set("Cookie", recipeCreatorCookie);
 
       expect(res.status).toBe(404);

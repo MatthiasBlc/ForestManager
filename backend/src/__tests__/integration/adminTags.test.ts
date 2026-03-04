@@ -196,7 +196,7 @@ describe('Admin Tags API', () => {
 
     it('should return 404 for non-existent tag', async () => {
       const res = await request(app)
-        .patch('/api/admin/tags/00000000-0000-0000-0000-000000000000')
+        .patch('/api/admin/tags/00000000-0000-4000-8000-000000000000')
         .set('Cookie', adminCookie)
         .send({ name: 'newname' });
 
@@ -239,7 +239,7 @@ describe('Admin Tags API', () => {
 
     it('should return 404 for non-existent tag', async () => {
       const res = await request(app)
-        .delete('/api/admin/tags/00000000-0000-0000-0000-000000000000')
+        .delete('/api/admin/tags/00000000-0000-4000-8000-000000000000')
         .set('Cookie', adminCookie);
 
       expect(res.status).toBe(404);

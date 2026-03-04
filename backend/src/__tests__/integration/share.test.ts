@@ -283,7 +283,7 @@ describe("Share Recipe API", () => {
       const res = await request(app)
         .post(`/api/recipes/${communityRecipeId}/share`)
         .set("Cookie", user1Cookie)
-        .send({ targetCommunityId: "00000000-0000-0000-0000-000000000000" });
+        .send({ targetCommunityId: "00000000-0000-4000-8000-000000000000" });
 
       expect(res.status).toBe(404);
       expect(res.body.error).toContain("COMMUNITY_002");
@@ -291,7 +291,7 @@ describe("Share Recipe API", () => {
 
     it("should reject if recipe does not exist", async () => {
       const res = await request(app)
-        .post("/api/recipes/00000000-0000-0000-0000-000000000000/share")
+        .post("/api/recipes/00000000-0000-4000-8000-000000000000/share")
         .set("Cookie", user1Cookie)
         .send({ targetCommunityId: targetCommunity.id });
 

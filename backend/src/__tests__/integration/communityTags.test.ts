@@ -261,7 +261,7 @@ describe("Community Tags API", () => {
 
     it("should return 404 for non-existent tag", async () => {
       const res = await request(app)
-        .patch(`/api/communities/${community.id}/tags/00000000-0000-0000-0000-000000000000`)
+        .patch(`/api/communities/${community.id}/tags/00000000-0000-4000-8000-000000000000`)
         .set("Cookie", moderatorCookie)
         .send({ name: "nope" });
 

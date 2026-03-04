@@ -7,11 +7,97 @@ export const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
 export const MIN_USERNAME_LENGTH = 3;
 export const MIN_PASSWORD_LENGTH = 8;
 
+// Max length constants
+export const MAX_USERNAME_LENGTH = 30;
+export const MAX_PASSWORD_LENGTH = 128;
+export const MAX_TITLE_LENGTH = 200;
+export const MAX_NAME_LENGTH = 100;
+export const MAX_REASON_LENGTH = 500;
+export const MAX_URL_LENGTH = 2048;
+export const MAX_FILTER_ITEMS = 20;
+export const MAX_TAGS_PER_RECIPE = 10;
+export const MAX_SEARCH_LENGTH = 200;
+
 export const COMMUNITY_VALIDATION = {
   NAME_MIN: 3,
   NAME_MAX: 100,
   DESCRIPTION_MAX: 1000,
 };
+
+// --- ValidationError ---
+
+export class ValidationError extends Error {
+  public readonly statusCode = 400;
+  public readonly code: string;
+
+  constructor(message: string, code = "VALIDATION_001") {
+    super(`${code}: ${message}`);
+    this.code = code;
+    this.name = "ValidationError";
+  }
+}
+
+// --- Type guards ---
+
+export function assertString(value: unknown, fieldName: string): asserts value is string {
+  if (typeof value !== "string") {
+    throw new ValidationError(`${fieldName} must be a string`);
+  }
+}
+
+export function assertOptionalString(value: unknown, fieldName: string): asserts value is string | null | undefined {
+  if (value !== null && value !== undefined && typeof value !== "string") {
+    throw new ValidationError(`${fieldName} must be a string`);
+  }
+}
+
+export function assertArray(value: unknown, fieldName: string): asserts value is unknown[] {
+  if (!Array.isArray(value)) {
+    throw new ValidationError(`${fieldName} must be an array`);
+  }
+}
+
+export function assertNumber(value: unknown, fieldName: string): asserts value is number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new ValidationError(`${fieldName} must be a valid number`);
+  }
+}
+
+export function assertOptionalNumber(value: unknown, fieldName: string): asserts value is number | null | undefined {
+  if (value !== null && value !== undefined) {
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+      throw new ValidationError(`${fieldName} must be a valid number`);
+    }
+  }
+}
+
+// --- Validation helpers ---
+
+export function validateStringLength(
+  value: string,
+  fieldName: string,
+  min: number,
+  max: number,
+): void {
+  if (value.length < min || value.length > max) {
+    throw new ValidationError(
+      `${fieldName} must be between ${min} and ${max} characters`,
+    );
+  }
+}
+
+/**
+ * Valide une quantite d'ingredient.
+ * null/undefined OK, sinon doit etre > 0, <= 99999, finite.
+ */
+export function validateQuantity(value: unknown, fieldName = "quantity"): number | null {
+  if (value === null || value === undefined) return null;
+  assertNumber(value, fieldName);
+  if (value <= 0 || value > 99999) {
+    throw new ValidationError(`${fieldName} must be between 0 and 99999`);
+  }
+  return value;
+}
 
 /**
  * Normalise une liste de noms (tags ou ingredients) :

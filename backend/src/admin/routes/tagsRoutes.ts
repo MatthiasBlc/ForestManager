@@ -1,6 +1,7 @@
 import express from "express";
 import * as tagsController from "../controllers/tagsController";
 import * as recipesController from "../controllers/recipesController";
+import { validateUUID } from "../../middleware/validateUUID";
 
 const router = express.Router();
 
@@ -11,15 +12,15 @@ router.get("/", tagsController.getAll);
 router.post("/", tagsController.create);
 
 // PATCH /api/admin/tags/:id - Renomme un tag
-router.patch("/:id", tagsController.update);
+router.patch("/:id", validateUUID, tagsController.update);
 
 // DELETE /api/admin/tags/:id - Supprime un tag
-router.delete("/:id", tagsController.remove);
+router.delete("/:id", validateUUID, tagsController.remove);
 
 // GET /api/admin/tags/:id/recipes - Liste les recettes d'un tag
-router.get("/:id/recipes", recipesController.getTagRecipes);
+router.get("/:id/recipes", validateUUID, recipesController.getTagRecipes);
 
 // POST /api/admin/tags/:id/merge - Fusionne un tag dans un autre
-router.post("/:id/merge", tagsController.merge);
+router.post("/:id/merge", validateUUID, tagsController.merge);
 
 export default router;

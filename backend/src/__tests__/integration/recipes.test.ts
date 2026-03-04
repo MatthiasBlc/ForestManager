@@ -419,7 +419,7 @@ describe('Recipes API', () => {
 
     it('should return 404 for non-existent recipe', async () => {
       const res = await request(app)
-        .get('/api/recipes/00000000-0000-0000-0000-000000000000')
+        .get('/api/recipes/00000000-0000-4000-8000-000000000000')
         .set('Cookie', sessionCookie!);
 
       expect(res.status).toBe(404);
@@ -577,7 +577,7 @@ describe('Recipes API', () => {
 
     it('should return 404 for non-existent recipe', async () => {
       const res = await request(app)
-        .patch('/api/recipes/00000000-0000-0000-0000-000000000000')
+        .patch('/api/recipes/00000000-0000-4000-8000-000000000000')
         .set('Cookie', sessionCookie!)
         .send({ title: 'New title' });
 
@@ -652,7 +652,7 @@ describe('Recipes API', () => {
 
     it('should return 404 for non-existent recipe', async () => {
       const res = await request(app)
-        .delete('/api/recipes/00000000-0000-0000-0000-000000000000')
+        .delete('/api/recipes/00000000-0000-4000-8000-000000000000')
         .set('Cookie', sessionCookie!);
 
       expect(res.status).toBe(404);

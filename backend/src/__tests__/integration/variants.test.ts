@@ -208,7 +208,7 @@ describe("Variants API", () => {
 
     it("should return 404 for non-existent recipe", async () => {
       const res = await request(app)
-        .get(`/api/recipes/00000000-0000-0000-0000-000000000000/variants`)
+        .get(`/api/recipes/00000000-0000-4000-8000-000000000000/variants`)
         .set("Cookie", recipeCreatorCookie);
 
       expect(res.status).toBe(404);

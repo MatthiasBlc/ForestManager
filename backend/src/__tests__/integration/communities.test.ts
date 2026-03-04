@@ -269,7 +269,7 @@ describe("Communities API", () => {
 
     it("should return 404 for non-existent community", async () => {
       const res = await request(app)
-        .get("/api/communities/00000000-0000-0000-0000-000000000000")
+        .get("/api/communities/00000000-0000-4000-8000-000000000000")
         .set("Cookie", userCookie);
 
       expect(res.status).toBe(404);
@@ -296,7 +296,7 @@ describe("Communities API", () => {
 
     it("should return 401 when not authenticated", async () => {
       const res = await request(app).get(
-        "/api/communities/00000000-0000-0000-0000-000000000000"
+        "/api/communities/00000000-0000-4000-8000-000000000000"
       );
 
       expect(res.status).toBe(401);
@@ -478,7 +478,7 @@ describe("Communities API", () => {
 
     it("should return 401 when not authenticated", async () => {
       const res = await request(app)
-        .patch("/api/communities/00000000-0000-0000-0000-000000000000")
+        .patch("/api/communities/00000000-0000-4000-8000-000000000000")
         .send({ name: "Test" });
 
       expect(res.status).toBe(401);

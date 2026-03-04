@@ -22,6 +22,7 @@ import adminRecipesRoutes from "./admin/routes/recipesRoutes";
 import createHttpError, { isHttpError } from "http-errors";
 import { httpLogger } from "./middleware/httpLogger";
 import logger from "./util/logger";
+import { ValidationError } from "./util/validation";
 import cors from "cors";
 import session from "express-session";
 import env from "./util/validateEnv";
@@ -49,7 +50,7 @@ if (env.CORS_ORIGIN) {
 
 app.use(httpLogger);
 
-app.use(express.json());
+app.use(express.json({ limit: "50kb" }));
 
 // User session middleware (cookie: connect.sid, duree: 1h)
 export const userSession = session({
@@ -130,6 +131,12 @@ app.use((req, res, next) => {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
+  // ValidationError → 400 (input validation)
+  if (error instanceof ValidationError) {
+    res.status(400).json({ error: error.message });
+    return;
+  }
+
   logger.error({ err: error, path: req.path, method: req.method }, "Unhandled error");
   let errorMessage = "An unknown error occurred";
   let statusCode = 500;
