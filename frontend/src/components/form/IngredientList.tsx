@@ -51,10 +51,7 @@ const IngredientRow = ({ ingredient, index, units, onUpdate, onRemove }: Ingredi
   const selectSuggestion = async (suggestion: IngredientSearchResult) => {
     setShowDropdown(false);
 
-    // Mise a jour immediate (nom + id) pour eviter le flash
-    onUpdate(index, { ...ingredient, name: suggestion.name, ingredientId: suggestion.id });
-
-    let unitId: string | undefined;
+    let unitId = ingredient.unitId;
     try {
       const suggested = await APIManager.getSuggestedUnit(suggestion.id);
       if (suggested.suggestedUnitId) {
@@ -64,9 +61,7 @@ const IngredientRow = ({ ingredient, index, units, onUpdate, onRemove }: Ingredi
       // Ignore pre-selection errors
     }
 
-    if (unitId) {
-      onUpdate(index, { name: suggestion.name, ingredientId: suggestion.id, unitId });
-    }
+    onUpdate(index, { ...ingredient, name: suggestion.name, ingredientId: suggestion.id, unitId });
   };
 
   return (
