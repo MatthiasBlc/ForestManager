@@ -311,9 +311,9 @@ const RecipeDetailPage = () => {
                   return (
                     <li key={ing.id}>
                       <span className="font-medium">{ing.name}</span>
-                      {scaledQty != null && (
+                      {(scaledQty != null || ing.unit) && (
                         <span className="text-base-content/70 text-sm">
-                          {" : "}{scaledQty}{ing.unit ? ` ${ing.unit.abbreviation}` : ""}
+                          {" : "}{scaledQty != null ? scaledQty : ""}{ing.unit ? `${scaledQty != null ? " " : ""}${ing.unit.abbreviation}` : ""}
                         </span>
                       )}
                     </li>
@@ -340,6 +340,8 @@ const RecipeDetailPage = () => {
               <div className="divider" />
               <ProposalsList
                 recipeId={recipe.id}
+                currentTitle={recipe.title}
+                currentSteps={recipe.steps}
                 currentIngredients={recipe.ingredients}
                 refreshSignal={proposalsRefresh}
                 onProposalDecided={handleProposalDecided}

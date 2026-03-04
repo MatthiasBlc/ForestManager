@@ -9,15 +9,20 @@ import { formatDuration } from "../../utils/formatDuration";
 
 interface ProposalsListProps {
   recipeId: string;
+  currentTitle: string;
+  currentSteps: { instruction: string }[];
   currentIngredients: RecipeIngredient[];
   refreshSignal?: number;
   onProposalDecided: () => void;
 }
 
 function formatIngredient(ing: { name: string; quantity?: number | null; unit?: { abbreviation: string } | null }): string {
+  const unitStr = ing.unit?.abbreviation ?? "";
   if (ing.quantity != null) {
-    const unitStr = ing.unit?.abbreviation ? ` ${ing.unit.abbreviation}` : "";
-    return `${ing.name} (${ing.quantity}${unitStr})`;
+    return `${ing.name} (${ing.quantity}${unitStr ? ` ${unitStr}` : ""})`;
+  }
+  if (unitStr) {
+    return `${ing.name} (${unitStr})`;
   }
   return ing.name;
 }
@@ -80,10 +85,12 @@ function IngredientsComparison({
             {kept.map((i) => {
               const ci = current.find((c) => c.name === i.ingredient.name);
               const qtyChanged = ci && ci.quantity !== i.quantity;
+              const unitChanged = ci && (ci.unitId ?? null) !== i.unitId;
+              const changed = qtyChanged || unitChanged;
               return (
-                <li key={i.id} className={qtyChanged ? "text-warning" : "text-base-content/70"}>
+                <li key={i.id} className={changed ? "text-warning" : "text-base-content/70"}>
                   {formatIngredient({ name: i.ingredient.name, quantity: i.quantity, unit: i.unit })}
-                  {qtyChanged && ci && (
+                  {changed && ci && (
                     <span className="text-xs"> (was {ci.quantity ?? "no qty"}{ci.unit?.abbreviation ? ` ${ci.unit.abbreviation}` : ""})</span>
                   )}
                 </li>
@@ -96,7 +103,7 @@ function IngredientsComparison({
   );
 }
 
-const ProposalsList = ({ recipeId, currentIngredients, refreshSignal, onProposalDecided }: ProposalsListProps) => {
+const ProposalsList = ({ recipeId, currentTitle, currentSteps, currentIngredients, refreshSignal, onProposalDecided }: ProposalsListProps) => {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -237,8 +244,15 @@ const ProposalsList = ({ recipeId, currentIngredients, refreshSignal, onProposal
                 <div className="mt-4 p-3 bg-base-100 rounded-lg">
                   <div className="text-sm space-y-3">
                     <div>
-                      <span className="font-medium">Proposed title:</span>
-                      <p className="mt-1">{proposal.proposedTitle}</p>
+                      <span className="font-medium">Title:</span>
+                      {proposal.proposedTitle !== currentTitle ? (
+                        <div className="mt-1">
+                          <p className="text-error line-through text-xs">{currentTitle}</p>
+                          <p className="text-success">{proposal.proposedTitle}</p>
+                        </div>
+                      ) : (
+                        <p className="mt-1 text-base-content/60 italic">No change</p>
+                      )}
                     </div>
                     {(proposal.proposedServings != null || proposal.proposedPrepTime != null || proposal.proposedCookTime != null || proposal.proposedRestTime != null) && (
                       <div className="flex flex-wrap gap-2">
@@ -269,11 +283,30 @@ const ProposalsList = ({ recipeId, currentIngredients, refreshSignal, onProposal
                     )}
                     {proposal.proposedSteps && proposal.proposedSteps.length > 0 && (
                       <div>
-                        <span className="font-medium">Proposed steps:</span>
+                        <span className="font-medium">Steps:</span>
                         <div className="mt-1 space-y-2 max-h-48 overflow-y-auto">
-                          {proposal.proposedSteps.map((step, i) => (
-                            <div key={step.id} className="flex gap-2 text-xs bg-base-200 p-2 rounded">
-                              <span className="badge badge-sm badge-neutral">{i + 1}</span>
+                          {proposal.proposedSteps.map((step, i) => {
+                            const currentStep = currentSteps[i];
+                            const isNew = !currentStep;
+                            const isChanged = currentStep && currentStep.instruction !== step.instruction;
+                            return (
+                              <div key={step.id} className="text-xs">
+                                {isChanged && currentStep && (
+                                  <div className="flex gap-2 bg-base-200 p-2 rounded mb-1 text-error line-through">
+                                    <span className="badge badge-sm badge-neutral">{i + 1}</span>
+                                    <span className="whitespace-pre-wrap">{currentStep.instruction}</span>
+                                  </div>
+                                )}
+                                <div className={`flex gap-2 bg-base-200 p-2 rounded ${isNew ? "text-success" : isChanged ? "text-success" : "text-base-content/60"}`}>
+                                  <span className="badge badge-sm badge-neutral">{i + 1}</span>
+                                  <span className="whitespace-pre-wrap">{step.instruction}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {currentSteps.slice(proposal.proposedSteps.length).map((step, i) => (
+                            <div key={`removed-${i}`} className="flex gap-2 text-xs bg-base-200 p-2 rounded text-error line-through">
+                              <span className="badge badge-sm badge-neutral">{proposal.proposedSteps!.length + i + 1}</span>
                               <span className="whitespace-pre-wrap">{step.instruction}</span>
                             </div>
                           ))}

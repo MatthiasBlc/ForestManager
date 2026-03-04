@@ -24,6 +24,8 @@ function TestWrapper({ children }: { children: React.ReactNode }) {
 describe('ProposalsList', () => {
   const defaultProps = {
     recipeId: 'test-recipe-id',
+    currentTitle: 'Original Recipe Title',
+    currentSteps: [{ instruction: 'Step 1 original' }, { instruction: 'Step 2 original' }],
     currentIngredients,
     onProposalDecided: vi.fn(),
   };
@@ -76,8 +78,8 @@ describe('ProposalsList', () => {
 
     await user.click(screen.getByText('Show changes'));
 
-    expect(screen.getByText('Proposed title:')).toBeInTheDocument();
-    expect(screen.getByText('Proposed steps:')).toBeInTheDocument();
+    expect(screen.getByText('Title:')).toBeInTheDocument();
+    expect(screen.getByText('Steps:')).toBeInTheDocument();
     expect(screen.getByText('Proposed ingredients:')).toBeInTheDocument();
   });
 
