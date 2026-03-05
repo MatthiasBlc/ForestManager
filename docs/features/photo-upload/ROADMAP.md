@@ -51,25 +51,25 @@ Guide infra : `GUIDE_MINIO.md`
 ## Phase C - Backend : endpoints upload recettes
 
 ### C.1 - Endpoint presigned URL
-- [ ] `POST /api/recipes/:id/upload-url`
+- [x] `POST /api/recipes/:id/upload-url`
   - Verifier que l'user est l'auteur de la recette
   - Generer la cle : `recipes/{recipeId}/cover.webp`
   - Retourner `{ uploadUrl, imageKey }`
-- [ ] Validation : recette existante, non soft-deleted, user = auteur
+- [x] Validation : recette existante, non soft-deleted, user = auteur
 
 ### C.2 - Endpoint confirmation upload
-- [ ] `POST /api/recipes/:id/confirm-upload`
+- [x] `POST /api/recipes/:id/confirm-upload`
   - Verifier que le fichier existe sur MinIO (headObject)
   - Valider MIME type (webp, jpeg, png) et taille (< 2 MB)
   - Si OK : sauvegarder `imageKey` en DB
   - Si KO : supprimer le fichier MinIO + erreur
-- [ ] Validation des memes permissions (auteur)
+- [x] Validation des memes permissions (auteur)
 
 ### C.3 - Endpoint suppression image
-- [ ] `DELETE /api/recipes/:id/image`
+- [x] `DELETE /api/recipes/:id/image`
   - Supprimer le fichier MinIO
   - Mettre `imageKey` a null en DB
-- [ ] Validation : auteur uniquement
+- [x] Validation : auteur uniquement
 
 ### C.4 - Tests
 - [ ] Tests d'integration pour les 3 endpoints recettes
