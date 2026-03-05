@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import prisma from "../../util/db";
 import { assertIsDefine } from "../../util/assertIsDefine";
+import { validateStringLength, assertNumber } from "../../util/validation";
 
 const VALID_CATEGORIES = ["WEIGHT", "VOLUME", "SPOON", "COUNT", "QUALITATIVE"];
 
@@ -69,13 +70,22 @@ export const create: RequestHandler = async (req, res, next) => {
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       throw createHttpError(400, "ADMIN_UNIT_001: Name is required");
     }
+    validateStringLength(name.trim(), "name", 1, 50);
 
     if (!abbreviation || typeof abbreviation !== "string" || abbreviation.trim().length === 0) {
       throw createHttpError(400, "ADMIN_UNIT_002: Abbreviation is required");
     }
+    validateStringLength(abbreviation.trim(), "abbreviation", 1, 10);
 
     if (!category || !VALID_CATEGORIES.includes(category)) {
       throw createHttpError(400, "ADMIN_UNIT_003: Valid category is required (WEIGHT, VOLUME, SPOON, COUNT, QUALITATIVE)");
+    }
+
+    if (sortOrder !== undefined) {
+      assertNumber(sortOrder, "sortOrder");
+      if (!Number.isInteger(sortOrder) || sortOrder < 0 || sortOrder > 9999) {
+        throw createHttpError(400, "VALIDATION_001: sortOrder must be an integer between 0 and 9999");
+      }
     }
 
     const normalizedName = name.trim().toLowerCase();
@@ -141,6 +151,7 @@ export const update: RequestHandler = async (req, res, next) => {
       if (typeof name !== "string" || name.trim().length === 0) {
         throw createHttpError(400, "ADMIN_UNIT_001: Name is required");
       }
+      validateStringLength(name.trim(), "name", 1, 50);
       const normalizedName = name.trim().toLowerCase();
       if (normalizedName !== unit.name) {
         const existing = await prisma.unit.findUnique({ where: { name: normalizedName } });
@@ -157,6 +168,7 @@ export const update: RequestHandler = async (req, res, next) => {
       if (typeof abbreviation !== "string" || abbreviation.trim().length === 0) {
         throw createHttpError(400, "ADMIN_UNIT_002: Abbreviation is required");
       }
+      validateStringLength(abbreviation.trim(), "abbreviation", 1, 10);
       const normalizedAbbr = abbreviation.trim().toLowerCase();
       if (normalizedAbbr !== unit.abbreviation) {
         const existing = await prisma.unit.findUnique({ where: { abbreviation: normalizedAbbr } });
@@ -176,7 +188,11 @@ export const update: RequestHandler = async (req, res, next) => {
       data.category = category;
     }
 
-    if (typeof sortOrder === "number") {
+    if (sortOrder !== undefined) {
+      assertNumber(sortOrder, "sortOrder");
+      if (!Number.isInteger(sortOrder) || sortOrder < 0 || sortOrder > 9999) {
+        throw createHttpError(400, "VALIDATION_001: sortOrder must be an integer between 0 and 9999");
+      }
       data.sortOrder = sortOrder;
     }
 

@@ -4,6 +4,7 @@ import bcrypt from "bcrypt";
 import { generateURI, verifySync } from "otplib";
 import * as QRCode from "qrcode";
 import prisma from "../../util/db";
+import { assertString } from "../../util/validation";
 
 const MAX_TOTP_ATTEMPTS = 3;
 const APP_NAME = "ForestManager";
@@ -20,6 +21,8 @@ export const login: RequestHandler = async (req, res, next) => {
     if (!email || !password) {
       throw createHttpError(400, "ADMIN_003: Email and password required");
     }
+    assertString(email, "email");
+    assertString(password, "password");
 
     const admin = await prisma.adminUser.findUnique({
       where: { email },

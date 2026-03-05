@@ -4,6 +4,7 @@ import prisma from "../../util/db";
 import { assertIsDefine } from "../../util/assertIsDefine";
 import { parsePagination, buildPaginationMeta } from "../../util/pagination";
 import appEvents from "../../services/eventEmitter";
+import { validateStringLength, MAX_NAME_LENGTH, MAX_REASON_LENGTH } from "../../util/validation";
 
 /**
  * GET /api/admin/ingredients
@@ -113,6 +114,7 @@ export const create: RequestHandler = async (req, res, next) => {
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       throw createHttpError(400, "ADMIN_ING_001: Name is required");
     }
+    validateStringLength(name.trim(), "name", 1, MAX_NAME_LENGTH);
 
     const normalized = name.trim().toLowerCase();
 
@@ -179,6 +181,7 @@ export const update: RequestHandler = async (req, res, next) => {
       if (typeof name !== "string" || name.trim().length === 0) {
         throw createHttpError(400, "ADMIN_ING_001: Name is required");
       }
+      validateStringLength(name.trim(), "name", 1, MAX_NAME_LENGTH);
 
       const normalized = name.trim().toLowerCase();
 
@@ -459,6 +462,7 @@ export const reject: RequestHandler = async (req, res, next) => {
     if (!reason || typeof reason !== "string" || reason.trim().length === 0) {
       throw createHttpError(400, "ADMIN_ING_009: Reason is required");
     }
+    validateStringLength(reason.trim(), "reason", 1, MAX_REASON_LENGTH);
 
     const ingredient = await prisma.ingredient.findUnique({ where: { id } });
     if (!ingredient) {

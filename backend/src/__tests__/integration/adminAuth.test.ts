@@ -81,6 +81,26 @@ describe("Admin Auth API", () => {
       expect(res.status).toBe(400);
       expect(res.body.error).toContain("ADMIN_003");
     });
+
+    it("should return 400 when email is not a string", async () => {
+      const res = await request(app).post("/api/admin/auth/login").send({
+        email: 123,
+        password: "Test123!Password",
+      });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain("VALIDATION_001");
+    });
+
+    it("should return 400 when password is not a string", async () => {
+      const res = await request(app).post("/api/admin/auth/login").send({
+        email: "admin@example.com",
+        password: { obj: true },
+      });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain("VALIDATION_001");
+    });
   });
 
   // =====================================

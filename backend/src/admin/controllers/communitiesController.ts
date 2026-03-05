@@ -3,6 +3,7 @@ import createHttpError from "http-errors";
 import prisma from "../../util/db";
 import { assertIsDefine } from "../../util/assertIsDefine";
 import { parsePagination, buildPaginationMeta } from "../../util/pagination";
+import { validateStringLength, COMMUNITY_VALIDATION } from "../../util/validation";
 
 /**
  * GET /api/admin/communities
@@ -147,6 +148,7 @@ export const update: RequestHandler = async (req, res, next) => {
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       throw createHttpError(400, "ADMIN_COM_002: Name is required");
     }
+    validateStringLength(name.trim(), "name", COMMUNITY_VALIDATION.NAME_MIN, COMMUNITY_VALIDATION.NAME_MAX);
 
     const oldName = community.name;
     const updated = await prisma.community.update({

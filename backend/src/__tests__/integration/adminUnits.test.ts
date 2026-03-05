@@ -165,6 +165,36 @@ describe('Admin Units API', () => {
       expect(res.status).toBe(400);
       expect(res.body.error).toContain('ADMIN_UNIT_003');
     });
+
+    it('should reject name too long (> 50 chars)', async () => {
+      const res = await request(app)
+        .post('/api/admin/units')
+        .set('Cookie', adminCookie)
+        .send({ name: 'a'.repeat(51), abbreviation: 'tl', category: 'WEIGHT' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('VALIDATION_001');
+    });
+
+    it('should reject abbreviation too long (> 10 chars)', async () => {
+      const res = await request(app)
+        .post('/api/admin/units')
+        .set('Cookie', adminCookie)
+        .send({ name: 'valid_name', abbreviation: 'a'.repeat(11), category: 'WEIGHT' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('VALIDATION_001');
+    });
+
+    it('should reject non-integer sortOrder', async () => {
+      const res = await request(app)
+        .post('/api/admin/units')
+        .set('Cookie', adminCookie)
+        .send({ name: 'sort_test', abbreviation: 'st', category: 'WEIGHT', sortOrder: 'abc' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('VALIDATION_001');
+    });
   });
 
   // =====================================

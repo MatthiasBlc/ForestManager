@@ -111,26 +111,26 @@
 
 ### D.1 - admin/unitsController.ts
 
-- [ ] create/update : validateStringLength name (1, 50)
-- [ ] create/update : validateStringLength abbreviation (1, 10)
-- [ ] sortOrder : assertNumber + Number.isInteger + range (0, 9999)
-- [ ] Tests
+- [x] create/update : validateStringLength name (1, 50)
+- [x] create/update : validateStringLength abbreviation (1, 10)
+- [x] sortOrder : assertNumber + Number.isInteger + range (0, 9999)
+- [x] Tests
 
 ### D.2 - admin/ingredientsController.ts
 
-- [ ] create/update : validateStringLength name (1, 100)
-- [ ] reject : validateStringLength reason (1, 500)
-- [ ] Tests
+- [x] create/update : validateStringLength name (1, 100)
+- [x] reject : validateStringLength reason (1, 500)
+- [x] Tests (couverts par tests existants)
 
 ### D.3 - admin/communitiesController.ts
 
-- [ ] update : validateStringLength name (3, 100), description (0, 1000)
-- [ ] Tests (si pas deja couverts)
+- [x] update : validateStringLength name (3, 100), description (0, 1000)
+- [x] Tests (couverts par tests existants)
 
 ### D.4 - admin/authController.ts
 
-- [ ] login : assertString email, password
-- [ ] Tests
+- [x] login : assertString email, password
+- [x] Tests
 
 ---
 
