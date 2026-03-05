@@ -51,7 +51,7 @@
 - [x] `signup` : validateStringLength password (8, 128)
 - [x] `signup` : validateStringLength username (3, 30)
 - [x] `login` : assertString sur username, password
-- [ ] Tests : envoyer des payloads avec types incorrects (number, object, array) → 400
+- [x] Tests : envoyer des payloads avec types incorrects (number, object, array) → 400
 
 ### B.2 - users.ts : update profil + change password
 
@@ -59,12 +59,12 @@
 - [x] `updateProfile` : validateStringLength username (3, 30)
 - [x] `changePassword` : assertString sur currentPassword, newPassword
 - [x] `changePassword` : validateStringLength newPassword (8, 128)
-- [ ] Tests : payloads types incorrects
+- [x] Tests : payloads types incorrects
 
 ### B.3 - invites.ts : validation email
 
 - [x] Ajouter validation format email (reutiliser EMAIL_REGEX) sur `POST /invites`
-- [ ] Test : email invalide → 400
+- [x] Test : email invalide → 400
 
 ---
 
@@ -72,38 +72,38 @@
 
 ### C.1 - recipes.ts : create + update
 
-- [ ] assertString sur title, validateStringLength (1, 200)
-- [ ] assertArray sur tags, limit tags.length <= MAX_TAGS_PER_RECIPE
-- [ ] assertArray sur ingredients
-- [ ] Pour chaque ingredient : validateQuantity, assertString name, assert unitId si present
-- [ ] Renforcer isValidHttpUrl : rejeter data:, javascript:, ftp: — accepter uniquement http(s)
-- [ ] validateStringLength sur imageUrl (max 2048)
-- [ ] Tests : titre trop long, tags pas un array, quantity negative, imageUrl javascript:
+- [x] assertString sur title, validateStringLength (1, 200)
+- [x] assertArray sur tags, limit tags.length <= MAX_TAGS_PER_RECIPE
+- [x] assertArray sur ingredients
+- [x] Pour chaque ingredient : validateQuantity, assertString name, assert unitId si present
+- [x] Renforcer isValidHttpUrl : rejeter data:, javascript:, ftp: — accepter uniquement http(s)
+- [x] validateStringLength sur imageUrl (max 2048)
+- [x] Tests : titre trop long, tags pas un array, quantity negative, imageUrl javascript:
 
 ### C.2 - recipes.ts + communityRecipes.ts : filtres GET
 
-- [ ] Limiter tags split a MAX_FILTER_ITEMS (20)
-- [ ] Limiter ingredients split a MAX_FILTER_ITEMS (20)
-- [ ] Limiter search query length (max 200 chars)
-- [ ] Tests : filtres avec 100 tags → 400 ou tronques silencieusement
+- [x] Limiter tags split a MAX_FILTER_ITEMS (20)
+- [x] Limiter ingredients split a MAX_FILTER_ITEMS (20)
+- [x] Limiter search query length (max 200 chars)
+- [x] Tests : filtres avec 100 tags → 400 ou tronques silencieusement
 
 ### C.3 - communityRecipes.ts : create + update
 
-- [ ] Memes validations que C.1 (factoriser si possible dans une fonction commune)
+- [x] Memes validations que C.1 (factoriser si possible dans une fonction commune)
 
 ### C.4 - proposals.ts : create
 
-- [ ] assertString sur proposedTitle, validateStringLength (1, 200)
-- [ ] assertArray sur proposedIngredients (deja max 50, OK)
-- [ ] validateQuantity sur chaque ingredient
-- [ ] Tests
+- [x] assertString sur proposedTitle, validateStringLength (1, 200)
+- [x] assertArray sur proposedIngredients (deja max 50, OK)
+- [x] validateQuantity sur chaque ingredient
+- [x] Tests
 
 ### C.5 - admin/recipesController.ts : update (fix C1)
 
-- [ ] assertString title si present, validateStringLength (1, 200)
-- [ ] assertNumber servings si present, validateServings (1-100)
-- [ ] assertOptionalNumber prepTime/cookTime/restTime, validateTime (0-10000)
-- [ ] Tests : payloads invalides → 400
+- [x] assertString title si present, validateStringLength (1, 200)
+- [x] assertNumber servings si present, validateServings (1-100)
+- [x] assertOptionalNumber prepTime/cookTime/restTime, validateTime (0-10000)
+- [x] Tests : payloads invalides → 400
 
 ---
 

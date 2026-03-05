@@ -134,6 +134,51 @@ describe('Auth API', () => {
       expect(res.status).toBe(409);
       expect(res.body.error).toContain('AUTH_007');
     });
+
+    it('should return 400 when username is not a string', async () => {
+      const res = await request(app)
+        .post('/api/auth/signup')
+        .send({ username: 123, email: 'test@example.com', password: 'Test123!Password' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('VALIDATION_001');
+    });
+
+    it('should return 400 when email is not a string', async () => {
+      const res = await request(app)
+        .post('/api/auth/signup')
+        .send({ username: 'testuser', email: { invalid: true }, password: 'Test123!Password' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('VALIDATION_001');
+    });
+
+    it('should return 400 when password is not a string', async () => {
+      const res = await request(app)
+        .post('/api/auth/signup')
+        .send({ username: 'testuser', email: 'test@example.com', password: ['array'] });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('VALIDATION_001');
+    });
+
+    it('should return 400 when username is too long', async () => {
+      const res = await request(app)
+        .post('/api/auth/signup')
+        .send({ username: 'a'.repeat(31), email: 'test@example.com', password: 'Test123!Password' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('AUTH_004');
+    });
+
+    it('should return 400 when password is too long', async () => {
+      const res = await request(app)
+        .post('/api/auth/signup')
+        .send({ username: 'testuser', email: 'test@example.com', password: 'a'.repeat(129) });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('AUTH_005');
+    });
   });
 
   // =====================================
@@ -199,6 +244,24 @@ describe('Auth API', () => {
 
       expect(res.status).toBe(400);
       expect(res.body.error).toContain('AUTH_002');
+    });
+
+    it('should return 400 when username is not a string', async () => {
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ username: 123, password: 'Test123!Password' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('VALIDATION_001');
+    });
+
+    it('should return 400 when password is not a string', async () => {
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ username: 'testuser', password: { obj: true } });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('VALIDATION_001');
     });
   });
 

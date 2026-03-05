@@ -3,7 +3,11 @@ import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { Prisma } from "@prisma/client";
-import { isValidHttpUrl, validateServings, validateTime, validateSteps, StepInput } from "../util/validation";
+import {
+  isValidHttpUrl, validateServings, validateTime, validateSteps, StepInput,
+  assertString, assertArray, validateQuantity, validateStringLength,
+  MAX_TITLE_LENGTH, MAX_TAGS_PER_RECIPE, MAX_URL_LENGTH, MAX_FILTER_ITEMS, MAX_SEARCH_LENGTH,
+} from "../util/validation";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import { RECIPE_TAGS_SELECT } from "../util/prismaSelects";
 import { formatTags, formatIngredients, formatSteps } from "../util/responseFormatters";
@@ -42,9 +46,14 @@ export const createCommunityRecipe: RequestHandler<
   try {
     assertIsDefine(authenticatedUserId);
 
-    if (!title?.trim()) {
+    if (!title) {
       throw createHttpError(400, "RECIPE_003: Title required");
     }
+    assertString(title, "title");
+    if (!title.trim()) {
+      throw createHttpError(400, "RECIPE_003: Title required");
+    }
+    validateStringLength(title.trim(), "title", 1, MAX_TITLE_LENGTH);
 
     if (!validateServings(servings)) {
       throw createHttpError(400, "RECIPE_006: Servings must be an integer between 1 and 100");
@@ -66,6 +75,24 @@ export const createCommunityRecipe: RequestHandler<
       throw createHttpError(400, "RECIPE_008: Invalid rest time (integer 0-10000)");
     }
 
+    // Tags validation
+    assertArray(tags, "tags");
+    if (tags.length > MAX_TAGS_PER_RECIPE) {
+      throw createHttpError(400, "TAG_003: Maximum 10 tags per recipe");
+    }
+
+    // Ingredients validation
+    assertArray(ingredients, "ingredients");
+    for (const ing of ingredients) {
+      assertString(ing.name, "ingredient name");
+      validateQuantity(ing.quantity, "ingredient quantity");
+    }
+
+    // Image URL validation
+    if (imageUrl !== undefined && imageUrl !== null) {
+      assertString(imageUrl, "imageUrl");
+      validateStringLength(imageUrl, "imageUrl", 0, MAX_URL_LENGTH);
+    }
     if (!isValidHttpUrl(imageUrl)) {
       throw createHttpError(400, "RECIPE_005: Invalid image URL");
     }
@@ -156,6 +183,16 @@ export const getCommunityRecipes: RequestHandler<
   const searchFilter = req.query.search?.trim() || "";
 
   try {
+    if (tagsFilter.length > MAX_FILTER_ITEMS) {
+      throw createHttpError(400, `VALIDATION_001: Too many tag filters (max ${MAX_FILTER_ITEMS})`);
+    }
+    if (ingredientsFilter.length > MAX_FILTER_ITEMS) {
+      throw createHttpError(400, `VALIDATION_001: Too many ingredient filters (max ${MAX_FILTER_ITEMS})`);
+    }
+    if (searchFilter.length > MAX_SEARCH_LENGTH) {
+      throw createHttpError(400, `VALIDATION_001: Search query too long (max ${MAX_SEARCH_LENGTH} chars)`);
+    }
+
     const whereClause: Prisma.RecipeWhereInput = {
       communityId,
       deletedAt: null,

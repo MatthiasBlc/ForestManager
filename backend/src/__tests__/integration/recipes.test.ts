@@ -263,6 +263,66 @@ describe('Recipes API', () => {
       expect(res.body.tags[0].name).toBe(uniqueTag);
     });
 
+    it('should return 400 when title is not a string', async () => {
+      const res = await request(app)
+        .post('/api/recipes')
+        .set('Cookie', sessionCookie!)
+        .send({ title: 123, servings: 4, steps: [{ instruction: 'Step' }] });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('VALIDATION_001');
+    });
+
+    it('should return 400 when title is too long', async () => {
+      const res = await request(app)
+        .post('/api/recipes')
+        .set('Cookie', sessionCookie!)
+        .send({ title: 'a'.repeat(201), servings: 4, steps: [{ instruction: 'Step' }] });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('VALIDATION_001');
+    });
+
+    it('should return 400 when tags is not an array', async () => {
+      const res = await request(app)
+        .post('/api/recipes')
+        .set('Cookie', sessionCookie!)
+        .send({ title: 'Recette', servings: 4, steps: [{ instruction: 'Step' }], tags: 'notarray' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('VALIDATION_001');
+    });
+
+    it('should return 400 when ingredient quantity is negative', async () => {
+      const res = await request(app)
+        .post('/api/recipes')
+        .set('Cookie', sessionCookie!)
+        .send({
+          title: 'Recette',
+          servings: 4,
+          steps: [{ instruction: 'Step' }],
+          ingredients: [{ name: 'farine', quantity: -1 }],
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('VALIDATION_001');
+    });
+
+    it('should return 400 when imageUrl is javascript:', async () => {
+      const res = await request(app)
+        .post('/api/recipes')
+        .set('Cookie', sessionCookie!)
+        .send({
+          title: 'Recette',
+          servings: 4,
+          steps: [{ instruction: 'Step' }],
+          imageUrl: 'javascript:alert(1)',
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('RECIPE_005');
+    });
+
     it('should return 401 when not authenticated', async () => {
       const res = await request(app)
         .post('/api/recipes')
@@ -375,6 +435,26 @@ describe('Recipes API', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.data).toHaveLength(0);
+    });
+
+    it('should return 400 when too many tag filters', async () => {
+      const tags = Array.from({ length: 21 }, (_, i) => `tag${i}`).join(',');
+      const res = await request(app)
+        .get(`/api/recipes?tags=${tags}`)
+        .set('Cookie', sessionCookie!);
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('VALIDATION_001');
+    });
+
+    it('should return 400 when search query is too long', async () => {
+      const search = 'a'.repeat(201);
+      const res = await request(app)
+        .get(`/api/recipes?search=${search}`)
+        .set('Cookie', sessionCookie!);
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('VALIDATION_001');
     });
 
     it('should return 401 when not authenticated', async () => {

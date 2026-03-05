@@ -4,6 +4,10 @@ import prisma from "../../util/db";
 import { assertIsDefine } from "../../util/assertIsDefine";
 import { parsePagination, buildPaginationMeta } from "../../util/pagination";
 import { RECIPE_DETAIL_INCLUDE } from "../../util/prismaSelects";
+import {
+  assertString, assertOptionalNumber, validateStringLength, validateServings, validateTime,
+  MAX_TITLE_LENGTH,
+} from "../../util/validation";
 
 /**
  * GET /api/admin/tags/:id/recipes
@@ -101,6 +105,27 @@ export const update: RequestHandler = async (req, res, next) => {
     const recipe = await prisma.recipe.findUnique({ where: { id: recipeId } });
     if (!recipe) {
       throw createHttpError(404, "ADMIN_REC_002: Recipe not found");
+    }
+
+    // Validation
+    if (title !== undefined) {
+      assertString(title, "title");
+      validateStringLength(title.trim(), "title", 1, MAX_TITLE_LENGTH);
+    }
+    if (servings !== undefined && !validateServings(servings)) {
+      throw createHttpError(400, "RECIPE_006: Servings must be an integer between 1 and 100");
+    }
+    assertOptionalNumber(prepTime, "prepTime");
+    if (prepTime !== undefined && !validateTime(prepTime)) {
+      throw createHttpError(400, "RECIPE_008: Invalid prep time (integer 0-10000)");
+    }
+    assertOptionalNumber(cookTime, "cookTime");
+    if (cookTime !== undefined && !validateTime(cookTime)) {
+      throw createHttpError(400, "RECIPE_008: Invalid cook time (integer 0-10000)");
+    }
+    assertOptionalNumber(restTime, "restTime");
+    if (restTime !== undefined && !validateTime(restTime)) {
+      throw createHttpError(400, "RECIPE_008: Invalid rest time (integer 0-10000)");
     }
 
     const data: Record<string, unknown> = {};

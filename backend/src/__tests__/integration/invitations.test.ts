@@ -210,6 +210,16 @@ describe("Invitations API", () => {
 
       expect(res.status).toBe(400);
     });
+
+    it("should return 400 when email format is invalid", async () => {
+      const res = await request(app)
+        .post(`/api/communities/${community.id}/invites`)
+        .set("Cookie", moderatorCookie)
+        .send({ email: "not-an-email" });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain("AUTH_003");
+    });
   });
 
   // =====================================

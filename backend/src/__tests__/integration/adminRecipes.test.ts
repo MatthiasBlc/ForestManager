@@ -205,6 +205,58 @@ describe('Admin Recipes API', () => {
       expect(res.body.error).toContain('ADMIN_REC_002');
     });
 
+    it('should return 400 when title is not a string', async () => {
+      const user = await createTestUser();
+      const recipe = await createTestRecipe(user.id, { title: 'Valid' });
+
+      const res = await request(app)
+        .patch(`/api/admin/recipes/${recipe.id}`)
+        .set('Cookie', adminCookie)
+        .send({ title: 123 });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('VALIDATION_001');
+    });
+
+    it('should return 400 when title is too long', async () => {
+      const user = await createTestUser();
+      const recipe = await createTestRecipe(user.id, { title: 'Valid' });
+
+      const res = await request(app)
+        .patch(`/api/admin/recipes/${recipe.id}`)
+        .set('Cookie', adminCookie)
+        .send({ title: 'a'.repeat(201) });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('VALIDATION_001');
+    });
+
+    it('should return 400 when servings is invalid', async () => {
+      const user = await createTestUser();
+      const recipe = await createTestRecipe(user.id, { title: 'Valid' });
+
+      const res = await request(app)
+        .patch(`/api/admin/recipes/${recipe.id}`)
+        .set('Cookie', adminCookie)
+        .send({ servings: 0 });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('RECIPE_006');
+    });
+
+    it('should return 400 when prepTime is not a number', async () => {
+      const user = await createTestUser();
+      const recipe = await createTestRecipe(user.id, { title: 'Valid' });
+
+      const res = await request(app)
+        .patch(`/api/admin/recipes/${recipe.id}`)
+        .set('Cookie', adminCookie)
+        .send({ prepTime: 'abc' });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain('VALIDATION_001');
+    });
+
     it('should return 401 without admin authentication', async () => {
       const res = await request(app)
         .patch('/api/admin/recipes/00000000-0000-4000-8000-000000000000')

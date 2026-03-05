@@ -9,7 +9,11 @@ import { acceptProposal as acceptProposalService, rejectProposal as rejectPropos
 import appEvents from "../services/eventEmitter";
 import { IngredientInput, upsertProposalIngredients, upsertProposalSteps } from "../services/recipeService";
 import { PROPOSAL_INGREDIENTS_SELECT, PROPOSAL_STEPS_SELECT } from "../util/prismaSelects";
-import { validateServings, validateTime, validateSteps, StepInput } from "../util/validation";
+import {
+  validateServings, validateTime, validateSteps, StepInput,
+  assertString, assertArray, validateQuantity, validateStringLength,
+  MAX_TITLE_LENGTH,
+} from "../util/validation";
 
 interface CreateProposalBody {
   proposedTitle?: string;
@@ -61,9 +65,14 @@ export const createProposal: RequestHandler<
     assertIsDefine(authenticatedUserId);
 
     // Validation des champs requis
-    if (!proposedTitle?.trim()) {
+    if (!proposedTitle) {
       throw createHttpError(400, "RECIPE_003: Title required");
     }
+    assertString(proposedTitle, "proposedTitle");
+    if (!proposedTitle.trim()) {
+      throw createHttpError(400, "RECIPE_003: Title required");
+    }
+    validateStringLength(proposedTitle.trim(), "proposedTitle", 1, MAX_TITLE_LENGTH);
 
     if (!validateSteps(proposedSteps)) {
       throw createHttpError(400, "RECIPE_007: At least one step required, each instruction non-empty (max 5000 chars)");
@@ -85,9 +94,16 @@ export const createProposal: RequestHandler<
       throw createHttpError(400, "RECIPE_008: Invalid rest time (integer 0-10000)");
     }
 
-    // Validation du nombre d'ingredients
-    if (proposedIngredients && proposedIngredients.length > 50) {
-      throw createHttpError(400, "INGREDIENT_003: Too many ingredients (max 50)");
+    // Validation des ingredients
+    if (proposedIngredients !== undefined) {
+      assertArray(proposedIngredients, "proposedIngredients");
+      if (proposedIngredients.length > 50) {
+        throw createHttpError(400, "INGREDIENT_003: Too many ingredients (max 50)");
+      }
+      for (const ing of proposedIngredients) {
+        assertString(ing.name, "ingredient name");
+        validateQuantity(ing.quantity, "ingredient quantity");
+      }
     }
 
     // Recuperer la recette avec sa communaute
