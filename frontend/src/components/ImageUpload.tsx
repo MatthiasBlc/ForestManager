@@ -13,6 +13,19 @@ interface ImageUploadProps {
 
 type UploadStatus = "idle" | "processing" | "uploading" | "confirming";
 
+function toUserMessage(err: unknown): string {
+  const msg = err instanceof Error ? err.message : "";
+  if (msg.includes("File not found")) return "Le fichier n'a pas ete recu par le serveur. Veuillez reessayer.";
+  if (msg.includes("Invalid file type")) return "Format non supporte. Utilisez JPEG, PNG ou WebP.";
+  if (msg.includes("File too large")) return "Image trop volumineuse. Maximum : 2 Mo.";
+  if (msg.includes("Network error")) return "Erreur reseau. Verifiez votre connexion.";
+  if (msg.includes("RECIPE_005") || msg.includes("COMMUNITY_006")) return "L'image n'est pas valide. Verifiez le format et la taille (max 2 Mo).";
+  if (msg.includes("RECIPE_002")) return "Vous n'avez pas la permission de modifier cette image.";
+  if (msg.includes("COMMUNITY_002")) return "Communaute introuvable.";
+  if (msg.includes("RECIPE_001")) return "Recette introuvable.";
+  return msg || "Une erreur est survenue.";
+}
+
 const statusLabels: Record<UploadStatus, string> = {
   idle: "",
   processing: "Conversion en cours...",
@@ -56,7 +69,7 @@ const ImageUpload = ({
           body: blob,
           headers: { "Content-Type": "image/webp" },
         });
-        if (!uploadRes.ok) throw new Error("Upload failed");
+        if (!uploadRes.ok) throw new Error("L'envoi de l'image a echoue. Veuillez reessayer.");
 
         // 4. Confirm upload
         setStatus("confirming");
@@ -67,7 +80,7 @@ const ImageUpload = ({
         onUploadComplete(imageUrl);
       } catch (err) {
         setStatus("idle");
-        setError(err instanceof Error ? err.message : "Upload failed");
+        setError(toUserMessage(err));
       }
     },
     [getUploadUrl, confirmUpload, onUploadComplete],
@@ -97,7 +110,7 @@ const ImageUpload = ({
       await deleteImage();
       onDeleteComplete();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Delete failed");
+      setError(toUserMessage(err));
     } finally {
       setIsDeleting(false);
     }

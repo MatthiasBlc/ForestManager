@@ -44,7 +44,7 @@ Guide infra : `GUIDE_MINIO.md`
   - `deleteObject(key: string): Promise<void>`
   - `headObject(key: string): Promise<{ contentType, contentLength }>`
 - [x] Creer `src/config/storage.ts` (lecture des variables d'env)
-- [ ] Tests unitaires du service (mock S3)
+- [x] Tests unitaires du service (mock S3)
 
 ---
 
@@ -72,8 +72,8 @@ Guide infra : `GUIDE_MINIO.md`
 - [x] Validation : auteur uniquement
 
 ### C.4 - Tests
-- [ ] Tests d'integration pour les 3 endpoints recettes
-- [ ] Tests des cas d'erreur (pas auteur, recette inexistante, fichier invalide)
+- [x] Tests d'integration pour les 3 endpoints recettes
+- [x] Tests des cas d'erreur (pas auteur, recette inexistante, fichier invalide)
 
 ---
 
@@ -93,8 +93,8 @@ Guide infra : `GUIDE_MINIO.md`
 - [x] `DELETE /api/communities/:id/image`
 
 ### D.4 - Tests
-- [ ] Tests d'integration pour les 3 endpoints communautes
-- [ ] Tests des cas d'erreur
+- [x] Tests d'integration pour les 3 endpoints communautes
+- [x] Tests des cas d'erreur
 
 ---
 
@@ -106,7 +106,7 @@ Guide infra : `GUIDE_MINIO.md`
 - [x] Supprimer les fichiers MinIO correspondants
 - [x] Mettre imageKey a null en DB
 - [x] Logs info/debug
-- [ ] Tests unitaires
+- [x] Tests unitaires
 
 ### E.2 - Suppression cascade (hard delete)
 - [x] N/A : pas de hard delete pour Recipe/Community dans le code actuel (soft delete uniquement)

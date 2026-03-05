@@ -22,14 +22,14 @@ export async function processImage(file: File): Promise<Blob> {
   canvas.height = height;
 
   const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas context unavailable");
+  if (!ctx) throw new Error("Impossible de traiter l'image. Veuillez reessayer.");
 
   ctx.drawImage(bitmap, 0, 0, width, height);
   bitmap.close();
 
   const blob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
-      (b) => (b ? resolve(b) : reject(new Error("Canvas conversion failed"))),
+      (b) => (b ? resolve(b) : reject(new Error("La conversion de l'image a echoue."))),
       "image/webp",
       0.8,
     );
