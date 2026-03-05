@@ -80,17 +80,17 @@ Guide infra : `GUIDE_MINIO.md`
 ## Phase D - Backend : endpoints upload communautes
 
 ### D.1 - Endpoint presigned URL
-- [ ] `POST /api/communities/:id/upload-url`
+- [x] `POST /api/communities/:id/upload-url`
   - Verifier que l'user est createur ou moderateur
   - Generer la cle : `communities/{communityId}/avatar.webp`
   - Retourner `{ uploadUrl, imageKey }`
 
 ### D.2 - Endpoint confirmation upload
-- [ ] `POST /api/communities/:id/confirm-upload`
+- [x] `POST /api/communities/:id/confirm-upload`
   - Meme logique que recettes (head, validate, save ou delete)
 
 ### D.3 - Endpoint suppression image
-- [ ] `DELETE /api/communities/:id/image`
+- [x] `DELETE /api/communities/:id/image`
 
 ### D.4 - Tests
 - [ ] Tests d'integration pour les 3 endpoints communautes

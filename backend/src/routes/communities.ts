@@ -1,5 +1,6 @@
 import express from "express";
 import * as CommunitiesController from "../controllers/communities";
+import * as CommunityImageController from "../controllers/communityImage";
 import * as CommunityRecipesController from "../controllers/communityRecipes";
 import * as CommunityTagsController from "../controllers/communityTags";
 import * as InvitesController from "../controllers/invites";
@@ -26,6 +27,34 @@ router.patch(
   memberOf,
   requireCommunityRole("MODERATOR"),
   CommunitiesController.updateCommunity
+);
+
+// =====================================
+// Image upload routes (MODERATOR only)
+// =====================================
+
+router.post(
+  "/:communityId/upload-url",
+  validateUUID,
+  memberOf,
+  requireCommunityRole("MODERATOR"),
+  CommunityImageController.getUploadUrl
+);
+
+router.post(
+  "/:communityId/confirm-upload",
+  validateUUID,
+  memberOf,
+  requireCommunityRole("MODERATOR"),
+  CommunityImageController.confirmUpload
+);
+
+router.delete(
+  "/:communityId/image",
+  validateUUID,
+  memberOf,
+  requireCommunityRole("MODERATOR"),
+  CommunityImageController.deleteImage
 );
 
 // =====================================
