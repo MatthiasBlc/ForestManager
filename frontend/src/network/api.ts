@@ -163,7 +163,7 @@ export default class APIManager {
   // --------------- Proposals ---------------
 
   static async getRecipeProposals(recipeId: string, status?: string): Promise<ProposalsResponse> {
-    const params = status ? `?status=${status}` : "";
+    const params = buildQueryString({ status });
     const response = await API.get(`/api/recipes/${recipeId}/proposals${params}`).catch(handleApiError);
     return response.data;
   }
@@ -227,7 +227,7 @@ export default class APIManager {
   // --------------- Tag Suggestions ---------------
 
   static async getTagSuggestions(recipeId: string, status?: string): Promise<TagSuggestionsResponse> {
-    const params = status ? `?status=${status}` : "";
+    const params = buildQueryString({ status });
     const response = await API.get(`/api/recipes/${recipeId}/tag-suggestions${params}`).catch(handleApiError);
     return response.data;
   }
@@ -424,7 +424,7 @@ export default class APIManager {
   // --------------- Invitations (community admin) ---------------
 
   static async getCommunityInvites(communityId: string, status?: string): Promise<{ data: CommunityInvite[] }> {
-    const params = status ? `?status=${status}` : "";
+    const params = buildQueryString({ status });
     const response = await API.get(`/api/communities/${communityId}/invites${params}`).catch(handleApiError);
     return response.data;
   }
@@ -443,7 +443,7 @@ export default class APIManager {
   // --------------- Invitations (user) ---------------
 
   static async getMyInvites(status?: string): Promise<{ data: ReceivedInvite[] }> {
-    const params = status ? `?status=${status}` : "";
+    const params = buildQueryString({ status });
     const response = await API.get(`/api/users/me/invites${params}`).catch(handleApiError);
     return response.data;
   }

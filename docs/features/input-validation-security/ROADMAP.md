@@ -152,36 +152,31 @@
 
 ### F.1 - ProfilePage : aligner validation avec SignUpPage
 
-- [ ] Ajouter regex USERNAME_REGEX sur champ username
-- [ ] Ajouter regex email sur champ email
-- [ ] Ajouter minLength/maxLength sur password change
+- [x] Ajouter regex USERNAME_REGEX sur champ username (pattern HTML5)
+- [x] Ajouter regex email sur champ email (type="email" deja present)
+- [x] Ajouter minLength/maxLength sur password change
 - [ ] Utiliser react-hook-form au lieu de controlled inputs (optionnel, hors scope si trop lourd)
 
 ### F.2 - RecipeFormPage : ajouter maxLength
 
-- [ ] Title : maxLength 200
-- [ ] ImageUrl : maxLength 2048
-- [ ] Steps : afficher compteur caracteres (deja max 5000 backend)
+- [x] Title : maxLength 200
+- [x] ImageUrl : maxLength 2048
+- [x] Steps : maxLength 5000 deja present dans StepEditor
 
 ### F.3 - ProposeModificationModal : maxLength titre
 
-- [ ] proposedTitle : maxLength 200
+- [x] proposedTitle : maxLength 200
 
 ### F.4 - api.ts : encoder les query params
 
-- [ ] Remplacer les 4 template literals `?status=${status}` par `buildQueryString` ou `encodeURIComponent`
+- [x] Remplacer les 4 template literals `?status=${status}` par `buildQueryString`
 
 ### F.5 - Nginx security headers
 
-- [ ] Ajouter dans le Dockerfile frontend (stage nginx) :
-  ```
-  add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss:; font-src 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none';" always;
-  add_header X-Content-Type-Options "nosniff" always;
-  add_header X-Frame-Options "DENY" always;
-  add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-  ```
-- [ ] Tester que le frontend charge correctement avec les nouveaux headers
-- [ ] Verifier que le inline script theme dans index.html est compatible (sinon nonce ou externaliser)
+- [x] Ajouter CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy dans Dockerfile nginx
+- [x] Externaliser inline theme script vers `/theme-init.js` pour compatibilite CSP strict
+- [x] img-src inclut `https:` pour les images recette externes
+- [x] Verifier que les tests frontend passent
 
 ---
 

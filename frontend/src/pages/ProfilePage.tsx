@@ -109,6 +109,9 @@ const ProfilePage = () => {
               className="input input-bordered"
               required
               minLength={3}
+              maxLength={30}
+              pattern="^[a-zA-Z0-9_]+$"
+              title="Only letters, numbers and underscores"
             />
           </div>
 
@@ -175,6 +178,7 @@ const ProfilePage = () => {
               className="input input-bordered"
               required
               minLength={8}
+              maxLength={128}
             />
           </div>
 
@@ -189,6 +193,7 @@ const ProfilePage = () => {
               className="input input-bordered"
               required
               minLength={8}
+              maxLength={128}
             />
           </div>
 

@@ -173,8 +173,9 @@ const RecipeFormPage = () => {
             </label>
             <input
               type="text"
-              {...register("title", { required: "Title is required" })}
+              {...register("title", { required: "Title is required", maxLength: { value: 200, message: "Title must be 200 characters or less" } })}
               placeholder="Recipe title"
+              maxLength={200}
               className={`input input-bordered w-full ${errors.title ? "input-error" : ""}`}
             />
             {errors.title && (
@@ -190,10 +191,16 @@ const RecipeFormPage = () => {
             </label>
             <input
               type="url"
-              {...register("imageUrl")}
+              {...register("imageUrl", { maxLength: { value: 2048, message: "URL must be 2048 characters or less" } })}
               placeholder="https://example.com/image.jpg"
-              className="input input-bordered w-full"
+              maxLength={2048}
+              className={`input input-bordered w-full ${errors.imageUrl ? "input-error" : ""}`}
             />
+            {errors.imageUrl && (
+              <label className="label">
+                <span className="label-text-alt text-error">{errors.imageUrl.message}</span>
+              </label>
+            )}
           </div>
 
           <div className="form-control">
