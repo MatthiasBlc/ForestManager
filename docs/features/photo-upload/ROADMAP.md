@@ -101,17 +101,16 @@ Guide infra : `GUIDE_MINIO.md`
 ## Phase E - Backend : cron nettoyage + suppression cascade
 
 ### E.1 - Cron de nettoyage des images orphelines
-- [ ] Creer `src/jobs/imageCleanup.ts` (meme pattern que `notificationCleanup.ts`)
-- [ ] Cron a 3h30 : chercher recettes/communautes soft-deleted > 7 jours avec imageKey non null
-- [ ] Supprimer les fichiers MinIO correspondants
-- [ ] Mettre imageKey a null en DB
-- [ ] Logs info/debug
+- [x] Creer `src/jobs/imageCleanup.ts` (meme pattern que `notificationCleanup.ts`)
+- [x] Cron a 3h30 : chercher recettes/communautes soft-deleted > 7 jours avec imageKey non null
+- [x] Supprimer les fichiers MinIO correspondants
+- [x] Mettre imageKey a null en DB
+- [x] Logs info/debug
 - [ ] Tests unitaires
 
 ### E.2 - Suppression cascade (hard delete)
-- [ ] Lors du hard delete d'une recette : supprimer l'image MinIO si imageKey existe
-- [ ] Lors du hard delete d'une communaute : idem
-- [ ] Tests
+- [x] N/A : pas de hard delete pour Recipe/Community dans le code actuel (soft delete uniquement)
+- [x] Le cron couvre le nettoyage apres 7 jours de soft delete
 
 ---
 
