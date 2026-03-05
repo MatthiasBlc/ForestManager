@@ -184,8 +184,8 @@
 
 ### G.1 - Run complet des tests existants
 
-- [ ] `npm run test:backend` — tous les tests passent
-- [ ] `npm run test:frontend` — tous les tests passent
+- [x] `npm run test:backend` — 704 tests passent
+- [x] `npm run test:frontend` — 404 tests passent
 
 ### G.2 - Tests manuels
 
