@@ -413,6 +413,15 @@ describe("Notifications API", () => {
       expect(res.status).toBe(200);
       expect(res.body.updated).toBe(1);
     });
+
+    it("should return 400 if ids contain non-string values", async () => {
+      const res = await request(app)
+        .patch("/api/notifications/read")
+        .set("Cookie", userCookie)
+        .send({ ids: [123, true, null] });
+
+      expect(res.status).toBe(400);
+    });
   });
 
   // =====================================

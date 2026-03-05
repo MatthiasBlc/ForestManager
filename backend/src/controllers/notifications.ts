@@ -3,6 +3,7 @@ import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { NotificationCategory, Notification } from "@prisma/client";
+import { assertString } from "../util/validation";
 
 const ALL_CATEGORIES = Object.values(NotificationCategory);
 const VALID_CATEGORIES: Set<string> = new Set(ALL_CATEGORIES);
@@ -332,6 +333,11 @@ export const markBatchAsRead: RequestHandler<
 
     if (ids.length > 100) {
       throw createHttpError(400, "NOTIF_004: Maximum 100 ids per batch");
+    }
+
+    // Validate each id is a string
+    for (const id of ids) {
+      assertString(id, "ids[]");
     }
 
     // Verifier que toutes les notifications appartiennent au user

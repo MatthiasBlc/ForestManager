@@ -138,13 +138,13 @@
 
 ### E.1 - notifications.ts
 
-- [ ] `markAsRead` : valider que chaque element de ids[] est un string
-- [ ] Tests
+- [x] `markBatchAsRead` : valider que chaque element de ids[] est un string
+- [x] Tests
 
 ### E.2 - Express body limit
 
-- [ ] Configurer `express.json({ limit: '50kb' })` dans app.ts
-- [ ] Verifier que les tests existants passent (aucun payload > 50kb attendu)
+- [x] Configurer `express.json({ limit: '50kb' })` dans app.ts (deja en place)
+- [x] Verifier que les tests existants passent (aucun payload > 50kb attendu)
 
 ---
 
