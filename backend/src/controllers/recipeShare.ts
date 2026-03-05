@@ -3,6 +3,7 @@ import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { formatTags, formatIngredients, formatSteps } from "../util/responseFormatters";
+import { buildImageUrl } from "../config/storage";
 import {
   forkRecipe,
   publishRecipe,
@@ -46,7 +47,7 @@ export const shareRecipe: RequestHandler<
         prepTime: true,
         cookTime: true,
         restTime: true,
-        imageUrl: true,
+        imageKey: true,
         communityId: true,
         creatorId: true,
         tags: { select: { tagId: true, tag: { select: { id: true, name: true, scope: true, communityId: true } } } },
@@ -139,7 +140,7 @@ export const shareRecipe: RequestHandler<
       prepTime: forkResult.prepTime,
       cookTime: forkResult.cookTime,
       restTime: forkResult.restTime,
-      imageUrl: forkResult.imageUrl,
+      imageUrl: forkResult.imageKey ? buildImageUrl(forkResult.imageKey) : null,
       createdAt: forkResult.createdAt,
       updatedAt: forkResult.updatedAt,
       creatorId: forkResult.creatorId,
@@ -222,7 +223,7 @@ export const publishToCommunities: RequestHandler<
         prepTime: true,
         cookTime: true,
         restTime: true,
-        imageUrl: true,
+        imageKey: true,
         creatorId: true,
         communityId: true,
         tags: { select: { tagId: true, tag: { select: { id: true, name: true, scope: true, communityId: true } } } },

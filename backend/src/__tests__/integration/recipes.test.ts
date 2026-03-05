@@ -308,21 +308,6 @@ describe('Recipes API', () => {
       expect(res.body.error).toContain('VALIDATION_001');
     });
 
-    it('should return 400 when imageUrl is javascript:', async () => {
-      const res = await request(app)
-        .post('/api/recipes')
-        .set('Cookie', sessionCookie!)
-        .send({
-          title: 'Recette',
-          servings: 4,
-          steps: [{ instruction: 'Step' }],
-          imageUrl: 'javascript:alert(1)',
-        });
-
-      expect(res.status).toBe(400);
-      expect(res.body.error).toContain('RECIPE_005');
-    });
-
     it('should return 401 when not authenticated', async () => {
       const res = await request(app)
         .post('/api/recipes')

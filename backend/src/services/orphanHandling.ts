@@ -47,7 +47,7 @@ export async function handleOrphanedRecipes(
       prepTime: true,
       cookTime: true,
       restTime: true,
-      imageUrl: true,
+      imageKey: true,
       proposals: {
         where: {
           status: "PENDING",
@@ -75,7 +75,7 @@ export async function handleOrphanedRecipes(
   const variantDataList: {
     proposal: typeof recipes[0]["proposals"][0];
     recipeId: string;
-    imageUrl: string | null;
+    imageKey: string | null;
     recipe: typeof recipes[0];
   }[] = [];
 
@@ -85,7 +85,7 @@ export async function handleOrphanedRecipes(
       variantDataList.push({
         proposal,
         recipeId: recipe.id,
-        imageUrl: recipe.imageUrl,
+        imageKey: recipe.imageKey,
         recipe,
       });
     }
@@ -112,7 +112,7 @@ export async function handleOrphanedRecipes(
     metadata: Prisma.InputJsonValue;
   }[] = [];
 
-  for (const { proposal, recipeId, imageUrl, recipe } of variantDataList) {
+  for (const { proposal, recipeId, imageKey, recipe } of variantDataList) {
     const variant = await client.recipe.create({
       data: {
         title: proposal.proposedTitle,
@@ -120,7 +120,7 @@ export async function handleOrphanedRecipes(
         prepTime: proposal.proposedPrepTime !== null ? proposal.proposedPrepTime : recipe.prepTime,
         cookTime: proposal.proposedCookTime !== null ? proposal.proposedCookTime : recipe.cookTime,
         restTime: proposal.proposedRestTime !== null ? proposal.proposedRestTime : recipe.restTime,
-        imageUrl,
+        imageKey,
         isVariant: true,
         creatorId: proposal.proposerId,
         communityId,

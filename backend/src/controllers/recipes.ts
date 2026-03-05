@@ -4,10 +4,11 @@ import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { Prisma } from "@prisma/client";
 import {
-  isValidHttpUrl, validateServings, validateTime, validateSteps, StepInput,
+  validateServings, validateTime, validateSteps, StepInput,
   assertString, assertArray, validateQuantity, validateStringLength,
-  MAX_TITLE_LENGTH, MAX_TAGS_PER_RECIPE, MAX_URL_LENGTH, MAX_FILTER_ITEMS, MAX_SEARCH_LENGTH,
+  MAX_TITLE_LENGTH, MAX_TAGS_PER_RECIPE, MAX_FILTER_ITEMS, MAX_SEARCH_LENGTH,
 } from "../util/validation";
+import { buildImageUrl } from "../config/storage";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import { RECIPE_TAGS_SELECT, RECIPE_STEPS_SELECT, RECIPE_INGREDIENTS_SELECT } from "../util/prismaSelects";
 import { requireRecipeAccess, requireRecipeOwnership } from "../services/membershipService";
@@ -97,7 +98,7 @@ export const getRecipes: RequestHandler<unknown, unknown, unknown, GetRecipesQue
           prepTime: true,
           cookTime: true,
           restTime: true,
-          imageUrl: true,
+          imageKey: true,
           createdAt: true,
           updatedAt: true,
           tags: RECIPE_TAGS_SELECT,
@@ -118,7 +119,7 @@ export const getRecipes: RequestHandler<unknown, unknown, unknown, GetRecipesQue
       prepTime: recipe.prepTime,
       cookTime: recipe.cookTime,
       restTime: recipe.restTime,
-      imageUrl: recipe.imageUrl,
+      imageUrl: recipe.imageKey ? buildImageUrl(recipe.imageKey) : null,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
       tags: formatTags(recipe.tags),
@@ -152,7 +153,7 @@ export const getRecipe: RequestHandler = async (req, res, next) => {
         prepTime: true,
         cookTime: true,
         restTime: true,
-        imageUrl: true,
+        imageKey: true,
         createdAt: true,
         updatedAt: true,
         creatorId: true,
@@ -197,7 +198,7 @@ export const getRecipe: RequestHandler = async (req, res, next) => {
       prepTime: recipe.prepTime,
       cookTime: recipe.cookTime,
       restTime: recipe.restTime,
-      imageUrl: recipe.imageUrl,
+      imageUrl: recipe.imageKey ? buildImageUrl(recipe.imageKey) : null,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
       creatorId: recipe.creatorId,
@@ -232,13 +233,12 @@ interface CreateRecipeBody {
   cookTime?: number | null;
   restTime?: number | null;
   steps?: StepInput[];
-  imageUrl?: string;
   tags?: string[];
   ingredients?: IngredientInput[];
 }
 
 export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeBody, unknown> = async (req, res, next) => {
-  const { title, servings, prepTime, cookTime, restTime, steps, imageUrl, tags = [], ingredients = [] } = req.body;
+  const { title, servings, prepTime, cookTime, restTime, steps, tags = [], ingredients = [] } = req.body;
   const authenticatedUserId = req.session.userId;
 
   try {
@@ -286,17 +286,8 @@ export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeBody, un
       validateQuantity(ing.quantity, "ingredient quantity");
     }
 
-    // Image URL validation
-    if (imageUrl !== undefined && imageUrl !== null) {
-      assertString(imageUrl, "imageUrl");
-      validateStringLength(imageUrl, "imageUrl", 0, MAX_URL_LENGTH);
-    }
-    if (!isValidHttpUrl(imageUrl)) {
-      throw createHttpError(400, "RECIPE_005: Invalid image URL");
-    }
-
     const newRecipe = await createRecipeService(authenticatedUserId, {
-      title, servings, prepTime, cookTime, restTime, steps, imageUrl, tags, ingredients,
+      title, servings, prepTime, cookTime, restTime, steps, tags, ingredients,
     });
 
     if (!newRecipe) {
@@ -310,7 +301,7 @@ export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeBody, un
       prepTime: newRecipe.prepTime,
       cookTime: newRecipe.cookTime,
       restTime: newRecipe.restTime,
-      imageUrl: newRecipe.imageUrl,
+      imageUrl: newRecipe.imageKey ? buildImageUrl(newRecipe.imageKey) : null,
       createdAt: newRecipe.createdAt,
       updatedAt: newRecipe.updatedAt,
       creatorId: newRecipe.creatorId,
@@ -336,14 +327,13 @@ interface UpdateRecipeBody {
   cookTime?: number | null;
   restTime?: number | null;
   steps?: StepInput[];
-  imageUrl?: string;
   tags?: string[];
   ingredients?: IngredientInput[];
 }
 
 export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRecipeBody, unknown> = async (req, res, next) => {
   const recipeId = req.params.recipeId;
-  const { title, servings, prepTime, cookTime, restTime, steps, imageUrl, tags, ingredients } = req.body;
+  const { title, servings, prepTime, cookTime, restTime, steps, tags, ingredients } = req.body;
   const authenticatedUserId = req.session.userId;
 
   try {
@@ -392,11 +382,6 @@ export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRec
       }
     }
 
-    if (imageUrl !== undefined && imageUrl !== null) {
-      assertString(imageUrl, "imageUrl");
-      validateStringLength(imageUrl, "imageUrl", 0, MAX_URL_LENGTH);
-    }
-
     const recipe = await prisma.recipe.findUnique({
       where: { id: recipeId, deletedAt: null },
     });
@@ -407,12 +392,8 @@ export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRec
 
     await requireRecipeOwnership(authenticatedUserId, recipe);
 
-    if (imageUrl !== undefined && !isValidHttpUrl(imageUrl)) {
-      throw createHttpError(400, "RECIPE_005: Invalid image URL");
-    }
-
     const { result: updatedRecipe, pendingTagIds } = await updateRecipeService(recipeId, {
-      title, servings, prepTime, cookTime, restTime, steps, imageUrl, tags, ingredients,
+      title, servings, prepTime, cookTime, restTime, steps, tags, ingredients,
     }, recipe, authenticatedUserId);
 
     if (!updatedRecipe) {
@@ -441,7 +422,7 @@ export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRec
       prepTime: updatedRecipe.prepTime,
       cookTime: updatedRecipe.cookTime,
       restTime: updatedRecipe.restTime,
-      imageUrl: updatedRecipe.imageUrl,
+      imageUrl: updatedRecipe.imageKey ? buildImageUrl(updatedRecipe.imageKey) : null,
       createdAt: updatedRecipe.createdAt,
       updatedAt: updatedRecipe.updatedAt,
       creatorId: updatedRecipe.creatorId,

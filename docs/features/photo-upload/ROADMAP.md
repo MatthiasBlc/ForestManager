@@ -16,8 +16,8 @@ Guide infra : `GUIDE_MINIO.md`
 
 ### A.2 - Variables d'environnement
 - [x] Ajouter les variables MINIO_* au `.env.development` (ou equivalent)
-- [ ] Ajouter les variables MINIO_* au `.env.example` / documentation
-- [ ] Ajouter la config MinIO dans le backend (fichier de config centralise)
+- [x] Ajouter les variables MINIO_* au `.env.example` / documentation
+- [x] Ajouter la config MinIO dans le backend (fichier de config centralise)
 
 ### A.3 - Stack MinIO VPS (preprod + prod)
 - [ ] Documenter le docker-compose de la stack MinIO pour Portainer
@@ -33,17 +33,17 @@ Guide infra : `GUIDE_MINIO.md`
 ## Phase B - Backend : service MinIO + migration DB
 
 ### B.1 - Migration Prisma
-- [ ] Ajouter `imageKey String?` sur le modele `Recipe`
-- [ ] Ajouter `imageKey String?` sur le modele `Community`
-- [ ] Generer et appliquer la migration
+- [x] Ajouter `imageKey String?` sur le modele `Recipe` (rename depuis imageUrl)
+- [x] Ajouter `imageKey String?` sur le modele `Community`
+- [x] Generer et appliquer la migration
 
 ### B.2 - Service MinIO (backend)
-- [ ] Installer le SDK S3 (`@aws-sdk/client-s3` + `@aws-sdk/s3-request-presigner`)
-- [ ] Creer `src/services/storageService.ts` :
+- [x] Installer le SDK S3 (`@aws-sdk/client-s3` + `@aws-sdk/s3-request-presigner`)
+- [x] Creer `src/services/storageService.ts` :
   - `generatePresignedUploadUrl(key: string): Promise<string>`
   - `deleteObject(key: string): Promise<void>`
   - `headObject(key: string): Promise<{ contentType, contentLength }>`
-- [ ] Creer `src/config/storage.ts` (lecture des variables d'env)
+- [x] Creer `src/config/storage.ts` (lecture des variables d'env)
 - [ ] Tests unitaires du service (mock S3)
 
 ---

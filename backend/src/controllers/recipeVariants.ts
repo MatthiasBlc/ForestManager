@@ -7,6 +7,7 @@ import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import { RECIPE_TAGS_SELECT } from "../util/prismaSelects";
 import { requireRecipeAccess } from "../services/membershipService";
 import { formatTags } from "../util/responseFormatters";
+import { buildImageUrl } from "../config/storage";
 
 interface GetVariantsQuery {
   limit?: string;
@@ -81,7 +82,7 @@ export const getVariants: RequestHandler<
           prepTime: true,
           cookTime: true,
           restTime: true,
-          imageUrl: true,
+          imageKey: true,
           createdAt: true,
           updatedAt: true,
           creatorId: true,
@@ -110,7 +111,7 @@ export const getVariants: RequestHandler<
       prepTime: variant.prepTime,
       cookTime: variant.cookTime,
       restTime: variant.restTime,
-      imageUrl: variant.imageUrl,
+      imageUrl: variant.imageKey ? buildImageUrl(variant.imageKey) : null,
       createdAt: variant.createdAt,
       updatedAt: variant.updatedAt,
       creatorId: variant.creatorId,

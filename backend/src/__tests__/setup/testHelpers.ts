@@ -30,7 +30,7 @@ interface TestRecipe {
   id: string;
   title: string;
   servings: number;
-  imageUrl: string | null;
+  imageKey: string | null;
   creatorId: string;
 }
 
@@ -148,7 +148,7 @@ export async function createTestRecipe(
     cookTime: number | null;
     restTime: number | null;
     steps: Array<{ instruction: string }>;
-    imageUrl: string | null;
+    imageKey: string | null;
     tags: string[];
     ingredients: Array<{ name: string; quantity?: number }>;
   }>
@@ -173,7 +173,7 @@ export async function createTestRecipe(
       prepTime: data?.prepTime ?? undefined,
       cookTime: data?.cookTime ?? undefined,
       restTime: data?.restTime ?? undefined,
-      imageUrl: data?.imageUrl ?? null,
+      imageKey: data?.imageKey ?? null,
       creatorId,
       steps: {
         create: (data?.steps ?? [{ instruction: "Test step" }]).map((step, index) => ({
@@ -208,7 +208,7 @@ export async function createTestRecipe(
     id: recipe.id,
     title: recipe.title,
     servings: recipe.servings,
-    imageUrl: recipe.imageUrl,
+    imageKey: recipe.imageKey,
     creatorId: recipe.creatorId,
   };
 }

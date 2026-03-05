@@ -43,7 +43,7 @@ interface ProposalWithRecipe {
     prepTime: number | null;
     cookTime: number | null;
     restTime: number | null;
-    imageUrl: string | null;
+    imageKey: string | null;
     communityId: string | null;
     creatorId: string;
     originRecipeId: string | null;
@@ -257,7 +257,7 @@ interface ProposalForReject {
     prepTime: number | null;
     cookTime: number | null;
     restTime: number | null;
-    imageUrl: string | null;
+    imageKey: string | null;
     communityId: string | null;
   };
 }
@@ -293,7 +293,7 @@ export async function rejectProposal(
         prepTime: proposal.proposedPrepTime !== null ? proposal.proposedPrepTime : proposal.recipe.prepTime,
         cookTime: proposal.proposedCookTime !== null ? proposal.proposedCookTime : proposal.recipe.cookTime,
         restTime: proposal.proposedRestTime !== null ? proposal.proposedRestTime : proposal.recipe.restTime,
-        imageUrl: proposal.recipe.imageUrl,
+        imageKey: proposal.recipe.imageKey,
         isVariant: true,
         creatorId: proposal.proposerId,
         communityId: proposal.recipe.communityId,
@@ -306,7 +306,7 @@ export async function rejectProposal(
         prepTime: true,
         cookTime: true,
         restTime: true,
-        imageUrl: true,
+        imageKey: true,
         isVariant: true,
         creatorId: true,
         communityId: true,
