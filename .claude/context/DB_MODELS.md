@@ -23,14 +23,14 @@ DB: PostgreSQL | ORM: Prisma
 | Model | Champs cles | Notes |
 |-------|-------------|-------|
 | User | id, email, username, password, deletedAt? | Soft delete, index email+username+deletedAt |
-| Community | id, name, description?, visibility(INVITE_ONLY), deletedAt? | Soft delete |
+| Community | id, name, description?, visibility(INVITE_ONLY), imageKey?, deletedAt? | Soft delete |
 | UserCommunity | userId, communityId, role(MEMBER/MODERATOR), joinedAt, deletedAt? | Soft delete, @@unique(userId,communityId) |
 | CommunityInvite | communityId, inviterId, inviteeId, status(PENDING/ACCEPTED/REJECTED/CANCELLED), respondedAt? | Index composite(communityId,inviteeId,status) |
 
 ### Recipes (10 models)
 | Model | Champs cles | Notes |
 |-------|-------------|-------|
-| Recipe | id, title, servings(default 4), prepTime?, cookTime?, restTime?, imageUrl?, isVariant, creatorId, communityId?, originRecipeId?, sharedFromCommunityId?, deletedAt? | Soft delete. communityId=null → perso. Phase 13: content → steps |
+| Recipe | id, title, servings(default 4), prepTime?, cookTime?, restTime?, imageKey?, isVariant, creatorId, communityId?, originRecipeId?, sharedFromCommunityId?, deletedAt? | Soft delete. communityId=null → perso. Phase 15: imageUrl → imageKey |
 | RecipeStep | id, recipeId(FK CASCADE), order, instruction | Index(recipeId, order). Phase 13 |
 | RecipeUpdateProposal | recipeId, proposerId, proposedTitle, proposedServings?, proposedPrepTime?, proposedCookTime?, proposedRestTime?, status(PENDING/ACCEPTED/REJECTED), deletedAt?, proposedSteps[], proposedIngredients[] | Soft delete. Phase 13: proposedContent → proposedSteps |
 | ProposalStep | id, proposalId(FK CASCADE), order, instruction | Index(proposalId, order). Phase 13 |

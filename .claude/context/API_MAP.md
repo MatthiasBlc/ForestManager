@@ -24,11 +24,14 @@ POST   /api/recipes/            # create (title, servings, steps[], prepTime?, c
 PATCH  /api/recipes/:recipeId   # update (owner, +membership for community recipes) → partial: title?, servings?, steps[]?, times?, tags?, ingredients?
 DELETE /api/recipes/:recipeId   # soft delete (owner, +membership for community recipes)
 GET    /api/recipes/:recipeId/variants   # list variants (isVariant=true, same community) → includes servings, times
+POST   /api/recipes/:recipeId/upload-url     # presigned PUT URL for image upload (owner only)
+POST   /api/recipes/:recipeId/confirm-upload # confirm image upload (validate MIME/size on MinIO)
+DELETE /api/recipes/:recipeId/image          # delete recipe image (MinIO + DB)
 POST   /api/recipes/:recipeId/share     # fork to another community (copies steps, servings, times)
 POST   /api/recipes/:recipeId/publish   # publish personal recipe to communities (copies steps, servings, times)
 GET    /api/recipes/:recipeId/communities  # list communities where recipe has copies
 ```
-Controller: `controllers/recipes.ts` | Route: `routes/recipes.ts`
+Controller: `controllers/recipes.ts`, `controllers/recipeImage.ts` | Route: `routes/recipes.ts`
 
 ## Tags (/api/tags) - requireAuth
 ```
@@ -55,8 +58,11 @@ GET    /api/communities/                          # list user's communities
 POST   /api/communities/                          # create (auto MODERATOR)
 GET    /api/communities/:communityId              # detail (memberOf)
 PATCH  /api/communities/:communityId              # update (MODERATOR)
+POST   /api/communities/:communityId/upload-url     # presigned PUT URL for avatar upload (MODERATOR)
+POST   /api/communities/:communityId/confirm-upload # confirm avatar upload (validate MIME/size)
+DELETE /api/communities/:communityId/image          # delete community avatar (MODERATOR)
 ```
-Controller: `controllers/communities.ts` | Route: `routes/communities.ts`
+Controller: `controllers/communities.ts`, `controllers/communityImage.ts` | Route: `routes/communities.ts`
 
 ### Recipes (nested under /api/communities/:communityId)
 ```
@@ -250,4 +256,4 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 | adminRateLimiter | middleware/security.ts | 30 req/min global admin |
 | authRateLimiter | routes config | 5/15min sur auth endpoints |
 
-## Total: 93 endpoints (59 user + 33 admin + 1 health)
+## Total: 99 endpoints (65 user + 33 admin + 1 health)

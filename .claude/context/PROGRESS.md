@@ -42,14 +42,23 @@ Phases 0 a 9.3 terminees.
 - Corrections frontend : window.confirm → useConfirm, debounce hook, step.order
 - **Tests** : 649 backend + 403 frontend = 1052 total (inchanges)
 
-## Phase 14 - Input Validation & Security Hardening : EN COURS (tests manuels restants)
+## Phase 14 - Input Validation & Security Hardening : COMPLETE
 
 - **Spec** : `docs/features/input-validation-security/SPEC_INPUT_VALIDATION.md`
 - **Roadmap** : `docs/features/input-validation-security/ROADMAP.md`
-- **Branche** : `Developement`
-- **Contexte** : Audit securite du 2026-03-04, 0 injection SQL, mais validations manquantes
+- **Branche** : `Developement` (merged)
 - **Tests** : 704 backend + 404 frontend = 1108 total
-- **Phases A-F** : COMPLETE. Phase G : tests auto OK, tests manuels restants
+
+## Phase 15 - Photo Upload System : EN COURS
+
+- **Spec** : `docs/features/photo-upload/SPEC_PHOTO_UPLOAD.md`
+- **Roadmap** : `docs/features/photo-upload/ROADMAP.md`
+- **Guide infra** : `docs/features/photo-upload/GUIDE_MINIO.md`
+- **Branche** : `UploadImageSystem`
+- **Tests** : 746 backend + 404 frontend = 1150 total
+- **Phases A-G** : COMPLETE (infra MinIO, backend endpoints, frontend composant, tests)
+- **Phase H** : Tests manuels E2E + polish restants
+- **Phase A.3** : VPS MinIO (differe, necessaire avant deploy preprod/prod)
 
 ## Resume de reprise
 
