@@ -133,6 +133,7 @@ const ProposeModificationModal = ({
             value={proposedTitle}
             onChange={(e) => setProposedTitle(e.target.value)}
             placeholder="Recipe title"
+            maxLength={200}
             className="input input-bordered w-full"
             disabled={isSubmitting}
           />
