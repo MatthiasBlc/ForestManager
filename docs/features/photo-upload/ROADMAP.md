@@ -117,24 +117,24 @@ Guide infra : `GUIDE_MINIO.md`
 ## Phase F - Frontend : composant d'upload recettes
 
 ### F.1 - Utilitaire de conversion d'image
-- [ ] Creer un utilitaire `imageUtils.ts` :
-  - Conversion en WebP (Canvas API ou lib type `browser-image-compression`)
+- [x] Creer un utilitaire `imageUtils.ts` :
+  - Conversion en WebP (Canvas API)
   - Resize a max 1600px (plus grand cote)
   - Validation taille < 2 MB
   - Validation format (jpeg, png, webp)
 
 ### F.2 - Composant ImageUpload
-- [ ] Composant reutilisable : zone de drop / bouton de selection
-- [ ] Preview de l'image avant upload
-- [ ] Indicateur de progression (upload vers MinIO)
-- [ ] Gestion des erreurs (fichier trop gros, format invalide, echec upload)
+- [x] Composant reutilisable : zone de drop / bouton de selection
+- [x] Preview de l'image avant upload
+- [x] Indicateur de progression (upload vers MinIO)
+- [x] Gestion des erreurs (fichier trop gros, format invalide, echec upload)
 
 ### F.3 - Integration page recette
-- [ ] Ajouter le composant sur le formulaire de creation/edition de recette
-- [ ] Appel backend pour presigned URL -> upload -> confirm
-- [ ] Affichage de l'image de couverture existante
-- [ ] Bouton de suppression de l'image
-- [ ] Affichage de l'image sur la page de detail de la recette
+- [x] Ajouter le composant sur le formulaire de creation/edition de recette
+- [x] Appel backend pour presigned URL -> upload -> confirm
+- [x] Affichage de l'image de couverture existante
+- [x] Bouton de suppression de l'image
+- [x] Affichage de l'image sur la page de detail de la recette
 
 ---
 

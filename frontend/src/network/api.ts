@@ -75,7 +75,6 @@ export interface RecipeInput {
   cookTime?: number | null;
   restTime?: number | null;
   steps: { instruction: string }[];
-  imageUrl?: string;
   tags?: string[];
   ingredients?: { name: string; quantity?: number; unitId?: string }[];
 }
@@ -320,6 +319,40 @@ export default class APIManager {
   static async updateCommunity(id: string, data: { name?: string; description?: string }): Promise<CommunityDetail> {
     const response = await API.patch(`/api/communities/${id}`, JSON.stringify(data)).catch(handleApiError);
     return response.data;
+  }
+
+
+  // --------------- Recipe Images ---------------
+
+  static async getRecipeUploadUrl(recipeId: string): Promise<{ uploadUrl: string; imageKey: string }> {
+    const response = await API.post(`/api/recipes/${recipeId}/upload-url`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async confirmRecipeUpload(recipeId: string): Promise<{ imageKey: string; imageUrl: string }> {
+    const response = await API.post(`/api/recipes/${recipeId}/confirm-upload`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async deleteRecipeImage(recipeId: string): Promise<void> {
+    await API.delete(`/api/recipes/${recipeId}/image`).catch(handleApiError);
+  }
+
+
+  // --------------- Community Images ---------------
+
+  static async getCommunityUploadUrl(communityId: string): Promise<{ uploadUrl: string; imageKey: string }> {
+    const response = await API.post(`/api/communities/${communityId}/upload-url`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async confirmCommunityUpload(communityId: string): Promise<{ imageKey: string; imageUrl: string }> {
+    const response = await API.post(`/api/communities/${communityId}/confirm-upload`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async deleteCommunityImage(communityId: string): Promise<void> {
+    await API.delete(`/api/communities/${communityId}/image`).catch(handleApiError);
   }
 
 
