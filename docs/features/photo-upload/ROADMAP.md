@@ -141,11 +141,11 @@ Guide infra : `GUIDE_MINIO.md`
 ## Phase G - Frontend : upload communautes
 
 ### G.1 - Integration page communaute
-- [ ] Ajouter le composant ImageUpload sur les settings de communaute
-- [ ] Meme flux : presigned URL -> upload -> confirm
-- [ ] Affichage de l'avatar existant
-- [ ] Bouton de suppression
-- [ ] Affichage de l'avatar dans les listes et pages de communaute
+- [x] Ajouter le composant ImageUpload sur les settings de communaute
+- [x] Meme flux : presigned URL -> upload -> confirm
+- [x] Affichage de l'avatar existant
+- [x] Bouton de suppression
+- [x] Affichage de l'avatar dans les listes et pages de communaute
 
 ---
 

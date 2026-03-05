@@ -137,7 +137,15 @@ const CommunityDetailPage = () => {
       {/* Header */}
       <div className="bg-base-100 rounded-lg shadow-xl p-6 mb-6">
         <div className="flex justify-between items-start gap-4">
-          <div>
+          <div className="flex items-start gap-4">
+            {community.imageUrl && (
+              <img
+                src={community.imageUrl}
+                alt={community.name}
+                className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+              />
+            )}
+            <div>
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-3xl font-bold">{community.name}</h1>
               <span className={`badge ${isModerator ? "badge-primary" : "badge-ghost"}`}>
@@ -152,6 +160,7 @@ const CommunityDetailPage = () => {
               {" "}&middot;{" "}
               {community.recipesCount} {community.recipesCount === 1 ? "recipe" : "recipes"}
             </p>
+          </div>
           </div>
           <div className="flex items-center gap-1">
             {/* Members button */}
@@ -258,6 +267,7 @@ const CommunityDetailPage = () => {
               communityId={community.id}
               initialName={community.name}
               initialDescription={community.description || ""}
+              initialImageUrl={community.imageUrl}
               onSaved={handleEditSaved}
               onCancel={() => setPanelContent(null)}
             />
