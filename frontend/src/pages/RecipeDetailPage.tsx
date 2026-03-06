@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { FaArrowLeft, FaEdit, FaTrash, FaLightbulb, FaShare, FaCodeBranch, FaTag } from "react-icons/fa";
 import APIManager from "../network/api";
 import { RecipeDetail } from "../models/recipe";
+import ImageUpload from "../components/ImageUpload";
 import { useAuth } from "../contexts/AuthContext";
 import { useConfirm } from "../hooks/useConfirm";
 import TagBadge from "../components/recipes/TagBadge";
@@ -173,6 +174,19 @@ const RecipeDetailPage = () => {
               className="w-full h-full object-cover"
             />
           </figure>
+        )}
+
+        {isOwner && (
+          <div className="px-6 pt-6 md:px-8 md:pt-8">
+            <ImageUpload
+              currentImageUrl={recipe.imageUrl}
+              onUploadComplete={() => loadRecipeData()}
+              onDeleteComplete={() => loadRecipeData()}
+              getUploadUrl={() => APIManager.getRecipeUploadUrl(recipe.id)}
+              confirmUpload={() => APIManager.confirmRecipeUpload(recipe.id)}
+              deleteImage={() => APIManager.deleteRecipeImage(recipe.id)}
+            />
+          </div>
         )}
 
         <div className="p-6 md:p-8">

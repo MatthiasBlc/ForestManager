@@ -10,7 +10,7 @@ interface CreateCommunityRecipeData {
   cookTime?: number | null;
   restTime?: number | null;
   steps: StepInput[];
-  imageUrl?: string | null;
+  imageKey?: string | null;
   tags: string[];
   ingredients: IngredientInput[];
 }
@@ -22,7 +22,7 @@ const COMMUNITY_RECIPE_SELECT = {
   prepTime: true,
   cookTime: true,
   restTime: true,
-  imageUrl: true,
+  imageKey: true,
   createdAt: true,
   updatedAt: true,
   creatorId: true,
@@ -53,7 +53,7 @@ export async function createCommunityRecipe(
         prepTime: data.prepTime ?? null,
         cookTime: data.cookTime ?? null,
         restTime: data.restTime ?? null,
-        imageUrl: data.imageUrl?.trim() || null,
+        imageKey: data.imageKey?.trim() || null,
         creatorId: userId,
         communityId: null,
       },
@@ -67,7 +67,7 @@ export async function createCommunityRecipe(
         prepTime: data.prepTime ?? null,
         cookTime: data.cookTime ?? null,
         restTime: data.restTime ?? null,
-        imageUrl: data.imageUrl?.trim() || null,
+        imageKey: data.imageKey?.trim() || null,
         creatorId: userId,
         communityId,
         originRecipeId: personalRecipe.id,

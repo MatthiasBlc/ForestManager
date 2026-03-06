@@ -7,10 +7,10 @@ import APIManager, { RecipeInput } from "../network/api";
 import TagSelector from "../components/form/TagSelector";
 import IngredientList, { IngredientInput } from "../components/form/IngredientList";
 import StepEditor from "../components/form/StepEditor";
+import ImageUpload from "../components/ImageUpload";
 
 interface FormData {
   title: string;
-  imageUrl: string;
 }
 
 const RecipeFormPage = () => {
@@ -28,6 +28,7 @@ const RecipeFormPage = () => {
   const [restTime, setRestTime] = useState<string>("");
   const [steps, setSteps] = useState<{ instruction: string }[]>([{ instruction: "" }]);
   const [stepsError, setStepsError] = useState<string | null>(null);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
 
   const {
     register,
@@ -37,7 +38,6 @@ const RecipeFormPage = () => {
   } = useForm<FormData>({
     defaultValues: {
       title: "",
-      imageUrl: "",
     },
   });
 
@@ -51,8 +51,8 @@ const RecipeFormPage = () => {
         const recipe = await APIManager.getRecipe(id);
         reset({
           title: recipe.title,
-          imageUrl: recipe.imageUrl || "",
         });
+        setCurrentImageUrl(recipe.imageUrl || null);
         setServings(recipe.servings);
         setPrepTime(recipe.prepTime != null ? String(recipe.prepTime) : "");
         setCookTime(recipe.cookTime != null ? String(recipe.cookTime) : "");
@@ -99,7 +99,6 @@ const RecipeFormPage = () => {
         cookTime: parseOptionalTime(cookTime),
         restTime: parseOptionalTime(restTime),
         steps: validSteps.map((s) => ({ instruction: s.instruction.trim() })),
-        imageUrl: data.imageUrl.trim() || undefined,
         tags: tags,
         ingredients: ingredients
           .filter((ing) => ing.name.trim())
@@ -185,23 +184,21 @@ const RecipeFormPage = () => {
             )}
           </div>
 
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text font-medium">Image URL (optional)</span>
-            </label>
-            <input
-              type="url"
-              {...register("imageUrl", { maxLength: { value: 2048, message: "URL must be 2048 characters or less" } })}
-              placeholder="https://example.com/image.jpg"
-              maxLength={2048}
-              className={`input input-bordered w-full ${errors.imageUrl ? "input-error" : ""}`}
-            />
-            {errors.imageUrl && (
+          {isEditing && id && (
+            <div className="form-control">
               <label className="label">
-                <span className="label-text-alt text-error">{errors.imageUrl.message}</span>
+                <span className="label-text font-medium">Photo</span>
               </label>
-            )}
-          </div>
+              <ImageUpload
+                currentImageUrl={currentImageUrl}
+                onUploadComplete={(imageUrl) => setCurrentImageUrl(imageUrl)}
+                onDeleteComplete={() => setCurrentImageUrl(null)}
+                getUploadUrl={() => APIManager.getRecipeUploadUrl(id)}
+                confirmUpload={() => APIManager.confirmRecipeUpload(id)}
+                deleteImage={() => APIManager.deleteRecipeImage(id)}
+              />
+            </div>
+          )}
 
           <div className="form-control">
             <label className="label">

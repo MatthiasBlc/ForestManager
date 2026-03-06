@@ -15,7 +15,7 @@ interface SourceRecipeForShare {
   prepTime: number | null;
   cookTime: number | null;
   restTime: number | null;
-  imageUrl: string | null;
+  imageKey: string | null;
   communityId: string;
   tags: { tagId: string; tag: { id: string; name: string; scope: string; communityId: string | null } }[];
   ingredients: { ingredientId: string; quantity: number | null; unitId: string | null; order: number }[];
@@ -41,7 +41,7 @@ export async function forkRecipe(
         prepTime: sourceRecipe.prepTime,
         cookTime: sourceRecipe.cookTime,
         restTime: sourceRecipe.restTime,
-        imageUrl: sourceRecipe.imageUrl,
+        imageKey: sourceRecipe.imageKey,
         creatorId: userId,
         communityId: targetCommunityId,
         originRecipeId: sourceRecipe.id,
@@ -137,7 +137,7 @@ export async function forkRecipe(
         prepTime: true,
         cookTime: true,
         restTime: true,
-        imageUrl: true,
+        imageKey: true,
         createdAt: true,
         updatedAt: true,
         creatorId: true,
@@ -163,7 +163,7 @@ interface SourceRecipeForPublish {
   prepTime: number | null;
   cookTime: number | null;
   restTime: number | null;
-  imageUrl: string | null;
+  imageKey: string | null;
   tags: { tagId: string; tag: { id: string; name: string; scope: string; communityId: string | null } }[];
   ingredients: { ingredientId: string; quantity: number | null; unitId: string | null; order: number }[];
   steps: { order: number; instruction: string }[];
@@ -189,7 +189,7 @@ export async function publishRecipe(
           prepTime: sourceRecipe.prepTime,
           cookTime: sourceRecipe.cookTime,
           restTime: sourceRecipe.restTime,
-          imageUrl: sourceRecipe.imageUrl,
+          imageKey: sourceRecipe.imageKey,
           creatorId: userId,
           communityId,
           originRecipeId: sourceRecipe.id,

@@ -38,7 +38,7 @@ npx prisma studio              # DB GUI :5555
 
 ## Phase actuelle
 
-**Phase 14** - Input Validation & Security Hardening : EN COURS.
+**Phase 15** - Photo Upload System (MinIO) : EN COURS.
 Voir `.claude/context/PROGRESS.md` pour le detail et les liens vers spec/roadmap.
 
 ## Codes erreur
@@ -79,6 +79,10 @@ docs/
     input-validation-security/
       SPEC_INPUT_VALIDATION.md
       ROADMAP.md
+    photo-upload/
+      SPEC_PHOTO_UPLOAD.md
+      ROADMAP.md
+      GUIDE_MINIO.md
 ```
 
 Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une spec et une roadmap.
@@ -107,6 +111,10 @@ Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une 
 | **Feature : Notifications Rework** | |
 | Spec Notifications Rework | `docs/features/notifications-rework/SPEC_NOTIFICATIONS_REWORK.md` |
 | Roadmap Notifications Rework | `docs/features/notifications-rework/ROADMAP.md` |
+| **Feature : Photo Upload** | |
+| Spec Photo Upload | `docs/features/photo-upload/SPEC_PHOTO_UPLOAD.md` |
+| Roadmap Photo Upload | `docs/features/photo-upload/ROADMAP.md` |
+| Guide MinIO | `docs/features/photo-upload/GUIDE_MINIO.md` |
 | **Archive MVP** | |
 | Regles metier | `docs/mvp/BUSINESS_RULES.md` |
 | User stories | `docs/mvp/USER_STORIES.md` |

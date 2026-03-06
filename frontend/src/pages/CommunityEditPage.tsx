@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { FaArrowLeft, FaSave } from "react-icons/fa";
 import APIManager from "../network/api";
+import ImageUpload from "../components/ImageUpload";
 
 interface FormData {
   name: string;
@@ -15,6 +16,7 @@ const CommunityEditPage = () => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   const {
     register,
@@ -46,6 +48,7 @@ const CommunityEditPage = () => {
           name: community.name,
           description: community.description || "",
         });
+        setImageUrl(community.imageUrl);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load community");
       } finally {
@@ -151,6 +154,22 @@ const CommunityEditPage = () => {
               </label>
             )}
           </div>
+
+          {id && (
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text font-medium">Image</span>
+              </label>
+              <ImageUpload
+                currentImageUrl={imageUrl}
+                onUploadComplete={(url) => setImageUrl(url)}
+                onDeleteComplete={() => setImageUrl(null)}
+                getUploadUrl={() => APIManager.getCommunityUploadUrl(id)}
+                confirmUpload={() => APIManager.confirmCommunityUpload(id)}
+                deleteImage={() => APIManager.deleteCommunityImage(id)}
+              />
+            </div>
+          )}
 
           {error && (
             <div className="alert alert-error">

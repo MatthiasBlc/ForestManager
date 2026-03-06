@@ -8,12 +8,14 @@ controllers/
 ├── activity.ts        # getCommunityActivity, getMyActivity
 ├── auth.ts            # signup, login, logout, me
 ├── communities.ts     # CRUD communautes
+├── communityImage.ts  # upload-url, confirm-upload, delete avatar communaute
 ├── communityRecipes.ts # create, list recettes communautaires
 ├── communityTags.ts   # CRUD + approve/reject tags communaute (moderateur)
 ├── members.ts         # list, promote, kick/leave membres
 ├── invites.ts         # create, list, cancel, accept, reject invitations
 ├── proposals.ts       # create, list, detail, accept, reject propositions
 ├── recipes.ts         # CRUD recettes personnelles (get, create, update, delete)
+├── recipeImage.ts     # upload-url, confirm-upload, delete image recette
 ├── recipeVariants.ts  # getVariants (liste variantes d'une recette)
 ├── recipeShare.ts     # shareRecipe, publishToCommunities, getRecipeCommunities
 ├── tagPreferences.ts  # tag visibility & moderator notification prefs (5 handlers)
@@ -45,7 +47,8 @@ middleware/
 ├── auth.ts            # requireAuth (verifie session.userId)
 ├── community.ts       # memberOf, requireCommunityRole
 ├── httpLogger.ts      # pino-http middleware (remplace morgan)
-└── security.ts        # helmet, CORS, rate limiting
+├── security.ts        # helmet, CORS, rate limiting
+└── validateUUID.ts    # Validation UUID v4 dans les params
 ```
 
 ### Admin (module isole)
@@ -88,6 +91,7 @@ services/
 ├── orphanHandling.ts  # Gestion recettes orphelines (auto-reject proposals)
 ├── notificationService.ts  # create, broadcast, preferences, templates, grouping
 ├── tagSuggestionService.ts # create, accept, reject tag suggestions
+├── storageService.ts  # MinIO/S3 : presigned URL, headObject, deleteObject, validateUploadedFile
 ├── eventEmitter.ts    # AppEventEmitter singleton (emit activity events)
 └── socketServer.ts    # Socket.IO server init, auth, rooms, notification persistence
 ```
@@ -99,6 +103,8 @@ server.ts              # Entry point (listen + notification cleanup job)
 types/
 ├── express.d.ts       # Extension types Express
 └── session.d.ts       # Types session
+config/
+└── storage.ts         # MinIO/S3 config (storageConfig, buildImageUrl)
 util/
 ├── logger.ts          # Logger Pino central (silent test, pretty dev, JSON prod)
 ├── pagination.ts      # parsePagination, buildPaginationMeta
@@ -108,7 +114,8 @@ util/
 ├── db.ts              # Prisma client singleton
 └── validateEnv.ts     # envalid env vars
 jobs/
-└── notificationCleanup.ts # Cron daily cleanup read notifications > 30 days
+├── notificationCleanup.ts # Cron daily cleanup read notifications > 30 days
+└── imageCleanup.ts    # Cron daily 3h30 cleanup orphan images (soft-deleted > 7 days)
 scripts/
 └── createAdmin.ts     # CLI creation SuperAdmin
 ```
@@ -124,6 +131,7 @@ __tests__/
 │   ├── pagination.test.ts         # Pagination utils
 │   ├── validation.test.ts         # Validation utils & constants
 │   ├── responseFormatters.test.ts # Response formatters
+│   ├── storageService.test.ts   # Storage service (mock S3)
 │   └── middleware/
 │       ├── auth.test.ts           # requireAuth
 │       ├── requireSuperAdmin.test.ts # requireSuperAdmin, requireAdminSession
@@ -154,7 +162,10 @@ __tests__/
     ├── notifications.test.ts
     ├── tagPreferences.test.ts
     ├── websocket.test.ts
-    └── notificationCleanup.test.ts
+    ├── notificationCleanup.test.ts
+    ├── recipeImage.test.ts        # Recipe image upload endpoints
+    ├── communityImage.test.ts     # Community image upload endpoints
+    └── imageCleanup.test.ts       # Image cleanup cron job
 ```
 
 ---
@@ -245,6 +256,7 @@ components/
 ├── admin/
 │   ├── AdminLayout.tsx       # Layout admin (sidebar + header + outlet)
 │   └── AdminProtectedRoute.tsx # Guard admin
+├── ImageUpload.tsx           # Composant upload image (drag&drop, preview, presigned URL)
 ├── AddEditRecipeDialog.tsx   # Dialog creation/edition
 ├── ErrorBoundary.tsx         # Error boundary React (crash → fallback UI)
 ├── LoginModal.tsx            # Modal login
@@ -297,6 +309,7 @@ utils/
 ├── format.Date.ts            # formatDate, formatDateShort
 ├── formatDuration.ts         # formatDuration: 45→"45 min", 90→"1h30" (Phase 13)
 ├── scaleQuantity.ts          # scaleQuantity: proportionnel arrondi 2 dec (Phase 13)
+├── imageUtils.ts             # processImage: validate, resize, convert WebP (Phase 15)
 └── communityEvents.ts        # Event bus for community refresh
 errors/                       # Classes erreur
 assets/                       # Assets statiques

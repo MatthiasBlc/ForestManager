@@ -1,5 +1,6 @@
 import express from "express";
 import * as RecipesController from "../controllers/recipes";
+import * as RecipeImageController from "../controllers/recipeImage";
 import * as RecipeVariantsController from "../controllers/recipeVariants";
 import * as RecipeShareController from "../controllers/recipeShare";
 import * as ProposalsController from "../controllers/proposals";
@@ -17,6 +18,11 @@ router.post("/", RecipesController.createRecipe);
 router.patch("/:recipeId", validateUUID, RecipesController.updateRecipe);
 
 router.delete("/:recipeId", validateUUID, RecipesController.deleteRecipe);
+
+// Image upload routes
+router.post("/:recipeId/upload-url", validateUUID, RecipeImageController.getUploadUrl);
+router.post("/:recipeId/confirm-upload", validateUUID, RecipeImageController.confirmUpload);
+router.delete("/:recipeId/image", validateUUID, RecipeImageController.deleteImage);
 
 // Variants routes on recipes
 router.get("/:recipeId/variants", validateUUID, RecipeVariantsController.getVariants);

@@ -4,6 +4,7 @@ import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { COMMUNITY_VALIDATION as VALIDATION } from "../util/validation";
+import { buildImageUrl } from "../config/storage";
 
 export const getCommunities: RequestHandler = async (req, res, next) => {
   const authenticatedUserId = req.session.userId;
@@ -26,6 +27,7 @@ export const getCommunities: RequestHandler = async (req, res, next) => {
             id: true,
             name: true,
             description: true,
+            imageKey: true,
             createdAt: true,
             updatedAt: true,
             _count: {
@@ -48,6 +50,7 @@ export const getCommunities: RequestHandler = async (req, res, next) => {
       id: membership.community.id,
       name: membership.community.name,
       description: membership.community.description,
+      imageUrl: membership.community.imageKey ? buildImageUrl(membership.community.imageKey) : null,
       role: membership.role,
       membersCount: membership.community._count.members,
       recipesCount: membership.community._count.recipes,
@@ -83,6 +86,7 @@ export const getCommunity: RequestHandler = async (req, res, next) => {
         id: true,
         name: true,
         description: true,
+        imageKey: true,
         visibility: true,
         createdAt: true,
         updatedAt: true,
@@ -108,6 +112,7 @@ export const getCommunity: RequestHandler = async (req, res, next) => {
       id: community.id,
       name: community.name,
       description: community.description,
+      imageUrl: community.imageKey ? buildImageUrl(community.imageKey) : null,
       visibility: community.visibility,
       createdAt: community.createdAt,
       membersCount: community._count.members,
@@ -280,6 +285,7 @@ export const updateCommunity: RequestHandler<
         id: true,
         name: true,
         description: true,
+        imageKey: true,
         visibility: true,
         createdAt: true,
         updatedAt: true,
@@ -300,6 +306,7 @@ export const updateCommunity: RequestHandler<
       id: updatedCommunity.id,
       name: updatedCommunity.name,
       description: updatedCommunity.description,
+      imageUrl: updatedCommunity.imageKey ? buildImageUrl(updatedCommunity.imageKey) : null,
       visibility: updatedCommunity.visibility,
       createdAt: updatedCommunity.createdAt,
       updatedAt: updatedCommunity.updatedAt,

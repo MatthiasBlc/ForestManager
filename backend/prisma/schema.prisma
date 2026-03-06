@@ -203,6 +203,7 @@ model Community {
   name        String
   description String?
   visibility  Visibility @default(INVITE_ONLY)
+  imageKey    String?    // Cle relative MinIO (ex: "communities/{id}/avatar.webp")
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   deletedAt   DateTime?
@@ -302,7 +303,7 @@ model Recipe {
   prepTime              Int?
   cookTime              Int?
   restTime              Int?
-  imageUrl              String?   // Optionnel - stockage differe a V1
+  imageKey              String?   // Cle relative MinIO (ex: "recipes/{id}/cover.webp")
   isVariant             Boolean   @default(false)
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt

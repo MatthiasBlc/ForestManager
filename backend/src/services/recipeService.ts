@@ -170,7 +170,7 @@ const RECIPE_RESULT_SELECT = {
   prepTime: true,
   cookTime: true,
   restTime: true,
-  imageUrl: true,
+  imageKey: true,
   createdAt: true,
   updatedAt: true,
   creatorId: true,
@@ -188,7 +188,7 @@ interface CreateRecipeData {
   cookTime?: number | null;
   restTime?: number | null;
   steps: StepInput[];
-  imageUrl?: string | null;
+  imageKey?: string | null;
   tags: string[];
   ingredients: IngredientInput[];
 }
@@ -202,7 +202,7 @@ export async function createRecipe(userId: string, data: CreateRecipeData) {
         prepTime: data.prepTime ?? null,
         cookTime: data.cookTime ?? null,
         restTime: data.restTime ?? null,
-        imageUrl: data.imageUrl?.trim() || null,
+        imageKey: data.imageKey?.trim() || null,
         creatorId: userId,
       },
     });
@@ -231,7 +231,7 @@ interface UpdateRecipeData {
   cookTime?: number | null;
   restTime?: number | null;
   steps?: StepInput[];
-  imageUrl?: string;
+  imageKey?: string;
   tags?: string[];
   ingredients?: IngredientInput[];
 }
@@ -261,7 +261,7 @@ export async function updateRecipe(
         ...(data.prepTime !== undefined && { prepTime: data.prepTime }),
         ...(data.cookTime !== undefined && { cookTime: data.cookTime }),
         ...(data.restTime !== undefined && { restTime: data.restTime }),
-        ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl?.trim() || null }),
+        ...(data.imageKey !== undefined && { imageKey: data.imageKey?.trim() || null }),
       },
     });
 
@@ -296,7 +296,7 @@ export async function updateRecipe(
 }
 
 /**
- * Synchronise titre, contenu, imageUrl et ingredients vers les recettes liees.
+ * Synchronise titre, contenu, imageKey et ingredients vers les recettes liees.
  * Tags sont LOCAUX (pas synchronises).
  * Forks (sharedFromCommunityId != null) et variantes (isVariant = true) sont exclus.
  */
@@ -313,7 +313,7 @@ async function syncLinkedRecipes(
   if (data.prepTime !== undefined) syncData.prepTime = data.prepTime;
   if (data.cookTime !== undefined) syncData.cookTime = data.cookTime;
   if (data.restTime !== undefined) syncData.restTime = data.restTime;
-  if (data.imageUrl !== undefined) syncData.imageUrl = data.imageUrl?.trim() || null;
+  if (data.imageKey !== undefined) syncData.imageKey = data.imageKey?.trim() || null;
 
   const hasSyncableFields = Object.keys(syncData).length > 0 || data.ingredients !== undefined || data.steps !== undefined;
   if (!hasSyncableFields) return;
@@ -353,7 +353,7 @@ async function syncLinkedRecipes(
 
   if (linkedRecipeIds.length === 0) return;
 
-  // Mettre a jour titre, contenu, imageUrl
+  // Mettre a jour titre, contenu, imageKey
   if (Object.keys(syncData).length > 0) {
     await tx.recipe.updateMany({
       where: { id: { in: linkedRecipeIds } },

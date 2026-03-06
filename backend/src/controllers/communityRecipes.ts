@@ -4,10 +4,11 @@ import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { Prisma } from "@prisma/client";
 import {
-  isValidHttpUrl, validateServings, validateTime, validateSteps, StepInput,
+  validateServings, validateTime, validateSteps, StepInput,
   assertString, assertArray, validateQuantity, validateStringLength,
-  MAX_TITLE_LENGTH, MAX_TAGS_PER_RECIPE, MAX_URL_LENGTH, MAX_FILTER_ITEMS, MAX_SEARCH_LENGTH,
+  MAX_TITLE_LENGTH, MAX_TAGS_PER_RECIPE, MAX_FILTER_ITEMS, MAX_SEARCH_LENGTH,
 } from "../util/validation";
+import { buildImageUrl } from "../config/storage";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import { RECIPE_TAGS_SELECT } from "../util/prismaSelects";
 import { formatTags, formatIngredients, formatSteps } from "../util/responseFormatters";
@@ -28,7 +29,6 @@ interface CreateCommunityRecipeBody {
   cookTime?: number | null;
   restTime?: number | null;
   steps?: StepInput[];
-  imageUrl?: string;
   tags?: string[];
   ingredients?: IngredientInput[];
 }
@@ -39,7 +39,7 @@ export const createCommunityRecipe: RequestHandler<
   CreateCommunityRecipeBody,
   unknown
 > = async (req, res, next) => {
-  const { title, servings, prepTime, cookTime, restTime, steps, imageUrl, tags = [], ingredients = [] } = req.body;
+  const { title, servings, prepTime, cookTime, restTime, steps, tags = [], ingredients = [] } = req.body;
   const authenticatedUserId = req.session.userId;
   const communityId = req.params.communityId;
 
@@ -88,17 +88,8 @@ export const createCommunityRecipe: RequestHandler<
       validateQuantity(ing.quantity, "ingredient quantity");
     }
 
-    // Image URL validation
-    if (imageUrl !== undefined && imageUrl !== null) {
-      assertString(imageUrl, "imageUrl");
-      validateStringLength(imageUrl, "imageUrl", 0, MAX_URL_LENGTH);
-    }
-    if (!isValidHttpUrl(imageUrl)) {
-      throw createHttpError(400, "RECIPE_005: Invalid image URL");
-    }
-
     const result = await createCommunityRecipeService(authenticatedUserId, communityId, {
-      title, servings, prepTime, cookTime, restTime, steps, imageUrl, tags, ingredients,
+      title, servings, prepTime, cookTime, restTime, steps, tags, ingredients,
     });
 
     if (!result.personal || !result.community) {
@@ -112,7 +103,7 @@ export const createCommunityRecipe: RequestHandler<
       prepTime: recipe.prepTime,
       cookTime: recipe.cookTime,
       restTime: recipe.restTime,
-      imageUrl: recipe.imageUrl,
+      imageUrl: recipe.imageKey ? buildImageUrl(recipe.imageKey) : null,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
       creatorId: recipe.creatorId,
@@ -250,7 +241,7 @@ export const getCommunityRecipes: RequestHandler<
           prepTime: true,
           cookTime: true,
           restTime: true,
-          imageUrl: true,
+          imageKey: true,
           createdAt: true,
           updatedAt: true,
           creatorId: true,
@@ -285,7 +276,7 @@ export const getCommunityRecipes: RequestHandler<
       prepTime: recipe.prepTime,
       cookTime: recipe.cookTime,
       restTime: recipe.restTime,
-      imageUrl: recipe.imageUrl,
+      imageUrl: recipe.imageKey ? buildImageUrl(recipe.imageKey) : null,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
       creatorId: recipe.creatorId,

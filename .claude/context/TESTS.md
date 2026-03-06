@@ -40,29 +40,29 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~1052 tests)
+## Inventaire des tests (~1150 tests)
 
-### Backend Integration (26 fichiers, ~590 tests)
+### Backend Integration (29 fichiers, ~678 tests)
 
 | Fichier | Module | Tests |
 |---------|--------|-------|
 | activity.test.ts | Activity feed (community + personal) | 15 |
-| auth.test.ts | User signup/login/logout/me | 16 |
-| recipes.test.ts | CRUD recettes (perso, steps/servings/times + validation) | 46 |
+| auth.test.ts | User signup/login/logout/me | 23 |
+| recipes.test.ts | CRUD recettes (perso, steps/servings/times + validation) | 52 |
 | communityRecipes.test.ts | CRUD recettes communautaires (+ tags scope-aware) | 35 |
 | proposals.test.ts | Propositions modifications (steps/servings/times + proposedIngredients) | 45 |
 | variants.test.ts | Liste variantes recettes (+ servings/times) | 11 |
 | tags.test.ts | Autocomplete tags (scope-aware) | 9 |
 | ingredients.test.ts | Autocomplete ingredients + suggested-unit | 5 |
 | communities.test.ts | CRUD communautes | 27 |
-| invitations.test.ts | Workflow invitations | 35 |
+| invitations.test.ts | Workflow invitations | 36 |
 | members.test.ts | Membres: list, promote, kick, orphan handling | 26 |
-| adminAuth.test.ts | Auth 2FA admin | 13 |
+| adminAuth.test.ts | Auth 2FA admin | 15 |
 | adminTags.test.ts | CRUD tags admin (+ scope filter) | 17 |
 | adminIngredients.test.ts | CRUD + approve/reject/merge ingredients admin + notifications | 35 |
-| adminUnits.test.ts | CRUD units admin + user endpoint | 25 |
+| adminUnits.test.ts | CRUD units admin + user endpoint | 28 |
 | adminFeatures.test.ts | Features grant/revoke | 13 |
-| adminRecipes.test.ts | Recipes admin (tag recipes, detail, update, delete) | 17 |
+| adminRecipes.test.ts | Recipes admin (tag recipes, detail, update, delete) | 21 |
 | adminCommunities.test.ts | Communities admin | 12 |
 | adminDashboard.test.ts | Stats dashboard | 4 |
 | adminActivity.test.ts | Logs activite | 4 |
@@ -71,11 +71,14 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | tagSuggestions.test.ts | Suggestions de tags | 29 |
 | tagPreferences.test.ts | Tag visibility + notification preferences + getModeratorIds | 23 |
 | notificationService.test.ts | Notification service (create, broadcast, preferences, templates) | 30 |
-| notifications.test.ts | Notifications API (CRUD, grouping, batch, preferences) | 27 |
+| notifications.test.ts | Notifications API (CRUD, grouping, batch, preferences) | 28 |
 | websocket.test.ts | WebSocket (auth, rooms, notification:new, notification:count, persistence) | 8 |
 | notificationCleanup.test.ts | Notification cleanup job (retention, batch, edge cases) | 6 |
+| recipeImage.test.ts | Recipe image upload endpoints (presigned URL, confirm, delete, permissions) | 12 |
+| communityImage.test.ts | Community image upload endpoints (presigned URL, confirm, delete, role-based) | 13 |
+| imageCleanup.test.ts | Image cleanup cron (recipes, communities, retention, error resilience) | 8 |
 
-### Backend Unit (7 fichiers, ~59 tests)
+### Backend Unit (8 fichiers, ~69 tests)
 
 | Fichier | Module | Tests |
 |---------|--------|-------|
@@ -86,8 +89,9 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | middleware/auth.test.ts | requireAuth | 4 |
 | middleware/requireSuperAdmin.test.ts | requireSuperAdmin, requireAdminSession | 6 |
 | middleware/security.test.ts | requireHttps, rateLimiters, helmet | 5 |
+| storageService.test.ts | S3/MinIO service (presigned URL, head, delete, validate) | 10 |
 
-### Frontend Unit (62 fichiers, ~403 tests)
+### Frontend Unit (62 fichiers, ~404 tests)
 
 | Fichier | Composant | Tests |
 |---------|-----------|-------|
