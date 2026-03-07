@@ -20,12 +20,12 @@ Guide infra : `GUIDE_MINIO.md`
 - [x] Ajouter la config MinIO dans le backend (fichier de config centralise)
 
 ### A.3 - Stack MinIO VPS (preprod + prod)
-- [ ] Documenter le docker-compose de la stack MinIO pour Portainer
-- [ ] Creer les buckets preprod et prod
+- [x] Documenter le docker-compose de la stack MinIO pour Portainer
+- [x] Creer les buckets preprod et prod
 - [ ] Configurer la policy public read sur chaque bucket
-- [ ] Creer le user `forestmanager` + policy IAM
-- [ ] Configurer les variables d'environnement dans Portainer (preprod + prod)
-- [ ] Ajouter le reseau `minio-net` aux stacks ForestManager (preprod + prod)
+- [x] Creer le user `forestmanager` + policy IAM
+- [x] Configurer les variables d'environnement dans Portainer (preprod)
+- [x] Ajouter le reseau `minio-net` aux stacks ForestManager (preprod)
 - [ ] Verifier la connectivite backend -> MinIO sur le VPS
 
 ---
