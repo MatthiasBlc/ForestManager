@@ -55,7 +55,7 @@ COPY --from=build /app/dist /usr/share/nginx/html
 # Note: X-Forwarded-Proto is passed from Traefik, not redefined here
 RUN echo 'server { \
     listen 80; \
-    add_header Content-Security-Policy "default-src '"'"'self'"'"'; script-src '"'"'self'"'"'; style-src '"'"'self'"'"' '"'"'unsafe-inline'"'"'; img-src '"'"'self'"'"' data: https:; connect-src '"'"'self'"'"' ws: wss:; font-src '"'"'self'"'"'; object-src '"'"'none'"'"'; frame-src '"'"'none'"'"'; frame-ancestors '"'"'none'"'"';" always; \
+    add_header Content-Security-Policy "default-src '"'"'self'"'"'; script-src '"'"'self'"'"'; style-src '"'"'self'"'"' '"'"'unsafe-inline'"'"'; img-src '"'"'self'"'"' data: https: blob:; connect-src '"'"'self'"'"' ws: wss: https://s3.matthias-bouloc.fr; font-src '"'"'self'"'"'; object-src '"'"'none'"'"'; frame-src '"'"'none'"'"'; frame-ancestors '"'"'none'"'"';" always; \
     add_header X-Content-Type-Options "nosniff" always; \
     add_header X-Frame-Options "DENY" always; \
     add_header Referrer-Policy "strict-origin-when-cross-origin" always; \

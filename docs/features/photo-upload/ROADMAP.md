@@ -2,6 +2,7 @@
 
 Spec : `SPEC_PHOTO_UPLOAD.md`
 Guide infra : `GUIDE_MINIO.md`
+Tests manuels : `MANUAL_TESTS.md`
 
 ---
 
@@ -22,11 +23,11 @@ Guide infra : `GUIDE_MINIO.md`
 ### A.3 - Stack MinIO VPS (preprod + prod)
 - [x] Documenter le docker-compose de la stack MinIO pour Portainer
 - [x] Creer les buckets preprod et prod
-- [ ] Configurer la policy public read sur chaque bucket
+- [x] Configurer la policy public read sur chaque bucket
 - [x] Creer le user `forestmanager` + policy IAM
 - [x] Configurer les variables d'environnement dans Portainer (preprod)
 - [x] Ajouter le reseau `minio-net` aux stacks ForestManager (preprod)
-- [ ] Verifier la connectivite backend -> MinIO sur le VPS
+- [x] Verifier la connectivite backend -> MinIO sur le VPS
 
 ---
 
@@ -157,3 +158,7 @@ Guide infra : `GUIDE_MINIO.md`
 - [ ] Verifier les permissions (non-auteur ne peut pas uploader)
 - [ ] Tests sur l'environnement preprod
 - [ ] Mettre a jour API_MAP, DB_MODELS, FILE_MAP, TESTS dans `.claude/context/`
+
+### H.1 - Bugfixes preprod (decouverts lors des tests)
+- [x] Fix presigned URLs : utiliser l'endpoint public (`MINIO_PUBLIC_URL`) au lieu de l'endpoint interne Docker pour les URLs destinees au frontend
+- [x] Fix CSP frontend : ajouter `blob:` a `img-src` pour les previews locales, ajouter `https://s3.matthias-bouloc.fr` a `connect-src` pour les uploads MinIO

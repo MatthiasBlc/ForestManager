@@ -8,6 +8,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { storageConfig } from "../config/storage";
 import logger from "../util/logger";
 
+// Client interne pour les operations serveur (head, delete, etc.)
 const s3Client = new S3Client({
   endpoint: `${storageConfig.useSSL ? "https" : "http"}://${storageConfig.endpoint}:${storageConfig.port}`,
   region: "us-east-1", // obligatoire pour le SDK, mais ignore par MinIO
@@ -16,6 +17,17 @@ const s3Client = new S3Client({
     secretAccessKey: storageConfig.secretKey,
   },
   forcePathStyle: true, // obligatoire pour MinIO (pas de virtual-hosted style)
+});
+
+// Client avec endpoint public pour generer les presigned URLs destinees au frontend
+const publicS3Client = new S3Client({
+  endpoint: storageConfig.publicUrl,
+  region: "us-east-1",
+  credentials: {
+    accessKeyId: storageConfig.accessKey,
+    secretAccessKey: storageConfig.secretKey,
+  },
+  forcePathStyle: true,
 });
 
 /**
@@ -28,7 +40,8 @@ export async function generatePresignedUploadUrl(key: string): Promise<string> {
     ContentType: "image/webp",
   });
 
-  const url = await getSignedUrl(s3Client, command, {
+  // Utilise le client public pour que l'URL soit accessible depuis le navigateur
+  const url = await getSignedUrl(publicS3Client, command, {
     expiresIn: storageConfig.presignedUrlTTL,
   });
 
