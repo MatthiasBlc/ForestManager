@@ -43,7 +43,9 @@ Voir `.claude/context/PROGRESS.md` pour le detail et les liens vers spec/roadmap
 
 ## Codes erreur
 
-AUTH_001-002 | COMMUNITY_001-006 | RECIPE_001-005 | INVITE_001-003 | ADMIN_001-012 | PROPOSAL_001-003 | SHARE_001-003 | TAG_001-007 | ADMIN_ING_001-009 | ADMIN_UNIT_001-007 | NOTIF_001-005 | ADMIN_REC_001-003 | VALIDATION_001
+**User API** : AUTH_001-011 | USER_001 | COMMUNITY_001-006 | RECIPE_001-009 | INVITE_001-006 | MEMBER_001-004 | PROPOSAL_001-004 | SHARE_001-006 | PUBLISH_001-003 | TAG_001-007 | INGREDIENT_003 | NOTIF_001-005 | VALIDATION_001
+
+**Admin API** : ADMIN_001-011 | ADMIN_TAG_001-006 | ADMIN_ING_001-009 | ADMIN_UNIT_001-007 | ADMIN_REC_001-003 | ADMIN_COM_001-003 | ADMIN_FEAT_001-006
 
 ## Regle: maintenir `.claude/` a jour
 
@@ -71,11 +73,12 @@ docs/
     ingredients-rework/
       SPEC_INGREDIENTS_REWORK.md
       ROADMAP.md
-      MANUAL_TESTS.md
+    recipe-rework-v2/
+      SPEC_RECIPE_REWORK_V2.md
+      ROADMAP.md
     notifications-rework/
       SPEC_NOTIFICATIONS_REWORK.md
       ROADMAP.md
-      MANUAL_TESTS.md
     input-validation-security/
       SPEC_INPUT_VALIDATION.md
       ROADMAP.md
