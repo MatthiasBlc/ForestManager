@@ -60,6 +60,9 @@ Si je n'ai pas le choix comment faire pour m'assurer à 100% que je ne dépasser
 Est-ce qu'il existe une solution en local ?
 Je cherche tout à de même à avoir une solution la plus professionnelle et sécurisée possible.
 
+# upload de photo suite
+faire ne sorte que les photos de communauté, s'il y en a une, soient utilisée pour la miniature de la communauté dans la sidebar
+
 # système d'importation de recettes
 
 Je ne sais pas si c'est vraiment nécessaire, mais il serait bien pratique de pouvoir importer des recettes depuis un copier coller. Le problème est que le format d'origine varie beaucoup. Un LLM pourrait aider à parser le format d'origine et à le convertir en format interne mais je ne veux pas de solution payante. Dans un monde idéal j'aimerais pouvoir coller un texte ou un lien, que le llm préremplit le formulaire de recette, l'utilisateur vérifie, ajuste et valide.

@@ -8,6 +8,7 @@ import TagSelector from "../components/form/TagSelector";
 import IngredientList, { IngredientInput } from "../components/form/IngredientList";
 import StepEditor from "../components/form/StepEditor";
 import ImageUpload from "../components/ImageUpload";
+import ImagePicker from "../components/ImagePicker";
 
 interface FormData {
   title: string;
@@ -29,6 +30,8 @@ const RecipeFormPage = () => {
   const [steps, setSteps] = useState<{ instruction: string }[]>([{ instruction: "" }]);
   const [stepsError, setStepsError] = useState<string | null>(null);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+  const [pendingImage, setPendingImage] = useState<Blob | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const {
     register,
@@ -83,6 +86,26 @@ const RecipeFormPage = () => {
     return isNaN(n) ? null : n;
   };
 
+  const uploadImageForRecipe = async (recipeId: string, imageBlob: Blob): Promise<boolean> => {
+    try {
+      setIsUploadingImage(true);
+      const { uploadUrl } = await APIManager.getRecipeUploadUrl(recipeId);
+      const uploadRes = await fetch(uploadUrl, {
+        method: "PUT",
+        body: imageBlob,
+        headers: { "Content-Type": "image/webp" },
+      });
+      if (!uploadRes.ok) throw new Error("Upload failed");
+      await APIManager.confirmRecipeUpload(recipeId);
+      return true;
+    } catch (err) {
+      toast.error("La recette a ete creee mais l'image n'a pas pu etre ajoutee.");
+      return false;
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
   const onSubmit = async (data: FormData) => {
     const validSteps = steps.filter((s) => s.instruction.trim().length > 0);
     if (validSteps.length === 0) {
@@ -114,9 +137,15 @@ const RecipeFormPage = () => {
         navigate(`/recipes/${id}`);
       } else if (communityId) {
         const newCommunityRecipe = await APIManager.createCommunityRecipe(communityId, recipeData);
+        if (pendingImage) {
+          await uploadImageForRecipe(newCommunityRecipe.id, pendingImage);
+        }
         navigate(`/recipes/${newCommunityRecipe.id}`);
       } else {
         const newRecipe = await APIManager.createRecipe(recipeData);
+        if (pendingImage) {
+          await uploadImageForRecipe(newRecipe.id, pendingImage);
+        }
         navigate(`/recipes/${newRecipe.id}`);
       }
     } catch (err) {
@@ -184,11 +213,11 @@ const RecipeFormPage = () => {
             )}
           </div>
 
-          {isEditing && id && (
-            <div className="form-control">
-              <label className="label">
-                <span className="label-text font-medium">Photo</span>
-              </label>
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text font-medium">Photo</span>
+            </label>
+            {isEditing && id ? (
               <ImageUpload
                 currentImageUrl={currentImageUrl}
                 onUploadComplete={(imageUrl) => setCurrentImageUrl(imageUrl)}
@@ -197,8 +226,10 @@ const RecipeFormPage = () => {
                 confirmUpload={() => APIManager.confirmRecipeUpload(id)}
                 deleteImage={() => APIManager.deleteRecipeImage(id)}
               />
-            </div>
-          )}
+            ) : (
+              <ImagePicker onImageSelected={setPendingImage} />
+            )}
+          </div>
 
           <div className="form-control">
             <label className="label">
@@ -305,9 +336,9 @@ const RecipeFormPage = () => {
             >
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary gap-2" disabled={isSubmitting}>
-              {isSubmitting ? <span className="loading loading-spinner loading-sm" /> : <FaSave />}
-              {isEditing ? "Save changes" : "Create recipe"}
+            <button type="submit" className="btn btn-primary gap-2" disabled={isSubmitting || isUploadingImage}>
+              {(isSubmitting || isUploadingImage) ? <span className="loading loading-spinner loading-sm" /> : <FaSave />}
+              {isUploadingImage ? "Uploading image..." : isEditing ? "Save changes" : "Create recipe"}
             </button>
           </div>
         </form>
