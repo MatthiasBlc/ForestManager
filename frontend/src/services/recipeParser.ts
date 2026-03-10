@@ -85,13 +85,13 @@ const LONG_UNIT_PATTERNS: { pattern: RegExp; abbr: string }[] = [
 ];
 
 // Headers de section (ne comptent pas comme titre)
-const SECTION_HEADERS = /^(ingr[eé]dients?|pr[eé]paration|[eé]tapes?|instructions?|recette|pour|temps|description|directions?|method|proc[eé]d[eé])s?\s*:?\s*$/i;
+const SECTION_HEADERS = /^(ingr[eé]dients?|pr[eé]paration|[eé]tapes?|instructions?|recette|pour|temps|description|directions?|method|proc[eé]d[eé]|process)s?\s*:?\s*$/i;
 
 // Headers de section ingredients
 const INGREDIENT_HEADER = /^ingr[eé]dients?\s*:?\s*$/i;
 
 // Headers de section etapes
-const STEP_HEADER = /^(pr[eé]paration|[eé]tapes?|instructions?|directions?|method|proc[eé]d[eé])\s*:?\s*$/i;
+const STEP_HEADER = /^(pr[eé]paration|[eé]tapes?|instructions?|directions?|method|proc[eé]d[eé]|process)\s*:?\s*$/i;
 
 // Ligne de separateur visuel
 const SEPARATOR_LINE = /^[\-=_*~]{3,}\s*$/;
@@ -429,22 +429,26 @@ export function parseRecipeText(text: string): ParsedRecipe {
       continue;
     }
 
-    // Ignorer les lignes de metadata (servings, temps) si pas dans une section
-    if (currentSection === 'NONE') {
-      const isMetaLine =
-        /(\d+)\s*(?:personnes?|pers\.?|parts?|portions?|servings?)/i.test(trimmed) ||
-        /pr[eé]p(?:aration)?\s*:/i.test(trimmed) ||
-        /cu(?:isson|ire)\s*:/i.test(trimmed) ||
-        /(?:repos?|pause)\s*:/i.test(trimmed) ||
-        /temps\s*:/i.test(trimmed) ||
-        /^pour\s+\d+/i.test(trimmed);
-      if (isMetaLine) continue;
-    }
+    // Ignorer les lignes de metadata (servings, temps) dans toutes les sections
+    const isMetaLine =
+      /(\d+)\s*(?:personnes?|pers\.?|parts?|portions?|servings?)/i.test(trimmed) ||
+      /pr[eé]p(?:aration)?\s*:/i.test(trimmed) ||
+      /cu(?:isson|ire)\s*:/i.test(trimmed) ||
+      /(?:repos?|pause)\s*:/i.test(trimmed) ||
+      /temps\s*:/i.test(trimmed) ||
+      /^pour\s+\d+/i.test(trimmed);
+    if (isMetaLine) continue;
 
     if (currentSection === 'INGREDIENTS') {
       ingredientLines.push(trimmed);
     } else if (currentSection === 'STEPS') {
       stepLines.push(trimmed);
+    } else if (currentSection === 'NONE') {
+      // Pas encore dans une section reconnue : capturer les lignes qui ressemblent a des ingredients
+      // (commence par un nombre ou une puce suivie d'un nombre)
+      if (looksLikeIngredient(trimmed)) {
+        ingredientLines.push(trimmed);
+      }
     }
   }
 

@@ -19,7 +19,7 @@ persistance, fonctionne y compris offline (je me connecte je dois voir les notif
 
 Implemente : servings avec scaling dynamique des quantites, etapes structurees ordonnees, temps de prep/cuisson/repos avec total auto, propositions granulaires (servings/temps/steps), badges temps et servings sur les cartes.
 
-# ~~Système d'upload de photos~~ DONE (Phase 14)
+# ~~Système d'upload de photos~~ DONE (Phase 15)
 
 usage :
 miniature user ?
@@ -61,14 +61,33 @@ Si je n'ai pas le choix comment faire pour m'assurer à 100% que je ne dépasser
 Est-ce qu'il existe une solution en local ?
 Je cherche tout à de même à avoir une solution la plus professionnelle et sécurisée possible.
 
-# système d'importation de recettes
+# ~~système d'importation de recettes~~ DONE (Phase 16)
 
 Je ne sais pas si c'est vraiment nécessaire, mais il serait bien pratique de pouvoir importer des recettes depuis un copier coller. Le problème est que le format d'origine varie beaucoup. Un LLM pourrait aider à parser le format d'origine et à le convertir en format interne mais je ne veux pas de solution payante. Dans un monde idéal j'aimerais pouvoir coller un texte ou un lien, que le llm préremplit le formulaire de recette, l'utilisateur vérifie, ajuste et valide.
 S'il existe une solution autre qu'un LLM c'est l'idéal mais pour le coup je ne maitrise pas du tout le sujet. Que peux-tu me proposer comme solutions ? Si c'est trop complexe, je suis ouvert à des solutions moins sophistiquées, et je suis également ouvert à ne pas réaliser cette fonctionnalité.
 
-# audit refactorisation complete back + front + zed ? + npm audit + lint + tests parfait
+# audit refactorisation complete
+
+back + front
+Clean code
+Dry
+optimisation du code
+zod ? est-ce nécessaire ?
+abstraction
+app.ts et app.tsx optimisés, clair et lisisbles
+mvp parfait, la suite ne sera que des itérations
+audit performances
+Audit sécurité complet
+npm audit
+lint
+tests
 
 # Update des docs et petit ménage dans Progress.md ?
+
+Mettre à jour les différents doc, archiver les features terminées (pourquoi pas même les delete si ce n'est plus nécessaire, en conservant le nécessaire dans une documentation globale)
+Mettre à jour les fichiers claude et les suivi du travail.
+On considère ici le mvp propre, ce qui arrivera par la suite sera des features qui viendront se greffer sur la production.
+Progress.md a toujours besoin de conserver des références aux étapes de construction du mvp ?
 
 ## système + page de changelog automatique
 
@@ -82,6 +101,8 @@ Dans l'interface admin, il faut pouvoir modifier et supprimer ces message (toujo
 ## upload de photo suite
 
 faire ne sorte que les photos de communauté, s'il y en a une, soient utilisée pour la miniature de la communauté dans la sidebar
+
+## Bouton pour exporter ses recettes ou celles d'une de nos communautés (backup local)
 
 ## Gestionnaire de planning de repas dans une communauté
 
@@ -103,6 +124,20 @@ Possibilité de marquer un article comme acheté.
 Archiver une liste.
 avoir des sous listes suivant les "type de shop favoris" (type de shop = supermarché, boucherie, poissonnerie, etc).
 poivoir associer les ingrédients et articles à un shop favori.
+
+## Recipe Rework v3 - Sous-sections de recettes
+
+Certaines recettes sont composees de plusieurs sous-recettes (ex: enchiladas = viande + sauce + assemblage), chacune avec ses propres ingredients et etapes. Aujourd'hui tout est aplati en une seule liste d'ingredients et une seule liste d'etapes. Penser également à séparer les ingrédients en sous catégories
+
+L'idee serait d'introduire un concept de `RecipeSection` (ou groupe) :
+
+- Une recette peut avoir N sections ordonnees (ex: "Sauce", "Viande", "Assemblage")
+- Chaque section a ses propres ingredients et ses propres etapes
+- Les recettes simples (1 seule section) gardent le meme rendu qu'aujourd'hui
+- L'import de recettes detecterait automatiquement les sous-sections
+- Le formulaire de creation permettrait d'ajouter/supprimer des sections
+- Impact DB : nouveau modele `RecipeSection` entre `Recipe` et `RecipeIngredient`/`RecipeStep`
+- Impact front : formulaire multi-sections, affichage avec separateurs visuels, scaling par section
 
 ## Brique on joue à quoi ?
 

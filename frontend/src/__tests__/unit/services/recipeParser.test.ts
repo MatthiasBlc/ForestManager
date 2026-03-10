@@ -516,4 +516,115 @@ Ingredients :
       expect(lait!.unitAbbreviation).toBe('l');
     });
   });
+
+  describe('metadata lines inside ingredient section', () => {
+    it('should not capture metadata lines as ingredients when they appear after ingredient header', () => {
+      const input = `Pancake Moelleux : recette facile
+6 portions
+Ingredients
+375 g de farine
+45 g de sucre semoule
+6 g de levure chimique
+3 g de sel
+3 oeufs
+75 g de beurre fondu
+68 cl de lait
+
+Preparation: 10 min
+Repos: 1 h
+Cuisson: 4 min
+
+Process
+ETAPE 1
+Dans un saladier, melanger les ingredients secs.
+ETAPE 2
+Ajouter les oeufs, le beurre fondu et le lait.
+ETAPE 3
+Laisser reposer 1h au frigo.
+ETAPE 4
+Cuire les pancakes dans une poele chaude.`;
+
+      const result = parseRecipeText(input);
+
+      expect(result.title).toBe('Pancake Moelleux : recette facile');
+      expect(result.servings).toBe(6);
+      expect(result.prepTime).toBe(10);
+      expect(result.restTime).toBe(60);
+      expect(result.cookTime).toBe(4);
+
+      // Ingredients should not contain metadata lines
+      expect(result.ingredients).toHaveLength(7);
+      expect(result.ingredients[0].name).toBe('farine');
+      const metaIngredient = result.ingredients.find(i =>
+        i.raw.includes('Preparation') || i.raw.includes('Repos') || i.raw.includes('Cuisson')
+      );
+      expect(metaIngredient).toBeUndefined();
+
+      // Steps should be correctly parsed
+      expect(result.steps.length).toBe(4);
+      expect(result.steps[0]).toContain('melanger les ingredients secs');
+    });
+
+    it('should recognize "Process" as a step header', () => {
+      const input = `Test Recipe\n\nIngredients\n100 g de farine\n\nProcess\nMelanger tout.`;
+      const result = parseRecipeText(input);
+      expect(result.ingredients).toHaveLength(1);
+      expect(result.steps).toHaveLength(1);
+      expect(result.steps[0]).toBe('Melanger tout.');
+    });
+  });
+
+  describe('multi-section recipes (no ingredient header)', () => {
+    it('should capture ingredients before step header even without ingredient header', () => {
+      const input = `Pour 4 personnes :
+
+Enchiladas
+- 500 g de blanc de poulet (environ 2)
+- 8 tortillas
+- 2 poivrons (jaune ou rouge)
+- 1 tomate
+- 2 gousses d'ail
+- 2 cas concentre de tomate
+
+Sauce
+- 400 g pulpe de tomates
+- 1 gousse d'ail
+- 2 cas concentre de tomate
+- 1 petit piment (facultatif)
+
+Preparation : 30 minutes
+Cuisson : 35 minutes
+
+Etapes :
+
+Preparer la sauce
+Faire revenir 1 gousse d'ail dans un peu d'huile d'olive
+Ajouter le concentre de tomates et la pulpe de tomates.
+
+Preparer la viande
+Emincer les blancs de poulet
+Faire revenir l'ail dans l'huile d'olive
+
+Preparer les enchiladas
+Farcir chaque tortilla avec le melange viande/poivron.
+Napper de sauce tomate
+Gratiner au four, 30 min a 180C`;
+
+      const result = parseRecipeText(input);
+
+      // Metadata
+      expect(result.servings).toBe(4);
+      expect(result.prepTime).toBe(30);
+      expect(result.cookTime).toBe(35);
+
+      // Ingredients captured from both sub-sections (lines starting with numbers after bullet strip)
+      expect(result.ingredients.length).toBeGreaterThanOrEqual(9);
+      expect(result.ingredients[0].name).toContain('blanc de poulet');
+      expect(result.ingredients[1].name).toBe('tortillas');
+
+      // Steps captured after "Etapes :" header
+      expect(result.steps.length).toBeGreaterThanOrEqual(8);
+      expect(result.steps[0]).toContain('Preparer la sauce');
+    });
+  });
 });
