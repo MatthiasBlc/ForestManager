@@ -29,6 +29,13 @@ function buildQueryString(params: Record<string, string | number | string[] | un
 
 API.interceptors.request.use((config) => {
   config.headers["Content-Type"] = "application/json";
+
+  // CSRF: lire le cookie XSRF-TOKEN et l'envoyer dans le header
+  const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+  if (match) {
+    config.headers["X-XSRF-TOKEN"] = decodeURIComponent(match[1]);
+  }
+
   return config;
 });
 

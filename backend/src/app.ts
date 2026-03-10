@@ -30,6 +30,7 @@ import { PrismaSessionStore } from "@quixo3/prisma-session-store";
 import { requireAuth } from "./middleware/auth";
 import { requireSuperAdmin } from "./admin/middleware/requireSuperAdmin";
 import { helmetMiddleware, adminRateLimiter, requireHttps } from "./middleware/security";
+import { csrfProtection } from "./middleware/csrf";
 import prisma from "./util/db";
 
 const app = express();
@@ -51,6 +52,9 @@ if (env.CORS_ORIGIN) {
 app.use(httpLogger);
 
 app.use(express.json({ limit: "50kb" }));
+
+// CSRF protection (double submit cookie pattern)
+app.use(csrfProtection);
 
 // User session middleware (cookie: forestmanager_user_session, duree: 1h)
 export const userSession = session({
