@@ -30,8 +30,9 @@ DELETE /api/recipes/:recipeId/image          # delete recipe image (MinIO + DB)
 POST   /api/recipes/:recipeId/share     # fork to another community (copies steps, servings, times)
 POST   /api/recipes/:recipeId/publish   # publish personal recipe to communities (copies steps, servings, times)
 GET    /api/recipes/:recipeId/communities  # list communities where recipe has copies
+POST   /api/recipes/import-url             # import recipe from URL (JSON-LD extraction)
 ```
-Controller: `controllers/recipes.ts`, `controllers/recipeImage.ts` | Route: `routes/recipes.ts`
+Controller: `controllers/recipes.ts`, `controllers/recipeImage.ts`, `controllers/recipeImport.ts` | Route: `routes/recipes.ts`
 
 ## Tags (/api/tags) - requireAuth
 ```

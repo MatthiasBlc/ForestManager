@@ -3,11 +3,15 @@ import * as RecipesController from "../controllers/recipes";
 import * as RecipeImageController from "../controllers/recipeImage";
 import * as RecipeVariantsController from "../controllers/recipeVariants";
 import * as RecipeShareController from "../controllers/recipeShare";
+import * as RecipeImportController from "../controllers/recipeImport";
 import * as ProposalsController from "../controllers/proposals";
 import * as TagSuggestionsController from "../controllers/tagSuggestions";
 import { validateUUID } from "../middleware/validateUUID";
 
 const router = express.Router();
+
+// Import route (must be before /:recipeId to avoid UUID validation)
+router.post("/import-url", RecipeImportController.importRecipeFromUrl);
 
 router.get("/", RecipesController.getRecipes);
 
