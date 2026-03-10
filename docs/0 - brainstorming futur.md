@@ -1,6 +1,7 @@
 # Projet futur
 
 Nous allons travailler sur chacun de ces points les uns après les autres.
+
 Le but est de bien définir chaque point avant de passer à l'implémentation.
 Tout doit être cohérent avec l'application et son fonctionnement actuel. Ce sont des évolutions, ou parfois des reworks complets de certaines parties du projet afin de les pousser à leur maximum.
 Tout doit être clair et maitrisé, pensé pour être maintenable et évoluer dans le temps.
@@ -18,7 +19,7 @@ persistance, fonctionne y compris offline (je me connecte je dois voir les notif
 
 Implemente : servings avec scaling dynamique des quantites, etapes structurees ordonnees, temps de prep/cuisson/repos avec total auto, propositions granulaires (servings/temps/steps), badges temps et servings sur les cartes.
 
-# Système d'upload de photos
+# ~~Système d'upload de photos~~ DONE (Phase 14)
 
 usage :
 miniature user ?
@@ -60,9 +61,6 @@ Si je n'ai pas le choix comment faire pour m'assurer à 100% que je ne dépasser
 Est-ce qu'il existe une solution en local ?
 Je cherche tout à de même à avoir une solution la plus professionnelle et sécurisée possible.
 
-# upload de photo suite
-faire ne sorte que les photos de communauté, s'il y en a une, soient utilisée pour la miniature de la communauté dans la sidebar
-
 # système d'importation de recettes
 
 Je ne sais pas si c'est vraiment nécessaire, mais il serait bien pratique de pouvoir importer des recettes depuis un copier coller. Le problème est que le format d'origine varie beaucoup. Un LLM pourrait aider à parser le format d'origine et à le convertir en format interne mais je ne veux pas de solution payante. Dans un monde idéal j'aimerais pouvoir coller un texte ou un lien, que le llm préremplit le formulaire de recette, l'utilisateur vérifie, ajuste et valide.
@@ -80,6 +78,10 @@ L'idée est d'avoir un véritable changelog automatisé. Pas besoin de retranscr
 Dans l'interface admin, il faut pouvoir modifier et supprimer ces message (toujours avec une confirmation de validation)
 
 - Mise en place d'un système de version propre pour suivre les patch du changelog ?
+
+## upload de photo suite
+
+faire ne sorte que les photos de communauté, s'il y en a une, soient utilisée pour la miniature de la communauté dans la sidebar
 
 ## Gestionnaire de planning de repas dans une communauté
 
