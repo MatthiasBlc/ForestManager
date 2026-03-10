@@ -484,4 +484,36 @@ Ingredients :
       expect(result.ingredients[0].name).toBe('sel');
     });
   });
+
+  describe('unicode fractions', () => {
+    it('should parse ½ as 0.5', () => {
+      const result = parseRecipeText(
+        `Test\n\nIngredients :\n- ½ litre de lait`
+      );
+      expect(result.ingredients).toHaveLength(1);
+      expect(result.ingredients[0].quantity).toBe(0.5);
+      expect(result.ingredients[0].unitAbbreviation).toBe('l');
+      expect(result.ingredients[0].name).toBe('lait');
+    });
+
+    it('should parse ¼ as 0.25', () => {
+      const result = parseRecipeText(
+        `Test\n\nIngredients :\n- ¼ kg de sucre`
+      );
+      expect(result.ingredients[0].quantity).toBe(0.25);
+      expect(result.ingredients[0].unitAbbreviation).toBe('kg');
+    });
+
+    it('should detect ½ ingredient in fallback mode (no headers)', () => {
+      const result = parseRecipeText(
+        `CREPES\n3 oeufs\n250 g de farine\n½ litre de lait\n1 pincee de sel`
+      );
+      expect(result.title).toBe('CREPES');
+      expect(result.ingredients.length).toBeGreaterThanOrEqual(4);
+      const lait = result.ingredients.find(i => i.name === 'lait');
+      expect(lait).toBeDefined();
+      expect(lait!.quantity).toBe(0.5);
+      expect(lait!.unitAbbreviation).toBe('l');
+    });
+  });
 });

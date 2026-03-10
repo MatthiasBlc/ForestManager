@@ -162,6 +162,20 @@ describe("parseIngredientLine", () => {
     expect(result.unitAbbreviation).toBe("cl");
     expect(result.name).toBe("creme");
   });
+
+  it("should parse unicode fraction ½: ½ litre de lait", () => {
+    const result = parseIngredientLine("½ litre de lait");
+    expect(result.quantity).toBe(0.5);
+    expect(result.unitAbbreviation).toBe("l");
+    expect(result.name).toBe("lait");
+  });
+
+  it("should parse unicode fraction ¼: ¼ kg de sucre", () => {
+    const result = parseIngredientLine("¼ kg de sucre");
+    expect(result.quantity).toBe(0.25);
+    expect(result.unitAbbreviation).toBe("kg");
+    expect(result.name).toBe("sucre");
+  });
 });
 
 // --- Unit tests for importFromUrl ---

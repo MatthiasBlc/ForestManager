@@ -69,10 +69,10 @@ const UNIT_MAP: Record<string, string> = {
   pieces: 'piece',
 };
 
-// Unites courtes reconnues par regex (sans espaces)
-// Ordre : plus longs d'abord pour eviter les matches partiels (ex: "g" avant "gousses")
+// Unites reconnues par regex (sans espaces, multi-mots exclus)
+// Ordre : plus longs d'abord pour eviter les matches partiels (ex: "litres" avant "l")
 const SHORT_UNITS =
-  'gousses|gousse|tranches|tranche|feuilles|feuille|pincees|pincee|pieces|piece|bottes|botte|brins|brin|kg|gr|ml|cl|dl|cas|cac|cs|cc|g|l';
+  'kilogrammes|kilogramme|millilitres|millilitre|centilitres|centilitre|decilitres|decilitre|grammes|gramme|gousses|gousse|tranches|tranche|feuilles|feuille|pincees|pincee|pieces|piece|bottes|botte|litres|litre|brins|brin|kilos|kilo|kg|gr|ml|cl|dl|cas|cac|cs|cc|g|l';
 
 // Unites longues (multi-mots) reconnues avant les unites courtes
 const LONG_UNIT_PATTERNS: { pattern: RegExp; abbr: string }[] = [
@@ -99,11 +99,24 @@ const SEPARATOR_LINE = /^[\-=_*~]{3,}\s*$/;
 // Pattern "a gout" / "selon besoin"
 const QUALITATIVE_SUFFIX = /[\s,]*(?:[àa]\s*go[uû]t|selon\s*(?:besoin|envie|go[uû]t))\s*$/i;
 
+// Fractions Unicode → fractions ASCII
+const UNICODE_FRACTIONS: Record<string, string> = {
+  '½': '1/2', '⅓': '1/3', '⅔': '2/3', '¼': '1/4', '¾': '3/4',
+  '⅕': '1/5', '⅖': '2/5', '⅗': '3/5', '⅘': '4/5',
+  '⅙': '1/6', '⅚': '5/6', '⅛': '1/8', '⅜': '3/8', '⅝': '5/8', '⅞': '7/8',
+};
+
+function normalizeUnicodeFractions(text: string): string {
+  return text.replace(/[½⅓⅔¼¾⅕⅖⅗⅘⅙⅚⅛⅜⅝⅞]/g, (ch) => UNICODE_FRACTIONS[ch] ?? ch);
+}
+
 /**
- * Nettoie le texte brut : normalise les sauts de ligne, supprime separateurs et lignes vides en debut/fin
+ * Nettoie le texte brut : normalise les sauts de ligne, fractions unicode, supprime separateurs et lignes vides en debut/fin
  */
 function cleanText(text: string): string[] {
-  const normalized = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  const normalized = normalizeUnicodeFractions(
+    text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+  );
   const lines = normalized.split('\n');
 
   // Supprimer les separateurs visuels

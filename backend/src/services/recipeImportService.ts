@@ -108,10 +108,24 @@ export function parseIsoDuration(duration: string | null | undefined): number | 
   return total > 0 ? total : null;
 }
 
+// --- Unicode fraction normalization ---
+
+const UNICODE_FRACTIONS: Record<string, string> = {
+  "\u00BD": "1/2", "\u2153": "1/3", "\u2154": "2/3", "\u00BC": "1/4", "\u00BE": "3/4",
+  "\u2155": "1/5", "\u2156": "2/5", "\u2157": "3/5", "\u2158": "4/5",
+  "\u2159": "1/6", "\u215A": "5/6", "\u215B": "1/8", "\u215C": "3/8", "\u215D": "5/8", "\u215E": "7/8",
+};
+
+function normalizeUnicodeFractions(text: string): string {
+  return text.replace(/[\u00BC\u00BD\u00BE\u2153-\u215E]/g, (ch) => UNICODE_FRACTIONS[ch] ?? ch);
+}
+
 // --- Ingredient parsing ---
 
 export function parseIngredientLine(line: string): ParsedIngredient {
-  const cleaned = line.replace(/^[-*\u2022\u2013\u2014]\s*/, "").trim();
+  const cleaned = normalizeUnicodeFractions(
+    line.replace(/^[-*\u2022\u2013\u2014]\s*/, "")
+  ).trim();
 
   if (!cleaned) {
     return { raw: line, quantity: null, unitAbbreviation: null, name: null };
