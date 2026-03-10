@@ -86,6 +86,9 @@ docs/
       SPEC_PHOTO_UPLOAD.md
       ROADMAP.md
       GUIDE_MINIO.md
+    audit-refactorisation/
+      SPEC_AUDIT_REFACTORISATION.md
+      ROADMAP.md
 ```
 
 Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une spec et une roadmap.
@@ -121,6 +124,9 @@ Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une 
 | **Feature : Recipe Import** | |
 | Spec Recipe Import | `docs/features/recipe-import/SPEC_RECIPE_IMPORT.md` |
 | Roadmap Recipe Import | `docs/features/recipe-import/ROADMAP.md` |
+| **Feature : Audit Refactorisation** | |
+| Spec Audit Refactorisation | `docs/features/audit-refactorisation/SPEC_AUDIT_REFACTORISATION.md` |
+| Roadmap Audit Refactorisation | `docs/features/audit-refactorisation/ROADMAP.md` |
 | **Archive MVP** | |
 | Regles metier | `docs/mvp/BUSINESS_RULES.md` |
 | User stories | `docs/mvp/USER_STORIES.md` |
