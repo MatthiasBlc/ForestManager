@@ -172,3 +172,23 @@ Barre de recherche unique (navbar) qui cherche simultanement dans les recettes, 
 Comptage vues (RecipeView, RecipeAnalytics)
 Affichage statistiques sur recettes
 Dashboard analytics utilisateur
+
+---
+
+Hello !
+
+J'ai un petit projet perso à vous partager ! Il se trouve que je suis développeur et que de temps en temps ça m'arrive de réfléchir (oui oui je vous jure!) et même de créer des petits projets.
+
+Mon projet actuel est un projet de gestion de communauté privées. Que ce soit votre famille, un groupe d'amis, vos colloc etc, libre à vous de vous regrouper comme vous le souhaitez !
+
+Pour commencer je m'intéresse à un sujet : la cuisine et plus particulièrement la gestion des recettes.
+On a tous des recettes dans des carnets, des postits, des words, des mails, des liens, des photos etc etc et il n'est pas toujours facile de les retrouver.
+L'idée ici est d'avoir votre propre espace pour stocker toutes vos recettes, puis les partager à vos proches dans vos communautés !
+Partager des recettes devient simple, les retrouver tout autant !
+
+Mais ce projet n'a pas pour but de s'arreter là ! La prochaine étape sera de permettre de générer à partir de règles personnalisées au niveau de la communauté des propositions de menus pour la semaine à partir de vos recettes, et pourquoi pas la liste de courses associée !
+
+Certain veulent partager les recettes du TOM, il suffit de créer une communauté TOM et que l'on y partage les recettes dedans et hop, tout le monde y a accès !
+
+Des idées j'en ai plein, mais je suis curieux de vos avis, et de vos retours !
+(PS : le design n'est pas mon métier donc la version actuelle est un peu "brute")
