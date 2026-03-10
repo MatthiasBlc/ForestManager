@@ -9,6 +9,7 @@ import {
   publishRecipe,
   getRecipeFamilyCommunities,
 } from "../services/shareService";
+import { requireRecipeAccess } from "../services/membershipService";
 import appEvents from "../services/eventEmitter";
 import { getModeratorIdsForTagNotification } from "../services/notificationService";
 
@@ -315,6 +316,18 @@ export const getRecipeCommunities: RequestHandler<
 
   try {
     assertIsDefine(authenticatedUserId);
+
+    // Verifier que l'utilisateur a acces a la recette
+    const recipe = await prisma.recipe.findFirst({
+      where: { id: recipeId, deletedAt: null },
+      select: { creatorId: true, communityId: true },
+    });
+
+    if (!recipe) {
+      throw createHttpError(404, "RECIPE_001: Recipe not found");
+    }
+
+    await requireRecipeAccess(authenticatedUserId, recipe);
 
     const communities = await getRecipeFamilyCommunities(recipeId);
 
