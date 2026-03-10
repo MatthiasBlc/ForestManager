@@ -118,6 +118,9 @@ Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une 
 | Spec Photo Upload | `docs/features/photo-upload/SPEC_PHOTO_UPLOAD.md` |
 | Roadmap Photo Upload | `docs/features/photo-upload/ROADMAP.md` |
 | Guide MinIO | `docs/features/photo-upload/GUIDE_MINIO.md` |
+| **Feature : Recipe Import** | |
+| Spec Recipe Import | `docs/features/recipe-import/SPEC_RECIPE_IMPORT.md` |
+| Roadmap Recipe Import | `docs/features/recipe-import/ROADMAP.md` |
 | **Archive MVP** | |
 | Regles metier | `docs/mvp/BUSINESS_RULES.md` |
 | User stories | `docs/mvp/USER_STORIES.md` |
