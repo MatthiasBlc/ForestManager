@@ -43,7 +43,7 @@ Voir `.claude/context/PROGRESS.md` pour le detail et les liens vers spec/roadmap
 
 ## Codes erreur
 
-**User API** : AUTH_001-011 | USER_001 | COMMUNITY_001-006 | RECIPE_001-009 | INVITE_001-006 | MEMBER_001-004 | PROPOSAL_001-004 | SHARE_001-006 | PUBLISH_001-003 | TAG_001-007 | INGREDIENT_003 | NOTIF_001-005 | VALIDATION_001
+**User API** : AUTH_001-011 | USER_001 | COMMUNITY_001-006 | RECIPE_001-009 | INVITE_001-006 | MEMBER_001-004 | PROPOSAL_001-004 | SHARE_001-006 | PUBLISH_001-003 | TAG_001-007 | INGREDIENT_003 | NOTIF_001-005 | IMPORT_001-003 | VALIDATION_001
 
 **Admin API** : ADMIN_001-011 | ADMIN_TAG_001-006 | ADMIN_ING_001-009 | ADMIN_UNIT_001-007 | ADMIN_REC_001-003 | ADMIN_COM_001-003 | ADMIN_FEAT_001-006
 
@@ -118,6 +118,9 @@ Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une 
 | Spec Photo Upload | `docs/features/photo-upload/SPEC_PHOTO_UPLOAD.md` |
 | Roadmap Photo Upload | `docs/features/photo-upload/ROADMAP.md` |
 | Guide MinIO | `docs/features/photo-upload/GUIDE_MINIO.md` |
+| **Feature : Recipe Import** | |
+| Spec Recipe Import | `docs/features/recipe-import/SPEC_RECIPE_IMPORT.md` |
+| Roadmap Recipe Import | `docs/features/recipe-import/ROADMAP.md` |
 | **Archive MVP** | |
 | Regles metier | `docs/mvp/BUSINESS_RULES.md` |
 | User stories | `docs/mvp/USER_STORIES.md` |

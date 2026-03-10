@@ -123,6 +123,11 @@ export default class APIManager {
     return response.data;
   }
 
+  static async importRecipeFromUrl(url: string): Promise<import("../services/recipeParser").ParsedRecipe> {
+    const response = await API.post("/api/recipes/import-url", JSON.stringify({ url })).catch(handleApiError);
+    return response.data.data;
+  }
+
   static async createRecipe(recipe: RecipeInput): Promise<RecipeDetail> {
     const response = await API.post("/api/recipes", JSON.stringify(recipe)).catch(handleApiError);
     return response.data;

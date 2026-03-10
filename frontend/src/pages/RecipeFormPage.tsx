@@ -1,14 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useForm } from "react-hook-form";
-import { FaArrowLeft, FaSave } from "react-icons/fa";
+import { FaArrowLeft, FaSave, FaFileImport } from "react-icons/fa";
 import APIManager, { RecipeInput } from "../network/api";
 import TagSelector from "../components/form/TagSelector";
 import IngredientList, { IngredientInput } from "../components/form/IngredientList";
 import StepEditor from "../components/form/StepEditor";
 import ImageUpload from "../components/ImageUpload";
 import ImagePicker from "../components/ImagePicker";
+import ImportRecipeModal from "../components/ImportRecipeModal";
+import { ParsedRecipe } from "../services/recipeParser";
+import { Unit } from "../models/recipe";
 
 interface FormData {
   title: string;
@@ -32,11 +35,13 @@ const RecipeFormPage = () => {
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
   const [pendingImage, setPendingImage] = useState<Blob | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const {
     register,
     handleSubmit,
     reset,
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     defaultValues: {
@@ -105,6 +110,105 @@ const RecipeFormPage = () => {
       setIsUploadingImage(false);
     }
   };
+
+  const handleImport = useCallback(async (parsed: ParsedRecipe) => {
+    // Verification avant ecrasement
+    const currentTitle = getValues("title")?.trim();
+    const hasData =
+      (currentTitle && currentTitle.length > 0) ||
+      tags.length > 0 ||
+      ingredients.some((i) => i.name.trim()) ||
+      steps.some((s) => s.instruction.trim());
+
+    if (hasData) {
+      const confirmed = window.confirm(
+        "Le formulaire contient deja des donnees. L'import va remplacer les champs detectes. Continuer ?"
+      );
+      if (!confirmed) return;
+    }
+
+    setShowImportModal(false);
+
+    // Pre-remplir les champs simples
+    if (parsed.title) reset({ title: parsed.title });
+    if (parsed.servings != null) setServings(parsed.servings);
+    if (parsed.prepTime != null) setPrepTime(String(parsed.prepTime));
+    if (parsed.cookTime != null) setCookTime(String(parsed.cookTime));
+    if (parsed.restTime != null) setRestTime(String(parsed.restTime));
+    if (parsed.steps.length > 0) {
+      setSteps(parsed.steps.map((s) => ({ instruction: s })));
+    }
+
+    // Matching des ingredients
+    if (parsed.ingredients.length > 0) {
+      try {
+        // Charger les unites pour le matching
+        const unitsByCategory = await APIManager.getUnits();
+        const allUnits: Unit[] = Object.values(unitsByCategory).flat();
+
+        // Matcher chaque ingredient en parallele
+        const mapped = await Promise.all(
+          parsed.ingredients.map(async (pi): Promise<IngredientInput> => {
+            const name = pi.name ?? pi.raw;
+
+            // Matcher l'unite par abbreviation
+            let unitId: string | undefined;
+            if (pi.unitAbbreviation) {
+              const matchedUnit = allUnits.find(
+                (u) => u.abbreviation.toLowerCase() === pi.unitAbbreviation!.toLowerCase()
+              );
+              if (matchedUnit) unitId = matchedUnit.id;
+            }
+
+            // Matcher l'ingredient par nom exact
+            let ingredientId: string | undefined;
+            if (name) {
+              try {
+                const results = await APIManager.searchIngredients(name, 5);
+                const exact = results.find(
+                  (r) => r.name.toLowerCase() === name.toLowerCase()
+                );
+                if (exact) {
+                  ingredientId = exact.id;
+                  // Si pas d'unite matchee, tenter la suggestion
+                  if (!unitId) {
+                    try {
+                      const suggested = await APIManager.getSuggestedUnit(exact.id);
+                      if (suggested.suggestedUnitId) unitId = suggested.suggestedUnitId;
+                    } catch { /* ignore */ }
+                  }
+                }
+              } catch { /* ignore search errors */ }
+            }
+
+            return {
+              name,
+              quantity: pi.quantity ?? undefined,
+              unitId,
+              ingredientId,
+            };
+          })
+        );
+
+        setIngredients(mapped);
+      } catch {
+        // Fallback sans matching
+        setIngredients(
+          parsed.ingredients.map((pi) => ({
+            name: pi.name ?? pi.raw,
+            quantity: pi.quantity ?? undefined,
+          }))
+        );
+      }
+    }
+
+    // Toast de succes
+    const parts: string[] = [];
+    if (parsed.title) parts.push("titre");
+    if (parsed.ingredients.length > 0) parts.push(`${parsed.ingredients.length} ingredients`);
+    if (parsed.steps.length > 0) parts.push(`${parsed.steps.length} etapes`);
+    toast.success(`Import reussi : ${parts.join(", ")} detectes`);
+  }, [tags, ingredients, steps, reset, getValues]);
 
   const onSubmit = async (data: FormData) => {
     const validSteps = steps.filter((s) => s.instruction.trim().length > 0);
@@ -192,7 +296,26 @@ const RecipeFormPage = () => {
       </div>
 
       <div className="bg-base-100 rounded-lg shadow-xl p-6 md:p-8">
-        <h1 className="text-2xl font-bold mb-6">{isEditing ? "Edit Recipe" : "New Recipe"}</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">{isEditing ? "Edit Recipe" : "New Recipe"}</h1>
+          {!isEditing && (
+            <button
+              type="button"
+              className="btn btn-outline btn-sm gap-2"
+              onClick={() => setShowImportModal(true)}
+            >
+              <FaFileImport />
+              Importer une recette
+            </button>
+          )}
+        </div>
+
+        {showImportModal && (
+          <ImportRecipeModal
+            onImport={handleImport}
+            onClose={() => setShowImportModal(false)}
+          />
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="form-control">

@@ -60,6 +60,16 @@ Phases 0 a 9.3 terminees.
 - **Phase H** : Tests manuels E2E + polish restants
 - **Phase A.3** : VPS MinIO (differe, necessaire avant deploy preprod/prod)
 
+## Phase 16 - Recipe Import : EN COURS
+
+- **Spec** : `docs/features/recipe-import/SPEC_RECIPE_IMPORT.md`
+- **Roadmap** : `docs/features/recipe-import/ROADMAP.md`
+- **Tests manuels** : `docs/features/recipe-import/MANUAL_TESTS.md`
+- **Branche** : `ImportRecipeSystem`
+- **Tests** : 798 backend + 463 frontend = 1261 total
+- **Phases A-C** : COMPLETE (parser texte, import URL, modale + integration)
+- **Phase D** : Tests manuels restants
+
 ## Resume de reprise
 
 Si une session precedente a ete interrompue, un fichier `.claude/context/RESUME.md` peut

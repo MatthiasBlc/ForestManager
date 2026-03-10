@@ -17,6 +17,7 @@ controllers/
 ├── recipes.ts         # CRUD recettes personnelles (get, create, update, delete)
 ├── recipeImage.ts     # upload-url, confirm-upload, delete image recette
 ├── recipeVariants.ts  # getVariants (liste variantes d'une recette)
+├── recipeImport.ts    # importRecipeFromUrl (URL import endpoint)
 ├── recipeShare.ts     # shareRecipe, publishToCommunities, getRecipeCommunities
 ├── tagPreferences.ts  # tag visibility & moderator notification prefs (5 handlers)
 ├── tagSuggestions.ts  # create, accept, reject tag suggestions
@@ -90,6 +91,7 @@ services/
 ├── proposalService.ts # acceptProposal (steps/servings/times + sync), rejectProposal (variant with steps)
 ├── orphanHandling.ts  # Gestion recettes orphelines (auto-reject proposals)
 ├── notificationService.ts  # create, broadcast, preferences, templates, grouping
+├── recipeImportService.ts # importFromUrl, parseIngredientLine, parseIsoDuration (JSON-LD extraction)
 ├── tagSuggestionService.ts # create, accept, reject tag suggestions
 ├── storageService.ts  # MinIO/S3 : presigned URL, headObject, deleteObject, validateUploadedFile
 ├── eventEmitter.ts    # AppEventEmitter singleton (emit activity events)
@@ -132,6 +134,7 @@ __tests__/
 │   ├── validation.test.ts         # Validation utils & constants
 │   ├── responseFormatters.test.ts # Response formatters
 │   ├── storageService.test.ts   # Storage service (mock S3)
+│   ├── recipeImportService.test.ts # Recipe import (URL validation, SSRF, JSON-LD parsing, ingredient parsing)
 │   └── middleware/
 │       ├── auth.test.ts           # requireAuth
 │       ├── requireSuperAdmin.test.ts # requireSuperAdmin, requireAdminSession
@@ -163,6 +166,7 @@ __tests__/
     ├── tagPreferences.test.ts
     ├── websocket.test.ts
     ├── notificationCleanup.test.ts
+    ├── recipeImport.test.ts       # Recipe import endpoint (auth, validation, SSRF)
     ├── recipeImage.test.ts        # Recipe image upload endpoints
     ├── communityImage.test.ts     # Community image upload endpoints
     └── imageCleanup.test.ts       # Image cleanup cron job
@@ -257,6 +261,7 @@ components/
 │   ├── AdminLayout.tsx       # Layout admin (sidebar + header + outlet)
 │   └── AdminProtectedRoute.tsx # Guard admin
 ├── ImageUpload.tsx           # Composant upload image (drag&drop, preview, presigned URL)
+├── ImportRecipeModal.tsx     # Modal import recette (texte brut ou URL)
 ├── AddEditRecipeDialog.tsx   # Dialog creation/edition
 ├── ErrorBoundary.tsx         # Error boundary React (crash → fallback UI)
 ├── LoginModal.tsx            # Modal login
@@ -275,6 +280,9 @@ contexts/
 
 network/
 └── api.ts                    # Client Axios, fonctions API
+
+services/
+└── recipeParser.ts           # parseRecipeText() — parsing texte brut (ingredients, etapes, metadonnees)
 ```
 
 ### Models & Types
