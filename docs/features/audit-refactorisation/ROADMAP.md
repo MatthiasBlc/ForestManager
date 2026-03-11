@@ -92,12 +92,11 @@
 - [x] Auto-fix 28 self-closing-comp warnings frontend
 - [x] 0 errors, 0 warnings (backend + frontend)
 
-### C3 - Pre-commit hooks
+### C3 - Pre-commit hooks ✅
 
-- [ ] Installer Husky
-- [ ] Installer lint-staged
-- [ ] Configurer : ESLint + Prettier sur fichiers stages
-- [ ] Tester le hook
+- [x] Installer Husky 9 + lint-staged 15 (racine)
+- [x] Configurer : Prettier sur fichiers stages (ESLint en CI uniquement, incompatible chemins Docker)
+- [x] Tester le hook
 
 ### C4 - CI Lint
 
