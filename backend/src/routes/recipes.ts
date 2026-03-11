@@ -11,6 +11,7 @@ import { validateBody } from "../middleware/validateBody";
 import { createRecipeSchema, updateRecipeSchema } from "../schemas/recipe.schema";
 import { createProposalSchema } from "../schemas/proposal.schema";
 import { shareRecipeSchema, publishToCommunitySchema } from "../schemas/recipeShare.schema";
+import { createTagSuggestionSchema } from "../schemas/tag.schema";
 
 const router = express.Router();
 
@@ -56,6 +57,7 @@ router.get("/:recipeId/tag-suggestions", validateUUID, TagSuggestionsController.
 router.post(
   "/:recipeId/tag-suggestions",
   validateUUID,
+  validateBody(createTagSuggestionSchema),
   TagSuggestionsController.createTagSuggestion
 );
 

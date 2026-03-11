@@ -13,6 +13,7 @@ import { createRecipeSchema } from "../schemas/recipe.schema";
 import { createCommunitySchema, updateCommunitySchema } from "../schemas/community.schema";
 import { createInviteSchema } from "../schemas/invite.schema";
 import { promoteMemberSchema } from "../schemas/member.schema";
+import { communityTagSchema } from "../schemas/tag.schema";
 
 const router = express.Router();
 
@@ -160,6 +161,7 @@ router.post(
   validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
+  validateBody(communityTagSchema),
   CommunityTagsController.createCommunityTag
 );
 
@@ -169,6 +171,7 @@ router.patch(
   validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
+  validateBody(communityTagSchema),
   CommunityTagsController.updateCommunityTag
 );
 

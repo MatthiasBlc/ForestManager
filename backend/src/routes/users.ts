@@ -6,6 +6,7 @@ import * as TagPreferencesController from "../controllers/tagPreferences";
 import { validateUUID } from "../middleware/validateUUID";
 import { validateBody } from "../middleware/validateBody";
 import { updateProfileSchema } from "../schemas/user.schema";
+import { updateTagPreferenceSchema } from "../schemas/tag.schema";
 
 const router = express.Router();
 
@@ -26,6 +27,7 @@ router.get("/me/tag-preferences", TagPreferencesController.getTagPreferences);
 router.put(
   "/me/tag-preferences/:communityId",
   validateUUID,
+  validateBody(updateTagPreferenceSchema),
   TagPreferencesController.updateTagPreference
 );
 

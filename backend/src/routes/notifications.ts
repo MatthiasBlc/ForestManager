@@ -1,6 +1,12 @@
 import express from "express";
 import * as notificationsController from "../controllers/notifications";
 import { validateUUID } from "../middleware/validateUUID";
+import { validateBody } from "../middleware/validateBody";
+import {
+  markBatchAsReadSchema,
+  markAllAsReadSchema,
+  updateNotificationPreferenceSchema,
+} from "../schemas/notification.schema";
 
 const router = express.Router();
 
@@ -11,10 +17,14 @@ router.get("/", notificationsController.getNotifications);
 router.get("/unread-count", notificationsController.getUnreadCount);
 
 // PATCH /api/notifications/read (batch) - doit etre avant /:id/read
-router.patch("/read", notificationsController.markBatchAsRead);
+router.patch("/read", validateBody(markBatchAsReadSchema), notificationsController.markBatchAsRead);
 
 // PATCH /api/notifications/read-all
-router.patch("/read-all", notificationsController.markAllAsRead);
+router.patch(
+  "/read-all",
+  validateBody(markAllAsReadSchema),
+  notificationsController.markAllAsRead
+);
 
 // PATCH /api/notifications/:id/read
 router.patch("/:id/read", validateUUID, notificationsController.markAsRead);
@@ -23,6 +33,10 @@ router.patch("/:id/read", validateUUID, notificationsController.markAsRead);
 router.get("/preferences", notificationsController.getPreferences);
 
 // PUT /api/notifications/preferences
-router.put("/preferences", notificationsController.updatePreference);
+router.put(
+  "/preferences",
+  validateBody(updateNotificationPreferenceSchema),
+  notificationsController.updatePreference
+);
 
 export default router;

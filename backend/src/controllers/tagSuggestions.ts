@@ -4,7 +4,6 @@ import { Prisma } from "@prisma/client";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
-import { validateTagName } from "../util/validation";
 import { requireMembership } from "../services/membershipService";
 import {
   createTagSuggestion as createTagSuggestionService,
@@ -14,12 +13,9 @@ import {
 import appEvents from "../services/eventEmitter";
 import { getModeratorIdsForTagNotification } from "../services/notificationService";
 import { RECIPE_001, RECIPE_002, TAG_003, TAG_006, TAG_007 } from "../constants/errorCodes";
+import { CreateTagSuggestionInput } from "../schemas/tag.schema";
 
 const MAX_TAGS_PER_RECIPE = 10;
-
-interface CreateTagSuggestionBody {
-  tagName?: string;
-}
 
 /**
  * POST /api/recipes/:recipeId/tag-suggestions
@@ -28,7 +24,7 @@ interface CreateTagSuggestionBody {
 export const createTagSuggestion: RequestHandler<
   { recipeId: string },
   unknown,
-  CreateTagSuggestionBody,
+  CreateTagSuggestionInput,
   unknown
 > = async (req, res, next) => {
   const { tagName } = req.body;
@@ -38,8 +34,8 @@ export const createTagSuggestion: RequestHandler<
   try {
     assertIsDefine(authenticatedUserId);
 
-    // Validation tagName
-    const normalized = validateTagName(tagName);
+    // tagName is already normalized by Zod schema
+    const normalized = tagName;
 
     // Recuperer la recette
     const recipe = await prisma.recipe.findFirst({

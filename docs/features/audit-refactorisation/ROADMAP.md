@@ -157,12 +157,12 @@
 - [x] Migrer `controllers/invites.ts`, `controllers/members.ts`, `controllers/recipeShare.ts`
 - [x] Tests (Docker requis)
 
-### D6c - Zod : Tags + Notifications
+### D6c - Zod : Tags + Notifications ✅
 
-- [ ] Creer `schemas/tag.schema.ts` (tagSuggestion, communityTag)
-- [ ] Creer `schemas/notification.schema.ts` (markBatch, updatePreference)
-- [ ] Migrer `controllers/tagSuggestions.ts`, `controllers/communityTags.ts`, `controllers/tagPreferences.ts`, `controllers/notifications.ts`
-- [ ] Tests
+- [x] Creer `schemas/tag.schema.ts` (tagSuggestion, communityTag, tagPreference)
+- [x] Creer `schemas/notification.schema.ts` (markBatch, markAll, updatePreference)
+- [x] Migrer `controllers/tagSuggestions.ts`, `controllers/communityTags.ts`, `controllers/tagPreferences.ts`, `controllers/notifications.ts`
+- [x] Tests (Docker requis)
 
 ### D6d - Zod : Import + Admin auth
 

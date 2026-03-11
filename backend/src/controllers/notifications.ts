@@ -3,15 +3,12 @@ import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { NotificationCategory, Notification } from "@prisma/client";
-import { assertString } from "../util/validation";
+import { NOTIF_001, NOTIF_002, NOTIF_003, COMMUNITY_001 } from "../constants/errorCodes";
 import {
-  NOTIF_001,
-  NOTIF_002,
-  NOTIF_003,
-  NOTIF_004,
-  NOTIF_005,
-  COMMUNITY_001,
-} from "../constants/errorCodes";
+  MarkBatchAsReadInput,
+  MarkAllAsReadInput,
+  UpdateNotificationPreferenceInput,
+} from "../schemas/notification.schema";
 
 const ALL_CATEGORIES = Object.values(NotificationCategory);
 const VALID_CATEGORIES: Set<string> = new Set(ALL_CATEGORIES);
@@ -317,7 +314,7 @@ export const markAsRead: RequestHandler<{ id: string }> = async (req, res, next)
 // PATCH /api/notifications/read (batch)
 // =============================================================================
 
-export const markBatchAsRead: RequestHandler<unknown, unknown, { ids?: string[] }> = async (
+export const markBatchAsRead: RequestHandler<unknown, unknown, MarkBatchAsReadInput> = async (
   req,
   res,
   next
@@ -327,19 +324,6 @@ export const markBatchAsRead: RequestHandler<unknown, unknown, { ids?: string[] 
 
   try {
     assertIsDefine(userId);
-
-    if (!Array.isArray(ids) || ids.length === 0) {
-      throw createHttpError(400, NOTIF_004);
-    }
-
-    if (ids.length > 100) {
-      throw createHttpError(400, NOTIF_004);
-    }
-
-    // Validate each id is a string
-    for (const id of ids) {
-      assertString(id, "ids[]");
-    }
 
     // Verifier que toutes les notifications appartiennent au user
     const notifications = await prisma.notification.findMany({
@@ -371,7 +355,7 @@ export const markBatchAsRead: RequestHandler<unknown, unknown, { ids?: string[] 
 // PATCH /api/notifications/read-all
 // =============================================================================
 
-export const markAllAsRead: RequestHandler<unknown, unknown, { category?: string }> = async (
+export const markAllAsRead: RequestHandler<unknown, unknown, MarkAllAsReadInput> = async (
   req,
   res,
   next
@@ -381,10 +365,6 @@ export const markAllAsRead: RequestHandler<unknown, unknown, { category?: string
 
   try {
     assertIsDefine(userId);
-
-    if (category && !VALID_CATEGORIES.has(category)) {
-      throw createHttpError(400, NOTIF_003);
-    }
 
     const where: Record<string, unknown> = { userId, readAt: null };
     if (category) where.category = category as NotificationCategory;
@@ -470,21 +450,13 @@ export const getPreferences: RequestHandler = async (req, res, next) => {
 export const updatePreference: RequestHandler<
   unknown,
   unknown,
-  { category?: string; enabled?: boolean; communityId?: string | null }
+  UpdateNotificationPreferenceInput
 > = async (req, res, next) => {
   const userId = req.session.userId;
   const { category, enabled, communityId } = req.body;
 
   try {
     assertIsDefine(userId);
-
-    if (!category || !VALID_CATEGORIES.has(category)) {
-      throw createHttpError(400, NOTIF_003);
-    }
-
-    if (typeof enabled !== "boolean") {
-      throw createHttpError(400, NOTIF_005);
-    }
 
     // Si communityId fourni, verifier le membership
     if (communityId) {

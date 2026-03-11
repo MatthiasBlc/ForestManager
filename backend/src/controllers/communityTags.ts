@@ -3,9 +3,9 @@ import createHttpError from "http-errors";
 import prisma from "../util/db";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { parsePagination } from "../util/pagination";
-import { validateTagName } from "../util/validation";
 import appEvents from "../services/eventEmitter";
 import { TAG_001, TAG_002, TAG_003, TAG_004, TAG_005 } from "../constants/errorCodes";
+import { CommunityTagInput } from "../schemas/tag.schema";
 
 /**
  * GET /api/communities/:communityId/tags
@@ -72,7 +72,11 @@ export const getCommunityTags: RequestHandler = async (req, res, next) => {
  * POST /api/communities/:communityId/tags
  * Cree un tag communaute (APPROVED directement, par moderateur)
  */
-export const createCommunityTag: RequestHandler = async (req, res, next) => {
+export const createCommunityTag: RequestHandler<
+  { communityId: string },
+  unknown,
+  CommunityTagInput
+> = async (req, res, next) => {
   const { communityId } = req.params;
   const { name } = req.body;
   const userId = req.session.userId;
@@ -80,7 +84,8 @@ export const createCommunityTag: RequestHandler = async (req, res, next) => {
   try {
     assertIsDefine(userId);
 
-    const normalized = validateTagName(name);
+    // name is already normalized by Zod schema
+    const normalized = name;
 
     // Verifier qu'aucun tag GLOBAL n'a ce nom
     const existingGlobal = await prisma.tag.findFirst({
@@ -142,7 +147,11 @@ export const createCommunityTag: RequestHandler = async (req, res, next) => {
  * PATCH /api/communities/:communityId/tags/:tagId
  * Renomme un tag communaute
  */
-export const updateCommunityTag: RequestHandler = async (req, res, next) => {
+export const updateCommunityTag: RequestHandler<
+  { communityId: string; tagId: string },
+  unknown,
+  CommunityTagInput
+> = async (req, res, next) => {
   const { communityId, tagId } = req.params;
   const { name } = req.body;
   const userId = req.session.userId;
@@ -151,7 +160,8 @@ export const updateCommunityTag: RequestHandler = async (req, res, next) => {
     assertIsDefine(userId);
     assertIsDefine(tagId);
 
-    const normalized = validateTagName(name);
+    // name is already normalized by Zod schema
+    const normalized = name;
 
     const tag = await prisma.tag.findUnique({ where: { id: tagId } });
     if (!tag) {
