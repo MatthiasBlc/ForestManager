@@ -51,11 +51,11 @@
 
 ## Phase B : NPM Audit & Dependencies
 
-### B1 - Audit des dependances
-- [ ] `npm audit` backend - corriger critical + high
-- [ ] `npm audit` frontend - corriger critical + high
-- [ ] Documenter les vulnerabilites non resolvables
-- [ ] Mettre a jour les dependances majeures si necessaire
+### B1 - Audit des dependances ✅
+- [x] `npm audit` backend - 26 vulns (1 critical, 23 high) → toutes corrigees via `npm audit fix`
+- [x] `npm audit` frontend - 3 vulns (2 high, 1 moderate) → toutes corrigees via `npm audit fix`
+- [x] 0 vulnerabilites restantes (backend + frontend)
+- [x] Principales corrections : fast-xml-parser (critical), express-rate-limit, minimatch, rollup, qs, ajv
 
 ### B2 - CI Integration
 - [ ] Ajouter `npm audit --audit-level=high` dans GitHub Actions
