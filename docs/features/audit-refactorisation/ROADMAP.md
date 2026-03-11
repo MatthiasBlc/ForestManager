@@ -119,11 +119,11 @@
 - [x] Remplacer les 3 definitions existantes (authRateLimiter, adminRateLimiter, adminAuthLimiter)
 - [x] 802 tests passent
 
-### D3 - Extraction config app.ts
+### D3 - Extraction config app.ts ✅
 
-- [ ] Extraire session config dans `config/session.ts`
-- [ ] Extraire error handler dans `middleware/errorHandler.ts`
-- [ ] Verifier que app.ts est lisible (~50 lignes)
+- [x] Extraire session config dans `config/session.ts`
+- [x] Extraire error handler dans `middleware/errorHandler.ts`
+- [x] Verifier que app.ts est lisible (~82 lignes, 50 sans imports)
 
 ### D4 - Zod : Phase 1 (fondations)
 
