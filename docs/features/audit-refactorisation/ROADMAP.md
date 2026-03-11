@@ -164,12 +164,12 @@
 - [x] Migrer `controllers/tagSuggestions.ts`, `controllers/communityTags.ts`, `controllers/tagPreferences.ts`, `controllers/notifications.ts`
 - [x] Tests (Docker requis)
 
-### D6d - Zod : Import + Admin auth
+### D6d - Zod : Import + Admin auth ✅
 
-- [ ] Creer `schemas/recipeImport.schema.ts` (importUrl)
-- [ ] Creer `admin/schemas/auth.schema.ts` (login, verifyTotp)
-- [ ] Migrer `controllers/recipeImport.ts`, `admin/controllers/authController.ts`
-- [ ] Tests
+- [x] Creer `schemas/recipeImport.schema.ts` (importUrl)
+- [x] Creer `admin/schemas/auth.schema.ts` (login, verifyTotp)
+- [x] Migrer `controllers/recipeImport.ts`, `admin/controllers/authController.ts`
+- [x] Tests (Docker requis)
 
 ### D6e - Zod : Admin CRUD simple
 

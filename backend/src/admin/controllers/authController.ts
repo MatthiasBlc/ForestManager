@@ -4,17 +4,15 @@ import bcrypt from "bcrypt";
 import { generateURI, verifySync } from "otplib";
 import * as QRCode from "qrcode";
 import prisma from "../../util/db";
-import { assertString } from "../../util/validation";
 import {
   ADMIN_001,
-  ADMIN_003,
   ADMIN_004,
-  ADMIN_005,
   ADMIN_006,
   ADMIN_007,
   ADMIN_008,
   ADMIN_009,
 } from "../../constants/errorCodes";
+import { AdminLoginInput, VerifyTotpInput } from "../schemas/auth.schema";
 
 const MAX_TOTP_ATTEMPTS = 3;
 const APP_NAME = "ForestManager";
@@ -24,15 +22,9 @@ const APP_NAME = "ForestManager";
  * Premiere etape: verification email/password
  * Si totpEnabled = false, retourne le QR code pour configurer TOTP
  */
-export const login: RequestHandler = async (req, res, next) => {
+export const login: RequestHandler<unknown, unknown, AdminLoginInput> = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-      throw createHttpError(400, ADMIN_003);
-    }
-    assertString(email, "email");
-    assertString(password, "password");
 
     const admin = await prisma.adminUser.findUnique({
       where: { email },
@@ -88,17 +80,17 @@ export const login: RequestHandler = async (req, res, next) => {
  * Deuxieme etape: verification du code TOTP
  * Finalise l'authentification si le code est valide
  */
-export const verifyTotp: RequestHandler = async (req, res, next) => {
+export const verifyTotp: RequestHandler<unknown, unknown, VerifyTotpInput> = async (
+  req,
+  res,
+  next
+) => {
   try {
     const { code } = req.body;
     const adminId = req.session.adminId;
 
     if (!adminId) {
       throw createHttpError(401, ADMIN_001);
-    }
-
-    if (!code) {
-      throw createHttpError(400, ADMIN_005);
     }
 
     // Verifier le nombre de tentatives

@@ -12,11 +12,16 @@ import { createRecipeSchema, updateRecipeSchema } from "../schemas/recipe.schema
 import { createProposalSchema } from "../schemas/proposal.schema";
 import { shareRecipeSchema, publishToCommunitySchema } from "../schemas/recipeShare.schema";
 import { createTagSuggestionSchema } from "../schemas/tag.schema";
+import { importRecipeUrlSchema } from "../schemas/recipeImport.schema";
 
 const router = express.Router();
 
 // Import route (must be before /:recipeId to avoid UUID validation)
-router.post("/import-url", RecipeImportController.importRecipeFromUrl);
+router.post(
+  "/import-url",
+  validateBody(importRecipeUrlSchema),
+  RecipeImportController.importRecipeFromUrl
+);
 
 router.get("/", RecipesController.getRecipes);
 
