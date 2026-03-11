@@ -142,10 +142,53 @@
 - [x] Migrer proposal controller (createProposal)
 - [x] Tests : 802/802 passent
 
-### D6 - Zod : Phase 3 (reste)
+### D6a - Zod : User + Community
 
-- [ ] Migrer community, invite, user, tag, notification controllers
-- [ ] Migrer admin controllers
+- [ ] Creer `schemas/user.schema.ts` (updateProfile)
+- [ ] Creer `schemas/community.schema.ts` (create, update)
+- [ ] Migrer `controllers/users.ts` et `controllers/communities.ts`
+- [ ] Tests
+
+### D6b - Zod : Invites + Members + Share
+
+- [ ] Creer `schemas/invite.schema.ts` (createInvite)
+- [ ] Creer `schemas/member.schema.ts` (promoteMember)
+- [ ] Creer `schemas/recipeShare.schema.ts` (share, publish)
+- [ ] Migrer `controllers/invites.ts`, `controllers/members.ts`, `controllers/recipeShare.ts`
+- [ ] Tests
+
+### D6c - Zod : Tags + Notifications
+
+- [ ] Creer `schemas/tag.schema.ts` (tagSuggestion, communityTag)
+- [ ] Creer `schemas/notification.schema.ts` (markBatch, updatePreference)
+- [ ] Migrer `controllers/tagSuggestions.ts`, `controllers/communityTags.ts`, `controllers/tagPreferences.ts`, `controllers/notifications.ts`
+- [ ] Tests
+
+### D6d - Zod : Import + Admin auth
+
+- [ ] Creer `schemas/recipeImport.schema.ts` (importUrl)
+- [ ] Creer `admin/schemas/auth.schema.ts` (login, verifyTotp)
+- [ ] Migrer `controllers/recipeImport.ts`, `admin/controllers/authController.ts`
+- [ ] Tests
+
+### D6e - Zod : Admin CRUD simple
+
+- [ ] Creer `admin/schemas/tag.schema.ts` (create, update, merge)
+- [ ] Creer `admin/schemas/community.schema.ts` (update)
+- [ ] Creer `admin/schemas/feature.schema.ts` (create, update)
+- [ ] Migrer `admin/controllers/tagsController.ts`, `admin/controllers/communitiesController.ts`, `admin/controllers/featuresController.ts`
+- [ ] Tests
+
+### D6f - Zod : Admin CRUD complexe
+
+- [ ] Creer `admin/schemas/recipe.schema.ts` (update)
+- [ ] Creer `admin/schemas/ingredient.schema.ts` (create, update, approve, reject)
+- [ ] Creer `admin/schemas/unit.schema.ts` (create, update)
+- [ ] Migrer `admin/controllers/recipesController.ts`, `admin/controllers/ingredientsController.ts`, `admin/controllers/unitsController.ts`
+- [ ] Tests
+
+### D6g - Zod : Nettoyage
+
 - [ ] Supprimer les assertions devenues inutiles dans `validation.ts`
 - [ ] Garder les constantes et regex dans `validation.ts` (reutilisees dans les schemas)
 
