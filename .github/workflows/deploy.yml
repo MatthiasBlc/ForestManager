@@ -41,6 +41,27 @@ jobs:
               - 'docker-compose.preprod.yml'
 
   # ========================================
+  # Format check
+  # ========================================
+  format-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Prettier
+        run: npm install --save-dev prettier
+
+      - name: Check formatting
+        run: npx prettier --check .
+
+  # ========================================
   # Test Backend
   # ========================================
   test-backend:
@@ -92,6 +113,10 @@ jobs:
           DATABASE_URL: postgresql://forestmanager:test_password@localhost:5432/forestmanager_test?schema=public
         run: npx prisma migrate deploy
 
+      - name: Lint
+        working-directory: ./backend
+        run: npx eslint .
+
       - name: Run tests
         working-directory: ./backend
         env:
@@ -128,6 +153,10 @@ jobs:
       - name: Security audit
         working-directory: ./frontend
         run: npm audit --audit-level=high
+
+      - name: Lint
+        working-directory: ./frontend
+        run: npx eslint .
 
       - name: Run tests
         working-directory: ./frontend

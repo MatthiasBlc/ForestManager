@@ -98,10 +98,10 @@
 - [x] Configurer : Prettier sur fichiers stages (ESLint en CI uniquement, incompatible chemins Docker)
 - [x] Tester le hook
 
-### C4 - CI Lint
+### C4 - CI Lint ✅
 
-- [ ] Ajouter `npm run lint` dans GitHub Actions
-- [ ] Ajouter `npm run format:check` dans GitHub Actions
+- [x] Ajouter `npx eslint .` dans GitHub Actions (backend + frontend jobs)
+- [x] Ajouter job `format-check` avec `npx prettier --check .` dans GitHub Actions
 
 ---
 
