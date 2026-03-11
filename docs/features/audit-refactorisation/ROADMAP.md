@@ -142,12 +142,12 @@
 - [x] Migrer proposal controller (createProposal)
 - [x] Tests : 802/802 passent
 
-### D6a - Zod : User + Community
+### D6a - Zod : User + Community ✅
 
-- [ ] Creer `schemas/user.schema.ts` (updateProfile)
-- [ ] Creer `schemas/community.schema.ts` (create, update)
-- [ ] Migrer `controllers/users.ts` et `controllers/communities.ts`
-- [ ] Tests
+- [x] Creer `schemas/user.schema.ts` (updateProfile)
+- [x] Creer `schemas/community.schema.ts` (create, update)
+- [x] Migrer `controllers/users.ts` et `controllers/communities.ts`
+- [x] Tests (Docker requis)
 
 ### D6b - Zod : Invites + Members + Share
 

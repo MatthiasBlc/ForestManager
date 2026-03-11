@@ -4,6 +4,8 @@ import * as UsersController from "../controllers/users";
 import * as ActivityController from "../controllers/activity";
 import * as TagPreferencesController from "../controllers/tagPreferences";
 import { validateUUID } from "../middleware/validateUUID";
+import { validateBody } from "../middleware/validateBody";
+import { updateProfileSchema } from "../schemas/user.schema";
 
 const router = express.Router();
 
@@ -11,7 +13,7 @@ const router = express.Router();
 router.get("/search", UsersController.searchUsers);
 
 // Update my profile
-router.patch("/me", UsersController.updateProfile);
+router.patch("/me", validateBody(updateProfileSchema), UsersController.updateProfile);
 
 // Get my received invitations
 router.get("/me/invites", InvitesController.getMyInvites);

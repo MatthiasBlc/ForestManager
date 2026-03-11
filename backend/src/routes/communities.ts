@@ -10,6 +10,7 @@ import { memberOf, requireCommunityRole } from "../middleware/community";
 import { validateUUID } from "../middleware/validateUUID";
 import { validateBody } from "../middleware/validateBody";
 import { createRecipeSchema } from "../schemas/recipe.schema";
+import { createCommunitySchema, updateCommunitySchema } from "../schemas/community.schema";
 
 const router = express.Router();
 
@@ -17,7 +18,7 @@ const router = express.Router();
 router.get("/", CommunitiesController.getCommunities);
 
 // Create a new community
-router.post("/", CommunitiesController.createCommunity);
+router.post("/", validateBody(createCommunitySchema), CommunitiesController.createCommunity);
 
 // Get community details (requires membership)
 router.get("/:communityId", validateUUID, memberOf, CommunitiesController.getCommunity);
@@ -28,6 +29,7 @@ router.patch(
   validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
+  validateBody(updateCommunitySchema),
   CommunitiesController.updateCommunity
 );
 

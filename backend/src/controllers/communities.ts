@@ -3,8 +3,8 @@ import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
-import { COMMUNITY_VALIDATION as VALIDATION } from "../util/validation";
 import { buildImageUrl } from "../config/storage";
+import { CreateCommunityInput, UpdateCommunityInput } from "../schemas/community.schema";
 
 export const getCommunities: RequestHandler = async (req, res, next) => {
   const authenticatedUserId = req.session.userId;
@@ -124,88 +124,54 @@ export const getCommunity: RequestHandler = async (req, res, next) => {
   }
 };
 
-interface CreateCommunityBody {
-  name?: string;
-  description?: string;
-}
+export const createCommunity: RequestHandler<unknown, unknown, CreateCommunityInput, unknown> =
+  async (req, res, next) => {
+    const { name, description } = req.body;
+    const authenticatedUserId = req.session.userId;
 
-export const createCommunity: RequestHandler<
-  unknown,
-  unknown,
-  CreateCommunityBody,
-  unknown
-> = async (req, res, next) => {
-  const { name, description } = req.body;
-  const authenticatedUserId = req.session.userId;
+    try {
+      assertIsDefine(authenticatedUserId);
 
-  try {
-    assertIsDefine(authenticatedUserId);
+      // Get default features
+      const defaultFeatures = await prisma.feature.findMany({
+        where: { isDefault: true },
+      });
 
-    // Validation
-    if (!name) {
-      throw createHttpError(400, "Community must have a name");
-    }
-
-    if (name.length < VALIDATION.NAME_MIN) {
-      throw createHttpError(400, `Name must be at least ${VALIDATION.NAME_MIN} characters`);
-    }
-
-    if (name.length > VALIDATION.NAME_MAX) {
-      throw createHttpError(400, `Name must be at most ${VALIDATION.NAME_MAX} characters`);
-    }
-
-    if (description && description.length > VALIDATION.DESCRIPTION_MAX) {
-      throw createHttpError(
-        400,
-        `Description must be at most ${VALIDATION.DESCRIPTION_MAX} characters`
-      );
-    }
-
-    // Get default features
-    const defaultFeatures = await prisma.feature.findMany({
-      where: { isDefault: true },
-    });
-
-    const newCommunity = await prisma.community.create({
-      data: {
-        name,
-        description: description || null,
-        members: {
-          create: {
-            userId: authenticatedUserId,
-            role: "MODERATOR",
+      const newCommunity = await prisma.community.create({
+        data: {
+          name,
+          description: description || null,
+          members: {
+            create: {
+              userId: authenticatedUserId,
+              role: "MODERATOR",
+            },
+          },
+          // Auto-assign default features
+          features: {
+            create: defaultFeatures.map((f) => ({
+              featureId: f.id,
+              // grantedById: null = automatic attribution
+            })),
           },
         },
-        // Auto-assign default features
-        features: {
-          create: defaultFeatures.map((f) => ({
-            featureId: f.id,
-            // grantedById: null = automatic attribution
-          })),
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          visibility: true,
+          createdAt: true,
         },
-      },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        visibility: true,
-        createdAt: true,
-      },
-    });
+      });
 
-    res.status(201).json(newCommunity);
-  } catch (error) {
-    next(error);
-  }
-};
+      res.status(201).json(newCommunity);
+    } catch (error) {
+      next(error);
+    }
+  };
 
 interface UpdateCommunityParams extends Record<string, string> {
   communityId: string;
-}
-
-interface UpdateCommunityBody {
-  name?: string;
-  description?: string;
 }
 
 /**
@@ -215,7 +181,7 @@ interface UpdateCommunityBody {
 export const updateCommunity: RequestHandler<
   UpdateCommunityParams,
   unknown,
-  UpdateCommunityBody,
+  UpdateCommunityInput,
   unknown
 > = async (req, res, next) => {
   const communityId = req.params.communityId;
@@ -227,30 +193,6 @@ export const updateCommunity: RequestHandler<
     // Role check is done by requireCommunityRole middleware
     if (!userCommunity) {
       throw createHttpError(500, "Middleware memberOf required");
-    }
-
-    // At least one field must be provided
-    if (name === undefined && description === undefined) {
-      throw createHttpError(400, "No fields to update");
-    }
-
-    // Validate name if provided
-    if (name !== undefined) {
-      if (name.length < VALIDATION.NAME_MIN) {
-        throw createHttpError(400, `Name must be at least ${VALIDATION.NAME_MIN} characters`);
-      }
-
-      if (name.length > VALIDATION.NAME_MAX) {
-        throw createHttpError(400, `Name must be at most ${VALIDATION.NAME_MAX} characters`);
-      }
-    }
-
-    // Validate description if provided
-    if (description !== undefined && description.length > VALIDATION.DESCRIPTION_MAX) {
-      throw createHttpError(
-        400,
-        `Description must be at most ${VALIDATION.DESCRIPTION_MAX} characters`
-      );
     }
 
     // Build update data
