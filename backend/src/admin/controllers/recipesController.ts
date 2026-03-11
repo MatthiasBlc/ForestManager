@@ -12,6 +12,13 @@ import {
   validateTime,
   MAX_TITLE_LENGTH,
 } from "../../util/validation";
+import {
+  ADMIN_REC_001,
+  ADMIN_REC_002,
+  ADMIN_REC_003,
+  RECIPE_006,
+  RECIPE_008,
+} from "../../constants/errorCodes";
 
 /**
  * GET /api/admin/tags/:id/recipes
@@ -25,7 +32,7 @@ export const getTagRecipes: RequestHandler = async (req, res, next) => {
 
     const tag = await prisma.tag.findUnique({ where: { id } });
     if (!tag) {
-      throw createHttpError(404, "ADMIN_REC_001: Tag not found");
+      throw createHttpError(404, ADMIN_REC_001);
     }
 
     const deletedFilter = includeDeleted === "true" ? {} : { deletedAt: null };
@@ -86,7 +93,7 @@ export const getDetail: RequestHandler = async (req, res, next) => {
     });
 
     if (!recipe) {
-      throw createHttpError(404, "ADMIN_REC_002: Recipe not found");
+      throw createHttpError(404, ADMIN_REC_002);
     }
 
     res.status(200).json({ recipe });
@@ -108,7 +115,7 @@ export const update: RequestHandler = async (req, res, next) => {
 
     const recipe = await prisma.recipe.findUnique({ where: { id: recipeId } });
     if (!recipe) {
-      throw createHttpError(404, "ADMIN_REC_002: Recipe not found");
+      throw createHttpError(404, ADMIN_REC_002);
     }
 
     // Validation
@@ -117,19 +124,19 @@ export const update: RequestHandler = async (req, res, next) => {
       validateStringLength(title.trim(), "title", 1, MAX_TITLE_LENGTH);
     }
     if (servings !== undefined && !validateServings(servings)) {
-      throw createHttpError(400, "RECIPE_006: Servings must be an integer between 1 and 100");
+      throw createHttpError(400, RECIPE_006);
     }
     assertOptionalNumber(prepTime, "prepTime");
     if (prepTime !== undefined && !validateTime(prepTime)) {
-      throw createHttpError(400, "RECIPE_008: Invalid prep time (integer 0-10000)");
+      throw createHttpError(400, RECIPE_008);
     }
     assertOptionalNumber(cookTime, "cookTime");
     if (cookTime !== undefined && !validateTime(cookTime)) {
-      throw createHttpError(400, "RECIPE_008: Invalid cook time (integer 0-10000)");
+      throw createHttpError(400, RECIPE_008);
     }
     assertOptionalNumber(restTime, "restTime");
     if (restTime !== undefined && !validateTime(restTime)) {
-      throw createHttpError(400, "RECIPE_008: Invalid rest time (integer 0-10000)");
+      throw createHttpError(400, RECIPE_008);
     }
 
     const data: Record<string, unknown> = {};
@@ -175,11 +182,11 @@ export const remove: RequestHandler = async (req, res, next) => {
 
     const recipe = await prisma.recipe.findUnique({ where: { id: recipeId } });
     if (!recipe) {
-      throw createHttpError(404, "ADMIN_REC_002: Recipe not found");
+      throw createHttpError(404, ADMIN_REC_002);
     }
 
     if (recipe.deletedAt) {
-      throw createHttpError(400, "ADMIN_REC_003: Recipe already deleted");
+      throw createHttpError(400, ADMIN_REC_003);
     }
 
     await prisma.recipe.update({

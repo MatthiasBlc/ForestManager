@@ -25,6 +25,16 @@ import {
   RECIPE_INGREDIENTS_SELECT,
 } from "../util/prismaSelects";
 import { requireRecipeAccess, requireRecipeOwnership } from "../services/membershipService";
+import {
+  VALIDATION_001,
+  RECIPE_001,
+  RECIPE_003,
+  RECIPE_006,
+  RECIPE_007,
+  RECIPE_008,
+  RECIPE_009,
+  TAG_003,
+} from "../constants/errorCodes";
 import { formatTags, formatIngredients, formatSteps } from "../util/responseFormatters";
 import {
   createRecipe as createRecipeService,
@@ -64,18 +74,18 @@ export const getRecipes: RequestHandler<unknown, unknown, unknown, GetRecipesQue
     assertIsDefine(authenticatedUserId);
 
     if (tagsFilter.length > MAX_FILTER_ITEMS) {
-      throw createHttpError(400, `VALIDATION_001: Too many tag filters (max ${MAX_FILTER_ITEMS})`);
+      throw createHttpError(400, VALIDATION_001(`Too many tag filters (max ${MAX_FILTER_ITEMS})`));
     }
     if (ingredientsFilter.length > MAX_FILTER_ITEMS) {
       throw createHttpError(
         400,
-        `VALIDATION_001: Too many ingredient filters (max ${MAX_FILTER_ITEMS})`
+        VALIDATION_001(`Too many ingredient filters (max ${MAX_FILTER_ITEMS})`)
       );
     }
     if (searchFilter.length > MAX_SEARCH_LENGTH) {
       throw createHttpError(
         400,
-        `VALIDATION_001: Search query too long (max ${MAX_SEARCH_LENGTH} chars)`
+        VALIDATION_001(`Search query too long (max ${MAX_SEARCH_LENGTH} chars)`)
       );
     }
 
@@ -224,7 +234,7 @@ export const getRecipe: RequestHandler = async (req, res, next) => {
     });
 
     if (!recipe) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     await requireRecipeAccess(authenticatedUserId, recipe);
@@ -296,41 +306,38 @@ export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeBody, un
     assertIsDefine(authenticatedUserId);
 
     if (!title) {
-      throw createHttpError(400, "RECIPE_003: Title required");
+      throw createHttpError(400, RECIPE_003);
     }
     assertString(title, "title");
     if (!title.trim()) {
-      throw createHttpError(400, "RECIPE_003: Title required");
+      throw createHttpError(400, RECIPE_003);
     }
     validateStringLength(title.trim(), "title", 1, MAX_TITLE_LENGTH);
 
     if (!validateServings(servings)) {
-      throw createHttpError(400, "RECIPE_006: Servings must be an integer between 1 and 100");
+      throw createHttpError(400, RECIPE_006);
     }
 
     if (!validateSteps(steps)) {
-      throw createHttpError(
-        400,
-        "RECIPE_007: At least one step required, each instruction non-empty (max 5000 chars)"
-      );
+      throw createHttpError(400, RECIPE_007);
     }
 
     if (!validateTime(prepTime)) {
-      throw createHttpError(400, "RECIPE_008: Invalid prep time (integer 0-10000)");
+      throw createHttpError(400, RECIPE_008);
     }
 
     if (!validateTime(cookTime)) {
-      throw createHttpError(400, "RECIPE_008: Invalid cook time (integer 0-10000)");
+      throw createHttpError(400, RECIPE_008);
     }
 
     if (!validateTime(restTime)) {
-      throw createHttpError(400, "RECIPE_008: Invalid rest time (integer 0-10000)");
+      throw createHttpError(400, RECIPE_008);
     }
 
     // Tags validation
     assertArray(tags, "tags");
     if (tags.length > MAX_TAGS_PER_RECIPE) {
-      throw createHttpError(400, "TAG_003: Maximum 10 tags per recipe");
+      throw createHttpError(400, TAG_003);
     }
 
     // Ingredients validation
@@ -408,38 +415,35 @@ export const updateRecipe: RequestHandler<
     if (title !== undefined) {
       assertString(title, "title");
       if (!title.trim()) {
-        throw createHttpError(400, "RECIPE_003: Title required");
+        throw createHttpError(400, RECIPE_003);
       }
       validateStringLength(title.trim(), "title", 1, MAX_TITLE_LENGTH);
     }
 
     if (servings !== undefined && !validateServings(servings)) {
-      throw createHttpError(400, "RECIPE_006: Servings must be an integer between 1 and 100");
+      throw createHttpError(400, RECIPE_006);
     }
 
     if (steps !== undefined && !validateSteps(steps)) {
-      throw createHttpError(
-        400,
-        "RECIPE_007: At least one step required, each instruction non-empty (max 5000 chars)"
-      );
+      throw createHttpError(400, RECIPE_007);
     }
 
     if (prepTime !== undefined && !validateTime(prepTime)) {
-      throw createHttpError(400, "RECIPE_008: Invalid prep time (integer 0-10000)");
+      throw createHttpError(400, RECIPE_008);
     }
 
     if (cookTime !== undefined && !validateTime(cookTime)) {
-      throw createHttpError(400, "RECIPE_008: Invalid cook time (integer 0-10000)");
+      throw createHttpError(400, RECIPE_008);
     }
 
     if (restTime !== undefined && !validateTime(restTime)) {
-      throw createHttpError(400, "RECIPE_008: Invalid rest time (integer 0-10000)");
+      throw createHttpError(400, RECIPE_008);
     }
 
     if (tags !== undefined) {
       assertArray(tags, "tags");
       if (tags.length > MAX_TAGS_PER_RECIPE) {
-        throw createHttpError(400, `RECIPE_009: Too many tags (max ${MAX_TAGS_PER_RECIPE})`);
+        throw createHttpError(400, RECIPE_009(MAX_TAGS_PER_RECIPE));
       }
     }
 
@@ -456,7 +460,7 @@ export const updateRecipe: RequestHandler<
     });
 
     if (!recipe) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     await requireRecipeOwnership(authenticatedUserId, recipe);
@@ -530,7 +534,7 @@ export const deleteRecipe: RequestHandler = async (req, res, next) => {
     });
 
     if (!recipe) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     await requireRecipeOwnership(authenticatedUserId, recipe);

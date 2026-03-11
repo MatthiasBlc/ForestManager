@@ -3,6 +3,7 @@ import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { requireMembership } from "../services/membershipService";
+import { TAG_001 } from "../constants/errorCodes";
 // =============================================================================
 // TAG VISIBILITY PREFERENCES (UserCommunityTagPreference)
 // =============================================================================
@@ -64,7 +65,7 @@ export const updateTagPreference: RequestHandler<
     assertIsDefine(userId);
 
     if (typeof showTags !== "boolean") {
-      throw createHttpError(400, "TAG_001: showTags must be a boolean");
+      throw createHttpError(400, TAG_001("showTags must be a boolean"));
     }
 
     // Verifier membership

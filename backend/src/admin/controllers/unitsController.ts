@@ -3,6 +3,16 @@ import createHttpError from "http-errors";
 import prisma from "../../util/db";
 import { assertIsDefine } from "../../util/assertIsDefine";
 import { validateStringLength, assertNumber } from "../../util/validation";
+import {
+  ADMIN_UNIT_001,
+  ADMIN_UNIT_002,
+  ADMIN_UNIT_003,
+  ADMIN_UNIT_004,
+  ADMIN_UNIT_005,
+  ADMIN_UNIT_006,
+  ADMIN_UNIT_007,
+  VALIDATION_001,
+} from "../../constants/errorCodes";
 
 const VALID_CATEGORIES = ["WEIGHT", "VOLUME", "SPOON", "COUNT", "QUALITATIVE"];
 
@@ -68,20 +78,17 @@ export const create: RequestHandler = async (req, res, next) => {
     assertIsDefine(adminId);
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
-      throw createHttpError(400, "ADMIN_UNIT_001: Name is required");
+      throw createHttpError(400, ADMIN_UNIT_001);
     }
     validateStringLength(name.trim(), "name", 1, 50);
 
     if (!abbreviation || typeof abbreviation !== "string" || abbreviation.trim().length === 0) {
-      throw createHttpError(400, "ADMIN_UNIT_002: Abbreviation is required");
+      throw createHttpError(400, ADMIN_UNIT_002);
     }
     validateStringLength(abbreviation.trim(), "abbreviation", 1, 10);
 
     if (!category || !VALID_CATEGORIES.includes(category)) {
-      throw createHttpError(
-        400,
-        "ADMIN_UNIT_003: Valid category is required (WEIGHT, VOLUME, SPOON, COUNT, QUALITATIVE)"
-      );
+      throw createHttpError(400, ADMIN_UNIT_003);
     }
 
     if (sortOrder !== undefined) {
@@ -89,7 +96,7 @@ export const create: RequestHandler = async (req, res, next) => {
       if (!Number.isInteger(sortOrder) || sortOrder < 0 || sortOrder > 9999) {
         throw createHttpError(
           400,
-          "VALIDATION_001: sortOrder must be an integer between 0 and 9999"
+          VALIDATION_001("sortOrder must be an integer between 0 and 9999")
         );
       }
     }
@@ -100,13 +107,13 @@ export const create: RequestHandler = async (req, res, next) => {
     // Verifier unicite nom
     const existingName = await prisma.unit.findUnique({ where: { name: normalizedName } });
     if (existingName) {
-      throw createHttpError(409, "ADMIN_UNIT_004: Unit name already exists");
+      throw createHttpError(409, ADMIN_UNIT_004);
     }
 
     // Verifier unicite abbreviation
     const existingAbbr = await prisma.unit.findUnique({ where: { abbreviation: normalizedAbbr } });
     if (existingAbbr) {
-      throw createHttpError(409, "ADMIN_UNIT_005: Abbreviation already exists");
+      throw createHttpError(409, ADMIN_UNIT_005);
     }
 
     const unit = await prisma.unit.create({
@@ -147,7 +154,7 @@ export const update: RequestHandler = async (req, res, next) => {
 
     const unit = await prisma.unit.findUnique({ where: { id } });
     if (!unit) {
-      throw createHttpError(404, "ADMIN_UNIT_006: Unit not found");
+      throw createHttpError(404, ADMIN_UNIT_006);
     }
 
     const data: Record<string, unknown> = {};
@@ -155,14 +162,14 @@ export const update: RequestHandler = async (req, res, next) => {
 
     if (name !== undefined) {
       if (typeof name !== "string" || name.trim().length === 0) {
-        throw createHttpError(400, "ADMIN_UNIT_001: Name is required");
+        throw createHttpError(400, ADMIN_UNIT_001);
       }
       validateStringLength(name.trim(), "name", 1, 50);
       const normalizedName = name.trim().toLowerCase();
       if (normalizedName !== unit.name) {
         const existing = await prisma.unit.findUnique({ where: { name: normalizedName } });
         if (existing) {
-          throw createHttpError(409, "ADMIN_UNIT_004: Unit name already exists");
+          throw createHttpError(409, ADMIN_UNIT_004);
         }
         metadata.oldName = unit.name;
         metadata.newName = normalizedName;
@@ -172,14 +179,14 @@ export const update: RequestHandler = async (req, res, next) => {
 
     if (abbreviation !== undefined) {
       if (typeof abbreviation !== "string" || abbreviation.trim().length === 0) {
-        throw createHttpError(400, "ADMIN_UNIT_002: Abbreviation is required");
+        throw createHttpError(400, ADMIN_UNIT_002);
       }
       validateStringLength(abbreviation.trim(), "abbreviation", 1, 10);
       const normalizedAbbr = abbreviation.trim().toLowerCase();
       if (normalizedAbbr !== unit.abbreviation) {
         const existing = await prisma.unit.findUnique({ where: { abbreviation: normalizedAbbr } });
         if (existing) {
-          throw createHttpError(409, "ADMIN_UNIT_005: Abbreviation already exists");
+          throw createHttpError(409, ADMIN_UNIT_005);
         }
         metadata.oldAbbreviation = unit.abbreviation;
         metadata.newAbbreviation = normalizedAbbr;
@@ -189,10 +196,7 @@ export const update: RequestHandler = async (req, res, next) => {
 
     if (category !== undefined) {
       if (!VALID_CATEGORIES.includes(category)) {
-        throw createHttpError(
-          400,
-          "ADMIN_UNIT_003: Valid category is required (WEIGHT, VOLUME, SPOON, COUNT, QUALITATIVE)"
-        );
+        throw createHttpError(400, ADMIN_UNIT_003);
       }
       data.category = category;
     }
@@ -202,7 +206,7 @@ export const update: RequestHandler = async (req, res, next) => {
       if (!Number.isInteger(sortOrder) || sortOrder < 0 || sortOrder > 9999) {
         throw createHttpError(
           400,
-          "VALIDATION_001: sortOrder must be an integer between 0 and 9999"
+          VALIDATION_001("sortOrder must be an integer between 0 and 9999")
         );
       }
       data.sortOrder = sortOrder;
@@ -257,7 +261,7 @@ export const remove: RequestHandler = async (req, res, next) => {
     });
 
     if (!unit) {
-      throw createHttpError(404, "ADMIN_UNIT_006: Unit not found");
+      throw createHttpError(404, ADMIN_UNIT_006);
     }
 
     const totalUsage =
@@ -265,10 +269,7 @@ export const remove: RequestHandler = async (req, res, next) => {
       unit._count.proposalIngredients +
       unit._count.defaultIngredients;
     if (totalUsage > 0) {
-      throw createHttpError(
-        409,
-        "ADMIN_UNIT_007: Cannot delete unit that is in use. Migrate recipes to another unit first."
-      );
+      throw createHttpError(409, ADMIN_UNIT_007);
     }
 
     await prisma.unit.delete({ where: { id } });

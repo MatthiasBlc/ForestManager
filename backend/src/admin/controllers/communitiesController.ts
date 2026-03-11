@@ -4,6 +4,7 @@ import prisma from "../../util/db";
 import { assertIsDefine } from "../../util/assertIsDefine";
 import { parsePagination, buildPaginationMeta } from "../../util/pagination";
 import { validateStringLength, COMMUNITY_VALIDATION } from "../../util/validation";
+import { ADMIN_COM_001, ADMIN_COM_002, ADMIN_COM_003 } from "../../constants/errorCodes";
 
 /**
  * GET /api/admin/communities
@@ -91,7 +92,7 @@ export const getOne: RequestHandler = async (req, res, next) => {
     });
 
     if (!community) {
-      throw createHttpError(404, "ADMIN_COM_001: Community not found");
+      throw createHttpError(404, ADMIN_COM_001);
     }
 
     res.status(200).json({
@@ -140,11 +141,11 @@ export const update: RequestHandler = async (req, res, next) => {
 
     const community = await prisma.community.findUnique({ where: { id } });
     if (!community) {
-      throw createHttpError(404, "ADMIN_COM_001: Community not found");
+      throw createHttpError(404, ADMIN_COM_001);
     }
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
-      throw createHttpError(400, "ADMIN_COM_002: Name is required");
+      throw createHttpError(400, ADMIN_COM_002);
     }
     validateStringLength(
       name.trim(),
@@ -187,11 +188,11 @@ export const remove: RequestHandler = async (req, res, next) => {
 
     const community = await prisma.community.findUnique({ where: { id } });
     if (!community) {
-      throw createHttpError(404, "ADMIN_COM_001: Community not found");
+      throw createHttpError(404, ADMIN_COM_001);
     }
 
     if (community.deletedAt) {
-      throw createHttpError(400, "ADMIN_COM_003: Community already deleted");
+      throw createHttpError(400, ADMIN_COM_003);
     }
 
     await prisma.community.update({

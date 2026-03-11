@@ -9,6 +9,7 @@ import {
   deleteObject,
 } from "../services/storageService";
 import { buildImageUrl } from "../config/storage";
+import { RECIPE_001, RECIPE_005 } from "../constants/errorCodes";
 
 /**
  * POST /api/recipes/:recipeId/upload-url
@@ -27,7 +28,7 @@ export const getUploadUrl: RequestHandler = async (req, res, next) => {
     });
 
     if (!recipe) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     await requireRecipeOwnership(authenticatedUserId, recipe);
@@ -58,7 +59,7 @@ export const confirmUpload: RequestHandler = async (req, res, next) => {
     });
 
     if (!recipe) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     await requireRecipeOwnership(authenticatedUserId, recipe);
@@ -68,7 +69,7 @@ export const confirmUpload: RequestHandler = async (req, res, next) => {
     const validationError = await validateUploadedFile(imageKey);
     if (validationError) {
       await deleteObject(imageKey);
-      throw createHttpError(400, `RECIPE_005: ${validationError}`);
+      throw createHttpError(400, RECIPE_005(validationError));
     }
 
     await prisma.recipe.update({
@@ -101,7 +102,7 @@ export const deleteImage: RequestHandler = async (req, res, next) => {
     });
 
     if (!recipe) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     await requireRecipeOwnership(authenticatedUserId, recipe);

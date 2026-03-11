@@ -5,6 +5,16 @@ import { generateURI, verifySync } from "otplib";
 import * as QRCode from "qrcode";
 import prisma from "../../util/db";
 import { assertString } from "../../util/validation";
+import {
+  ADMIN_001,
+  ADMIN_003,
+  ADMIN_004,
+  ADMIN_005,
+  ADMIN_006,
+  ADMIN_007,
+  ADMIN_008,
+  ADMIN_009,
+} from "../../constants/errorCodes";
 
 const MAX_TOTP_ATTEMPTS = 3;
 const APP_NAME = "ForestManager";
@@ -19,7 +29,7 @@ export const login: RequestHandler = async (req, res, next) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      throw createHttpError(400, "ADMIN_003: Email and password required");
+      throw createHttpError(400, ADMIN_003);
     }
     assertString(email, "email");
     assertString(password, "password");
@@ -30,12 +40,12 @@ export const login: RequestHandler = async (req, res, next) => {
 
     if (!admin) {
       // Message generique pour eviter l'enumeration
-      throw createHttpError(401, "ADMIN_004: Invalid credentials");
+      throw createHttpError(401, ADMIN_004);
     }
 
     const isPasswordValid = await bcrypt.compare(password, admin.password);
     if (!isPasswordValid) {
-      throw createHttpError(401, "ADMIN_004: Invalid credentials");
+      throw createHttpError(401, ADMIN_004);
     }
 
     // Regenerer la session pour prevenir la session fixation
@@ -84,11 +94,11 @@ export const verifyTotp: RequestHandler = async (req, res, next) => {
     const adminId = req.session.adminId;
 
     if (!adminId) {
-      throw createHttpError(401, "ADMIN_001: Not authenticated");
+      throw createHttpError(401, ADMIN_001);
     }
 
     if (!code) {
-      throw createHttpError(400, "ADMIN_005: TOTP code required");
+      throw createHttpError(400, ADMIN_005);
     }
 
     // Verifier le nombre de tentatives
@@ -96,7 +106,7 @@ export const verifyTotp: RequestHandler = async (req, res, next) => {
     if (attempts >= MAX_TOTP_ATTEMPTS) {
       // Reset la session et bloquer
       req.session.destroy(() => {});
-      throw createHttpError(429, "ADMIN_006: Too many failed attempts, please login again");
+      throw createHttpError(429, ADMIN_006);
     }
 
     const admin = await prisma.adminUser.findUnique({
@@ -104,7 +114,7 @@ export const verifyTotp: RequestHandler = async (req, res, next) => {
     });
 
     if (!admin) {
-      throw createHttpError(401, "ADMIN_001: Not authenticated");
+      throw createHttpError(401, ADMIN_001);
     }
 
     const result = verifySync({
@@ -115,7 +125,7 @@ export const verifyTotp: RequestHandler = async (req, res, next) => {
 
     if (!isValid) {
       req.session.totpAttempts = attempts + 1;
-      throw createHttpError(401, "ADMIN_007: Invalid TOTP code");
+      throw createHttpError(401, ADMIN_007);
     }
 
     // TOTP valide - marquer comme configure si premiere fois
@@ -194,7 +204,7 @@ export const logout: RequestHandler = async (req, res, next) => {
 
     req.session.destroy((err) => {
       if (err) {
-        return next(createHttpError(500, "ADMIN_008: Logout failed"));
+        return next(createHttpError(500, ADMIN_008));
       }
       res.clearCookie("admin.sid");
       res.status(200).json({ message: "Logged out successfully" });
@@ -213,7 +223,7 @@ export const getMe: RequestHandler = async (req, res, next) => {
     const adminId = req.session.adminId;
 
     if (!adminId) {
-      throw createHttpError(401, "ADMIN_001: Not authenticated");
+      throw createHttpError(401, ADMIN_001);
     }
 
     const admin = await prisma.adminUser.findUnique({
@@ -227,7 +237,7 @@ export const getMe: RequestHandler = async (req, res, next) => {
     });
 
     if (!admin) {
-      throw createHttpError(404, "ADMIN_009: Admin not found");
+      throw createHttpError(404, ADMIN_009);
     }
 
     res.status(200).json({ admin });

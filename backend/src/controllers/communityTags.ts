@@ -5,6 +5,7 @@ import { assertIsDefine } from "../util/assertIsDefine";
 import { parsePagination } from "../util/pagination";
 import { validateTagName } from "../util/validation";
 import appEvents from "../services/eventEmitter";
+import { TAG_001, TAG_002, TAG_003, TAG_004, TAG_005 } from "../constants/errorCodes";
 
 /**
  * GET /api/communities/:communityId/tags
@@ -86,7 +87,7 @@ export const createCommunityTag: RequestHandler = async (req, res, next) => {
       where: { name: normalized, scope: "GLOBAL", communityId: null },
     });
     if (existingGlobal) {
-      throw createHttpError(409, "TAG_002: A global tag with this name already exists");
+      throw createHttpError(409, TAG_002);
     }
 
     // Verifier qu'aucun tag COMMUNITY n'a ce nom dans cette communaute
@@ -94,7 +95,7 @@ export const createCommunityTag: RequestHandler = async (req, res, next) => {
       where: { name: normalized, communityId },
     });
     if (existingCommunity) {
-      throw createHttpError(409, "TAG_002: A tag with this name already exists in this community");
+      throw createHttpError(409, TAG_002);
     }
 
     // Verifier limite 100 tags par communaute
@@ -102,7 +103,7 @@ export const createCommunityTag: RequestHandler = async (req, res, next) => {
       where: { communityId, scope: "COMMUNITY" },
     });
     if (count >= 100) {
-      throw createHttpError(400, "TAG_003: Community tag limit reached (100)");
+      throw createHttpError(400, TAG_003);
     }
 
     const tag = await prisma.tag.create({
@@ -154,15 +155,12 @@ export const updateCommunityTag: RequestHandler = async (req, res, next) => {
 
     const tag = await prisma.tag.findUnique({ where: { id: tagId } });
     if (!tag) {
-      throw createHttpError(404, "TAG_001: Tag not found");
+      throw createHttpError(404, TAG_001("Tag not found"));
     }
 
     // Verifier que le tag appartient a cette communaute
     if (tag.communityId !== communityId || tag.scope !== "COMMUNITY") {
-      throw createHttpError(
-        403,
-        "TAG_005: Cannot modify a tag that does not belong to this community"
-      );
+      throw createHttpError(403, TAG_005);
     }
 
     if (normalized !== tag.name) {
@@ -171,7 +169,7 @@ export const updateCommunityTag: RequestHandler = async (req, res, next) => {
         where: { name: normalized, scope: "GLOBAL", communityId: null },
       });
       if (existingGlobal) {
-        throw createHttpError(409, "TAG_002: A global tag with this name already exists");
+        throw createHttpError(409, TAG_002);
       }
 
       // Verifier unicite dans la communaute
@@ -179,10 +177,7 @@ export const updateCommunityTag: RequestHandler = async (req, res, next) => {
         where: { name: normalized, communityId, id: { not: tagId } },
       });
       if (existingCommunity) {
-        throw createHttpError(
-          409,
-          "TAG_002: A tag with this name already exists in this community"
-        );
+        throw createHttpError(409, TAG_002);
       }
     }
 
@@ -227,14 +222,11 @@ export const deleteCommunityTag: RequestHandler = async (req, res, next) => {
 
     const tag = await prisma.tag.findUnique({ where: { id: tagId } });
     if (!tag) {
-      throw createHttpError(404, "TAG_001: Tag not found");
+      throw createHttpError(404, TAG_001("Tag not found"));
     }
 
     if (tag.communityId !== communityId || tag.scope !== "COMMUNITY") {
-      throw createHttpError(
-        403,
-        "TAG_005: Cannot modify a tag that does not belong to this community"
-      );
+      throw createHttpError(403, TAG_005);
     }
 
     await prisma.tag.delete({ where: { id: tagId } });
@@ -268,18 +260,15 @@ export const approveCommunityTag: RequestHandler = async (req, res, next) => {
 
     const tag = await prisma.tag.findUnique({ where: { id: tagId } });
     if (!tag) {
-      throw createHttpError(404, "TAG_001: Tag not found");
+      throw createHttpError(404, TAG_001("Tag not found"));
     }
 
     if (tag.communityId !== communityId || tag.scope !== "COMMUNITY") {
-      throw createHttpError(
-        403,
-        "TAG_005: Cannot modify a tag that does not belong to this community"
-      );
+      throw createHttpError(403, TAG_005);
     }
 
     if (tag.status !== "PENDING") {
-      throw createHttpError(400, "TAG_004: Tag is not pending");
+      throw createHttpError(400, TAG_004);
     }
 
     const updated = await prisma.tag.update({
@@ -343,18 +332,15 @@ export const rejectCommunityTag: RequestHandler = async (req, res, next) => {
 
     const tag = await prisma.tag.findUnique({ where: { id: tagId } });
     if (!tag) {
-      throw createHttpError(404, "TAG_001: Tag not found");
+      throw createHttpError(404, TAG_001("Tag not found"));
     }
 
     if (tag.communityId !== communityId || tag.scope !== "COMMUNITY") {
-      throw createHttpError(
-        403,
-        "TAG_005: Cannot modify a tag that does not belong to this community"
-      );
+      throw createHttpError(403, TAG_005);
     }
 
     if (tag.status !== "PENDING") {
-      throw createHttpError(400, "TAG_004: Tag is not pending");
+      throw createHttpError(400, TAG_004);
     }
 
     // Cascade : rejeter les TagSuggestions PENDING_MODERATOR avec ce tagName dans cette communaute

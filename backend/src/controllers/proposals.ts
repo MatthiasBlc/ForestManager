@@ -27,6 +27,19 @@ import {
   validateStringLength,
   MAX_TITLE_LENGTH,
 } from "../util/validation";
+import {
+  RECIPE_001,
+  RECIPE_002,
+  RECIPE_003,
+  RECIPE_006,
+  RECIPE_007,
+  RECIPE_008,
+  PROPOSAL_001,
+  PROPOSAL_002,
+  PROPOSAL_003,
+  PROPOSAL_004,
+  INGREDIENT_003,
+} from "../constants/errorCodes";
 
 interface CreateProposalBody {
   proposedTitle?: string;
@@ -87,19 +100,16 @@ export const createProposal: RequestHandler<
 
     // Validation des champs requis
     if (!proposedTitle) {
-      throw createHttpError(400, "RECIPE_003: Title required");
+      throw createHttpError(400, RECIPE_003);
     }
     assertString(proposedTitle, "proposedTitle");
     if (!proposedTitle.trim()) {
-      throw createHttpError(400, "RECIPE_003: Title required");
+      throw createHttpError(400, RECIPE_003);
     }
     validateStringLength(proposedTitle.trim(), "proposedTitle", 1, MAX_TITLE_LENGTH);
 
     if (!validateSteps(proposedSteps)) {
-      throw createHttpError(
-        400,
-        "RECIPE_007: At least one step required, each instruction non-empty (max 5000 chars)"
-      );
+      throw createHttpError(400, RECIPE_007);
     }
 
     if (
@@ -107,26 +117,26 @@ export const createProposal: RequestHandler<
       proposedServings !== null &&
       !validateServings(proposedServings)
     ) {
-      throw createHttpError(400, "RECIPE_006: Servings must be an integer between 1 and 100");
+      throw createHttpError(400, RECIPE_006);
     }
 
     if (proposedPrepTime !== undefined && !validateTime(proposedPrepTime)) {
-      throw createHttpError(400, "RECIPE_008: Invalid prep time (integer 0-10000)");
+      throw createHttpError(400, RECIPE_008);
     }
 
     if (proposedCookTime !== undefined && !validateTime(proposedCookTime)) {
-      throw createHttpError(400, "RECIPE_008: Invalid cook time (integer 0-10000)");
+      throw createHttpError(400, RECIPE_008);
     }
 
     if (proposedRestTime !== undefined && !validateTime(proposedRestTime)) {
-      throw createHttpError(400, "RECIPE_008: Invalid rest time (integer 0-10000)");
+      throw createHttpError(400, RECIPE_008);
     }
 
     // Validation des ingredients
     if (proposedIngredients !== undefined) {
       assertArray(proposedIngredients, "proposedIngredients");
       if (proposedIngredients.length > 50) {
-        throw createHttpError(400, "INGREDIENT_003: Too many ingredients (max 50)");
+        throw createHttpError(400, INGREDIENT_003);
       }
       for (const ing of proposedIngredients) {
         assertString(ing.name, "ingredient name");
@@ -148,19 +158,19 @@ export const createProposal: RequestHandler<
     });
 
     if (!recipe) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     // Verifier que c'est une recette communautaire
     if (!recipe.communityId) {
-      throw createHttpError(400, "PROPOSAL_001: Cannot propose on personal recipe");
+      throw createHttpError(400, PROPOSAL_001);
     }
 
     await requireMembership(authenticatedUserId, recipe.communityId!);
 
     // Verifier que l'utilisateur ne propose pas sur sa propre recette
     if (recipe.creatorId === authenticatedUserId) {
-      throw createHttpError(400, "PROPOSAL_001: Cannot propose on your own recipe");
+      throw createHttpError(400, PROPOSAL_001);
     }
 
     // Creer la proposition
@@ -262,12 +272,12 @@ export const getProposals: RequestHandler<
     });
 
     if (!recipe) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     // Verifier que c'est une recette communautaire
     if (!recipe.communityId) {
-      throw createHttpError(400, "PROPOSAL_001: Cannot list proposals on personal recipe");
+      throw createHttpError(400, PROPOSAL_001);
     }
 
     await requireMembership(authenticatedUserId, recipe.communityId!);
@@ -341,7 +351,7 @@ export const getProposal: RequestHandler<
     });
 
     if (!proposal) {
-      throw createHttpError(404, "PROPOSAL_004: Proposal not found");
+      throw createHttpError(404, PROPOSAL_004);
     }
 
     if (proposal.recipe.communityId) {
@@ -407,30 +417,27 @@ export const acceptProposal: RequestHandler<
     });
 
     if (!proposal) {
-      throw createHttpError(404, "PROPOSAL_004: Proposal not found");
+      throw createHttpError(404, PROPOSAL_004);
     }
 
     // Verifier que c'est une recette communautaire
     if (!proposal.recipe.communityId) {
-      throw createHttpError(400, "PROPOSAL_001: Cannot accept proposal on personal recipe");
+      throw createHttpError(400, PROPOSAL_001);
     }
 
     // Verifier que l'utilisateur est le createur de la recette
     if (proposal.recipe.creatorId !== authenticatedUserId) {
-      throw createHttpError(403, "RECIPE_002: Only the recipe creator can accept proposals");
+      throw createHttpError(403, RECIPE_002);
     }
 
     // Verifier que la proposition est en status PENDING
     if (proposal.status !== "PENDING") {
-      throw createHttpError(400, "PROPOSAL_002: Proposal already decided");
+      throw createHttpError(400, PROPOSAL_002);
     }
 
     // Verifier que la recette n'a pas ete modifiee depuis la creation de la proposition
     if (proposal.recipe.updatedAt > proposal.createdAt) {
-      throw createHttpError(
-        409,
-        "PROPOSAL_003: Recipe has been modified since proposal was created"
-      );
+      throw createHttpError(409, PROPOSAL_003);
     }
 
     const result = await acceptProposalService(proposalId, proposal, authenticatedUserId);
@@ -500,22 +507,22 @@ export const rejectProposal: RequestHandler<
     });
 
     if (!proposal) {
-      throw createHttpError(404, "PROPOSAL_004: Proposal not found");
+      throw createHttpError(404, PROPOSAL_004);
     }
 
     // Verifier que c'est une recette communautaire
     if (!proposal.recipe.communityId) {
-      throw createHttpError(400, "PROPOSAL_001: Cannot reject proposal on personal recipe");
+      throw createHttpError(400, PROPOSAL_001);
     }
 
     // Verifier que l'utilisateur est le createur de la recette
     if (proposal.recipe.creatorId !== authenticatedUserId) {
-      throw createHttpError(403, "RECIPE_002: Only the recipe creator can reject proposals");
+      throw createHttpError(403, RECIPE_002);
     }
 
     // Verifier que la proposition est en status PENDING
     if (proposal.status !== "PENDING") {
-      throw createHttpError(400, "PROPOSAL_002: Proposal already decided");
+      throw createHttpError(400, PROPOSAL_002);
     }
 
     const result = await rejectProposalService(proposalId, proposal);

@@ -13,6 +13,7 @@ import {
 } from "../services/tagSuggestionService";
 import appEvents from "../services/eventEmitter";
 import { getModeratorIdsForTagNotification } from "../services/notificationService";
+import { RECIPE_001, RECIPE_002, TAG_003, TAG_006, TAG_007 } from "../constants/errorCodes";
 
 const MAX_TAGS_PER_RECIPE = 10;
 
@@ -52,12 +53,12 @@ export const createTagSuggestion: RequestHandler<
     });
 
     if (!recipe) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     // Doit etre une recette communautaire
     if (!recipe.communityId) {
-      throw createHttpError(400, "TAG_007: Cannot suggest tags on personal recipes");
+      throw createHttpError(400, TAG_007);
     }
 
     // Verifier membership
@@ -65,7 +66,7 @@ export const createTagSuggestion: RequestHandler<
 
     // Bloquer auto-suggestion
     if (recipe.creatorId === authenticatedUserId) {
-      throw createHttpError(400, "TAG_007: Cannot suggest tags on your own recipe");
+      throw createHttpError(400, TAG_007);
     }
 
     // Verifier doublon
@@ -79,12 +80,12 @@ export const createTagSuggestion: RequestHandler<
       },
     });
     if (existing) {
-      throw createHttpError(409, "TAG_006: You already suggested this tag on this recipe");
+      throw createHttpError(409, TAG_006);
     }
 
     // Verifier max tags sur la recette
     if (recipe._count.tags >= MAX_TAGS_PER_RECIPE) {
-      throw createHttpError(400, "TAG_003: Maximum 10 tags per recipe");
+      throw createHttpError(400, TAG_003);
     }
 
     // Creer la suggestion
@@ -138,11 +139,11 @@ export const getTagSuggestions: RequestHandler<
     });
 
     if (!recipe) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     if (!recipe.communityId) {
-      throw createHttpError(400, "TAG_007: No tag suggestions on personal recipes");
+      throw createHttpError(400, TAG_007);
     }
 
     await requireMembership(authenticatedUserId, recipe.communityId);
@@ -210,7 +211,7 @@ export const acceptTagSuggestion: RequestHandler<
     });
 
     if (!suggestion) {
-      throw createHttpError(404, "TAG_007: Tag suggestion not found");
+      throw createHttpError(404, TAG_007);
     }
 
     // Recette orpheline -> auto-reject
@@ -219,17 +220,17 @@ export const acceptTagSuggestion: RequestHandler<
         where: { id },
         data: { status: "REJECTED", decidedAt: new Date() },
       });
-      throw createHttpError(400, "TAG_007: Recipe is no longer available");
+      throw createHttpError(400, TAG_007);
     }
 
     // Verifier que c'est le owner
     if (suggestion.recipe.creatorId !== authenticatedUserId) {
-      throw createHttpError(403, "RECIPE_002: Only the recipe owner can accept suggestions");
+      throw createHttpError(403, RECIPE_002);
     }
 
     // Verifier statut
     if (suggestion.status !== "PENDING_OWNER") {
-      throw createHttpError(400, "TAG_007: Suggestion already decided");
+      throw createHttpError(400, TAG_007);
     }
 
     const result = await acceptTagSuggestionService(id, suggestion, authenticatedUserId);
@@ -290,7 +291,7 @@ export const rejectTagSuggestion: RequestHandler<
     });
 
     if (!suggestion) {
-      throw createHttpError(404, "TAG_007: Tag suggestion not found");
+      throw createHttpError(404, TAG_007);
     }
 
     // Recette orpheline -> auto-reject
@@ -299,17 +300,17 @@ export const rejectTagSuggestion: RequestHandler<
         where: { id },
         data: { status: "REJECTED", decidedAt: new Date() },
       });
-      throw createHttpError(400, "TAG_007: Recipe is no longer available");
+      throw createHttpError(400, TAG_007);
     }
 
     // Verifier que c'est le owner
     if (suggestion.recipe.creatorId !== authenticatedUserId) {
-      throw createHttpError(403, "RECIPE_002: Only the recipe owner can reject suggestions");
+      throw createHttpError(403, RECIPE_002);
     }
 
     // Verifier statut
     if (suggestion.status !== "PENDING_OWNER") {
-      throw createHttpError(400, "TAG_007: Suggestion already decided");
+      throw createHttpError(400, TAG_007);
     }
 
     const result = await rejectTagSuggestionService(

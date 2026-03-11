@@ -5,6 +5,17 @@ import { assertIsDefine } from "../../util/assertIsDefine";
 import { parsePagination, buildPaginationMeta } from "../../util/pagination";
 import appEvents from "../../services/eventEmitter";
 import { validateStringLength, MAX_NAME_LENGTH, MAX_REASON_LENGTH } from "../../util/validation";
+import {
+  ADMIN_ING_001,
+  ADMIN_ING_002,
+  ADMIN_ING_003,
+  ADMIN_ING_004,
+  ADMIN_ING_005,
+  ADMIN_ING_006,
+  ADMIN_ING_007,
+  ADMIN_ING_008,
+  ADMIN_ING_009,
+} from "../../constants/errorCodes";
 
 /**
  * GET /api/admin/ingredients
@@ -116,7 +127,7 @@ export const create: RequestHandler = async (req, res, next) => {
     assertIsDefine(adminId);
 
     if (!name || typeof name !== "string" || name.trim().length === 0) {
-      throw createHttpError(400, "ADMIN_ING_001: Name is required");
+      throw createHttpError(400, ADMIN_ING_001);
     }
     validateStringLength(name.trim(), "name", 1, MAX_NAME_LENGTH);
 
@@ -127,14 +138,14 @@ export const create: RequestHandler = async (req, res, next) => {
     });
 
     if (existing) {
-      throw createHttpError(409, "ADMIN_ING_002: Ingredient already exists");
+      throw createHttpError(409, ADMIN_ING_002);
     }
 
     // Valider defaultUnitId si fourni
     if (defaultUnitId) {
       const unit = await prisma.unit.findUnique({ where: { id: defaultUnitId } });
       if (!unit) {
-        throw createHttpError(400, "ADMIN_ING_007: Default unit not found");
+        throw createHttpError(400, ADMIN_ING_007);
       }
     }
 
@@ -175,7 +186,7 @@ export const update: RequestHandler = async (req, res, next) => {
 
     const ingredient = await prisma.ingredient.findUnique({ where: { id } });
     if (!ingredient) {
-      throw createHttpError(404, "ADMIN_ING_003: Ingredient not found");
+      throw createHttpError(404, ADMIN_ING_003);
     }
 
     const data: Record<string, unknown> = {};
@@ -183,7 +194,7 @@ export const update: RequestHandler = async (req, res, next) => {
 
     if (name !== undefined) {
       if (typeof name !== "string" || name.trim().length === 0) {
-        throw createHttpError(400, "ADMIN_ING_001: Name is required");
+        throw createHttpError(400, ADMIN_ING_001);
       }
       validateStringLength(name.trim(), "name", 1, MAX_NAME_LENGTH);
 
@@ -194,7 +205,7 @@ export const update: RequestHandler = async (req, res, next) => {
           where: { name: normalized },
         });
         if (existing) {
-          throw createHttpError(409, "ADMIN_ING_002: Ingredient already exists");
+          throw createHttpError(409, ADMIN_ING_002);
         }
         metadata.oldName = ingredient.name;
         metadata.newName = normalized;
@@ -208,7 +219,7 @@ export const update: RequestHandler = async (req, res, next) => {
       } else {
         const unit = await prisma.unit.findUnique({ where: { id: defaultUnitId } });
         if (!unit) {
-          throw createHttpError(400, "ADMIN_ING_007: Default unit not found");
+          throw createHttpError(400, ADMIN_ING_007);
         }
         data.defaultUnitId = defaultUnitId;
       }
@@ -251,7 +262,7 @@ export const remove: RequestHandler = async (req, res, next) => {
 
     const ingredient = await prisma.ingredient.findUnique({ where: { id } });
     if (!ingredient) {
-      throw createHttpError(404, "ADMIN_ING_003: Ingredient not found");
+      throw createHttpError(404, ADMIN_ING_003);
     }
 
     await prisma.ingredient.delete({ where: { id } });
@@ -285,11 +296,11 @@ export const merge: RequestHandler = async (req, res, next) => {
     assertIsDefine(adminId);
 
     if (!targetId) {
-      throw createHttpError(400, "ADMIN_ING_004: Target ingredient ID required");
+      throw createHttpError(400, ADMIN_ING_004);
     }
 
     if (sourceId === targetId) {
-      throw createHttpError(400, "ADMIN_ING_005: Cannot merge ingredient into itself");
+      throw createHttpError(400, ADMIN_ING_005);
     }
 
     const [source, target] = await Promise.all([
@@ -298,10 +309,10 @@ export const merge: RequestHandler = async (req, res, next) => {
     ]);
 
     if (!source) {
-      throw createHttpError(404, "ADMIN_ING_003: Source ingredient not found");
+      throw createHttpError(404, ADMIN_ING_003);
     }
     if (!target) {
-      throw createHttpError(404, "ADMIN_ING_006: Target ingredient not found");
+      throw createHttpError(404, ADMIN_ING_006);
     }
 
     await prisma.$transaction(async (tx) => {
@@ -394,11 +405,11 @@ export const approve: RequestHandler = async (req, res, next) => {
 
     const ingredient = await prisma.ingredient.findUnique({ where: { id } });
     if (!ingredient) {
-      throw createHttpError(404, "ADMIN_ING_003: Ingredient not found");
+      throw createHttpError(404, ADMIN_ING_003);
     }
 
     if (ingredient.status !== "PENDING") {
-      throw createHttpError(400, "ADMIN_ING_008: Ingredient is not pending");
+      throw createHttpError(400, ADMIN_ING_008);
     }
 
     const data: Record<string, unknown> = { status: "APPROVED" };
@@ -409,7 +420,7 @@ export const approve: RequestHandler = async (req, res, next) => {
       if (normalized !== ingredient.name) {
         const existing = await prisma.ingredient.findUnique({ where: { name: normalized } });
         if (existing) {
-          throw createHttpError(409, "ADMIN_ING_002: Ingredient already exists");
+          throw createHttpError(409, ADMIN_ING_002);
         }
         data.name = normalized;
         metadata.oldName = ingredient.name;
@@ -464,17 +475,17 @@ export const reject: RequestHandler = async (req, res, next) => {
     assertIsDefine(adminId);
 
     if (!reason || typeof reason !== "string" || reason.trim().length === 0) {
-      throw createHttpError(400, "ADMIN_ING_009: Reason is required");
+      throw createHttpError(400, ADMIN_ING_009);
     }
     validateStringLength(reason.trim(), "reason", 1, MAX_REASON_LENGTH);
 
     const ingredient = await prisma.ingredient.findUnique({ where: { id } });
     if (!ingredient) {
-      throw createHttpError(404, "ADMIN_ING_003: Ingredient not found");
+      throw createHttpError(404, ADMIN_ING_003);
     }
 
     if (ingredient.status !== "PENDING") {
-      throw createHttpError(400, "ADMIN_ING_008: Ingredient is not pending");
+      throw createHttpError(400, ADMIN_ING_008);
     }
 
     // Hard delete (cascade supprime RecipeIngredient + ProposalIngredient)

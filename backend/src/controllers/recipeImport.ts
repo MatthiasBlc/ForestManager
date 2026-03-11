@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { importFromUrl } from "../services/recipeImportService";
+import { IMPORT_001 } from "../constants/errorCodes";
 
 interface ImportUrlBody {
   url?: string;
@@ -20,7 +21,7 @@ export const importRecipeFromUrl: RequestHandler<unknown, unknown, ImportUrlBody
     const { url } = req.body;
 
     if (!url || typeof url !== "string") {
-      throw createHttpError(400, "IMPORT_001: Invalid URL format");
+      throw createHttpError(400, IMPORT_001);
     }
 
     const parsedRecipe = await importFromUrl(url);

@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio";
 import createHttpError from "http-errors";
+import { IMPORT_001, IMPORT_002, IMPORT_003 } from "../constants/errorCodes";
 
 // --- Types ---
 
@@ -343,23 +344,23 @@ function mapJsonLdToRecipe(recipe: Record<string, unknown>): ParsedRecipe {
 export async function importFromUrl(url: string): Promise<ParsedRecipe> {
   // Validation URL
   if (!url || typeof url !== "string" || url.length > 2000) {
-    throw createHttpError(400, "IMPORT_001: Invalid URL format");
+    throw createHttpError(400, IMPORT_001);
   }
 
   let parsedUrl: URL;
   try {
     parsedUrl = new URL(url);
   } catch {
-    throw createHttpError(400, "IMPORT_001: Invalid URL format");
+    throw createHttpError(400, IMPORT_001);
   }
 
   if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
-    throw createHttpError(400, "IMPORT_001: Invalid URL format");
+    throw createHttpError(400, IMPORT_001);
   }
 
   // SSRF protection
   if (isPrivateHost(parsedUrl.hostname)) {
-    throw createHttpError(400, "IMPORT_001: Invalid URL format");
+    throw createHttpError(400, IMPORT_001);
   }
 
   // Fetch la page
@@ -382,24 +383,24 @@ export async function importFromUrl(url: string): Promise<ParsedRecipe> {
     // Verifier la taille du contenu
     const contentLength = response.headers.get("content-length");
     if (contentLength && parseInt(contentLength, 10) > 5 * 1024 * 1024) {
-      throw createHttpError(422, "IMPORT_002: Could not fetch URL");
+      throw createHttpError(422, IMPORT_002);
     }
 
     if (!response.ok) {
-      throw createHttpError(422, "IMPORT_002: Could not fetch URL");
+      throw createHttpError(422, IMPORT_002);
     }
 
     html = await response.text();
 
     // Verifier la taille apres telechargement aussi
     if (html.length > 5 * 1024 * 1024) {
-      throw createHttpError(422, "IMPORT_002: Could not fetch URL");
+      throw createHttpError(422, IMPORT_002);
     }
   } catch (error) {
     if (error instanceof Error && "statusCode" in error) {
       throw error; // Re-throw createHttpError
     }
-    throw createHttpError(422, "IMPORT_002: Could not fetch URL");
+    throw createHttpError(422, IMPORT_002);
   }
 
   // Extraire les JSON-LD
@@ -426,7 +427,7 @@ export async function importFromUrl(url: string): Promise<ParsedRecipe> {
   });
 
   if (!recipeData) {
-    throw createHttpError(422, "IMPORT_003: No recipe data found");
+    throw createHttpError(422, IMPORT_003);
   }
 
   return mapJsonLdToRecipe(recipeData);

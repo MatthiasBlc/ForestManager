@@ -12,6 +12,18 @@ import {
   assertOptionalString,
   assertString,
 } from "../util/validation";
+import {
+  AUTH_001,
+  AUTH_003,
+  AUTH_004_LENGTH,
+  AUTH_004_FORMAT,
+  AUTH_005,
+  AUTH_006,
+  AUTH_007,
+  AUTH_010,
+  AUTH_011,
+  USER_001,
+} from "../constants/errorCodes";
 
 export const searchUsers: RequestHandler = async (req, res, next) => {
   try {
@@ -52,7 +64,7 @@ export const updateProfile: RequestHandler<unknown, unknown, UpdateProfileBody> 
 ) => {
   try {
     const userId = req.session.userId;
-    if (!userId) throw createHttpError(401, "AUTH_001: Not authenticated");
+    if (!userId) throw createHttpError(401, AUTH_001);
 
     const { username, email, currentPassword, newPassword } = req.body;
 
@@ -65,55 +77,46 @@ export const updateProfile: RequestHandler<unknown, unknown, UpdateProfileBody> 
     const user = await prisma.user.findUnique({
       where: { id: userId, deletedAt: null },
     });
-    if (!user) throw createHttpError(404, "USER_001: User not found");
+    if (!user) throw createHttpError(404, USER_001);
 
     const updates: { username?: string; email?: string; password?: string } = {};
 
     if (username && username !== user.username) {
       if (username.length < MIN_USERNAME_LENGTH || username.length > MAX_USERNAME_LENGTH) {
-        throw createHttpError(
-          400,
-          `AUTH_004: Username must be between ${MIN_USERNAME_LENGTH} and ${MAX_USERNAME_LENGTH} characters`
-        );
+        throw createHttpError(400, AUTH_004_LENGTH(MIN_USERNAME_LENGTH, MAX_USERNAME_LENGTH));
       }
       if (!USERNAME_REGEX.test(username)) {
-        throw createHttpError(
-          400,
-          "AUTH_004: Username can only contain letters, numbers, and underscores"
-        );
+        throw createHttpError(400, AUTH_004_FORMAT);
       }
       const existing = await prisma.user.findFirst({
         where: { username, deletedAt: null, id: { not: userId } },
       });
-      if (existing) throw createHttpError(409, "AUTH_006: Username already taken");
+      if (existing) throw createHttpError(409, AUTH_006);
       updates.username = username;
     }
 
     if (email && email !== user.email) {
       if (!EMAIL_REGEX.test(email)) {
-        throw createHttpError(400, "AUTH_003: Invalid email format");
+        throw createHttpError(400, AUTH_003);
       }
       const existing = await prisma.user.findFirst({
         where: { email, deletedAt: null, id: { not: userId } },
       });
-      if (existing) throw createHttpError(409, "AUTH_007: Email already in use");
+      if (existing) throw createHttpError(409, AUTH_007);
       updates.email = email;
     }
 
     if (newPassword) {
       if (!currentPassword) {
-        throw createHttpError(400, "AUTH_010: Current password is required to change password");
+        throw createHttpError(400, AUTH_010);
       }
       assertString(currentPassword, "currentPassword");
       const passwordMatch = await bcrypt.compare(currentPassword, user.password);
       if (!passwordMatch) {
-        throw createHttpError(401, "AUTH_011: Current password is incorrect");
+        throw createHttpError(401, AUTH_011);
       }
       if (newPassword.length < MIN_PASSWORD_LENGTH || newPassword.length > MAX_PASSWORD_LENGTH) {
-        throw createHttpError(
-          400,
-          `AUTH_005: Password must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters`
-        );
+        throw createHttpError(400, AUTH_005(MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH));
       }
       updates.password = await bcrypt.hash(newPassword, 10);
     }

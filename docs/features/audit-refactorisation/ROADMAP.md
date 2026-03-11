@@ -107,11 +107,11 @@
 
 ## Phase D : DRY Backend
 
-### D1 - Error Codes centralises
+### D1 - Error Codes centralises ✅
 
-- [ ] Creer `constants/errorCodes.ts` avec tous les codes existants
-- [ ] Migrer les controllers pour utiliser les constantes
-- [ ] Verifier qu'aucun code n'est en string literal
+- [x] Creer `constants/errorCodes.ts` avec tous les codes existants (~90 constantes)
+- [x] Migrer tous les controllers, middleware et services (32 fichiers)
+- [x] 1 seul string literal restant volontairement (COMMUNITY_001 message different selon contexte)
 
 ### D2 - Rate Limiter Factory
 

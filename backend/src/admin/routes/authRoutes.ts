@@ -3,6 +3,7 @@ import rateLimit from "express-rate-limit";
 import * as authController from "../controllers/authController";
 import { requireAdminSession, requireSuperAdmin } from "../middleware/requireSuperAdmin";
 import env from "../../util/validateEnv";
+import { ADMIN_010 } from "../../constants/errorCodes";
 
 const router = express.Router();
 
@@ -14,7 +15,7 @@ const adminAuthLimiter: RequestHandler =
     : rateLimit({
         windowMs: 15 * 60 * 1000, // 15 minutes
         max: 5, // 5 tentatives max
-        message: { error: "ADMIN_010: Too many login attempts, please try again later" },
+        message: { error: ADMIN_010 },
         standardHeaders: true,
         legacyHeaders: false,
       });

@@ -2,6 +2,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { RequestHandler } from "express";
 import env from "../util/validateEnv";
+import { ADMIN_011 } from "../constants/errorCodes";
 
 /**
  * Helmet configuration with strict security headers
@@ -61,7 +62,7 @@ export const adminRateLimiter: RequestHandler =
     : rateLimit({
         windowMs: 60 * 1000, // 1 minute
         max: 30, // 30 requetes par minute
-        message: { error: "ADMIN_011: Too many requests, please slow down" },
+        message: { error: ADMIN_011 },
         standardHeaders: true,
         legacyHeaders: false,
         skip: (req) => {

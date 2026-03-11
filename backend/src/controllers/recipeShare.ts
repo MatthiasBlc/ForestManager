@@ -8,6 +8,21 @@ import { forkRecipe, publishRecipe, getRecipeFamilyCommunities } from "../servic
 import { requireRecipeAccess } from "../services/membershipService";
 import appEvents from "../services/eventEmitter";
 import { getModeratorIdsForTagNotification } from "../services/notificationService";
+import {
+  SHARE_001,
+  SHARE_002,
+  SHARE_003,
+  SHARE_004,
+  SHARE_005,
+  SHARE_006,
+  RECIPE_001,
+  RECIPE_002,
+  COMMUNITY_001,
+  COMMUNITY_002,
+  PUBLISH_001,
+  PUBLISH_002,
+  PUBLISH_003,
+} from "../constants/errorCodes";
 
 interface ShareRecipeBody {
   targetCommunityId: string;
@@ -31,7 +46,7 @@ export const shareRecipe: RequestHandler<
     assertIsDefine(authenticatedUserId);
 
     if (!targetCommunityId?.trim()) {
-      throw createHttpError(400, "SHARE_001: Target community ID required");
+      throw createHttpError(400, SHARE_001);
     }
 
     // 1. Recuperer la recette source avec ses relations
@@ -65,15 +80,15 @@ export const shareRecipe: RequestHandler<
     });
 
     if (!sourceRecipe) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     if (sourceRecipe.communityId === null) {
-      throw createHttpError(400, "SHARE_002: Cannot share personal recipes");
+      throw createHttpError(400, SHARE_002);
     }
 
     if (sourceRecipe.communityId === targetCommunityId) {
-      throw createHttpError(400, "SHARE_003: Cannot share to same community");
+      throw createHttpError(400, SHARE_003);
     }
 
     // Verifier que la communaute cible existe
@@ -82,7 +97,7 @@ export const shareRecipe: RequestHandler<
     });
 
     if (!targetCommunity) {
-      throw createHttpError(404, "COMMUNITY_002: Target community not found");
+      throw createHttpError(404, COMMUNITY_002);
     }
 
     // Verifier membership dans les deux communautes
@@ -100,11 +115,11 @@ export const shareRecipe: RequestHandler<
     ]);
 
     if (!sourceMembership) {
-      throw createHttpError(403, "COMMUNITY_001: Not a member of source community");
+      throw createHttpError(403, COMMUNITY_001);
     }
 
     if (!targetMembership) {
-      throw createHttpError(403, "SHARE_004: Not a member of target community");
+      throw createHttpError(403, SHARE_004);
     }
 
     // Verifier permission: MODERATOR dans une des deux OU createur de la recette
@@ -113,10 +128,7 @@ export const shareRecipe: RequestHandler<
     const isModeratorInTarget = targetMembership.role === "MODERATOR";
 
     if (!isRecipeCreator && !isModeratorInSource && !isModeratorInTarget) {
-      throw createHttpError(
-        403,
-        "SHARE_005: Must be recipe creator or moderator in one of the communities"
-      );
+      throw createHttpError(403, SHARE_005);
     }
 
     // Verifier qu'il n'existe pas deja un partage vers cette communaute
@@ -125,7 +137,7 @@ export const shareRecipe: RequestHandler<
     });
 
     if (existingShare) {
-      throw createHttpError(400, "SHARE_006: Recipe already shared with this community");
+      throw createHttpError(400, SHARE_006);
     }
 
     const { recipe: forkResult, pendingTagIds } = await forkRecipe(
@@ -217,7 +229,7 @@ export const publishToCommunities: RequestHandler<
     assertIsDefine(authenticatedUserId);
 
     if (!communityIds || !Array.isArray(communityIds) || communityIds.length === 0) {
-      throw createHttpError(400, "PUBLISH_001: At least one community ID required");
+      throw createHttpError(400, PUBLISH_001);
     }
 
     const sourceRecipe = await prisma.recipe.findFirst({
@@ -250,15 +262,15 @@ export const publishToCommunities: RequestHandler<
     });
 
     if (!sourceRecipe) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     if (sourceRecipe.communityId !== null) {
-      throw createHttpError(400, "PUBLISH_002: Can only publish personal recipes");
+      throw createHttpError(400, PUBLISH_002);
     }
 
     if (sourceRecipe.creatorId !== authenticatedUserId) {
-      throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
+      throw createHttpError(403, RECIPE_002);
     }
 
     // Verifier membership
@@ -269,7 +281,7 @@ export const publishToCommunities: RequestHandler<
     const memberCommunityIds = new Set(memberships.map((m) => m.communityId));
     for (const cid of communityIds) {
       if (!memberCommunityIds.has(cid)) {
-        throw createHttpError(403, `PUBLISH_003: Not a member of community ${cid}`);
+        throw createHttpError(403, PUBLISH_003(cid));
       }
     }
 
@@ -340,7 +352,7 @@ export const getRecipeCommunities: RequestHandler<
     });
 
     if (!recipe) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     await requireRecipeAccess(authenticatedUserId, recipe);
@@ -348,7 +360,7 @@ export const getRecipeCommunities: RequestHandler<
     const communities = await getRecipeFamilyCommunities(recipeId);
 
     if (communities === null) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     res.status(200).json({ data: communities });

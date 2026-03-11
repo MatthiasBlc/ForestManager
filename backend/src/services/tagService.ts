@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import createHttpError from "http-errors";
 import prisma from "../util/db";
 import { normalizeNames } from "../util/validation";
+import { TAG_003 } from "../constants/errorCodes";
 
 type TransactionClient = Omit<
   PrismaClient,
@@ -32,7 +33,7 @@ export async function resolveTagsForRecipe(
   const normalized = normalizeNames(tagNames);
 
   if (normalized.length > MAX_TAGS_PER_RECIPE) {
-    throw createHttpError(400, "TAG_003: Maximum 10 tags per recipe");
+    throw createHttpError(400, TAG_003);
   }
 
   const tagIds: string[] = [];
@@ -69,7 +70,7 @@ export async function resolveTagsForRecipe(
       });
 
       if (communityTagCount >= MAX_COMMUNITY_TAGS) {
-        throw createHttpError(400, "TAG_003: Community tag limit reached (100)");
+        throw createHttpError(400, TAG_003);
       }
 
       const newTag = await tx.tag.create({

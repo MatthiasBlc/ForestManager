@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import createHttpError from "http-errors";
+import { ADMIN_001, ADMIN_002 } from "../../constants/errorCodes";
 
 /**
  * Middleware pour proteger les routes admin.
@@ -9,11 +10,11 @@ import createHttpError from "http-errors";
  */
 export const requireSuperAdmin: RequestHandler = (req, res, next) => {
   if (!req.session.adminId) {
-    return next(createHttpError(401, "ADMIN_001: Not authenticated"));
+    return next(createHttpError(401, ADMIN_001));
   }
 
   if (!req.session.totpVerified) {
-    return next(createHttpError(401, "ADMIN_002: TOTP not verified"));
+    return next(createHttpError(401, ADMIN_002));
   }
 
   next();
@@ -25,7 +26,7 @@ export const requireSuperAdmin: RequestHandler = (req, res, next) => {
  */
 export const requireAdminSession: RequestHandler = (req, res, next) => {
   if (!req.session.adminId) {
-    return next(createHttpError(401, "ADMIN_001: Not authenticated"));
+    return next(createHttpError(401, ADMIN_001));
   }
 
   next();

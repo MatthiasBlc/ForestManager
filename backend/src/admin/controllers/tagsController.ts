@@ -4,6 +4,13 @@ import prisma from "../../util/db";
 import { assertIsDefine } from "../../util/assertIsDefine";
 import { parsePagination, buildPaginationMeta } from "../../util/pagination";
 import { validateTagName } from "../../util/validation";
+import {
+  ADMIN_TAG_002,
+  ADMIN_TAG_003,
+  ADMIN_TAG_004,
+  ADMIN_TAG_005,
+  ADMIN_TAG_006,
+} from "../../constants/errorCodes";
 
 /**
  * GET /api/admin/tags
@@ -100,7 +107,7 @@ export const create: RequestHandler = async (req, res, next) => {
     });
 
     if (existing) {
-      throw createHttpError(409, "ADMIN_TAG_002: Tag already exists");
+      throw createHttpError(409, ADMIN_TAG_002);
     }
 
     const tag = await prisma.tag.create({
@@ -138,7 +145,7 @@ export const update: RequestHandler = async (req, res, next) => {
 
     const tag = await prisma.tag.findUnique({ where: { id } });
     if (!tag) {
-      throw createHttpError(404, "ADMIN_TAG_003: Tag not found");
+      throw createHttpError(404, ADMIN_TAG_003);
     }
 
     if (normalized !== tag.name) {
@@ -147,7 +154,7 @@ export const update: RequestHandler = async (req, res, next) => {
         where: { name: normalized, communityId: tag.communityId, id: { not: tag.id } },
       });
       if (existing) {
-        throw createHttpError(409, "ADMIN_TAG_002: Tag already exists");
+        throw createHttpError(409, ADMIN_TAG_002);
       }
       // Si c'est un tag global, verifier aussi qu'aucun tag communaute n'a ce nom
       // (pas necessaire car la contrainte unique est [name, communityId])
@@ -187,7 +194,7 @@ export const remove: RequestHandler = async (req, res, next) => {
 
     const tag = await prisma.tag.findUnique({ where: { id } });
     if (!tag) {
-      throw createHttpError(404, "ADMIN_TAG_003: Tag not found");
+      throw createHttpError(404, ADMIN_TAG_003);
     }
 
     await prisma.tag.delete({ where: { id } });
@@ -221,11 +228,11 @@ export const merge: RequestHandler = async (req, res, next) => {
     assertIsDefine(adminId);
 
     if (!targetId) {
-      throw createHttpError(400, "ADMIN_TAG_004: Target tag ID required");
+      throw createHttpError(400, ADMIN_TAG_004);
     }
 
     if (sourceId === targetId) {
-      throw createHttpError(400, "ADMIN_TAG_005: Cannot merge tag into itself");
+      throw createHttpError(400, ADMIN_TAG_005);
     }
 
     const [source, target] = await Promise.all([
@@ -234,10 +241,10 @@ export const merge: RequestHandler = async (req, res, next) => {
     ]);
 
     if (!source) {
-      throw createHttpError(404, "ADMIN_TAG_003: Source tag not found");
+      throw createHttpError(404, ADMIN_TAG_003);
     }
     if (!target) {
-      throw createHttpError(404, "ADMIN_TAG_006: Target tag not found");
+      throw createHttpError(404, ADMIN_TAG_006);
     }
 
     // Transferer les recettes du source vers le target

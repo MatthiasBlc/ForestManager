@@ -4,6 +4,15 @@ import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { handleOrphanedRecipes } from "../services/orphanHandling";
 import appEvents from "../services/eventEmitter";
+import {
+  MEMBER_001,
+  MEMBER_002,
+  MEMBER_003,
+  MEMBER_004,
+  COMMUNITY_002,
+  COMMUNITY_003,
+  COMMUNITY_006,
+} from "../constants/errorCodes";
 
 // =====================================
 // GET /api/communities/:communityId/members
@@ -73,11 +82,11 @@ export const promoteMember: RequestHandler<
 
     // Validate role field
     if (!role) {
-      throw createHttpError(400, "MEMBER_001: Role is required");
+      throw createHttpError(400, MEMBER_001);
     }
 
     if (role !== "MODERATOR") {
-      throw createHttpError(400, "MEMBER_002: Only promotion to MODERATOR is allowed");
+      throw createHttpError(400, MEMBER_002);
     }
 
     // Find the target membership
@@ -90,11 +99,11 @@ export const promoteMember: RequestHandler<
     });
 
     if (!targetMembership) {
-      throw createHttpError(404, "MEMBER_003: Member not found");
+      throw createHttpError(404, MEMBER_003);
     }
 
     if (targetMembership.role === "MODERATOR") {
-      throw createHttpError(400, "MEMBER_004: User is already MODERATOR");
+      throw createHttpError(400, MEMBER_004);
     }
 
     // Promote and log in a transaction
@@ -191,10 +200,7 @@ async function handleLeave(
 
   if (isLastModerator) {
     // Cannot leave as last moderator when other members exist
-    throw createHttpError(
-      403,
-      "COMMUNITY_003: Last moderator cannot leave. Promote another member first"
-    );
+    throw createHttpError(403, COMMUNITY_003);
   }
 
   // Regular leave - use interactive transaction for orphan handling
@@ -240,7 +246,7 @@ async function handleKick(
 ) {
   // Only MODERATOR can kick
   if (requesterRole !== "MODERATOR") {
-    throw createHttpError(403, "COMMUNITY_002: Permission insufficient");
+    throw createHttpError(403, COMMUNITY_002);
   }
 
   // Find the target membership
@@ -258,7 +264,7 @@ async function handleKick(
 
   // Cannot kick another MODERATOR
   if (targetMembership.role === "MODERATOR") {
-    throw createHttpError(403, "COMMUNITY_006: Cannot remove a moderator");
+    throw createHttpError(403, COMMUNITY_006);
   }
 
   // Kick the member - use interactive transaction for orphan handling

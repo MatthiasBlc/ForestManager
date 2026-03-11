@@ -11,6 +11,18 @@ import {
   MAX_PASSWORD_LENGTH,
   assertString,
 } from "../util/validation";
+import {
+  AUTH_001,
+  AUTH_002,
+  AUTH_003,
+  AUTH_004_LENGTH,
+  AUTH_004_FORMAT,
+  AUTH_005,
+  AUTH_006,
+  AUTH_007,
+  AUTH_008,
+  AUTH_009,
+} from "../constants/errorCodes";
 
 /**
  * GET /api/auth/me
@@ -19,7 +31,7 @@ import {
 export const getMe: RequestHandler = async (req, res, next) => {
   try {
     if (!req.session.userId) {
-      throw createHttpError(401, "AUTH_001: Not authenticated");
+      throw createHttpError(401, AUTH_001);
     }
 
     const user = await prisma.user.findUnique({
@@ -38,7 +50,7 @@ export const getMe: RequestHandler = async (req, res, next) => {
     if (!user) {
       // User was deleted or not found
       req.session.destroy(() => {});
-      throw createHttpError(401, "AUTH_009: Account deactivated");
+      throw createHttpError(401, AUTH_009);
     }
 
     res.status(200).json({ user });
@@ -67,7 +79,7 @@ export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = asy
   try {
     // Validation des parametres requis
     if (!username || !email || !password) {
-      throw createHttpError(400, "AUTH_002: Missing required parameters");
+      throw createHttpError(400, AUTH_002);
     }
 
     // Type guards (rejette number, object, array)
@@ -77,29 +89,20 @@ export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = asy
 
     // Validation email
     if (!EMAIL_REGEX.test(email)) {
-      throw createHttpError(400, "AUTH_003: Invalid email format");
+      throw createHttpError(400, AUTH_003);
     }
 
     // Validation username format et longueur
     if (username.length < MIN_USERNAME_LENGTH || username.length > MAX_USERNAME_LENGTH) {
-      throw createHttpError(
-        400,
-        `AUTH_004: Username must be between ${MIN_USERNAME_LENGTH} and ${MAX_USERNAME_LENGTH} characters`
-      );
+      throw createHttpError(400, AUTH_004_LENGTH(MIN_USERNAME_LENGTH, MAX_USERNAME_LENGTH));
     }
     if (!USERNAME_REGEX.test(username)) {
-      throw createHttpError(
-        400,
-        "AUTH_004: Username can only contain letters, numbers, and underscores"
-      );
+      throw createHttpError(400, AUTH_004_FORMAT);
     }
 
     // Validation password longueur
     if (password.length < MIN_PASSWORD_LENGTH || password.length > MAX_PASSWORD_LENGTH) {
-      throw createHttpError(
-        400,
-        `AUTH_005: Password must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters`
-      );
+      throw createHttpError(400, AUTH_005(MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH));
     }
 
     // Verification username unique (excluant les comptes supprimes)
@@ -114,7 +117,7 @@ export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = asy
     });
 
     if (existingUsername) {
-      throw createHttpError(409, "AUTH_006: Username already taken");
+      throw createHttpError(409, AUTH_006);
     }
 
     // Verification email unique (excluant les comptes supprimes)
@@ -129,7 +132,7 @@ export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = asy
     });
 
     if (existingEmail) {
-      throw createHttpError(409, "AUTH_007: Email already in use");
+      throw createHttpError(409, AUTH_007);
     }
 
     const passwordHashed = await bcrypt.hash(password, 10);
@@ -177,7 +180,7 @@ export const login: RequestHandler<unknown, unknown, LoginBody, unknown> = async
 
   try {
     if (!username || !password) {
-      throw createHttpError(400, "AUTH_002: Missing required parameters");
+      throw createHttpError(400, AUTH_002);
     }
 
     // Type guards
@@ -199,18 +202,18 @@ export const login: RequestHandler<unknown, unknown, LoginBody, unknown> = async
     });
 
     if (!user) {
-      throw createHttpError(401, "AUTH_008: Invalid credentials");
+      throw createHttpError(401, AUTH_008);
     }
 
     // Verifier si le compte est desactive (soft deleted)
     if (user.deletedAt !== null) {
-      throw createHttpError(401, "AUTH_009: Account deactivated");
+      throw createHttpError(401, AUTH_009);
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      throw createHttpError(401, "AUTH_008: Invalid credentials");
+      throw createHttpError(401, AUTH_008);
     }
 
     // Regenerer la session pour prevenir la session fixation

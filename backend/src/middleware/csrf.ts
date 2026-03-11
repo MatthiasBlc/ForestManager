@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { Request, RequestHandler } from "express";
 import env from "../util/validateEnv";
+import { CSRF_001 } from "../constants/errorCodes";
 
 const SAFE_METHODS = ["GET", "HEAD", "OPTIONS"];
 const CSRF_COOKIE_NAME = "XSRF-TOKEN";
@@ -54,7 +55,7 @@ export const csrfProtection: RequestHandler = (req, res, next) => {
   if (!SAFE_METHODS.includes(req.method)) {
     const headerToken = req.headers[CSRF_HEADER_NAME] as string | undefined;
     if (!headerToken || headerToken !== token) {
-      res.status(403).json({ error: "CSRF_001: Invalid or missing CSRF token" });
+      res.status(403).json({ error: CSRF_001 });
       return;
     }
   }
