@@ -89,6 +89,14 @@ Mettre à jour les fichiers claude et les suivi du travail.
 On considère ici le mvp propre, ce qui arrivera par la suite sera des features qui viendront se greffer sur la production.
 Progress.md a toujours besoin de conserver des références aux étapes de construction du mvp ?
 
+# Version mobile inutilisable
+
+La version mobile a des boutons hors champs, n'est pas utilisable et a un design contre intuitif. A revoir totalement.
+
+## Version application ?
+
+comment faire ?
+
 ## système + page de changelog automatique
 
 (Bouton à ajouter dans le footer du menu sidebar lorsqu'un user est connecté)
