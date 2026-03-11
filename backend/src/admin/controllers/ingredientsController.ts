@@ -4,18 +4,21 @@ import prisma from "../../util/db";
 import { assertIsDefine } from "../../util/assertIsDefine";
 import { parsePagination, buildPaginationMeta } from "../../util/pagination";
 import appEvents from "../../services/eventEmitter";
-import { validateStringLength, MAX_NAME_LENGTH, MAX_REASON_LENGTH } from "../../util/validation";
 import {
-  ADMIN_ING_001,
   ADMIN_ING_002,
   ADMIN_ING_003,
-  ADMIN_ING_004,
   ADMIN_ING_005,
   ADMIN_ING_006,
   ADMIN_ING_007,
   ADMIN_ING_008,
-  ADMIN_ING_009,
 } from "../../constants/errorCodes";
+import {
+  AdminCreateIngredientInput,
+  AdminUpdateIngredientInput,
+  AdminApproveIngredientInput,
+  AdminRejectIngredientInput,
+  AdminMergeIngredientInput,
+} from "../schemas/ingredient.schema";
 
 /**
  * GET /api/admin/ingredients
@@ -122,19 +125,12 @@ async function getPopularUnitsForIngredients(
  */
 export const create: RequestHandler = async (req, res, next) => {
   try {
-    const { name, defaultUnitId } = req.body;
+    const { name, defaultUnitId } = req.body as AdminCreateIngredientInput;
     const adminId = req.session.adminId;
     assertIsDefine(adminId);
 
-    if (!name || typeof name !== "string" || name.trim().length === 0) {
-      throw createHttpError(400, ADMIN_ING_001);
-    }
-    validateStringLength(name.trim(), "name", 1, MAX_NAME_LENGTH);
-
-    const normalized = name.trim().toLowerCase();
-
     const existing = await prisma.ingredient.findUnique({
-      where: { name: normalized },
+      where: { name },
     });
 
     if (existing) {
@@ -151,7 +147,7 @@ export const create: RequestHandler = async (req, res, next) => {
 
     const ingredient = await prisma.ingredient.create({
       data: {
-        name: normalized,
+        name,
         status: "APPROVED",
         defaultUnitId: defaultUnitId || null,
       },
@@ -163,7 +159,7 @@ export const create: RequestHandler = async (req, res, next) => {
         type: "INGREDIENT_CREATED",
         targetType: "Ingredient",
         targetId: ingredient.id,
-        metadata: { name: normalized },
+        metadata: { name },
       },
     });
 
@@ -180,7 +176,7 @@ export const create: RequestHandler = async (req, res, next) => {
 export const update: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, defaultUnitId } = req.body;
+    const { name, defaultUnitId } = req.body as AdminUpdateIngredientInput;
     const adminId = req.session.adminId;
     assertIsDefine(adminId);
 
@@ -192,25 +188,16 @@ export const update: RequestHandler = async (req, res, next) => {
     const data: Record<string, unknown> = {};
     const metadata: Record<string, string> = {};
 
-    if (name !== undefined) {
-      if (typeof name !== "string" || name.trim().length === 0) {
-        throw createHttpError(400, ADMIN_ING_001);
+    if (name !== undefined && name !== ingredient.name) {
+      const existing = await prisma.ingredient.findUnique({
+        where: { name },
+      });
+      if (existing) {
+        throw createHttpError(409, ADMIN_ING_002);
       }
-      validateStringLength(name.trim(), "name", 1, MAX_NAME_LENGTH);
-
-      const normalized = name.trim().toLowerCase();
-
-      if (normalized !== ingredient.name) {
-        const existing = await prisma.ingredient.findUnique({
-          where: { name: normalized },
-        });
-        if (existing) {
-          throw createHttpError(409, ADMIN_ING_002);
-        }
-        metadata.oldName = ingredient.name;
-        metadata.newName = normalized;
-        data.name = normalized;
-      }
+      metadata.oldName = ingredient.name;
+      metadata.newName = name;
+      data.name = name;
     }
 
     if (defaultUnitId !== undefined) {
@@ -291,13 +278,9 @@ export const remove: RequestHandler = async (req, res, next) => {
 export const merge: RequestHandler = async (req, res, next) => {
   try {
     const { id: sourceId } = req.params;
-    const { targetId } = req.body;
+    const { targetId } = req.body as AdminMergeIngredientInput;
     const adminId = req.session.adminId;
     assertIsDefine(adminId);
-
-    if (!targetId) {
-      throw createHttpError(400, ADMIN_ING_004);
-    }
 
     if (sourceId === targetId) {
       throw createHttpError(400, ADMIN_ING_005);
@@ -399,7 +382,7 @@ export const merge: RequestHandler = async (req, res, next) => {
 export const approve: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { newName } = req.body;
+    const { newName } = req.body as AdminApproveIngredientInput;
     const adminId = req.session.adminId;
     assertIsDefine(adminId);
 
@@ -415,17 +398,14 @@ export const approve: RequestHandler = async (req, res, next) => {
     const data: Record<string, unknown> = { status: "APPROVED" };
     const metadata: Record<string, string> = { name: ingredient.name };
 
-    if (newName && typeof newName === "string" && newName.trim().length > 0) {
-      const normalized = newName.trim().toLowerCase();
-      if (normalized !== ingredient.name) {
-        const existing = await prisma.ingredient.findUnique({ where: { name: normalized } });
-        if (existing) {
-          throw createHttpError(409, ADMIN_ING_002);
-        }
-        data.name = normalized;
-        metadata.oldName = ingredient.name;
-        metadata.newName = normalized;
+    if (newName && newName !== ingredient.name) {
+      const existing = await prisma.ingredient.findUnique({ where: { name: newName } });
+      if (existing) {
+        throw createHttpError(409, ADMIN_ING_002);
       }
+      data.name = newName;
+      metadata.oldName = ingredient.name;
+      metadata.newName = newName;
     }
 
     const updated = await prisma.ingredient.update({
@@ -470,14 +450,9 @@ export const approve: RequestHandler = async (req, res, next) => {
 export const reject: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { reason } = req.body;
+    const { reason } = req.body as AdminRejectIngredientInput;
     const adminId = req.session.adminId;
     assertIsDefine(adminId);
-
-    if (!reason || typeof reason !== "string" || reason.trim().length === 0) {
-      throw createHttpError(400, ADMIN_ING_009);
-    }
-    validateStringLength(reason.trim(), "reason", 1, MAX_REASON_LENGTH);
 
     const ingredient = await prisma.ingredient.findUnique({ where: { id } });
     if (!ingredient) {
@@ -499,7 +474,7 @@ export const reject: RequestHandler = async (req, res, next) => {
         targetId: id,
         metadata: {
           name: ingredient.name,
-          reason: reason.trim(),
+          reason,
           createdById: ingredient.createdById,
         },
       },
@@ -514,7 +489,7 @@ export const reject: RequestHandler = async (req, res, next) => {
         targetUserIds: [ingredient.createdById],
         metadata: {
           ingredientName: ingredient.name,
-          reason: reason.trim(),
+          reason,
         },
       });
     }

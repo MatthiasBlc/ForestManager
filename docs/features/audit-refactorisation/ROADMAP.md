@@ -179,13 +179,13 @@
 - [x] Migrer `admin/controllers/tagsController.ts`, `admin/controllers/communitiesController.ts`, `admin/controllers/featuresController.ts`
 - [x] Tests (Docker requis)
 
-### D6f - Zod : Admin CRUD complexe
+### D6f - Zod : Admin CRUD complexe ✅
 
-- [ ] Creer `admin/schemas/recipe.schema.ts` (update)
-- [ ] Creer `admin/schemas/ingredient.schema.ts` (create, update, approve, reject)
-- [ ] Creer `admin/schemas/unit.schema.ts` (create, update)
-- [ ] Migrer `admin/controllers/recipesController.ts`, `admin/controllers/ingredientsController.ts`, `admin/controllers/unitsController.ts`
-- [ ] Tests
+- [x] Creer `admin/schemas/recipe.schema.ts` (update)
+- [x] Creer `admin/schemas/ingredient.schema.ts` (create, update, approve, reject, merge)
+- [x] Creer `admin/schemas/unit.schema.ts` (create, update)
+- [x] Migrer `admin/controllers/recipesController.ts`, `admin/controllers/ingredientsController.ts`, `admin/controllers/unitsController.ts`
+- [x] Tests (Docker requis)
 
 ### D6g - Zod : Nettoyage
 

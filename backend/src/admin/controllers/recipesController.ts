@@ -4,21 +4,8 @@ import prisma from "../../util/db";
 import { assertIsDefine } from "../../util/assertIsDefine";
 import { parsePagination, buildPaginationMeta } from "../../util/pagination";
 import { RECIPE_DETAIL_INCLUDE } from "../../util/prismaSelects";
-import {
-  assertString,
-  assertOptionalNumber,
-  validateStringLength,
-  validateServings,
-  validateTime,
-  MAX_TITLE_LENGTH,
-} from "../../util/validation";
-import {
-  ADMIN_REC_001,
-  ADMIN_REC_002,
-  ADMIN_REC_003,
-  RECIPE_006,
-  RECIPE_008,
-} from "../../constants/errorCodes";
+import { ADMIN_REC_001, ADMIN_REC_002, ADMIN_REC_003 } from "../../constants/errorCodes";
+import { AdminUpdateRecipeInput } from "../schemas/recipe.schema";
 
 /**
  * GET /api/admin/tags/:id/recipes
@@ -109,34 +96,13 @@ export const getDetail: RequestHandler = async (req, res, next) => {
 export const update: RequestHandler = async (req, res, next) => {
   try {
     const { recipeId } = req.params;
-    const { title, servings, prepTime, cookTime, restTime } = req.body;
+    const { title, servings, prepTime, cookTime, restTime } = req.body as AdminUpdateRecipeInput;
     const adminId = req.session.adminId;
     assertIsDefine(adminId);
 
     const recipe = await prisma.recipe.findUnique({ where: { id: recipeId } });
     if (!recipe) {
       throw createHttpError(404, ADMIN_REC_002);
-    }
-
-    // Validation
-    if (title !== undefined) {
-      assertString(title, "title");
-      validateStringLength(title.trim(), "title", 1, MAX_TITLE_LENGTH);
-    }
-    if (servings !== undefined && !validateServings(servings)) {
-      throw createHttpError(400, RECIPE_006);
-    }
-    assertOptionalNumber(prepTime, "prepTime");
-    if (prepTime !== undefined && !validateTime(prepTime)) {
-      throw createHttpError(400, RECIPE_008);
-    }
-    assertOptionalNumber(cookTime, "cookTime");
-    if (cookTime !== undefined && !validateTime(cookTime)) {
-      throw createHttpError(400, RECIPE_008);
-    }
-    assertOptionalNumber(restTime, "restTime");
-    if (restTime !== undefined && !validateTime(restTime)) {
-      throw createHttpError(400, RECIPE_008);
     }
 
     const data: Record<string, unknown> = {};
