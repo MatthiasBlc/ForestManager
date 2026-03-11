@@ -10,6 +10,7 @@ import { validateUUID } from "../middleware/validateUUID";
 import { validateBody } from "../middleware/validateBody";
 import { createRecipeSchema, updateRecipeSchema } from "../schemas/recipe.schema";
 import { createProposalSchema } from "../schemas/proposal.schema";
+import { shareRecipeSchema, publishToCommunitySchema } from "../schemas/recipeShare.schema";
 
 const router = express.Router();
 
@@ -59,10 +60,20 @@ router.post(
 );
 
 // Share recipe to another community (fork)
-router.post("/:recipeId/share", validateUUID, RecipeShareController.shareRecipe);
+router.post(
+  "/:recipeId/share",
+  validateUUID,
+  validateBody(shareRecipeSchema),
+  RecipeShareController.shareRecipe
+);
 
 // Publish personal recipe to communities
-router.post("/:recipeId/publish", validateUUID, RecipeShareController.publishToCommunities);
+router.post(
+  "/:recipeId/publish",
+  validateUUID,
+  validateBody(publishToCommunitySchema),
+  RecipeShareController.publishToCommunities
+);
 
 // Get communities where a recipe has copies
 router.get("/:recipeId/communities", validateUUID, RecipeShareController.getRecipeCommunities);

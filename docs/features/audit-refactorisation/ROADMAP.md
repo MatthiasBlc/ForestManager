@@ -149,13 +149,13 @@
 - [x] Migrer `controllers/users.ts` et `controllers/communities.ts`
 - [x] Tests (Docker requis)
 
-### D6b - Zod : Invites + Members + Share
+### D6b - Zod : Invites + Members + Share ✅
 
-- [ ] Creer `schemas/invite.schema.ts` (createInvite)
-- [ ] Creer `schemas/member.schema.ts` (promoteMember)
-- [ ] Creer `schemas/recipeShare.schema.ts` (share, publish)
-- [ ] Migrer `controllers/invites.ts`, `controllers/members.ts`, `controllers/recipeShare.ts`
-- [ ] Tests
+- [x] Creer `schemas/invite.schema.ts` (createInvite)
+- [x] Creer `schemas/member.schema.ts` (promoteMember)
+- [x] Creer `schemas/recipeShare.schema.ts` (share, publish)
+- [x] Migrer `controllers/invites.ts`, `controllers/members.ts`, `controllers/recipeShare.ts`
+- [x] Tests (Docker requis)
 
 ### D6c - Zod : Tags + Notifications
 

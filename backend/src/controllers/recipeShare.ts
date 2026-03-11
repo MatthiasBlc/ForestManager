@@ -9,7 +9,6 @@ import { requireRecipeAccess } from "../services/membershipService";
 import appEvents from "../services/eventEmitter";
 import { getModeratorIdsForTagNotification } from "../services/notificationService";
 import {
-  SHARE_001,
   SHARE_002,
   SHARE_003,
   SHARE_004,
@@ -19,38 +18,26 @@ import {
   RECIPE_002,
   COMMUNITY_001,
   COMMUNITY_002,
-  PUBLISH_001,
   PUBLISH_002,
   PUBLISH_003,
 } from "../constants/errorCodes";
-
-interface ShareRecipeBody {
-  targetCommunityId: string;
-}
+import { ShareRecipeInput, PublishToCommunityInput } from "../schemas/recipeShare.schema";
 
 /**
  * POST /api/recipes/:recipeId/share
  * Partager (fork) une recette vers une autre communaute
  */
-export const shareRecipe: RequestHandler<
-  { recipeId: string },
-  unknown,
-  ShareRecipeBody,
-  unknown
-> = async (req, res, next) => {
-  const authenticatedUserId = req.session.userId;
-  const { recipeId } = req.params;
-  const { targetCommunityId } = req.body;
+export const shareRecipe: RequestHandler<{ recipeId: string }, unknown, ShareRecipeInput, unknown> =
+  async (req, res, next) => {
+    const authenticatedUserId = req.session.userId;
+    const { recipeId } = req.params;
+    const { targetCommunityId } = req.body;
 
-  try {
-    assertIsDefine(authenticatedUserId);
+    try {
+      assertIsDefine(authenticatedUserId);
 
-    if (!targetCommunityId?.trim()) {
-      throw createHttpError(400, SHARE_001);
-    }
-
-    // 1. Recuperer la recette source avec ses relations
-    const sourceRecipe = await prisma.recipe.findFirst({
+      // 1. Recuperer la recette source avec ses relations
+      const sourceRecipe = await prisma.recipe.findFirst({
       where: { id: recipeId, deletedAt: null },
       select: {
         id: true,
@@ -207,10 +194,6 @@ export const shareRecipe: RequestHandler<
   }
 };
 
-interface PublishToCommunityBody {
-  communityIds: string[];
-}
-
 /**
  * POST /api/recipes/:recipeId/publish
  * Publier une recette personnelle vers une ou plusieurs communautes
@@ -218,7 +201,7 @@ interface PublishToCommunityBody {
 export const publishToCommunities: RequestHandler<
   { recipeId: string },
   unknown,
-  PublishToCommunityBody,
+  PublishToCommunityInput,
   unknown
 > = async (req, res, next) => {
   const authenticatedUserId = req.session.userId;
@@ -227,10 +210,6 @@ export const publishToCommunities: RequestHandler<
 
   try {
     assertIsDefine(authenticatedUserId);
-
-    if (!communityIds || !Array.isArray(communityIds) || communityIds.length === 0) {
-      throw createHttpError(400, PUBLISH_001);
-    }
 
     const sourceRecipe = await prisma.recipe.findFirst({
       where: { id: recipeId, deletedAt: null },

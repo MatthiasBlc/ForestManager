@@ -5,14 +5,13 @@ import { assertIsDefine } from "../util/assertIsDefine";
 import { handleOrphanedRecipes } from "../services/orphanHandling";
 import appEvents from "../services/eventEmitter";
 import {
-  MEMBER_001,
-  MEMBER_002,
   MEMBER_003,
   MEMBER_004,
   COMMUNITY_002,
   COMMUNITY_003,
   COMMUNITY_006,
 } from "../constants/errorCodes";
+import { PromoteMemberInput } from "../schemas/member.schema";
 
 // =====================================
 // GET /api/communities/:communityId/members
@@ -63,31 +62,17 @@ export const getMembers: RequestHandler<{ communityId: string }> = async (req, r
 // Promote a member (MODERATOR only)
 // =====================================
 
-interface PromoteMemberBody {
-  role?: string;
-}
-
 export const promoteMember: RequestHandler<
   { communityId: string; userId: string },
   unknown,
-  PromoteMemberBody
+  PromoteMemberInput
 > = async (req, res, next) => {
   const communityId = req.params.communityId;
   const targetUserId = req.params.userId;
   const userId = req.session.userId;
-  const { role } = req.body;
 
   try {
     assertIsDefine(userId);
-
-    // Validate role field
-    if (!role) {
-      throw createHttpError(400, MEMBER_001);
-    }
-
-    if (role !== "MODERATOR") {
-      throw createHttpError(400, MEMBER_002);
-    }
 
     // Find the target membership
     const targetMembership = await prisma.userCommunity.findFirst({

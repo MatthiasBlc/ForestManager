@@ -4,29 +4,16 @@ import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { InviteStatus } from "@prisma/client";
 import appEvents from "../services/eventEmitter";
-import { EMAIL_REGEX } from "../util/validation";
 import {
-  AUTH_003,
   INVITE_001,
   INVITE_002,
   INVITE_003,
-  INVITE_004,
-  INVITE_005,
   INVITE_006,
   COMMUNITY_001,
   COMMUNITY_004,
   COMMUNITY_005,
 } from "../constants/errorCodes";
-
-// =====================================
-// Types
-// =====================================
-
-interface CreateInviteBody {
-  email?: string;
-  username?: string;
-  userId?: string;
-}
+import { CreateInviteInput } from "../schemas/invite.schema";
 
 interface GetInvitesQuery {
   status?: string;
@@ -40,41 +27,24 @@ interface GetMyInvitesQuery {
 // POST /api/communities/:communityId/invites
 // Create an invitation (MODERATOR only)
 // =====================================
-export const createInvite: RequestHandler<
-  { communityId: string },
-  unknown,
-  CreateInviteBody
-> = async (req, res, next) => {
-  const communityId = req.params.communityId;
-  const email = req.body.email?.trim();
-  const username = req.body.username?.trim();
-  const userId = req.body.userId?.trim();
-  const inviterId = req.session.userId;
-  const userCommunity = req.userCommunity;
+export const createInvite: RequestHandler<{ communityId: string }, unknown, CreateInviteInput> =
+  async (req, res, next) => {
+    const communityId = req.params.communityId;
+    const email = req.body.email?.trim();
+    const username = req.body.username?.trim();
+    const userId = req.body.userId?.trim();
+    const inviterId = req.session.userId;
+    const userCommunity = req.userCommunity;
 
-  try {
-    assertIsDefine(inviterId);
+    try {
+      assertIsDefine(inviterId);
 
-    if (!userCommunity) {
-      throw createHttpError(500, "Middleware memberOf required");
-    }
+      if (!userCommunity) {
+        throw createHttpError(500, "Middleware memberOf required");
+      }
 
-    // Validate email format if provided
-    if (email && !EMAIL_REGEX.test(email)) {
-      throw createHttpError(400, AUTH_003);
-    }
-
-    // Validate that exactly one search field is provided
-    const providedFields = [email, username, userId].filter(Boolean);
-    if (providedFields.length === 0) {
-      throw createHttpError(400, INVITE_004);
-    }
-    if (providedFields.length > 1) {
-      throw createHttpError(400, INVITE_005);
-    }
-
-    // Find the user to invite
-    const invitee = await prisma.user.findFirst({
+      // Find the user to invite
+      const invitee = await prisma.user.findFirst({
       where: {
         deletedAt: null,
         ...(email && { email }),

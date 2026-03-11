@@ -11,6 +11,8 @@ import { validateUUID } from "../middleware/validateUUID";
 import { validateBody } from "../middleware/validateBody";
 import { createRecipeSchema } from "../schemas/recipe.schema";
 import { createCommunitySchema, updateCommunitySchema } from "../schemas/community.schema";
+import { createInviteSchema } from "../schemas/invite.schema";
+import { promoteMemberSchema } from "../schemas/member.schema";
 
 const router = express.Router();
 
@@ -95,6 +97,7 @@ router.patch(
   validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
+  validateBody(promoteMemberSchema),
   MembersController.promoteMember
 );
 
@@ -125,6 +128,7 @@ router.post(
   validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
+  validateBody(createInviteSchema),
   InvitesController.createInvite
 );
 
