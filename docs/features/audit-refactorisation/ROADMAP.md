@@ -34,10 +34,12 @@
 - [x] Verifier que logout detruit la session → OK (destroy + clearCookie)
 - [x] Session fixation corrigee par regenerate()
 
-### A6 - Upload Security
-- [ ] Verifier validation type MIME
-- [ ] Verifier taille max
-- [ ] Verifier expiration des presigned URLs
+### A6 - Upload Security ✅
+- [x] Verifier validation type MIME → OK (webp, jpeg, png via validateUploadedFile)
+- [x] Verifier taille max → OK (2 MB verifie cote backend via headObject)
+- [x] Verifier expiration des presigned URLs → OK (60 secondes)
+- [x] ContentType force a image/webp dans le PutObjectCommand
+- [x] Aucune correction necessaire
 
 ### A7 - Logging & Secrets
 - [ ] Rechercher les logs de donnees sensibles
