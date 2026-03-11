@@ -3,8 +3,8 @@ import createHttpError from "http-errors";
 import prisma from "../../util/db";
 import { assertIsDefine } from "../../util/assertIsDefine";
 import { parsePagination, buildPaginationMeta } from "../../util/pagination";
-import { validateStringLength, COMMUNITY_VALIDATION } from "../../util/validation";
-import { ADMIN_COM_001, ADMIN_COM_002, ADMIN_COM_003 } from "../../constants/errorCodes";
+import { ADMIN_COM_001, ADMIN_COM_003 } from "../../constants/errorCodes";
+import { AdminUpdateCommunityInput } from "../schemas/community.schema";
 
 /**
  * GET /api/admin/communities
@@ -135,7 +135,7 @@ export const getOne: RequestHandler = async (req, res, next) => {
 export const update: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name } = req.body;
+    const { name } = req.body as AdminUpdateCommunityInput;
     const adminId = req.session.adminId;
     assertIsDefine(adminId);
 
@@ -144,20 +144,10 @@ export const update: RequestHandler = async (req, res, next) => {
       throw createHttpError(404, ADMIN_COM_001);
     }
 
-    if (!name || typeof name !== "string" || name.trim().length === 0) {
-      throw createHttpError(400, ADMIN_COM_002);
-    }
-    validateStringLength(
-      name.trim(),
-      "name",
-      COMMUNITY_VALIDATION.NAME_MIN,
-      COMMUNITY_VALIDATION.NAME_MAX
-    );
-
     const oldName = community.name;
     const updated = await prisma.community.update({
       where: { id },
-      data: { name: name.trim() },
+      data: { name },
     });
 
     await prisma.adminActivityLog.create({
@@ -166,7 +156,7 @@ export const update: RequestHandler = async (req, res, next) => {
         type: "COMMUNITY_RENAMED",
         targetType: "Community",
         targetId: id,
-        metadata: { oldName, newName: name.trim() },
+        metadata: { oldName, newName: name },
       },
     });
 

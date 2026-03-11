@@ -171,13 +171,13 @@
 - [x] Migrer `controllers/recipeImport.ts`, `admin/controllers/authController.ts`
 - [x] Tests (Docker requis)
 
-### D6e - Zod : Admin CRUD simple
+### D6e - Zod : Admin CRUD simple ✅
 
-- [ ] Creer `admin/schemas/tag.schema.ts` (create, update, merge)
-- [ ] Creer `admin/schemas/community.schema.ts` (update)
-- [ ] Creer `admin/schemas/feature.schema.ts` (create, update)
-- [ ] Migrer `admin/controllers/tagsController.ts`, `admin/controllers/communitiesController.ts`, `admin/controllers/featuresController.ts`
-- [ ] Tests
+- [x] Creer `admin/schemas/tag.schema.ts` (create, update, merge)
+- [x] Creer `admin/schemas/community.schema.ts` (update)
+- [x] Creer `admin/schemas/feature.schema.ts` (create, update)
+- [x] Migrer `admin/controllers/tagsController.ts`, `admin/controllers/communitiesController.ts`, `admin/controllers/featuresController.ts`
+- [x] Tests (Docker requis)
 
 ### D6f - Zod : Admin CRUD complexe
 

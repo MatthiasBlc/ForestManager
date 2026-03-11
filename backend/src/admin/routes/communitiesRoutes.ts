@@ -2,6 +2,8 @@ import express from "express";
 import * as communitiesController from "../controllers/communitiesController";
 import * as featuresController from "../controllers/featuresController";
 import { validateUUID } from "../../middleware/validateUUID";
+import { validateBody } from "../../middleware/validateBody";
+import { adminUpdateCommunitySchema } from "../schemas/community.schema";
 
 const router = express.Router();
 
@@ -12,7 +14,12 @@ router.get("/", communitiesController.getAll);
 router.get("/:id", validateUUID, communitiesController.getOne);
 
 // PATCH /api/admin/communities/:id - Modifie une communaute
-router.patch("/:id", validateUUID, communitiesController.update);
+router.patch(
+  "/:id",
+  validateUUID,
+  validateBody(adminUpdateCommunitySchema),
+  communitiesController.update
+);
 
 // DELETE /api/admin/communities/:id - Soft delete une communaute
 router.delete("/:id", validateUUID, communitiesController.remove);
