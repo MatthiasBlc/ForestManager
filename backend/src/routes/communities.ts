@@ -8,6 +8,8 @@ import * as MembersController from "../controllers/members";
 import * as ActivityController from "../controllers/activity";
 import { memberOf, requireCommunityRole } from "../middleware/community";
 import { validateUUID } from "../middleware/validateUUID";
+import { validateBody } from "../middleware/validateBody";
+import { createRecipeSchema } from "../schemas/recipe.schema";
 
 const router = express.Router();
 
@@ -74,6 +76,7 @@ router.post(
   "/:communityId/recipes",
   validateUUID,
   memberOf,
+  validateBody(createRecipeSchema),
   CommunityRecipesController.createCommunityRecipe
 );
 

@@ -3,20 +3,7 @@ import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { Prisma } from "@prisma/client";
-import {
-  validateServings,
-  validateTime,
-  validateSteps,
-  StepInput,
-  assertString,
-  assertArray,
-  validateQuantity,
-  validateStringLength,
-  MAX_TITLE_LENGTH,
-  MAX_TAGS_PER_RECIPE,
-  MAX_FILTER_ITEMS,
-  MAX_SEARCH_LENGTH,
-} from "../util/validation";
+import { MAX_FILTER_ITEMS, MAX_SEARCH_LENGTH } from "../util/validation";
 import { buildImageUrl } from "../config/storage";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import {
@@ -25,16 +12,7 @@ import {
   RECIPE_INGREDIENTS_SELECT,
 } from "../util/prismaSelects";
 import { requireRecipeAccess, requireRecipeOwnership } from "../services/membershipService";
-import {
-  VALIDATION_001,
-  RECIPE_001,
-  RECIPE_003,
-  RECIPE_006,
-  RECIPE_007,
-  RECIPE_008,
-  RECIPE_009,
-  TAG_003,
-} from "../constants/errorCodes";
+import { VALIDATION_001, RECIPE_001 } from "../constants/errorCodes";
 import { formatTags, formatIngredients, formatSteps } from "../util/responseFormatters";
 import {
   createRecipe as createRecipeService,
@@ -42,6 +20,7 @@ import {
 } from "../services/recipeService";
 import appEvents from "../services/eventEmitter";
 import { getModeratorIdsForTagNotification } from "../services/notificationService";
+import type { CreateRecipeInput, UpdateRecipeInput } from "../schemas/recipe.schema";
 
 interface GetRecipesQuery {
   limit?: string;
@@ -268,84 +247,20 @@ export const getRecipe: RequestHandler = async (req, res, next) => {
   }
 };
 
-interface IngredientInput {
-  name: string;
-  quantity?: number;
-  unitId?: string;
-}
-
-interface CreateRecipeBody {
-  title?: string;
-  servings?: number;
-  prepTime?: number | null;
-  cookTime?: number | null;
-  restTime?: number | null;
-  steps?: StepInput[];
-  tags?: string[];
-  ingredients?: IngredientInput[];
-}
-
-export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeBody, unknown> = async (
+/**
+ * POST /api/recipes
+ * Creer une recette personnelle (body valide par createRecipeSchema)
+ */
+export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeInput, unknown> = async (
   req,
   res,
   next
 ) => {
-  const {
-    title,
-    servings,
-    prepTime,
-    cookTime,
-    restTime,
-    steps,
-    tags = [],
-    ingredients = [],
-  } = req.body;
+  const { title, servings, prepTime, cookTime, restTime, steps, tags, ingredients } = req.body;
   const authenticatedUserId = req.session.userId;
 
   try {
     assertIsDefine(authenticatedUserId);
-
-    if (!title) {
-      throw createHttpError(400, RECIPE_003);
-    }
-    assertString(title, "title");
-    if (!title.trim()) {
-      throw createHttpError(400, RECIPE_003);
-    }
-    validateStringLength(title.trim(), "title", 1, MAX_TITLE_LENGTH);
-
-    if (!validateServings(servings)) {
-      throw createHttpError(400, RECIPE_006);
-    }
-
-    if (!validateSteps(steps)) {
-      throw createHttpError(400, RECIPE_007);
-    }
-
-    if (!validateTime(prepTime)) {
-      throw createHttpError(400, RECIPE_008);
-    }
-
-    if (!validateTime(cookTime)) {
-      throw createHttpError(400, RECIPE_008);
-    }
-
-    if (!validateTime(restTime)) {
-      throw createHttpError(400, RECIPE_008);
-    }
-
-    // Tags validation
-    assertArray(tags, "tags");
-    if (tags.length > MAX_TAGS_PER_RECIPE) {
-      throw createHttpError(400, TAG_003);
-    }
-
-    // Ingredients validation
-    assertArray(ingredients, "ingredients");
-    for (const ing of ingredients) {
-      assertString(ing.name, "ingredient name");
-      validateQuantity(ing.quantity, "ingredient quantity");
-    }
 
     const newRecipe = await createRecipeService(authenticatedUserId, {
       title,
@@ -384,25 +299,14 @@ export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeBody, un
   }
 };
 
-interface UpdateRecipeParams {
-  recipeId: string;
-}
-
-interface UpdateRecipeBody {
-  title?: string;
-  servings?: number;
-  prepTime?: number | null;
-  cookTime?: number | null;
-  restTime?: number | null;
-  steps?: StepInput[];
-  tags?: string[];
-  ingredients?: IngredientInput[];
-}
-
+/**
+ * PATCH /api/recipes/:recipeId
+ * Modifier une recette (body valide par updateRecipeSchema)
+ */
 export const updateRecipe: RequestHandler<
-  UpdateRecipeParams,
+  { recipeId: string },
   unknown,
-  UpdateRecipeBody,
+  UpdateRecipeInput,
   unknown
 > = async (req, res, next) => {
   const recipeId = req.params.recipeId;
@@ -411,49 +315,6 @@ export const updateRecipe: RequestHandler<
 
   try {
     assertIsDefine(authenticatedUserId);
-
-    if (title !== undefined) {
-      assertString(title, "title");
-      if (!title.trim()) {
-        throw createHttpError(400, RECIPE_003);
-      }
-      validateStringLength(title.trim(), "title", 1, MAX_TITLE_LENGTH);
-    }
-
-    if (servings !== undefined && !validateServings(servings)) {
-      throw createHttpError(400, RECIPE_006);
-    }
-
-    if (steps !== undefined && !validateSteps(steps)) {
-      throw createHttpError(400, RECIPE_007);
-    }
-
-    if (prepTime !== undefined && !validateTime(prepTime)) {
-      throw createHttpError(400, RECIPE_008);
-    }
-
-    if (cookTime !== undefined && !validateTime(cookTime)) {
-      throw createHttpError(400, RECIPE_008);
-    }
-
-    if (restTime !== undefined && !validateTime(restTime)) {
-      throw createHttpError(400, RECIPE_008);
-    }
-
-    if (tags !== undefined) {
-      assertArray(tags, "tags");
-      if (tags.length > MAX_TAGS_PER_RECIPE) {
-        throw createHttpError(400, RECIPE_009(MAX_TAGS_PER_RECIPE));
-      }
-    }
-
-    if (ingredients !== undefined) {
-      assertArray(ingredients, "ingredients");
-      for (const ing of ingredients) {
-        assertString(ing.name, "ingredient name");
-        validateQuantity(ing.quantity, "ingredient quantity");
-      }
-    }
 
     const recipe = await prisma.recipe.findUnique({
       where: { id: recipeId, deletedAt: null },

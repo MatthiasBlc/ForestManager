@@ -134,13 +134,13 @@
 - [x] Migrer auth controllers vers Zod
 - [x] Tests : 802/802 passent
 
-### D5 - Zod : Phase 2 (recipes)
+### D5 - Zod : Phase 2 (recipes) ✅
 
-- [ ] Creer `schemas/recipe.schema.ts`
-- [ ] Migrer recipe create/update controllers
-- [ ] Creer `schemas/proposal.schema.ts`
-- [ ] Migrer proposal controllers
-- [ ] Tests
+- [x] Creer `schemas/recipe.schema.ts` (create + update)
+- [x] Migrer recipe create/update controllers (recipes.ts + communityRecipes.ts)
+- [x] Creer `schemas/proposal.schema.ts`
+- [x] Migrer proposal controller (createProposal)
+- [x] Tests : 802/802 passent
 
 ### D6 - Zod : Phase 3 (reste)
 

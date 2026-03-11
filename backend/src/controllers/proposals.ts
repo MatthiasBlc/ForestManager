@@ -10,46 +10,17 @@ import {
   rejectProposal as rejectProposalService,
 } from "../services/proposalService";
 import appEvents from "../services/eventEmitter";
-import {
-  IngredientInput,
-  upsertProposalIngredients,
-  upsertProposalSteps,
-} from "../services/recipeService";
+import { upsertProposalIngredients, upsertProposalSteps } from "../services/recipeService";
 import { PROPOSAL_INGREDIENTS_SELECT, PROPOSAL_STEPS_SELECT } from "../util/prismaSelects";
-import {
-  validateServings,
-  validateTime,
-  validateSteps,
-  StepInput,
-  assertString,
-  assertArray,
-  validateQuantity,
-  validateStringLength,
-  MAX_TITLE_LENGTH,
-} from "../util/validation";
 import {
   RECIPE_001,
   RECIPE_002,
-  RECIPE_003,
-  RECIPE_006,
-  RECIPE_007,
-  RECIPE_008,
   PROPOSAL_001,
   PROPOSAL_002,
   PROPOSAL_003,
   PROPOSAL_004,
-  INGREDIENT_003,
 } from "../constants/errorCodes";
-
-interface CreateProposalBody {
-  proposedTitle?: string;
-  proposedServings?: number | null;
-  proposedPrepTime?: number | null;
-  proposedCookTime?: number | null;
-  proposedRestTime?: number | null;
-  proposedSteps?: StepInput[];
-  proposedIngredients?: IngredientInput[];
-}
+import type { CreateProposalInput } from "../schemas/proposal.schema";
 
 const PROPOSAL_RESPONSE_SELECT = {
   id: true,
@@ -75,12 +46,12 @@ const PROPOSAL_RESPONSE_SELECT = {
 
 /**
  * POST /api/recipes/:recipeId/proposals
- * Creer une proposition de modification sur une recette communautaire
+ * Creer une proposition de modification (body valide par createProposalSchema)
  */
 export const createProposal: RequestHandler<
   { recipeId: string },
   unknown,
-  CreateProposalBody,
+  CreateProposalInput,
   unknown
 > = async (req, res, next) => {
   const {
@@ -97,52 +68,6 @@ export const createProposal: RequestHandler<
 
   try {
     assertIsDefine(authenticatedUserId);
-
-    // Validation des champs requis
-    if (!proposedTitle) {
-      throw createHttpError(400, RECIPE_003);
-    }
-    assertString(proposedTitle, "proposedTitle");
-    if (!proposedTitle.trim()) {
-      throw createHttpError(400, RECIPE_003);
-    }
-    validateStringLength(proposedTitle.trim(), "proposedTitle", 1, MAX_TITLE_LENGTH);
-
-    if (!validateSteps(proposedSteps)) {
-      throw createHttpError(400, RECIPE_007);
-    }
-
-    if (
-      proposedServings !== undefined &&
-      proposedServings !== null &&
-      !validateServings(proposedServings)
-    ) {
-      throw createHttpError(400, RECIPE_006);
-    }
-
-    if (proposedPrepTime !== undefined && !validateTime(proposedPrepTime)) {
-      throw createHttpError(400, RECIPE_008);
-    }
-
-    if (proposedCookTime !== undefined && !validateTime(proposedCookTime)) {
-      throw createHttpError(400, RECIPE_008);
-    }
-
-    if (proposedRestTime !== undefined && !validateTime(proposedRestTime)) {
-      throw createHttpError(400, RECIPE_008);
-    }
-
-    // Validation des ingredients
-    if (proposedIngredients !== undefined) {
-      assertArray(proposedIngredients, "proposedIngredients");
-      if (proposedIngredients.length > 50) {
-        throw createHttpError(400, INGREDIENT_003);
-      }
-      for (const ing of proposedIngredients) {
-        assertString(ing.name, "ingredient name");
-        validateQuantity(ing.quantity, "ingredient quantity");
-      }
-    }
 
     // Recuperer la recette avec sa communaute
     const recipe = await prisma.recipe.findFirst({

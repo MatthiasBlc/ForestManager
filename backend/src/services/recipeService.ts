@@ -15,7 +15,7 @@ type TransactionClient = Omit<
 
 export interface IngredientInput {
   name: string;
-  quantity?: number;
+  quantity?: number | null;
   unitId?: string;
 }
 
