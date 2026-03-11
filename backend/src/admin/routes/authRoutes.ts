@@ -1,24 +1,17 @@
-import express, { RequestHandler } from "express";
-import rateLimit from "express-rate-limit";
+import express from "express";
 import * as authController from "../controllers/authController";
 import { requireAdminSession, requireSuperAdmin } from "../middleware/requireSuperAdmin";
-import env from "../../util/validateEnv";
 import { ADMIN_010 } from "../../constants/errorCodes";
+import { createRateLimiter } from "../../config/rateLimiter";
 
 const router = express.Router();
 
-// Rate limiter pour les routes d'auth admin (5 tentatives / 15min)
-// Desactive en mode test pour permettre l'execution des tests
-const adminAuthLimiter: RequestHandler =
-  env.NODE_ENV === "test"
-    ? (_req, _res, next) => next()
-    : rateLimit({
-        windowMs: 15 * 60 * 1000, // 15 minutes
-        max: 5, // 5 tentatives max
-        message: { error: ADMIN_010 },
-        standardHeaders: true,
-        legacyHeaders: false,
-      });
+/** Rate limiter admin auth : 5 req / 15 min */
+const adminAuthLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: ADMIN_010,
+});
 
 // POST /api/admin/auth/login - Premiere etape (email/password)
 router.post("/login", adminAuthLimiter, authController.login);

@@ -113,11 +113,11 @@
 - [x] Migrer tous les controllers, middleware et services (32 fichiers)
 - [x] 1 seul string literal restant volontairement (COMMUNITY_001 message different selon contexte)
 
-### D2 - Rate Limiter Factory
+### D2 - Rate Limiter Factory ✅
 
-- [ ] Creer `config/rateLimiter.ts` avec factory function
-- [ ] Remplacer les 3 definitions existantes
-- [ ] Tester que les rate limits fonctionnent toujours
+- [x] Creer `config/rateLimiter.ts` avec factory `createRateLimiter()` (bypass auto en test)
+- [x] Remplacer les 3 definitions existantes (authRateLimiter, adminRateLimiter, adminAuthLimiter)
+- [x] 802 tests passent
 
 ### D3 - Extraction config app.ts
 
