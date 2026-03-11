@@ -194,6 +194,12 @@
 
 ---
 
+## Interlude
+
+- [ ] A l'image de D6, Si d'autres taches de la roadmap sont trop conséquentes, décompose les en sous-taches
+
+---
+
 ## Phase E : DRY Frontend
 
 ### E1 - useAsyncData hook
