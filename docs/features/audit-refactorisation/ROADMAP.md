@@ -19,10 +19,13 @@
 - [x] Pas de spread `req.body`, pas de passage direct a Prisma
 - [x] Champs sensibles (role, deletedAt, password, totpSecret) jamais settables depuis le body
 
-### A4 - Audit XSS
-- [ ] Rechercher `dangerouslySetInnerHTML` dans le frontend
-- [ ] Verifier la config CSP de Helmet
-- [ ] Corriger si necessaire
+### A4 - Audit XSS ✅
+- [x] Rechercher `dangerouslySetInnerHTML` dans le frontend → aucun usage
+- [x] Rechercher `innerHTML`, `document.write`, `eval` → aucun usage (sauf assertions test)
+- [x] Verifier la config CSP de Helmet → stricte (self-only, no object/frame)
+- [x] Verifier la config CSP Nginx (frontend Dockerfile) → coherente avec Helmet
+- [x] X-Content-Type-Options: nosniff active
+- [x] Aucune correction necessaire
 
 ### A5 - Session Security
 - [ ] Verifier `req.session.regenerate()` apres login (user + admin)
