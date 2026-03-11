@@ -41,10 +41,11 @@
 - [x] ContentType force a image/webp dans le PutObjectCommand
 - [x] Aucune correction necessaire
 
-### A7 - Logging & Secrets
-- [ ] Rechercher les logs de donnees sensibles
-- [ ] Verifier .gitignore pour .env
-- [ ] Verifier qu'en production les stack traces ne sont pas exposees
+### A7 - Logging & Secrets ✅
+- [x] Rechercher les logs de donnees sensibles → aucun (password/secret/token jamais loggues)
+- [x] Verifier .gitignore pour .env → OK (.env et .env.* ignores, sauf .env.example)
+- [x] Verifier qu'en production les stack traces ne sont pas exposees → OK (error handler retourne { error: message } uniquement, stack loggue serveur-side via pino)
+- [x] Aucune correction necessaire
 
 ---
 
