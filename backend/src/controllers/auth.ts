@@ -136,9 +136,12 @@ export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = asy
       },
     });
 
-    req.session.userId = newUser.id;
-
-    res.status(201).json({ user: newUser });
+    // Regenerer la session pour prevenir la session fixation
+    req.session.regenerate((err) => {
+      if (err) return next(err);
+      req.session.userId = newUser.id;
+      res.status(201).json({ user: newUser });
+    });
   } catch (error) {
     next(error);
   }
@@ -194,16 +197,19 @@ export const login: RequestHandler<unknown, unknown, LoginBody, unknown> = async
       throw createHttpError(401, "AUTH_008: Invalid credentials");
     }
 
-    req.session.userId = user.id;
+    // Regenerer la session pour prevenir la session fixation
+    req.session.regenerate((err) => {
+      if (err) return next(err);
+      req.session.userId = user.id;
 
-    // Ne pas retourner le password
-    res.status(200).json({
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        createdAt: user.createdAt,
-      },
+      res.status(200).json({
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          createdAt: user.createdAt,
+        },
+      });
     });
   } catch (error) {
     next(error);

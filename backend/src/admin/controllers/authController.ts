@@ -38,26 +38,35 @@ export const login: RequestHandler = async (req, res, next) => {
       throw createHttpError(401, "ADMIN_004: Invalid credentials");
     }
 
-    // Stocke l'adminId en session (mais totpVerified reste false)
-    req.session.adminId = admin.id;
-    req.session.totpVerified = false;
-    req.session.totpAttempts = 0;
+    // Regenerer la session pour prevenir la session fixation
+    const adminId = admin.id;
+    const totpEnabled = admin.totpEnabled;
+    const adminEmail = admin.email;
+    const totpSecret = admin.totpSecret;
 
-    // Si TOTP pas encore configure, generer le QR code
-    if (!admin.totpEnabled) {
-      const otpauth = generateURI({ secret: admin.totpSecret, issuer: APP_NAME, label: admin.email });
-      const qrCodeDataUrl = await QRCode.toDataURL(otpauth);
+    req.session.regenerate(async (err) => {
+      if (err) return next(err);
 
-      return res.status(200).json({
-        requiresTotpSetup: true,
-        qrCode: qrCodeDataUrl,
-        message: "Scan this QR code with your authenticator app, then verify with a code",
+      req.session.adminId = adminId;
+      req.session.totpVerified = false;
+      req.session.totpAttempts = 0;
+
+      // Si TOTP pas encore configure, generer le QR code
+      if (!totpEnabled) {
+        const otpauth = generateURI({ secret: totpSecret, issuer: APP_NAME, label: adminEmail });
+        const qrCodeDataUrl = await QRCode.toDataURL(otpauth);
+
+        return res.status(200).json({
+          requiresTotpSetup: true,
+          qrCode: qrCodeDataUrl,
+          message: "Scan this QR code with your authenticator app, then verify with a code",
+        });
+      }
+
+      res.status(200).json({
+        requiresTotpSetup: false,
+        message: "Please enter your TOTP code",
       });
-    }
-
-    res.status(200).json({
-      requiresTotpSetup: false,
-      message: "Please enter your TOTP code",
     });
   } catch (error) {
     next(error);
@@ -126,10 +135,6 @@ export const verifyTotp: RequestHandler = async (req, res, next) => {
       });
     }
 
-    // Finaliser l'authentification
-    req.session.totpVerified = true;
-    req.session.totpAttempts = 0;
-
     // Mettre a jour lastLoginAt et logger
     await prisma.adminUser.update({
       where: { id: adminId },
@@ -144,13 +149,25 @@ export const verifyTotp: RequestHandler = async (req, res, next) => {
       },
     });
 
-    res.status(200).json({
-      message: "Authentication successful",
-      admin: {
-        id: admin.id,
-        username: admin.username,
-        email: admin.email,
-      },
+    // Regenerer la session apres authentification complete
+    const finalAdminId = admin.id;
+    const adminUsername = admin.username;
+    const adminEmail = admin.email;
+
+    req.session.regenerate((err) => {
+      if (err) return next(err);
+      req.session.adminId = finalAdminId;
+      req.session.totpVerified = true;
+      req.session.totpAttempts = 0;
+
+      res.status(200).json({
+        message: "Authentication successful",
+        admin: {
+          id: finalAdminId,
+          username: adminUsername,
+          email: adminEmail,
+        },
+      });
     });
   } catch (error) {
     next(error);

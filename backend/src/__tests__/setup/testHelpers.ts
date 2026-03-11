@@ -483,17 +483,20 @@ export async function loginAsAdmin(admin: TestAdmin): Promise<string> {
     password: admin.password,
   });
 
-  const sessionCookie = extractSessionCookie(loginRes, "forestmanager_admin_session");
-  if (!sessionCookie) {
+  // Capturer le cookie apres regenerate() du step 1
+  const step1Cookie = extractSessionCookie(loginRes, "forestmanager_admin_session");
+  if (!step1Cookie) {
     throw new Error("Failed to get admin session cookie from login");
   }
 
-  // Step 2: Verifier TOTP
+  // Step 2: Verifier TOTP (regenerate() cree un nouveau session ID)
   const totpCode = generateTotpCode(admin.totpSecret);
-  await supertest(app)
+  const totpRes = await supertest(app)
     .post("/api/admin/auth/totp/verify")
-    .set("Cookie", sessionCookie)
+    .set("Cookie", step1Cookie)
     .send({ code: totpCode });
 
-  return sessionCookie;
+  // Capturer le nouveau cookie apres regenerate() du step 2
+  const finalCookie = extractSessionCookie(totpRes, "forestmanager_admin_session");
+  return finalCookie || step1Cookie;
 }

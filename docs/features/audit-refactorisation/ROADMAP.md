@@ -27,11 +27,12 @@
 - [x] X-Content-Type-Options: nosniff active
 - [x] Aucune correction necessaire
 
-### A5 - Session Security
-- [ ] Verifier `req.session.regenerate()` apres login (user + admin)
-- [ ] Verifier cookies secure + sameSite en production
-- [ ] Verifier que logout detruit la session
-- [ ] Tester session fixation
+### A5 - Session Security ✅
+- [x] Ajouter `req.session.regenerate()` apres login user (signup + login)
+- [x] Ajouter `req.session.regenerate()` apres login admin (step1 + verifyTotp)
+- [x] Verifier cookies secure + sameSite en production → OK (secure: prod, sameSite: lax/strict, httpOnly)
+- [x] Verifier que logout detruit la session → OK (destroy + clearCookie)
+- [x] Session fixation corrigee par regenerate()
 
 ### A6 - Upload Security
 - [ ] Verifier validation type MIME

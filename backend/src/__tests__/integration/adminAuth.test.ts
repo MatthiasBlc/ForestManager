@@ -211,12 +211,15 @@ describe("Admin Auth API", () => {
       const sessionCookie = extractSessionCookie(loginRes, "forestmanager_admin_session");
 
       const validCode = generateTotpCode(admin.totpSecret);
-      await request(app).post("/api/admin/auth/totp/verify").set("Cookie", sessionCookie!).send({
+      const totpRes = await request(app).post("/api/admin/auth/totp/verify").set("Cookie", sessionCookie!).send({
         code: validCode,
       });
 
+      // Capturer le nouveau cookie apres session.regenerate()
+      const finalCookie = extractSessionCookie(totpRes, "forestmanager_admin_session") || sessionCookie;
+
       // Verifier /me
-      const res = await request(app).get("/api/admin/auth/me").set("Cookie", sessionCookie!);
+      const res = await request(app).get("/api/admin/auth/me").set("Cookie", finalCookie!);
 
       expect(res.status).toBe(200);
       expect(res.body.admin).toBeDefined();
