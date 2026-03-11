@@ -89,9 +89,19 @@ Mettre à jour les fichiers claude et les suivi du travail.
 On considère ici le mvp propre, ce qui arrivera par la suite sera des features qui viendront se greffer sur la production.
 Progress.md a toujours besoin de conserver des références aux étapes de construction du mvp ?
 
+# Corrections des imports depuis Hello Fresh
+
+exemple : https://www.hellofresh.fr/recipes/aubergine-laquee-au-miso-and-oeuf-64fb2da9786cce2df0e01899
+(pas de nom d'ingrédients, des balises html dans les étapes etc )
+
 # Version mobile inutilisable
 
 La version mobile a des boutons hors champs, n'est pas utilisable et a un design contre intuitif. A revoir totalement.
+S'inspirer de la version mobile / app de discord ?
+
+# codes erreur doublons : string literal
+
+Des codes erreurs utilisent des string literal au lieu de constantes car le code erreur est le même. Peut être qu'il faudrait créer de nouveaux code erreur pour ces cas spécifiques et les centraliser pour éviter les string literal et les doublons.
 
 ## Version application ?
 
