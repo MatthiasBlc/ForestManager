@@ -84,12 +84,13 @@
 - [x] Formater tout le codebase + verifier format:check OK
 - [x] Tests backend (802) + frontend (469) passent apres formatage
 
-### C2 - ESLint strict
+### C2 - ESLint strict ✅
 
-- [ ] Backend : ajouter `no-explicit-any` (warn), `no-console` (warn)
-- [ ] Frontend : ajouter `no-explicit-any` (warn), `self-closing-comp`
-- [ ] Corriger les warnings existants progressivement
-- [ ] Objectif : 0 warnings a terme
+- [x] Backend : ajouter `no-explicit-any` (warn), `no-console` (warn, avec exception scripts CLI)
+- [x] Frontend : ajouter `no-explicit-any` (warn), `self-closing-comp` (warn)
+- [x] Corriger 10 erreurs existantes (unused imports, useless escapes, unused vars)
+- [x] Auto-fix 28 self-closing-comp warnings frontend
+- [x] 0 errors, 0 warnings (backend + frontend)
 
 ### C3 - Pre-commit hooks
 

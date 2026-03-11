@@ -11,7 +11,6 @@ import {
   MAX_PASSWORD_LENGTH,
   assertOptionalString,
   assertString,
-  validateStringLength,
 } from "../util/validation";
 
 export const searchUsers: RequestHandler = async (req, res, next) => {

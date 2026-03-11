@@ -628,7 +628,6 @@ describe("Community Tags API", () => {
   // T13.3 - Moderateur ne peut agir que sur sa communaute
   // =====================================
   describe("T13.3 - Moderator cannot manage tags of another community", () => {
-    let otherCommunity: { id: string };
     let otherModeratorCookie: string;
     let communityTag: { id: string };
 
@@ -645,12 +644,10 @@ describe("Community Tags API", () => {
         });
       otherModeratorCookie = extractSessionCookie(otherModSignup)!;
 
-      const otherRes = await request(app)
+      await request(app)
         .post("/api/communities")
         .set("Cookie", otherModeratorCookie)
         .send({ name: `Other Community ${suffix}` });
-      otherCommunity = otherRes.body;
-
       // Creer un tag dans la communaute principale
       communityTag = await testPrisma.tag.create({
         data: {

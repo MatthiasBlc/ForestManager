@@ -204,7 +204,7 @@ function parseInstructions(instructions: unknown): string[] {
   if (typeof instructions === "string") {
     return instructions
       .split(/\n/)
-      .map((s) => s.replace(/^\d+[\.\)]\s*/, "").trim())
+      .map((s) => s.replace(/^\d+[.)]\s*/, "").trim())
       .filter(Boolean);
   }
 
@@ -214,7 +214,7 @@ function parseInstructions(instructions: unknown): string[] {
 
     for (const item of instructions) {
       if (typeof item === "string") {
-        const trimmed = item.replace(/^\d+[\.\)]\s*/, "").trim();
+        const trimmed = item.replace(/^\d+[.)]\s*/, "").trim();
         if (trimmed) steps.push(trimmed);
       } else if (item && typeof item === "object") {
         // HowToStep

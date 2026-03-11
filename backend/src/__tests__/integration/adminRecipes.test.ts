@@ -6,7 +6,6 @@ import {
   createTestTag,
   createTestUser,
   createTestRecipe,
-  createTestCommunity,
   loginAsAdmin,
 } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";

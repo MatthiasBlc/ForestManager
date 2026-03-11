@@ -10,7 +10,6 @@ import {
   MAX_USERNAME_LENGTH,
   MAX_PASSWORD_LENGTH,
   assertString,
-  validateStringLength,
 } from "../util/validation";
 
 /**

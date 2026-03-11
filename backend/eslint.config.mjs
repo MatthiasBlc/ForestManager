@@ -22,6 +22,15 @@ export default [
         "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
+      "@typescript-eslint/no-explicit-any": "warn",
+      "no-console": ["warn", { allow: ["warn", "error"] }],
+    },
+  },
+  {
+    // Scripts CLI : console.log autorise
+    files: ["src/scripts/**", "prisma/**"],
+    rules: {
+      "no-console": "off",
     },
   },
   {
