@@ -194,9 +194,9 @@
 
 ---
 
-## Interlude
+## Interlude ✅
 
-- [ ] A l'image de D6, Si d'autres taches de la roadmap sont trop conséquentes, décompose les en sous-taches
+- [x] Decomposition des taches consequentes en sous-taches (voir ci-dessous)
 
 ---
 
@@ -204,15 +204,30 @@
 
 ### E1 - useAsyncData hook
 
-- [ ] Creer le hook `useAsyncData<T>(fetchFn, deps)`
-- [ ] Migrer 2-3 pages pour valider le pattern
-- [ ] Migrer le reste des pages progressivement
+- [ ] Creer le hook `useAsyncData<T>(fetchFn, deps)` avec gestion loading/error/data
+- [ ] Migrer pages pilotes pour valider le pattern :
+  - [ ] DashboardPage.tsx (185 lignes)
+  - [ ] CommunitiesPage.tsx (81 lignes)
+  - [ ] InvitationsPage.tsx (87 lignes)
+- [ ] Migrer pages admin simples :
+  - [ ] AdminDashboardPage.tsx (120 lignes)
+  - [ ] AdminActivityPage.tsx (164 lignes)
+  - [ ] AdminFeaturesPage.tsx (222 lignes)
+- [ ] Migrer pages admin complexes :
+  - [ ] AdminCommunitiesPage.tsx (327 lignes)
+  - [ ] AdminUnitsPage.tsx (376 lignes)
+  - [ ] AdminIngredientsPage.tsx (660 lignes)
+  - [ ] AdminTagsPage.tsx (821 lignes)
+- [ ] Migrer pages user complexes :
+  - [ ] CommunityDetailPage.tsx (285 lignes)
+  - [ ] CommunityEditPage.tsx (199 lignes)
+  - [ ] NotificationsPage.tsx (294 lignes)
+  - [ ] RecipeDetailPage.tsx (416 lignes)
 
 ### E2 - DataContainer composant
 
-- [ ] Creer le composant `DataContainer`
-- [ ] Props : loading, error, empty, emptyMessage, children
-- [ ] Migrer les pages qui repetent ce pattern
+- [ ] Creer le composant `DataContainer` (loading, error, empty, emptyMessage, children)
+- [ ] Integrer dans les pages migrées avec useAsyncData (meme liste que E1)
 
 ### E3 - SearchSelector generique
 
@@ -224,8 +239,8 @@
 ### E4 - useImageUpload hook
 
 - [ ] Creer le hook `useImageUpload(entityType, entityId)`
-- [ ] Refactorer RecipeFormPage
-- [ ] Refactorer CommunityEditPage
+- [ ] Refactorer RecipeFormPage (498 lignes)
+- [ ] Refactorer CommunityEditPage (199 lignes)
 - [ ] Tester les deux flows d'upload
 
 ### E5 - Extraction routes App.tsx
@@ -246,11 +261,19 @@
 - [ ] Supprimer les fonctions non appelees
 - [ ] Supprimer le code commente
 
-### F2 - Fichiers longs
+### F2 - Fichiers longs (>300 lignes identifies)
 
-- [ ] Lister les fichiers >300 lignes
-- [ ] Decouper les composants React trop gros
-- [ ] Extraire les helpers de controllers vers des services
+Frontend pages a decouper :
+- [ ] AdminTagsPage.tsx (821 lignes) → extraire TagMergeModal, TagEditModal, TagFilters
+- [ ] AdminIngredientsPage.tsx (660 lignes) → extraire IngredientMergeModal, IngredientApproveModal
+- [ ] RecipeFormPage.tsx (498 lignes) → extraire RecipeBasicInfoForm, RecipeStepsEditor
+- [ ] RecipeDetailPage.tsx (416 lignes) → extraire RecipeHeader, RecipeIngredientsList, RecipeProposals
+- [ ] AdminUnitsPage.tsx (376 lignes) → extraire UnitEditModal, UnitFilters
+- [ ] AdminCommunitiesPage.tsx (327 lignes) → extraire CommunityFeatureManager
+
+Frontend components :
+- [ ] RecipesPageLoggedInView.tsx (258 lignes) → evaluer si besoin de decoupage
+- [ ] ImageUpload.tsx (204 lignes) → OK (composant complexe mais cohesif)
 
 ### F3 - Coherence patterns
 
@@ -270,9 +293,23 @@
 
 ### G2 - Tests manquants
 
-- [ ] Ajouter les tests d'integration pour les controllers non couverts
-- [ ] Ajouter les tests unitaires pour les services non couverts
-- [ ] Prioriser les flux critiques (auth, recipe CRUD, sharing, proposals)
+Etat actuel : 33 fichiers de tests integration, la plupart des controllers sont couverts.
+
+Tests d'integration a ajouter/completer :
+- [ ] `units.test.ts` (user) - endpoint GET /api/units non teste directement
+- [ ] Verifier couverture des nouveaux schemas Zod (validation errors)
+
+Tests unitaires a verifier :
+- [ ] Services : tagService, tagSuggestionService, eventEmitter
+- [ ] Middlewares : validateBody, validateUUID, csrf
+- [ ] Utils : pagination, prismaSelects
+
+Flux critiques a prioriser (verification couverture) :
+- [ ] Auth complet (signup → login → logout → session regeneration)
+- [ ] Recipe CRUD (create → read → update → delete + soft delete)
+- [ ] Sharing (share to community → publish → variant creation)
+- [ ] Proposals (create → vote → accept/reject)
+- [ ] Notifications (create → mark read → preferences)
 
 ### G3 - Seuil de couverture
 
