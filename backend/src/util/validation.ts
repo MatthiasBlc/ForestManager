@@ -1,6 +1,5 @@
-import createHttpError from "http-errors";
-
 // Validation constants et utilitaires partages
+// Note: Les type guards (assertString, etc.) ont ete supprimes car Zod gere maintenant la validation
 
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const USERNAME_REGEX = /^[a-zA-Z0-9_]+$/;
@@ -25,6 +24,7 @@ export const COMMUNITY_VALIDATION = {
 };
 
 // --- ValidationError ---
+// Garde pour compatibilite avec errorHandler.ts
 
 export class ValidationError extends Error {
   public readonly statusCode = 400;
@@ -35,72 +35,6 @@ export class ValidationError extends Error {
     this.code = code;
     this.name = "ValidationError";
   }
-}
-
-// --- Type guards ---
-
-export function assertString(value: unknown, fieldName: string): asserts value is string {
-  if (typeof value !== "string") {
-    throw new ValidationError(`${fieldName} must be a string`);
-  }
-}
-
-export function assertOptionalString(
-  value: unknown,
-  fieldName: string
-): asserts value is string | null | undefined {
-  if (value !== null && value !== undefined && typeof value !== "string") {
-    throw new ValidationError(`${fieldName} must be a string`);
-  }
-}
-
-export function assertArray(value: unknown, fieldName: string): asserts value is unknown[] {
-  if (!Array.isArray(value)) {
-    throw new ValidationError(`${fieldName} must be an array`);
-  }
-}
-
-export function assertNumber(value: unknown, fieldName: string): asserts value is number {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    throw new ValidationError(`${fieldName} must be a valid number`);
-  }
-}
-
-export function assertOptionalNumber(
-  value: unknown,
-  fieldName: string
-): asserts value is number | null | undefined {
-  if (value !== null && value !== undefined) {
-    if (typeof value !== "number" || !Number.isFinite(value)) {
-      throw new ValidationError(`${fieldName} must be a valid number`);
-    }
-  }
-}
-
-// --- Validation helpers ---
-
-export function validateStringLength(
-  value: string,
-  fieldName: string,
-  min: number,
-  max: number
-): void {
-  if (value.length < min || value.length > max) {
-    throw new ValidationError(`${fieldName} must be between ${min} and ${max} characters`);
-  }
-}
-
-/**
- * Valide une quantite d'ingredient.
- * null/undefined OK, sinon doit etre > 0, <= 99999, finite.
- */
-export function validateQuantity(value: unknown, fieldName = "quantity"): number | null {
-  if (value === null || value === undefined) return null;
-  assertNumber(value, fieldName);
-  if (value <= 0 || value > 99999) {
-    throw new ValidationError(`${fieldName} must be between 0 and 99999`);
-  }
-  return value;
 }
 
 /**
@@ -125,27 +59,7 @@ export function isValidHttpUrl(url: string | null | undefined): boolean {
   }
 }
 
-// --- Tag validation ---
-
-/**
- * Valide et normalise un nom de tag : trim, lowercase, longueur 2-50.
- * Retourne le nom normalise ou throw createHttpError.
- */
-export function validateTagName(name: unknown, errorPrefix = "TAG_001"): string {
-  if (!name || typeof name !== "string" || name.trim().length === 0) {
-    throw createHttpError(400, `${errorPrefix}: Tag name is required`);
-  }
-
-  const normalized = name.trim().toLowerCase();
-
-  if (normalized.length < 2 || normalized.length > 50) {
-    throw createHttpError(400, `${errorPrefix}: Tag name must be between 2 and 50 characters`);
-  }
-
-  return normalized;
-}
-
-// --- Recipe Rework v2 validators ---
+// --- Recipe validators (gardes pour les tests unitaires) ---
 
 export function validateServings(value: unknown): value is number {
   return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 100;

@@ -187,10 +187,10 @@
 - [x] Migrer `admin/controllers/recipesController.ts`, `admin/controllers/ingredientsController.ts`, `admin/controllers/unitsController.ts`
 - [x] Tests (Docker requis)
 
-### D6g - Zod : Nettoyage
+### D6g - Zod : Nettoyage ✅
 
-- [ ] Supprimer les assertions devenues inutiles dans `validation.ts`
-- [ ] Garder les constantes et regex dans `validation.ts` (reutilisees dans les schemas)
+- [x] Supprimer les assertions devenues inutiles dans `validation.ts` (assertString, assertOptionalString, assertArray, assertNumber, assertOptionalNumber, validateStringLength, validateQuantity, validateTagName)
+- [x] Garder les constantes et regex dans `validation.ts` (reutilisees dans les schemas)
 
 ---
 
