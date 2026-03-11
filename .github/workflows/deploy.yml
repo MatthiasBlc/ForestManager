@@ -78,6 +78,10 @@ jobs:
         working-directory: ./backend
         run: npm ci
 
+      - name: Security audit
+        working-directory: ./backend
+        run: npm audit --audit-level=high
+
       - name: Generate Prisma Client
         working-directory: ./backend
         run: npx prisma generate
@@ -120,6 +124,10 @@ jobs:
       - name: Install dependencies
         working-directory: ./frontend
         run: npm ci
+
+      - name: Security audit
+        working-directory: ./frontend
+        run: npm audit --audit-level=high
 
       - name: Run tests
         working-directory: ./frontend

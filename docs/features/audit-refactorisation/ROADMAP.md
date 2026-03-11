@@ -57,9 +57,9 @@
 - [x] 0 vulnerabilites restantes (backend + frontend)
 - [x] Principales corrections : fast-xml-parser (critical), express-rate-limit, minimatch, rollup, qs, ajv
 
-### B2 - CI Integration
-- [ ] Ajouter `npm audit --audit-level=high` dans GitHub Actions
-- [ ] Faire echouer le build si vulnerabilite high+
+### B2 - CI Integration ✅
+- [x] Ajouter `npm audit --audit-level=high` dans GitHub Actions (backend + frontend)
+- [x] Build echoue si vulnerabilite high+ detectee
 
 ---
 
