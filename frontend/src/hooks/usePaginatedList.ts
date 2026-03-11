@@ -26,7 +26,7 @@ interface UsePaginatedListReturn<T> {
 export function usePaginatedList<T>(
   fetchFn: (params: { limit: number; offset: number }) => Promise<PaginatedResponse<T>>,
   pageSize: number,
-  deps: unknown[],
+  deps: unknown[]
 ): UsePaginatedListReturn<T> {
   const [data, setData] = useState<T[]>([]);
   const [pagination, setPagination] = useState<PaginationMeta | null>(null);

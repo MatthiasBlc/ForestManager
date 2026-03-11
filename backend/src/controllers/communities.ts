@@ -122,7 +122,7 @@ export const getCommunity: RequestHandler = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-}
+};
 
 interface CreateCommunityBody {
   name?: string;
@@ -147,17 +147,11 @@ export const createCommunity: RequestHandler<
     }
 
     if (name.length < VALIDATION.NAME_MIN) {
-      throw createHttpError(
-        400,
-        `Name must be at least ${VALIDATION.NAME_MIN} characters`
-      );
+      throw createHttpError(400, `Name must be at least ${VALIDATION.NAME_MIN} characters`);
     }
 
     if (name.length > VALIDATION.NAME_MAX) {
-      throw createHttpError(
-        400,
-        `Name must be at most ${VALIDATION.NAME_MAX} characters`
-      );
+      throw createHttpError(400, `Name must be at most ${VALIDATION.NAME_MAX} characters`);
     }
 
     if (description && description.length > VALIDATION.DESCRIPTION_MAX) {
@@ -205,7 +199,6 @@ export const createCommunity: RequestHandler<
   }
 };
 
-
 interface UpdateCommunityParams extends Record<string, string> {
   communityId: string;
 }
@@ -244,17 +237,11 @@ export const updateCommunity: RequestHandler<
     // Validate name if provided
     if (name !== undefined) {
       if (name.length < VALIDATION.NAME_MIN) {
-        throw createHttpError(
-          400,
-          `Name must be at least ${VALIDATION.NAME_MIN} characters`
-        );
+        throw createHttpError(400, `Name must be at least ${VALIDATION.NAME_MIN} characters`);
       }
 
       if (name.length > VALIDATION.NAME_MAX) {
-        throw createHttpError(
-          400,
-          `Name must be at most ${VALIDATION.NAME_MAX} characters`
-        );
+        throw createHttpError(400, `Name must be at most ${VALIDATION.NAME_MAX} characters`);
       }
     }
 

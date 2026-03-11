@@ -230,7 +230,10 @@ export async function isNotificationEnabled(
   communityId: string | null
 ): Promise<boolean> {
   const whereConditions = communityId
-    ? [{ userId, communityId: null, category }, { userId, communityId, category }]
+    ? [
+        { userId, communityId: null, category },
+        { userId, communityId, category },
+      ]
     : [{ userId, communityId: null, category }];
 
   const prefs = await prisma.notificationPreference.findMany({
@@ -314,9 +317,7 @@ interface CreateNotificationInput {
  * Verifie les preferences sauf pour les types non-desactivables.
  * Retourne la notification creee ou null si desactivee par preference.
  */
-export async function createNotification(
-  input: CreateNotificationInput
-) {
+export async function createNotification(input: CreateNotificationInput) {
   const { userId, type, actorId, communityId, recipeId, metadata, templateVars } = input;
 
   const category = getCategoryForType(type);
@@ -507,9 +508,7 @@ export async function resolveTemplateVars(event: {
  * Retourne les IDs des moderateurs d'une communaute qui ont les notifications tags activees.
  * Filtre par NotificationPreference (category=TAG, global puis par communaute).
  */
-export async function getModeratorIdsForTagNotification(
-  communityId: string
-): Promise<string[]> {
+export async function getModeratorIdsForTagNotification(communityId: string): Promise<string[]> {
   const moderators = await prisma.userCommunity.findMany({
     where: {
       communityId,

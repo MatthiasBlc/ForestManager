@@ -38,12 +38,7 @@ describe("StepEditor", () => {
   });
 
   it("should enable remove button when multiple steps", () => {
-    render(
-      <StepEditor
-        value={[{ instruction: "A" }, { instruction: "B" }]}
-        onChange={vi.fn()}
-      />
-    );
+    render(<StepEditor value={[{ instruction: "A" }, { instruction: "B" }]} onChange={vi.fn()} />);
     const removeButtons = screen.getAllByLabelText("Remove step");
     expect(removeButtons[0]).not.toBeDisabled();
   });
@@ -51,12 +46,7 @@ describe("StepEditor", () => {
   it("should call onChange when removing a step", async () => {
     const onChange = vi.fn();
     const user = userEvent.setup();
-    render(
-      <StepEditor
-        value={[{ instruction: "A" }, { instruction: "B" }]}
-        onChange={onChange}
-      />
-    );
+    render(<StepEditor value={[{ instruction: "A" }, { instruction: "B" }]} onChange={onChange} />);
 
     const removeButtons = screen.getAllByLabelText("Remove step");
     await user.click(removeButtons[0]);
@@ -64,12 +54,7 @@ describe("StepEditor", () => {
   });
 
   it("should disable move up on first step and move down on last step", () => {
-    render(
-      <StepEditor
-        value={[{ instruction: "A" }, { instruction: "B" }]}
-        onChange={vi.fn()}
-      />
-    );
+    render(<StepEditor value={[{ instruction: "A" }, { instruction: "B" }]} onChange={vi.fn()} />);
     const moveUpButtons = screen.getAllByLabelText("Move up");
     const moveDownButtons = screen.getAllByLabelText("Move down");
 
@@ -80,12 +65,7 @@ describe("StepEditor", () => {
   });
 
   it("should render drag handles for each step", () => {
-    render(
-      <StepEditor
-        value={[{ instruction: "A" }, { instruction: "B" }]}
-        onChange={vi.fn()}
-      />
-    );
+    render(<StepEditor value={[{ instruction: "A" }, { instruction: "B" }]} onChange={vi.fn()} />);
     const dragHandles = screen.getAllByLabelText("Drag to reorder");
     expect(dragHandles).toHaveLength(2);
   });

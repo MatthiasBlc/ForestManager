@@ -11,7 +11,11 @@ interface TagSuggestionsListProps {
   onSuggestionDecided: () => void;
 }
 
-const TagSuggestionsList = ({ recipeId, refreshSignal, onSuggestionDecided }: TagSuggestionsListProps) => {
+const TagSuggestionsList = ({
+  recipeId,
+  refreshSignal,
+  onSuggestionDecided,
+}: TagSuggestionsListProps) => {
   const [suggestions, setSuggestions] = useState<TagSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -91,10 +95,7 @@ const TagSuggestionsList = ({ recipeId, refreshSignal, onSuggestionDecided }: Ta
 
       <div className="space-y-3">
         {suggestions.map((suggestion) => (
-          <div
-            key={suggestion.id}
-            className="card bg-base-200 shadow-sm"
-          >
+          <div key={suggestion.id} className="card bg-base-200 shadow-sm">
             <div className="card-body p-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">

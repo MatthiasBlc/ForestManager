@@ -9,7 +9,12 @@ interface SearchIngredientsQuery {
   limit?: string;
 }
 
-export const searchIngredients: RequestHandler<unknown, unknown, unknown, SearchIngredientsQuery> = async (req, res, next) => {
+export const searchIngredients: RequestHandler<
+  unknown,
+  unknown,
+  unknown,
+  SearchIngredientsQuery
+> = async (req, res, next) => {
   const authenticatedUserId = req.session.userId;
   const search = req.query.search?.trim().toLowerCase() || "";
   const { limit } = parsePagination(req.query);

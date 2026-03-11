@@ -59,6 +59,7 @@ Preparation :
 ```
 
 Verifications :
+
 - [ ] La modale se ferme
 - [ ] Un toast "Import reussi : titre, 6 ingredients, 6 etapes detectes" apparait
 - [ ] Le titre "Gateau au chocolat" est pre-rempli
@@ -76,6 +77,7 @@ Verifications :
 ### 2.2 Recette minimale
 
 Coller :
+
 ```
 Salade verte
 ```
@@ -86,6 +88,7 @@ Salade verte
 ### 2.3 Texte non reconnu
 
 Coller :
+
 ```
 abc
 ```
@@ -96,6 +99,7 @@ abc
 ### 2.4 Recette avec temps en heures
 
 Coller :
+
 ```
 Pain maison
 
@@ -125,6 +129,7 @@ Etapes :
 ### 2.5 Recette sans headers de section
 
 Coller :
+
 ```
 Omelette
 
@@ -156,6 +161,7 @@ Coller une URL de recette d'un site connu (exemples a tester) :
 - [ ] `https://www.cuisineaz.com/recettes/gateau-au-chocolat-en-poudre-13tried.aspx`
 
 Pour chaque URL :
+
 - [ ] Le spinner de chargement s'affiche
 - [ ] La modale se ferme apres le parsing
 - [ ] Le formulaire est pre-rempli (titre, servings, temps, ingredients, etapes)

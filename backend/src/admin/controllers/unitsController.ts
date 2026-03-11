@@ -78,13 +78,19 @@ export const create: RequestHandler = async (req, res, next) => {
     validateStringLength(abbreviation.trim(), "abbreviation", 1, 10);
 
     if (!category || !VALID_CATEGORIES.includes(category)) {
-      throw createHttpError(400, "ADMIN_UNIT_003: Valid category is required (WEIGHT, VOLUME, SPOON, COUNT, QUALITATIVE)");
+      throw createHttpError(
+        400,
+        "ADMIN_UNIT_003: Valid category is required (WEIGHT, VOLUME, SPOON, COUNT, QUALITATIVE)"
+      );
     }
 
     if (sortOrder !== undefined) {
       assertNumber(sortOrder, "sortOrder");
       if (!Number.isInteger(sortOrder) || sortOrder < 0 || sortOrder > 9999) {
-        throw createHttpError(400, "VALIDATION_001: sortOrder must be an integer between 0 and 9999");
+        throw createHttpError(
+          400,
+          "VALIDATION_001: sortOrder must be an integer between 0 and 9999"
+        );
       }
     }
 
@@ -183,7 +189,10 @@ export const update: RequestHandler = async (req, res, next) => {
 
     if (category !== undefined) {
       if (!VALID_CATEGORIES.includes(category)) {
-        throw createHttpError(400, "ADMIN_UNIT_003: Valid category is required (WEIGHT, VOLUME, SPOON, COUNT, QUALITATIVE)");
+        throw createHttpError(
+          400,
+          "ADMIN_UNIT_003: Valid category is required (WEIGHT, VOLUME, SPOON, COUNT, QUALITATIVE)"
+        );
       }
       data.category = category;
     }
@@ -191,7 +200,10 @@ export const update: RequestHandler = async (req, res, next) => {
     if (sortOrder !== undefined) {
       assertNumber(sortOrder, "sortOrder");
       if (!Number.isInteger(sortOrder) || sortOrder < 0 || sortOrder > 9999) {
-        throw createHttpError(400, "VALIDATION_001: sortOrder must be an integer between 0 and 9999");
+        throw createHttpError(
+          400,
+          "VALIDATION_001: sortOrder must be an integer between 0 and 9999"
+        );
       }
       data.sortOrder = sortOrder;
     }
@@ -248,7 +260,10 @@ export const remove: RequestHandler = async (req, res, next) => {
       throw createHttpError(404, "ADMIN_UNIT_006: Unit not found");
     }
 
-    const totalUsage = unit._count.recipeIngredients + unit._count.proposalIngredients + unit._count.defaultIngredients;
+    const totalUsage =
+      unit._count.recipeIngredients +
+      unit._count.proposalIngredients +
+      unit._count.defaultIngredients;
     if (totalUsage > 0) {
       throw createHttpError(
         409,

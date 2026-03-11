@@ -13,12 +13,14 @@ Amener le projet a un niveau de qualite production : code propre, DRY, performan
 **Constat :** Aucune protection CSRF en place. L'app utilise des sessions cookie-based (`connect.sid`, `admin.sid`) avec `credentials: include` cote Axios. Un site tiers pourrait forger des requetes POST/PATCH/DELETE avec le cookie de session.
 
 **Solution :** Double-submit cookie pattern.
+
 - Le serveur genere un token CSRF et le place dans un cookie (`XSRF-TOKEN`, httpOnly: false)
 - Le client lit ce cookie et l'envoie dans un header (`X-XSRF-TOKEN`) a chaque requete mutante
 - Le serveur verifie que cookie et header correspondent
 - Alternative : library `csrf-csrf` (maintenue, compatible express-session)
 
 **Scope :**
+
 - Backend : middleware CSRF sur toutes les routes POST/PATCH/PUT/DELETE
 - Frontend : intercepteur Axios pour lire le cookie et ajouter le header
 - Exclure : routes publiques (login, signup), health check
@@ -28,6 +30,7 @@ Amener le projet a un niveau de qualite production : code propre, DRY, performan
 **Constat :** La plupart des endpoints verifient l'ownership/membership via `memberOf` middleware ou `requireRecipeAccess`. A auditer systematiquement.
 
 **Actions :**
+
 - [ ] Lister tous les endpoints qui prennent un ID en parametre
 - [ ] Verifier pour chacun que l'utilisateur a le droit d'acceder/modifier la ressource
 - [ ] Points sensibles : PATCH/DELETE sur recipes, communities, proposals, invites, notifications
@@ -38,6 +41,7 @@ Amener le projet a un niveau de qualite production : code propre, DRY, performan
 **Constat :** Verifier qu'aucun controller ne passe `req.body` directement a Prisma sans filtrage explicite des champs.
 
 **Actions :**
+
 - [ ] Auditer chaque `prisma.create()` et `prisma.update()` dans les controllers
 - [ ] S'assurer que seuls les champs explicites sont passes dans `data: { ... }`
 - [ ] Attention aux champs sensibles : `role`, `deletedAt`, `isVerified`, `totpSecret`
@@ -47,6 +51,7 @@ Amener le projet a un niveau de qualite production : code propre, DRY, performan
 **Constat :** React echappe par defaut le contenu rendu. Verifier les exceptions.
 
 **Actions :**
+
 - [ ] Rechercher `dangerouslySetInnerHTML` dans le frontend
 - [ ] Verifier que les donnees utilisateur (titres, descriptions, noms) ne sont jamais injectees dans des attributs HTML sans echappement
 - [ ] Verifier le CSP Helmet (script-src, style-src)
@@ -54,6 +59,7 @@ Amener le projet a un niveau de qualite production : code propre, DRY, performan
 ### 1.5 Session Security
 
 **Actions :**
+
 - [ ] Verifier `req.session.regenerate()` apres login (previent session fixation)
 - [ ] Verifier que les cookies ont `secure: true` en production
 - [ ] Verifier `sameSite` stricte sur les cookies admin
@@ -62,6 +68,7 @@ Amener le projet a un niveau de qualite production : code propre, DRY, performan
 ### 1.6 Upload Security
 
 **Actions :**
+
 - [ ] Verifier la validation du type MIME a l'upload (pas juste l'extension)
 - [ ] Verifier la taille max par fichier
 - [ ] Verifier que les fichiers uploades ne sont pas executables
@@ -70,6 +77,7 @@ Amener le projet a un niveau de qualite production : code propre, DRY, performan
 ### 1.7 Logging & Secrets
 
 **Actions :**
+
 - [ ] Verifier qu'aucun mot de passe, token, ou secret n'apparait dans les logs Pino
 - [ ] Verifier que les .env ne sont pas commites (check .gitignore)
 - [ ] Verifier que les error responses ne leakent pas de stack traces en production
@@ -79,6 +87,7 @@ Amener le projet a un niveau de qualite production : code propre, DRY, performan
 ## 2. NPM Audit
 
 **Actions :**
+
 - [ ] `cd backend && npm audit` - corriger critical + high
 - [ ] `cd frontend && npm audit` - corriger critical + high
 - [ ] Documenter les vulnerabilites low/moderate non resolvables (dependances transitives)
@@ -96,6 +105,7 @@ Amener le projet a un niveau de qualite production : code propre, DRY, performan
 **Regles a ajouter :**
 
 Backend (`eslint.config.mjs`) :
+
 ```javascript
 rules: {
   "@typescript-eslint/no-explicit-any": "warn",      // Puis "error" progressivement
@@ -107,6 +117,7 @@ rules: {
 ```
 
 Frontend (`eslint.config.mjs`) :
+
 ```javascript
 rules: {
   "@typescript-eslint/no-explicit-any": "warn",
@@ -118,6 +129,7 @@ rules: {
 ### 3.2 Prettier
 
 **Action :** Ajouter Prettier pour le formatage automatique.
+
 - Config : `.prettierrc` a la racine (tabs vs spaces, trailing commas, etc.)
 - Integration ESLint : `eslint-config-prettier` pour desactiver les regles conflictuelles
 - Scripts : `format`, `format:check`
@@ -125,6 +137,7 @@ rules: {
 ### 3.3 Pre-commit hooks
 
 **Action :** Installer Husky + lint-staged.
+
 - Pre-commit : `lint-staged` execute ESLint + Prettier sur les fichiers stages
 - Config dans `package.json` ou `.lintstagedrc`
 - Garantit qu'aucun code non conforme n'est commite
@@ -143,6 +156,7 @@ rules: {
 **Actuellement :** Codes erreur en strings dans les controllers (`"AUTH_001: ..."`, `"RECIPE_003: ..."`).
 
 **Solution :** Fichier `constants/errorCodes.ts` :
+
 ```typescript
 export const ERROR_CODES = {
   AUTH_001: "AUTH_001: You are not authenticated",
@@ -150,6 +164,7 @@ export const ERROR_CODES = {
   // ...
 } as const;
 ```
+
 - Autocompletion dans les controllers
 - Impossible de faire une typo
 - Source unique de verite pour les messages
@@ -159,6 +174,7 @@ export const ERROR_CODES = {
 **Actuellement :** 3 definitions quasi identiques.
 
 **Solution :** `config/rateLimiter.ts` :
+
 ```typescript
 export function createRateLimiter(windowMs: number, max: number, message: string) {
   return rateLimit({ windowMs, max, message, standardHeaders: true, legacyHeaders: false });
@@ -168,6 +184,7 @@ export function createRateLimiter(windowMs: number, max: number, message: string
 ### 4.3 Middleware validateBody
 
 **Solution :** Si Zod adopte :
+
 ```typescript
 export function validateBody<T>(schema: ZodSchema<T>): RequestHandler {
   return (req, res, next) => {
@@ -180,7 +197,9 @@ export function validateBody<T>(schema: ZodSchema<T>): RequestHandler {
   };
 }
 ```
+
 Permet de declarer la validation au niveau de la route :
+
 ```typescript
 router.post("/", validateBody(createRecipeSchema), RecipesController.createRecipe);
 ```
@@ -198,6 +217,7 @@ Extraire la configuration des deux sessions (user + admin) de `app.ts` vers `con
 **Actuellement :** `TagSelector` et `IngredientSelector` partagent ~80% de logique (recherche debounced, dropdown, multi-select, keyboard, badges).
 
 **Solution :** Composant `SearchSelector<T>` parametrable :
+
 ```tsx
 <SearchSelector<Tag>
   searchFn={(q) => APIManager.searchTags(q)}
@@ -213,14 +233,21 @@ Extraire la configuration des deux sessions (user + admin) de `app.ts` vers `con
 ### 5.2 useAsyncData hook
 
 **Pattern repete dans chaque page :**
+
 ```typescript
 const [data, setData] = useState(null);
 const [loading, setLoading] = useState(true);
 const [error, setError] = useState(null);
-useEffect(() => { fetchData().then(setData).catch(setError).finally(() => setLoading(false)); }, []);
+useEffect(() => {
+  fetchData()
+    .then(setData)
+    .catch(setError)
+    .finally(() => setLoading(false));
+}, []);
 ```
 
 **Solution :**
+
 ```typescript
 const { data, loading, error, refetch } = useAsyncData(() => APIManager.getRecipe(id), [id]);
 ```
@@ -230,6 +257,7 @@ const { data, loading, error, refetch } = useAsyncData(() => APIManager.getRecip
 **Logique dupliquee :** get presigned URL → upload to MinIO → confirm upload.
 
 **Solution :**
+
 ```typescript
 const { upload, uploading, imageUrl, error } = useImageUpload("recipe", recipeId);
 // upload(file) gere tout le flow
@@ -240,9 +268,12 @@ const { upload, uploading, imageUrl, error } = useImageUpload("recipe", recipeId
 **Pattern repete :** loading spinner → error alert → empty state → contenu.
 
 **Solution :**
+
 ```tsx
 <DataContainer loading={loading} error={error} empty={!data?.length} emptyMessage="Aucune recette">
-  {data.map(recipe => <RecipeCard key={recipe.id} recipe={recipe} />)}
+  {data.map((recipe) => (
+    <RecipeCard key={recipe.id} recipe={recipe} />
+  ))}
 </DataContainer>
 ```
 
@@ -374,6 +405,7 @@ backend/src/schemas/
 ### 10.3 Coexistence
 
 Pendant la migration, les deux systemes coexistent :
+
 - Nouveaux endpoints : Zod + `validateBody` middleware
 - Anciens endpoints : assertions existantes, migres progressivement
 - `validation.ts` conserve les constantes (longueurs, regex) utilisables dans les schemas Zod

@@ -122,10 +122,7 @@ const DashboardPage = () => {
           <h2 className="text-2xl font-bold">My Recipes</h2>
           <div className="flex gap-2">
             {totalRecipes > RECENT_RECIPES_LIMIT && (
-              <button
-                className="btn btn-ghost btn-sm"
-                onClick={() => navigate("/recipes")}
-              >
+              <button className="btn btn-ghost btn-sm" onClick={() => navigate("/recipes")}>
                 See all ({totalRecipes})
               </button>
             )}
@@ -156,22 +153,13 @@ const DashboardPage = () => {
             {recipes.length > 0 ? (
               <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {recipes.map((recipe) => (
-                  <RecipeCard
-                    key={recipe.id}
-                    recipe={recipe}
-                    onDelete={handleDeleteRecipe}
-                  />
+                  <RecipeCard key={recipe.id} recipe={recipe} onDelete={handleDeleteRecipe} />
                 ))}
               </div>
             ) : (
               <div className="bg-base-100 rounded-lg shadow p-8 text-center">
-                <p className="text-base-content/60 mb-4">
-                  You don't have any recipes yet.
-                </p>
-                <button
-                  className="btn btn-primary gap-2"
-                  onClick={() => navigate("/recipes/new")}
-                >
+                <p className="text-base-content/60 mb-4">You don't have any recipes yet.</p>
+                <button className="btn btn-primary gap-2" onClick={() => navigate("/recipes/new")}>
                   <FaPlus />
                   Create your first recipe
                 </button>

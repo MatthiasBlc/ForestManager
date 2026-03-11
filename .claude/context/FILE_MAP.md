@@ -3,6 +3,7 @@
 ## Backend (backend/src/)
 
 ### Controllers (logique metier)
+
 ```
 controllers/
 ├── activity.ts        # getCommunityActivity, getMyActivity
@@ -28,6 +29,7 @@ controllers/
 ```
 
 ### Routes (endpoints API)
+
 ```
 routes/
 ├── auth.ts            # /api/auth/*
@@ -43,6 +45,7 @@ routes/
 ```
 
 ### Middleware
+
 ```
 middleware/
 ├── auth.ts            # requireAuth (verifie session.userId)
@@ -53,6 +56,7 @@ middleware/
 ```
 
 ### Admin (module isole)
+
 ```
 admin/
 ├── controllers/
@@ -81,6 +85,7 @@ admin/
 ```
 
 ### Services
+
 ```
 services/
 ├── tagService.ts      # Logique scope-aware tags (resolve, autocomplete, fork)
@@ -99,6 +104,7 @@ services/
 ```
 
 ### Autres backend
+
 ```
 app.ts                 # Config Express, montage routes, sessions
 server.ts              # Entry point (listen + notification cleanup job)
@@ -123,6 +129,7 @@ scripts/
 ```
 
 ### Tests backend
+
 ```
 __tests__/
 ├── setup/
@@ -177,6 +184,7 @@ __tests__/
 ## Frontend (frontend/src/)
 
 ### Pages
+
 ```
 pages/
 ├── HomePage.tsx              # Accueil (redirect vers dashboard si connecte)
@@ -206,6 +214,7 @@ pages/
 ```
 
 ### Components
+
 ```
 components/
 ├── Layout/
@@ -271,6 +280,7 @@ components/
 ```
 
 ### Contexts & Network
+
 ```
 contexts/
 ├── AuthContext.tsx            # Auth user (session, login/logout)
@@ -286,6 +296,7 @@ services/
 ```
 
 ### Models & Types
+
 ```
 models/
 ├── user.ts                   # User types
@@ -299,6 +310,7 @@ models/
 ```
 
 ### Autres frontend
+
 ```
 App.tsx                       # Routes React Router
 main.tsx                      # Entry point React
@@ -325,6 +337,7 @@ styles/                       # CSS
 ```
 
 ### Tests frontend
+
 ```
 __tests__/
 ├── setup/

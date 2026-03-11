@@ -7,11 +7,7 @@ import prisma from "../util/db";
  * Attend communityId dans req.params.
  * Ajoute req.userCommunity avec les infos du membership.
  */
-export const memberOf = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const memberOf = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const userId = req.session.userId;
   const communityId = req.params.communityId;
 
@@ -77,9 +73,7 @@ export const requireCommunityRole = (requiredRole: "MEMBER" | "MODERATOR") => {
     const userCommunity = req.userCommunity;
 
     if (!userCommunity) {
-      return next(
-        createHttpError(500, "requireCommunityRole must be used after memberOf")
-      );
+      return next(createHttpError(500, "requireCommunityRole must be used after memberOf"));
     }
 
     // Role hierarchy: MODERATOR > MEMBER
@@ -92,9 +86,7 @@ export const requireCommunityRole = (requiredRole: "MEMBER" | "MODERATOR") => {
     const requiredRoleLevel = roleHierarchy[requiredRole] || 0;
 
     if (userRoleLevel < requiredRoleLevel) {
-      return next(
-        createHttpError(403, "COMMUNITY_002: Permission insufficient")
-      );
+      return next(createHttpError(403, "COMMUNITY_002: Permission insufficient"));
     }
 
     next();

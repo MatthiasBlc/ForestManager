@@ -15,9 +15,7 @@ export const getAll: RequestHandler = async (req, res, next) => {
     const { limit, offset } = parsePagination(req.query as Record<string, string>, 100);
 
     const where = {
-      ...(search
-        ? { name: { contains: String(search), mode: "insensitive" as const } }
-        : {}),
+      ...(search ? { name: { contains: String(search), mode: "insensitive" as const } } : {}),
       ...(includeDeleted !== "true" ? { deletedAt: null } : {}),
     };
 
@@ -148,7 +146,12 @@ export const update: RequestHandler = async (req, res, next) => {
     if (!name || typeof name !== "string" || name.trim().length === 0) {
       throw createHttpError(400, "ADMIN_COM_002: Name is required");
     }
-    validateStringLength(name.trim(), "name", COMMUNITY_VALIDATION.NAME_MIN, COMMUNITY_VALIDATION.NAME_MAX);
+    validateStringLength(
+      name.trim(),
+      "name",
+      COMMUNITY_VALIDATION.NAME_MIN,
+      COMMUNITY_VALIDATION.NAME_MAX
+    );
 
     const oldName = community.name;
     const updated = await prisma.community.update({

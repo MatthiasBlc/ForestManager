@@ -22,17 +22,26 @@ const IngredientSelector = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useDebouncedEffect(() => {
-    if (!showDropdown) return;
+  useDebouncedEffect(
+    () => {
+      if (!showDropdown) return;
 
-    setIsLoading(true);
-    APIManager.searchIngredients(inputValue.trim(), 10)
-      .then((results) => setSuggestions(results.filter((ingredient) => !value.includes(ingredient.name))))
-      .catch(() => setSuggestions([]))
-      .finally(() => setIsLoading(false));
-  }, inputValue ? 300 : 0, [inputValue, value, showDropdown]);
+      setIsLoading(true);
+      APIManager.searchIngredients(inputValue.trim(), 10)
+        .then((results) =>
+          setSuggestions(results.filter((ingredient) => !value.includes(ingredient.name)))
+        )
+        .catch(() => setSuggestions([]))
+        .finally(() => setIsLoading(false));
+    },
+    inputValue ? 300 : 0,
+    [inputValue, value, showDropdown]
+  );
 
-  useClickOutside(containerRef, useCallback(() => setShowDropdown(false), []));
+  useClickOutside(
+    containerRef,
+    useCallback(() => setShowDropdown(false), [])
+  );
 
   const addIngredient = (ingredientName: string) => {
     const normalizedIngredient = ingredientName.trim().toLowerCase();

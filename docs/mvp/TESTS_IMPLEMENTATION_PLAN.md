@@ -1,9 +1,11 @@
 # Plan d'Implementation des Tests - ForestManager
 
 ## Objectif
+
 Mettre en place un systeme de tests unitaires complet pour le backend et le frontend, integre au workflow CI/CD et au DEVELOPMENT_ROADMAP.md.
 
 ## Decisions
+
 - **Priorite**: Phase 0.5 (Admin) d'abord
 - **Couverture**: Exhaustive (~244 tests total)
 
@@ -12,19 +14,22 @@ Mettre en place un systeme de tests unitaires complet pour le backend et le fron
 ## Etat Actuel (74 tests)
 
 ### Backend (61 tests existants)
-| Fichier | Tests | Couverture |
-|---------|-------|------------|
-| `auth.test.ts` | 16 | User signup/login/logout/me |
-| `adminAuth.test.ts` | 14 | Admin 2FA login flow |
-| `recipes.test.ts` | 31 | CRUD complet recettes |
+
+| Fichier             | Tests | Couverture                  |
+| ------------------- | ----- | --------------------------- |
+| `auth.test.ts`      | 16    | User signup/login/logout/me |
+| `adminAuth.test.ts` | 14    | Admin 2FA login flow        |
+| `recipes.test.ts`   | 31    | CRUD complet recettes       |
 
 ### Frontend (13 tests existants)
-| Fichier | Tests | Couverture |
-|---------|-------|------------|
-| `AuthContext.test.tsx` | 6 | Context auth user |
-| `AdminAuthContext.test.tsx` | 7 | Context admin 2FA |
+
+| Fichier                     | Tests | Couverture        |
+| --------------------------- | ----- | ----------------- |
+| `AuthContext.test.tsx`      | 6     | Context auth user |
+| `AdminAuthContext.test.tsx` | 7     | Context admin 2FA |
 
 ### Infrastructure existante
+
 - **Backend**: Vitest + Supertest + Prisma test DB + testHelpers
 - **Frontend**: Vitest + MSW + Testing Library + testUtils
 - **CI/CD**: Jobs `test-backend` et `test-frontend` dans deploy.yml
@@ -34,6 +39,7 @@ Mettre en place un systeme de tests unitaires complet pour le backend et le fron
 ## Sprints d'Implementation
 
 ### Sprint 1: Backend Admin (Phase 0.5) - ~50 tests
+
 - [ ] Ajouter helpers dans `testHelpers.ts`:
   - `createTestCommunity(creatorId, data?)`
   - `createTestFeature(data?)`
@@ -67,6 +73,7 @@ Mettre en place un systeme de tests unitaires complet pour le backend et le fron
   - GET /api/admin/activity - logs activite
 
 ### Sprint 2: Backend User Complet - ~10 tests
+
 - [ ] `tags.test.ts` (5 tests)
   - GET /api/tags - recherche
   - Pagination, filtres, recipeCount
@@ -75,6 +82,7 @@ Mettre en place un systeme de tests unitaires complet pour le backend et le fron
   - Pagination, filtres, recipeCount
 
 ### Sprint 3: Frontend Admin (Phase 0.5) - ~20 tests
+
 - [ ] Etendre `mswHandlers.ts` avec mocks admin API:
   - /api/admin/tags (CRUD)
   - /api/admin/ingredients (CRUD)
@@ -101,6 +109,7 @@ Mettre en place un systeme de tests unitaires complet pour le backend et le fron
   - Navigation
 
 ### Sprint 4: Frontend Auth (Phase 1.2) - ~25 tests
+
 - [ ] `LoginModal.test.tsx` (6 tests)
   - Ouverture/fermeture modal
   - Formulaire validation
@@ -122,6 +131,7 @@ Mettre en place un systeme de tests unitaires complet pour le backend et le fron
   - Navigation links
 
 ### Sprint 5: Frontend Recipes (Phase 2.0) - ~40 tests
+
 - [ ] `RecipeCard.test.tsx` (6 tests)
   - Affichage image, titre, tags
   - Click navigation
@@ -150,6 +160,7 @@ Mettre en place un systeme de tests unitaires complet pour le backend et le fron
   - Submit succes/erreur
 
 ### Sprint 6: Frontend Pages & Layout - ~25 tests
+
 - [ ] `RecipeDetailPage.test.tsx` (6 tests)
   - Affichage complet
   - Boutons actions
@@ -168,6 +179,7 @@ Mettre en place un systeme de tests unitaires complet pour le backend et le fron
   - Redirect selon auth
 
 ### Sprint 7: Documentation & DEVELOPMENT_ROADMAP.md
+
 - [ ] Ajouter section "Tests" apres chaque phase dans DEVELOPMENT_ROADMAP.md
 - [ ] Template pour futures fonctionnalites avec tests
 - [ ] Checklist validation tests
@@ -177,6 +189,7 @@ Mettre en place un systeme de tests unitaires complet pour le backend et le fron
 ## Fichiers a Creer
 
 ### Backend
+
 ```
 backend/src/__tests__/integration/
   adminTags.test.ts
@@ -190,6 +203,7 @@ backend/src/__tests__/integration/
 ```
 
 ### Frontend
+
 ```
 frontend/src/__tests__/
   unit/components/
@@ -250,20 +264,20 @@ cd frontend && npm run test:coverage
 
 ## Objectifs de Couverture
 
-| Categorie | Cible |
-|-----------|-------|
-| Backend controllers/routes | > 80% |
+| Categorie                     | Cible |
+| ----------------------------- | ----- |
+| Backend controllers/routes    | > 80% |
 | Frontend composants critiques | > 70% |
 
 ---
 
 ## Estimation Finale
 
-| Categorie | Tests existants | Tests a ajouter | Total |
-|-----------|-----------------|-----------------|-------|
-| Backend | 61 | ~60 | ~121 |
-| Frontend | 13 | ~110 | ~123 |
-| **Total** | **74** | **~170** | **~244** |
+| Categorie | Tests existants | Tests a ajouter | Total    |
+| --------- | --------------- | --------------- | -------- |
+| Backend   | 61              | ~60             | ~121     |
+| Frontend  | 13              | ~110            | ~123     |
+| **Total** | **74**          | **~170**        | **~244** |
 
 ---
 
@@ -281,16 +295,19 @@ cd frontend && npm run test:coverage
 ## Notes Techniques
 
 ### Backend
+
 - Tests executent sequentiellement (`singleFork: true`) pour eviter conflits DB
 - `afterEach` nettoie toutes les tables dans le bon ordre (FK)
 - Rate limiting admin desactive en mode test (`NODE_ENV=test`)
 
 ### Frontend
+
 - MSW intercepte les appels API
 - `resetAuthState()` a appeler dans `beforeEach` pour isoler les tests
 - Utiliser `renderWithUserAuth()` ou `renderWithAdminAuth()` selon le contexte
 
 ### CI/CD
+
 - `test-backend` demarre un service PostgreSQL
 - `test-frontend` n'a pas besoin de DB (MSW mock)
 - Les builds dependent des tests

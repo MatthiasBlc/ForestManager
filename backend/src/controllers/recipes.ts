@@ -4,16 +4,32 @@ import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { Prisma } from "@prisma/client";
 import {
-  validateServings, validateTime, validateSteps, StepInput,
-  assertString, assertArray, validateQuantity, validateStringLength,
-  MAX_TITLE_LENGTH, MAX_TAGS_PER_RECIPE, MAX_FILTER_ITEMS, MAX_SEARCH_LENGTH,
+  validateServings,
+  validateTime,
+  validateSteps,
+  StepInput,
+  assertString,
+  assertArray,
+  validateQuantity,
+  validateStringLength,
+  MAX_TITLE_LENGTH,
+  MAX_TAGS_PER_RECIPE,
+  MAX_FILTER_ITEMS,
+  MAX_SEARCH_LENGTH,
 } from "../util/validation";
 import { buildImageUrl } from "../config/storage";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
-import { RECIPE_TAGS_SELECT, RECIPE_STEPS_SELECT, RECIPE_INGREDIENTS_SELECT } from "../util/prismaSelects";
+import {
+  RECIPE_TAGS_SELECT,
+  RECIPE_STEPS_SELECT,
+  RECIPE_INGREDIENTS_SELECT,
+} from "../util/prismaSelects";
 import { requireRecipeAccess, requireRecipeOwnership } from "../services/membershipService";
 import { formatTags, formatIngredients, formatSteps } from "../util/responseFormatters";
-import { createRecipe as createRecipeService, updateRecipe as updateRecipeService } from "../services/recipeService";
+import {
+  createRecipe as createRecipeService,
+  updateRecipe as updateRecipeService,
+} from "../services/recipeService";
 import appEvents from "../services/eventEmitter";
 import { getModeratorIdsForTagNotification } from "../services/notificationService";
 
@@ -25,11 +41,23 @@ interface GetRecipesQuery {
   search?: string;
 }
 
-export const getRecipes: RequestHandler<unknown, unknown, unknown, GetRecipesQuery> = async (req, res, next) => {
+export const getRecipes: RequestHandler<unknown, unknown, unknown, GetRecipesQuery> = async (
+  req,
+  res,
+  next
+) => {
   const authenticatedUserId = req.session.userId;
   const { limit, offset } = parsePagination(req.query);
-  const tagsFilter = req.query.tags?.split(",").map((t) => t.trim().toLowerCase()).filter(Boolean) || [];
-  const ingredientsFilter = req.query.ingredients?.split(",").map((i) => i.trim().toLowerCase()).filter(Boolean) || [];
+  const tagsFilter =
+    req.query.tags
+      ?.split(",")
+      .map((t) => t.trim().toLowerCase())
+      .filter(Boolean) || [];
+  const ingredientsFilter =
+    req.query.ingredients
+      ?.split(",")
+      .map((i) => i.trim().toLowerCase())
+      .filter(Boolean) || [];
   const searchFilter = req.query.search?.trim() || "";
 
   try {
@@ -39,10 +67,16 @@ export const getRecipes: RequestHandler<unknown, unknown, unknown, GetRecipesQue
       throw createHttpError(400, `VALIDATION_001: Too many tag filters (max ${MAX_FILTER_ITEMS})`);
     }
     if (ingredientsFilter.length > MAX_FILTER_ITEMS) {
-      throw createHttpError(400, `VALIDATION_001: Too many ingredient filters (max ${MAX_FILTER_ITEMS})`);
+      throw createHttpError(
+        400,
+        `VALIDATION_001: Too many ingredient filters (max ${MAX_FILTER_ITEMS})`
+      );
     }
     if (searchFilter.length > MAX_SEARCH_LENGTH) {
-      throw createHttpError(400, `VALIDATION_001: Search query too long (max ${MAX_SEARCH_LENGTH} chars)`);
+      throw createHttpError(
+        400,
+        `VALIDATION_001: Search query too long (max ${MAX_SEARCH_LENGTH} chars)`
+      );
     }
 
     const whereClause: Prisma.RecipeWhereInput = {
@@ -61,27 +95,31 @@ export const getRecipes: RequestHandler<unknown, unknown, unknown, GetRecipesQue
     const andConditions = [];
 
     if (tagsFilter.length > 0) {
-      andConditions.push(...tagsFilter.map((tagName) => ({
-        tags: {
-          some: {
-            tag: {
-              name: tagName,
+      andConditions.push(
+        ...tagsFilter.map((tagName) => ({
+          tags: {
+            some: {
+              tag: {
+                name: tagName,
+              },
             },
           },
-        },
-      })));
+        }))
+      );
     }
 
     if (ingredientsFilter.length > 0) {
-      andConditions.push(...ingredientsFilter.map((ingredientName) => ({
-        ingredients: {
-          some: {
-            ingredient: {
-              name: ingredientName,
+      andConditions.push(
+        ...ingredientsFilter.map((ingredientName) => ({
+          ingredients: {
+            some: {
+              ingredient: {
+                name: ingredientName,
+              },
             },
           },
-        },
-      })));
+        }))
+      );
     }
 
     if (andConditions.length > 0) {
@@ -237,8 +275,21 @@ interface CreateRecipeBody {
   ingredients?: IngredientInput[];
 }
 
-export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeBody, unknown> = async (req, res, next) => {
-  const { title, servings, prepTime, cookTime, restTime, steps, tags = [], ingredients = [] } = req.body;
+export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeBody, unknown> = async (
+  req,
+  res,
+  next
+) => {
+  const {
+    title,
+    servings,
+    prepTime,
+    cookTime,
+    restTime,
+    steps,
+    tags = [],
+    ingredients = [],
+  } = req.body;
   const authenticatedUserId = req.session.userId;
 
   try {
@@ -258,7 +309,10 @@ export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeBody, un
     }
 
     if (!validateSteps(steps)) {
-      throw createHttpError(400, "RECIPE_007: At least one step required, each instruction non-empty (max 5000 chars)");
+      throw createHttpError(
+        400,
+        "RECIPE_007: At least one step required, each instruction non-empty (max 5000 chars)"
+      );
     }
 
     if (!validateTime(prepTime)) {
@@ -287,7 +341,14 @@ export const createRecipe: RequestHandler<unknown, unknown, CreateRecipeBody, un
     }
 
     const newRecipe = await createRecipeService(authenticatedUserId, {
-      title, servings, prepTime, cookTime, restTime, steps, tags, ingredients,
+      title,
+      servings,
+      prepTime,
+      cookTime,
+      restTime,
+      steps,
+      tags,
+      ingredients,
     });
 
     if (!newRecipe) {
@@ -331,7 +392,12 @@ interface UpdateRecipeBody {
   ingredients?: IngredientInput[];
 }
 
-export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRecipeBody, unknown> = async (req, res, next) => {
+export const updateRecipe: RequestHandler<
+  UpdateRecipeParams,
+  unknown,
+  UpdateRecipeBody,
+  unknown
+> = async (req, res, next) => {
   const recipeId = req.params.recipeId;
   const { title, servings, prepTime, cookTime, restTime, steps, tags, ingredients } = req.body;
   const authenticatedUserId = req.session.userId;
@@ -352,7 +418,10 @@ export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRec
     }
 
     if (steps !== undefined && !validateSteps(steps)) {
-      throw createHttpError(400, "RECIPE_007: At least one step required, each instruction non-empty (max 5000 chars)");
+      throw createHttpError(
+        400,
+        "RECIPE_007: At least one step required, each instruction non-empty (max 5000 chars)"
+      );
     }
 
     if (prepTime !== undefined && !validateTime(prepTime)) {
@@ -392,9 +461,21 @@ export const updateRecipe: RequestHandler<UpdateRecipeParams, unknown, UpdateRec
 
     await requireRecipeOwnership(authenticatedUserId, recipe);
 
-    const { result: updatedRecipe, pendingTagIds } = await updateRecipeService(recipeId, {
-      title, servings, prepTime, cookTime, restTime, steps, tags, ingredients,
-    }, recipe, authenticatedUserId);
+    const { result: updatedRecipe, pendingTagIds } = await updateRecipeService(
+      recipeId,
+      {
+        title,
+        servings,
+        prepTime,
+        cookTime,
+        restTime,
+        steps,
+        tags,
+        ingredients,
+      },
+      recipe,
+      authenticatedUserId
+    );
 
     if (!updatedRecipe) {
       throw createHttpError(500, "Failed to update recipe");

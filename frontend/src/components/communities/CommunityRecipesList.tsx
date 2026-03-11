@@ -25,7 +25,7 @@ const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesList
 
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem("recipesViewMode");
-    return (saved === "list" || saved === "card") ? saved : "card";
+    return saved === "list" || saved === "card" ? saved : "card";
   });
 
   const [searchFilter, setSearchFilter] = useState("");
@@ -52,8 +52,14 @@ const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesList
   );
 
   const {
-    data: recipes, pagination, isLoading: recipesLoading, isLoadingMore: loadingMore,
-    error, loadMore: handleLoadMore, setData: setRecipes, setPagination,
+    data: recipes,
+    pagination,
+    isLoading: recipesLoading,
+    isLoadingMore: loadingMore,
+    error,
+    loadMore: handleLoadMore,
+    setData: setRecipes,
+    setPagination,
   } = usePaginatedList<CommunityRecipeListItem>(fetchRecipes, RECIPES_PER_PAGE, [fetchRecipes]);
 
   const handleTagClick = (tag: string) => {
@@ -198,9 +204,7 @@ const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesList
           ) : (
             <div className="text-center py-12">
               <p className="text-lg text-base-content/60 mb-4">
-                {hasFilters
-                  ? "No recipes match your filters"
-                  : "No recipes in this community yet"}
+                {hasFilters ? "No recipes match your filters" : "No recipes in this community yet"}
               </p>
               {hasFilters && (
                 <button className="btn btn-ghost" onClick={handleResetFilters}>

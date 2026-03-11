@@ -39,15 +39,15 @@ prisma/
 
 ## API Endpoints
 
-| Module | Endpoints | Description |
-| ------ | --------- | ----------- |
-| Auth | `/api/auth/*` | Inscription, connexion, sessions |
-| Recipes | `/api/recipes/*` | CRUD recettes, images, propositions |
-| Communities | `/api/communities/*` | CRUD communautes, membres, invitations |
-| Tags | `/api/tags/*` | Autocomplete tags scope-aware |
-| Ingredients | `/api/ingredients/*` | Autocomplete + unite suggeree |
-| Notifications | `/api/notifications/*` | CRUD, preferences, batch |
-| Admin | `/api/admin/*` | Dashboard, gestion (2FA requis) |
+| Module        | Endpoints              | Description                            |
+| ------------- | ---------------------- | -------------------------------------- |
+| Auth          | `/api/auth/*`          | Inscription, connexion, sessions       |
+| Recipes       | `/api/recipes/*`       | CRUD recettes, images, propositions    |
+| Communities   | `/api/communities/*`   | CRUD communautes, membres, invitations |
+| Tags          | `/api/tags/*`          | Autocomplete tags scope-aware          |
+| Ingredients   | `/api/ingredients/*`   | Autocomplete + unite suggeree          |
+| Notifications | `/api/notifications/*` | CRUD, preferences, batch               |
+| Admin         | `/api/admin/*`         | Dashboard, gestion (2FA requis)        |
 
 Voir `.claude/context/API_MAP.md` pour la liste complete des 99 endpoints.
 
@@ -66,6 +66,7 @@ npm test                  # Tests
 ## Tests
 
 746 tests (integration + unit) couvrant :
+
 - Authentification et sessions
 - CRUD recettes/communautes
 - Propositions et variantes

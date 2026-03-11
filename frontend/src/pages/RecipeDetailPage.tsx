@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { FaArrowLeft, FaEdit, FaTrash, FaLightbulb, FaShare, FaCodeBranch, FaTag } from "react-icons/fa";
+import {
+  FaArrowLeft,
+  FaEdit,
+  FaTrash,
+  FaLightbulb,
+  FaShare,
+  FaCodeBranch,
+  FaTag,
+} from "react-icons/fa";
 import APIManager from "../network/api";
 import { RecipeDetail } from "../models/recipe";
 import { useAuth } from "../contexts/AuthContext";
@@ -26,7 +34,9 @@ const RecipeDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedServings, setSelectedServings] = useState<number>(4);
-  const [openModal, setOpenModal] = useState<"propose" | "share" | "publish" | "suggest-tag" | null>(null);
+  const [openModal, setOpenModal] = useState<
+    "propose" | "share" | "publish" | "suggest-tag" | null
+  >(null);
   const [proposalsRefresh, setProposalsRefresh] = useState(0);
   const [suggestionsRefresh, setSuggestionsRefresh] = useState(0);
 
@@ -57,7 +67,13 @@ const RecipeDetailPage = () => {
   const handleDelete = async () => {
     if (!recipe) return;
 
-    if (await confirm({ message: "Are you sure you want to delete this recipe?", confirmLabel: "Delete", confirmClass: "btn btn-error" })) {
+    if (
+      await confirm({
+        message: "Are you sure you want to delete this recipe?",
+        confirmLabel: "Delete",
+        confirmClass: "btn btn-error",
+      })
+    ) {
       try {
         await APIManager.deleteRecipe(recipe.id);
         navigate(recipe.communityId ? `/communities/${recipe.communityId}` : "/recipes");
@@ -127,10 +143,7 @@ const RecipeDetailPage = () => {
         <div className="alert alert-error">
           <span>{error || "Recipe not found"}</span>
         </div>
-        <button
-          className="btn btn-ghost mt-4 gap-2"
-          onClick={() => navigate(-1)}
-        >
+        <button className="btn btn-ghost mt-4 gap-2" onClick={() => navigate(-1)}>
           <FaArrowLeft />
           Go back
         </button>
@@ -155,10 +168,7 @@ const RecipeDetailPage = () => {
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-6">
-        <button
-          className="btn btn-ghost gap-2"
-          onClick={() => navigate(backPath)}
-        >
+        <button className="btn btn-ghost gap-2" onClick={() => navigate(backPath)}>
           <FaArrowLeft />
           {backLabel}
         </button>
@@ -167,11 +177,7 @@ const RecipeDetailPage = () => {
       <article className="bg-base-100 rounded-lg shadow-xl overflow-hidden">
         {recipe.imageUrl && (
           <figure className="h-64 md:h-96 overflow-hidden">
-            <img
-              src={recipe.imageUrl}
-              alt={recipe.title}
-              className="w-full h-full object-cover"
-            />
+            <img src={recipe.imageUrl} alt={recipe.title} className="w-full h-full object-cover" />
           </figure>
         )}
 
@@ -191,7 +197,9 @@ const RecipeDetailPage = () => {
                 {isSharedRecipe && (
                   <span className="badge badge-outline badge-info gap-1">
                     <FaCodeBranch className="w-3 h-3" />
-                    {recipe.creator ? `Shared by: ${recipe.creator.username}` : "Shared from another community"}
+                    {recipe.creator
+                      ? `Shared by: ${recipe.creator.username}`
+                      : "Shared from another community"}
                   </span>
                 )}
               </div>
@@ -300,10 +308,7 @@ const RecipeDetailPage = () => {
             <div className="bg-base-200 rounded-lg p-4 mb-6">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-lg font-semibold">Ingredients</h2>
-                <ServingsSelector
-                  value={selectedServings}
-                  onChange={setSelectedServings}
-                />
+                <ServingsSelector value={selectedServings} onChange={setSelectedServings} />
               </div>
               <ul className="space-y-2">
                 {recipe.ingredients.map((ing) => {
@@ -313,7 +318,11 @@ const RecipeDetailPage = () => {
                       <span className="font-medium">{ing.name}</span>
                       {(scaledQty != null || ing.unit) && (
                         <span className="text-base-content/70 text-sm">
-                          {" : "}{scaledQty != null ? scaledQty : ""}{ing.unit ? `${scaledQty != null ? " " : ""}${ing.unit.abbreviation}` : ""}
+                          {" : "}
+                          {scaledQty != null ? scaledQty : ""}
+                          {ing.unit
+                            ? `${scaledQty != null ? " " : ""}${ing.unit.abbreviation}`
+                            : ""}
                         </span>
                       )}
                     </li>

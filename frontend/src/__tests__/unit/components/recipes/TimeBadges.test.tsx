@@ -5,9 +5,7 @@ import TimeBadges from "../../../../components/recipes/TimeBadges";
 
 describe("TimeBadges", () => {
   it("should render nothing when all times are null", () => {
-    const { container } = render(
-      <TimeBadges prepTime={null} cookTime={null} restTime={null} />
-    );
+    const { container } = render(<TimeBadges prepTime={null} cookTime={null} restTime={null} />);
     expect(container.innerHTML).toBe("");
   });
 

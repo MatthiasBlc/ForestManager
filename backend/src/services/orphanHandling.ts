@@ -73,10 +73,10 @@ export async function handleOrphanedRecipes(
   // Collecter toutes les propositions et preparer les variants
   const allProposalIds: string[] = [];
   const variantDataList: {
-    proposal: typeof recipes[0]["proposals"][0];
+    proposal: (typeof recipes)[0]["proposals"][0];
     recipeId: string;
     imageKey: string | null;
-    recipe: typeof recipes[0];
+    recipe: (typeof recipes)[0];
   }[] = [];
 
   for (const recipe of recipes) {
@@ -163,4 +163,3 @@ export async function handleOrphanedRecipes(
     createdVariants: variantDataList.length,
   };
 }
-

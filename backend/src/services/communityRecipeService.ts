@@ -1,6 +1,16 @@
 import prisma from "../util/db";
-import { RECIPE_TAGS_SELECT, RECIPE_INGREDIENTS_SELECT, RECIPE_STEPS_SELECT } from "../util/prismaSelects";
-import { IngredientInput, upsertTags, linkTagsToRecipe, upsertIngredients, upsertSteps } from "./recipeService";
+import {
+  RECIPE_TAGS_SELECT,
+  RECIPE_INGREDIENTS_SELECT,
+  RECIPE_STEPS_SELECT,
+} from "../util/prismaSelects";
+import {
+  IngredientInput,
+  upsertTags,
+  linkTagsToRecipe,
+  upsertIngredients,
+  upsertSteps,
+} from "./recipeService";
 import { StepInput } from "../util/validation";
 
 interface CreateCommunityRecipeData {
@@ -86,7 +96,11 @@ export async function createCommunityRecipe(
         where: { recipeId: communityRecipe.id },
         select: { tagId: true },
       });
-      await linkTagsToRecipe(tx, personalRecipe.id, communityRecipeTags.map(rt => rt.tagId));
+      await linkTagsToRecipe(
+        tx,
+        personalRecipe.id,
+        communityRecipeTags.map((rt) => rt.tagId)
+      );
     }
 
     if (data.ingredients.length > 0) {

@@ -159,7 +159,10 @@ export const updateCommunityTag: RequestHandler = async (req, res, next) => {
 
     // Verifier que le tag appartient a cette communaute
     if (tag.communityId !== communityId || tag.scope !== "COMMUNITY") {
-      throw createHttpError(403, "TAG_005: Cannot modify a tag that does not belong to this community");
+      throw createHttpError(
+        403,
+        "TAG_005: Cannot modify a tag that does not belong to this community"
+      );
     }
 
     if (normalized !== tag.name) {
@@ -176,7 +179,10 @@ export const updateCommunityTag: RequestHandler = async (req, res, next) => {
         where: { name: normalized, communityId, id: { not: tagId } },
       });
       if (existingCommunity) {
-        throw createHttpError(409, "TAG_002: A tag with this name already exists in this community");
+        throw createHttpError(
+          409,
+          "TAG_002: A tag with this name already exists in this community"
+        );
       }
     }
 
@@ -225,7 +231,10 @@ export const deleteCommunityTag: RequestHandler = async (req, res, next) => {
     }
 
     if (tag.communityId !== communityId || tag.scope !== "COMMUNITY") {
-      throw createHttpError(403, "TAG_005: Cannot modify a tag that does not belong to this community");
+      throw createHttpError(
+        403,
+        "TAG_005: Cannot modify a tag that does not belong to this community"
+      );
     }
 
     await prisma.tag.delete({ where: { id: tagId } });
@@ -263,7 +272,10 @@ export const approveCommunityTag: RequestHandler = async (req, res, next) => {
     }
 
     if (tag.communityId !== communityId || tag.scope !== "COMMUNITY") {
-      throw createHttpError(403, "TAG_005: Cannot modify a tag that does not belong to this community");
+      throw createHttpError(
+        403,
+        "TAG_005: Cannot modify a tag that does not belong to this community"
+      );
     }
 
     if (tag.status !== "PENDING") {
@@ -335,7 +347,10 @@ export const rejectCommunityTag: RequestHandler = async (req, res, next) => {
     }
 
     if (tag.communityId !== communityId || tag.scope !== "COMMUNITY") {
-      throw createHttpError(403, "TAG_005: Cannot modify a tag that does not belong to this community");
+      throw createHttpError(
+        403,
+        "TAG_005: Cannot modify a tag that does not belong to this community"
+      );
     }
 
     if (tag.status !== "PENDING") {

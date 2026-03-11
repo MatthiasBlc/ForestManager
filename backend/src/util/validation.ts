@@ -45,7 +45,10 @@ export function assertString(value: unknown, fieldName: string): asserts value i
   }
 }
 
-export function assertOptionalString(value: unknown, fieldName: string): asserts value is string | null | undefined {
+export function assertOptionalString(
+  value: unknown,
+  fieldName: string
+): asserts value is string | null | undefined {
   if (value !== null && value !== undefined && typeof value !== "string") {
     throw new ValidationError(`${fieldName} must be a string`);
   }
@@ -63,7 +66,10 @@ export function assertNumber(value: unknown, fieldName: string): asserts value i
   }
 }
 
-export function assertOptionalNumber(value: unknown, fieldName: string): asserts value is number | null | undefined {
+export function assertOptionalNumber(
+  value: unknown,
+  fieldName: string
+): asserts value is number | null | undefined {
   if (value !== null && value !== undefined) {
     if (typeof value !== "number" || !Number.isFinite(value)) {
       throw new ValidationError(`${fieldName} must be a valid number`);
@@ -77,12 +83,10 @@ export function validateStringLength(
   value: string,
   fieldName: string,
   min: number,
-  max: number,
+  max: number
 ): void {
   if (value.length < min || value.length > max) {
-    throw new ValidationError(
-      `${fieldName} must be between ${min} and ${max} characters`,
-    );
+    throw new ValidationError(`${fieldName} must be between ${min} and ${max} characters`);
   }
 }
 
@@ -104,9 +108,7 @@ export function validateQuantity(value: unknown, fieldName = "quantity"): number
  * trim, lowercase, deduplique, filtre les vides.
  */
 export function normalizeNames(items: string[]): string[] {
-  return [
-    ...new Set(items.map((item) => item.trim().toLowerCase()).filter(Boolean)),
-  ];
+  return [...new Set(items.map((item) => item.trim().toLowerCase()).filter(Boolean))];
 }
 
 /**

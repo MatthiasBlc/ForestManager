@@ -11,11 +11,11 @@ export const requireSuperAdmin: RequestHandler = (req, res, next) => {
   if (!req.session.adminId) {
     return next(createHttpError(401, "ADMIN_001: Not authenticated"));
   }
-  
+
   if (!req.session.totpVerified) {
     return next(createHttpError(401, "ADMIN_002: TOTP not verified"));
   }
-  
+
   next();
 };
 
@@ -27,6 +27,6 @@ export const requireAdminSession: RequestHandler = (req, res, next) => {
   if (!req.session.adminId) {
     return next(createHttpError(401, "ADMIN_001: Not authenticated"));
   }
-  
+
   next();
 };

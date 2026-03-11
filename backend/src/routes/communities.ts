@@ -62,10 +62,20 @@ router.delete(
 // =====================================
 
 // List community recipes
-router.get("/:communityId/recipes", validateUUID, memberOf, CommunityRecipesController.getCommunityRecipes);
+router.get(
+  "/:communityId/recipes",
+  validateUUID,
+  memberOf,
+  CommunityRecipesController.getCommunityRecipes
+);
 
 // Create a community recipe
-router.post("/:communityId/recipes", validateUUID, memberOf, CommunityRecipesController.createCommunityRecipe);
+router.post(
+  "/:communityId/recipes",
+  validateUUID,
+  memberOf,
+  CommunityRecipesController.createCommunityRecipe
+);
 
 // =====================================
 // Member routes
@@ -185,6 +195,11 @@ router.post(
 // =====================================
 
 // Get community activity feed (any member)
-router.get("/:communityId/activity", validateUUID, memberOf, ActivityController.getCommunityActivity);
+router.get(
+  "/:communityId/activity",
+  validateUUID,
+  memberOf,
+  ActivityController.getCommunityActivity
+);
 
 export default router;

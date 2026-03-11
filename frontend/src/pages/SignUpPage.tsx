@@ -10,7 +10,11 @@ interface SignUpFormData extends SignUpCredentials {
 }
 
 // Password strength calculation
-function calculatePasswordStrength(password: string): { score: number; label: string; color: string } {
+function calculatePasswordStrength(password: string): {
+  score: number;
+  label: string;
+  color: string;
+} {
   let score = 0;
 
   if (password.length >= 8) score++;
@@ -80,9 +84,7 @@ const SignUpPage = () => {
     <div className="flex-1 flex items-center justify-center bg-base-200 px-4">
       <div className="card w-full max-w-md bg-base-100 shadow-xl">
         <div className="card-body">
-          <h2 className="card-title text-2xl font-bold justify-center mb-4">
-            Create an Account
-          </h2>
+          <h2 className="card-title text-2xl font-bold justify-center mb-4">Create an Account</h2>
 
           {errorText && (
             <div className="alert alert-error mb-4">
@@ -171,9 +173,7 @@ const SignUpPage = () => {
                         style={{ width: `${(passwordStrength.score / 6) * 100}%` }}
                       />
                     </div>
-                    <span className="text-sm text-base-content/70">
-                      {passwordStrength.label}
-                    </span>
+                    <span className="text-sm text-base-content/70">{passwordStrength.label}</span>
                   </div>
                 </div>
               )}
@@ -189,17 +189,12 @@ const SignUpPage = () => {
               register={register}
               registerOptions={{
                 required: "Please confirm your password",
-                validate: (value: string) =>
-                  value === password || "Passwords do not match",
+                validate: (value: string) => value === password || "Passwords do not match",
               }}
               error={errors.confirmPassword}
             />
 
-            <button
-              type="submit"
-              className="btn btn-primary w-full"
-              disabled={isSubmitting}
-            >
+            <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
               {isSubmitting ? (
                 <span className="loading loading-spinner loading-sm"></span>
               ) : (
@@ -212,11 +207,7 @@ const SignUpPage = () => {
 
           <p className="text-center text-base-content/70">
             Already have an account?{" "}
-            <button
-              type="button"
-              className="link link-primary"
-              onClick={handleLoginClick}
-            >
+            <button type="button" className="link link-primary" onClick={handleLoginClick}>
               Log in
             </button>
           </p>

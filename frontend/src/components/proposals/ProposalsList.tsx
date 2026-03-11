@@ -16,7 +16,11 @@ interface ProposalsListProps {
   onProposalDecided: () => void;
 }
 
-function formatIngredient(ing: { name: string; quantity?: number | null; unit?: { abbreviation: string } | null }): string {
+function formatIngredient(ing: {
+  name: string;
+  quantity?: number | null;
+  unit?: { abbreviation: string } | null;
+}): string {
   const unitStr = ing.unit?.abbreviation ?? "";
   if (ing.quantity != null) {
     return `${ing.name} (${ing.quantity}${unitStr ? ` ${unitStr}` : ""})`;
@@ -89,9 +93,17 @@ function IngredientsComparison({
               const changed = qtyChanged || unitChanged;
               return (
                 <li key={i.id} className={changed ? "text-warning" : "text-base-content/70"}>
-                  {formatIngredient({ name: i.ingredient.name, quantity: i.quantity, unit: i.unit })}
+                  {formatIngredient({
+                    name: i.ingredient.name,
+                    quantity: i.quantity,
+                    unit: i.unit,
+                  })}
                   {changed && ci && (
-                    <span className="text-xs"> (was {ci.quantity ?? "no qty"}{ci.unit?.abbreviation ? ` ${ci.unit.abbreviation}` : ""})</span>
+                    <span className="text-xs">
+                      {" "}
+                      (was {ci.quantity ?? "no qty"}
+                      {ci.unit?.abbreviation ? ` ${ci.unit.abbreviation}` : ""})
+                    </span>
                   )}
                 </li>
               );
@@ -103,7 +115,14 @@ function IngredientsComparison({
   );
 }
 
-const ProposalsList = ({ recipeId, currentTitle, currentSteps, currentIngredients, refreshSignal, onProposalDecided }: ProposalsListProps) => {
+const ProposalsList = ({
+  recipeId,
+  currentTitle,
+  currentSteps,
+  currentIngredients,
+  refreshSignal,
+  onProposalDecided,
+}: ProposalsListProps) => {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -137,7 +156,9 @@ const ProposalsList = ({ recipeId, currentTitle, currentSteps, currentIngredient
       loadProposals();
     } catch (err) {
       if (err instanceof ConflictError) {
-        setError("The recipe has been modified since this proposal was created. Please refresh and review the changes.");
+        setError(
+          "The recipe has been modified since this proposal was created. Please refresh and review the changes."
+        );
       } else {
         setError(err instanceof Error ? err.message : "Failed to accept proposal");
       }
@@ -188,10 +209,7 @@ const ProposalsList = ({ recipeId, currentTitle, currentSteps, currentIngredient
 
       <div className="space-y-3">
         {proposals.map((proposal) => (
-          <div
-            key={proposal.id}
-            className="card bg-base-200 shadow-sm"
-          >
+          <div key={proposal.id} className="card bg-base-200 shadow-sm">
             <div className="card-body p-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -254,19 +272,30 @@ const ProposalsList = ({ recipeId, currentTitle, currentSteps, currentIngredient
                         <p className="mt-1 text-base-content/60 italic">No change</p>
                       )}
                     </div>
-                    {(proposal.proposedServings != null || proposal.proposedPrepTime != null || proposal.proposedCookTime != null || proposal.proposedRestTime != null) && (
+                    {(proposal.proposedServings != null ||
+                      proposal.proposedPrepTime != null ||
+                      proposal.proposedCookTime != null ||
+                      proposal.proposedRestTime != null) && (
                       <div className="flex flex-wrap gap-2">
                         {proposal.proposedServings != null && (
-                          <span className="badge badge-outline badge-sm">{proposal.proposedServings} pers.</span>
+                          <span className="badge badge-outline badge-sm">
+                            {proposal.proposedServings} pers.
+                          </span>
                         )}
                         {proposal.proposedPrepTime != null && (
-                          <span className="badge badge-outline badge-sm">Prep {formatDuration(proposal.proposedPrepTime)}</span>
+                          <span className="badge badge-outline badge-sm">
+                            Prep {formatDuration(proposal.proposedPrepTime)}
+                          </span>
                         )}
                         {proposal.proposedCookTime != null && (
-                          <span className="badge badge-outline badge-sm">Cuisson {formatDuration(proposal.proposedCookTime)}</span>
+                          <span className="badge badge-outline badge-sm">
+                            Cuisson {formatDuration(proposal.proposedCookTime)}
+                          </span>
                         )}
                         {proposal.proposedRestTime != null && (
-                          <span className="badge badge-outline badge-sm">Repos {formatDuration(proposal.proposedRestTime)}</span>
+                          <span className="badge badge-outline badge-sm">
+                            Repos {formatDuration(proposal.proposedRestTime)}
+                          </span>
                         )}
                       </div>
                     )}
@@ -288,16 +317,21 @@ const ProposalsList = ({ recipeId, currentTitle, currentSteps, currentIngredient
                           {proposal.proposedSteps.map((step, i) => {
                             const currentStep = currentSteps[i];
                             const isNew = !currentStep;
-                            const isChanged = currentStep && currentStep.instruction !== step.instruction;
+                            const isChanged =
+                              currentStep && currentStep.instruction !== step.instruction;
                             return (
                               <div key={step.id} className="text-xs">
                                 {isChanged && currentStep && (
                                   <div className="flex gap-2 bg-base-200 p-2 rounded mb-1 text-error line-through">
                                     <span className="badge badge-sm badge-neutral">{i + 1}</span>
-                                    <span className="whitespace-pre-wrap">{currentStep.instruction}</span>
+                                    <span className="whitespace-pre-wrap">
+                                      {currentStep.instruction}
+                                    </span>
                                   </div>
                                 )}
-                                <div className={`flex gap-2 bg-base-200 p-2 rounded ${isNew ? "text-success" : isChanged ? "text-success" : "text-base-content/60"}`}>
+                                <div
+                                  className={`flex gap-2 bg-base-200 p-2 rounded ${isNew ? "text-success" : isChanged ? "text-success" : "text-base-content/60"}`}
+                                >
                                   <span className="badge badge-sm badge-neutral">{i + 1}</span>
                                   <span className="whitespace-pre-wrap">{step.instruction}</span>
                                 </div>
@@ -305,8 +339,13 @@ const ProposalsList = ({ recipeId, currentTitle, currentSteps, currentIngredient
                             );
                           })}
                           {currentSteps.slice(proposal.proposedSteps.length).map((step, i) => (
-                            <div key={`removed-${i}`} className="flex gap-2 text-xs bg-base-200 p-2 rounded text-error line-through">
-                              <span className="badge badge-sm badge-neutral">{proposal.proposedSteps!.length + i + 1}</span>
+                            <div
+                              key={`removed-${i}`}
+                              className="flex gap-2 text-xs bg-base-200 p-2 rounded text-error line-through"
+                            >
+                              <span className="badge badge-sm badge-neutral">
+                                {proposal.proposedSteps!.length + i + 1}
+                              </span>
                               <span className="whitespace-pre-wrap">{step.instruction}</span>
                             </div>
                           ))}

@@ -44,10 +44,12 @@ function AdminActivityPage() {
 
   function formatMetadata(metadata: Record<string, unknown>): string {
     if (!metadata || Object.keys(metadata).length === 0) return "-";
-    return Object.entries(metadata)
-      .filter(([key]) => key !== "ip")
-      .map(([key, val]) => `${key}: ${val}`)
-      .join(", ") || "-";
+    return (
+      Object.entries(metadata)
+        .filter(([key]) => key !== "ip")
+        .map(([key, val]) => `${key}: ${val}`)
+        .join(", ") || "-"
+    );
   }
 
   return (
@@ -121,7 +123,9 @@ function AdminActivityPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} className="text-center text-base-content/50">No activity found</td>
+                      <td colSpan={4} className="text-center text-base-content/50">
+                        No activity found
+                      </td>
                     </tr>
                   )}
                 </tbody>

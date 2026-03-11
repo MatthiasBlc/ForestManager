@@ -4,7 +4,6 @@ import app from "../../app";
 import { uniqueSuffix, extractSessionCookie } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
 
-
 describe("Notifications API", () => {
   let user: { id: string };
   let userCookie: string;
@@ -14,22 +13,26 @@ describe("Notifications API", () => {
     const suffix = uniqueSuffix();
 
     // Create user
-    const userSignup = await request(app).post("/api/auth/signup").send({
-      username: `nuser_${suffix}`,
-      email: `nuser_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const userSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `nuser_${suffix}`,
+        email: `nuser_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     userCookie = extractSessionCookie(userSignup)!;
     user = (await testPrisma.user.findFirst({
       where: { email: `nuser_${suffix}@example.com` },
     }))!;
 
     // Create actor (for notification source)
-    const actorSignup = await request(app).post("/api/auth/signup").send({
-      username: `nactor_${suffix}`,
-      email: `nactor_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const actorSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `nactor_${suffix}`,
+        email: `nactor_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     extractSessionCookie(actorSignup);
     actor = (await testPrisma.user.findFirst({
       where: { email: `nactor_${suffix}@example.com` },
@@ -56,9 +59,7 @@ describe("Notifications API", () => {
   // =====================================
   describe("GET /api/notifications", () => {
     it("should return empty list when no notifications", async () => {
-      const res = await request(app)
-        .get("/api/notifications")
-        .set("Cookie", userCookie);
+      const res = await request(app).get("/api/notifications").set("Cookie", userCookie);
 
       expect(res.status).toBe(200);
       expect(res.body.data).toEqual([]);
@@ -68,11 +69,13 @@ describe("Notifications API", () => {
 
     it("should return notifications for the authenticated user", async () => {
       await createNotif();
-      await createNotif({ type: "PROPOSAL_ACCEPTED", category: "RECIPE_PROPOSAL", title: "Proposal" });
+      await createNotif({
+        type: "PROPOSAL_ACCEPTED",
+        category: "RECIPE_PROPOSAL",
+        title: "Proposal",
+      });
 
-      const res = await request(app)
-        .get("/api/notifications")
-        .set("Cookie", userCookie);
+      const res = await request(app).get("/api/notifications").set("Cookie", userCookie);
 
       expect(res.status).toBe(200);
       expect(res.body.data.length).toBe(2);
@@ -83,7 +86,11 @@ describe("Notifications API", () => {
     it("should not return notifications belonging to other users", async () => {
       // Create notification for another user
       const otherUser = await testPrisma.user.create({
-        data: { username: `other_${uniqueSuffix()}`, email: `other_${uniqueSuffix()}@example.com`, password: "h" },
+        data: {
+          username: `other_${uniqueSuffix()}`,
+          email: `other_${uniqueSuffix()}@example.com`,
+          password: "h",
+        },
       });
       await testPrisma.notification.create({
         data: {
@@ -95,9 +102,7 @@ describe("Notifications API", () => {
         },
       });
 
-      const res = await request(app)
-        .get("/api/notifications")
-        .set("Cookie", userCookie);
+      const res = await request(app).get("/api/notifications").set("Cookie", userCookie);
 
       expect(res.status).toBe(200);
       expect(res.body.data.length).toBe(0);
@@ -156,9 +161,7 @@ describe("Notifications API", () => {
     it("should include actor info in response", async () => {
       await createNotif();
 
-      const res = await request(app)
-        .get("/api/notifications")
-        .set("Cookie", userCookie);
+      const res = await request(app).get("/api/notifications").set("Cookie", userCookie);
 
       expect(res.status).toBe(200);
       expect(res.body.data[0].actor).not.toBeNull();
@@ -199,9 +202,7 @@ describe("Notifications API", () => {
         message: "R3",
       });
 
-      const res = await request(app)
-        .get("/api/notifications")
-        .set("Cookie", userCookie);
+      const res = await request(app).get("/api/notifications").set("Cookie", userCookie);
 
       expect(res.status).toBe(200);
       // Should be grouped into 1 entry
@@ -317,7 +318,11 @@ describe("Notifications API", () => {
 
     it("should return 403 for notification of another user", async () => {
       const otherUser = await testPrisma.user.create({
-        data: { username: `oth_${uniqueSuffix()}`, email: `oth_${uniqueSuffix()}@example.com`, password: "h" },
+        data: {
+          username: `oth_${uniqueSuffix()}`,
+          email: `oth_${uniqueSuffix()}@example.com`,
+          password: "h",
+        },
       });
       const notif = await testPrisma.notification.create({
         data: {
@@ -381,7 +386,11 @@ describe("Notifications API", () => {
     it("should return 403 if any notification belongs to another user", async () => {
       const n1 = await createNotif();
       const otherUser = await testPrisma.user.create({
-        data: { username: `oth2_${uniqueSuffix()}`, email: `oth2_${uniqueSuffix()}@example.com`, password: "h" },
+        data: {
+          username: `oth2_${uniqueSuffix()}`,
+          email: `oth2_${uniqueSuffix()}@example.com`,
+          password: "h",
+        },
       });
       const n2 = await testPrisma.notification.create({
         data: {
@@ -471,9 +480,7 @@ describe("Notifications API", () => {
     });
 
     it("should return 401 if not authenticated", async () => {
-      const res = await request(app)
-        .patch("/api/notifications/read-all")
-        .send({});
+      const res = await request(app).patch("/api/notifications/read-all").send({});
 
       expect(res.status).toBe(401);
     });

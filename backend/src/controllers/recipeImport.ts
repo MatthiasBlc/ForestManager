@@ -7,7 +7,11 @@ interface ImportUrlBody {
   url?: string;
 }
 
-export const importRecipeFromUrl: RequestHandler<unknown, unknown, ImportUrlBody, unknown> = async (req, res, next) => {
+export const importRecipeFromUrl: RequestHandler<unknown, unknown, ImportUrlBody, unknown> = async (
+  req,
+  res,
+  next
+) => {
   const authenticatedUserId = req.session.userId;
 
   try {

@@ -111,9 +111,21 @@ export function parseIsoDuration(duration: string | null | undefined): number | 
 // --- Unicode fraction normalization ---
 
 const UNICODE_FRACTIONS: Record<string, string> = {
-  "\u00BD": "1/2", "\u2153": "1/3", "\u2154": "2/3", "\u00BC": "1/4", "\u00BE": "3/4",
-  "\u2155": "1/5", "\u2156": "2/5", "\u2157": "3/5", "\u2158": "4/5",
-  "\u2159": "1/6", "\u215A": "5/6", "\u215B": "1/8", "\u215C": "3/8", "\u215D": "5/8", "\u215E": "7/8",
+  "\u00BD": "1/2",
+  "\u2153": "1/3",
+  "\u2154": "2/3",
+  "\u00BC": "1/4",
+  "\u00BE": "3/4",
+  "\u2155": "1/5",
+  "\u2156": "2/5",
+  "\u2157": "3/5",
+  "\u2158": "4/5",
+  "\u2159": "1/6",
+  "\u215A": "5/6",
+  "\u215B": "1/8",
+  "\u215C": "3/8",
+  "\u215D": "5/8",
+  "\u215E": "7/8",
 };
 
 function normalizeUnicodeFractions(text: string): string {
@@ -123,9 +135,7 @@ function normalizeUnicodeFractions(text: string): string {
 // --- Ingredient parsing ---
 
 export function parseIngredientLine(line: string): ParsedIngredient {
-  const cleaned = normalizeUnicodeFractions(
-    line.replace(/^[-*\u2022\u2013\u2014]\s*/, "")
-  ).trim();
+  const cleaned = normalizeUnicodeFractions(line.replace(/^[-*\u2022\u2013\u2014]\s*/, "")).trim();
 
   if (!cleaned) {
     return { raw: line, quantity: null, unitAbbreviation: null, name: null };
@@ -133,7 +143,7 @@ export function parseIngredientLine(line: string): ParsedIngredient {
 
   // Variante "a gout" / sans quantite
   const tasteMatch = cleaned.match(
-    /^(.+?)[\s,]*(?:[aà]\s*go[uû]t|selon\s*(?:besoin|envie|go[uû]t))$/i,
+    /^(.+?)[\s,]*(?:[aà]\s*go[uû]t|selon\s*(?:besoin|envie|go[uû]t))$/i
   );
   if (tasteMatch) {
     return {
@@ -147,14 +157,14 @@ export function parseIngredientLine(line: string): ParsedIngredient {
   // Variante fractions en premier (1/2, 3/4) pour eviter que "1" de "1/2" matche le pattern principal
   const fractionPattern = new RegExp(
     `^(\\d+/\\d+)\\s*(${UNIT_PATTERNS})?\\s*(?:de\\s+|d')?(.+)$`,
-    "i",
+    "i"
   );
   const fractionMatch = cleaned.match(fractionPattern);
   if (fractionMatch) {
     const [num, den] = fractionMatch[1].split("/");
     const quantity = parseInt(num, 10) / parseInt(den, 10);
     const unitRaw = fractionMatch[2]?.toLowerCase() || null;
-    const unitAbbreviation = unitRaw ? (UNIT_ALIAS_MAP[unitRaw] || null) : null;
+    const unitAbbreviation = unitRaw ? UNIT_ALIAS_MAP[unitRaw] || null : null;
     return {
       raw: cleaned,
       quantity: isNaN(quantity) ? null : quantity,
@@ -166,13 +176,13 @@ export function parseIngredientLine(line: string): ParsedIngredient {
   // Pattern principal : nombre (entier/decimal) + unite optionnelle + nom
   const mainPattern = new RegExp(
     `^(\\d+[.,]?\\d*)\\s*(${UNIT_PATTERNS})?\\s*(?:de\\s+|d')?(.+)$`,
-    "i",
+    "i"
   );
   const mainMatch = cleaned.match(mainPattern);
   if (mainMatch) {
     const quantity = parseFloat(mainMatch[1].replace(",", "."));
     const unitRaw = mainMatch[2]?.toLowerCase() || null;
-    const unitAbbreviation = unitRaw ? (UNIT_ALIAS_MAP[unitRaw] || null) : null;
+    const unitAbbreviation = unitRaw ? UNIT_ALIAS_MAP[unitRaw] || null : null;
     return {
       raw: cleaned,
       quantity: isNaN(quantity) ? null : quantity,

@@ -1,5 +1,5 @@
-import { beforeAll, afterAll, afterEach } from 'vitest';
-import { PrismaClient } from '@prisma/client';
+import { beforeAll, afterAll, afterEach } from "vitest";
+import { PrismaClient } from "@prisma/client";
 
 // Instance Prisma pour les tests
 export const testPrisma = new PrismaClient({

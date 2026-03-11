@@ -10,9 +10,7 @@ const TagBadge = ({ tag, size = "sm", onClick }: TagBadgeProps) => {
   const isPending = tag.status === "PENDING";
 
   const baseClasses = `badge badge-${size}`;
-  const styleClasses = isPending
-    ? "badge-outline badge-warning border-dashed"
-    : "badge-primary";
+  const styleClasses = isPending ? "badge-outline badge-warning border-dashed" : "badge-primary";
   const interactionClasses = onClick ? "cursor-pointer hover:badge-secondary" : "";
 
   return (

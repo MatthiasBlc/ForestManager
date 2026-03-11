@@ -4,7 +4,6 @@ import app from "../../app";
 import { uniqueSuffix, extractSessionCookie } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
 
-
 describe("Variants API", () => {
   let recipeCreator: { id: string; username: string; email: string };
   let recipeCreatorCookie: string;
@@ -19,11 +18,13 @@ describe("Variants API", () => {
     const suffix = uniqueSuffix();
 
     // Create recipe creator (moderator) via signup
-    const creatorSignup = await request(app).post("/api/auth/signup").send({
-      username: `varcreator_${suffix}`,
-      email: `varcreator_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const creatorSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `varcreator_${suffix}`,
+        email: `varcreator_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     recipeCreatorCookie = extractSessionCookie(creatorSignup)!;
     recipeCreator = (await testPrisma.user.findFirst({
       where: { email: `varcreator_${suffix}@example.com` },
@@ -37,11 +38,13 @@ describe("Variants API", () => {
     community = createRes.body;
 
     // Create member via signup
-    const memberSignup = await request(app).post("/api/auth/signup").send({
-      username: `varmem_${suffix}`,
-      email: `varmem_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const memberSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `varmem_${suffix}`,
+        email: `varmem_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     memberCookie = extractSessionCookie(memberSignup)!;
     member = (await testPrisma.user.findFirst({
       where: { email: `varmem_${suffix}@example.com` },
@@ -57,11 +60,13 @@ describe("Variants API", () => {
     });
 
     // Create non-member via signup
-    const nonMemberSignup = await request(app).post("/api/auth/signup").send({
-      username: `varnonm_${suffix}`,
-      email: `varnonm_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const nonMemberSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `varnonm_${suffix}`,
+        email: `varnonm_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     nonMemberCookie = extractSessionCookie(nonMemberSignup)!;
     _nonMember = (await testPrisma.user.findFirst({
       where: { email: `varnonm_${suffix}@example.com` },
@@ -214,8 +219,7 @@ describe("Variants API", () => {
     });
 
     it("should return 401 when not authenticated", async () => {
-      const res = await request(app)
-        .get(`/api/recipes/${communityRecipeId}/variants`);
+      const res = await request(app).get(`/api/recipes/${communityRecipeId}/variants`);
 
       expect(res.status).toBe(401);
     });

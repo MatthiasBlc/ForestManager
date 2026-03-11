@@ -46,7 +46,7 @@ function AdminIngredientsPage() {
     try {
       const data = await APIManager.getAdminIngredients(
         search || undefined,
-        statusFilter || undefined,
+        statusFilter || undefined
       );
       setIngredients(data);
     } catch {
@@ -63,7 +63,9 @@ function AdminIngredientsPage() {
 
   // Load units for defaultUnit selector
   useEffect(() => {
-    APIManager.getAdminUnits().then(setUnits).catch(() => {});
+    APIManager.getAdminUnits()
+      .then(setUnits)
+      .catch(() => {});
   }, []);
 
   // --- Sorting ---
@@ -117,7 +119,11 @@ function AdminIngredientsPage() {
 
   const SortIcon = ({ column }: { column: SortColumn }) => {
     if (sortColumn !== column) return <FaSort className="ml-1 opacity-30" />;
-    return sortDirection === "asc" ? <FaSortUp className="ml-1" /> : <FaSortDown className="ml-1" />;
+    return sortDirection === "asc" ? (
+      <FaSortUp className="ml-1" />
+    ) : (
+      <FaSortDown className="ml-1" />
+    );
   };
 
   // --- Create / Edit ---
@@ -217,9 +223,12 @@ function AdminIngredientsPage() {
     if (!approveItem) return;
     setSaving(true);
     try {
-      const newName = approveNewName.trim() !== approveItem.name ? approveNewName.trim() : undefined;
+      const newName =
+        approveNewName.trim() !== approveItem.name ? approveNewName.trim() : undefined;
       await APIManager.approveAdminIngredient(approveItem.id, newName);
-      toast.success(newName ? `Approved as "${newName}"` : `Ingredient "${approveItem.name}" approved`);
+      toast.success(
+        newName ? `Approved as "${newName}"` : `Ingredient "${approveItem.name}" approved`
+      );
       setApproveModalOpen(false);
       setApproveItem(null);
       loadIngredients();
@@ -258,7 +267,9 @@ function AdminIngredientsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Ingredients</h1>
-        <button className="btn btn-primary" onClick={openCreate}>Add Ingredient</button>
+        <button className="btn btn-primary" onClick={openCreate}>
+          Add Ingredient
+        </button>
       </div>
 
       {/* Filters */}
@@ -294,22 +305,52 @@ function AdminIngredientsPage() {
               <thead>
                 <tr>
                   <th className="cursor-pointer select-none" onClick={() => handleSort("name")}>
-                    <span className="flex items-center">Name<SortIcon column="name" /></span>
+                    <span className="flex items-center">
+                      Name
+                      <SortIcon column="name" />
+                    </span>
                   </th>
                   <th className="cursor-pointer select-none" onClick={() => handleSort("status")}>
-                    <span className="flex items-center">Status<SortIcon column="status" /></span>
+                    <span className="flex items-center">
+                      Status
+                      <SortIcon column="status" />
+                    </span>
                   </th>
-                  <th className="cursor-pointer select-none" onClick={() => handleSort("defaultUnit")}>
-                    <span className="flex items-center">Default Unit<SortIcon column="defaultUnit" /></span>
+                  <th
+                    className="cursor-pointer select-none"
+                    onClick={() => handleSort("defaultUnit")}
+                  >
+                    <span className="flex items-center">
+                      Default Unit
+                      <SortIcon column="defaultUnit" />
+                    </span>
                   </th>
-                  <th className="cursor-pointer select-none" onClick={() => handleSort("popularUnit")}>
-                    <span className="flex items-center">Popular Unit<SortIcon column="popularUnit" /></span>
+                  <th
+                    className="cursor-pointer select-none"
+                    onClick={() => handleSort("popularUnit")}
+                  >
+                    <span className="flex items-center">
+                      Popular Unit
+                      <SortIcon column="popularUnit" />
+                    </span>
                   </th>
-                  <th className="cursor-pointer select-none" onClick={() => handleSort("createdBy")}>
-                    <span className="flex items-center">Created By<SortIcon column="createdBy" /></span>
+                  <th
+                    className="cursor-pointer select-none"
+                    onClick={() => handleSort("createdBy")}
+                  >
+                    <span className="flex items-center">
+                      Created By
+                      <SortIcon column="createdBy" />
+                    </span>
                   </th>
-                  <th className="cursor-pointer select-none text-right" onClick={() => handleSort("recipeCount")}>
-                    <span className="flex items-center justify-end">Recipes<SortIcon column="recipeCount" /></span>
+                  <th
+                    className="cursor-pointer select-none text-right"
+                    onClick={() => handleSort("recipeCount")}
+                  >
+                    <span className="flex items-center justify-end">
+                      Recipes
+                      <SortIcon column="recipeCount" />
+                    </span>
                   </th>
                   <th className="text-right">Actions</th>
                 </tr>
@@ -355,21 +396,47 @@ function AdminIngredientsPage() {
                         <div className="flex justify-end gap-1 flex-wrap">
                           {item.status === "PENDING" && (
                             <>
-                              <button className="btn btn-success btn-xs" onClick={() => handleApproveSimple(item)}>Approve</button>
-                              <button className="btn btn-ghost btn-xs" onClick={() => openApproveWithRename(item)}>Rename</button>
-                              <button className="btn btn-error btn-xs" onClick={() => openReject(item)}>Reject</button>
+                              <button
+                                className="btn btn-success btn-xs"
+                                onClick={() => handleApproveSimple(item)}
+                              >
+                                Approve
+                              </button>
+                              <button
+                                className="btn btn-ghost btn-xs"
+                                onClick={() => openApproveWithRename(item)}
+                              >
+                                Rename
+                              </button>
+                              <button
+                                className="btn btn-error btn-xs"
+                                onClick={() => openReject(item)}
+                              >
+                                Reject
+                              </button>
                             </>
                           )}
-                          <button className="btn btn-ghost btn-xs" onClick={() => openEdit(item)}>Edit</button>
-                          <button className="btn btn-ghost btn-xs" onClick={() => openMerge(item)}>Merge</button>
-                          <button className="btn btn-ghost btn-xs text-error" onClick={() => handleDelete(item)}>Delete</button>
+                          <button className="btn btn-ghost btn-xs" onClick={() => openEdit(item)}>
+                            Edit
+                          </button>
+                          <button className="btn btn-ghost btn-xs" onClick={() => openMerge(item)}>
+                            Merge
+                          </button>
+                          <button
+                            className="btn btn-ghost btn-xs text-error"
+                            onClick={() => handleDelete(item)}
+                          >
+                            Delete
+                          </button>
                         </div>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={7} className="text-center text-base-content/50">No ingredients found</td>
+                    <td colSpan={7} className="text-center text-base-content/50">
+                      No ingredients found
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -382,9 +449,13 @@ function AdminIngredientsPage() {
       {modalOpen && (
         <div className="modal modal-open">
           <div className="modal-box">
-            <h3 className="font-bold text-lg">{editingItem ? "Edit Ingredient" : "Create Ingredient"}</h3>
+            <h3 className="font-bold text-lg">
+              {editingItem ? "Edit Ingredient" : "Create Ingredient"}
+            </h3>
             <div className="form-control mt-4">
-              <label className="label"><span className="label-text">Name</span></label>
+              <label className="label">
+                <span className="label-text">Name</span>
+              </label>
               <input
                 type="text"
                 className="input input-bordered"
@@ -394,7 +465,9 @@ function AdminIngredientsPage() {
               />
             </div>
             <div className="form-control mt-2">
-              <label className="label"><span className="label-text">Default Unit</span></label>
+              <label className="label">
+                <span className="label-text">Default Unit</span>
+              </label>
               <select
                 className="select select-bordered"
                 value={itemDefaultUnitId}
@@ -402,13 +475,21 @@ function AdminIngredientsPage() {
               >
                 <option value="">None</option>
                 {units.map((u) => (
-                  <option key={u.id} value={u.id}>{u.name} ({u.abbreviation})</option>
+                  <option key={u.id} value={u.id}>
+                    {u.name} ({u.abbreviation})
+                  </option>
                 ))}
               </select>
             </div>
             <div className="modal-action">
-              <button className="btn btn-ghost" onClick={() => setModalOpen(false)}>Cancel</button>
-              <button className="btn btn-primary" onClick={handleSave} disabled={saving || !itemName.trim()}>
+              <button className="btn btn-ghost" onClick={() => setModalOpen(false)}>
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleSave}
+                disabled={saving || !itemName.trim()}
+              >
                 {saving ? <span className="loading loading-spinner loading-sm"></span> : "Save"}
               </button>
             </div>
@@ -422,7 +503,9 @@ function AdminIngredientsPage() {
         <div className="modal modal-open">
           <div className="modal-box">
             <h3 className="font-bold text-lg">Merge &quot;{mergeSource.name}&quot; into...</h3>
-            <p className="text-sm text-base-content/70 mt-2">Select the target ingredient. All recipes will be moved to the target.</p>
+            <p className="text-sm text-base-content/70 mt-2">
+              Select the target ingredient. All recipes will be moved to the target.
+            </p>
             <input
               type="text"
               placeholder="Search target ingredient..."
@@ -433,7 +516,11 @@ function AdminIngredientsPage() {
             />
             <div className="mt-3 max-h-60 overflow-y-auto">
               {ingredients
-                .filter((i) => i.id !== mergeSource.id && i.name.toLowerCase().includes(mergeSearch.toLowerCase()))
+                .filter(
+                  (i) =>
+                    i.id !== mergeSource.id &&
+                    i.name.toLowerCase().includes(mergeSearch.toLowerCase())
+                )
                 .map((item) => (
                   <button
                     key={item.id}
@@ -445,10 +532,24 @@ function AdminIngredientsPage() {
                 ))}
             </div>
             <div className="modal-action">
-              <button className="btn btn-ghost" onClick={() => { setMergeModalOpen(false); setMergeSource(null); }}>Cancel</button>
+              <button
+                className="btn btn-ghost"
+                onClick={() => {
+                  setMergeModalOpen(false);
+                  setMergeSource(null);
+                }}
+              >
+                Cancel
+              </button>
             </div>
           </div>
-          <div className="modal-backdrop bg-black/50" onClick={() => { setMergeModalOpen(false); setMergeSource(null); }} />
+          <div
+            className="modal-backdrop bg-black/50"
+            onClick={() => {
+              setMergeModalOpen(false);
+              setMergeSource(null);
+            }}
+          />
         </div>
       )}
 
@@ -461,7 +562,9 @@ function AdminIngredientsPage() {
               Approve ingredient &quot;{approveItem.name}&quot;. Optionally change the name.
             </p>
             <div className="form-control mt-4">
-              <label className="label"><span className="label-text">Name</span></label>
+              <label className="label">
+                <span className="label-text">Name</span>
+              </label>
               <input
                 type="text"
                 className="input input-bordered"
@@ -471,13 +574,31 @@ function AdminIngredientsPage() {
               />
             </div>
             <div className="modal-action">
-              <button className="btn btn-ghost" onClick={() => { setApproveModalOpen(false); setApproveItem(null); }}>Cancel</button>
-              <button className="btn btn-success" onClick={handleApproveWithRename} disabled={saving || !approveNewName.trim()}>
+              <button
+                className="btn btn-ghost"
+                onClick={() => {
+                  setApproveModalOpen(false);
+                  setApproveItem(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-success"
+                onClick={handleApproveWithRename}
+                disabled={saving || !approveNewName.trim()}
+              >
                 {saving ? <span className="loading loading-spinner loading-sm"></span> : "Approve"}
               </button>
             </div>
           </div>
-          <div className="modal-backdrop bg-black/50" onClick={() => { setApproveModalOpen(false); setApproveItem(null); }} />
+          <div
+            className="modal-backdrop bg-black/50"
+            onClick={() => {
+              setApproveModalOpen(false);
+              setApproveItem(null);
+            }}
+          />
         </div>
       )}
 
@@ -487,10 +608,13 @@ function AdminIngredientsPage() {
           <div className="modal-box">
             <h3 className="font-bold text-lg">Reject Ingredient</h3>
             <p className="text-sm text-base-content/70 mt-2">
-              Reject ingredient &quot;{rejectItem.name}&quot;. This will permanently delete it and remove it from all recipes.
+              Reject ingredient &quot;{rejectItem.name}&quot;. This will permanently delete it and
+              remove it from all recipes.
             </p>
             <div className="form-control mt-4">
-              <label className="label"><span className="label-text">Reason (required)</span></label>
+              <label className="label">
+                <span className="label-text">Reason (required)</span>
+              </label>
               <textarea
                 className="textarea textarea-bordered"
                 value={rejectReason}
@@ -500,13 +624,31 @@ function AdminIngredientsPage() {
               />
             </div>
             <div className="modal-action">
-              <button className="btn btn-ghost" onClick={() => { setRejectModalOpen(false); setRejectItem(null); }}>Cancel</button>
-              <button className="btn btn-error" onClick={handleReject} disabled={saving || !rejectReason.trim()}>
+              <button
+                className="btn btn-ghost"
+                onClick={() => {
+                  setRejectModalOpen(false);
+                  setRejectItem(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                className="btn btn-error"
+                onClick={handleReject}
+                disabled={saving || !rejectReason.trim()}
+              >
                 {saving ? <span className="loading loading-spinner loading-sm"></span> : "Reject"}
               </button>
             </div>
           </div>
-          <div className="modal-backdrop bg-black/50" onClick={() => { setRejectModalOpen(false); setRejectItem(null); }} />
+          <div
+            className="modal-backdrop bg-black/50"
+            onClick={() => {
+              setRejectModalOpen(false);
+              setRejectItem(null);
+            }}
+          />
         </div>
       )}
 

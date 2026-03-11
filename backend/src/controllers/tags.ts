@@ -10,7 +10,11 @@ interface SearchTagsQuery {
   communityId?: string;
 }
 
-export const searchTags: RequestHandler<unknown, unknown, unknown, SearchTagsQuery> = async (req, res, next) => {
+export const searchTags: RequestHandler<unknown, unknown, unknown, SearchTagsQuery> = async (
+  req,
+  res,
+  next
+) => {
   const authenticatedUserId = req.session.userId;
   const search = req.query.search?.trim().toLowerCase() || "";
   const communityId = req.query.communityId?.trim() || null;
@@ -51,7 +55,7 @@ export const searchTags: RequestHandler<unknown, unknown, unknown, SearchTagsQue
     // En contexte perso : agreger par nom pour dedupliquer les tags identiques venant de communautes differentes
     let data;
     if (!communityId) {
-      const nameMap = new Map<string, typeof enriched[number]>();
+      const nameMap = new Map<string, (typeof enriched)[number]>();
       for (const tag of enriched) {
         const existing = nameMap.get(tag.name);
         if (existing) {

@@ -154,12 +154,12 @@
 
 ## Resume
 
-| Phase | Scope | Dependances |
-|-------|-------|-------------|
-| **A** | Parser texte (frontend, pur TS) | Aucune |
-| **B** | Import URL (backend, cheerio) | Aucune (independant de A) |
-| **C** | Modale + integration formulaire | A + B |
-| **D** | Polish + docs | C |
+| Phase | Scope                           | Dependances               |
+| ----- | ------------------------------- | ------------------------- |
+| **A** | Parser texte (frontend, pur TS) | Aucune                    |
+| **B** | Import URL (backend, cheerio)   | Aucune (independant de A) |
+| **C** | Modale + integration formulaire | A + B                     |
+| **D** | Polish + docs                   | C                         |
 
 Phases A et B sont independantes et peuvent etre developpees en parallele.
 

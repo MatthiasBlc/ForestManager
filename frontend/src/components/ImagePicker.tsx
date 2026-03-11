@@ -31,7 +31,7 @@ const ImagePicker = ({ onImageSelected }: ImagePickerProps) => {
         onImageSelected(null);
       }
     },
-    [onImageSelected],
+    [onImageSelected]
   );
 
   const handleDrop = useCallback(
@@ -41,7 +41,7 @@ const ImagePicker = ({ onImageSelected }: ImagePickerProps) => {
       const file = e.dataTransfer.files[0];
       if (file) handleFile(file);
     },
-    [handleFile, status],
+    [handleFile, status]
   );
 
   const handleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,11 +60,7 @@ const ImagePicker = ({ onImageSelected }: ImagePickerProps) => {
     <div className="space-y-3">
       {preview && (
         <div className="relative inline-block">
-          <img
-            src={preview}
-            alt="Preview"
-            className="rounded-lg max-h-64 object-cover"
-          />
+          <img src={preview} alt="Preview" className="rounded-lg max-h-64 object-cover" />
           {status === "idle" && (
             <button
               type="button"
@@ -99,12 +95,8 @@ const ImagePicker = ({ onImageSelected }: ImagePickerProps) => {
           onDragOver={(e) => e.preventDefault()}
         >
           <FaCloudUploadAlt className="w-8 h-8 mx-auto text-base-content/40 mb-2" />
-          <p className="text-sm text-base-content/60">
-            Cliquez ou glissez une image ici
-          </p>
-          <p className="text-xs text-base-content/40 mt-1">
-            JPEG, PNG ou WebP — max 2 Mo
-          </p>
+          <p className="text-sm text-base-content/60">Cliquez ou glissez une image ici</p>
+          <p className="text-xs text-base-content/40 mt-1">JPEG, PNG ou WebP — max 2 Mo</p>
           <input
             ref={inputRef}
             type="file"

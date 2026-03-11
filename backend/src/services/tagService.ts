@@ -117,9 +117,7 @@ export async function getAutocompleteTags(
   search: string,
   limit: number
 ): Promise<AutocompleteTag[]> {
-  const searchFilter = search
-    ? { name: { contains: search, mode: "insensitive" as const } }
-    : {};
+  const searchFilter = search ? { name: { contains: search, mode: "insensitive" as const } } : {};
 
   if (communityId) {
     // Tags GLOBAL APPROVED + COMMUNITY APPROVED de cette communaute

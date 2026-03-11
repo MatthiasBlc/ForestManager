@@ -14,11 +14,29 @@ interface RecipeListRowProps {
   canDelete?: boolean;
 }
 
-const RecipeListRow = ({ recipe, onDelete, onTagClick, onShare, showCreator = false, canEdit = true, canDelete = true }: RecipeListRowProps) => {
+const RecipeListRow = ({
+  recipe,
+  onDelete,
+  onTagClick,
+  onShare,
+  showCreator = false,
+  canEdit = true,
+  canDelete = true,
+}: RecipeListRowProps) => {
   const {
-    title, imageUrl, tags, displayedTags, remainingTagsCount, dateText,
-    communityRecipe, isSharedRecipe,
-    handleClick, handleEdit, handleDelete, handleTagClick, handleShare,
+    title,
+    imageUrl,
+    tags,
+    displayedTags,
+    remainingTagsCount,
+    dateText,
+    communityRecipe,
+    isSharedRecipe,
+    handleClick,
+    handleEdit,
+    handleDelete,
+    handleTagClick,
+    handleShare,
     ConfirmDialog,
   } = useRecipeActions({ recipe, onDelete, onTagClick, onShare });
 

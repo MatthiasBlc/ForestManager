@@ -32,9 +32,7 @@ const TimeBadges = ({ prepTime, cookTime, restTime }: TimeBadgesProps) => {
         </div>
       )}
       {totalTime > 0 && (
-        <div className="badge badge-primary gap-1">
-          Total {formatDuration(totalTime)}
-        </div>
+        <div className="badge badge-primary gap-1">Total {formatDuration(totalTime)}</div>
       )}
     </div>
   );

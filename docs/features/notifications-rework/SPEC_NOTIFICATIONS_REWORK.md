@@ -21,15 +21,15 @@ Le systeme actuel est purement temps-reel (WebSocket) sans persistance. Les noti
 
 ### 1.1 Ce qui change
 
-| Aspect | Avant | Apres |
-|--------|-------|-------|
-| Persistance | Aucune (WebSocket only) | Table `Notification` en DB |
-| Offline | Notifications perdues | Stockees, delivrees a la reconnexion |
-| UI | Dropdown invitations uniquement | Dropdown toutes notifs + page dediee |
-| Statut | Aucun | Lu/non-lu avec tracking |
-| Preferences | Tags moderateurs uniquement | Par categorie, tous les users |
-| Groupement | Aucun | Broadcasts communaute groupes |
-| Retention | N/A | 30j lues / illimitee non-lues |
+| Aspect      | Avant                           | Apres                                |
+| ----------- | ------------------------------- | ------------------------------------ |
+| Persistance | Aucune (WebSocket only)         | Table `Notification` en DB           |
+| Offline     | Notifications perdues           | Stockees, delivrees a la reconnexion |
+| UI          | Dropdown invitations uniquement | Dropdown toutes notifs + page dediee |
+| Statut      | Aucun                           | Lu/non-lu avec tracking              |
+| Preferences | Tags moderateurs uniquement     | Par categorie, tous les users        |
+| Groupement  | Aucun                           | Broadcasts communaute groupes        |
+| Retention   | N/A                             | 30j lues / illimitee non-lues        |
 
 ### 1.2 Ce qui ne change pas
 
@@ -41,13 +41,13 @@ Le systeme actuel est purement temps-reel (WebSocket) sans persistance. Les noti
 
 ### 1.3 Coexistence ActivityLog / Notification
 
-| | ActivityLog | Notification |
-|---|---|---|
-| **But** | Flux d'activite communautaire public | Alerte personnelle pour un utilisateur |
-| **Destinataire** | Aucun (visible par tous les membres) | Un utilisateur specifique |
-| **Statut lu** | Non | Oui (readAt) |
-| **Action** | Non | Oui (lien contextuel) |
-| **Retention** | Illimitee | 30j lues / illimitee non-lues |
+|                  | ActivityLog                          | Notification                           |
+| ---------------- | ------------------------------------ | -------------------------------------- |
+| **But**          | Flux d'activite communautaire public | Alerte personnelle pour un utilisateur |
+| **Destinataire** | Aucun (visible par tous les membres) | Un utilisateur specifique              |
+| **Statut lu**    | Non                                  | Oui (readAt)                           |
+| **Action**       | Non                                  | Oui (lien contextuel)                  |
+| **Retention**    | Illimitee                            | 30j lues / illimitee non-lues          |
 
 Un meme evenement peut creer a la fois une entree ActivityLog ET des Notifications. Exemple : `RECIPE_CREATED` -> 1 ActivityLog + N Notifications (1 par membre de la communaute, sauf l'auteur).
 
@@ -125,13 +125,13 @@ enum NotificationCategory {
 
 ### 2.4 Mapping type -> categorie
 
-| Categorie | Types d'evenements |
-|-----------|-------------------|
-| `INVITATION` | `INVITE_SENT`, `INVITE_ACCEPTED`, `INVITE_REJECTED`, `INVITE_CANCELLED` |
-| `RECIPE_PROPOSAL` | `VARIANT_PROPOSED`, `PROPOSAL_ACCEPTED`, `PROPOSAL_REJECTED`, `RECIPE_CREATED`, `RECIPE_SHARED` |
-| `TAG` | `TAG_SUGGESTION_CREATED`, `TAG_SUGGESTION_ACCEPTED`, `TAG_SUGGESTION_REJECTED`, `tag-suggestion:pending-mod`, `tag:pending`, `tag:approved`, `tag:rejected` |
-| `INGREDIENT` | `INGREDIENT_APPROVED`, `INGREDIENT_MODIFIED`, `INGREDIENT_MERGED`, `INGREDIENT_REJECTED` |
-| `MODERATION` | `USER_PROMOTED`, `USER_KICKED`, `USER_LEFT` |
+| Categorie         | Types d'evenements                                                                                                                                          |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `INVITATION`      | `INVITE_SENT`, `INVITE_ACCEPTED`, `INVITE_REJECTED`, `INVITE_CANCELLED`                                                                                     |
+| `RECIPE_PROPOSAL` | `VARIANT_PROPOSED`, `PROPOSAL_ACCEPTED`, `PROPOSAL_REJECTED`, `RECIPE_CREATED`, `RECIPE_SHARED`                                                             |
+| `TAG`             | `TAG_SUGGESTION_CREATED`, `TAG_SUGGESTION_ACCEPTED`, `TAG_SUGGESTION_REJECTED`, `tag-suggestion:pending-mod`, `tag:pending`, `tag:approved`, `tag:rejected` |
+| `INGREDIENT`      | `INGREDIENT_APPROVED`, `INGREDIENT_MODIFIED`, `INGREDIENT_MERGED`, `INGREDIENT_REJECTED`                                                                    |
+| `MODERATION`      | `USER_PROMOTED`, `USER_KICKED`, `USER_LEFT`                                                                                                                 |
 
 ---
 
@@ -143,11 +143,11 @@ Seuls les **broadcasts communautaires** sont groupes. Les notifications personne
 
 ### 3.2 Notifications groupables
 
-| Type | groupKey | Exemple de message groupe |
-|------|----------|--------------------------|
-| `RECIPE_CREATED` | `community:{id}:RECIPE_CREATED` | "3 nouvelles recettes dans {communaute}" |
-| `RECIPE_SHARED` | `community:{id}:RECIPE_SHARED` | "2 recettes partagees dans {communaute}" |
-| `USER_JOINED` (via INVITE_ACCEPTED broadcast) | `community:{id}:USER_JOINED` | "2 nouveaux membres dans {communaute}" |
+| Type                                          | groupKey                        | Exemple de message groupe                |
+| --------------------------------------------- | ------------------------------- | ---------------------------------------- |
+| `RECIPE_CREATED`                              | `community:{id}:RECIPE_CREATED` | "3 nouvelles recettes dans {communaute}" |
+| `RECIPE_SHARED`                               | `community:{id}:RECIPE_SHARED`  | "2 recettes partagees dans {communaute}" |
+| `USER_JOINED` (via INVITE_ACCEPTED broadcast) | `community:{id}:USER_JOINED`    | "2 nouveaux membres dans {communaute}"   |
 
 ### 3.3 Regles de groupement
 
@@ -179,13 +179,13 @@ Seuls les **broadcasts communautaires** sont groupes. Les notifications personne
 
 Chaque utilisateur peut activer/desactiver les notifications par categorie :
 
-| Categorie | Label UI | Description | Default |
-|-----------|----------|-------------|---------|
-| `INVITATION` | Invitations | Invitations recues, acceptees, refusees | `true` |
-| `RECIPE_PROPOSAL` | Recettes & Proposals | Nouvelles recettes, proposals de modifications | `true` |
-| `TAG` | Tags | Suggestions de tags, validations | `true` |
-| `INGREDIENT` | Ingredients | Approbations, rejets d'ingredients | `true` |
-| `MODERATION` | Moderation | Promotions, exclusions de communaute | `true` |
+| Categorie         | Label UI             | Description                                    | Default |
+| ----------------- | -------------------- | ---------------------------------------------- | ------- |
+| `INVITATION`      | Invitations          | Invitations recues, acceptees, refusees        | `true`  |
+| `RECIPE_PROPOSAL` | Recettes & Proposals | Nouvelles recettes, proposals de modifications | `true`  |
+| `TAG`             | Tags                 | Suggestions de tags, validations               | `true`  |
+| `INGREDIENT`      | Ingredients          | Approbations, rejets d'ingredients             | `true`  |
+| `MODERATION`      | Moderation           | Promotions, exclusions de communaute           | `true`  |
 
 ### 4.2 Hierarchie des preferences
 
@@ -269,17 +269,18 @@ WHERE "readAt" IS NOT NULL
 
 ### 6.1 Notifications
 
-| Methode | Endpoint | Description |
-|---------|----------|-------------|
-| `GET` | `/api/notifications` | Liste paginee des notifications (avec groupement) |
-| `GET` | `/api/notifications/unread-count` | Nombre de notifications non-lues |
-| `PATCH` | `/api/notifications/:id/read` | Marquer une notification comme lue |
-| `PATCH` | `/api/notifications/read` | Marquer un batch comme lu (body: `{ ids: string[] }`) |
-| `PATCH` | `/api/notifications/read-all` | Tout marquer comme lu (optionnel: `{ category?: string }`) |
+| Methode | Endpoint                          | Description                                                |
+| ------- | --------------------------------- | ---------------------------------------------------------- |
+| `GET`   | `/api/notifications`              | Liste paginee des notifications (avec groupement)          |
+| `GET`   | `/api/notifications/unread-count` | Nombre de notifications non-lues                           |
+| `PATCH` | `/api/notifications/:id/read`     | Marquer une notification comme lue                         |
+| `PATCH` | `/api/notifications/read`         | Marquer un batch comme lu (body: `{ ids: string[] }`)      |
+| `PATCH` | `/api/notifications/read-all`     | Tout marquer comme lu (optionnel: `{ category?: string }`) |
 
 #### GET /api/notifications
 
 **Query params** :
+
 - `page` (number, default 1)
 - `limit` (number, default 20, max 50)
 - `category` (NotificationCategory, optionnel) - filtre par categorie
@@ -287,6 +288,7 @@ WHERE "readAt" IS NOT NULL
 - `grouped` (boolean, default true) - activer le groupement
 
 **Response** :
+
 ```json
 {
   "data": [
@@ -337,6 +339,7 @@ WHERE "readAt" IS NOT NULL
 #### GET /api/notifications/unread-count
 
 **Response** :
+
 ```json
 {
   "count": 7,
@@ -352,14 +355,15 @@ WHERE "readAt" IS NOT NULL
 
 ### 6.2 Preferences
 
-| Methode | Endpoint | Description |
-|---------|----------|-------------|
-| `GET` | `/api/notifications/preferences` | Toutes les preferences de l'utilisateur |
-| `PUT` | `/api/notifications/preferences` | Mettre a jour une preference |
+| Methode | Endpoint                         | Description                             |
+| ------- | -------------------------------- | --------------------------------------- |
+| `GET`   | `/api/notifications/preferences` | Toutes les preferences de l'utilisateur |
+| `PUT`   | `/api/notifications/preferences` | Mettre a jour une preference            |
 
 #### GET /api/notifications/preferences
 
 **Response** :
+
 ```json
 {
   "global": {
@@ -388,11 +392,12 @@ WHERE "readAt" IS NOT NULL
 #### PUT /api/notifications/preferences
 
 **Body** :
+
 ```json
 {
   "category": "RECIPE_PROPOSAL",
   "enabled": false,
-  "communityId": "uuid"       // optionnel, null = global
+  "communityId": "uuid" // optionnel, null = global
 }
 ```
 
@@ -402,10 +407,10 @@ WHERE "readAt" IS NOT NULL
 
 ### 7.1 Evenements emis (serveur -> client)
 
-| Evenement | Payload | Quand |
-|-----------|---------|-------|
-| `notification:new` | `{ notification: Notification }` | Nouvelle notification creee pour ce user |
-| `notification:count` | `{ count: number, byCategory: {...} }` | Mise a jour du compteur non-lu |
+| Evenement            | Payload                                | Quand                                    |
+| -------------------- | -------------------------------------- | ---------------------------------------- |
+| `notification:new`   | `{ notification: Notification }`       | Nouvelle notification creee pour ce user |
+| `notification:count` | `{ count: number, byCategory: {...} }` | Mise a jour du compteur non-lu           |
 
 ### 7.2 Changements par rapport a l'existant
 
@@ -430,6 +435,7 @@ A la connexion/reconnexion du socket :
 **Remplacement** du `NotificationDropdown` actuel (invitations only).
 
 **Composants** :
+
 - **Bell icon** avec badge numerique (compteur non-lues, cap a 99+)
 - **Panneau dropdown** (largeur ~380px) :
   - Header : "Notifications" + bouton "Tout marquer comme lu"
@@ -440,6 +446,7 @@ A la connexion/reconnexion du socket :
   - Footer : lien "Voir toutes les notifications" -> page dediee
 
 **Comportement** :
+
 - Ouverture : fetch les 10 dernieres notifications
 - Auto-mark as read : les notifications visibles sont marquees comme lues apres 3 secondes d'ouverture continue
 - Click sur notification : navigation vers `actionUrl` + mark as read + fermeture dropdown
@@ -451,6 +458,7 @@ A la connexion/reconnexion du socket :
 **Route** : `/notifications`
 
 **Composants** :
+
 - Header : "Notifications" + bouton "Tout marquer comme lu"
 - Filtres : par categorie (chips/tabs) + toggle "Non-lues uniquement"
 - Liste paginee (load more / infinite scroll) de toutes les notifications
@@ -462,6 +470,7 @@ A la connexion/reconnexion du socket :
 **Remplacement** du `NotificationPreferencesSection` actuel.
 
 **Composants** :
+
 - Section "Notifications" dans la page profil
 - Pour chaque categorie : toggle global on/off
 - Sous chaque categorie : overrides par communaute (liste des communautes de l'utilisateur)
@@ -478,37 +487,37 @@ Les invitations (`INVITE_SENT`) deviennent des notifications comme les autres, a
 
 ### 9.1 Notifications personnelles
 
-| Type | Titre | Message | Action URL |
-|------|-------|---------|------------|
-| `INVITE_SENT` | Nouvelle invitation | "{actor} vous invite a rejoindre {communaute}" | `/invitations` |
-| `INVITE_ACCEPTED` | Invitation acceptee | "{actor} a accepte votre invitation pour {communaute}" | `/communities/{id}` |
-| `INVITE_REJECTED` | Invitation refusee | "{actor} a decline votre invitation pour {communaute}" | `/communities/{id}` |
-| `INVITE_CANCELLED` | Invitation annulee | "L'invitation pour {communaute} a ete annulee" | null |
-| `VARIANT_PROPOSED` | Nouvelle proposal | "{actor} propose une modification sur '{recette}'" | `/communities/{id}/recipes/{id}` |
-| `PROPOSAL_ACCEPTED` | Proposal acceptee | "Votre proposal sur '{recette}' a ete acceptee" | `/communities/{id}/recipes/{id}` |
-| `PROPOSAL_REJECTED` | Proposal refusee | "Votre proposal sur '{recette}' a ete refusee" | `/communities/{id}/recipes/{id}` |
-| `USER_PROMOTED` | Promotion moderateur | "Vous etes maintenant moderateur de {communaute}" | `/communities/{id}` |
-| `USER_KICKED` | Exclusion | "Vous avez ete retire de {communaute}" | null |
-| `TAG_SUGGESTION_CREATED` | Suggestion de tag | "{actor} suggere le tag '{tag}' sur '{recette}'" | `/communities/{id}/recipes/{id}` |
-| `TAG_SUGGESTION_ACCEPTED` | Suggestion acceptee | "Votre suggestion de tag '{tag}' a ete acceptee" | `/communities/{id}/recipes/{id}` |
-| `TAG_SUGGESTION_REJECTED` | Suggestion refusee | "Votre suggestion de tag '{tag}' a ete refusee" | `/communities/{id}/recipes/{id}` |
-| `tag-suggestion:pending-mod` | Tag en attente | "Un tag suggere attend votre validation dans {communaute}" | `/communities/{id}/tags` |
-| `tag:pending` | Tag en attente | "Un nouveau tag attend validation dans {communaute}" | `/communities/{id}/tags` |
-| `tag:approved` | Tag valide | "Votre tag '{tag}' a ete valide dans {communaute}" | `/communities/{id}` |
-| `tag:rejected` | Tag rejete | "Votre tag '{tag}' a ete rejete dans {communaute}" | `/communities/{id}` |
-| `INGREDIENT_APPROVED` | Ingredient valide | "Votre ingredient '{name}' a ete valide" | null |
-| `INGREDIENT_MODIFIED` | Ingredient renomme | "Votre ingredient a ete valide sous le nom '{newName}'" | null |
-| `INGREDIENT_MERGED` | Ingredient fusionne | "Votre ingredient '{name}' a ete fusionne avec '{targetName}'" | null |
-| `INGREDIENT_REJECTED` | Ingredient rejete | "Votre ingredient '{name}' a ete rejete : {reason}" | null |
+| Type                         | Titre                | Message                                                        | Action URL                       |
+| ---------------------------- | -------------------- | -------------------------------------------------------------- | -------------------------------- |
+| `INVITE_SENT`                | Nouvelle invitation  | "{actor} vous invite a rejoindre {communaute}"                 | `/invitations`                   |
+| `INVITE_ACCEPTED`            | Invitation acceptee  | "{actor} a accepte votre invitation pour {communaute}"         | `/communities/{id}`              |
+| `INVITE_REJECTED`            | Invitation refusee   | "{actor} a decline votre invitation pour {communaute}"         | `/communities/{id}`              |
+| `INVITE_CANCELLED`           | Invitation annulee   | "L'invitation pour {communaute} a ete annulee"                 | null                             |
+| `VARIANT_PROPOSED`           | Nouvelle proposal    | "{actor} propose une modification sur '{recette}'"             | `/communities/{id}/recipes/{id}` |
+| `PROPOSAL_ACCEPTED`          | Proposal acceptee    | "Votre proposal sur '{recette}' a ete acceptee"                | `/communities/{id}/recipes/{id}` |
+| `PROPOSAL_REJECTED`          | Proposal refusee     | "Votre proposal sur '{recette}' a ete refusee"                 | `/communities/{id}/recipes/{id}` |
+| `USER_PROMOTED`              | Promotion moderateur | "Vous etes maintenant moderateur de {communaute}"              | `/communities/{id}`              |
+| `USER_KICKED`                | Exclusion            | "Vous avez ete retire de {communaute}"                         | null                             |
+| `TAG_SUGGESTION_CREATED`     | Suggestion de tag    | "{actor} suggere le tag '{tag}' sur '{recette}'"               | `/communities/{id}/recipes/{id}` |
+| `TAG_SUGGESTION_ACCEPTED`    | Suggestion acceptee  | "Votre suggestion de tag '{tag}' a ete acceptee"               | `/communities/{id}/recipes/{id}` |
+| `TAG_SUGGESTION_REJECTED`    | Suggestion refusee   | "Votre suggestion de tag '{tag}' a ete refusee"                | `/communities/{id}/recipes/{id}` |
+| `tag-suggestion:pending-mod` | Tag en attente       | "Un tag suggere attend votre validation dans {communaute}"     | `/communities/{id}/tags`         |
+| `tag:pending`                | Tag en attente       | "Un nouveau tag attend validation dans {communaute}"           | `/communities/{id}/tags`         |
+| `tag:approved`               | Tag valide           | "Votre tag '{tag}' a ete valide dans {communaute}"             | `/communities/{id}`              |
+| `tag:rejected`               | Tag rejete           | "Votre tag '{tag}' a ete rejete dans {communaute}"             | `/communities/{id}`              |
+| `INGREDIENT_APPROVED`        | Ingredient valide    | "Votre ingredient '{name}' a ete valide"                       | null                             |
+| `INGREDIENT_MODIFIED`        | Ingredient renomme   | "Votre ingredient a ete valide sous le nom '{newName}'"        | null                             |
+| `INGREDIENT_MERGED`          | Ingredient fusionne  | "Votre ingredient '{name}' a ete fusionne avec '{targetName}'" | null                             |
+| `INGREDIENT_REJECTED`        | Ingredient rejete    | "Votre ingredient '{name}' a ete rejete : {reason}"            | null                             |
 
 ### 9.2 Notifications broadcast (groupables)
 
-| Type | Titre (individuel) | Message groupe | Action URL | groupKey |
-|------|-------|---------|------------|----------|
-| `RECIPE_CREATED` | Nouvelle recette | "{count} nouvelles recettes dans {communaute}" | `/communities/{id}` | `community:{id}:RECIPE_CREATED` |
-| `RECIPE_SHARED` | Recette partagee | "{count} recettes partagees dans {communaute}" | `/communities/{id}` | `community:{id}:RECIPE_SHARED` |
-| `USER_JOINED` | Nouveau membre | "{count} nouveaux membres dans {communaute}" | `/communities/{id}` | `community:{id}:USER_JOINED` |
-| `USER_LEFT` | Depart | "{count} membres ont quitte {communaute}" | `/communities/{id}` | `community:{id}:USER_LEFT` |
+| Type             | Titre (individuel) | Message groupe                                 | Action URL          | groupKey                        |
+| ---------------- | ------------------ | ---------------------------------------------- | ------------------- | ------------------------------- |
+| `RECIPE_CREATED` | Nouvelle recette   | "{count} nouvelles recettes dans {communaute}" | `/communities/{id}` | `community:{id}:RECIPE_CREATED` |
+| `RECIPE_SHARED`  | Recette partagee   | "{count} recettes partagees dans {communaute}" | `/communities/{id}` | `community:{id}:RECIPE_SHARED`  |
+| `USER_JOINED`    | Nouveau membre     | "{count} nouveaux membres dans {communaute}"   | `/communities/{id}` | `community:{id}:USER_JOINED`    |
+| `USER_LEFT`      | Depart             | "{count} membres ont quitte {communaute}"      | `/communities/{id}` | `community:{id}:USER_LEFT`      |
 
 ---
 
@@ -564,13 +573,13 @@ Les invitations (`INVITE_SENT`) deviennent des notifications comme les autres, a
 
 ## 12. Codes erreur
 
-| Code | HTTP | Description |
-|------|------|-------------|
-| `NOTIF_001` | 404 | Notification non trouvee |
-| `NOTIF_002` | 403 | Notification appartient a un autre utilisateur |
-| `NOTIF_003` | 400 | Categorie de notification invalide |
-| `NOTIF_004` | 400 | IDs de notifications invalides (batch read) |
-| `NOTIF_005` | 400 | Parametre de pagination invalide |
+| Code        | HTTP | Description                                    |
+| ----------- | ---- | ---------------------------------------------- |
+| `NOTIF_001` | 404  | Notification non trouvee                       |
+| `NOTIF_002` | 403  | Notification appartient a un autre utilisateur |
+| `NOTIF_003` | 400  | Categorie de notification invalide             |
+| `NOTIF_004` | 400  | IDs de notifications invalides (batch read)    |
+| `NOTIF_005` | 400  | Parametre de pagination invalide               |
 
 ---
 

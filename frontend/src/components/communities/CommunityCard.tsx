@@ -32,9 +32,7 @@ const CommunityCard = ({ community }: CommunityCardProps) => {
           </span>
         </div>
 
-        {description && (
-          <p className="text-base-content/70 line-clamp-2">{description}</p>
-        )}
+        {description && <p className="text-base-content/70 line-clamp-2">{description}</p>}
 
         <div className="flex gap-4 mt-2 text-sm text-base-content/60">
           <span className="flex items-center gap-1">

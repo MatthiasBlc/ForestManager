@@ -277,14 +277,14 @@ function AppContent() {
 function App() {
   return (
     <ThemeProvider>
-    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <AuthProvider>
-        <SocketProvider>
-        <NotificationHandler />
-        <AppContent />
-        </SocketProvider>
-      </AuthProvider>
-    </BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <AuthProvider>
+          <SocketProvider>
+            <NotificationHandler />
+            <AppContent />
+          </SocketProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </ThemeProvider>
   );
 }

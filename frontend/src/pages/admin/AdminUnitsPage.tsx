@@ -96,7 +96,11 @@ function AdminUnitsPage() {
 
   const SortIcon = ({ column }: { column: UnitSortColumn }) => {
     if (sortColumn !== column) return <FaSort className="ml-1 opacity-30" />;
-    return sortDirection === "asc" ? <FaSortUp className="ml-1" /> : <FaSortDown className="ml-1" />;
+    return sortDirection === "asc" ? (
+      <FaSortUp className="ml-1" />
+    ) : (
+      <FaSortDown className="ml-1" />
+    );
   };
 
   function openCreate() {
@@ -169,7 +173,9 @@ function AdminUnitsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Units</h1>
-        <button className="btn btn-primary" onClick={openCreate}>Add Unit</button>
+        <button className="btn btn-primary" onClick={openCreate}>
+          Add Unit
+        </button>
       </div>
 
       {/* Filters */}
@@ -188,7 +194,9 @@ function AdminUnitsPage() {
         >
           <option value="">All categories</option>
           {CATEGORIES.map((cat) => (
-            <option key={cat} value={cat}>{CATEGORY_LABELS[cat]}</option>
+            <option key={cat} value={cat}>
+              {CATEGORY_LABELS[cat]}
+            </option>
           ))}
         </select>
       </div>
@@ -205,19 +213,43 @@ function AdminUnitsPage() {
               <thead>
                 <tr>
                   <th className="cursor-pointer select-none" onClick={() => handleSort("name")}>
-                    <span className="flex items-center">Name<SortIcon column="name" /></span>
+                    <span className="flex items-center">
+                      Name
+                      <SortIcon column="name" />
+                    </span>
                   </th>
-                  <th className="cursor-pointer select-none" onClick={() => handleSort("abbreviation")}>
-                    <span className="flex items-center">Abbreviation<SortIcon column="abbreviation" /></span>
+                  <th
+                    className="cursor-pointer select-none"
+                    onClick={() => handleSort("abbreviation")}
+                  >
+                    <span className="flex items-center">
+                      Abbreviation
+                      <SortIcon column="abbreviation" />
+                    </span>
                   </th>
                   <th className="cursor-pointer select-none" onClick={() => handleSort("category")}>
-                    <span className="flex items-center">Category<SortIcon column="category" /></span>
+                    <span className="flex items-center">
+                      Category
+                      <SortIcon column="category" />
+                    </span>
                   </th>
-                  <th className="cursor-pointer select-none text-right" onClick={() => handleSort("sortOrder")}>
-                    <span className="flex items-center justify-end">Order<SortIcon column="sortOrder" /></span>
+                  <th
+                    className="cursor-pointer select-none text-right"
+                    onClick={() => handleSort("sortOrder")}
+                  >
+                    <span className="flex items-center justify-end">
+                      Order
+                      <SortIcon column="sortOrder" />
+                    </span>
                   </th>
-                  <th className="cursor-pointer select-none text-right" onClick={() => handleSort("usageCount")}>
-                    <span className="flex items-center justify-end">Usage<SortIcon column="usageCount" /></span>
+                  <th
+                    className="cursor-pointer select-none text-right"
+                    onClick={() => handleSort("usageCount")}
+                  >
+                    <span className="flex items-center justify-end">
+                      Usage
+                      <SortIcon column="usageCount" />
+                    </span>
                   </th>
                   <th className="text-right">Actions</th>
                 </tr>
@@ -229,21 +261,32 @@ function AdminUnitsPage() {
                       <td className="font-medium">{item.name}</td>
                       <td>{item.abbreviation}</td>
                       <td>
-                        <span className="badge badge-outline badge-sm">{CATEGORY_LABELS[item.category]}</span>
+                        <span className="badge badge-outline badge-sm">
+                          {CATEGORY_LABELS[item.category]}
+                        </span>
                       </td>
                       <td className="text-right">{item.sortOrder}</td>
                       <td className="text-right">{item.usageCount}</td>
                       <td className="text-right">
                         <div className="flex justify-end gap-1">
-                          <button className="btn btn-ghost btn-xs" onClick={() => openEdit(item)}>Edit</button>
-                          <button className="btn btn-ghost btn-xs text-error" onClick={() => handleDelete(item)}>Delete</button>
+                          <button className="btn btn-ghost btn-xs" onClick={() => openEdit(item)}>
+                            Edit
+                          </button>
+                          <button
+                            className="btn btn-ghost btn-xs text-error"
+                            onClick={() => handleDelete(item)}
+                          >
+                            Delete
+                          </button>
                         </div>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="text-center text-base-content/50">No units found</td>
+                    <td colSpan={6} className="text-center text-base-content/50">
+                      No units found
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -258,7 +301,9 @@ function AdminUnitsPage() {
           <div className="modal-box">
             <h3 className="font-bold text-lg">{editingItem ? "Edit Unit" : "Create Unit"}</h3>
             <div className="form-control mt-4">
-              <label className="label"><span className="label-text">Name</span></label>
+              <label className="label">
+                <span className="label-text">Name</span>
+              </label>
               <input
                 type="text"
                 className="input input-bordered"
@@ -268,7 +313,9 @@ function AdminUnitsPage() {
               />
             </div>
             <div className="form-control mt-2">
-              <label className="label"><span className="label-text">Abbreviation</span></label>
+              <label className="label">
+                <span className="label-text">Abbreviation</span>
+              </label>
               <input
                 type="text"
                 className="input input-bordered"
@@ -278,19 +325,25 @@ function AdminUnitsPage() {
               />
             </div>
             <div className="form-control mt-2">
-              <label className="label"><span className="label-text">Category</span></label>
+              <label className="label">
+                <span className="label-text">Category</span>
+              </label>
               <select
                 className="select select-bordered"
                 value={formCategory}
                 onChange={(e) => setFormCategory(e.target.value)}
               >
                 {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>{CATEGORY_LABELS[cat]}</option>
+                  <option key={cat} value={cat}>
+                    {CATEGORY_LABELS[cat]}
+                  </option>
                 ))}
               </select>
             </div>
             <div className="form-control mt-2">
-              <label className="label"><span className="label-text">Sort Order</span></label>
+              <label className="label">
+                <span className="label-text">Sort Order</span>
+              </label>
               <input
                 type="number"
                 className="input input-bordered"
@@ -299,7 +352,9 @@ function AdminUnitsPage() {
               />
             </div>
             <div className="modal-action">
-              <button className="btn btn-ghost" onClick={() => setModalOpen(false)}>Cancel</button>
+              <button className="btn btn-ghost" onClick={() => setModalOpen(false)}>
+                Cancel
+              </button>
               <button
                 className="btn btn-primary"
                 onClick={handleSave}

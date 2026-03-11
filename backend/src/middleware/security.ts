@@ -26,11 +26,14 @@ export const helmetMiddleware = helmet({
   xFrameOptions: { action: "deny" },
   xContentTypeOptions: true, // X-Content-Type-Options: nosniff
   referrerPolicy: { policy: "strict-origin-when-cross-origin" },
-  hsts: env.NODE_ENV === "production" ? {
-    maxAge: 31536000, // 1 an
-    includeSubDomains: true,
-    preload: true,
-  } : false,
+  hsts:
+    env.NODE_ENV === "production"
+      ? {
+          maxAge: 31536000, // 1 an
+          includeSubDomains: true,
+          preload: true,
+        }
+      : false,
 });
 
 /**
@@ -41,29 +44,31 @@ export const helmetMiddleware = helmet({
  * Rate limiter pour les routes d'authentification user (signup/login).
  * 10 tentatives par IP par fenetre de 15 minutes.
  */
-export const authRateLimiter: RequestHandler = env.NODE_ENV === "test"
-  ? ((_req, _res, next) => next())
-  : rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 10,
-      message: { error: "AUTH_002: Too many attempts, please try again later" },
-      standardHeaders: true,
-      legacyHeaders: false,
-    });
+export const authRateLimiter: RequestHandler =
+  env.NODE_ENV === "test"
+    ? (_req, _res, next) => next()
+    : rateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 10,
+        message: { error: "AUTH_002: Too many attempts, please try again later" },
+        standardHeaders: true,
+        legacyHeaders: false,
+      });
 
-export const adminRateLimiter: RequestHandler = env.NODE_ENV === "test"
-  ? ((_req, _res, next) => next())
-  : rateLimit({
-      windowMs: 60 * 1000, // 1 minute
-      max: 30, // 30 requetes par minute
-      message: { error: "ADMIN_011: Too many requests, please slow down" },
-      standardHeaders: true,
-      legacyHeaders: false,
-      skip: (req) => {
-        // Skip pour les routes auth (elles ont leur propre rate limiter plus strict)
-        return req.path.startsWith("/auth");
-      },
-    });
+export const adminRateLimiter: RequestHandler =
+  env.NODE_ENV === "test"
+    ? (_req, _res, next) => next()
+    : rateLimit({
+        windowMs: 60 * 1000, // 1 minute
+        max: 30, // 30 requetes par minute
+        message: { error: "ADMIN_011: Too many requests, please slow down" },
+        standardHeaders: true,
+        legacyHeaders: false,
+        skip: (req) => {
+          // Skip pour les routes auth (elles ont leur propre rate limiter plus strict)
+          return req.path.startsWith("/auth");
+        },
+      });
 
 /**
  * Middleware pour forcer HTTPS en production

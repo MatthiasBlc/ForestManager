@@ -1,11 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import request from "supertest";
 import app from "../../app";
-import {
-  createTestUser,
-  createTestCommunity,
-  extractSessionCookie,
-} from "../setup/testHelpers";
+import { createTestUser, createTestCommunity, extractSessionCookie } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
 
 // Mock storageService (pas de MinIO en CI)
@@ -105,8 +101,7 @@ describe("Community Image API", () => {
     });
 
     it("should return 401 without auth", async () => {
-      const res = await request(app)
-        .post(`/api/communities/${community.id}/upload-url`);
+      const res = await request(app).post(`/api/communities/${community.id}/upload-url`);
 
       expect(res.status).toBe(401);
     });

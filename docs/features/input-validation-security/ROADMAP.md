@@ -199,21 +199,22 @@
 
 ## Resume par phase et estimation
 
-| Phase | Scope | Fixes couverts |
-|-------|-------|----------------|
-| **A** | Fondations (middleware UUID, validation.ts, error handler) | M5, base pour tout |
-| **B** | Controllers Auth/Users/Invites | H1, M4, M8, L2 |
-| **C** | Controllers Recipe/Proposals/Admin recipes | C1, H2, H3, M1, M2, M3, M6 |
-| **D** | Controllers Admin (units, ingredients, communities) | M9 |
-| **E** | Notifications + Express config | L4 |
-| **F** | Frontend forms + nginx headers | H4, M7, L3 |
-| **G** | Non-regression | Verification globale |
+| Phase | Scope                                                      | Fixes couverts             |
+| ----- | ---------------------------------------------------------- | -------------------------- |
+| **A** | Fondations (middleware UUID, validation.ts, error handler) | M5, base pour tout         |
+| **B** | Controllers Auth/Users/Invites                             | H1, M4, M8, L2             |
+| **C** | Controllers Recipe/Proposals/Admin recipes                 | C1, H2, H3, M1, M2, M3, M6 |
+| **D** | Controllers Admin (units, ingredients, communities)        | M9                         |
+| **E** | Notifications + Express config                             | L4                         |
+| **F** | Frontend forms + nginx headers                             | H4, M7, L3                 |
+| **G** | Non-regression                                             | Verification globale       |
 
 ---
 
 ## Notes pour la reprise
 
 Si le contexte est perdu en cours de route :
+
 1. Consulter cette roadmap pour voir les cases cochees
 2. Consulter `.claude/context/RESUME.md` si genere
 3. Les phases sont independantes (B, C, D, E peuvent etre faites dans n'importe quel ordre apres A)

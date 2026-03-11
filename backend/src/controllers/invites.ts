@@ -55,10 +55,7 @@ export const createInvite: RequestHandler<
     // Validate that exactly one search field is provided
     const providedFields = [email, username, userId].filter(Boolean);
     if (providedFields.length === 0) {
-      throw createHttpError(
-        400,
-        "INVITE_004: One of email, username, or userId is required"
-      );
+      throw createHttpError(400, "INVITE_004: One of email, username, or userId is required");
     }
     if (providedFields.length > 1) {
       throw createHttpError(
@@ -193,12 +190,7 @@ export const getInvites: RequestHandler<
     // Build status filter
     let statusFilter: { status?: InviteStatus } = {};
     if (status && status !== "all") {
-      const validStatuses: InviteStatus[] = [
-        "PENDING",
-        "ACCEPTED",
-        "REJECTED",
-        "CANCELLED",
-      ];
+      const validStatuses: InviteStatus[] = ["PENDING", "ACCEPTED", "REJECTED", "CANCELLED"];
       if (validStatuses.includes(status as InviteStatus)) {
         statusFilter = { status: status as InviteStatus };
       }
@@ -252,7 +244,11 @@ export const getInvites: RequestHandler<
 // DELETE /api/communities/:communityId/invites/:inviteId
 // Cancel an invitation (MODERATOR only)
 // =====================================
-export const cancelInvite: RequestHandler<{ communityId: string; inviteId: string }> = async (req, res, next) => {
+export const cancelInvite: RequestHandler<{ communityId: string; inviteId: string }> = async (
+  req,
+  res,
+  next
+) => {
   const communityId = req.params.communityId;
   const inviteId = req.params.inviteId;
   const userId = req.session.userId;
@@ -293,10 +289,7 @@ export const cancelInvite: RequestHandler<{ communityId: string; inviteId: strin
 
     // Only the inviter or a moderator can cancel
     if (invite.inviterId !== userId && userCommunity.role !== "MODERATOR") {
-      throw createHttpError(
-        403,
-        "INVITE_003: Only the inviter or a moderator can cancel"
-      );
+      throw createHttpError(403, "INVITE_003: Only the inviter or a moderator can cancel");
     }
 
     // Cancel the invite and log activity in a transaction
@@ -340,12 +333,11 @@ export const cancelInvite: RequestHandler<{ communityId: string; inviteId: strin
 // GET /api/users/me/invites
 // Get my received invitations
 // =====================================
-export const getMyInvites: RequestHandler<
-  unknown,
-  unknown,
-  unknown,
-  GetMyInvitesQuery
-> = async (req, res, next) => {
+export const getMyInvites: RequestHandler<unknown, unknown, unknown, GetMyInvitesQuery> = async (
+  req,
+  res,
+  next
+) => {
   const userId = req.session.userId;
   const { status } = req.query;
 

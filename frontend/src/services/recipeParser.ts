@@ -20,78 +20,80 @@ export interface ParsedRecipe {
 
 // Mapping des variantes textuelles vers les abbreviations en DB
 const UNIT_MAP: Record<string, string> = {
-  g: 'g',
-  gr: 'g',
-  gramme: 'g',
-  grammes: 'g',
-  kg: 'kg',
-  kilo: 'kg',
-  kilos: 'kg',
-  kilogramme: 'kg',
-  kilogrammes: 'kg',
-  ml: 'ml',
-  millilitre: 'ml',
-  millilitres: 'ml',
-  cl: 'cl',
-  centilitre: 'cl',
-  centilitres: 'cl',
-  dl: 'dl',
-  decilitre: 'dl',
-  decilitres: 'dl',
-  l: 'l',
-  litre: 'l',
-  litres: 'l',
-  cas: 'cas',
-  cs: 'cas',
-  'c.a.s': 'cas',
-  'c. a s.': 'cas',
-  'cuillere a soupe': 'cas',
-  'cuilleres a soupe': 'cas',
-  cac: 'cac',
-  cc: 'cac',
-  'c.a.c': 'cac',
-  'c. a c.': 'cac',
-  'cuillere a cafe': 'cac',
-  'cuilleres a cafe': 'cac',
-  pincee: 'pincee',
-  pincees: 'pincee',
-  gousse: 'gousse',
-  gousses: 'gousse',
-  tranche: 'tranche',
-  tranches: 'tranche',
-  feuille: 'feuille',
-  feuilles: 'feuille',
-  brin: 'brin',
-  brins: 'brin',
-  botte: 'botte',
-  bottes: 'botte',
-  piece: 'piece',
-  pieces: 'piece',
+  g: "g",
+  gr: "g",
+  gramme: "g",
+  grammes: "g",
+  kg: "kg",
+  kilo: "kg",
+  kilos: "kg",
+  kilogramme: "kg",
+  kilogrammes: "kg",
+  ml: "ml",
+  millilitre: "ml",
+  millilitres: "ml",
+  cl: "cl",
+  centilitre: "cl",
+  centilitres: "cl",
+  dl: "dl",
+  decilitre: "dl",
+  decilitres: "dl",
+  l: "l",
+  litre: "l",
+  litres: "l",
+  cas: "cas",
+  cs: "cas",
+  "c.a.s": "cas",
+  "c. a s.": "cas",
+  "cuillere a soupe": "cas",
+  "cuilleres a soupe": "cas",
+  cac: "cac",
+  cc: "cac",
+  "c.a.c": "cac",
+  "c. a c.": "cac",
+  "cuillere a cafe": "cac",
+  "cuilleres a cafe": "cac",
+  pincee: "pincee",
+  pincees: "pincee",
+  gousse: "gousse",
+  gousses: "gousse",
+  tranche: "tranche",
+  tranches: "tranche",
+  feuille: "feuille",
+  feuilles: "feuille",
+  brin: "brin",
+  brins: "brin",
+  botte: "botte",
+  bottes: "botte",
+  piece: "piece",
+  pieces: "piece",
 };
 
 // Unites reconnues par regex (sans espaces, multi-mots exclus)
 // Ordre : plus longs d'abord pour eviter les matches partiels (ex: "litres" avant "l")
 const SHORT_UNITS =
-  'kilogrammes|kilogramme|millilitres|millilitre|centilitres|centilitre|decilitres|decilitre|grammes|gramme|gousses|gousse|tranches|tranche|feuilles|feuille|pincees|pincee|pieces|piece|bottes|botte|litres|litre|brins|brin|kilos|kilo|kg|gr|ml|cl|dl|cas|cac|cs|cc|g|l';
+  "kilogrammes|kilogramme|millilitres|millilitre|centilitres|centilitre|decilitres|decilitre|grammes|gramme|gousses|gousse|tranches|tranche|feuilles|feuille|pincees|pincee|pieces|piece|bottes|botte|litres|litre|brins|brin|kilos|kilo|kg|gr|ml|cl|dl|cas|cac|cs|cc|g|l";
 
 // Unites longues (multi-mots) reconnues avant les unites courtes
 const LONG_UNIT_PATTERNS: { pattern: RegExp; abbr: string }[] = [
-  { pattern: /cuill[eè]res?\s+[aà]\s+soupe/i, abbr: 'cas' },
-  { pattern: /cuill[eè]res?\s+[aà]\s+caf[eé]/i, abbr: 'cac' },
-  { pattern: /c\.\s*a\s+s\./i, abbr: 'cas' },
-  { pattern: /c\.\s*a\s+c\./i, abbr: 'cac' },
-  { pattern: /c\.a\.s/i, abbr: 'cas' },
-  { pattern: /c\.a\.c/i, abbr: 'cac' },
+  { pattern: /cuill[eè]res?\s+[aà]\s+soupe/i, abbr: "cas" },
+  { pattern: /cuill[eè]res?\s+[aà]\s+caf[eé]/i, abbr: "cac" },
+  { pattern: /c\.\s*a\s+s\./i, abbr: "cas" },
+  { pattern: /c\.\s*a\s+c\./i, abbr: "cac" },
+  { pattern: /c\.a\.s/i, abbr: "cas" },
+  { pattern: /c\.a\.c/i, abbr: "cac" },
 ];
 
 // Headers de section (ne comptent pas comme titre)
-const SECTION_HEADERS = /^(ingr[eé]dients?|pr[eé]paration|[eé]tapes?|instructions?|recette|pour|temps|description|directions?|method|proc[eé]d[eé]|process)s?\s*:?\s*$/i;
+const SECTION_HEADERS =
+  /^(ingr[eé]dients?|pr[eé]paration|[eé]tapes?|instructions?|recette|pour|temps|description|directions?|method|proc[eé]d[eé]|process)s?\s*:?\s*$/i;
 
 // Headers de section ingredients
 const INGREDIENT_HEADER = /^ingr[eé]dients?\s*:?\s*$/i;
 
 // Headers de section etapes
-const STEP_HEADER = /^(pr[eé]paration|[eé]tapes?|instructions?|directions?|method|proc[eé]d[eé]|process)\s*:?\s*$/i;
+const STEP_HEADER =
+  /^(pr[eé]paration|[eé]tapes?|instructions?|directions?|method|proc[eé]d[eé]|process)\s*:?\s*$/i;
 
 // Ligne de separateur visuel
 const SEPARATOR_LINE = /^[\-=_*~]{3,}\s*$/;
@@ -101,9 +103,21 @@ const QUALITATIVE_SUFFIX = /[\s,]*(?:[àa]\s*go[uû]t|selon\s*(?:besoin|envie|go
 
 // Fractions Unicode → fractions ASCII
 const UNICODE_FRACTIONS: Record<string, string> = {
-  '½': '1/2', '⅓': '1/3', '⅔': '2/3', '¼': '1/4', '¾': '3/4',
-  '⅕': '1/5', '⅖': '2/5', '⅗': '3/5', '⅘': '4/5',
-  '⅙': '1/6', '⅚': '5/6', '⅛': '1/8', '⅜': '3/8', '⅝': '5/8', '⅞': '7/8',
+  "½": "1/2",
+  "⅓": "1/3",
+  "⅔": "2/3",
+  "¼": "1/4",
+  "¾": "3/4",
+  "⅕": "1/5",
+  "⅖": "2/5",
+  "⅗": "3/5",
+  "⅘": "4/5",
+  "⅙": "1/6",
+  "⅚": "5/6",
+  "⅛": "1/8",
+  "⅜": "3/8",
+  "⅝": "5/8",
+  "⅞": "7/8",
 };
 
 function normalizeUnicodeFractions(text: string): string {
@@ -114,19 +128,17 @@ function normalizeUnicodeFractions(text: string): string {
  * Nettoie le texte brut : normalise les sauts de ligne, fractions unicode, supprime separateurs et lignes vides en debut/fin
  */
 function cleanText(text: string): string[] {
-  const normalized = normalizeUnicodeFractions(
-    text.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
-  );
-  const lines = normalized.split('\n');
+  const normalized = normalizeUnicodeFractions(text.replace(/\r\n/g, "\n").replace(/\r/g, "\n"));
+  const lines = normalized.split("\n");
 
   // Supprimer les separateurs visuels
   const filtered = lines.filter((line) => !SEPARATOR_LINE.test(line));
 
   // Trim les lignes vides en debut/fin
   let start = 0;
-  while (start < filtered.length && filtered[start].trim() === '') start++;
+  while (start < filtered.length && filtered[start].trim() === "") start++;
   let end = filtered.length - 1;
-  while (end > start && filtered[end].trim() === '') end--;
+  while (end > start && filtered[end].trim() === "") end--;
 
   return filtered.slice(start, end + 1);
 }
@@ -137,7 +149,7 @@ function cleanText(text: string): string[] {
 function detectTitle(lines: string[]): { title: string | null; titleIndex: number } {
   for (let i = 0; i < lines.length; i++) {
     const trimmed = lines[i].trim();
-    if (trimmed === '') continue;
+    if (trimmed === "") continue;
     if (trimmed.length < 100 && !SECTION_HEADERS.test(trimmed)) {
       return { title: trimmed, titleIndex: i };
     }
@@ -151,7 +163,7 @@ function detectTitle(lines: string[]): { title: string | null; titleIndex: numbe
  * Convertit une fraction (ex: "1/2") en nombre
  */
 function parseFraction(str: string): number {
-  const parts = str.split('/');
+  const parts = str.split("/");
   if (parts.length === 2) {
     const num = parseFloat(parts[0]);
     const den = parseFloat(parts[1]);
@@ -166,8 +178,8 @@ function parseFraction(str: string): number {
  * Parse une quantite (entier, decimal, fraction)
  */
 function parseQuantity(str: string): number | null {
-  const trimmed = str.trim().replace(',', '.');
-  if (trimmed.includes('/')) {
+  const trimmed = str.trim().replace(",", ".");
+  if (trimmed.includes("/")) {
     const val = parseFraction(trimmed);
     return isNaN(val) ? null : val;
   }
@@ -188,7 +200,7 @@ function resolveUnit(unitText: string): string | null {
  * Supprime les puces en debut de ligne
  */
 function stripBullet(line: string): string {
-  return line.replace(/^\s*[-*•–—]\s*/, '');
+  return line.replace(/^\s*[-*•–—]\s*/, "");
 }
 
 /**
@@ -196,9 +208,9 @@ function stripBullet(line: string): string {
  */
 function stripStepNumbering(line: string): string {
   return line
-    .replace(/^\s*[eéEÉ]tape\s+\d+\s*[:\-–—]?\s*/i, '')
-    .replace(/^\s*\d+\s*[.):\-–—]\s*/, '')
-    .replace(/^\s*[-*•–—]\s*/, '');
+    .replace(/^\s*[eéEÉ]tape\s+\d+\s*[:\-–—]?\s*/i, "")
+    .replace(/^\s*\d+\s*[.):\-–—]\s*/, "")
+    .replace(/^\s*[-*•–—]\s*/, "");
 }
 
 /**
@@ -218,14 +230,17 @@ function parseIngredientLine(rawLine: string): ParsedIngredient {
   // Pattern "a gout" / "selon besoin"
   const qualMatch = line.match(QUALITATIVE_SUFFIX);
   if (qualMatch) {
-    const qualText = qualMatch[0].trim().replace(/^[\s,]+/, '').toLowerCase();
+    const qualText = qualMatch[0]
+      .trim()
+      .replace(/^[\s,]+/, "")
+      .toLowerCase();
     const namepart = line.slice(0, qualMatch.index).trim();
     result.name = namepart || null;
 
     if (/selon\s*(besoin|envie)/i.test(qualText)) {
-      result.unitAbbreviation = 'selon besoin';
+      result.unitAbbreviation = "selon besoin";
     } else {
-      result.unitAbbreviation = 'a gout';
+      result.unitAbbreviation = "a gout";
     }
     return result;
   }
@@ -235,7 +250,7 @@ function parseIngredientLine(rawLine: string): ParsedIngredient {
     // Pattern : quantite + unite longue + (de/d') + nom
     const longRegex = new RegExp(
       `^(\\d+[.,]?\\d*|\\d+\\/\\d+)\\s+${pattern.source}\\s+(?:de\\s+|d')?(.+)$`,
-      'i'
+      "i"
     );
     const m = line.match(longRegex);
     if (m) {
@@ -250,7 +265,7 @@ function parseIngredientLine(rawLine: string): ParsedIngredient {
   // Fraction en premier pour eviter que "1/2" matche juste "1"
   const mainRegex = new RegExp(
     `^(\\d+\\/\\d+|\\d+[.,]?\\d*)\\s*(${SHORT_UNITS})?\\s*(?:de\\s+|d')?(.+)$`,
-    'i'
+    "i"
   );
   const mainMatch = line.match(mainRegex);
   if (mainMatch) {
@@ -333,9 +348,7 @@ function extractMetadata(lines: string[]): {
 
     // Prep time
     if (prepTime === null) {
-      const prepMatch = trimmed.match(
-        /pr[eé]p(?:aration)?\s*:?\s*(.*)/i
-      );
+      const prepMatch = trimmed.match(/pr[eé]p(?:aration)?\s*:?\s*(.*)/i);
       if (prepMatch) {
         prepTime = parseDuration(prepMatch[1]);
       }
@@ -343,9 +356,7 @@ function extractMetadata(lines: string[]): {
 
     // Cook time
     if (cookTime === null) {
-      const cookMatch = trimmed.match(
-        /cu(?:isson|ire)\s*:?\s*(.*)/i
-      );
+      const cookMatch = trimmed.match(/cu(?:isson|ire)\s*:?\s*(.*)/i);
       if (cookMatch) {
         cookTime = parseDuration(cookMatch[1]);
       }
@@ -353,9 +364,7 @@ function extractMetadata(lines: string[]): {
 
     // Rest time
     if (restTime === null) {
-      const restMatch = trimmed.match(
-        /(?:repos?|pause)\s*:?\s*(.*)/i
-      );
+      const restMatch = trimmed.match(/(?:repos?|pause)\s*:?\s*(.*)/i);
       if (restMatch) {
         restTime = parseDuration(restMatch[1]);
       }
@@ -363,9 +372,7 @@ function extractMetadata(lines: string[]): {
 
     // Temps generique (fallback pour prepTime)
     if (genericTime === null) {
-      const timeMatch = trimmed.match(
-        /temps\s*:?\s*(.*)/i
-      );
+      const timeMatch = trimmed.match(/temps\s*:?\s*(.*)/i);
       if (timeMatch) {
         genericTime = parseDuration(timeMatch[1]);
       }
@@ -406,7 +413,7 @@ export function parseRecipeText(text: string): ParsedRecipe {
   const metadata = extractMetadata(lines);
 
   // Scanner les sections
-  let currentSection: 'NONE' | 'INGREDIENTS' | 'STEPS' = 'NONE';
+  let currentSection: "NONE" | "INGREDIENTS" | "STEPS" = "NONE";
   const ingredientLines: string[] = [];
   const stepLines: string[] = [];
   let hasHeaders = false;
@@ -415,16 +422,16 @@ export function parseRecipeText(text: string): ParsedRecipe {
     if (i === titleIndex) continue;
 
     const trimmed = lines[i].trim();
-    if (trimmed === '') continue;
+    if (trimmed === "") continue;
 
     // Detecter un header de section
     if (INGREDIENT_HEADER.test(trimmed)) {
-      currentSection = 'INGREDIENTS';
+      currentSection = "INGREDIENTS";
       hasHeaders = true;
       continue;
     }
     if (STEP_HEADER.test(trimmed)) {
-      currentSection = 'STEPS';
+      currentSection = "STEPS";
       hasHeaders = true;
       continue;
     }
@@ -439,11 +446,11 @@ export function parseRecipeText(text: string): ParsedRecipe {
       /^pour\s+\d+/i.test(trimmed);
     if (isMetaLine) continue;
 
-    if (currentSection === 'INGREDIENTS') {
+    if (currentSection === "INGREDIENTS") {
       ingredientLines.push(trimmed);
-    } else if (currentSection === 'STEPS') {
+    } else if (currentSection === "STEPS") {
       stepLines.push(trimmed);
-    } else if (currentSection === 'NONE') {
+    } else if (currentSection === "NONE") {
       // Pas encore dans une section reconnue : capturer les lignes qui ressemblent a des ingredients
       // (commence par un nombre ou une puce suivie d'un nombre)
       if (looksLikeIngredient(trimmed)) {
@@ -457,7 +464,7 @@ export function parseRecipeText(text: string): ParsedRecipe {
     for (let i = 0; i < lines.length; i++) {
       if (i === titleIndex) continue;
       const trimmed = lines[i].trim();
-      if (trimmed === '') continue;
+      if (trimmed === "") continue;
 
       // Ignorer les lignes de metadata
       const isMetaLine =

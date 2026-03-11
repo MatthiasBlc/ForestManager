@@ -1,11 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  FaBell,
-  FaCheckDouble,
-  FaChevronDown,
-  FaChevronUp,
-} from "react-icons/fa";
+import { FaBell, FaCheckDouble, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { useNotifications } from "../hooks/useNotifications";
 import { useUnreadCount } from "../hooks/useUnreadCount";
 import { Notification, NotificationCategory } from "../models/notification";
@@ -14,26 +9,18 @@ import { formatRelativeTime } from "../utils/formatTime";
 
 const NotificationsPage = () => {
   const navigate = useNavigate();
-  const [selectedCategory, setSelectedCategory] = useState<
-    NotificationCategory | undefined
-  >(undefined);
+  const [selectedCategory, setSelectedCategory] = useState<NotificationCategory | undefined>(
+    undefined
+  );
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
-  const {
-    notifications,
-    loading,
-    error,
-    hasMore,
-    loadMore,
-    markAsRead,
-    markAllAsRead,
-    total,
-  } = useNotifications({
-    category: selectedCategory,
-    unreadOnly,
-    limit: 20,
-  });
+  const { notifications, loading, error, hasMore, loadMore, markAsRead, markAllAsRead, total } =
+    useNotifications({
+      category: selectedCategory,
+      unreadOnly,
+      limit: 20,
+    });
 
   const { byCategory, refresh: refreshCount } = useUnreadCount();
 
@@ -83,15 +70,10 @@ const NotificationsPage = () => {
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <FaBell className="w-5 h-5" />
           Notifications
-          {total > 0 && (
-            <span className="badge badge-neutral text-sm">{total}</span>
-          )}
+          {total > 0 && <span className="badge badge-neutral text-sm">{total}</span>}
         </h1>
         {hasUnread && (
-          <button
-            className="btn btn-sm btn-outline gap-2"
-            onClick={handleMarkAllAsRead}
-          >
+          <button className="btn btn-sm btn-outline gap-2" onClick={handleMarkAllAsRead}>
             <FaCheckDouble />
             Tout marquer comme lu
           </button>
@@ -125,9 +107,7 @@ const NotificationsPage = () => {
                 <CatIcon />
                 {config.label}
                 {unreadForCat > 0 && (
-                  <span className="badge badge-sm badge-secondary">
-                    {unreadForCat}
-                  </span>
+                  <span className="badge badge-sm badge-secondary">{unreadForCat}</span>
                 )}
               </button>
             );
@@ -183,11 +163,7 @@ const NotificationsPage = () => {
                     isGroup || notif.actionUrl
                       ? "cursor-pointer hover:bg-base-200"
                       : "cursor-default"
-                  } ${
-                    !notif.readAt
-                      ? "border-l-4 border-l-primary"
-                      : "border-base-300"
-                  }`}
+                  } ${!notif.readAt ? "border-l-4 border-l-primary" : "border-base-300"}`}
                   onClick={() => {
                     if (isGroup) {
                       toggleGroup(notif.id);
@@ -200,9 +176,7 @@ const NotificationsPage = () => {
                     {/* Category icon */}
                     <div
                       className={`text-lg ${
-                        !notif.readAt
-                          ? "text-primary"
-                          : "text-base-content/40"
+                        !notif.readAt ? "text-primary" : "text-base-content/40"
                       }`}
                     >
                       {getCategoryIcon(notif.category)}
@@ -219,14 +193,10 @@ const NotificationsPage = () => {
                           {notif.title}
                         </p>
                         {isGroup && (
-                          <span className="badge badge-sm badge-ghost">
-                            {notif.group!.count}
-                          </span>
+                          <span className="badge badge-sm badge-ghost">{notif.group!.count}</span>
                         )}
                       </div>
-                      <p className="text-xs text-base-content/60 truncate">
-                        {notif.message}
-                      </p>
+                      <p className="text-xs text-base-content/60 truncate">{notif.message}</p>
                       <div className="flex items-center gap-2 mt-0.5">
                         {notif.community && (
                           <span className="text-xs text-base-content/50">
@@ -270,17 +240,13 @@ const NotificationsPage = () => {
                       <div
                         key={item.id}
                         className={`card card-compact bg-base-100 shadow-xs border cursor-pointer transition-colors hover:bg-base-200 ${
-                          !item.readAt
-                            ? "border-l-4 border-l-primary/60"
-                            : "border-base-300"
+                          !item.readAt ? "border-l-4 border-l-primary/60" : "border-base-300"
                         }`}
                         onClick={() => handleNotificationClick(notif)}
                       >
                         <div className="card-body flex-row items-center gap-3 py-2">
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs text-base-content/70 truncate">
-                              {item.message}
-                            </p>
+                            <p className="text-xs text-base-content/70 truncate">{item.message}</p>
                           </div>
                           <span className="text-xs text-base-content/40 whitespace-nowrap">
                             {formatRelativeTime(item.createdAt)}
@@ -311,9 +277,7 @@ const NotificationsPage = () => {
           {hasMore && (
             <div className="flex justify-center mt-4">
               <button
-                className={`btn btn-outline btn-sm ${
-                  loading ? "loading" : ""
-                }`}
+                className={`btn btn-outline btn-sm ${loading ? "loading" : ""}`}
                 onClick={loadMore}
                 disabled={loading}
               >

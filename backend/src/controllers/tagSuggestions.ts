@@ -245,9 +245,7 @@ export const acceptTagSuggestion: RequestHandler<
 
     // Si la suggestion est passee en PENDING_MODERATOR, notifier les moderateurs
     if (result.status === "PENDING_MODERATOR" && suggestion.recipe.communityId) {
-      const moderatorIds = await getModeratorIdsForTagNotification(
-        suggestion.recipe.communityId
-      );
+      const moderatorIds = await getModeratorIdsForTagNotification(suggestion.recipe.communityId);
       if (moderatorIds.length > 0) {
         appEvents.emitActivity({
           type: "tag-suggestion:pending-mod",

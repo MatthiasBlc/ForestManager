@@ -26,17 +26,24 @@ const TagSelector = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useDebouncedEffect(() => {
-    if (!showDropdown) return;
+  useDebouncedEffect(
+    () => {
+      if (!showDropdown) return;
 
-    setIsLoading(true);
-    APIManager.searchTags(inputValue.trim(), 10, communityId)
-      .then((results) => setSuggestions(results.filter((tag) => !value.includes(tag.name))))
-      .catch(() => setSuggestions([]))
-      .finally(() => setIsLoading(false));
-  }, inputValue ? 300 : 0, [inputValue, value, showDropdown, communityId]);
+      setIsLoading(true);
+      APIManager.searchTags(inputValue.trim(), 10, communityId)
+        .then((results) => setSuggestions(results.filter((tag) => !value.includes(tag.name))))
+        .catch(() => setSuggestions([]))
+        .finally(() => setIsLoading(false));
+    },
+    inputValue ? 300 : 0,
+    [inputValue, value, showDropdown, communityId]
+  );
 
-  useClickOutside(containerRef, useCallback(() => setShowDropdown(false), []));
+  useClickOutside(
+    containerRef,
+    useCallback(() => setShowDropdown(false), [])
+  );
 
   const addTag = (tagName: string) => {
     const normalizedTag = tagName.trim().toLowerCase();

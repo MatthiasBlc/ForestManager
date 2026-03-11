@@ -21,6 +21,10 @@ router.get("/me/activity", ActivityController.getMyActivity);
 
 // Tag visibility preferences
 router.get("/me/tag-preferences", TagPreferencesController.getTagPreferences);
-router.put("/me/tag-preferences/:communityId", validateUUID, TagPreferencesController.updateTagPreference);
+router.put(
+  "/me/tag-preferences/:communityId",
+  validateUUID,
+  TagPreferencesController.updateTagPreference
+);
 
 export default router;

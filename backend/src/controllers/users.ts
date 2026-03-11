@@ -16,7 +16,7 @@ import {
 
 export const searchUsers: RequestHandler = async (req, res, next) => {
   try {
-    const query = (req.query.q as string || "").trim();
+    const query = ((req.query.q as string) || "").trim();
 
     if (query.length < 3) {
       res.status(200).json({ data: [] });
@@ -46,7 +46,11 @@ interface UpdateProfileBody {
   newPassword?: string;
 }
 
-export const updateProfile: RequestHandler<unknown, unknown, UpdateProfileBody> = async (req, res, next) => {
+export const updateProfile: RequestHandler<unknown, unknown, UpdateProfileBody> = async (
+  req,
+  res,
+  next
+) => {
   try {
     const userId = req.session.userId;
     if (!userId) throw createHttpError(401, "AUTH_001: Not authenticated");
@@ -68,10 +72,16 @@ export const updateProfile: RequestHandler<unknown, unknown, UpdateProfileBody> 
 
     if (username && username !== user.username) {
       if (username.length < MIN_USERNAME_LENGTH || username.length > MAX_USERNAME_LENGTH) {
-        throw createHttpError(400, `AUTH_004: Username must be between ${MIN_USERNAME_LENGTH} and ${MAX_USERNAME_LENGTH} characters`);
+        throw createHttpError(
+          400,
+          `AUTH_004: Username must be between ${MIN_USERNAME_LENGTH} and ${MAX_USERNAME_LENGTH} characters`
+        );
       }
       if (!USERNAME_REGEX.test(username)) {
-        throw createHttpError(400, "AUTH_004: Username can only contain letters, numbers, and underscores");
+        throw createHttpError(
+          400,
+          "AUTH_004: Username can only contain letters, numbers, and underscores"
+        );
       }
       const existing = await prisma.user.findFirst({
         where: { username, deletedAt: null, id: { not: userId } },
@@ -101,13 +111,19 @@ export const updateProfile: RequestHandler<unknown, unknown, UpdateProfileBody> 
         throw createHttpError(401, "AUTH_011: Current password is incorrect");
       }
       if (newPassword.length < MIN_PASSWORD_LENGTH || newPassword.length > MAX_PASSWORD_LENGTH) {
-        throw createHttpError(400, `AUTH_005: Password must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters`);
+        throw createHttpError(
+          400,
+          `AUTH_005: Password must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters`
+        );
       }
       updates.password = await bcrypt.hash(newPassword, 10);
     }
 
     if (Object.keys(updates).length === 0) {
-      res.status(200).json({ message: "No changes", user: { id: user.id, username: user.username, email: user.email } });
+      res.status(200).json({
+        message: "No changes",
+        user: { id: user.id, username: user.username, email: user.email },
+      });
       return;
     }
 

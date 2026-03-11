@@ -111,104 +111,109 @@ const RecipeFormPage = () => {
     }
   };
 
-  const handleImport = useCallback(async (parsed: ParsedRecipe) => {
-    // Verification avant ecrasement
-    const currentTitle = getValues("title")?.trim();
-    const hasData =
-      (currentTitle && currentTitle.length > 0) ||
-      tags.length > 0 ||
-      ingredients.some((i) => i.name.trim()) ||
-      steps.some((s) => s.instruction.trim());
+  const handleImport = useCallback(
+    async (parsed: ParsedRecipe) => {
+      // Verification avant ecrasement
+      const currentTitle = getValues("title")?.trim();
+      const hasData =
+        (currentTitle && currentTitle.length > 0) ||
+        tags.length > 0 ||
+        ingredients.some((i) => i.name.trim()) ||
+        steps.some((s) => s.instruction.trim());
 
-    if (hasData) {
-      const confirmed = window.confirm(
-        "Le formulaire contient deja des donnees. L'import va remplacer les champs detectes. Continuer ?"
-      );
-      if (!confirmed) return;
-    }
-
-    setShowImportModal(false);
-
-    // Pre-remplir les champs simples
-    if (parsed.title) reset({ title: parsed.title });
-    if (parsed.servings != null) setServings(parsed.servings);
-    if (parsed.prepTime != null) setPrepTime(String(parsed.prepTime));
-    if (parsed.cookTime != null) setCookTime(String(parsed.cookTime));
-    if (parsed.restTime != null) setRestTime(String(parsed.restTime));
-    if (parsed.steps.length > 0) {
-      setSteps(parsed.steps.map((s) => ({ instruction: s })));
-    }
-
-    // Matching des ingredients
-    if (parsed.ingredients.length > 0) {
-      try {
-        // Charger les unites pour le matching
-        const unitsByCategory = await APIManager.getUnits();
-        const allUnits: Unit[] = Object.values(unitsByCategory).flat();
-
-        // Matcher chaque ingredient en parallele
-        const mapped = await Promise.all(
-          parsed.ingredients.map(async (pi): Promise<IngredientInput> => {
-            const name = pi.name ?? pi.raw;
-
-            // Matcher l'unite par abbreviation
-            let unitId: string | undefined;
-            if (pi.unitAbbreviation) {
-              const matchedUnit = allUnits.find(
-                (u) => u.abbreviation.toLowerCase() === pi.unitAbbreviation!.toLowerCase()
-              );
-              if (matchedUnit) unitId = matchedUnit.id;
-            }
-
-            // Matcher l'ingredient par nom exact
-            let ingredientId: string | undefined;
-            if (name) {
-              try {
-                const results = await APIManager.searchIngredients(name, 5);
-                const exact = results.find(
-                  (r) => r.name.toLowerCase() === name.toLowerCase()
-                );
-                if (exact) {
-                  ingredientId = exact.id;
-                  // Si pas d'unite matchee, tenter la suggestion
-                  if (!unitId) {
-                    try {
-                      const suggested = await APIManager.getSuggestedUnit(exact.id);
-                      if (suggested.suggestedUnitId) unitId = suggested.suggestedUnitId;
-                    } catch { /* ignore */ }
-                  }
-                }
-              } catch { /* ignore search errors */ }
-            }
-
-            return {
-              name,
-              quantity: pi.quantity ?? undefined,
-              unitId,
-              ingredientId,
-            };
-          })
+      if (hasData) {
+        const confirmed = window.confirm(
+          "Le formulaire contient deja des donnees. L'import va remplacer les champs detectes. Continuer ?"
         );
-
-        setIngredients(mapped);
-      } catch {
-        // Fallback sans matching
-        setIngredients(
-          parsed.ingredients.map((pi) => ({
-            name: pi.name ?? pi.raw,
-            quantity: pi.quantity ?? undefined,
-          }))
-        );
+        if (!confirmed) return;
       }
-    }
 
-    // Toast de succes
-    const parts: string[] = [];
-    if (parsed.title) parts.push("titre");
-    if (parsed.ingredients.length > 0) parts.push(`${parsed.ingredients.length} ingredients`);
-    if (parsed.steps.length > 0) parts.push(`${parsed.steps.length} etapes`);
-    toast.success(`Import reussi : ${parts.join(", ")} detectes`);
-  }, [tags, ingredients, steps, reset, getValues]);
+      setShowImportModal(false);
+
+      // Pre-remplir les champs simples
+      if (parsed.title) reset({ title: parsed.title });
+      if (parsed.servings != null) setServings(parsed.servings);
+      if (parsed.prepTime != null) setPrepTime(String(parsed.prepTime));
+      if (parsed.cookTime != null) setCookTime(String(parsed.cookTime));
+      if (parsed.restTime != null) setRestTime(String(parsed.restTime));
+      if (parsed.steps.length > 0) {
+        setSteps(parsed.steps.map((s) => ({ instruction: s })));
+      }
+
+      // Matching des ingredients
+      if (parsed.ingredients.length > 0) {
+        try {
+          // Charger les unites pour le matching
+          const unitsByCategory = await APIManager.getUnits();
+          const allUnits: Unit[] = Object.values(unitsByCategory).flat();
+
+          // Matcher chaque ingredient en parallele
+          const mapped = await Promise.all(
+            parsed.ingredients.map(async (pi): Promise<IngredientInput> => {
+              const name = pi.name ?? pi.raw;
+
+              // Matcher l'unite par abbreviation
+              let unitId: string | undefined;
+              if (pi.unitAbbreviation) {
+                const matchedUnit = allUnits.find(
+                  (u) => u.abbreviation.toLowerCase() === pi.unitAbbreviation!.toLowerCase()
+                );
+                if (matchedUnit) unitId = matchedUnit.id;
+              }
+
+              // Matcher l'ingredient par nom exact
+              let ingredientId: string | undefined;
+              if (name) {
+                try {
+                  const results = await APIManager.searchIngredients(name, 5);
+                  const exact = results.find((r) => r.name.toLowerCase() === name.toLowerCase());
+                  if (exact) {
+                    ingredientId = exact.id;
+                    // Si pas d'unite matchee, tenter la suggestion
+                    if (!unitId) {
+                      try {
+                        const suggested = await APIManager.getSuggestedUnit(exact.id);
+                        if (suggested.suggestedUnitId) unitId = suggested.suggestedUnitId;
+                      } catch {
+                        /* ignore */
+                      }
+                    }
+                  }
+                } catch {
+                  /* ignore search errors */
+                }
+              }
+
+              return {
+                name,
+                quantity: pi.quantity ?? undefined,
+                unitId,
+                ingredientId,
+              };
+            })
+          );
+
+          setIngredients(mapped);
+        } catch {
+          // Fallback sans matching
+          setIngredients(
+            parsed.ingredients.map((pi) => ({
+              name: pi.name ?? pi.raw,
+              quantity: pi.quantity ?? undefined,
+            }))
+          );
+        }
+      }
+
+      // Toast de succes
+      const parts: string[] = [];
+      if (parsed.title) parts.push("titre");
+      if (parsed.ingredients.length > 0) parts.push(`${parsed.ingredients.length} ingredients`);
+      if (parsed.steps.length > 0) parts.push(`${parsed.steps.length} etapes`);
+      toast.success(`Import reussi : ${parts.join(", ")} detectes`);
+    },
+    [tags, ingredients, steps, reset, getValues]
+  );
 
   const onSubmit = async (data: FormData) => {
     const validSteps = steps.filter((s) => s.instruction.trim().length > 0);
@@ -271,7 +276,10 @@ const RecipeFormPage = () => {
         <div className="alert alert-error">
           <span>{error}</span>
         </div>
-        <button className="btn btn-ghost mt-4 gap-2" onClick={() => navigate(communityId ? `/communities/${communityId}` : "/recipes")}>
+        <button
+          className="btn btn-ghost mt-4 gap-2"
+          onClick={() => navigate(communityId ? `/communities/${communityId}` : "/recipes")}
+        >
           <FaArrowLeft />
           {communityId ? "Back to community" : "Back to recipes"}
         </button>
@@ -311,10 +319,7 @@ const RecipeFormPage = () => {
         </div>
 
         {showImportModal && (
-          <ImportRecipeModal
-            onImport={handleImport}
-            onClose={() => setShowImportModal(false)}
-          />
+          <ImportRecipeModal onImport={handleImport} onClose={() => setShowImportModal(false)} />
         )}
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -324,7 +329,10 @@ const RecipeFormPage = () => {
             </label>
             <input
               type="text"
-              {...register("title", { required: "Title is required", maxLength: { value: 200, message: "Title must be 200 characters or less" } })}
+              {...register("title", {
+                required: "Title is required",
+                maxLength: { value: 200, message: "Title must be 200 characters or less" },
+              })}
               placeholder="Recipe title"
               maxLength={200}
               className={`input input-bordered w-full ${errors.title ? "input-error" : ""}`}
@@ -425,7 +433,12 @@ const RecipeFormPage = () => {
             <label className="label">
               <span className="label-text font-medium">Tags</span>
             </label>
-            <TagSelector value={tags} onChange={setTags} allowCreate={true} communityId={communityId} />
+            <TagSelector
+              value={tags}
+              onChange={setTags}
+              allowCreate={true}
+              communityId={communityId}
+            />
           </div>
 
           <div className="form-control">
@@ -459,9 +472,21 @@ const RecipeFormPage = () => {
             >
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary gap-2" disabled={isSubmitting || isUploadingImage}>
-              {(isSubmitting || isUploadingImage) ? <span className="loading loading-spinner loading-sm" /> : <FaSave />}
-              {isUploadingImage ? "Uploading image..." : isEditing ? "Save changes" : "Create recipe"}
+            <button
+              type="submit"
+              className="btn btn-primary gap-2"
+              disabled={isSubmitting || isUploadingImage}
+            >
+              {isSubmitting || isUploadingImage ? (
+                <span className="loading loading-spinner loading-sm" />
+              ) : (
+                <FaSave />
+              )}
+              {isUploadingImage
+                ? "Uploading image..."
+                : isEditing
+                  ? "Save changes"
+                  : "Create recipe"}
             </button>
           </div>
         </form>

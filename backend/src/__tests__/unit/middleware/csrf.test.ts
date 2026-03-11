@@ -12,7 +12,11 @@ function createMockReq(overrides: Partial<Request> = {}): Request {
   } as unknown as Request;
 }
 
-function createMockRes(): Response & { _cookies: Record<string, unknown>; _status: number; _json: unknown } {
+function createMockRes(): Response & {
+  _cookies: Record<string, unknown>;
+  _status: number;
+  _json: unknown;
+} {
   const res = {
     _cookies: {} as Record<string, unknown>,
     _status: 0,

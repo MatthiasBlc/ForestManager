@@ -84,4 +84,3 @@ export const updateTagPreference: RequestHandler<
     next(error);
   }
 };
-

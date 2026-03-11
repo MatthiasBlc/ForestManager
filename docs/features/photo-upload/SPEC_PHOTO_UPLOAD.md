@@ -59,21 +59,21 @@ Meme flux pour les communautes avec les endpoints adaptes.
 
 ## Contraintes fichier
 
-| Contrainte | Valeur |
-|-----------|--------|
+| Contrainte                  | Valeur                                  |
+| --------------------------- | --------------------------------------- |
 | Formats acceptes a l'upload | `image/webp`, `image/jpeg`, `image/png` |
-| Format final sur MinIO | WebP (conversion cote frontend) |
-| Taille max | **2 MB** |
-| Dimensions max | 1600 x 1600 px |
-| 1 image par entite | Pas de galerie |
+| Format final sur MinIO      | WebP (conversion cote frontend)         |
+| Taille max                  | **2 MB**                                |
+| Dimensions max              | 1600 x 1600 px                          |
+| 1 image par entite          | Pas de galerie                          |
 
 ## Permissions
 
-| Action | Qui peut |
-|--------|----------|
-| Upload photo recette | Auteur de la recette uniquement |
-| Upload photo communaute | Createur ou Moderateurs de la communaute |
-| Remplacement | Ecrasement (meme cle `cover.webp`), pas de versioning |
+| Action                  | Qui peut                                              |
+| ----------------------- | ----------------------------------------------------- |
+| Upload photo recette    | Auteur de la recette uniquement                       |
+| Upload photo communaute | Createur ou Moderateurs de la communaute              |
+| Remplacement            | Ecrasement (meme cle `cover.webp`), pas de versioning |
 
 Modifier la photo d'une recette dont on n'est pas l'auteur passe par le systeme de propositions de modification existant.
 
@@ -98,13 +98,13 @@ Modifier la photo d'une recette dont on n'est pas l'auteur passe par le systeme 
 
 ## Securite
 
-| Mesure | Detail |
-|--------|--------|
-| Presigned PUT | TTL 60 secondes |
-| Validation post-upload | MIME type + taille verifies cote backend |
-| Pas de transit fichier par le backend | Upload direct frontend -> MinIO |
-| Credentials par bucket | Isolation des projets sur la meme instance MinIO |
-| Rejet si invalide | Suppression du fichier + erreur renvoyee |
+| Mesure                                | Detail                                           |
+| ------------------------------------- | ------------------------------------------------ |
+| Presigned PUT                         | TTL 60 secondes                                  |
+| Validation post-upload                | MIME type + taille verifies cote backend         |
+| Pas de transit fichier par le backend | Upload direct frontend -> MinIO                  |
+| Credentials par bucket                | Isolation des projets sur la meme instance MinIO |
+| Rejet si invalide                     | Suppression du fichier + erreur renvoyee         |
 
 ## Variables d'environnement (backend)
 
@@ -121,19 +121,19 @@ MINIO_USE_SSL=false                     # true en prod (Traefik TLS)
 
 ### Recettes
 
-| Methode | Endpoint | Description |
-|---------|----------|-------------|
-| POST | `/api/recipes/:id/upload-url` | Genere une presigned PUT URL |
-| POST | `/api/recipes/:id/confirm-upload` | Confirme et valide l'upload |
-| DELETE | `/api/recipes/:id/image` | Supprime l'image |
+| Methode | Endpoint                          | Description                  |
+| ------- | --------------------------------- | ---------------------------- |
+| POST    | `/api/recipes/:id/upload-url`     | Genere une presigned PUT URL |
+| POST    | `/api/recipes/:id/confirm-upload` | Confirme et valide l'upload  |
+| DELETE  | `/api/recipes/:id/image`          | Supprime l'image             |
 
 ### Communautes
 
-| Methode | Endpoint | Description |
-|---------|----------|-------------|
-| POST | `/api/communities/:id/upload-url` | Genere une presigned PUT URL |
-| POST | `/api/communities/:id/confirm-upload` | Confirme et valide l'upload |
-| DELETE | `/api/communities/:id/image` | Supprime l'image |
+| Methode | Endpoint                              | Description                  |
+| ------- | ------------------------------------- | ---------------------------- |
+| POST    | `/api/communities/:id/upload-url`     | Genere une presigned PUT URL |
+| POST    | `/api/communities/:id/confirm-upload` | Confirme et valide l'upload  |
+| DELETE  | `/api/communities/:id/image`          | Supprime l'image             |
 
 ## Schema DB (migration Prisma)
 

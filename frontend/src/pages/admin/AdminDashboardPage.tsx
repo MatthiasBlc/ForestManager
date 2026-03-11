@@ -51,7 +51,11 @@ function AdminDashboardPage() {
           <h2 className="text-xl font-semibold mb-4">Last 7 days</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <StatCard title="New Users" value={stats.lastWeek.newUsers} variant="success" />
-            <StatCard title="New Communities" value={stats.lastWeek.newCommunities} variant="success" />
+            <StatCard
+              title="New Communities"
+              value={stats.lastWeek.newCommunities}
+              variant="success"
+            />
             <StatCard title="New Recipes" value={stats.lastWeek.newRecipes} variant="success" />
           </div>
 

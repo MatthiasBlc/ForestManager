@@ -4,8 +4,12 @@ import { formatTags, formatIngredients, formatSteps } from "../../util/responseF
 describe("formatTags", () => {
   it("should extract tags from pivot format", () => {
     const raw = [
-      { tag: { id: "t1", name: "dessert", scope: "GLOBAL", status: "APPROVED", communityId: null } },
-      { tag: { id: "t2", name: "vegan", scope: "COMMUNITY", status: "PENDING", communityId: "c1" } },
+      {
+        tag: { id: "t1", name: "dessert", scope: "GLOBAL", status: "APPROVED", communityId: null },
+      },
+      {
+        tag: { id: "t2", name: "vegan", scope: "COMMUNITY", status: "PENDING", communityId: "c1" },
+      },
     ];
     expect(formatTags(raw)).toEqual([
       { id: "t1", name: "dessert", scope: "GLOBAL", status: "APPROVED", communityId: null },
@@ -36,8 +40,24 @@ describe("formatIngredients", () => {
     ];
 
     expect(formatIngredients(raw)).toEqual([
-      { id: "ri1", name: "sugar", ingredientId: "i1", quantity: 100, unitId: null, unit: null, order: 0 },
-      { id: "ri2", name: "milk", ingredientId: "i2", quantity: 200, unitId: null, unit: null, order: 1 },
+      {
+        id: "ri1",
+        name: "sugar",
+        ingredientId: "i1",
+        quantity: 100,
+        unitId: null,
+        unit: null,
+        order: 0,
+      },
+      {
+        id: "ri2",
+        name: "milk",
+        ingredientId: "i2",
+        quantity: 200,
+        unitId: null,
+        unit: null,
+        order: 1,
+      },
     ]);
   });
 

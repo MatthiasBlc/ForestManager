@@ -15,11 +15,13 @@ type UploadStatus = "idle" | "processing" | "uploading" | "confirming";
 
 function toUserMessage(err: unknown): string {
   const msg = err instanceof Error ? err.message : "";
-  if (msg.includes("File not found")) return "Le fichier n'a pas ete recu par le serveur. Veuillez reessayer.";
+  if (msg.includes("File not found"))
+    return "Le fichier n'a pas ete recu par le serveur. Veuillez reessayer.";
   if (msg.includes("Invalid file type")) return "Format non supporte. Utilisez JPEG, PNG ou WebP.";
   if (msg.includes("File too large")) return "Image trop volumineuse. Maximum : 2 Mo.";
   if (msg.includes("Network error")) return "Erreur reseau. Verifiez votre connexion.";
-  if (msg.includes("RECIPE_005") || msg.includes("COMMUNITY_006")) return "L'image n'est pas valide. Verifiez le format et la taille (max 2 Mo).";
+  if (msg.includes("RECIPE_005") || msg.includes("COMMUNITY_006"))
+    return "L'image n'est pas valide. Verifiez le format et la taille (max 2 Mo).";
   if (msg.includes("RECIPE_002")) return "Vous n'avez pas la permission de modifier cette image.";
   if (msg.includes("COMMUNITY_002")) return "Communaute introuvable.";
   if (msg.includes("RECIPE_001")) return "Recette introuvable.";
@@ -83,7 +85,7 @@ const ImageUpload = ({
         setError(toUserMessage(err));
       }
     },
-    [getUploadUrl, confirmUpload, onUploadComplete],
+    [getUploadUrl, confirmUpload, onUploadComplete]
   );
 
   const handleDrop = useCallback(
@@ -93,7 +95,7 @@ const ImageUpload = ({
       const file = e.dataTransfer.files[0];
       if (file) handleFile(file);
     },
-    [handleFile, busy],
+    [handleFile, busy]
   );
 
   const handleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,11 +131,7 @@ const ImageUpload = ({
       {/* Current / preview image */}
       {displayUrl && (
         <div className="relative inline-block">
-          <img
-            src={displayUrl}
-            alt="Recipe"
-            className="rounded-lg max-h-64 object-cover"
-          />
+          <img src={displayUrl} alt="Recipe" className="rounded-lg max-h-64 object-cover" />
           {/* Delete button (only for persisted image, not during upload) */}
           {currentImageUrl && !preview && status === "idle" && (
             <button
@@ -188,12 +186,8 @@ const ImageUpload = ({
           onDragOver={(e) => e.preventDefault()}
         >
           <FaCloudUploadAlt className="w-8 h-8 mx-auto text-base-content/40 mb-2" />
-          <p className="text-sm text-base-content/60">
-            Cliquez ou glissez une image ici
-          </p>
-          <p className="text-xs text-base-content/40 mt-1">
-            JPEG, PNG ou WebP — max 2 Mo
-          </p>
+          <p className="text-sm text-base-content/60">Cliquez ou glissez une image ici</p>
+          <p className="text-xs text-base-content/40 mt-1">JPEG, PNG ou WebP — max 2 Mo</p>
           <input
             ref={inputRef}
             type="file"

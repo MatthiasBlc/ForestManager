@@ -57,11 +57,7 @@ const LoginModal = () => {
       <Modal onClose={handleClose}>
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-bold text-lg">Log In</h3>
-          <button
-            type="button"
-            className="btn btn-sm btn-circle btn-ghost"
-            onClick={handleClose}
-          >
+          <button type="button" className="btn btn-sm btn-circle btn-ghost" onClick={handleClose}>
             X
           </button>
         </div>
@@ -109,11 +105,7 @@ const LoginModal = () => {
             error={errors.password}
           />
           <div className="modal-action flex-col gap-2">
-            <button
-              type="submit"
-              className="btn btn-primary w-full"
-              disabled={isSubmitting}
-            >
+            <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
               {isSubmitting ? (
                 <span className="loading loading-spinner loading-sm"></span>
               ) : (
@@ -122,11 +114,7 @@ const LoginModal = () => {
             </button>
             <p className="text-center text-sm text-base-content/70 mt-2">
               Don't have an account?{" "}
-              <Link
-                to="/signup"
-                className="link link-primary"
-                onClick={handleSignUpClick}
-              >
+              <Link to="/signup" className="link link-primary" onClick={handleSignUpClick}>
                 Create one
               </Link>
             </p>

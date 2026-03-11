@@ -32,10 +32,7 @@ const CommunitiesPage = () => {
     <div className="container mx-auto px-4 py-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">My Communities</h1>
-        <button
-          className="btn btn-primary gap-2"
-          onClick={() => navigate("/communities/create")}
-        >
+        <button className="btn btn-primary gap-2" onClick={() => navigate("/communities/create")}>
           <FaPlus />
           New Community
         </button>

@@ -60,10 +60,7 @@ export const getVariants: RequestHandler<
     const whereClause: Prisma.RecipeWhereInput = {
       deletedAt: null,
       id: { not: recipeId },
-      OR: [
-        { id: rootId },
-        { originRecipeId: rootId, isVariant: true },
-      ],
+      OR: [{ id: rootId }, { originRecipeId: rootId, isVariant: true }],
     };
 
     // Si c'est une recette communautaire, ne retourner que celles de la meme communaute

@@ -40,10 +40,7 @@ const CommunityCreatePage = () => {
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
       <div className="mb-6">
-        <button
-          className="btn btn-ghost gap-2"
-          onClick={() => navigate("/communities")}
-        >
+        <button className="btn btn-ghost gap-2" onClick={() => navigate("/communities")}>
           <FaArrowLeft />
           Back to communities
         </button>

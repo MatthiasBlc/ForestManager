@@ -4,9 +4,18 @@ import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { Prisma } from "@prisma/client";
 import {
-  validateServings, validateTime, validateSteps, StepInput,
-  assertString, assertArray, validateQuantity, validateStringLength,
-  MAX_TITLE_LENGTH, MAX_TAGS_PER_RECIPE, MAX_FILTER_ITEMS, MAX_SEARCH_LENGTH,
+  validateServings,
+  validateTime,
+  validateSteps,
+  StepInput,
+  assertString,
+  assertArray,
+  validateQuantity,
+  validateStringLength,
+  MAX_TITLE_LENGTH,
+  MAX_TAGS_PER_RECIPE,
+  MAX_FILTER_ITEMS,
+  MAX_SEARCH_LENGTH,
 } from "../util/validation";
 import { buildImageUrl } from "../config/storage";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
@@ -39,7 +48,16 @@ export const createCommunityRecipe: RequestHandler<
   CreateCommunityRecipeBody,
   unknown
 > = async (req, res, next) => {
-  const { title, servings, prepTime, cookTime, restTime, steps, tags = [], ingredients = [] } = req.body;
+  const {
+    title,
+    servings,
+    prepTime,
+    cookTime,
+    restTime,
+    steps,
+    tags = [],
+    ingredients = [],
+  } = req.body;
   const authenticatedUserId = req.session.userId;
   const communityId = req.params.communityId;
 
@@ -60,7 +78,10 @@ export const createCommunityRecipe: RequestHandler<
     }
 
     if (!validateSteps(steps)) {
-      throw createHttpError(400, "RECIPE_007: At least one step required, each instruction non-empty (max 5000 chars)");
+      throw createHttpError(
+        400,
+        "RECIPE_007: At least one step required, each instruction non-empty (max 5000 chars)"
+      );
     }
 
     if (!validateTime(prepTime)) {
@@ -89,7 +110,14 @@ export const createCommunityRecipe: RequestHandler<
     }
 
     const result = await createCommunityRecipeService(authenticatedUserId, communityId, {
-      title, servings, prepTime, cookTime, restTime, steps, tags, ingredients,
+      title,
+      servings,
+      prepTime,
+      cookTime,
+      restTime,
+      steps,
+      tags,
+      ingredients,
     });
 
     if (!result.personal || !result.community) {
@@ -178,10 +206,16 @@ export const getCommunityRecipes: RequestHandler<
       throw createHttpError(400, `VALIDATION_001: Too many tag filters (max ${MAX_FILTER_ITEMS})`);
     }
     if (ingredientsFilter.length > MAX_FILTER_ITEMS) {
-      throw createHttpError(400, `VALIDATION_001: Too many ingredient filters (max ${MAX_FILTER_ITEMS})`);
+      throw createHttpError(
+        400,
+        `VALIDATION_001: Too many ingredient filters (max ${MAX_FILTER_ITEMS})`
+      );
     }
     if (searchFilter.length > MAX_SEARCH_LENGTH) {
-      throw createHttpError(400, `VALIDATION_001: Search query too long (max ${MAX_SEARCH_LENGTH} chars)`);
+      throw createHttpError(
+        400,
+        `VALIDATION_001: Search query too long (max ${MAX_SEARCH_LENGTH} chars)`
+      );
     }
 
     const whereClause: Prisma.RecipeWhereInput = {

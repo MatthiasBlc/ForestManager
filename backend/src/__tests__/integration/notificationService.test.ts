@@ -11,7 +11,6 @@ import {
   getModeratorIdsForTagNotification,
 } from "../../services/notificationService";
 
-
 // Helper pour creer un user en DB
 async function createUser(suffix: string) {
   return testPrisma.user.create({
@@ -265,7 +264,12 @@ describe("createNotification", () => {
 
   it("should set groupKey for broadcast types", async () => {
     const recipe = await testPrisma.recipe.create({
-      data: { title: "Test Recipe", servings: 4, creatorId: actor.id, steps: { create: [{ order: 0, instruction: "content" }] } },
+      data: {
+        title: "Test Recipe",
+        servings: 4,
+        creatorId: actor.id,
+        steps: { create: [{ order: 0, instruction: "content" }] },
+      },
     });
 
     const notif = await createNotification({
@@ -330,7 +334,13 @@ describe("createBroadcastNotifications", () => {
 
   it("should create notifications for all members except actor", async () => {
     const recipe = await testPrisma.recipe.create({
-      data: { title: "New Recipe", servings: 4, creatorId: actor.id, communityId: community.id, steps: { create: [{ order: 0, instruction: "content" }] } },
+      data: {
+        title: "New Recipe",
+        servings: 4,
+        creatorId: actor.id,
+        communityId: community.id,
+        steps: { create: [{ order: 0, instruction: "content" }] },
+      },
     });
 
     const notifs = await createBroadcastNotifications({
@@ -361,7 +371,13 @@ describe("createBroadcastNotifications", () => {
     });
 
     const recipe = await testPrisma.recipe.create({
-      data: { title: "New Recipe", servings: 4, creatorId: actor.id, communityId: community.id, steps: { create: [{ order: 0, instruction: "content" }] } },
+      data: {
+        title: "New Recipe",
+        servings: 4,
+        creatorId: actor.id,
+        communityId: community.id,
+        steps: { create: [{ order: 0, instruction: "content" }] },
+      },
     });
 
     const notifs = await createBroadcastNotifications({
@@ -395,7 +411,13 @@ describe("createBroadcastNotifications", () => {
 
   it("should set groupKey on all broadcast notifications", async () => {
     const recipe = await testPrisma.recipe.create({
-      data: { title: "R", servings: 4, creatorId: actor.id, communityId: community.id, steps: { create: [{ order: 0, instruction: "c" }] } },
+      data: {
+        title: "R",
+        servings: 4,
+        creatorId: actor.id,
+        communityId: community.id,
+        steps: { create: [{ order: 0, instruction: "c" }] },
+      },
     });
 
     const notifs = await createBroadcastNotifications({
@@ -454,7 +476,12 @@ describe("resolveTemplateVars", () => {
     const suffix = uniqueSuffix();
     const user = await createUser(`resolve3_${suffix}`);
     const recipe = await testPrisma.recipe.create({
-      data: { title: "Ma Recette", servings: 4, creatorId: user.id, steps: { create: [{ order: 0, instruction: "c" }] } },
+      data: {
+        title: "Ma Recette",
+        servings: 4,
+        creatorId: user.id,
+        steps: { create: [{ order: 0, instruction: "c" }] },
+      },
     });
 
     const vars = await resolveTemplateVars({

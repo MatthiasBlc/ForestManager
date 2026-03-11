@@ -150,7 +150,9 @@ export interface AdminRecipeDetail {
   deletedAt: string | null;
   creator: { id: string; username: string };
   community: { id: string; name: string } | null;
-  tags: { tag: { id: string; name: string; scope: string; status: string; communityId: string | null } }[];
+  tags: {
+    tag: { id: string; name: string; scope: string; status: string; communityId: string | null };
+  }[];
   ingredients: {
     id: string;
     quantity: number | null;

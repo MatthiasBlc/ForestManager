@@ -43,11 +43,7 @@ export async function requireRecipeAccess(
     return null;
   }
 
-  return requireMembership(
-    userId,
-    recipe.communityId,
-    "RECIPE_002: Cannot access this recipe"
-  );
+  return requireMembership(userId, recipe.communityId, "RECIPE_002: Cannot access this recipe");
 }
 
 /**
@@ -65,11 +61,7 @@ export async function requireRecipeOwnership(
   }
 
   if (recipe.communityId !== null) {
-    return requireMembership(
-      userId,
-      recipe.communityId,
-      "RECIPE_002: Cannot access this recipe"
-    );
+    return requireMembership(userId, recipe.communityId, "RECIPE_002: Cannot access this recipe");
   }
 
   return null;

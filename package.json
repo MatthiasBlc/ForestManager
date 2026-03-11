@@ -23,7 +23,9 @@
     "test:watch:frontend": "docker compose exec frontend npm run test:watch",
     "test:coverage": "npm run test:coverage:backend && npm run test:coverage:frontend",
     "test:coverage:backend": "docker compose exec backend npm run test:coverage",
-    "test:coverage:frontend": "docker compose exec frontend npm run test:coverage"
+    "test:coverage:frontend": "docker compose exec frontend npm run test:coverage",
+    "format": "npx prettier --write .",
+    "format:check": "npx prettier --check ."
   },
   "repository": {
     "type": "git",
@@ -31,5 +33,8 @@
   },
   "keywords": [],
   "author": "Matthias Bouloc",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "^3.8.1"
+  }
 }

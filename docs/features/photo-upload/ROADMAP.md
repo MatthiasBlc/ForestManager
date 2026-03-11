@@ -9,6 +9,7 @@ Tests manuels : `MANUAL_TESTS.md`
 ## Phase A - Infrastructure MinIO
 
 ### A.1 - MinIO local (docker-compose dev)
+
 - [x] Ajouter le service `minio` au docker-compose.yml
 - [x] Ajouter le service `minio-init` (creation bucket + policy auto)
 - [x] Ajouter le volume `minio-data`
@@ -16,11 +17,13 @@ Tests manuels : `MANUAL_TESTS.md`
 - [x] Tester l'acces console sur `http://localhost:9001`
 
 ### A.2 - Variables d'environnement
-- [x] Ajouter les variables MINIO_* au `.env.development` (ou equivalent)
-- [x] Ajouter les variables MINIO_* au `.env.example` / documentation
+
+- [x] Ajouter les variables MINIO\_\* au `.env.development` (ou equivalent)
+- [x] Ajouter les variables MINIO\_\* au `.env.example` / documentation
 - [x] Ajouter la config MinIO dans le backend (fichier de config centralise)
 
 ### A.3 - Stack MinIO VPS (preprod + prod)
+
 - [x] Documenter le docker-compose de la stack MinIO pour Portainer
 - [x] Creer les buckets preprod et prod
 - [x] Configurer la policy public read sur chaque bucket
@@ -34,11 +37,13 @@ Tests manuels : `MANUAL_TESTS.md`
 ## Phase B - Backend : service MinIO + migration DB
 
 ### B.1 - Migration Prisma
+
 - [x] Ajouter `imageKey String?` sur le modele `Recipe` (rename depuis imageUrl)
 - [x] Ajouter `imageKey String?` sur le modele `Community`
 - [x] Generer et appliquer la migration
 
 ### B.2 - Service MinIO (backend)
+
 - [x] Installer le SDK S3 (`@aws-sdk/client-s3` + `@aws-sdk/s3-request-presigner`)
 - [x] Creer `src/services/storageService.ts` :
   - `generatePresignedUploadUrl(key: string): Promise<string>`
@@ -52,6 +57,7 @@ Tests manuels : `MANUAL_TESTS.md`
 ## Phase C - Backend : endpoints upload recettes
 
 ### C.1 - Endpoint presigned URL
+
 - [x] `POST /api/recipes/:id/upload-url`
   - Verifier que l'user est l'auteur de la recette
   - Generer la cle : `recipes/{recipeId}/cover.webp`
@@ -59,6 +65,7 @@ Tests manuels : `MANUAL_TESTS.md`
 - [x] Validation : recette existante, non soft-deleted, user = auteur
 
 ### C.2 - Endpoint confirmation upload
+
 - [x] `POST /api/recipes/:id/confirm-upload`
   - Verifier que le fichier existe sur MinIO (headObject)
   - Valider MIME type (webp, jpeg, png) et taille (< 2 MB)
@@ -67,12 +74,14 @@ Tests manuels : `MANUAL_TESTS.md`
 - [x] Validation des memes permissions (auteur)
 
 ### C.3 - Endpoint suppression image
+
 - [x] `DELETE /api/recipes/:id/image`
   - Supprimer le fichier MinIO
   - Mettre `imageKey` a null en DB
 - [x] Validation : auteur uniquement
 
 ### C.4 - Tests
+
 - [x] Tests d'integration pour les 3 endpoints recettes
 - [x] Tests des cas d'erreur (pas auteur, recette inexistante, fichier invalide)
 
@@ -81,19 +90,23 @@ Tests manuels : `MANUAL_TESTS.md`
 ## Phase D - Backend : endpoints upload communautes
 
 ### D.1 - Endpoint presigned URL
+
 - [x] `POST /api/communities/:id/upload-url`
   - Verifier que l'user est createur ou moderateur
   - Generer la cle : `communities/{communityId}/avatar.webp`
   - Retourner `{ uploadUrl, imageKey }`
 
 ### D.2 - Endpoint confirmation upload
+
 - [x] `POST /api/communities/:id/confirm-upload`
   - Meme logique que recettes (head, validate, save ou delete)
 
 ### D.3 - Endpoint suppression image
+
 - [x] `DELETE /api/communities/:id/image`
 
 ### D.4 - Tests
+
 - [x] Tests d'integration pour les 3 endpoints communautes
 - [x] Tests des cas d'erreur
 
@@ -102,6 +115,7 @@ Tests manuels : `MANUAL_TESTS.md`
 ## Phase E - Backend : cron nettoyage + suppression cascade
 
 ### E.1 - Cron de nettoyage des images orphelines
+
 - [x] Creer `src/jobs/imageCleanup.ts` (meme pattern que `notificationCleanup.ts`)
 - [x] Cron a 3h30 : chercher recettes/communautes soft-deleted > 7 jours avec imageKey non null
 - [x] Supprimer les fichiers MinIO correspondants
@@ -110,6 +124,7 @@ Tests manuels : `MANUAL_TESTS.md`
 - [x] Tests unitaires
 
 ### E.2 - Suppression cascade (hard delete)
+
 - [x] N/A : pas de hard delete pour Recipe/Community dans le code actuel (soft delete uniquement)
 - [x] Le cron couvre le nettoyage apres 7 jours de soft delete
 
@@ -118,6 +133,7 @@ Tests manuels : `MANUAL_TESTS.md`
 ## Phase F - Frontend : composant d'upload recettes
 
 ### F.1 - Utilitaire de conversion d'image
+
 - [x] Creer un utilitaire `imageUtils.ts` :
   - Conversion en WebP (Canvas API)
   - Resize a max 1600px (plus grand cote)
@@ -125,12 +141,14 @@ Tests manuels : `MANUAL_TESTS.md`
   - Validation format (jpeg, png, webp)
 
 ### F.2 - Composant ImageUpload
+
 - [x] Composant reutilisable : zone de drop / bouton de selection
 - [x] Preview de l'image avant upload
 - [x] Indicateur de progression (upload vers MinIO)
 - [x] Gestion des erreurs (fichier trop gros, format invalide, echec upload)
 
 ### F.3 - Integration page recette
+
 - [x] Ajouter le composant sur le formulaire de creation/edition de recette
 - [x] Appel backend pour presigned URL -> upload -> confirm
 - [x] Affichage de l'image de couverture existante
@@ -142,6 +160,7 @@ Tests manuels : `MANUAL_TESTS.md`
 ## Phase G - Frontend : upload communautes
 
 ### G.1 - Integration page communaute
+
 - [x] Ajouter le composant ImageUpload sur les settings de communaute
 - [x] Meme flux : presigned URL -> upload -> confirm
 - [x] Affichage de l'avatar existant
@@ -160,5 +179,6 @@ Tests manuels : `MANUAL_TESTS.md`
 - [ ] Mettre a jour API_MAP, DB_MODELS, FILE_MAP, TESTS dans `.claude/context/`
 
 ### H.1 - Bugfixes preprod (decouverts lors des tests)
+
 - [x] Fix presigned URLs : utiliser l'endpoint public (`MINIO_PUBLIC_URL`) au lieu de l'endpoint interne Docker pour les URLs destinees au frontend
 - [x] Fix CSP frontend : ajouter `blob:` a `img-src` pour les previews locales, ajouter `https://s3.matthias-bouloc.fr` a `connect-src` pour les uploads MinIO

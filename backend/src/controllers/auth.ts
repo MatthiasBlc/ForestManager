@@ -58,7 +58,11 @@ interface SignUpBody {
  * POST /api/auth/signup
  * Cree un nouvel utilisateur
  */
-export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = async (req, res, next) => {
+export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = async (
+  req,
+  res,
+  next
+) => {
   const { username, email, password } = req.body;
 
   try {
@@ -79,15 +83,24 @@ export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = asy
 
     // Validation username format et longueur
     if (username.length < MIN_USERNAME_LENGTH || username.length > MAX_USERNAME_LENGTH) {
-      throw createHttpError(400, `AUTH_004: Username must be between ${MIN_USERNAME_LENGTH} and ${MAX_USERNAME_LENGTH} characters`);
+      throw createHttpError(
+        400,
+        `AUTH_004: Username must be between ${MIN_USERNAME_LENGTH} and ${MAX_USERNAME_LENGTH} characters`
+      );
     }
     if (!USERNAME_REGEX.test(username)) {
-      throw createHttpError(400, "AUTH_004: Username can only contain letters, numbers, and underscores");
+      throw createHttpError(
+        400,
+        "AUTH_004: Username can only contain letters, numbers, and underscores"
+      );
     }
 
     // Validation password longueur
     if (password.length < MIN_PASSWORD_LENGTH || password.length > MAX_PASSWORD_LENGTH) {
-      throw createHttpError(400, `AUTH_005: Password must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters`);
+      throw createHttpError(
+        400,
+        `AUTH_005: Password must be between ${MIN_PASSWORD_LENGTH} and ${MAX_PASSWORD_LENGTH} characters`
+      );
     }
 
     // Verification username unique (excluant les comptes supprimes)
@@ -156,7 +169,11 @@ interface LoginBody {
  * POST /api/auth/login
  * Authentifie un utilisateur existant
  */
-export const login: RequestHandler<unknown, unknown, LoginBody, unknown> = async (req, res, next) => {
+export const login: RequestHandler<unknown, unknown, LoginBody, unknown> = async (
+  req,
+  res,
+  next
+) => {
   const { username, password } = req.body;
 
   try {

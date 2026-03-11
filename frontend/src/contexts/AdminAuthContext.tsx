@@ -58,33 +58,36 @@ export function AdminAuthProvider({ children }: AdminAuthProviderProps) {
   }, []);
 
   // Step 1: Email/password verification
-  const loginStep1 = useCallback(async (email: string, password: string): Promise<LoginStep1Result> => {
-    setError(null);
-    try {
-      const response = await APIManager.adminLogin(email, password);
+  const loginStep1 = useCallback(
+    async (email: string, password: string): Promise<LoginStep1Result> => {
+      setError(null);
+      try {
+        const response = await APIManager.adminLogin(email, password);
 
-      if (response.requiresTotpSetup && response.qrCode) {
-        setQrCode(response.qrCode);
-      } else {
-        setQrCode(null);
-      }
+        if (response.requiresTotpSetup && response.qrCode) {
+          setQrCode(response.qrCode);
+        } else {
+          setQrCode(null);
+        }
 
-      setAuthStep("totp");
-      return {
-        requiresTotpSetup: response.requiresTotpSetup,
-        qrCode: response.qrCode,
-      };
-    } catch (err) {
-      if (err instanceof UnauthorizedError) {
-        setError(err.message);
-      } else if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Login failed");
+        setAuthStep("totp");
+        return {
+          requiresTotpSetup: response.requiresTotpSetup,
+          qrCode: response.qrCode,
+        };
+      } catch (err) {
+        if (err instanceof UnauthorizedError) {
+          setError(err.message);
+        } else if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Login failed");
+        }
+        throw err;
       }
-      throw err;
-    }
-  }, []);
+    },
+    []
+  );
 
   // Step 2: TOTP verification
   const loginStep2 = useCallback(async (code: string): Promise<void> => {
@@ -136,11 +139,7 @@ export function AdminAuthProvider({ children }: AdminAuthProviderProps) {
     clearError,
   };
 
-  return (
-    <AdminAuthContext.Provider value={value}>
-      {children}
-    </AdminAuthContext.Provider>
-  );
+  return <AdminAuthContext.Provider value={value}>{children}</AdminAuthContext.Provider>;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

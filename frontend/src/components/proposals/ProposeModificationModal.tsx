@@ -42,14 +42,20 @@ const ProposeModificationModal = ({
 }: ProposeModificationModalProps) => {
   const [proposedTitle, setProposedTitle] = useState(currentTitle);
   const [proposedServings, setProposedServings] = useState(currentServings);
-  const [proposedPrepTime, setProposedPrepTime] = useState(currentPrepTime != null ? String(currentPrepTime) : "");
-  const [proposedCookTime, setProposedCookTime] = useState(currentCookTime != null ? String(currentCookTime) : "");
-  const [proposedRestTime, setProposedRestTime] = useState(currentRestTime != null ? String(currentRestTime) : "");
-  const [proposedSteps, setProposedSteps] = useState<{ instruction: string }[]>(
-    () => currentSteps.map((s) => ({ instruction: s.instruction }))
+  const [proposedPrepTime, setProposedPrepTime] = useState(
+    currentPrepTime != null ? String(currentPrepTime) : ""
   );
-  const [proposedIngredients, setProposedIngredients] = useState<IngredientInput[]>(
-    () => recipeIngredientsToInputs(currentIngredients)
+  const [proposedCookTime, setProposedCookTime] = useState(
+    currentCookTime != null ? String(currentCookTime) : ""
+  );
+  const [proposedRestTime, setProposedRestTime] = useState(
+    currentRestTime != null ? String(currentRestTime) : ""
+  );
+  const [proposedSteps, setProposedSteps] = useState<{ instruction: string }[]>(() =>
+    currentSteps.map((s) => ({ instruction: s.instruction }))
+  );
+  const [proposedIngredients, setProposedIngredients] = useState<IngredientInput[]>(() =>
+    recipeIngredientsToInputs(currentIngredients)
   );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -60,17 +66,23 @@ const ProposeModificationModal = ({
     return isNaN(n) ? null : n;
   };
 
-  const ingredientsChanged = JSON.stringify(
-    proposedIngredients.filter((i) => i.name.trim()).map(({ name, quantity, unitId }) => ({ name, quantity, unitId }))
-  ) !== JSON.stringify(
-    currentIngredients.map((i) => ({ name: i.name, quantity: i.quantity ?? undefined, unitId: i.unitId ?? undefined }))
-  );
+  const ingredientsChanged =
+    JSON.stringify(
+      proposedIngredients
+        .filter((i) => i.name.trim())
+        .map(({ name, quantity, unitId }) => ({ name, quantity, unitId }))
+    ) !==
+    JSON.stringify(
+      currentIngredients.map((i) => ({
+        name: i.name,
+        quantity: i.quantity ?? undefined,
+        unitId: i.unitId ?? undefined,
+      }))
+    );
 
-  const stepsChanged = JSON.stringify(
-    proposedSteps.map((s) => s.instruction)
-  ) !== JSON.stringify(
-    currentSteps.map((s) => s.instruction)
-  );
+  const stepsChanged =
+    JSON.stringify(proposedSteps.map((s) => s.instruction)) !==
+    JSON.stringify(currentSteps.map((s) => s.instruction));
 
   const titleChanged = proposedTitle !== currentTitle;
   const servingsChanged = proposedServings !== currentServings;
@@ -78,7 +90,14 @@ const ProposeModificationModal = ({
   const cookTimeChanged = parseTime(proposedCookTime) !== currentCookTime;
   const restTimeChanged = parseTime(proposedRestTime) !== currentRestTime;
 
-  const hasChanges = titleChanged || servingsChanged || prepTimeChanged || cookTimeChanged || restTimeChanged || stepsChanged || ingredientsChanged;
+  const hasChanges =
+    titleChanged ||
+    servingsChanged ||
+    prepTimeChanged ||
+    cookTimeChanged ||
+    restTimeChanged ||
+    stepsChanged ||
+    ingredientsChanged;
   const validSteps = proposedSteps.filter((s) => s.instruction.trim().length > 0);
   const isValid = proposedTitle.trim().length > 0 && validSteps.length > 0;
 
@@ -119,8 +138,8 @@ const ProposeModificationModal = ({
     <Modal onClose={onClose} disableClickOutside={isSubmitting}>
       <h3 className="font-bold text-lg mb-4">Propose a modification</h3>
       <p className="text-sm text-base-content/70 mb-4">
-        Suggest changes to this recipe. The owner can accept your proposal to update the recipe,
-        or reject it to create a variant with your changes.
+        Suggest changes to this recipe. The owner can accept your proposal to update the recipe, or
+        reject it to create a variant with your changes.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -214,10 +233,7 @@ const ProposeModificationModal = ({
           <label className="label">
             <span className="label-text">Ingredients</span>
           </label>
-          <IngredientList
-            value={proposedIngredients}
-            onChange={setProposedIngredients}
-          />
+          <IngredientList value={proposedIngredients} onChange={setProposedIngredients} />
         </div>
 
         <div className="form-control">
@@ -240,12 +256,7 @@ const ProposeModificationModal = ({
         )}
 
         <div className="modal-action">
-          <button
-            type="button"
-            className="btn btn-ghost"
-            onClick={onClose}
-            disabled={isSubmitting}
-          >
+          <button type="button" className="btn btn-ghost" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </button>
           <button

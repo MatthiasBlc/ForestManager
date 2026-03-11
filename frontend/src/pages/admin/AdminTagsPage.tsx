@@ -1,6 +1,11 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { FaSortUp, FaSortDown, FaSort } from "react-icons/fa";
-import { AdminTag, AdminRecipeListItem, AdminRecipeDetail, AdminRecipeUpdateInput } from "../../models/admin";
+import {
+  AdminTag,
+  AdminRecipeListItem,
+  AdminRecipeDetail,
+  AdminRecipeUpdateInput,
+} from "../../models/admin";
 import APIManager from "../../network/api";
 import { useConfirm } from "../../hooks/useConfirm";
 import toast from "react-hot-toast";
@@ -98,7 +103,11 @@ function AdminTagsPage() {
 
   const SortIcon = ({ column }: { column: TagSortColumn }) => {
     if (sortColumn !== column) return <FaSort className="ml-1 opacity-30" />;
-    return sortDirection === "asc" ? <FaSortUp className="ml-1" /> : <FaSortDown className="ml-1" />;
+    return sortDirection === "asc" ? (
+      <FaSortUp className="ml-1" />
+    ) : (
+      <FaSortDown className="ml-1" />
+    );
   };
 
   function openCreate() {
@@ -299,7 +308,9 @@ function AdminTagsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Tags</h1>
-        <button className="btn btn-primary" onClick={openCreate}>Add Tag</button>
+        <button className="btn btn-primary" onClick={openCreate}>
+          Add Tag
+        </button>
       </div>
 
       {/* Filters */}
@@ -335,14 +346,26 @@ function AdminTagsPage() {
               <thead>
                 <tr>
                   <th className="cursor-pointer select-none" onClick={() => handleSort("name")}>
-                    <span className="flex items-center">Name<SortIcon column="name" /></span>
+                    <span className="flex items-center">
+                      Name
+                      <SortIcon column="name" />
+                    </span>
                   </th>
                   <th className="cursor-pointer select-none" onClick={() => handleSort("scope")}>
-                    <span className="flex items-center">Scope<SortIcon column="scope" /></span>
+                    <span className="flex items-center">
+                      Scope
+                      <SortIcon column="scope" />
+                    </span>
                   </th>
                   <th>Community</th>
-                  <th className="cursor-pointer select-none text-right" onClick={() => handleSort("recipeCount")}>
-                    <span className="flex items-center justify-end">Recipes<SortIcon column="recipeCount" /></span>
+                  <th
+                    className="cursor-pointer select-none text-right"
+                    onClick={() => handleSort("recipeCount")}
+                  >
+                    <span className="flex items-center justify-end">
+                      Recipes
+                      <SortIcon column="recipeCount" />
+                    </span>
                   </th>
                   <th className="text-right">Actions</th>
                 </tr>
@@ -353,13 +376,13 @@ function AdminTagsPage() {
                     <tr key={tag.id}>
                       <td className="font-medium">{tag.name}</td>
                       <td>
-                        <span className={`badge badge-sm ${tag.scope === "GLOBAL" ? "badge-primary" : "badge-secondary"}`}>
+                        <span
+                          className={`badge badge-sm ${tag.scope === "GLOBAL" ? "badge-primary" : "badge-secondary"}`}
+                        >
                           {tag.scope || "GLOBAL"}
                         </span>
                       </td>
-                      <td className="text-base-content/60">
-                        {tag.community?.name || "-"}
-                      </td>
+                      <td className="text-base-content/60">{tag.community?.name || "-"}</td>
                       <td className="text-right">
                         {tag.recipeCount > 0 ? (
                           <button
@@ -374,16 +397,27 @@ function AdminTagsPage() {
                       </td>
                       <td className="text-right">
                         <div className="flex justify-end gap-1">
-                          <button className="btn btn-ghost btn-xs" onClick={() => openEdit(tag)}>Edit</button>
-                          <button className="btn btn-ghost btn-xs" onClick={() => openMerge(tag)}>Merge</button>
-                          <button className="btn btn-ghost btn-xs text-error" onClick={() => handleDelete(tag)}>Delete</button>
+                          <button className="btn btn-ghost btn-xs" onClick={() => openEdit(tag)}>
+                            Edit
+                          </button>
+                          <button className="btn btn-ghost btn-xs" onClick={() => openMerge(tag)}>
+                            Merge
+                          </button>
+                          <button
+                            className="btn btn-ghost btn-xs text-error"
+                            onClick={() => handleDelete(tag)}
+                          >
+                            Delete
+                          </button>
                         </div>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="text-center text-base-content/50">No tags found</td>
+                    <td colSpan={5} className="text-center text-base-content/50">
+                      No tags found
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -398,7 +432,9 @@ function AdminTagsPage() {
           <div className="modal-box">
             <h3 className="font-bold text-lg">{editingTag ? "Edit Tag" : "Create Tag"}</h3>
             <div className="form-control mt-4">
-              <label className="label"><span className="label-text">Name</span></label>
+              <label className="label">
+                <span className="label-text">Name</span>
+              </label>
               <input
                 type="text"
                 className="input input-bordered"
@@ -408,8 +444,14 @@ function AdminTagsPage() {
               />
             </div>
             <div className="modal-action">
-              <button className="btn btn-ghost" onClick={() => setModalOpen(false)}>Cancel</button>
-              <button className="btn btn-primary" onClick={handleSave} disabled={saving || !tagName.trim()}>
+              <button className="btn btn-ghost" onClick={() => setModalOpen(false)}>
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleSave}
+                disabled={saving || !tagName.trim()}
+              >
                 {saving ? <span className="loading loading-spinner loading-sm"></span> : "Save"}
               </button>
             </div>
@@ -423,7 +465,9 @@ function AdminTagsPage() {
         <div className="modal modal-open">
           <div className="modal-box">
             <h3 className="font-bold text-lg">Merge &quot;{mergeSource.name}&quot; into...</h3>
-            <p className="text-sm text-base-content/70 mt-2">Select the target tag. All recipes will be moved to the target.</p>
+            <p className="text-sm text-base-content/70 mt-2">
+              Select the target tag. All recipes will be moved to the target.
+            </p>
             <input
               type="text"
               placeholder="Search target tag..."
@@ -434,7 +478,11 @@ function AdminTagsPage() {
             />
             <div className="mt-3 max-h-60 overflow-y-auto">
               {tags
-                .filter((t) => t.id !== mergeSource.id && t.name.toLowerCase().includes(mergeSearch.toLowerCase()))
+                .filter(
+                  (t) =>
+                    t.id !== mergeSource.id &&
+                    t.name.toLowerCase().includes(mergeSearch.toLowerCase())
+                )
                 .map((tag) => (
                   <button
                     key={tag.id}
@@ -446,10 +494,24 @@ function AdminTagsPage() {
                 ))}
             </div>
             <div className="modal-action">
-              <button className="btn btn-ghost" onClick={() => { setMergeModalOpen(false); setMergeSource(null); }}>Cancel</button>
+              <button
+                className="btn btn-ghost"
+                onClick={() => {
+                  setMergeModalOpen(false);
+                  setMergeSource(null);
+                }}
+              >
+                Cancel
+              </button>
             </div>
           </div>
-          <div className="modal-backdrop bg-black/50" onClick={() => { setMergeModalOpen(false); setMergeSource(null); }} />
+          <div
+            className="modal-backdrop bg-black/50"
+            onClick={() => {
+              setMergeModalOpen(false);
+              setMergeSource(null);
+            }}
+          />
         </div>
       )}
 
@@ -457,7 +519,9 @@ function AdminTagsPage() {
       {recipesModalTag && (
         <div className="modal modal-open">
           <div className="modal-box max-w-3xl">
-            <h3 className="font-bold text-lg">Recipes with tag &quot;{recipesModalTag.name}&quot;</h3>
+            <h3 className="font-bold text-lg">
+              Recipes with tag &quot;{recipesModalTag.name}&quot;
+            </h3>
 
             <div className="form-control mt-3">
               <label className="label cursor-pointer justify-start gap-2">
@@ -512,7 +576,9 @@ function AdminTagsPage() {
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={5} className="text-center text-base-content/50">No recipes found</td>
+                        <td colSpan={5} className="text-center text-base-content/50">
+                          No recipes found
+                        </td>
                       </tr>
                     )}
                   </tbody>
@@ -521,7 +587,9 @@ function AdminTagsPage() {
             )}
 
             <div className="modal-action">
-              <button className="btn btn-ghost" onClick={closeRecipesModal}>Close</button>
+              <button className="btn btn-ghost" onClick={closeRecipesModal}>
+                Close
+              </button>
             </div>
           </div>
           <div className="modal-backdrop bg-black/50" onClick={closeRecipesModal} />
@@ -536,146 +604,209 @@ function AdminTagsPage() {
               <div className="flex justify-center py-8">
                 <span className="loading loading-spinner loading-md"></span>
               </div>
-            ) : recipeDetail && (
-              <>
-                <div className="flex items-start justify-between">
-                  <h3 className="font-bold text-lg">{recipeDetail.title}</h3>
-                  {recipeDetail.deletedAt && (
-                    <span className="badge badge-error">Deleted</span>
-                  )}
-                </div>
+            ) : (
+              recipeDetail && (
+                <>
+                  <div className="flex items-start justify-between">
+                    <h3 className="font-bold text-lg">{recipeDetail.title}</h3>
+                    {recipeDetail.deletedAt && <span className="badge badge-error">Deleted</span>}
+                  </div>
 
-                {!editingRecipe ? (
-                  <>
-                    {/* Read-only view */}
-                    <div className="card bg-base-200 mt-4 p-4">
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div><span className="font-semibold">Servings:</span> {recipeDetail.servings}</div>
-                        <div><span className="font-semibold">Prep:</span> {formatTime(recipeDetail.prepTime)}</div>
-                        <div><span className="font-semibold">Cook:</span> {formatTime(recipeDetail.cookTime)}</div>
-                        <div><span className="font-semibold">Rest:</span> {formatTime(recipeDetail.restTime)}</div>
-                        <div><span className="font-semibold">Creator:</span> {recipeDetail.creator.username}</div>
-                        <div><span className="font-semibold">Community:</span> {recipeDetail.community?.name || "-"}</div>
-                      </div>
-                    </div>
-
-                    {/* Tags */}
-                    {recipeDetail.tags.length > 0 && (
-                      <div className="mt-4">
-                        <h4 className="font-semibold text-sm mb-1">Tags</h4>
-                        <div className="flex flex-wrap gap-1">
-                          {recipeDetail.tags.map(({ tag }) => (
-                            <span key={tag.id} className="badge badge-sm badge-outline">{tag.name}</span>
-                          ))}
+                  {!editingRecipe ? (
+                    <>
+                      {/* Read-only view */}
+                      <div className="card bg-base-200 mt-4 p-4">
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <span className="font-semibold">Servings:</span> {recipeDetail.servings}
+                          </div>
+                          <div>
+                            <span className="font-semibold">Prep:</span>{" "}
+                            {formatTime(recipeDetail.prepTime)}
+                          </div>
+                          <div>
+                            <span className="font-semibold">Cook:</span>{" "}
+                            {formatTime(recipeDetail.cookTime)}
+                          </div>
+                          <div>
+                            <span className="font-semibold">Rest:</span>{" "}
+                            {formatTime(recipeDetail.restTime)}
+                          </div>
+                          <div>
+                            <span className="font-semibold">Creator:</span>{" "}
+                            {recipeDetail.creator.username}
+                          </div>
+                          <div>
+                            <span className="font-semibold">Community:</span>{" "}
+                            {recipeDetail.community?.name || "-"}
+                          </div>
                         </div>
                       </div>
-                    )}
 
-                    {/* Ingredients */}
-                    {recipeDetail.ingredients.length > 0 && (
-                      <div className="mt-4">
-                        <h4 className="font-semibold text-sm mb-1">Ingredients</h4>
-                        <ul className="list-disc list-inside text-sm space-y-0.5">
-                          {recipeDetail.ingredients.map((ing) => (
-                            <li key={ing.id}>
-                              {ing.quantity != null && <span>{ing.quantity} </span>}
-                              {ing.unit && <span>{ing.unit.abbreviation} </span>}
-                              {ing.ingredient.name}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {/* Steps */}
-                    {recipeDetail.steps.length > 0 && (
-                      <div className="mt-4">
-                        <h4 className="font-semibold text-sm mb-1">Steps</h4>
-                        <ol className="list-decimal list-inside text-sm space-y-1">
-                          {recipeDetail.steps.map((step) => (
-                            <li key={step.id}>{step.instruction}</li>
-                          ))}
-                        </ol>
-                      </div>
-                    )}
-
-                    {/* Action buttons */}
-                    <div className="modal-action">
-                      <button className="btn btn-ghost" onClick={closeRecipeDetail}>Close</button>
-                      {!recipeDetail.deletedAt && (
-                        <>
-                          <button className="btn btn-outline btn-sm" onClick={startEditRecipe}>Edit</button>
-                          <button className="btn btn-error btn-sm" onClick={handleDeleteRecipe}>Delete</button>
-                        </>
+                      {/* Tags */}
+                      {recipeDetail.tags.length > 0 && (
+                        <div className="mt-4">
+                          <h4 className="font-semibold text-sm mb-1">Tags</h4>
+                          <div className="flex flex-wrap gap-1">
+                            {recipeDetail.tags.map(({ tag }) => (
+                              <span key={tag.id} className="badge badge-sm badge-outline">
+                                {tag.name}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       )}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {/* Edit form */}
-                    <div className="card bg-base-200 mt-4 p-4 space-y-3">
-                      <div className="form-control">
-                        <label className="label"><span className="label-text text-sm">Title</span></label>
-                        <input
-                          type="text"
-                          className="input input-bordered input-sm"
-                          value={recipeForm.title ?? ""}
-                          onChange={(e) => setRecipeForm({ ...recipeForm, title: e.target.value })}
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="form-control">
-                          <label className="label"><span className="label-text text-sm">Servings</span></label>
-                          <input
-                            type="number"
-                            className="input input-bordered input-sm"
-                            value={recipeForm.servings ?? ""}
-                            onChange={(e) => setRecipeForm({ ...recipeForm, servings: e.target.value ? Number(e.target.value) : undefined })}
-                          />
-                        </div>
-                        <div className="form-control">
-                          <label className="label"><span className="label-text text-sm">Prep time (min)</span></label>
-                          <input
-                            type="number"
-                            className="input input-bordered input-sm"
-                            value={recipeForm.prepTime ?? ""}
-                            onChange={(e) => setRecipeForm({ ...recipeForm, prepTime: e.target.value ? Number(e.target.value) : null })}
-                          />
-                        </div>
-                        <div className="form-control">
-                          <label className="label"><span className="label-text text-sm">Cook time (min)</span></label>
-                          <input
-                            type="number"
-                            className="input input-bordered input-sm"
-                            value={recipeForm.cookTime ?? ""}
-                            onChange={(e) => setRecipeForm({ ...recipeForm, cookTime: e.target.value ? Number(e.target.value) : null })}
-                          />
-                        </div>
-                        <div className="form-control">
-                          <label className="label"><span className="label-text text-sm">Rest time (min)</span></label>
-                          <input
-                            type="number"
-                            className="input input-bordered input-sm"
-                            value={recipeForm.restTime ?? ""}
-                            onChange={(e) => setRecipeForm({ ...recipeForm, restTime: e.target.value ? Number(e.target.value) : null })}
-                          />
-                        </div>
-                      </div>
-                    </div>
 
-                    <div className="modal-action">
-                      <button className="btn btn-ghost" onClick={() => setEditingRecipe(false)}>Cancel</button>
-                      <button
-                        className="btn btn-primary btn-sm"
-                        onClick={handleSaveRecipe}
-                        disabled={savingRecipe || !recipeForm.title?.trim()}
-                      >
-                        {savingRecipe ? <span className="loading loading-spinner loading-sm"></span> : "Save"}
-                      </button>
-                    </div>
-                  </>
-                )}
-              </>
+                      {/* Ingredients */}
+                      {recipeDetail.ingredients.length > 0 && (
+                        <div className="mt-4">
+                          <h4 className="font-semibold text-sm mb-1">Ingredients</h4>
+                          <ul className="list-disc list-inside text-sm space-y-0.5">
+                            {recipeDetail.ingredients.map((ing) => (
+                              <li key={ing.id}>
+                                {ing.quantity != null && <span>{ing.quantity} </span>}
+                                {ing.unit && <span>{ing.unit.abbreviation} </span>}
+                                {ing.ingredient.name}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Steps */}
+                      {recipeDetail.steps.length > 0 && (
+                        <div className="mt-4">
+                          <h4 className="font-semibold text-sm mb-1">Steps</h4>
+                          <ol className="list-decimal list-inside text-sm space-y-1">
+                            {recipeDetail.steps.map((step) => (
+                              <li key={step.id}>{step.instruction}</li>
+                            ))}
+                          </ol>
+                        </div>
+                      )}
+
+                      {/* Action buttons */}
+                      <div className="modal-action">
+                        <button className="btn btn-ghost" onClick={closeRecipeDetail}>
+                          Close
+                        </button>
+                        {!recipeDetail.deletedAt && (
+                          <>
+                            <button className="btn btn-outline btn-sm" onClick={startEditRecipe}>
+                              Edit
+                            </button>
+                            <button className="btn btn-error btn-sm" onClick={handleDeleteRecipe}>
+                              Delete
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* Edit form */}
+                      <div className="card bg-base-200 mt-4 p-4 space-y-3">
+                        <div className="form-control">
+                          <label className="label">
+                            <span className="label-text text-sm">Title</span>
+                          </label>
+                          <input
+                            type="text"
+                            className="input input-bordered input-sm"
+                            value={recipeForm.title ?? ""}
+                            onChange={(e) =>
+                              setRecipeForm({ ...recipeForm, title: e.target.value })
+                            }
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="form-control">
+                            <label className="label">
+                              <span className="label-text text-sm">Servings</span>
+                            </label>
+                            <input
+                              type="number"
+                              className="input input-bordered input-sm"
+                              value={recipeForm.servings ?? ""}
+                              onChange={(e) =>
+                                setRecipeForm({
+                                  ...recipeForm,
+                                  servings: e.target.value ? Number(e.target.value) : undefined,
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="form-control">
+                            <label className="label">
+                              <span className="label-text text-sm">Prep time (min)</span>
+                            </label>
+                            <input
+                              type="number"
+                              className="input input-bordered input-sm"
+                              value={recipeForm.prepTime ?? ""}
+                              onChange={(e) =>
+                                setRecipeForm({
+                                  ...recipeForm,
+                                  prepTime: e.target.value ? Number(e.target.value) : null,
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="form-control">
+                            <label className="label">
+                              <span className="label-text text-sm">Cook time (min)</span>
+                            </label>
+                            <input
+                              type="number"
+                              className="input input-bordered input-sm"
+                              value={recipeForm.cookTime ?? ""}
+                              onChange={(e) =>
+                                setRecipeForm({
+                                  ...recipeForm,
+                                  cookTime: e.target.value ? Number(e.target.value) : null,
+                                })
+                              }
+                            />
+                          </div>
+                          <div className="form-control">
+                            <label className="label">
+                              <span className="label-text text-sm">Rest time (min)</span>
+                            </label>
+                            <input
+                              type="number"
+                              className="input input-bordered input-sm"
+                              value={recipeForm.restTime ?? ""}
+                              onChange={(e) =>
+                                setRecipeForm({
+                                  ...recipeForm,
+                                  restTime: e.target.value ? Number(e.target.value) : null,
+                                })
+                              }
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="modal-action">
+                        <button className="btn btn-ghost" onClick={() => setEditingRecipe(false)}>
+                          Cancel
+                        </button>
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={handleSaveRecipe}
+                          disabled={savingRecipe || !recipeForm.title?.trim()}
+                        >
+                          {savingRecipe ? (
+                            <span className="loading loading-spinner loading-sm"></span>
+                          ) : (
+                            "Save"
+                          )}
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </>
+              )
             )}
           </div>
           <div className="modal-backdrop bg-black/50" onClick={closeRecipeDetail} />

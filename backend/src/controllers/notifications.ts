@@ -81,8 +81,7 @@ function groupNotifications(
     for (const notif of notifs) {
       if (
         currentGroup.length === 0 ||
-        currentGroup[currentGroup.length - 1].createdAt.getTime() -
-          notif.createdAt.getTime() <=
+        currentGroup[currentGroup.length - 1].createdAt.getTime() - notif.createdAt.getTime() <=
           GROUP_WINDOW_MS
       ) {
         currentGroup.push(notif);
@@ -121,9 +120,7 @@ function groupNotifications(
           category: newest.category,
           title: newest.title,
           message: `${sg.length} ${getGroupMessage(newest.type, newest.community?.name ?? "")}`,
-          actionUrl: newest.community
-            ? `/communities/${newest.community.id}`
-            : null,
+          actionUrl: newest.community ? `/communities/${newest.community.id}` : null,
           actor: null,
           community: newest.community,
           readAt: allRead ? newest.readAt : null,
@@ -272,11 +269,7 @@ export const getUnreadCount: RequestHandler = async (req, res, next) => {
 // PATCH /api/notifications/:id/read
 // =============================================================================
 
-export const markAsRead: RequestHandler<{ id: string }> = async (
-  req,
-  res,
-  next
-) => {
+export const markAsRead: RequestHandler<{ id: string }> = async (req, res, next) => {
   const userId = req.session.userId;
   const { id } = req.params;
 
@@ -316,11 +309,11 @@ export const markAsRead: RequestHandler<{ id: string }> = async (
 // PATCH /api/notifications/read (batch)
 // =============================================================================
 
-export const markBatchAsRead: RequestHandler<
-  unknown,
-  unknown,
-  { ids?: string[] }
-> = async (req, res, next) => {
+export const markBatchAsRead: RequestHandler<unknown, unknown, { ids?: string[] }> = async (
+  req,
+  res,
+  next
+) => {
   const userId = req.session.userId;
   const { ids } = req.body;
 
@@ -370,11 +363,11 @@ export const markBatchAsRead: RequestHandler<
 // PATCH /api/notifications/read-all
 // =============================================================================
 
-export const markAllAsRead: RequestHandler<
-  unknown,
-  unknown,
-  { category?: string }
-> = async (req, res, next) => {
+export const markAllAsRead: RequestHandler<unknown, unknown, { category?: string }> = async (
+  req,
+  res,
+  next
+) => {
   const userId = req.session.userId;
   const { category } = req.body;
 
@@ -442,9 +435,7 @@ export const getPreferences: RequestHandler = async (req, res, next) => {
     const communities = memberships.map((m) => {
       const communityPrefs: Record<string, boolean> = {};
       for (const cat of allCategories) {
-        const pref = prefs.find(
-          (p) => p.communityId === m.communityId && p.category === cat
-        );
+        const pref = prefs.find((p) => p.communityId === m.communityId && p.category === cat);
         // Si pas de pref communaute, heriter de la globale
         communityPrefs[cat] = pref?.enabled ?? globalPrefs[cat];
       }

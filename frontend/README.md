@@ -63,6 +63,7 @@ npm run dev               # http://localhost:3000
 ## Tests
 
 404 tests unitaires couvrant :
+
 - Contexts (Auth, Admin, Socket, Theme)
 - Hooks personnalises
 - Composants (pages, forms, modals)

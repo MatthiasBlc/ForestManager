@@ -78,7 +78,9 @@ function AdminFeaturesPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Features</h1>
-        <button className="btn btn-primary" onClick={openCreate}>Add Feature</button>
+        <button className="btn btn-primary" onClick={openCreate}>
+          Add Feature
+        </button>
       </div>
 
       {/* Table */}
@@ -104,9 +106,13 @@ function AdminFeaturesPage() {
                 {features.length > 0 ? (
                   features.map((feature) => (
                     <tr key={feature.id}>
-                      <td><code className="text-sm">{feature.code}</code></td>
+                      <td>
+                        <code className="text-sm">{feature.code}</code>
+                      </td>
                       <td className="font-medium">{feature.name}</td>
-                      <td className="text-sm text-base-content/70 max-w-xs truncate">{feature.description || "-"}</td>
+                      <td className="text-sm text-base-content/70 max-w-xs truncate">
+                        {feature.description || "-"}
+                      </td>
                       <td className="text-center">
                         {feature.isDefault ? (
                           <span className="badge badge-success badge-sm">Yes</span>
@@ -116,13 +122,17 @@ function AdminFeaturesPage() {
                       </td>
                       <td className="text-right">{feature.communityCount ?? 0}</td>
                       <td className="text-right">
-                        <button className="btn btn-ghost btn-xs" onClick={() => openEdit(feature)}>Edit</button>
+                        <button className="btn btn-ghost btn-xs" onClick={() => openEdit(feature)}>
+                          Edit
+                        </button>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="text-center text-base-content/50">No features found</td>
+                    <td colSpan={6} className="text-center text-base-content/50">
+                      No features found
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -135,11 +145,15 @@ function AdminFeaturesPage() {
       {modalOpen && (
         <div className="modal modal-open">
           <div className="modal-box">
-            <h3 className="font-bold text-lg">{editingFeature ? "Edit Feature" : "Create Feature"}</h3>
+            <h3 className="font-bold text-lg">
+              {editingFeature ? "Edit Feature" : "Create Feature"}
+            </h3>
 
             {!editingFeature && (
               <div className="form-control mt-4">
-                <label className="label"><span className="label-text">Code</span></label>
+                <label className="label">
+                  <span className="label-text">Code</span>
+                </label>
                 <input
                   type="text"
                   className="input input-bordered"
@@ -151,7 +165,9 @@ function AdminFeaturesPage() {
             )}
 
             <div className="form-control mt-4">
-              <label className="label"><span className="label-text">Name</span></label>
+              <label className="label">
+                <span className="label-text">Name</span>
+              </label>
               <input
                 type="text"
                 className="input input-bordered"
@@ -161,7 +177,9 @@ function AdminFeaturesPage() {
             </div>
 
             <div className="form-control mt-4">
-              <label className="label"><span className="label-text">Description</span></label>
+              <label className="label">
+                <span className="label-text">Description</span>
+              </label>
               <textarea
                 className="textarea textarea-bordered"
                 value={form.description}
@@ -182,7 +200,9 @@ function AdminFeaturesPage() {
             </div>
 
             <div className="modal-action">
-              <button className="btn btn-ghost" onClick={() => setModalOpen(false)}>Cancel</button>
+              <button className="btn btn-ghost" onClick={() => setModalOpen(false)}>
+                Cancel
+              </button>
               <button
                 className="btn btn-primary"
                 onClick={handleSave}

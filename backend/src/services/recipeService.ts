@@ -1,6 +1,10 @@
 import prisma from "../util/db";
 import { PrismaClient } from "@prisma/client";
-import { RECIPE_TAGS_SELECT, RECIPE_INGREDIENTS_SELECT, RECIPE_STEPS_SELECT } from "../util/prismaSelects";
+import {
+  RECIPE_TAGS_SELECT,
+  RECIPE_INGREDIENTS_SELECT,
+  RECIPE_STEPS_SELECT,
+} from "../util/prismaSelects";
 import { resolveTagsForRecipe } from "./tagService";
 import { StepInput } from "../util/validation";
 
@@ -129,11 +133,7 @@ export async function upsertProposalIngredients(
 
 // --- Helpers pour steps ---
 
-export async function upsertSteps(
-  tx: TransactionClient,
-  recipeId: string,
-  steps: StepInput[]
-) {
+export async function upsertSteps(tx: TransactionClient, recipeId: string, steps: StepInput[]) {
   for (let i = 0; i < steps.length; i++) {
     await tx.recipeStep.create({
       data: {
@@ -315,7 +315,8 @@ async function syncLinkedRecipes(
   if (data.restTime !== undefined) syncData.restTime = data.restTime;
   if (data.imageKey !== undefined) syncData.imageKey = data.imageKey?.trim() || null;
 
-  const hasSyncableFields = Object.keys(syncData).length > 0 || data.ingredients !== undefined || data.steps !== undefined;
+  const hasSyncableFields =
+    Object.keys(syncData).length > 0 || data.ingredients !== undefined || data.steps !== undefined;
   if (!hasSyncableFields) return;
 
   // Trouver les recettes liees a synchroniser

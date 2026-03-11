@@ -8,12 +8,10 @@ describe("Recipe Import API", () => {
 
   beforeEach(async () => {
     const testUser = await createTestUser();
-    const loginRes = await request(app)
-      .post("/api/auth/login")
-      .send({
-        username: testUser.username,
-        password: testUser.password,
-      });
+    const loginRes = await request(app).post("/api/auth/login").send({
+      username: testUser.username,
+      password: testUser.password,
+    });
     sessionCookie = extractSessionCookie(loginRes);
   });
 

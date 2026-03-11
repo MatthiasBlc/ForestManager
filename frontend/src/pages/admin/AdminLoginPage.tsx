@@ -146,8 +146,8 @@ function AdminLoginPage() {
                       />
                     </svg>
                     <span>
-                      First time setup: Scan this QR code with your authenticator app
-                      (Google Authenticator, Authy, etc.)
+                      First time setup: Scan this QR code with your authenticator app (Google
+                      Authenticator, Authy, etc.)
                     </span>
                   </div>
                   <div className="flex justify-center">

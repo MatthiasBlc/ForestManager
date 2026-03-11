@@ -26,11 +26,13 @@ describe("Invitations API", () => {
       const suffix = uniqueSuffix();
 
       // Create moderator and get cookie
-      const signupRes = await request(app).post("/api/auth/signup").send({
-        username: `invitemoderator_${suffix}`,
-        email: `invitemoderator_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const signupRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `invitemoderator_${suffix}`,
+          email: `invitemoderator_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       moderatorCookie = extractSessionCookie(signupRes)!;
       moderator = (await testPrisma.user.findFirst({
         where: { email: `invitemoderator_${suffix}@example.com` },
@@ -44,11 +46,13 @@ describe("Invitations API", () => {
       community = createRes.body;
 
       // Create member user
-      const memberSignupRes = await request(app).post("/api/auth/signup").send({
-        username: `invitemember_${suffix}`,
-        email: `invitemember_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const memberSignupRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `invitemember_${suffix}`,
+          email: `invitemember_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       memberCookie = extractSessionCookie(memberSignupRes)!;
       member = (await testPrisma.user.findFirst({
         where: { email: `invitemember_${suffix}@example.com` },
@@ -130,11 +134,13 @@ describe("Invitations API", () => {
 
     it("should return 403 when user is not a member", async () => {
       const suffix2 = uniqueSuffix();
-      const outsiderRes = await request(app).post("/api/auth/signup").send({
-        username: `outsider_${suffix2}`,
-        email: `outsider_${suffix2}@example.com`,
-        password: "Test123!Password",
-      });
+      const outsiderRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `outsider_${suffix2}`,
+          email: `outsider_${suffix2}@example.com`,
+          password: "Test123!Password",
+        });
       const outsiderCookie = extractSessionCookie(outsiderRes)!;
 
       const res = await request(app)
@@ -236,11 +242,13 @@ describe("Invitations API", () => {
       const suffix = uniqueSuffix();
 
       // Create moderator
-      const signupRes = await request(app).post("/api/auth/signup").send({
-        username: `listmoderator_${suffix}`,
-        email: `listmoderator_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const signupRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `listmoderator_${suffix}`,
+          email: `listmoderator_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       moderatorCookie = extractSessionCookie(signupRes)!;
       moderator = (await testPrisma.user.findFirst({
         where: { email: `listmoderator_${suffix}@example.com` },
@@ -254,11 +262,13 @@ describe("Invitations API", () => {
       community = createRes.body;
 
       // Create member
-      const memberRes = await request(app).post("/api/auth/signup").send({
-        username: `listmember_${suffix}`,
-        email: `listmember_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const memberRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `listmember_${suffix}`,
+          email: `listmember_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       memberCookie = extractSessionCookie(memberRes)!;
       const member = (await testPrisma.user.findFirst({
         where: { email: `listmember_${suffix}@example.com` },
@@ -356,11 +366,13 @@ describe("Invitations API", () => {
       const suffix = uniqueSuffix();
 
       // Create moderator
-      const signupRes = await request(app).post("/api/auth/signup").send({
-        username: `cancelmoderator_${suffix}`,
-        email: `cancelmoderator_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const signupRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `cancelmoderator_${suffix}`,
+          email: `cancelmoderator_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       moderatorCookie = extractSessionCookie(signupRes)!;
       moderator = (await testPrisma.user.findFirst({
         where: { email: `cancelmoderator_${suffix}@example.com` },
@@ -459,11 +471,13 @@ describe("Invitations API", () => {
       });
 
       // Create invitee and login
-      const signupRes = await request(app).post("/api/auth/signup").send({
-        username: `myinvitesinvitee_${suffix}`,
-        email: `myinvitesinvitee_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const signupRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `myinvitesinvitee_${suffix}`,
+          email: `myinvitesinvitee_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       inviteeCookie = extractSessionCookie(signupRes)!;
       invitee = (await testPrisma.user.findFirst({
         where: { email: `myinvitesinvitee_${suffix}@example.com` },
@@ -473,9 +487,7 @@ describe("Invitations API", () => {
     it("should return PENDING invites by default", async () => {
       await createTestInvite(community.id, moderator.id, invitee.id, "PENDING");
 
-      const res = await request(app)
-        .get("/api/users/me/invites")
-        .set("Cookie", inviteeCookie);
+      const res = await request(app).get("/api/users/me/invites").set("Cookie", inviteeCookie);
 
       expect(res.status).toBe(200);
       expect(res.body.data).toHaveLength(1);
@@ -505,9 +517,7 @@ describe("Invitations API", () => {
         data: { deletedAt: new Date() },
       });
 
-      const res = await request(app)
-        .get("/api/users/me/invites")
-        .set("Cookie", inviteeCookie);
+      const res = await request(app).get("/api/users/me/invites").set("Cookie", inviteeCookie);
 
       expect(res.status).toBe(200);
       expect(res.body.data).toHaveLength(0);
@@ -545,22 +555,26 @@ describe("Invitations API", () => {
       });
 
       // Create invitee and login
-      const signupRes = await request(app).post("/api/auth/signup").send({
-        username: `acceptinvitee_${suffix}`,
-        email: `acceptinvitee_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const signupRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `acceptinvitee_${suffix}`,
+          email: `acceptinvitee_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       inviteeCookie = extractSessionCookie(signupRes)!;
       invitee = (await testPrisma.user.findFirst({
         where: { email: `acceptinvitee_${suffix}@example.com` },
       }))!;
 
       // Create other user
-      const otherRes = await request(app).post("/api/auth/signup").send({
-        username: `acceptotheruser_${suffix}`,
-        email: `acceptotheruser_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const otherRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `acceptotheruser_${suffix}`,
+          email: `acceptotheruser_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       otherUserCookie = extractSessionCookie(otherRes)!;
     });
 
@@ -595,9 +609,7 @@ describe("Invitations API", () => {
     it("should log INVITE_ACCEPTED and USER_JOINED activities", async () => {
       const invite = await createTestInvite(community.id, moderator.id, invitee.id, "PENDING");
 
-      await request(app)
-        .post(`/api/invites/${invite.id}/accept`)
-        .set("Cookie", inviteeCookie);
+      await request(app).post(`/api/invites/${invite.id}/accept`).set("Cookie", inviteeCookie);
 
       const acceptedActivity = await testPrisma.activityLog.findFirst({
         where: {
@@ -699,22 +711,26 @@ describe("Invitations API", () => {
       });
 
       // Create invitee and login
-      const signupRes = await request(app).post("/api/auth/signup").send({
-        username: `rejectinvitee_${suffix}`,
-        email: `rejectinvitee_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const signupRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `rejectinvitee_${suffix}`,
+          email: `rejectinvitee_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       inviteeCookie = extractSessionCookie(signupRes)!;
       invitee = (await testPrisma.user.findFirst({
         where: { email: `rejectinvitee_${suffix}@example.com` },
       }))!;
 
       // Create other user
-      const otherRes = await request(app).post("/api/auth/signup").send({
-        username: `rejectotheruser_${suffix}`,
-        email: `rejectotheruser_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const otherRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `rejectotheruser_${suffix}`,
+          email: `rejectotheruser_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       otherUserCookie = extractSessionCookie(otherRes)!;
     });
 
@@ -747,9 +763,7 @@ describe("Invitations API", () => {
     it("should log INVITE_REJECTED activity", async () => {
       const invite = await createTestInvite(community.id, moderator.id, invitee.id, "PENDING");
 
-      await request(app)
-        .post(`/api/invites/${invite.id}/reject`)
-        .set("Cookie", inviteeCookie);
+      await request(app).post(`/api/invites/${invite.id}/reject`).set("Cookie", inviteeCookie);
 
       const activity = await testPrisma.activityLog.findFirst({
         where: {

@@ -14,11 +14,29 @@ interface RecipeCardProps {
   canDelete?: boolean;
 }
 
-const RecipeCard = ({ recipe, onDelete, onTagClick, onShare, showCreator = false, canEdit = true, canDelete = true }: RecipeCardProps) => {
+const RecipeCard = ({
+  recipe,
+  onDelete,
+  onTagClick,
+  onShare,
+  showCreator = false,
+  canEdit = true,
+  canDelete = true,
+}: RecipeCardProps) => {
   const {
-    title, imageUrl, tags, displayedTags, remainingTagsCount, dateText,
-    communityRecipe, isSharedRecipe,
-    handleClick, handleEdit, handleDelete, handleTagClick, handleShare,
+    title,
+    imageUrl,
+    tags,
+    displayedTags,
+    remainingTagsCount,
+    dateText,
+    communityRecipe,
+    isSharedRecipe,
+    handleClick,
+    handleEdit,
+    handleDelete,
+    handleTagClick,
+    handleShare,
     ConfirmDialog,
   } = useRecipeActions({ recipe, onDelete, onTagClick, onShare });
 

@@ -39,7 +39,11 @@ router.post("/:recipeId/proposals", validateUUID, ProposalsController.createProp
 // Tag suggestions routes on recipes
 router.get("/:recipeId/tag-suggestions", validateUUID, TagSuggestionsController.getTagSuggestions);
 
-router.post("/:recipeId/tag-suggestions", validateUUID, TagSuggestionsController.createTagSuggestion);
+router.post(
+  "/:recipeId/tag-suggestions",
+  validateUUID,
+  TagSuggestionsController.createTagSuggestion
+);
 
 // Share recipe to another community (fork)
 router.post("/:recipeId/share", validateUUID, RecipeShareController.shareRecipe);

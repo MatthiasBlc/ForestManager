@@ -4,7 +4,6 @@ import app from "../../app";
 import { uniqueSuffix, extractSessionCookie } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
 
-
 describe("Tag Suggestions API", () => {
   let _moderator: { id: string };
   let moderatorCookie: string;
@@ -19,11 +18,13 @@ describe("Tag Suggestions API", () => {
     const suffix = uniqueSuffix();
 
     // Create moderator (creates community)
-    const modSignup = await request(app).post("/api/auth/signup").send({
-      username: `tsmod_${suffix}`,
-      email: `tsmod_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const modSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `tsmod_${suffix}`,
+        email: `tsmod_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     moderatorCookie = extractSessionCookie(modSignup)!;
     _moderator = (await testPrisma.user.findFirst({
       where: { email: `tsmod_${suffix}@example.com` },
@@ -37,11 +38,13 @@ describe("Tag Suggestions API", () => {
     community = createRes.body;
 
     // Create owner (member)
-    const ownerSignup = await request(app).post("/api/auth/signup").send({
-      username: `tsown_${suffix}`,
-      email: `tsown_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const ownerSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `tsown_${suffix}`,
+        email: `tsown_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     ownerCookie = extractSessionCookie(ownerSignup)!;
     owner = (await testPrisma.user.findFirst({
       where: { email: `tsown_${suffix}@example.com` },
@@ -51,11 +54,13 @@ describe("Tag Suggestions API", () => {
     });
 
     // Create suggester (member)
-    const sugSignup = await request(app).post("/api/auth/signup").send({
-      username: `tssug_${suffix}`,
-      email: `tssug_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const sugSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `tssug_${suffix}`,
+        email: `tssug_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     suggesterCookie = extractSessionCookie(sugSignup)!;
     suggester = (await testPrisma.user.findFirst({
       where: { email: `tssug_${suffix}@example.com` },
@@ -115,11 +120,13 @@ describe("Tag Suggestions API", () => {
 
     it("should block non-member", async () => {
       const suffix = uniqueSuffix();
-      const outsiderSignup = await request(app).post("/api/auth/signup").send({
-        username: `tsout_${suffix}`,
-        email: `tsout_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const outsiderSignup = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `tsout_${suffix}`,
+          email: `tsout_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       const outsiderCookie = extractSessionCookie(outsiderSignup)!;
 
       const res = await request(app)
@@ -284,11 +291,13 @@ describe("Tag Suggestions API", () => {
 
     it("should block non-members", async () => {
       const suffix = uniqueSuffix();
-      const outsiderSignup = await request(app).post("/api/auth/signup").send({
-        username: `tsout2_${suffix}`,
-        email: `tsout2_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const outsiderSignup = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `tsout2_${suffix}`,
+          email: `tsout2_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       const outsiderCookie = extractSessionCookie(outsiderSignup)!;
 
       const res = await request(app)
@@ -380,7 +389,12 @@ describe("Tag Suggestions API", () => {
 
       // A PENDING community tag should have been created
       const pendingTag = await testPrisma.tag.findFirst({
-        where: { name: "brand_new_tag", scope: "COMMUNITY", status: "PENDING", communityId: community.id },
+        where: {
+          name: "brand_new_tag",
+          scope: "COMMUNITY",
+          status: "PENDING",
+          communityId: community.id,
+        },
       });
       expect(pendingTag).not.toBeNull();
 

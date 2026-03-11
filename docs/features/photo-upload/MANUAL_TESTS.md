@@ -221,13 +221,13 @@ Pour tester le cron, on peut simuler une recette soft-deleted > 7 jours :
 
 ## Resume des tests
 
-| Section | Description | Status |
-|---------|-------------|--------|
-| 1 | Upload image recette | [ ] |
-| 2 | Upload image communaute | [ ] |
-| 3 | Validation et erreurs | [ ] |
-| 4 | Permissions | [ ] |
-| 5 | Affichage des images | [ ] |
-| 6 | Cron de nettoyage | [ ] |
-| 7 | URLs publiques | [ ] |
-| 8 | Tests preprod | [ ] |
+| Section | Description             | Status |
+| ------- | ----------------------- | ------ |
+| 1       | Upload image recette    | [ ]    |
+| 2       | Upload image communaute | [ ]    |
+| 3       | Validation et erreurs   | [ ]    |
+| 4       | Permissions             | [ ]    |
+| 5       | Affichage des images    | [ ]    |
+| 6       | Cron de nettoyage       | [ ]    |
+| 7       | URLs publiques          | [ ]    |
+| 8       | Tests preprod           | [ ]    |

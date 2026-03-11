@@ -10,7 +10,10 @@ const NavBarLoggedInView = () => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  useClickOutside(menuRef, useCallback(() => setIsOpen(false), []));
+  useClickOutside(
+    menuRef,
+    useCallback(() => setIsOpen(false), [])
+  );
 
   const handleLogout = async () => {
     try {

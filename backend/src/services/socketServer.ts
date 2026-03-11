@@ -55,23 +55,13 @@ async function emitUnreadCount(ioServer: Server, userId: string) {
 }
 
 // Types de broadcast communautaire (notifient tous les membres sauf l'acteur)
-const BROADCAST_TYPES = new Set([
-  "RECIPE_CREATED",
-  "RECIPE_SHARED",
-  "USER_JOINED",
-  "USER_LEFT",
-]);
+const BROADCAST_TYPES = new Set(["RECIPE_CREATED", "RECIPE_SHARED", "USER_JOINED", "USER_LEFT"]);
 
-export function initSocketServer(
-  httpServer: HttpServer,
-  userSessionMiddleware: RequestHandler
-) {
+export function initSocketServer(httpServer: HttpServer, userSessionMiddleware: RequestHandler) {
   const corsOrigin = env.CORS_ORIGIN || false;
 
   io = new Server(httpServer, {
-    cors: corsOrigin
-      ? { origin: corsOrigin, credentials: true }
-      : undefined,
+    cors: corsOrigin ? { origin: corsOrigin, credentials: true } : undefined,
     transports: ["websocket", "polling"],
   });
 

@@ -22,23 +22,25 @@ const TagPreferencesSection = () => {
     };
 
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const handleToggle = async (communityId: string, currentValue: boolean) => {
     const newValue = !currentValue;
 
     // Optimistic update
-    setPreferences(prev =>
-      prev.map(p => p.communityId === communityId ? { ...p, showTags: newValue } : p)
+    setPreferences((prev) =>
+      prev.map((p) => (p.communityId === communityId ? { ...p, showTags: newValue } : p))
     );
 
     try {
       await APIManager.updateTagPreference(communityId, newValue);
     } catch {
       // Revert on error
-      setPreferences(prev =>
-        prev.map(p => p.communityId === communityId ? { ...p, showTags: currentValue } : p)
+      setPreferences((prev) =>
+        prev.map((p) => (p.communityId === communityId ? { ...p, showTags: currentValue } : p))
       );
     }
   };
@@ -63,7 +65,7 @@ const TagPreferencesSection = () => {
       </p>
 
       <div className="space-y-3">
-        {preferences.map(pref => (
+        {preferences.map((pref) => (
           <div key={pref.communityId} className="flex items-center justify-between">
             <span className="font-medium">{pref.communityName}</span>
             <input

@@ -1,10 +1,4 @@
-import {
-  FaEnvelope,
-  FaUtensils,
-  FaTag,
-  FaLeaf,
-  FaShieldAlt,
-} from "react-icons/fa";
+import { FaEnvelope, FaUtensils, FaTag, FaLeaf, FaShieldAlt } from "react-icons/fa";
 import { NotificationCategory } from "../models/notification";
 
 export interface CategoryConfig {

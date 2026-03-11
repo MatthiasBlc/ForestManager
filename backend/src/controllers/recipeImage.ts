@@ -3,7 +3,11 @@ import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { requireRecipeOwnership } from "../services/membershipService";
-import { generatePresignedUploadUrl, validateUploadedFile, deleteObject } from "../services/storageService";
+import {
+  generatePresignedUploadUrl,
+  validateUploadedFile,
+  deleteObject,
+} from "../services/storageService";
 import { buildImageUrl } from "../config/storage";
 
 /**

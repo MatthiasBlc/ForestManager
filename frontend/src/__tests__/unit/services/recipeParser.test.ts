@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
-import { parseRecipeText, ParsedRecipe } from '../../../services/recipeParser';
+import { describe, it, expect } from "vitest";
+import { parseRecipeText, ParsedRecipe } from "../../../services/recipeParser";
 
-describe('parseRecipeText', () => {
+describe("parseRecipeText", () => {
   // --- Cas nominal : recette complete bien formatee ---
-  describe('nominal case - complete well-formatted recipe', () => {
+  describe("nominal case - complete well-formatted recipe", () => {
     const input = `Gateau au chocolat
 
 Pour 6 personnes
@@ -32,64 +32,64 @@ Preparation :
       result = parseRecipeText(input);
     });
 
-    it('should extract the title', () => {
-      expect(result.title).toBe('Gateau au chocolat');
+    it("should extract the title", () => {
+      expect(result.title).toBe("Gateau au chocolat");
     });
 
-    it('should extract servings', () => {
+    it("should extract servings", () => {
       expect(result.servings).toBe(6);
     });
 
-    it('should extract prep time', () => {
+    it("should extract prep time", () => {
       expect(result.prepTime).toBe(20);
     });
 
-    it('should extract cook time', () => {
+    it("should extract cook time", () => {
       expect(result.cookTime).toBe(35);
     });
 
-    it('should have null rest time when not present', () => {
+    it("should have null rest time when not present", () => {
       expect(result.restTime).toBeNull();
     });
 
-    it('should extract all 6 ingredients', () => {
+    it("should extract all 6 ingredients", () => {
       expect(result.ingredients).toHaveLength(6);
     });
 
-    it('should parse ingredient with unit (200g de farine)', () => {
+    it("should parse ingredient with unit (200g de farine)", () => {
       const farine = result.ingredients[0];
-      expect(farine.raw).toBe('200g de farine');
+      expect(farine.raw).toBe("200g de farine");
       expect(farine.quantity).toBe(200);
-      expect(farine.unitAbbreviation).toBe('g');
-      expect(farine.name).toBe('farine');
+      expect(farine.unitAbbreviation).toBe("g");
+      expect(farine.name).toBe("farine");
     });
 
-    it('should parse ingredient without unit (3 oeufs)', () => {
+    it("should parse ingredient without unit (3 oeufs)", () => {
       const oeufs = result.ingredients[1];
       expect(oeufs.quantity).toBe(3);
       expect(oeufs.unitAbbreviation).toBeNull();
-      expect(oeufs.name).toBe('oeufs');
+      expect(oeufs.name).toBe("oeufs");
     });
 
     it('should parse ingredient without unit but with "de" particle (1 sachet de levure)', () => {
       const levure = result.ingredients[5];
       expect(levure.quantity).toBe(1);
       expect(levure.unitAbbreviation).toBeNull();
-      expect(levure.name).toBe('sachet de levure');
+      expect(levure.name).toBe("sachet de levure");
     });
 
-    it('should extract all 6 steps', () => {
+    it("should extract all 6 steps", () => {
       expect(result.steps).toHaveLength(6);
     });
 
-    it('should strip numbering from steps', () => {
-      expect(result.steps[0]).toBe('Prechauffer le four a 180C.');
-      expect(result.steps[5]).toBe('Verser dans un moule et enfourner 35 minutes.');
+    it("should strip numbering from steps", () => {
+      expect(result.steps[0]).toBe("Prechauffer le four a 180C.");
+      expect(result.steps[5]).toBe("Verser dans un moule et enfourner 35 minutes.");
     });
   });
 
   // --- Recette sans headers de section (fallback) ---
-  describe('recipe without section headers (fallback detection)', () => {
+  describe("recipe without section headers (fallback detection)", () => {
     const input = `Salade composee
 
 4 personnes
@@ -109,72 +109,72 @@ Preparation :
       result = parseRecipeText(input);
     });
 
-    it('should detect the title', () => {
-      expect(result.title).toBe('Salade composee');
+    it("should detect the title", () => {
+      expect(result.title).toBe("Salade composee");
     });
 
-    it('should detect servings', () => {
+    it("should detect servings", () => {
       expect(result.servings).toBe(4);
     });
 
-    it('should detect ingredients by pattern', () => {
+    it("should detect ingredients by pattern", () => {
       expect(result.ingredients.length).toBeGreaterThanOrEqual(3);
-      expect(result.ingredients[0].name).toBe('lentilles');
+      expect(result.ingredients[0].name).toBe("lentilles");
       expect(result.ingredients[0].quantity).toBe(200);
-      expect(result.ingredients[0].unitAbbreviation).toBe('g');
+      expect(result.ingredients[0].unitAbbreviation).toBe("g");
     });
 
     it('should map "cas" to DB abbreviation', () => {
-      const vinaigre = result.ingredients.find((i) => i.name?.includes('vinaigre'));
+      const vinaigre = result.ingredients.find((i) => i.name?.includes("vinaigre"));
       expect(vinaigre).toBeDefined();
-      expect(vinaigre!.unitAbbreviation).toBe('cas');
+      expect(vinaigre!.unitAbbreviation).toBe("cas");
       expect(vinaigre!.quantity).toBe(2);
     });
 
-    it('should detect numbered steps', () => {
+    it("should detect numbered steps", () => {
       expect(result.steps).toHaveLength(3);
-      expect(result.steps[0]).toBe('Cuire les lentilles 20 minutes.');
+      expect(result.steps[0]).toBe("Cuire les lentilles 20 minutes.");
     });
   });
 
   // --- Formats d'ingredients varies ---
-  describe('various ingredient formats', () => {
+  describe("various ingredient formats", () => {
     it('should handle ingredient with "d\'" particle', () => {
       const result = parseRecipeText(`Test\n\nIngredients :\n- 200g d'amandes`);
       expect(result.ingredients[0].quantity).toBe(200);
-      expect(result.ingredients[0].unitAbbreviation).toBe('g');
-      expect(result.ingredients[0].name).toBe('amandes');
+      expect(result.ingredients[0].unitAbbreviation).toBe("g");
+      expect(result.ingredients[0].name).toBe("amandes");
     });
 
-    it('should handle fraction quantities (1/2)', () => {
+    it("should handle fraction quantities (1/2)", () => {
       const result = parseRecipeText(`Test\n\nIngredients :\n- 1/2 l de lait`);
       expect(result.ingredients[0].quantity).toBe(0.5);
-      expect(result.ingredients[0].unitAbbreviation).toBe('l');
-      expect(result.ingredients[0].name).toBe('lait');
+      expect(result.ingredients[0].unitAbbreviation).toBe("l");
+      expect(result.ingredients[0].name).toBe("lait");
     });
 
     it('should handle "a gout" pattern', () => {
       const result = parseRecipeText(`Test\n\nIngredients :\n- Sel, a gout`);
       expect(result.ingredients[0].quantity).toBeNull();
-      expect(result.ingredients[0].unitAbbreviation).toBe('a gout');
-      expect(result.ingredients[0].name).toBe('Sel');
+      expect(result.ingredients[0].unitAbbreviation).toBe("a gout");
+      expect(result.ingredients[0].name).toBe("Sel");
     });
 
     it('should handle "selon besoin" pattern', () => {
       const result = parseRecipeText(`Test\n\nIngredients :\n- Poivre selon besoin`);
       expect(result.ingredients[0].quantity).toBeNull();
-      expect(result.ingredients[0].unitAbbreviation).toBe('selon besoin');
-      expect(result.ingredients[0].name).toBe('Poivre');
+      expect(result.ingredients[0].unitAbbreviation).toBe("selon besoin");
+      expect(result.ingredients[0].name).toBe("Poivre");
     });
 
-    it('should handle decimal quantities', () => {
+    it("should handle decimal quantities", () => {
       const result = parseRecipeText(`Test\n\nIngredients :\n- 1,5 kg de poulet`);
       expect(result.ingredients[0].quantity).toBe(1.5);
-      expect(result.ingredients[0].unitAbbreviation).toBe('kg');
-      expect(result.ingredients[0].name).toBe('poulet');
+      expect(result.ingredients[0].unitAbbreviation).toBe("kg");
+      expect(result.ingredients[0].name).toBe("poulet");
     });
 
-    it('should handle ingredient with no quantity as fallback', () => {
+    it("should handle ingredient with no quantity as fallback", () => {
       const result = parseRecipeText(`Test\n\nIngredients :\n- huile d'olive`);
       expect(result.ingredients[0].quantity).toBeNull();
       expect(result.ingredients[0].unitAbbreviation).toBeNull();
@@ -184,102 +184,100 @@ Preparation :
     it('should handle "ml" unit', () => {
       const result = parseRecipeText(`Test\n\nIngredients :\n- 250 ml de creme`);
       expect(result.ingredients[0].quantity).toBe(250);
-      expect(result.ingredients[0].unitAbbreviation).toBe('ml');
-      expect(result.ingredients[0].name).toBe('creme');
+      expect(result.ingredients[0].unitAbbreviation).toBe("ml");
+      expect(result.ingredients[0].name).toBe("creme");
     });
 
     it('should handle "cl" unit', () => {
       const result = parseRecipeText(`Test\n\nIngredients :\n- 25 cl de vin blanc`);
       expect(result.ingredients[0].quantity).toBe(25);
-      expect(result.ingredients[0].unitAbbreviation).toBe('cl');
-      expect(result.ingredients[0].name).toBe('vin blanc');
+      expect(result.ingredients[0].unitAbbreviation).toBe("cl");
+      expect(result.ingredients[0].name).toBe("vin blanc");
     });
 
     it('should handle "cc" mapping to "cac"', () => {
       const result = parseRecipeText(`Test\n\nIngredients :\n- 2 cc de vanille`);
       expect(result.ingredients[0].quantity).toBe(2);
-      expect(result.ingredients[0].unitAbbreviation).toBe('cac');
-      expect(result.ingredients[0].name).toBe('vanille');
+      expect(result.ingredients[0].unitAbbreviation).toBe("cac");
+      expect(result.ingredients[0].name).toBe("vanille");
     });
 
     it('should handle "cs" mapping to "cas"', () => {
       const result = parseRecipeText(`Test\n\nIngredients :\n- 3 cs de miel`);
       expect(result.ingredients[0].quantity).toBe(3);
-      expect(result.ingredients[0].unitAbbreviation).toBe('cas');
-      expect(result.ingredients[0].name).toBe('miel');
+      expect(result.ingredients[0].unitAbbreviation).toBe("cas");
+      expect(result.ingredients[0].name).toBe("miel");
     });
 
     it('should handle "pincee" unit', () => {
       const result = parseRecipeText(`Test\n\nIngredients :\n- 1 pincee de sel`);
       expect(result.ingredients[0].quantity).toBe(1);
-      expect(result.ingredients[0].unitAbbreviation).toBe('pincee');
-      expect(result.ingredients[0].name).toBe('sel');
+      expect(result.ingredients[0].unitAbbreviation).toBe("pincee");
+      expect(result.ingredients[0].name).toBe("sel");
     });
 
     it('should handle "gousses" (plural) mapping to "gousse"', () => {
       const result = parseRecipeText(`Test\n\nIngredients :\n- 2 gousses d'ail`);
       expect(result.ingredients[0].quantity).toBe(2);
-      expect(result.ingredients[0].unitAbbreviation).toBe('gousse');
-      expect(result.ingredients[0].name).toBe('ail');
+      expect(result.ingredients[0].unitAbbreviation).toBe("gousse");
+      expect(result.ingredients[0].name).toBe("ail");
     });
 
     it('should handle "feuilles" mapping to "feuille"', () => {
       const result = parseRecipeText(`Test\n\nIngredients :\n- 3 feuilles de laurier`);
       expect(result.ingredients[0].quantity).toBe(3);
-      expect(result.ingredients[0].unitAbbreviation).toBe('feuille');
-      expect(result.ingredients[0].name).toBe('laurier');
+      expect(result.ingredients[0].unitAbbreviation).toBe("feuille");
+      expect(result.ingredients[0].name).toBe("laurier");
     });
 
     it('should handle "brin" unit', () => {
       const result = parseRecipeText(`Test\n\nIngredients :\n- 2 brins de thym`);
       expect(result.ingredients[0].quantity).toBe(2);
-      expect(result.ingredients[0].unitAbbreviation).toBe('brin');
-      expect(result.ingredients[0].name).toBe('thym');
+      expect(result.ingredients[0].unitAbbreviation).toBe("brin");
+      expect(result.ingredients[0].name).toBe("thym");
     });
 
     it('should handle "botte" unit', () => {
       const result = parseRecipeText(`Test\n\nIngredients :\n- 1 botte de persil`);
       expect(result.ingredients[0].quantity).toBe(1);
-      expect(result.ingredients[0].unitAbbreviation).toBe('botte');
-      expect(result.ingredients[0].name).toBe('persil');
+      expect(result.ingredients[0].unitAbbreviation).toBe("botte");
+      expect(result.ingredients[0].name).toBe("persil");
     });
 
     it('should handle "tranche" unit', () => {
       const result = parseRecipeText(`Test\n\nIngredients :\n- 4 tranches de jambon`);
       expect(result.ingredients[0].quantity).toBe(4);
-      expect(result.ingredients[0].unitAbbreviation).toBe('tranche');
-      expect(result.ingredients[0].name).toBe('jambon');
+      expect(result.ingredients[0].unitAbbreviation).toBe("tranche");
+      expect(result.ingredients[0].name).toBe("jambon");
     });
 
-    it('should handle various bullet styles', () => {
-      const result = parseRecipeText(
-        `Test\n\nIngredients :\n- 1 pomme\n* 2 poires\n• 3 bananes`
-      );
+    it("should handle various bullet styles", () => {
+      const result = parseRecipeText(`Test\n\nIngredients :\n- 1 pomme\n* 2 poires\n• 3 bananes`);
       expect(result.ingredients).toHaveLength(3);
-      expect(result.ingredients[0].name).toBe('pomme');
-      expect(result.ingredients[1].name).toBe('poires');
-      expect(result.ingredients[2].name).toBe('bananes');
+      expect(result.ingredients[0].name).toBe("pomme");
+      expect(result.ingredients[1].name).toBe("poires");
+      expect(result.ingredients[2].name).toBe("bananes");
     });
   });
 
   // --- Temps en heures et minutes ---
-  describe('time parsing', () => {
-    it('should parse time in hours (1h30)', () => {
+  describe("time parsing", () => {
+    it("should parse time in hours (1h30)", () => {
       const result = parseRecipeText(`Test\nPreparation : 1h30`);
       expect(result.prepTime).toBe(90);
     });
 
-    it('should parse time in minutes (45 min)', () => {
+    it("should parse time in minutes (45 min)", () => {
       const result = parseRecipeText(`Test\nCuisson : 45 min`);
       expect(result.cookTime).toBe(45);
     });
 
-    it('should parse time in hours only (2h)', () => {
+    it("should parse time in hours only (2h)", () => {
       const result = parseRecipeText(`Test\nPreparation : 2h`);
       expect(result.prepTime).toBe(120);
     });
 
-    it('should parse rest time', () => {
+    it("should parse rest time", () => {
       const result = parseRecipeText(`Test\nRepos : 30 min`);
       expect(result.restTime).toBe(30);
     });
@@ -301,8 +299,8 @@ Preparation :
   });
 
   // --- Texte avec separateurs visuels ---
-  describe('text with visual separators', () => {
-    it('should remove separator lines and parse correctly', () => {
+  describe("text with visual separators", () => {
+    it("should remove separator lines and parse correctly", () => {
       const input = `Tarte aux pommes
 ---
 Ingredients :
@@ -314,12 +312,12 @@ Preparation :
 2. Disposer les pommes.`;
 
       const result = parseRecipeText(input);
-      expect(result.title).toBe('Tarte aux pommes');
+      expect(result.title).toBe("Tarte aux pommes");
       expect(result.ingredients).toHaveLength(2);
       expect(result.steps).toHaveLength(2);
     });
 
-    it('should handle underscores and tildes as separators', () => {
+    it("should handle underscores and tildes as separators", () => {
       const input = `Test
 ___
 ~~~
@@ -327,16 +325,16 @@ Ingredients :
 - 100g de beurre`;
 
       const result = parseRecipeText(input);
-      expect(result.title).toBe('Test');
+      expect(result.title).toBe("Test");
       expect(result.ingredients).toHaveLength(1);
     });
   });
 
   // --- Texte minimal (juste un titre) ---
-  describe('minimal text', () => {
-    it('should detect only a title from a short text', () => {
-      const result = parseRecipeText('Ma recette preferee');
-      expect(result.title).toBe('Ma recette preferee');
+  describe("minimal text", () => {
+    it("should detect only a title from a short text", () => {
+      const result = parseRecipeText("Ma recette preferee");
+      expect(result.title).toBe("Ma recette preferee");
       expect(result.ingredients).toHaveLength(0);
       expect(result.steps).toHaveLength(0);
       expect(result.servings).toBeNull();
@@ -347,59 +345,59 @@ Ingredients :
   });
 
   // --- Texte vide ---
-  describe('empty text', () => {
-    it('should return empty result for empty string', () => {
-      const result = parseRecipeText('');
+  describe("empty text", () => {
+    it("should return empty result for empty string", () => {
+      const result = parseRecipeText("");
       expect(result.title).toBeNull();
       expect(result.ingredients).toHaveLength(0);
       expect(result.steps).toHaveLength(0);
     });
 
-    it('should return empty result for whitespace-only string', () => {
-      const result = parseRecipeText('   \n\n   \n  ');
+    it("should return empty result for whitespace-only string", () => {
+      const result = parseRecipeText("   \n\n   \n  ");
       expect(result.title).toBeNull();
       expect(result.ingredients).toHaveLength(0);
       expect(result.steps).toHaveLength(0);
     });
 
-    it('should return empty result for null-ish input', () => {
-      const result = parseRecipeText('' as string);
+    it("should return empty result for null-ish input", () => {
+      const result = parseRecipeText("" as string);
       expect(result.title).toBeNull();
     });
   });
 
   // --- Edge cases: "de" / "d'" particles ---
-  describe('edge cases with particles', () => {
+  describe("edge cases with particles", () => {
     it('should handle "de" particle correctly', () => {
       const result = parseRecipeText(`Test\n\nIngredients :\n- 500g de pommes de terre`);
       expect(result.ingredients[0].quantity).toBe(500);
-      expect(result.ingredients[0].unitAbbreviation).toBe('g');
-      expect(result.ingredients[0].name).toBe('pommes de terre');
+      expect(result.ingredients[0].unitAbbreviation).toBe("g");
+      expect(result.ingredients[0].name).toBe("pommes de terre");
     });
 
     it('should handle "d\'" particle correctly', () => {
       const result = parseRecipeText(`Test\n\nIngredients :\n- 100ml d'huile d'olive`);
       expect(result.ingredients[0].quantity).toBe(100);
-      expect(result.ingredients[0].unitAbbreviation).toBe('ml');
+      expect(result.ingredients[0].unitAbbreviation).toBe("ml");
       expect(result.ingredients[0].name).toBe("huile d'olive");
     });
 
-    it('should handle quantity with space before unit', () => {
+    it("should handle quantity with space before unit", () => {
       const result = parseRecipeText(`Test\n\nIngredients :\n- 200 g de farine`);
       expect(result.ingredients[0].quantity).toBe(200);
-      expect(result.ingredients[0].unitAbbreviation).toBe('g');
-      expect(result.ingredients[0].name).toBe('farine');
+      expect(result.ingredients[0].unitAbbreviation).toBe("g");
+      expect(result.ingredients[0].name).toBe("farine");
     });
   });
 
   // --- Section header variants ---
-  describe('section header variants', () => {
+  describe("section header variants", () => {
     it('should recognize "Etapes" as steps header', () => {
       const result = parseRecipeText(
         `Test\n\nIngredients :\n- 1 pomme\n\nEtapes :\n1. Laver la pomme.`
       );
       expect(result.steps).toHaveLength(1);
-      expect(result.steps[0]).toBe('Laver la pomme.');
+      expect(result.steps[0]).toBe("Laver la pomme.");
     });
 
     it('should recognize "Instructions" as steps header', () => {
@@ -409,7 +407,7 @@ Ingredients :
       expect(result.steps).toHaveLength(1);
     });
 
-    it('should handle headers with accents', () => {
+    it("should handle headers with accents", () => {
       const result = parseRecipeText(
         `Test\n\nIngr\u00e9dients :\n- 1 pomme\n\nPr\u00e9paration :\n1. Laver.`
       );
@@ -417,108 +415,94 @@ Ingredients :
       expect(result.steps).toHaveLength(1);
     });
 
-    it('should handle headers without colon', () => {
-      const result = parseRecipeText(
-        `Test\n\nIngredients\n- 1 pomme\n\nPreparation\n1. Laver.`
-      );
+    it("should handle headers without colon", () => {
+      const result = parseRecipeText(`Test\n\nIngredients\n- 1 pomme\n\nPreparation\n1. Laver.`);
       expect(result.ingredients).toHaveLength(1);
       expect(result.steps).toHaveLength(1);
     });
   });
 
   // --- Step formatting ---
-  describe('step formatting', () => {
+  describe("step formatting", () => {
     it('should strip "Etape X :" prefix', () => {
       const result = parseRecipeText(
         `Test\n\nPreparation :\nEtape 1 : Faire bouillir.\nEtape 2 : Servir.`
       );
-      expect(result.steps[0]).toBe('Faire bouillir.');
-      expect(result.steps[1]).toBe('Servir.');
+      expect(result.steps[0]).toBe("Faire bouillir.");
+      expect(result.steps[1]).toBe("Servir.");
     });
 
-    it('should strip bullet-style steps', () => {
-      const result = parseRecipeText(
-        `Test\n\nPreparation :\n- Faire bouillir.\n- Servir.`
-      );
-      expect(result.steps[0]).toBe('Faire bouillir.');
-      expect(result.steps[1]).toBe('Servir.');
+    it("should strip bullet-style steps", () => {
+      const result = parseRecipeText(`Test\n\nPreparation :\n- Faire bouillir.\n- Servir.`);
+      expect(result.steps[0]).toBe("Faire bouillir.");
+      expect(result.steps[1]).toBe("Servir.");
     });
 
-    it('should strip parenthesis-style numbering', () => {
-      const result = parseRecipeText(
-        `Test\n\nPreparation :\n1) Faire bouillir.\n2) Servir.`
-      );
-      expect(result.steps[0]).toBe('Faire bouillir.');
-      expect(result.steps[1]).toBe('Servir.');
+    it("should strip parenthesis-style numbering", () => {
+      const result = parseRecipeText(`Test\n\nPreparation :\n1) Faire bouillir.\n2) Servir.`);
+      expect(result.steps[0]).toBe("Faire bouillir.");
+      expect(result.steps[1]).toBe("Servir.");
     });
   });
 
   // --- Windows-style line endings ---
-  describe('line ending normalization', () => {
-    it('should handle \\r\\n line endings', () => {
-      const input = 'Test\r\n\r\nIngredients :\r\n- 1 pomme\r\n\r\nPreparation :\r\n1. Laver.';
+  describe("line ending normalization", () => {
+    it("should handle \\r\\n line endings", () => {
+      const input = "Test\r\n\r\nIngredients :\r\n- 1 pomme\r\n\r\nPreparation :\r\n1. Laver.";
       const result = parseRecipeText(input);
-      expect(result.title).toBe('Test');
+      expect(result.title).toBe("Test");
       expect(result.ingredients).toHaveLength(1);
       expect(result.steps).toHaveLength(1);
     });
   });
 
   // --- "cuillere a soupe" long unit ---
-  describe('long unit patterns', () => {
+  describe("long unit patterns", () => {
     it('should parse "cuillere a soupe"', () => {
-      const result = parseRecipeText(
-        `Test\n\nIngredients :\n- 2 cuilleres a soupe de moutarde`
-      );
+      const result = parseRecipeText(`Test\n\nIngredients :\n- 2 cuilleres a soupe de moutarde`);
       expect(result.ingredients[0].quantity).toBe(2);
-      expect(result.ingredients[0].unitAbbreviation).toBe('cas');
-      expect(result.ingredients[0].name).toBe('moutarde');
+      expect(result.ingredients[0].unitAbbreviation).toBe("cas");
+      expect(result.ingredients[0].name).toBe("moutarde");
     });
 
     it('should parse "cuillere a cafe"', () => {
-      const result = parseRecipeText(
-        `Test\n\nIngredients :\n- 1 cuillere a cafe de sel`
-      );
+      const result = parseRecipeText(`Test\n\nIngredients :\n- 1 cuillere a cafe de sel`);
       expect(result.ingredients[0].quantity).toBe(1);
-      expect(result.ingredients[0].unitAbbreviation).toBe('cac');
-      expect(result.ingredients[0].name).toBe('sel');
+      expect(result.ingredients[0].unitAbbreviation).toBe("cac");
+      expect(result.ingredients[0].name).toBe("sel");
     });
   });
 
-  describe('unicode fractions', () => {
-    it('should parse ½ as 0.5', () => {
-      const result = parseRecipeText(
-        `Test\n\nIngredients :\n- ½ litre de lait`
-      );
+  describe("unicode fractions", () => {
+    it("should parse ½ as 0.5", () => {
+      const result = parseRecipeText(`Test\n\nIngredients :\n- ½ litre de lait`);
       expect(result.ingredients).toHaveLength(1);
       expect(result.ingredients[0].quantity).toBe(0.5);
-      expect(result.ingredients[0].unitAbbreviation).toBe('l');
-      expect(result.ingredients[0].name).toBe('lait');
+      expect(result.ingredients[0].unitAbbreviation).toBe("l");
+      expect(result.ingredients[0].name).toBe("lait");
     });
 
-    it('should parse ¼ as 0.25', () => {
-      const result = parseRecipeText(
-        `Test\n\nIngredients :\n- ¼ kg de sucre`
-      );
+    it("should parse ¼ as 0.25", () => {
+      const result = parseRecipeText(`Test\n\nIngredients :\n- ¼ kg de sucre`);
       expect(result.ingredients[0].quantity).toBe(0.25);
-      expect(result.ingredients[0].unitAbbreviation).toBe('kg');
+      expect(result.ingredients[0].unitAbbreviation).toBe("kg");
     });
 
-    it('should detect ½ ingredient in fallback mode (no headers)', () => {
+    it("should detect ½ ingredient in fallback mode (no headers)", () => {
       const result = parseRecipeText(
         `CREPES\n3 oeufs\n250 g de farine\n½ litre de lait\n1 pincee de sel`
       );
-      expect(result.title).toBe('CREPES');
+      expect(result.title).toBe("CREPES");
       expect(result.ingredients.length).toBeGreaterThanOrEqual(4);
-      const lait = result.ingredients.find(i => i.name === 'lait');
+      const lait = result.ingredients.find((i) => i.name === "lait");
       expect(lait).toBeDefined();
       expect(lait!.quantity).toBe(0.5);
-      expect(lait!.unitAbbreviation).toBe('l');
+      expect(lait!.unitAbbreviation).toBe("l");
     });
   });
 
-  describe('metadata lines inside ingredient section', () => {
-    it('should not capture metadata lines as ingredients when they appear after ingredient header', () => {
+  describe("metadata lines inside ingredient section", () => {
+    it("should not capture metadata lines as ingredients when they appear after ingredient header", () => {
       const input = `Pancake Moelleux : recette facile
 6 portions
 Ingredients
@@ -546,7 +530,7 @@ Cuire les pancakes dans une poele chaude.`;
 
       const result = parseRecipeText(input);
 
-      expect(result.title).toBe('Pancake Moelleux : recette facile');
+      expect(result.title).toBe("Pancake Moelleux : recette facile");
       expect(result.servings).toBe(6);
       expect(result.prepTime).toBe(10);
       expect(result.restTime).toBe(60);
@@ -554,15 +538,15 @@ Cuire les pancakes dans une poele chaude.`;
 
       // Ingredients should not contain metadata lines
       expect(result.ingredients).toHaveLength(7);
-      expect(result.ingredients[0].name).toBe('farine');
-      const metaIngredient = result.ingredients.find(i =>
-        i.raw.includes('Preparation') || i.raw.includes('Repos') || i.raw.includes('Cuisson')
+      expect(result.ingredients[0].name).toBe("farine");
+      const metaIngredient = result.ingredients.find(
+        (i) => i.raw.includes("Preparation") || i.raw.includes("Repos") || i.raw.includes("Cuisson")
       );
       expect(metaIngredient).toBeUndefined();
 
       // Steps should be correctly parsed
       expect(result.steps.length).toBe(4);
-      expect(result.steps[0]).toContain('melanger les ingredients secs');
+      expect(result.steps[0]).toContain("melanger les ingredients secs");
     });
 
     it('should recognize "Process" as a step header', () => {
@@ -570,12 +554,12 @@ Cuire les pancakes dans une poele chaude.`;
       const result = parseRecipeText(input);
       expect(result.ingredients).toHaveLength(1);
       expect(result.steps).toHaveLength(1);
-      expect(result.steps[0]).toBe('Melanger tout.');
+      expect(result.steps[0]).toBe("Melanger tout.");
     });
   });
 
-  describe('multi-section recipes (no ingredient header)', () => {
-    it('should capture ingredients before step header even without ingredient header', () => {
+  describe("multi-section recipes (no ingredient header)", () => {
+    it("should capture ingredients before step header even without ingredient header", () => {
       const input = `Pour 4 personnes :
 
 Enchiladas
@@ -619,12 +603,12 @@ Gratiner au four, 30 min a 180C`;
 
       // Ingredients captured from both sub-sections (lines starting with numbers after bullet strip)
       expect(result.ingredients.length).toBeGreaterThanOrEqual(9);
-      expect(result.ingredients[0].name).toContain('blanc de poulet');
-      expect(result.ingredients[1].name).toBe('tortillas');
+      expect(result.ingredients[0].name).toContain("blanc de poulet");
+      expect(result.ingredients[1].name).toBe("tortillas");
 
       // Steps captured after "Etapes :" header
       expect(result.steps.length).toBeGreaterThanOrEqual(8);
-      expect(result.steps[0]).toContain('Preparer la sauce');
+      expect(result.steps[0]).toContain("Preparer la sauce");
     });
   });
 });

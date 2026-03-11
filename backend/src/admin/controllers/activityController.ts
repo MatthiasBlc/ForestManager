@@ -14,7 +14,11 @@ interface GetActivityQuery {
  * GET /api/admin/activity
  * Liste des activites admin avec pagination
  */
-export const getAll: RequestHandler<unknown, unknown, unknown, GetActivityQuery> = async (req, res, next) => {
+export const getAll: RequestHandler<unknown, unknown, unknown, GetActivityQuery> = async (
+  req,
+  res,
+  next
+) => {
   try {
     const { type, adminId } = req.query;
     const { limit: take, offset: skip } = parsePagination(req.query, 50);

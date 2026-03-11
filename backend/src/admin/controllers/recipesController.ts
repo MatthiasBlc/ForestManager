@@ -5,7 +5,11 @@ import { assertIsDefine } from "../../util/assertIsDefine";
 import { parsePagination, buildPaginationMeta } from "../../util/pagination";
 import { RECIPE_DETAIL_INCLUDE } from "../../util/prismaSelects";
 import {
-  assertString, assertOptionalNumber, validateStringLength, validateServings, validateTime,
+  assertString,
+  assertOptionalNumber,
+  validateStringLength,
+  validateServings,
+  validateTime,
   MAX_TITLE_LENGTH,
 } from "../../util/validation";
 
@@ -146,7 +150,10 @@ export const update: RequestHandler = async (req, res, next) => {
         type: "RECIPE_UPDATED",
         targetType: "Recipe",
         targetId: recipeId,
-        metadata: { changes: data as Record<string, string | number | null>, oldTitle: recipe.title },
+        metadata: {
+          changes: data as Record<string, string | number | null>,
+          oldTitle: recipe.title,
+        },
       },
     });
 

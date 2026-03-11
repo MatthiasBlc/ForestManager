@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { render } from '../../../setup/testUtils';
-import RecipeFilters from '../../../../components/recipes/RecipeFilters';
-import { setUserAuthenticated, resetAuthState } from '../../../setup/mswHandlers';
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { render } from "../../../setup/testUtils";
+import RecipeFilters from "../../../../components/recipes/RecipeFilters";
+import { setUserAuthenticated, resetAuthState } from "../../../setup/mswHandlers";
 
-describe('RecipeFilters', () => {
+describe("RecipeFilters", () => {
   const mockOnSearchChange = vi.fn();
   const mockOnTagsChange = vi.fn();
   const mockOnIngredientsChange = vi.fn();
@@ -18,7 +18,7 @@ describe('RecipeFilters', () => {
   });
 
   const defaultProps = {
-    search: '',
+    search: "",
     tags: [],
     ingredients: [],
     onSearchChange: mockOnSearchChange,
@@ -27,88 +27,71 @@ describe('RecipeFilters', () => {
     onReset: mockOnReset,
   };
 
-  it('should render search input', () => {
+  it("should render search input", () => {
     render(<RecipeFilters {...defaultProps} />);
 
-    expect(screen.getByPlaceholderText('Search by title...')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Search by title...")).toBeInTheDocument();
   });
 
-  it('should render tag selector', () => {
+  it("should render tag selector", () => {
     render(<RecipeFilters {...defaultProps} />);
 
-    expect(screen.getByText('Filter by tags')).toBeInTheDocument();
+    expect(screen.getByText("Filter by tags")).toBeInTheDocument();
   });
 
-  it('should render ingredient selector', () => {
+  it("should render ingredient selector", () => {
     render(<RecipeFilters {...defaultProps} />);
 
-    expect(screen.getByText('Filter by ingredients')).toBeInTheDocument();
+    expect(screen.getByText("Filter by ingredients")).toBeInTheDocument();
   });
 
-  it('should call onSearchChange with debounce', async () => {
+  it("should call onSearchChange with debounce", async () => {
     const user = userEvent.setup();
 
     render(<RecipeFilters {...defaultProps} />);
 
-    const searchInput = screen.getByPlaceholderText('Search by title...');
-    await user.type(searchInput, 'test');
+    const searchInput = screen.getByPlaceholderText("Search by title...");
+    await user.type(searchInput, "test");
 
     // After debounce (300ms), onSearchChange should be called
-    await waitFor(() => {
-      expect(mockOnSearchChange).toHaveBeenCalledWith('test');
-    }, { timeout: 1000 });
-  });
-
-  it('should show clear button when filters are active', () => {
-    render(
-      <RecipeFilters
-        {...defaultProps}
-        search="test"
-      />
+    await waitFor(
+      () => {
+        expect(mockOnSearchChange).toHaveBeenCalledWith("test");
+      },
+      { timeout: 1000 }
     );
-
-    expect(screen.getByText('Clear filters')).toBeInTheDocument();
   });
 
-  it('should not show clear button when no filters are active', () => {
+  it("should show clear button when filters are active", () => {
+    render(<RecipeFilters {...defaultProps} search="test" />);
+
+    expect(screen.getByText("Clear filters")).toBeInTheDocument();
+  });
+
+  it("should not show clear button when no filters are active", () => {
     render(<RecipeFilters {...defaultProps} />);
 
-    expect(screen.queryByText('Clear filters')).not.toBeInTheDocument();
+    expect(screen.queryByText("Clear filters")).not.toBeInTheDocument();
   });
 
-  it('should call onReset when clear filters is clicked', async () => {
+  it("should call onReset when clear filters is clicked", async () => {
     const user = userEvent.setup();
-    render(
-      <RecipeFilters
-        {...defaultProps}
-        search="test"
-      />
-    );
+    render(<RecipeFilters {...defaultProps} search="test" />);
 
-    await user.click(screen.getByText('Clear filters'));
+    await user.click(screen.getByText("Clear filters"));
 
     expect(mockOnReset).toHaveBeenCalled();
   });
 
-  it('should show clear button when tags are active', () => {
-    render(
-      <RecipeFilters
-        {...defaultProps}
-        tags={['dessert']}
-      />
-    );
+  it("should show clear button when tags are active", () => {
+    render(<RecipeFilters {...defaultProps} tags={["dessert"]} />);
 
-    expect(screen.getByText('Clear filters')).toBeInTheDocument();
+    expect(screen.getByText("Clear filters")).toBeInTheDocument();
   });
 
-  it('should show clear button when ingredients are active', () => {
-    render(
-      <RecipeFilters
-        {...defaultProps}
-        ingredients={['sugar']}
-      />
-    );
+  it("should show clear button when ingredients are active", () => {
+    render(<RecipeFilters {...defaultProps} ingredients={["sugar"]} />);
 
-    expect(screen.getByText('Clear filters')).toBeInTheDocument();
+    expect(screen.getByText("Clear filters")).toBeInTheDocument();
   });
 });

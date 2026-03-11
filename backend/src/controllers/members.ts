@@ -132,7 +132,11 @@ export const promoteMember: RequestHandler<
 // DELETE /api/communities/:communityId/members/:userId
 // Leave community (self) or kick member (moderator)
 // =====================================
-export const removeMember: RequestHandler<{ communityId: string; userId: string }> = async (req, res, next) => {
+export const removeMember: RequestHandler<{ communityId: string; userId: string }> = async (
+  req,
+  res,
+  next
+) => {
   const communityId = req.params.communityId;
   const targetUserId = req.params.userId;
   const userId = req.session.userId;

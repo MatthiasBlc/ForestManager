@@ -14,7 +14,13 @@ interface MembersListProps {
   onLeave: () => void;
 }
 
-const MembersList = ({ communityId, members, currentUserRole, onMembersChange, onLeave }: MembersListProps) => {
+const MembersList = ({
+  communityId,
+  members,
+  currentUserRole,
+  onMembersChange,
+  onLeave,
+}: MembersListProps) => {
   const { user } = useAuth();
   const { confirm, ConfirmDialog } = useConfirm();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -23,7 +29,7 @@ const MembersList = ({ communityId, members, currentUserRole, onMembersChange, o
   const isModerator = currentUserRole === "MODERATOR";
 
   const handlePromote = async (memberId: string) => {
-    if (!await confirm({ message: "Promote this member to moderator?" })) return;
+    if (!(await confirm({ message: "Promote this member to moderator?" }))) return;
 
     try {
       setActionLoading(memberId);
@@ -39,7 +45,14 @@ const MembersList = ({ communityId, members, currentUserRole, onMembersChange, o
   };
 
   const handleKick = async (memberId: string) => {
-    if (!await confirm({ message: "Remove this member from the community?", confirmLabel: "Remove", confirmClass: "btn btn-error" })) return;
+    if (
+      !(await confirm({
+        message: "Remove this member from the community?",
+        confirmLabel: "Remove",
+        confirmClass: "btn btn-error",
+      }))
+    )
+      return;
 
     try {
       setActionLoading(memberId);
@@ -62,7 +75,8 @@ const MembersList = ({ communityId, members, currentUserRole, onMembersChange, o
       ? "You are the last member of this community. Leaving will permanently destroy it and all its data. Are you sure?"
       : "Are you sure you want to leave this community?";
 
-    if (!await confirm({ message, confirmLabel: "Leave", confirmClass: "btn btn-warning" })) return;
+    if (!(await confirm({ message, confirmLabel: "Leave", confirmClass: "btn btn-warning" })))
+      return;
 
     try {
       setActionLoading(user.id);
@@ -107,7 +121,9 @@ const MembersList = ({ communityId, members, currentUserRole, onMembersChange, o
                     {isCurrentUser && <span className="text-base-content/50 ml-1">(you)</span>}
                   </td>
                   <td>
-                    <span className={`badge badge-sm ${member.role === "MODERATOR" ? "badge-primary" : "badge-ghost"}`}>
+                    <span
+                      className={`badge badge-sm ${member.role === "MODERATOR" ? "badge-primary" : "badge-ghost"}`}
+                    >
                       {member.role}
                     </span>
                   </td>

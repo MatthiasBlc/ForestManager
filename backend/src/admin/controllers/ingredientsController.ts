@@ -67,16 +67,20 @@ export const getAll: RequestHandler = async (req, res, next) => {
 /**
  * Calcule l'unite la plus utilisee pour chaque ingredient
  */
-async function getPopularUnitsForIngredients(ingredientIds: string[]): Promise<Record<string, { id: string; abbreviation: string; useCount: number }>> {
+async function getPopularUnitsForIngredients(
+  ingredientIds: string[]
+): Promise<Record<string, { id: string; abbreviation: string; useCount: number }>> {
   if (ingredientIds.length === 0) return {};
 
   // Requete raw pour obtenir l'unite la plus utilisee par ingredient
-  const results = await prisma.$queryRaw<Array<{
-    ingredientId: string;
-    unitId: string;
-    abbreviation: string;
-    useCount: bigint;
-  }>>`
+  const results = await prisma.$queryRaw<
+    Array<{
+      ingredientId: string;
+      unitId: string;
+      abbreviation: string;
+      useCount: bigint;
+    }>
+  >`
     SELECT DISTINCT ON (ri."ingredientId")
       ri."ingredientId",
       ri."unitId",

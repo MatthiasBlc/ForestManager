@@ -4,11 +4,7 @@ import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { formatTags, formatIngredients, formatSteps } from "../util/responseFormatters";
 import { buildImageUrl } from "../config/storage";
-import {
-  forkRecipe,
-  publishRecipe,
-  getRecipeFamilyCommunities,
-} from "../services/shareService";
+import { forkRecipe, publishRecipe, getRecipeFamilyCommunities } from "../services/shareService";
 import { requireRecipeAccess } from "../services/membershipService";
 import appEvents from "../services/eventEmitter";
 import { getModeratorIdsForTagNotification } from "../services/notificationService";
@@ -51,7 +47,12 @@ export const shareRecipe: RequestHandler<
         imageKey: true,
         communityId: true,
         creatorId: true,
-        tags: { select: { tagId: true, tag: { select: { id: true, name: true, scope: true, communityId: true } } } },
+        tags: {
+          select: {
+            tagId: true,
+            tag: { select: { id: true, name: true, scope: true, communityId: true } },
+          },
+        },
         ingredients: {
           select: { ingredientId: true, quantity: true, unitId: true, order: true },
           orderBy: { order: "asc" },
@@ -87,7 +88,11 @@ export const shareRecipe: RequestHandler<
     // Verifier membership dans les deux communautes
     const [sourceMembership, targetMembership] = await Promise.all([
       prisma.userCommunity.findFirst({
-        where: { userId: authenticatedUserId, communityId: sourceRecipe.communityId, deletedAt: null },
+        where: {
+          userId: authenticatedUserId,
+          communityId: sourceRecipe.communityId,
+          deletedAt: null,
+        },
       }),
       prisma.userCommunity.findFirst({
         where: { userId: authenticatedUserId, communityId: targetCommunityId, deletedAt: null },
@@ -227,7 +232,12 @@ export const publishToCommunities: RequestHandler<
         imageKey: true,
         creatorId: true,
         communityId: true,
-        tags: { select: { tagId: true, tag: { select: { id: true, name: true, scope: true, communityId: true } } } },
+        tags: {
+          select: {
+            tagId: true,
+            tag: { select: { id: true, name: true, scope: true, communityId: true } },
+          },
+        },
         ingredients: {
           select: { ingredientId: true, quantity: true, unitId: true, order: true },
           orderBy: { order: "asc" },
@@ -272,11 +282,17 @@ export const publishToCommunities: RequestHandler<
     const newCommunityIds = communityIds.filter((cid) => !alreadySharedCommunityIds.has(cid));
 
     if (newCommunityIds.length === 0) {
-      res.status(200).json({ data: [], message: "Recipe already shared to all selected communities" });
+      res
+        .status(200)
+        .json({ data: [], message: "Recipe already shared to all selected communities" });
       return;
     }
 
-    const { recipes: createdRecipes, pendingTagIds } = await publishRecipe(authenticatedUserId, sourceRecipe, newCommunityIds);
+    const { recipes: createdRecipes, pendingTagIds } = await publishRecipe(
+      authenticatedUserId,
+      sourceRecipe,
+      newCommunityIds
+    );
 
     // Notifier les moderateurs si des tags PENDING ont ete crees
     if (pendingTagIds.length > 0) {

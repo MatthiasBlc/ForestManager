@@ -1,6 +1,6 @@
 export interface Recipe {
-  id: string,
-  label: string,
+  id: string;
+  label: string;
 }
 
 export interface CommunityTag {

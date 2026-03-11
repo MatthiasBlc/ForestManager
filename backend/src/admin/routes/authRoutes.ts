@@ -8,15 +8,16 @@ const router = express.Router();
 
 // Rate limiter pour les routes d'auth admin (5 tentatives / 15min)
 // Desactive en mode test pour permettre l'execution des tests
-const adminAuthLimiter: RequestHandler = env.NODE_ENV === "test"
-  ? ((_req, _res, next) => next())
-  : rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 5, // 5 tentatives max
-      message: { error: "ADMIN_010: Too many login attempts, please try again later" },
-      standardHeaders: true,
-      legacyHeaders: false,
-    });
+const adminAuthLimiter: RequestHandler =
+  env.NODE_ENV === "test"
+    ? (_req, _res, next) => next()
+    : rateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 5, // 5 tentatives max
+        message: { error: "ADMIN_010: Too many login attempts, please try again later" },
+        standardHeaders: true,
+        legacyHeaders: false,
+      });
 
 // POST /api/admin/auth/login - Premiere etape (email/password)
 router.post("/login", adminAuthLimiter, authController.login);
