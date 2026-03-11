@@ -2,27 +2,8 @@ import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import prisma from "../util/db";
 import bcrypt from "bcrypt";
-import {
-  EMAIL_REGEX,
-  USERNAME_REGEX,
-  MIN_USERNAME_LENGTH,
-  MIN_PASSWORD_LENGTH,
-  MAX_USERNAME_LENGTH,
-  MAX_PASSWORD_LENGTH,
-  assertString,
-} from "../util/validation";
-import {
-  AUTH_001,
-  AUTH_002,
-  AUTH_003,
-  AUTH_004_LENGTH,
-  AUTH_004_FORMAT,
-  AUTH_005,
-  AUTH_006,
-  AUTH_007,
-  AUTH_008,
-  AUTH_009,
-} from "../constants/errorCodes";
+import { AUTH_001, AUTH_006, AUTH_007, AUTH_008, AUTH_009 } from "../constants/errorCodes";
+import type { SignupInput, LoginInput } from "../schemas/auth.schema";
 
 /**
  * GET /api/auth/me
@@ -59,17 +40,11 @@ export const getMe: RequestHandler = async (req, res, next) => {
   }
 };
 
-interface SignUpBody {
-  username?: string;
-  email?: string;
-  password?: string;
-}
-
 /**
  * POST /api/auth/signup
- * Cree un nouvel utilisateur
+ * Cree un nouvel utilisateur (body valide par signupSchema)
  */
-export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = async (
+export const signUp: RequestHandler<unknown, unknown, SignupInput, unknown> = async (
   req,
   res,
   next
@@ -77,34 +52,6 @@ export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = asy
   const { username, email, password } = req.body;
 
   try {
-    // Validation des parametres requis
-    if (!username || !email || !password) {
-      throw createHttpError(400, AUTH_002);
-    }
-
-    // Type guards (rejette number, object, array)
-    assertString(username, "username");
-    assertString(email, "email");
-    assertString(password, "password");
-
-    // Validation email
-    if (!EMAIL_REGEX.test(email)) {
-      throw createHttpError(400, AUTH_003);
-    }
-
-    // Validation username format et longueur
-    if (username.length < MIN_USERNAME_LENGTH || username.length > MAX_USERNAME_LENGTH) {
-      throw createHttpError(400, AUTH_004_LENGTH(MIN_USERNAME_LENGTH, MAX_USERNAME_LENGTH));
-    }
-    if (!USERNAME_REGEX.test(username)) {
-      throw createHttpError(400, AUTH_004_FORMAT);
-    }
-
-    // Validation password longueur
-    if (password.length < MIN_PASSWORD_LENGTH || password.length > MAX_PASSWORD_LENGTH) {
-      throw createHttpError(400, AUTH_005(MIN_PASSWORD_LENGTH, MAX_PASSWORD_LENGTH));
-    }
-
     // Verification username unique (excluant les comptes supprimes)
     const existingUsername = await prisma.user.findFirst({
       where: {
@@ -162,16 +109,11 @@ export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = asy
   }
 };
 
-interface LoginBody {
-  username?: string;
-  password?: string;
-}
-
 /**
  * POST /api/auth/login
- * Authentifie un utilisateur existant
+ * Authentifie un utilisateur existant (body valide par loginSchema)
  */
-export const login: RequestHandler<unknown, unknown, LoginBody, unknown> = async (
+export const login: RequestHandler<unknown, unknown, LoginInput, unknown> = async (
   req,
   res,
   next
@@ -179,14 +121,6 @@ export const login: RequestHandler<unknown, unknown, LoginBody, unknown> = async
   const { username, password } = req.body;
 
   try {
-    if (!username || !password) {
-      throw createHttpError(400, AUTH_002);
-    }
-
-    // Type guards
-    assertString(username, "username");
-    assertString(password, "password");
-
     const user = await prisma.user.findUnique({
       where: {
         username: username,

@@ -125,14 +125,14 @@
 - [x] Extraire error handler dans `middleware/errorHandler.ts`
 - [x] Verifier que app.ts est lisible (~82 lignes, 50 sans imports)
 
-### D4 - Zod : Phase 1 (fondations)
+### D4 - Zod : Phase 1 (fondations) ✅
 
-- [ ] Installer Zod
-- [ ] Creer le middleware `validateBody`
-- [ ] Creer `schemas/common.schema.ts` (pagination, uuid)
-- [ ] Creer `schemas/auth.schema.ts` (signup, login)
-- [ ] Migrer auth controllers vers Zod
-- [ ] Tests : verifier que la validation fonctionne
+- [x] Installer Zod (v4.3.6)
+- [x] Creer le middleware `validateBody`
+- [x] Creer `schemas/common.schema.ts` (pagination, uuid)
+- [x] Creer `schemas/auth.schema.ts` (signup, login)
+- [x] Migrer auth controllers vers Zod
+- [x] Tests : 802/802 passent
 
 ### D5 - Zod : Phase 2 (recipes)
 
