@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { FaArrowLeft, FaSave } from "react-icons/fa";
 import APIManager from "../network/api";
 import ImageUpload from "../components/ImageUpload";
+import { useAsyncData } from "../hooks/useAsyncData";
 
 interface FormData {
   name: string;
@@ -14,9 +15,8 @@ const CommunityEditPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
     register,
@@ -30,47 +30,41 @@ const CommunityEditPage = () => {
     },
   });
 
+  const {
+    data: community,
+    isLoading,
+    error: loadError,
+  } = useAsyncData(
+    () => (id ? APIManager.getCommunity(id) : Promise.reject(new Error("Missing community ID"))),
+    [id]
+  );
+
+  // Populate form when community data loads
   useEffect(() => {
-    async function loadCommunity() {
-      if (!id) return;
-
-      try {
-        setIsLoading(true);
-        setError(null);
-        const community = await APIManager.getCommunity(id);
-
-        if (community.currentUserRole !== "MODERATOR") {
-          navigate(`/communities/${id}`);
-          return;
-        }
-
-        reset({
-          name: community.name,
-          description: community.description || "",
-        });
-        setImageUrl(community.imageUrl);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load community");
-      } finally {
-        setIsLoading(false);
-      }
+    if (!community) return;
+    if (community.currentUserRole !== "MODERATOR") {
+      navigate(`/communities/${id}`);
+      return;
     }
-
-    loadCommunity();
-  }, [id, reset, navigate]);
+    reset({
+      name: community.name,
+      description: community.description || "",
+    });
+    setImageUrl(community.imageUrl);
+  }, [community, id, navigate, reset]);
 
   const onSubmit = async (data: FormData) => {
     if (!id) return;
 
     try {
-      setError(null);
+      setSubmitError(null);
       await APIManager.updateCommunity(id, {
         name: data.name.trim(),
         description: data.description.trim() || undefined,
       });
       navigate(`/communities/${id}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update community");
+      setSubmitError(err instanceof Error ? err.message : "Failed to update community");
     }
   };
 
@@ -82,11 +76,11 @@ const CommunityEditPage = () => {
     );
   }
 
-  if (error && !isSubmitting) {
+  if (loadError && !isSubmitting) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="alert alert-error">
-          <span>{error}</span>
+          <span>{loadError}</span>
         </div>
         <button
           className="btn btn-ghost mt-4 gap-2"
@@ -171,9 +165,9 @@ const CommunityEditPage = () => {
             </div>
           )}
 
-          {error && (
+          {submitError && (
             <div className="alert alert-error">
-              <span>{error}</span>
+              <span>{submitError}</span>
             </div>
           )}
 

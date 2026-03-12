@@ -1,32 +1,18 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaPlus } from "react-icons/fa";
 import { CommunityListItem } from "../models/community";
 import APIManager from "../network/api";
 import CommunityCard from "../components/communities/CommunityCard";
+import { useAsyncData } from "../hooks/useAsyncData";
 
 const CommunitiesPage = () => {
   const navigate = useNavigate();
-  const [communities, setCommunities] = useState<CommunityListItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function loadCommunities() {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await APIManager.getCommunities();
-        setCommunities(response.data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load communities");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadCommunities();
-  }, []);
+  const {
+    data: communities,
+    isLoading,
+    error,
+  } = useAsyncData<CommunityListItem[]>(() => APIManager.getCommunities().then((r) => r.data), []);
 
   return (
     <div className="container mx-auto px-4 py-6">
@@ -52,9 +38,9 @@ const CommunitiesPage = () => {
 
       {!isLoading && !error && (
         <>
-          {communities.length > 0 ? (
+          {(communities?.length ?? 0) > 0 ? (
             <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-              {communities.map((community) => (
+              {communities!.map((community) => (
                 <CommunityCard key={community.id} community={community} />
               ))}
             </div>

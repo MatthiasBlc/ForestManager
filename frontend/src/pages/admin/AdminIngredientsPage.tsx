@@ -1,8 +1,9 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { FaSortUp, FaSortDown, FaSort } from "react-icons/fa";
 import { AdminIngredient, AdminUnit } from "../../models/admin";
 import APIManager from "../../network/api";
 import { useConfirm } from "../../hooks/useConfirm";
+import { useAsyncData } from "../../hooks/useAsyncData";
 import toast from "react-hot-toast";
 
 type StatusFilter = "" | "APPROVED" | "PENDING";
@@ -10,9 +11,6 @@ type SortColumn = "name" | "status" | "defaultUnit" | "popularUnit" | "createdBy
 type SortDirection = "asc" | "desc";
 
 function AdminIngredientsPage() {
-  const [ingredients, setIngredients] = useState<AdminIngredient[]>([]);
-  const [units, setUnits] = useState<AdminUnit[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("");
   const [sortColumn, setSortColumn] = useState<SortColumn>("name");
@@ -42,31 +40,21 @@ function AdminIngredientsPage() {
 
   const { confirm, ConfirmDialog } = useConfirm();
 
-  const loadIngredients = useCallback(async () => {
-    try {
-      const data = await APIManager.getAdminIngredients(
-        search || undefined,
-        statusFilter || undefined
-      );
-      setIngredients(data);
-    } catch {
-      toast.error("Failed to load ingredients");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [search, statusFilter]);
+  const {
+    data: ingredients,
+    isLoading,
+    error,
+    refetch: loadIngredients,
+  } = useAsyncData<AdminIngredient[]>(
+    () => APIManager.getAdminIngredients(search || undefined, statusFilter || undefined),
+    [search, statusFilter]
+  );
+
+  const { data: units } = useAsyncData<AdminUnit[]>(() => APIManager.getAdminUnits(), []);
 
   useEffect(() => {
-    setIsLoading(true);
-    loadIngredients();
-  }, [loadIngredients]);
-
-  // Load units for defaultUnit selector
-  useEffect(() => {
-    APIManager.getAdminUnits()
-      .then(setUnits)
-      .catch(() => {});
-  }, []);
+    if (error) toast.error(error);
+  }, [error]);
 
   // --- Sorting ---
   const handleSort = (column: SortColumn) => {
@@ -79,7 +67,7 @@ function AdminIngredientsPage() {
   };
 
   const sortedIngredients = useMemo(() => {
-    const sorted = [...ingredients].sort((a, b) => {
+    const sorted = [...(ingredients ?? [])].sort((a, b) => {
       let aVal: string | number = "";
       let bVal: string | number = "";
 
@@ -294,7 +282,7 @@ function AdminIngredientsPage() {
       </div>
 
       {/* Table */}
-      {isLoading ? (
+      {isLoading && !ingredients ? (
         <div className="flex justify-center py-12">
           <span className="loading loading-spinner loading-lg" />
         </div>
@@ -474,7 +462,7 @@ function AdminIngredientsPage() {
                 onChange={(e) => setItemDefaultUnitId(e.target.value)}
               >
                 <option value="">None</option>
-                {units.map((u) => (
+                {(units ?? []).map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.name} ({u.abbreviation})
                   </option>
@@ -515,7 +503,7 @@ function AdminIngredientsPage() {
               autoFocus
             />
             <div className="mt-3 max-h-60 overflow-y-auto">
-              {ingredients
+              {(ingredients ?? [])
                 .filter(
                   (i) =>
                     i.id !== mergeSource.id &&

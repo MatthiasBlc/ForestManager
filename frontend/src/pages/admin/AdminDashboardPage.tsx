@@ -1,25 +1,13 @@
-import { useEffect, useState } from "react";
 import { DashboardStats } from "../../models/admin";
 import APIManager from "../../network/api";
+import { useAsyncData } from "../../hooks/useAsyncData";
 
 function AdminDashboardPage() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function loadStats() {
-      try {
-        const data = await APIManager.getAdminDashboardStats();
-        setStats(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load dashboard");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-    loadStats();
-  }, []);
+  const {
+    data: stats,
+    isLoading,
+    error,
+  } = useAsyncData<DashboardStats>(() => APIManager.getAdminDashboardStats(), []);
 
   return (
     <div>

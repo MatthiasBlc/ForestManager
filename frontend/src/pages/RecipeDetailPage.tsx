@@ -14,6 +14,7 @@ import APIManager from "../network/api";
 import { RecipeDetail } from "../models/recipe";
 import { useAuth } from "../contexts/AuthContext";
 import { useConfirm } from "../hooks/useConfirm";
+import { useAsyncData } from "../hooks/useAsyncData";
 import TagBadge from "../components/recipes/TagBadge";
 import TimeBadges from "../components/recipes/TimeBadges";
 import ServingsSelector from "../components/recipes/ServingsSelector";
@@ -30,9 +31,6 @@ const RecipeDetailPage = () => {
   const { user } = useAuth();
   const { confirm, ConfirmDialog } = useConfirm();
 
-  const [recipe, setRecipe] = useState<RecipeDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedServings, setSelectedServings] = useState<number>(4);
   const [openModal, setOpenModal] = useState<
     "propose" | "share" | "publish" | "suggest-tag" | null
@@ -40,29 +38,20 @@ const RecipeDetailPage = () => {
   const [proposalsRefresh, setProposalsRefresh] = useState(0);
   const [suggestionsRefresh, setSuggestionsRefresh] = useState(0);
 
+  const {
+    data: recipe,
+    isLoading,
+    error,
+    setData: setRecipe,
+  } = useAsyncData<RecipeDetail>(
+    () => (id ? APIManager.getRecipe(id) : Promise.reject(new Error("Recipe ID is missing"))),
+    [id]
+  );
+
+  // Update servings when recipe loads
   useEffect(() => {
-    async function loadRecipe() {
-      if (!id) {
-        setError("Recipe ID is missing");
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        setIsLoading(true);
-        setError(null);
-        const data = await APIManager.getRecipe(id);
-        setRecipe(data);
-        setSelectedServings(data.servings);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load recipe");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    loadRecipe();
-  }, [id]);
+    if (recipe) setSelectedServings(recipe.servings);
+  }, [recipe]);
 
   const handleDelete = async () => {
     if (!recipe) return;

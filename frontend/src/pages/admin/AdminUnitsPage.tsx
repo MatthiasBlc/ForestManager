@@ -1,8 +1,9 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { FaSortUp, FaSortDown, FaSort } from "react-icons/fa";
 import { AdminUnit } from "../../models/admin";
 import APIManager from "../../network/api";
 import { useConfirm } from "../../hooks/useConfirm";
+import { useAsyncData } from "../../hooks/useAsyncData";
 import toast from "react-hot-toast";
 
 type UnitSortColumn = "name" | "abbreviation" | "category" | "sortOrder" | "usageCount";
@@ -18,8 +19,6 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 function AdminUnitsPage() {
-  const [units, setUnits] = useState<AdminUnit[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -33,21 +32,19 @@ function AdminUnitsPage() {
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const { confirm, ConfirmDialog } = useConfirm();
 
-  const loadUnits = useCallback(async () => {
-    try {
-      const data = await APIManager.getAdminUnits(search || undefined, filterCategory || undefined);
-      setUnits(data);
-    } catch {
-      toast.error("Failed to load units");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [search, filterCategory]);
+  const {
+    data: units,
+    isLoading,
+    error,
+    refetch: loadUnits,
+  } = useAsyncData<AdminUnit[]>(
+    () => APIManager.getAdminUnits(search || undefined, filterCategory || undefined),
+    [search, filterCategory]
+  );
 
   useEffect(() => {
-    setIsLoading(true);
-    loadUnits();
-  }, [loadUnits]);
+    if (error) toast.error(error);
+  }, [error]);
 
   // --- Sorting ---
   const handleSort = (column: UnitSortColumn) => {
@@ -60,7 +57,7 @@ function AdminUnitsPage() {
   };
 
   const sortedUnits = useMemo(() => {
-    const sorted = [...units].sort((a, b) => {
+    const sorted = [...(units ?? [])].sort((a, b) => {
       let aVal: string | number = "";
       let bVal: string | number = "";
 
@@ -202,7 +199,7 @@ function AdminUnitsPage() {
       </div>
 
       {/* Table */}
-      {isLoading ? (
+      {isLoading && !units ? (
         <div className="flex justify-center py-12">
           <span className="loading loading-spinner loading-lg" />
         </div>

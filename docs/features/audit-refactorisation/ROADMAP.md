@@ -202,27 +202,27 @@
 
 ## Phase E : DRY Frontend
 
-### E1 - useAsyncData hook
+### E1 - useAsyncData hook ✅
 
-- [ ] Creer le hook `useAsyncData<T>(fetchFn, deps)` avec gestion loading/error/data
-- [ ] Migrer pages pilotes pour valider le pattern :
-  - [ ] DashboardPage.tsx (185 lignes)
-  - [ ] CommunitiesPage.tsx (81 lignes)
-  - [ ] InvitationsPage.tsx (87 lignes)
-- [ ] Migrer pages admin simples :
-  - [ ] AdminDashboardPage.tsx (120 lignes)
-  - [ ] AdminActivityPage.tsx (164 lignes)
-  - [ ] AdminFeaturesPage.tsx (222 lignes)
-- [ ] Migrer pages admin complexes :
-  - [ ] AdminCommunitiesPage.tsx (327 lignes)
-  - [ ] AdminUnitsPage.tsx (376 lignes)
-  - [ ] AdminIngredientsPage.tsx (660 lignes)
-  - [ ] AdminTagsPage.tsx (821 lignes)
-- [ ] Migrer pages user complexes :
-  - [ ] CommunityDetailPage.tsx (285 lignes)
-  - [ ] CommunityEditPage.tsx (199 lignes)
-  - [ ] NotificationsPage.tsx (294 lignes)
-  - [ ] RecipeDetailPage.tsx (416 lignes)
+- [x] Creer le hook `useAsyncData<T>(fetchFn, deps)` avec gestion loading/error/data
+- [x] Migrer pages pilotes pour valider le pattern :
+  - [x] DashboardPage.tsx (185 lignes)
+  - [x] CommunitiesPage.tsx (81 lignes)
+  - [x] InvitationsPage.tsx (87 lignes)
+- [x] Migrer pages admin simples :
+  - [x] AdminDashboardPage.tsx (120 lignes)
+  - [x] AdminActivityPage.tsx (164 lignes)
+  - [x] AdminFeaturesPage.tsx (222 lignes)
+- [x] Migrer pages admin complexes :
+  - [x] AdminCommunitiesPage.tsx (327 lignes)
+  - [x] AdminUnitsPage.tsx (376 lignes)
+  - [x] AdminIngredientsPage.tsx (660 lignes)
+  - [x] AdminTagsPage.tsx (821 lignes)
+- [x] Migrer pages user complexes :
+  - [x] CommunityDetailPage.tsx (285 lignes)
+  - [x] CommunityEditPage.tsx (199 lignes)
+  - [x] NotificationsPage.tsx - Skip (utilise deja useNotifications hook)
+  - [x] RecipeDetailPage.tsx (416 lignes)
 
 ### E2 - DataContainer composant
 
@@ -264,6 +264,7 @@
 ### F2 - Fichiers longs (>300 lignes identifies)
 
 Frontend pages a decouper :
+
 - [ ] AdminTagsPage.tsx (821 lignes) → extraire TagMergeModal, TagEditModal, TagFilters
 - [ ] AdminIngredientsPage.tsx (660 lignes) → extraire IngredientMergeModal, IngredientApproveModal
 - [ ] RecipeFormPage.tsx (498 lignes) → extraire RecipeBasicInfoForm, RecipeStepsEditor
@@ -272,6 +273,7 @@ Frontend pages a decouper :
 - [ ] AdminCommunitiesPage.tsx (327 lignes) → extraire CommunityFeatureManager
 
 Frontend components :
+
 - [ ] RecipesPageLoggedInView.tsx (258 lignes) → evaluer si besoin de decoupage
 - [ ] ImageUpload.tsx (204 lignes) → OK (composant complexe mais cohesif)
 
@@ -296,15 +298,18 @@ Frontend components :
 Etat actuel : 33 fichiers de tests integration, la plupart des controllers sont couverts.
 
 Tests d'integration a ajouter/completer :
+
 - [ ] `units.test.ts` (user) - endpoint GET /api/units non teste directement
 - [ ] Verifier couverture des nouveaux schemas Zod (validation errors)
 
 Tests unitaires a verifier :
+
 - [ ] Services : tagService, tagSuggestionService, eventEmitter
 - [ ] Middlewares : validateBody, validateUUID, csrf
 - [ ] Utils : pagination, prismaSelects
 
 Flux critiques a prioriser (verification couverture) :
+
 - [ ] Auth complet (signup → login → logout → session regeneration)
 - [ ] Recipe CRUD (create → read → update → delete + soft delete)
 - [ ] Sharing (share to community → publish → variant creation)

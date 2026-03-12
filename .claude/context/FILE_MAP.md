@@ -315,6 +315,7 @@ models/
 App.tsx                       # Routes React Router
 main.tsx                      # Entry point React
 hooks/
+├── useAsyncData.ts           # Generic async data fetching (loading/error/data/refetch)
 ├── useClickOutside.ts        # Detect clicks outside a ref element
 ├── useDebouncedEffect.ts     # Effect with configurable delay
 ├── useConfirm.tsx            # Confirmation dialog hook (promise-based)

@@ -1,13 +1,12 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { AdminCommunity, AdminCommunityDetail, AdminFeature } from "../../models/admin";
 import APIManager from "../../network/api";
 import { useConfirm } from "../../hooks/useConfirm";
+import { useAsyncData } from "../../hooks/useAsyncData";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 
 function AdminCommunitiesPage() {
-  const [communities, setCommunities] = useState<AdminCommunity[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [showDeleted, setShowDeleted] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -16,21 +15,19 @@ function AdminCommunitiesPage() {
   const [allFeatures, setAllFeatures] = useState<AdminFeature[]>([]);
   const { confirm, ConfirmDialog } = useConfirm();
 
-  const loadCommunities = useCallback(async () => {
-    try {
-      const data = await APIManager.getAdminCommunities(search || undefined, showDeleted);
-      setCommunities(data);
-    } catch {
-      toast.error("Failed to load communities");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [search, showDeleted]);
+  const {
+    data: communities,
+    isLoading,
+    error,
+    refetch: loadCommunities,
+  } = useAsyncData<AdminCommunity[]>(
+    () => APIManager.getAdminCommunities(search || undefined, showDeleted),
+    [search, showDeleted]
+  );
 
   useEffect(() => {
-    setIsLoading(true);
-    loadCommunities();
-  }, [loadCommunities]);
+    if (error) toast.error(error);
+  }, [error]);
 
   async function openDetail(communityId: string) {
     setDetailLoading(true);
@@ -124,7 +121,7 @@ function AdminCommunitiesPage() {
       </div>
 
       {/* Table */}
-      {isLoading ? (
+      {isLoading && !communities ? (
         <div className="flex justify-center py-12">
           <span className="loading loading-spinner loading-lg" />
         </div>
@@ -143,8 +140,8 @@ function AdminCommunitiesPage() {
                 </tr>
               </thead>
               <tbody>
-                {communities.length > 0 ? (
-                  communities.map((community) => (
+                {(communities ?? []).length > 0 ? (
+                  (communities ?? []).map((community) => (
                     <tr
                       key={community.id}
                       className={`cursor-pointer hover ${community.deletedAt ? "opacity-50" : ""}`}

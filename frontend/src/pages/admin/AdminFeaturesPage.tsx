@@ -1,30 +1,25 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { AdminFeature } from "../../models/admin";
 import APIManager from "../../network/api";
 import toast from "react-hot-toast";
+import { useAsyncData } from "../../hooks/useAsyncData";
 
 function AdminFeaturesPage() {
-  const [features, setFeatures] = useState<AdminFeature[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingFeature, setEditingFeature] = useState<AdminFeature | null>(null);
   const [form, setForm] = useState({ code: "", name: "", description: "", isDefault: false });
   const [saving, setSaving] = useState(false);
 
-  const loadFeatures = useCallback(async () => {
-    try {
-      const data = await APIManager.getAdminFeatures();
-      setFeatures(data);
-    } catch {
-      toast.error("Failed to load features");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const {
+    data: features,
+    isLoading,
+    error,
+    refetch: loadFeatures,
+  } = useAsyncData<AdminFeature[]>(() => APIManager.getAdminFeatures(), []);
 
   useEffect(() => {
-    loadFeatures();
-  }, [loadFeatures]);
+    if (error) toast.error(error);
+  }, [error]);
 
   function openCreate() {
     setEditingFeature(null);
@@ -84,7 +79,7 @@ function AdminFeaturesPage() {
       </div>
 
       {/* Table */}
-      {isLoading ? (
+      {isLoading && !features ? (
         <div className="flex justify-center py-12">
           <span className="loading loading-spinner loading-lg" />
         </div>
@@ -103,8 +98,8 @@ function AdminFeaturesPage() {
                 </tr>
               </thead>
               <tbody>
-                {features.length > 0 ? (
-                  features.map((feature) => (
+                {(features ?? []).length > 0 ? (
+                  (features ?? []).map((feature) => (
                     <tr key={feature.id}>
                       <td>
                         <code className="text-sm">{feature.code}</code>

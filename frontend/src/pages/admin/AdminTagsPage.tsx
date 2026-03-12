@@ -8,6 +8,7 @@ import {
 } from "../../models/admin";
 import APIManager from "../../network/api";
 import { useConfirm } from "../../hooks/useConfirm";
+import { useAsyncData } from "../../hooks/useAsyncData";
 import toast from "react-hot-toast";
 
 type ScopeFilter = "ALL" | "GLOBAL" | "COMMUNITY";
@@ -15,8 +16,6 @@ type TagSortColumn = "name" | "scope" | "status" | "recipeCount";
 type SortDirection = "asc" | "desc";
 
 function AdminTagsPage() {
-  const [tags, setTags] = useState<AdminTag[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [scopeFilter, setScopeFilter] = useState<ScopeFilter>("ALL");
   const [modalOpen, setModalOpen] = useState(false);
@@ -43,22 +42,19 @@ function AdminTagsPage() {
   const [recipeForm, setRecipeForm] = useState<AdminRecipeUpdateInput>({});
   const [savingRecipe, setSavingRecipe] = useState(false);
 
-  const loadTags = useCallback(async () => {
-    try {
-      const scope = scopeFilter !== "ALL" ? scopeFilter : undefined;
-      const data = await APIManager.getAdminTags(search || undefined, scope);
-      setTags(data);
-    } catch {
-      toast.error("Failed to load tags");
-    } finally {
-      setIsLoading(false);
-    }
+  const {
+    data: tags,
+    isLoading,
+    error,
+    refetch: loadTags,
+  } = useAsyncData<AdminTag[]>(() => {
+    const scope = scopeFilter !== "ALL" ? scopeFilter : undefined;
+    return APIManager.getAdminTags(search || undefined, scope);
   }, [search, scopeFilter]);
 
   useEffect(() => {
-    setIsLoading(true);
-    loadTags();
-  }, [loadTags]);
+    if (error) toast.error(error);
+  }, [error]);
 
   // --- Sorting ---
   const handleSort = (column: TagSortColumn) => {
@@ -71,7 +67,7 @@ function AdminTagsPage() {
   };
 
   const sortedTags = useMemo(() => {
-    const sorted = [...tags].sort((a, b) => {
+    const sorted = [...(tags ?? [])].sort((a, b) => {
       let aVal: string | number = "";
       let bVal: string | number = "";
 
@@ -335,7 +331,7 @@ function AdminTagsPage() {
       </div>
 
       {/* Table */}
-      {isLoading ? (
+      {isLoading && !tags ? (
         <div className="flex justify-center py-12">
           <span className="loading loading-spinner loading-lg" />
         </div>
@@ -477,7 +473,7 @@ function AdminTagsPage() {
               autoFocus
             />
             <div className="mt-3 max-h-60 overflow-y-auto">
-              {tags
+              {(tags ?? [])
                 .filter(
                   (t) =>
                     t.id !== mergeSource.id &&

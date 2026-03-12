@@ -12,6 +12,7 @@ import CommunityTagsList from "../components/communities/CommunityTagsList";
 import { ActivityFeed } from "../components/activity";
 import SidePanel from "../components/communities/SidePanel";
 import { communityEvents } from "../utils/communityEvents";
+import { useAsyncData } from "../hooks/useAsyncData";
 
 type PanelContent = "members" | "activity" | "invitations" | "edit" | "tags";
 
@@ -23,10 +24,6 @@ const CommunityDetailPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const [community, setCommunity] = useState<CommunityDetail | null>(null);
-  const [members, setMembers] = useState<CommunityMember[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const VALID_PANELS: PanelContent[] = ["members", "activity", "invitations", "edit", "tags"];
   const panelParam = searchParams.get("panel");
   const initialPanel =
@@ -40,6 +37,24 @@ const CommunityDetailPage = () => {
     return saved ? parseInt(saved, 10) : DEFAULT_PANEL_WIDTH;
   });
 
+  const {
+    data: communityData,
+    isLoading,
+    error,
+    refetch: loadCommunity,
+  } = useAsyncData(
+    () =>
+      id
+        ? Promise.all([APIManager.getCommunity(id), APIManager.getCommunityMembers(id)]).then(
+            ([c, m]) => ({ community: c, members: m.data })
+          )
+        : Promise.reject(new Error("Missing community ID")),
+    [id]
+  );
+
+  const community: CommunityDetail | null = communityData?.community ?? null;
+  const members: CommunityMember[] = communityData?.members ?? [];
+
   // Synchroniser le panel avec le query param (navigation depuis notification)
   useEffect(() => {
     const p = searchParams.get("panel");
@@ -51,29 +66,6 @@ const CommunityDetailPage = () => {
 
   // Lire les filtres tags depuis les query params
   const initialTags = searchParams.get("tags");
-
-  const loadCommunity = useCallback(async () => {
-    if (!id) return;
-
-    try {
-      setIsLoading(true);
-      setError(null);
-      const [communityData, membersData] = await Promise.all([
-        APIManager.getCommunity(id),
-        APIManager.getCommunityMembers(id),
-      ]);
-      setCommunity(communityData);
-      setMembers(membersData.data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load community");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    loadCommunity();
-  }, [loadCommunity]);
 
   const handleMembersChange = () => {
     loadCommunity();
