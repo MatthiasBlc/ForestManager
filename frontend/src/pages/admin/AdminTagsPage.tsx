@@ -8,6 +8,7 @@ import {
 } from "../../models/admin";
 import APIManager from "../../network/api";
 import { useConfirm } from "../../hooks/useConfirm";
+import DataContainer from "../../components/DataContainer";
 import { useAsyncData } from "../../hooks/useAsyncData";
 import toast from "react-hot-toast";
 
@@ -331,11 +332,7 @@ function AdminTagsPage() {
       </div>
 
       {/* Table */}
-      {isLoading && !tags ? (
-        <div className="flex justify-center py-12">
-          <span className="loading loading-spinner loading-lg" />
-        </div>
-      ) : (
+      <DataContainer isLoading={isLoading && !tags} error={null}>
         <div className="card bg-base-100 shadow">
           <div className="overflow-x-auto">
             <table className="table">
@@ -420,7 +417,7 @@ function AdminTagsPage() {
             </table>
           </div>
         </div>
-      )}
+      </DataContainer>
 
       {/* Create/Edit Modal */}
       {modalOpen && (

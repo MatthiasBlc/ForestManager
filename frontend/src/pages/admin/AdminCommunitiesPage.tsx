@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AdminCommunity, AdminCommunityDetail, AdminFeature } from "../../models/admin";
 import APIManager from "../../network/api";
 import { useConfirm } from "../../hooks/useConfirm";
+import DataContainer from "../../components/DataContainer";
 import { useAsyncData } from "../../hooks/useAsyncData";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
@@ -121,11 +122,7 @@ function AdminCommunitiesPage() {
       </div>
 
       {/* Table */}
-      {isLoading && !communities ? (
-        <div className="flex justify-center py-12">
-          <span className="loading loading-spinner loading-lg" />
-        </div>
-      ) : (
+      <DataContainer isLoading={isLoading && !communities} error={null}>
         <div className="card bg-base-100 shadow">
           <div className="overflow-x-auto">
             <table className="table">
@@ -193,7 +190,7 @@ function AdminCommunitiesPage() {
             </table>
           </div>
         </div>
-      )}
+      </DataContainer>
 
       {/* Detail Modal */}
       {detailOpen && (

@@ -224,10 +224,11 @@
   - [x] NotificationsPage.tsx - Skip (utilise deja useNotifications hook)
   - [x] RecipeDetailPage.tsx (416 lignes)
 
-### E2 - DataContainer composant
+### E2 - DataContainer composant ✅
 
-- [ ] Creer le composant `DataContainer` (loading, error, empty, emptyMessage, children)
-- [ ] Integrer dans les pages migrées avec useAsyncData (meme liste que E1)
+- [x] Creer le composant `DataContainer` (loading, error, empty, emptyMessage, children)
+- [x] Integrer dans les pages migrées avec useAsyncData (10 pages : Dashboard, Communities, Invitations, AdminDashboard, AdminActivity, AdminFeatures, AdminCommunities, AdminUnits, AdminIngredients, AdminTags)
+- [x] Pages detail (CommunityDetail, RecipeDetail, CommunityEdit) conservent le pattern early return (UI custom avec bouton retour)
 
 ### E3 - SearchSelector generique
 

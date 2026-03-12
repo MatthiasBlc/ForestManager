@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AdminFeature } from "../../models/admin";
 import APIManager from "../../network/api";
 import toast from "react-hot-toast";
+import DataContainer from "../../components/DataContainer";
 import { useAsyncData } from "../../hooks/useAsyncData";
 
 function AdminFeaturesPage() {
@@ -79,11 +80,7 @@ function AdminFeaturesPage() {
       </div>
 
       {/* Table */}
-      {isLoading && !features ? (
-        <div className="flex justify-center py-12">
-          <span className="loading loading-spinner loading-lg" />
-        </div>
-      ) : (
+      <DataContainer isLoading={isLoading && !features} error={null}>
         <div className="card bg-base-100 shadow">
           <div className="overflow-x-auto">
             <table className="table">
@@ -134,7 +131,7 @@ function AdminFeaturesPage() {
             </table>
           </div>
         </div>
-      )}
+      </DataContainer>
 
       {/* Create/Edit Modal */}
       {modalOpen && (

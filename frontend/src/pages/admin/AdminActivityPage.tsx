@@ -3,6 +3,7 @@ import { AdminActivityLog } from "../../models/admin";
 import APIManager from "../../network/api";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
+import DataContainer from "../../components/DataContainer";
 import { useAsyncData } from "../../hooks/useAsyncData";
 
 const PAGE_SIZE = 20;
@@ -86,11 +87,7 @@ function AdminActivityPage() {
       </div>
 
       {/* Table */}
-      {isLoading && !activityData ? (
-        <div className="flex justify-center py-12">
-          <span className="loading loading-spinner loading-lg" />
-        </div>
-      ) : (
+      <DataContainer isLoading={isLoading && !activityData} error={null}>
         <>
           <div className="card bg-base-100 shadow">
             <div className="overflow-x-auto">
@@ -154,7 +151,7 @@ function AdminActivityPage() {
             </div>
           )}
         </>
-      )}
+      </DataContainer>
     </div>
   );
 }

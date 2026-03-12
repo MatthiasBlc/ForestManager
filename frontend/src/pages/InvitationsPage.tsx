@@ -3,6 +3,7 @@ import { FaEnvelope } from "react-icons/fa";
 import { ReceivedInvite } from "../models/community";
 import APIManager from "../network/api";
 import InviteCard from "../components/invitations/InviteCard";
+import DataContainer from "../components/DataContainer";
 import { useAsyncData } from "../hooks/useAsyncData";
 
 const InvitationsPage = () => {
@@ -41,35 +42,18 @@ const InvitationsPage = () => {
         </select>
       </div>
 
-      {isLoading && (
-        <div className="flex justify-center py-12">
-          <span className="loading loading-spinner loading-lg" />
+      <DataContainer
+        isLoading={isLoading}
+        error={error}
+        isEmpty={(invites?.length ?? 0) === 0}
+        emptyMessage={statusFilter ? "No invitations found" : "No pending invitations"}
+      >
+        <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          {(invites ?? []).map((invite) => (
+            <InviteCard key={invite.id} invite={invite} onRespond={handleRespond} />
+          ))}
         </div>
-      )}
-
-      {error && (
-        <div className="alert alert-error">
-          <span>{error}</span>
-        </div>
-      )}
-
-      {!isLoading && !error && (
-        <>
-          {(invites?.length ?? 0) > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-              {invites!.map((invite) => (
-                <InviteCard key={invite.id} invite={invite} onRespond={handleRespond} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-lg text-base-content/60">
-                {statusFilter ? "No invitations found" : "No pending invitations"}
-              </p>
-            </div>
-          )}
-        </>
-      )}
+      </DataContainer>
     </div>
   );
 };

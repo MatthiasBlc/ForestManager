@@ -3,6 +3,7 @@ import { FaSortUp, FaSortDown, FaSort } from "react-icons/fa";
 import { AdminUnit } from "../../models/admin";
 import APIManager from "../../network/api";
 import { useConfirm } from "../../hooks/useConfirm";
+import DataContainer from "../../components/DataContainer";
 import { useAsyncData } from "../../hooks/useAsyncData";
 import toast from "react-hot-toast";
 
@@ -199,11 +200,7 @@ function AdminUnitsPage() {
       </div>
 
       {/* Table */}
-      {isLoading && !units ? (
-        <div className="flex justify-center py-12">
-          <span className="loading loading-spinner loading-lg" />
-        </div>
-      ) : (
+      <DataContainer isLoading={isLoading && !units} error={null}>
         <div className="card bg-base-100 shadow">
           <div className="overflow-x-auto">
             <table className="table">
@@ -290,7 +287,7 @@ function AdminUnitsPage() {
             </table>
           </div>
         </div>
-      )}
+      </DataContainer>
 
       {/* Create/Edit Modal */}
       {modalOpen && (
