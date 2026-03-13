@@ -1,6 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import prisma from "../util/db";
-import { RECIPE_TAGS_SELECT, RECIPE_INGREDIENTS_SELECT, RECIPE_STEPS_SELECT } from "../util/prismaSelects";
+import {
+  RECIPE_TAGS_SELECT,
+  RECIPE_INGREDIENTS_SELECT,
+  RECIPE_STEPS_SELECT,
+} from "../util/prismaSelects";
 import { resolveTagsForFork } from "./tagService";
 
 type TransactionClient = Omit<
@@ -17,8 +21,16 @@ interface SourceRecipeForShare {
   restTime: number | null;
   imageKey: string | null;
   communityId: string;
-  tags: { tagId: string; tag: { id: string; name: string; scope: string; communityId: string | null } }[];
-  ingredients: { ingredientId: string; quantity: number | null; unitId: string | null; order: number }[];
+  tags: {
+    tagId: string;
+    tag: { id: string; name: string; scope: string; communityId: string | null };
+  }[];
+  ingredients: {
+    ingredientId: string;
+    quantity: number | null;
+    unitId: string | null;
+    order: number;
+  }[];
   steps: { order: number; instruction: string }[];
 }
 
@@ -70,7 +82,12 @@ export async function forkRecipe(
         scope: rt.tag.scope,
         communityId: rt.tag.communityId,
       }));
-      const { tagIds, pendingTagIds } = await resolveTagsForFork(tx, sourceTags, targetCommunityId, userId);
+      const { tagIds, pendingTagIds } = await resolveTagsForFork(
+        tx,
+        sourceTags,
+        targetCommunityId,
+        userId
+      );
       forkPendingTagIds = pendingTagIds;
       if (tagIds.length > 0) {
         await tx.recipeTag.createMany({
@@ -164,8 +181,16 @@ interface SourceRecipeForPublish {
   cookTime: number | null;
   restTime: number | null;
   imageKey: string | null;
-  tags: { tagId: string; tag: { id: string; name: string; scope: string; communityId: string | null } }[];
-  ingredients: { ingredientId: string; quantity: number | null; unitId: string | null; order: number }[];
+  tags: {
+    tagId: string;
+    tag: { id: string; name: string; scope: string; communityId: string | null };
+  }[];
+  ingredients: {
+    ingredientId: string;
+    quantity: number | null;
+    unitId: string | null;
+    order: number;
+  }[];
   steps: { order: number; instruction: string }[];
 }
 
@@ -215,7 +240,12 @@ export async function publishRecipe(
           scope: rt.tag.scope,
           communityId: rt.tag.communityId,
         }));
-        const { tagIds, pendingTagIds } = await resolveTagsForFork(tx, sourceTags, communityId, userId);
+        const { tagIds, pendingTagIds } = await resolveTagsForFork(
+          tx,
+          sourceTags,
+          communityId,
+          userId
+        );
         allPendingTagIds.push(...pendingTagIds);
         if (tagIds.length > 0) {
           await tx.recipeTag.createMany({
@@ -333,11 +363,10 @@ async function updateAncestorAnalytics(tx: TransactionClient, sourceRecipeId: st
   let currentRecipeId: string | null = sourceRecipeId;
 
   while (currentRecipeId) {
-    const parentRecipe: { originRecipeId: string | null } | null =
-      await tx.recipe.findFirst({
-        where: { id: currentRecipeId },
-        select: { originRecipeId: true },
-      });
+    const parentRecipe: { originRecipeId: string | null } | null = await tx.recipe.findFirst({
+      where: { id: currentRecipeId },
+      select: { originRecipeId: true },
+    });
 
     if (parentRecipe?.originRecipeId) {
       recipesToUpdate.push(parentRecipe.originRecipeId);

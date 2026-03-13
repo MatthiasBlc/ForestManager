@@ -20,42 +20,42 @@
 
 ### CRITIQUE
 
-| ID | Description | Fichier(s) |
-|----|-------------|------------|
-| C1 | Admin recipe update : zero validation sur title, servings, times | `admin/controllers/recipesController.ts:107-111` |
+| ID  | Description                                                      | Fichier(s)                                       |
+| --- | ---------------------------------------------------------------- | ------------------------------------------------ |
+| C1  | Admin recipe update : zero validation sur title, servings, times | `admin/controllers/recipesController.ts:107-111` |
 
 ### HIGH
 
-| ID | Description | Fichier(s) |
-|----|-------------|------------|
-| H1 | Pas de `typeof === 'string'` sur password avant `.length` et `bcrypt` | `auth.ts:80`, `users.ts:83-93` |
-| H2 | Tableaux de filtres `?tags=...&ingredients=...` illimites → DoS query | `recipes.ts:26`, `communityRecipes.ts:147` |
-| H3 | `ingredients[].quantity` accepte negatif, Infinity, NaN | `recipes.ts:210`, `communityRecipes.ts:16`, `proposals.ts:21` |
-| H4 | Frontend SPA servie par nginx sans CSP ni headers securite | `frontend/Dockerfile` (nginx config) |
+| ID  | Description                                                           | Fichier(s)                                                    |
+| --- | --------------------------------------------------------------------- | ------------------------------------------------------------- |
+| H1  | Pas de `typeof === 'string'` sur password avant `.length` et `bcrypt` | `auth.ts:80`, `users.ts:83-93`                                |
+| H2  | Tableaux de filtres `?tags=...&ingredients=...` illimites → DoS query | `recipes.ts:26`, `communityRecipes.ts:147`                    |
+| H3  | `ingredients[].quantity` accepte negatif, Infinity, NaN               | `recipes.ts:210`, `communityRecipes.ts:16`, `proposals.ts:21` |
+| H4  | Frontend SPA servie par nginx sans CSP ni headers securite            | `frontend/Dockerfile` (nginx config)                          |
 
 ### MEDIUM
 
-| ID | Description | Fichier(s) |
-|----|-------------|------------|
-| M1 | Pas de maxLength sur recipe title (backend + frontend) | `recipes.ts:233`, `RecipeFormPage.tsx:176` |
-| M2 | Pas de type-check array sur tags/ingredients body | `recipes.ts:227`, `communityRecipes.ts:38` |
-| M3 | MAX_TAGS_PER_RECIPE non applique a la creation/update | `recipes.ts` |
-| M4 | Pas de validation email dans invite | `invites.ts:36` |
-| M5 | Pas de validation UUID format sur les route params → 500 au lieu de 400 | Tous les controllers |
-| M6 | imageUrl sans allowlist de scheme (accepte data:, javascript:) | `validation.ts:30`, `RecipeFormPage.tsx` |
-| M7 | ProfilePage : pas de validation format username/email | `ProfilePage.tsx:101-126` |
-| M8 | Password sans maxLength → CPU exhaustion bcrypt | `auth.ts:80` |
-| M9 | Admin name/reason fields sans maxLength | `admin/controllers/unitsController.ts`, `ingredientsController.ts` |
+| ID  | Description                                                             | Fichier(s)                                                         |
+| --- | ----------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| M1  | Pas de maxLength sur recipe title (backend + frontend)                  | `recipes.ts:233`, `RecipeFormPage.tsx:176`                         |
+| M2  | Pas de type-check array sur tags/ingredients body                       | `recipes.ts:227`, `communityRecipes.ts:38`                         |
+| M3  | MAX_TAGS_PER_RECIPE non applique a la creation/update                   | `recipes.ts`                                                       |
+| M4  | Pas de validation email dans invite                                     | `invites.ts:36`                                                    |
+| M5  | Pas de validation UUID format sur les route params → 500 au lieu de 400 | Tous les controllers                                               |
+| M6  | imageUrl sans allowlist de scheme (accepte data:, javascript:)          | `validation.ts:30`, `RecipeFormPage.tsx`                           |
+| M7  | ProfilePage : pas de validation format username/email                   | `ProfilePage.tsx:101-126`                                          |
+| M8  | Password sans maxLength → CPU exhaustion bcrypt                         | `auth.ts:80`                                                       |
+| M9  | Admin name/reason fields sans maxLength                                 | `admin/controllers/unitsController.ts`, `ingredientsController.ts` |
 
 ### LOW
 
-| ID | Description | Fichier(s) |
-|----|-------------|------------|
-| L1 | Email regex faible (accepte `a@b.c`) | `validation.ts:5` |
-| L2 | Username sans maxLength | `validation.ts:7` |
-| L3 | Status query params non encodes dans api.ts frontend | `api.ts:166,230,427,446` |
-| L4 | express.json() sans limit explicite | `app.ts:52` |
-| L5 | styleSrc unsafe-inline dans CSP backend | `security.ts` |
+| ID  | Description                                          | Fichier(s)               |
+| --- | ---------------------------------------------------- | ------------------------ |
+| L1  | Email regex faible (accepte `a@b.c`)                 | `validation.ts:5`        |
+| L2  | Username sans maxLength                              | `validation.ts:7`        |
+| L3  | Status query params non encodes dans api.ts frontend | `api.ts:166,230,427,446` |
+| L4  | express.json() sans limit explicite                  | `app.ts:52`              |
+| L5  | styleSrc unsafe-inline dans CSP backend              | `security.ts`            |
 
 ---
 
@@ -64,6 +64,7 @@
 ### 3.1 Middleware de validation UUID (fix M5)
 
 Creer `backend/src/middleware/validateUUID.ts` :
+
 - Fonction middleware qui valide tout `req.params` matching un pattern `*Id` ou `id`
 - Regex : `/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i`
 - Retourne 400 avec message clair si invalide
@@ -75,21 +76,21 @@ Enrichir `backend/src/util/validation.ts` avec :
 
 ```typescript
 // Type guards
-function assertString(value: unknown, field: string): asserts value is string
-function assertArray(value: unknown, field: string): asserts value is unknown[]
-function assertNumber(value: unknown, field: string): asserts value is number
+function assertString(value: unknown, field: string): asserts value is string;
+function assertArray(value: unknown, field: string): asserts value is unknown[];
+function assertNumber(value: unknown, field: string): asserts value is number;
 
 // Constantes maxLength
-MAX_USERNAME_LENGTH = 30
-MAX_PASSWORD_LENGTH = 128
-MAX_TITLE_LENGTH = 200
-MAX_NAME_LENGTH = 100
-MAX_REASON_LENGTH = 500
-MAX_URL_LENGTH = 2048
-MAX_FILTER_ITEMS = 20
+MAX_USERNAME_LENGTH = 30;
+MAX_PASSWORD_LENGTH = 128;
+MAX_TITLE_LENGTH = 200;
+MAX_NAME_LENGTH = 100;
+MAX_REASON_LENGTH = 500;
+MAX_URL_LENGTH = 2048;
+MAX_FILTER_ITEMS = 20;
 
 // Validation quantity
-function validateQuantity(val: unknown): number | null
+function validateQuantity(val: unknown): number | null;
 // → doit etre null, ou number > 0, <= 99999, Number.isFinite()
 ```
 
@@ -106,6 +107,7 @@ Pas de changement de logique metier, uniquement ajout de guards en debut de hand
 ### 3.5 Headers securite nginx (fix H4)
 
 Ajouter dans la config nginx du frontend Dockerfile :
+
 ```nginx
 add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss:; font-src 'self'; object-src 'none'; frame-src 'none'; frame-ancestors 'none';" always;
 add_header X-Content-Type-Options "nosniff" always;
@@ -121,7 +123,7 @@ Ajouter maxLength sur les champs titre recette, etc.
 ### 3.7 Express body limit (fix L4)
 
 ```typescript
-app.use(express.json({ limit: '50kb' }));
+app.use(express.json({ limit: "50kb" }));
 ```
 
 ### 3.8 Frontend api.ts : encoder les query params (fix L3)

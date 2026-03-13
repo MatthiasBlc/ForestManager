@@ -84,10 +84,28 @@ tests
 
 # Update des docs et petit ménage dans Progress.md ?
 
-Mettre à jour les différents doc, archiver les features terminées (pourquoi pas même les delete si ce n'est plus nécessaire, en conservant le nécessaire dans une documentation globale)
+Mettre à jour les différents doc, archiver les features terminées (pourquoi pas même les delete si ce n'est plus nécessaire, en conservant le nécessaire dans une documentation globale un wiki dans le github ? autre?)
 Mettre à jour les fichiers claude et les suivi du travail.
 On considère ici le mvp propre, ce qui arrivera par la suite sera des features qui viendront se greffer sur la production.
 Progress.md a toujours besoin de conserver des références aux étapes de construction du mvp ?
+
+# Corrections des imports depuis Hello Fresh
+
+exemple : https://www.hellofresh.fr/recipes/aubergine-laquee-au-miso-and-oeuf-64fb2da9786cce2df0e01899
+(pas de nom d'ingrédients, des balises html dans les étapes etc )
+
+# Version mobile inutilisable
+
+La version mobile a des boutons hors champs, n'est pas utilisable et a un design contre intuitif. A revoir totalement.
+S'inspirer de la version mobile / app de discord ?
+
+# codes erreur doublons : string literal
+
+Des codes erreurs utilisent des string literal au lieu de constantes car le code erreur est le même. Peut être qu'il faudrait créer de nouveaux code erreur pour ces cas spécifiques et les centraliser pour éviter les string literal et les doublons.
+
+## Version application ?
+
+comment faire ?
 
 ## système + page de changelog automatique
 
@@ -172,3 +190,23 @@ Barre de recherche unique (navbar) qui cherche simultanement dans les recettes, 
 Comptage vues (RecipeView, RecipeAnalytics)
 Affichage statistiques sur recettes
 Dashboard analytics utilisateur
+
+---
+
+Hello !
+
+J'ai un petit projet perso à vous partager ! Il se trouve que je suis développeur et que de temps en temps ça m'arrive de réfléchir (oui oui je vous jure!) et même de créer des petits projets.
+
+Mon projet actuel est un projet de gestion de communauté privées. Que ce soit votre famille, un groupe d'amis, vos colloc etc, libre à vous de vous regrouper comme vous le souhaitez !
+
+Pour commencer je m'intéresse à un sujet : la cuisine et plus particulièrement la gestion des recettes.
+On a tous des recettes dans des carnets, des postits, des words, des mails, des liens, des photos etc etc et il n'est pas toujours facile de les retrouver.
+L'idée ici est d'avoir votre propre espace pour stocker toutes vos recettes, puis les partager à vos proches dans vos communautés !
+Partager des recettes devient simple, les retrouver tout autant !
+
+Mais ce projet n'a pas pour but de s'arreter là ! La prochaine étape sera de permettre de générer à partir de règles personnalisées au niveau de la communauté des propositions de menus pour la semaine à partir de vos recettes, et pourquoi pas la liste de courses associée !
+
+Certain veulent partager les recettes du TOM, il suffit de créer une communauté TOM et que l'on y partage les recettes dedans et hop, tout le monde y a accès !
+
+Des idées j'en ai plein, mais je suis curieux de vos avis, et de vos retours !
+(PS : le design n'est pas mon métier donc la version actuelle est un peu "brute")

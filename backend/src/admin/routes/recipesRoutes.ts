@@ -1,6 +1,8 @@
 import express from "express";
 import * as recipesController from "../controllers/recipesController";
 import { validateUUID } from "../../middleware/validateUUID";
+import { validateBody } from "../../middleware/validateBody";
+import { adminUpdateRecipeSchema } from "../schemas/recipe.schema";
 
 const router = express.Router();
 
@@ -8,7 +10,12 @@ const router = express.Router();
 router.get("/:recipeId", validateUUID, recipesController.getDetail);
 
 // PATCH /api/admin/recipes/:recipeId - Modifier une recette
-router.patch("/:recipeId", validateUUID, recipesController.update);
+router.patch(
+  "/:recipeId",
+  validateUUID,
+  validateBody(adminUpdateRecipeSchema),
+  recipesController.update
+);
 
 // DELETE /api/admin/recipes/:recipeId - Soft delete une recette
 router.delete("/:recipeId", validateUUID, recipesController.remove);

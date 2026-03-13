@@ -32,24 +32,16 @@ export function useConfirm() {
   const ConfirmDialog = options ? (
     <div className="modal modal-open">
       <div className="modal-box">
-        <button
-          className="btn btn-sm btn-circle absolute right-2 top-2"
-          onClick={handleCancel}
-        >
+        <button className="btn btn-sm btn-circle absolute right-2 top-2" onClick={handleCancel}>
           <FaTimes />
         </button>
-        {options.title && (
-          <h3 className="font-bold text-lg">{options.title}</h3>
-        )}
+        {options.title && <h3 className="font-bold text-lg">{options.title}</h3>}
         <p className="py-4">{options.message}</p>
         <div className="modal-action">
           <button className="btn btn-ghost" onClick={handleCancel}>
             Cancel
           </button>
-          <button
-            className={options.confirmClass || "btn btn-error"}
-            onClick={handleConfirm}
-          >
+          <button className={options.confirmClass || "btn btn-error"} onClick={handleConfirm}>
             {options.confirmLabel || "Confirm"}
           </button>
         </div>

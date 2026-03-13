@@ -51,7 +51,10 @@ interface ProposalWithRecipe {
   };
 }
 
-type TxClient = Omit<typeof prisma, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">;
+type TxClient = Omit<
+  typeof prisma,
+  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
 
 /**
  * Copie les ProposalIngredients vers les RecipeIngredients d'une recette cible.
@@ -60,7 +63,12 @@ type TxClient = Omit<typeof prisma, "$connect" | "$disconnect" | "$on" | "$trans
 async function applyProposalIngredients(
   tx: TxClient,
   recipeId: string,
-  proposalIngredients: Array<{ ingredientId: string; quantity: number | null; unitId: string | null; order: number }>
+  proposalIngredients: Array<{
+    ingredientId: string;
+    quantity: number | null;
+    unitId: string | null;
+    order: number;
+  }>
 ) {
   await tx.recipeIngredient.deleteMany({ where: { recipeId } });
   for (const pi of proposalIngredients) {
@@ -266,10 +274,7 @@ interface ProposalForReject {
  * Refuse une proposition et cree une variante pour le proposeur.
  * Si des ProposalIngredients existent, les copie dans la variante.
  */
-export async function rejectProposal(
-  proposalId: string,
-  proposal: ProposalForReject
-) {
+export async function rejectProposal(proposalId: string, proposal: ProposalForReject) {
   return prisma.$transaction(async (tx) => {
     const now = new Date();
 
@@ -290,9 +295,12 @@ export async function rejectProposal(
       data: {
         title: proposal.proposedTitle,
         servings: proposal.proposedServings ?? proposal.recipe.servings,
-        prepTime: proposal.proposedPrepTime !== null ? proposal.proposedPrepTime : proposal.recipe.prepTime,
-        cookTime: proposal.proposedCookTime !== null ? proposal.proposedCookTime : proposal.recipe.cookTime,
-        restTime: proposal.proposedRestTime !== null ? proposal.proposedRestTime : proposal.recipe.restTime,
+        prepTime:
+          proposal.proposedPrepTime !== null ? proposal.proposedPrepTime : proposal.recipe.prepTime,
+        cookTime:
+          proposal.proposedCookTime !== null ? proposal.proposedCookTime : proposal.recipe.cookTime,
+        restTime:
+          proposal.proposedRestTime !== null ? proposal.proposedRestTime : proposal.recipe.restTime,
         imageKey: proposal.recipe.imageKey,
         isVariant: true,
         creatorId: proposal.proposerId,

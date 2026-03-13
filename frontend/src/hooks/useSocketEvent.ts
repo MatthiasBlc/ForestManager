@@ -1,10 +1,7 @@
 import { useEffect } from "react";
 import { useSocket } from "../contexts/SocketContext";
 
-export function useSocketEvent<T = unknown>(
-  event: string,
-  handler: (data: T) => void
-) {
+export function useSocketEvent<T = unknown>(event: string, handler: (data: T) => void) {
   const { socket } = useSocket();
 
   useEffect(() => {

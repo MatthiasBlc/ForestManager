@@ -272,11 +272,7 @@ describe("importFromUrl", () => {
       recipeYield: "6 servings",
       prepTime: "PT20M",
       cookTime: "PT35M",
-      recipeIngredient: [
-        "200g de farine",
-        "3 oeufs",
-        "150g de sucre",
-      ],
+      recipeIngredient: ["200g de farine", "3 oeufs", "150g de sucre"],
       recipeInstructions: [
         { "@type": "HowToStep", text: "Prechauffer le four a 180C." },
         { "@type": "HowToStep", text: "Melanger les ingredients." },
@@ -370,10 +366,7 @@ describe("importFromUrl", () => {
     const jsonLd = {
       "@type": "Recipe",
       name: "Test",
-      recipeInstructions: [
-        "Etape 1: faire ceci",
-        "Etape 2: faire cela",
-      ],
+      recipeInstructions: ["Etape 1: faire ceci", "Etape 2: faire cela"],
     };
 
     mockFetch(makeHtml(jsonLd));
@@ -399,9 +392,7 @@ describe("importFromUrl", () => {
         {
           "@type": "HowToSection",
           name: "Cuisson",
-          itemListElement: [
-            { "@type": "HowToStep", text: "Enfourner 30 min." },
-          ],
+          itemListElement: [{ "@type": "HowToStep", text: "Enfourner 30 min." }],
         },
       ],
     };

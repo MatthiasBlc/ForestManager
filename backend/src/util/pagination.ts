@@ -23,10 +23,7 @@ export function parsePagination(
   defaultLimit = 20,
   maxLimit = 100
 ): PaginationParams {
-  const limit = Math.min(
-    Math.max(parseInt(query.limit || String(defaultLimit), 10), 1),
-    maxLimit
-  );
+  const limit = Math.min(Math.max(parseInt(query.limit || String(defaultLimit), 10), 1), maxLimit);
   const offset = Math.max(parseInt(query.offset || "0", 10), 0);
   return { limit, offset };
 }

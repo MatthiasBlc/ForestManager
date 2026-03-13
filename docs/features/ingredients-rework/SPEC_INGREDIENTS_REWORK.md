@@ -13,14 +13,14 @@ Le systeme actuel d'ingredients est minimaliste : un `name` unique, une `quantit
 
 ### 1.1 Objectifs
 
-| Objectif | Description |
-|----------|-------------|
-| **Unites structurees** | Quantites numeriques + unites de mesure standardisees (g, cl, l...) |
-| **Qualite des donnees** | Moderation admin pour eviter doublons, typos, ingredients fantaisistes |
-| **UX fluide** | Creation immediate en PENDING, aucun blocage pour l'utilisateur |
-| **Unite favorite** | Pre-selection intelligente de l'unite la plus pertinente par ingredient |
-| **Proposals completes** | Les propositions de modification incluent les ingredients |
-| **Base pour le futur** | Quantites numeriques = prerequis pour le scaling par portions (Rework recettes v2) |
+| Objectif                | Description                                                                        |
+| ----------------------- | ---------------------------------------------------------------------------------- |
+| **Unites structurees**  | Quantites numeriques + unites de mesure standardisees (g, cl, l...)                |
+| **Qualite des donnees** | Moderation admin pour eviter doublons, typos, ingredients fantaisistes             |
+| **UX fluide**           | Creation immediate en PENDING, aucun blocage pour l'utilisateur                    |
+| **Unite favorite**      | Pre-selection intelligente de l'unite la plus pertinente par ingredient            |
+| **Proposals completes** | Les propositions de modification incluent les ingredients                          |
+| **Base pour le futur**  | Quantites numeriques = prerequis pour le scaling par portions (Rework recettes v2) |
 
 ### 1.2 Perimetre
 
@@ -150,25 +150,25 @@ RecipeUpdateProposal (modifie)
 
 Les unites sont seedees au deploiement. Le SuperAdmin peut en ajouter/modifier/supprimer ensuite.
 
-| Categorie | name | abbreviation | sortOrder |
-|-----------|------|-------------|-----------|
-| **WEIGHT** | gramme | g | 1 |
-| **WEIGHT** | kilogramme | kg | 2 |
-| **VOLUME** | millilitre | ml | 1 |
-| **VOLUME** | centilitre | cl | 2 |
-| **VOLUME** | decilitre | dl | 3 |
-| **VOLUME** | litre | l | 4 |
-| **SPOON** | cuillere a cafe | cac | 1 |
-| **SPOON** | cuillere a soupe | cas | 2 |
-| **COUNT** | piece | pc | 1 |
-| **COUNT** | tranche | tr | 2 |
-| **COUNT** | gousse | gse | 3 |
-| **COUNT** | botte | bte | 4 |
-| **COUNT** | feuille | fle | 5 |
-| **COUNT** | brin | brn | 6 |
-| **QUALITATIVE** | pincee | pincee | 1 |
-| **QUALITATIVE** | a gout | a gout | 2 |
-| **QUALITATIVE** | selon besoin | selon besoin | 3 |
+| Categorie       | name             | abbreviation | sortOrder |
+| --------------- | ---------------- | ------------ | --------- |
+| **WEIGHT**      | gramme           | g            | 1         |
+| **WEIGHT**      | kilogramme       | kg           | 2         |
+| **VOLUME**      | millilitre       | ml           | 1         |
+| **VOLUME**      | centilitre       | cl           | 2         |
+| **VOLUME**      | decilitre        | dl           | 3         |
+| **VOLUME**      | litre            | l            | 4         |
+| **SPOON**       | cuillere a cafe  | cac          | 1         |
+| **SPOON**       | cuillere a soupe | cas          | 2         |
+| **COUNT**       | piece            | pc           | 1         |
+| **COUNT**       | tranche          | tr           | 2         |
+| **COUNT**       | gousse           | gse          | 3         |
+| **COUNT**       | botte            | bte          | 4         |
+| **COUNT**       | feuille          | fle          | 5         |
+| **COUNT**       | brin             | brn          | 6         |
+| **QUALITATIVE** | pincee           | pincee       | 1         |
+| **QUALITATIVE** | a gout           | a gout       | 2         |
+| **QUALITATIVE** | selon besoin     | selon besoin | 3         |
 
 ### 3.2 Regles
 
@@ -185,10 +185,10 @@ Les unites sont seedees au deploiement. Le SuperAdmin peut en ajouter/modifier/s
 
 L'utilisateur peut creer un ingredient a la volee lors de l'ajout a une recette. L'ingredient est utilisable immediatement mais en attente de review admin.
 
-| Createur | Status initial | Utilisable immediatement | Review necessaire |
-|----------|---------------|-------------------------|-------------------|
-| **SuperAdmin** | APPROVED | Oui | Non |
-| **Utilisateur** (via recette) | PENDING | **Oui** | Oui (admin async) |
+| Createur                      | Status initial | Utilisable immediatement | Review necessaire |
+| ----------------------------- | -------------- | ------------------------ | ----------------- |
+| **SuperAdmin**                | APPROVED       | Oui                      | Non               |
+| **Utilisateur** (via recette) | PENDING        | **Oui**                  | Oui (admin async) |
 
 ### 4.2 Flow utilisateur : ajout d'ingredient a une recette
 
@@ -207,17 +207,18 @@ L'utilisateur peut creer un ingredient a la volee lors de l'ajout a une recette.
 ### 4.3 Reutilisation d'un ingredient PENDING
 
 Si un ingredient PENDING existe deja (cree par un autre user) :
+
 - L'autocomplete le propose normalement
 - L'utilisateur peut l'utiliser sans re-creer
 - Pas de doublon
 
 ### 4.4 Affichage des ingredients PENDING
 
-| Contexte | Style |
-|----------|-------|
-| Dans une recette (vue lecture) | Style normal (l'ingredient est un ingredient, pending ou pas) |
-| Dans l'autocomplete | Badge "nouveau" ou icone distincte pour les PENDING |
-| Dans le panneau admin | Badge "en attente" avec nombre de recettes utilisant l'ingredient |
+| Contexte                       | Style                                                             |
+| ------------------------------ | ----------------------------------------------------------------- |
+| Dans une recette (vue lecture) | Style normal (l'ingredient est un ingredient, pending ou pas)     |
+| Dans l'autocomplete            | Badge "nouveau" ou icone distincte pour les PENDING               |
+| Dans le panneau admin          | Badge "en attente" avec nombre de recettes utilisant l'ingredient |
 
 > **Difference avec les tags** : un tag PENDING a un style visuel different sur la recette car la "categorisation" est sujette a validation. Un ingredient PENDING est un fait ("poire" c'est "poire"), donc il s'affiche normalement sur la recette.
 
@@ -228,6 +229,7 @@ Si un ingredient PENDING existe deja (cree par un autre user) :
 ### 5.1 File de review
 
 Le panneau admin affiche les ingredients PENDING avec :
+
 - Nom de l'ingredient
 - Createur (username)
 - Nombre de recettes utilisant cet ingredient
@@ -235,12 +237,12 @@ Le panneau admin affiche les ingredients PENDING avec :
 
 ### 5.2 Actions de moderation
 
-| Action | Effet sur l'ingredient | Effet sur les recettes | Notification |
-|--------|----------------------|----------------------|-------------|
-| **Approuver** | `status` → `APPROVED` | Aucun changement | Optionnelle au createur |
-| **Approuver + modifier** | Rename + `status` → `APPROVED` | Suivent automatiquement (FK) | Createur informe du renommage |
-| **Merger** | Supprime le PENDING, rattache les RecipeIngredient au target | Les recettes pointent vers l'ingredient cible | Createur informe du merge |
-| **Rejeter** | Hard delete de l'ingredient | Cascade : suppression des RecipeIngredient | **Obligatoire** : createur notifie avec raison + demande de correction |
+| Action                   | Effet sur l'ingredient                                       | Effet sur les recettes                        | Notification                                                           |
+| ------------------------ | ------------------------------------------------------------ | --------------------------------------------- | ---------------------------------------------------------------------- |
+| **Approuver**            | `status` → `APPROVED`                                        | Aucun changement                              | Optionnelle au createur                                                |
+| **Approuver + modifier** | Rename + `status` → `APPROVED`                               | Suivent automatiquement (FK)                  | Createur informe du renommage                                          |
+| **Merger**               | Supprime le PENDING, rattache les RecipeIngredient au target | Les recettes pointent vers l'ingredient cible | Createur informe du merge                                              |
+| **Rejeter**              | Hard delete de l'ingredient                                  | Cascade : suppression des RecipeIngredient    | **Obligatoire** : createur notifie avec raison + demande de correction |
 
 ### 5.3 Rejet : detail du flow
 
@@ -291,6 +293,7 @@ GET /api/ingredients/:id/suggested-unit
 ```
 
 **Reponse :**
+
 ```json
 {
   "suggestedUnitId": "uuid-or-null",
@@ -354,11 +357,13 @@ Une proposition de modification de recette (`RecipeUpdateProposal`) inclut desor
 ```
 GET  /api/ingredients?search=X&limit=20
 ```
+
 Recherche d'ingredients (APPROVED + PENDING). Reponse enrichie avec recipeCount.
 
 ```
 GET  /api/ingredients/:id/suggested-unit
 ```
+
 Retourne l'unite suggeree pour un ingredient (voir section 6.2).
 
 ### 8.2 User API : Units
@@ -366,6 +371,7 @@ Retourne l'unite suggeree pour un ingredient (voir section 6.2).
 ```
 GET  /api/units
 ```
+
 Liste toutes les unites, groupees par categorie, triees par sortOrder.
 
 ### 8.3 Admin API : Units (NOUVEAU)
@@ -384,47 +390,54 @@ DELETE /api/admin/units/:id            → Supprimer une unite
 ```
 GET    /api/admin/ingredients?search=X&status=PENDING
 ```
+
 Filtre par status ajoute. Reponse enrichie avec `status`, `createdBy`, `defaultUnit`.
 
 ```
 POST   /api/admin/ingredients
 ```
+
 Creation d'un ingredient APPROVED (inchange).
 
 ```
 PATCH  /api/admin/ingredients/:id
 ```
+
 Modification du nom et/ou du `defaultUnitId`. Peut aussi changer le status (approuver un PENDING).
 
 ```
 DELETE /api/admin/ingredients/:id
 ```
+
 Suppression (inchange, cascade sur RecipeIngredient).
 
 ```
 POST   /api/admin/ingredients/:id/merge
 ```
+
 Merge (logique enrichie pour gerer ProposalIngredient, voir section 5.4).
 
 ```
 POST   /api/admin/ingredients/:id/approve
 ```
+
 **NOUVEAU** - Approuver un ingredient PENDING. Optionnel : renommer en meme temps.
 
 ```json
 {
-  "newName": "poire"  // optionnel, pour corriger typo/nom
+  "newName": "poire" // optionnel, pour corriger typo/nom
 }
 ```
 
 ```
 POST   /api/admin/ingredients/:id/reject
 ```
+
 **NOUVEAU** - Rejeter un ingredient PENDING.
 
 ```json
 {
-  "reason": "Ingredient trop vague, precisez le type"  // obligatoire
+  "reason": "Ingredient trop vague, precisez le type" // obligatoire
 }
 ```
 
@@ -436,38 +449,38 @@ Integration dans le systeme existant via `appEvents.emitActivity()`.
 
 ### 9.1 Evenements emis
 
-| Evenement | Destinataire | Declencheur |
-|-----------|-------------|-------------|
-| `INGREDIENT_APPROVED` | Createur de l'ingredient | Admin approuve un ingredient PENDING |
+| Evenement             | Destinataire             | Declencheur                               |
+| --------------------- | ------------------------ | ----------------------------------------- |
+| `INGREDIENT_APPROVED` | Createur de l'ingredient | Admin approuve un ingredient PENDING      |
 | `INGREDIENT_MODIFIED` | Createur de l'ingredient | Admin approuve avec modification (rename) |
-| `INGREDIENT_MERGED` | Createur de l'ingredient | Admin merge un ingredient PENDING |
-| `INGREDIENT_REJECTED` | Createur de l'ingredient | Admin rejette un ingredient PENDING |
+| `INGREDIENT_MERGED`   | Createur de l'ingredient | Admin merge un ingredient PENDING         |
+| `INGREDIENT_REJECTED` | Createur de l'ingredient | Admin rejette un ingredient PENDING       |
 
 ### 9.2 Payload des notifications
 
 ```typescript
 appEvents.emitActivity({
-  type: "INGREDIENT_REJECTED",  // ou APPROVED, MODIFIED, MERGED
+  type: "INGREDIENT_REJECTED", // ou APPROVED, MODIFIED, MERGED
   userId: adminId,
-  communityId: null,            // global, pas de communaute
+  communityId: null, // global, pas de communaute
   targetUserIds: [ingredient.createdById],
   metadata: {
     ingredientName: "poire",
-    reason: "...",              // uniquement pour REJECTED
-    newName: "...",             // uniquement pour MODIFIED
-    targetName: "...",          // uniquement pour MERGED
+    reason: "...", // uniquement pour REJECTED
+    newName: "...", // uniquement pour MODIFIED
+    targetName: "...", // uniquement pour MERGED
   },
 });
 ```
 
 ### 9.3 Messages toast (frontend)
 
-| Type | Message |
-|------|---------|
-| `INGREDIENT_APPROVED` | "Votre ingredient '[name]' a ete valide" |
-| `INGREDIENT_MODIFIED` | "Votre ingredient a ete valide sous le nom '[newName]'" |
-| `INGREDIENT_MERGED` | "Votre ingredient '[name]' a ete fusionne avec '[targetName]'" |
-| `INGREDIENT_REJECTED` | "Votre ingredient '[name]' a ete rejete : [reason]" |
+| Type                  | Message                                                        |
+| --------------------- | -------------------------------------------------------------- |
+| `INGREDIENT_APPROVED` | "Votre ingredient '[name]' a ete valide"                       |
+| `INGREDIENT_MODIFIED` | "Votre ingredient a ete valide sous le nom '[newName]'"        |
+| `INGREDIENT_MERGED`   | "Votre ingredient '[name]' a ete fusionne avec '[targetName]'" |
+| `INGREDIENT_REJECTED` | "Votre ingredient '[name]' a ete rejete : [reason]"            |
 
 ---
 
@@ -536,16 +549,16 @@ Comme seules des donnees de seed existent en production, la migration est simple
 
 ## 12. Codes d'erreur (NOUVEAUX)
 
-| Code | Message | Contexte |
-|------|---------|----------|
-| `INGREDIENT_001` | Ingredient non trouve | ID invalide ou supprime |
-| `INGREDIENT_002` | Nom d'ingredient deja utilise | Unicite violee |
-| `INGREDIENT_003` | Limite d'ingredients atteinte | >50 sur une recette |
-| `INGREDIENT_004` | Unite non trouvee | unitId invalide |
-| `INGREDIENT_005` | Unite en cours d'utilisation | Suppression d'une unite utilisee |
-| `INGREDIENT_006` | Raison de rejet obligatoire | Admin rejette sans raison |
-| `INGREDIENT_007` | Quantite invalide | Quantite <= 0 |
-| `INGREDIENT_008` | Ingredient deja approuve | Tentative d'approuver un APPROVED |
+| Code             | Message                       | Contexte                          |
+| ---------------- | ----------------------------- | --------------------------------- |
+| `INGREDIENT_001` | Ingredient non trouve         | ID invalide ou supprime           |
+| `INGREDIENT_002` | Nom d'ingredient deja utilise | Unicite violee                    |
+| `INGREDIENT_003` | Limite d'ingredients atteinte | >50 sur une recette               |
+| `INGREDIENT_004` | Unite non trouvee             | unitId invalide                   |
+| `INGREDIENT_005` | Unite en cours d'utilisation  | Suppression d'une unite utilisee  |
+| `INGREDIENT_006` | Raison de rejet obligatoire   | Admin rejette sans raison         |
+| `INGREDIENT_007` | Quantite invalide             | Quantite <= 0                     |
+| `INGREDIENT_008` | Ingredient deja approuve      | Tentative d'approuver un APPROVED |
 
 ---
 
@@ -553,20 +566,20 @@ Comme seules des donnees de seed existent en production, la migration est simple
 
 ### 13.1 Actions tracees
 
-| Type (existant) | Usage |
-|-----------------|-------|
-| `INGREDIENT_CREATED` | Admin cree un ingredient |
+| Type (existant)      | Usage                              |
+| -------------------- | ---------------------------------- |
+| `INGREDIENT_CREATED` | Admin cree un ingredient           |
 | `INGREDIENT_UPDATED` | Admin modifie nom ou defaultUnitId |
-| `INGREDIENT_DELETED` | Admin supprime un ingredient |
-| `INGREDIENT_MERGED` | Admin merge deux ingredients |
+| `INGREDIENT_DELETED` | Admin supprime un ingredient       |
+| `INGREDIENT_MERGED`  | Admin merge deux ingredients       |
 
-| Type (nouveau) | Usage |
-|----------------|-------|
+| Type (nouveau)        | Usage                                                                    |
+| --------------------- | ------------------------------------------------------------------------ |
 | `INGREDIENT_APPROVED` | Admin approuve un PENDING (metadata: ingredientName, newName si modifie) |
-| `INGREDIENT_REJECTED` | Admin rejette un PENDING (metadata: ingredientName, reason) |
-| `UNIT_CREATED` | Admin cree une unite |
-| `UNIT_UPDATED` | Admin modifie une unite |
-| `UNIT_DELETED` | Admin supprime une unite |
+| `INGREDIENT_REJECTED` | Admin rejette un PENDING (metadata: ingredientName, reason)              |
+| `UNIT_CREATED`        | Admin cree une unite                                                     |
+| `UNIT_UPDATED`        | Admin modifie une unite                                                  |
+| `UNIT_DELETED`        | Admin supprime une unite                                                 |
 
 ---
 
@@ -575,6 +588,7 @@ Comme seules des donnees de seed existent en production, la migration est simple
 Les ingredients sont synchronises lors du partage de recettes entre communautes (fork). Comme les ingredients sont globaux, il n'y a pas de probleme de portee : l'ingredient "poire" est le meme partout.
 
 Lors d'un fork :
+
 - Les RecipeIngredient sont copies tels quels (ingredientId, quantity, unitId, order)
 - Aucune creation de doublon, aucune validation supplementaire
 

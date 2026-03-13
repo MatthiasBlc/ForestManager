@@ -4,7 +4,6 @@ import app from "../../app";
 import { uniqueSuffix, extractSessionCookie } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
 
-
 describe("Proposals API", () => {
   let recipeCreator: { id: string; username: string; email: string };
   let recipeCreatorCookie: string;
@@ -20,11 +19,13 @@ describe("Proposals API", () => {
     const suffix = uniqueSuffix();
 
     // Create recipe creator (moderator) via signup
-    const creatorSignup = await request(app).post("/api/auth/signup").send({
-      username: `propcreator_${suffix}`,
-      email: `propcreator_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const creatorSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `propcreator_${suffix}`,
+        email: `propcreator_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     recipeCreatorCookie = extractSessionCookie(creatorSignup)!;
     recipeCreator = (await testPrisma.user.findFirst({
       where: { email: `propcreator_${suffix}@example.com` },
@@ -38,11 +39,13 @@ describe("Proposals API", () => {
     community = createRes.body;
 
     // Create proposer (member) via signup
-    const proposerSignup = await request(app).post("/api/auth/signup").send({
-      username: `proposer_${suffix}`,
-      email: `proposer_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const proposerSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `proposer_${suffix}`,
+        email: `proposer_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     proposerCookie = extractSessionCookie(proposerSignup)!;
     proposer = (await testPrisma.user.findFirst({
       where: { email: `proposer_${suffix}@example.com` },
@@ -58,11 +61,13 @@ describe("Proposals API", () => {
     });
 
     // Create non-member via signup
-    const nonMemberSignup = await request(app).post("/api/auth/signup").send({
-      username: `propnonm_${suffix}`,
-      email: `propnonm_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const nonMemberSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `propnonm_${suffix}`,
+        email: `propnonm_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     nonMemberCookie = extractSessionCookie(nonMemberSignup)!;
     _nonMember = (await testPrisma.user.findFirst({
       where: { email: `propnonm_${suffix}@example.com` },
@@ -288,8 +293,7 @@ describe("Proposals API", () => {
     });
 
     it("should return 401 when not authenticated", async () => {
-      const res = await request(app)
-        .get(`/api/recipes/${communityRecipeId}/proposals`);
+      const res = await request(app).get(`/api/recipes/${communityRecipeId}/proposals`);
 
       expect(res.status).toBe(401);
     });
@@ -680,9 +684,7 @@ describe("Proposals API", () => {
           .send({
             proposedTitle: "Recipe reusing ingredient",
             proposedSteps: [{ instruction: "Step" }],
-            proposedIngredients: [
-              { name: existingIngredient.name, quantity: 3 },
-            ],
+            proposedIngredients: [{ name: existingIngredient.name, quantity: 3 }],
           });
 
         expect(res.status).toBe(201);
@@ -741,9 +743,7 @@ describe("Proposals API", () => {
           .send({
             proposedTitle: "Recipe with unit",
             proposedSteps: [{ instruction: "Step" }],
-            proposedIngredients: [
-              { name: "Chocolat", quantity: 150, unitId: unit.id },
-            ],
+            proposedIngredients: [{ name: "Chocolat", quantity: 150, unitId: unit.id }],
           });
 
         expect(res.status).toBe(201);

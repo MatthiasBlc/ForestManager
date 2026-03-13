@@ -6,62 +6,70 @@ DB: PostgreSQL | ORM: Prisma
 ## Models (30 total)
 
 ### Sessions (isolees)
-| Model | Champs cles | Notes |
-|-------|-------------|-------|
-| Session | id, sid, data, expiresAt | User sessions (connect.sid) |
-| AdminSession | id, sid, data, expiresAt | Admin sessions (admin.sid) |
+
+| Model        | Champs cles              | Notes                       |
+| ------------ | ------------------------ | --------------------------- |
+| Session      | id, sid, data, expiresAt | User sessions (connect.sid) |
+| AdminSession | id, sid, data, expiresAt | Admin sessions (admin.sid)  |
 
 ### Admin (4 models)
-| Model | Champs cles | Notes |
-|-------|-------------|-------|
-| AdminUser | id, email, username, password, totpSecret, totpEnabled | 2FA TOTP obligatoire, index email+username |
-| Feature | id, code(unique), name, description?, isDefault | Briques ("MVP" par defaut) |
-| CommunityFeature | communityId, featureId, grantedById?, revokedAt? | Pivot, soft revoke, @@unique(communityId,featureId) |
-| AdminActivityLog | id, type(AdminActionType), targetType?, targetId?, metadata?(Json), adminId | Audit, index type+createdAt |
+
+| Model            | Champs cles                                                                 | Notes                                               |
+| ---------------- | --------------------------------------------------------------------------- | --------------------------------------------------- |
+| AdminUser        | id, email, username, password, totpSecret, totpEnabled                      | 2FA TOTP obligatoire, index email+username          |
+| Feature          | id, code(unique), name, description?, isDefault                             | Briques ("MVP" par defaut)                          |
+| CommunityFeature | communityId, featureId, grantedById?, revokedAt?                            | Pivot, soft revoke, @@unique(communityId,featureId) |
+| AdminActivityLog | id, type(AdminActionType), targetType?, targetId?, metadata?(Json), adminId | Audit, index type+createdAt                         |
 
 ### Users & Communities (4 models)
-| Model | Champs cles | Notes |
-|-------|-------------|-------|
-| User | id, email, username, password, deletedAt? | Soft delete, index email+username+deletedAt |
-| Community | id, name, description?, visibility(INVITE_ONLY), imageKey?, deletedAt? | Soft delete |
-| UserCommunity | userId, communityId, role(MEMBER/MODERATOR), joinedAt, deletedAt? | Soft delete, @@unique(userId,communityId) |
+
+| Model           | Champs cles                                                                                  | Notes                                         |
+| --------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| User            | id, email, username, password, deletedAt?                                                    | Soft delete, index email+username+deletedAt   |
+| Community       | id, name, description?, visibility(INVITE_ONLY), imageKey?, deletedAt?                       | Soft delete                                   |
+| UserCommunity   | userId, communityId, role(MEMBER/MODERATOR), joinedAt, deletedAt?                            | Soft delete, @@unique(userId,communityId)     |
 | CommunityInvite | communityId, inviterId, inviteeId, status(PENDING/ACCEPTED/REJECTED/CANCELLED), respondedAt? | Index composite(communityId,inviteeId,status) |
 
 ### Recipes (10 models)
-| Model | Champs cles | Notes |
-|-------|-------------|-------|
-| Recipe | id, title, servings(default 4), prepTime?, cookTime?, restTime?, imageKey?, isVariant, creatorId, communityId?, originRecipeId?, sharedFromCommunityId?, deletedAt? | Soft delete. communityId=null → perso. Phase 15: imageUrl → imageKey |
-| RecipeStep | id, recipeId(FK CASCADE), order, instruction | Index(recipeId, order). Phase 13 |
-| RecipeUpdateProposal | recipeId, proposerId, proposedTitle, proposedServings?, proposedPrepTime?, proposedCookTime?, proposedRestTime?, status(PENDING/ACCEPTED/REJECTED), deletedAt?, proposedSteps[], proposedIngredients[] | Soft delete. Phase 13: proposedContent → proposedSteps |
-| ProposalStep | id, proposalId(FK CASCADE), order, instruction | Index(proposalId, order). Phase 13 |
-| Tag | id, name, scope(GLOBAL/COMMUNITY), status(APPROVED/PENDING), communityId?, createdById?, createdAt, updatedAt | @@unique(name,communityId) + partial unique index global. Index name, communityId+status |
-| RecipeTag | recipeId, tagId | PK composite, **Cascade** delete |
-| Unit | id, name(unique), abbreviation(unique), category(UnitCategory), sortOrder | Index (category,sortOrder). Phase 11 |
-| Ingredient | id, name(unique), status(IngredientStatus), defaultUnitId?, createdById?, createdAt, updatedAt | Index name, status. FK Unit + User. Phase 11 enriched |
-| RecipeIngredient | recipeId, ingredientId, quantity(Float?), unitId?, order | **Cascade** delete, @@unique(recipeId,ingredientId). FK Unit |
-| ProposalIngredient | proposalId, ingredientId, quantity(Float?), unitId?, order | **Cascade** on proposal+ingredient, @@unique(proposalId,ingredientId). Phase 11 |
+
+| Model                | Champs cles                                                                                                                                                                                            | Notes                                                                                    |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| Recipe               | id, title, servings(default 4), prepTime?, cookTime?, restTime?, imageKey?, isVariant, creatorId, communityId?, originRecipeId?, sharedFromCommunityId?, deletedAt?                                    | Soft delete. communityId=null → perso. Phase 15: imageUrl → imageKey                     |
+| RecipeStep           | id, recipeId(FK CASCADE), order, instruction                                                                                                                                                           | Index(recipeId, order). Phase 13                                                         |
+| RecipeUpdateProposal | recipeId, proposerId, proposedTitle, proposedServings?, proposedPrepTime?, proposedCookTime?, proposedRestTime?, status(PENDING/ACCEPTED/REJECTED), deletedAt?, proposedSteps[], proposedIngredients[] | Soft delete. Phase 13: proposedContent → proposedSteps                                   |
+| ProposalStep         | id, proposalId(FK CASCADE), order, instruction                                                                                                                                                         | Index(proposalId, order). Phase 13                                                       |
+| Tag                  | id, name, scope(GLOBAL/COMMUNITY), status(APPROVED/PENDING), communityId?, createdById?, createdAt, updatedAt                                                                                          | @@unique(name,communityId) + partial unique index global. Index name, communityId+status |
+| RecipeTag            | recipeId, tagId                                                                                                                                                                                        | PK composite, **Cascade** delete                                                         |
+| Unit                 | id, name(unique), abbreviation(unique), category(UnitCategory), sortOrder                                                                                                                              | Index (category,sortOrder). Phase 11                                                     |
+| Ingredient           | id, name(unique), status(IngredientStatus), defaultUnitId?, createdById?, createdAt, updatedAt                                                                                                         | Index name, status. FK Unit + User. Phase 11 enriched                                    |
+| RecipeIngredient     | recipeId, ingredientId, quantity(Float?), unitId?, order                                                                                                                                               | **Cascade** delete, @@unique(recipeId,ingredientId). FK Unit                             |
+| ProposalIngredient   | proposalId, ingredientId, quantity(Float?), unitId?, order                                                                                                                                             | **Cascade** on proposal+ingredient, @@unique(proposalId,ingredientId). Phase 11          |
 
 ### Tags (2 models - Phase 10)
-| Model | Champs cles | Notes |
-|-------|-------------|-------|
-| TagSuggestion | id, recipeId, tagName, suggestedById, status(TagSuggestionStatus), createdAt, decidedAt? | @@unique(recipeId,tagName,suggestedById), Cascade on recipe delete |
-| UserCommunityTagPreference | userId, communityId, showTags(default true), updatedAt | PK composite(userId,communityId), Cascade delete |
+
+| Model                      | Champs cles                                                                              | Notes                                                              |
+| -------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| TagSuggestion              | id, recipeId, tagName, suggestedById, status(TagSuggestionStatus), createdAt, decidedAt? | @@unique(recipeId,tagName,suggestedById), Cascade on recipe delete |
+| UserCommunityTagPreference | userId, communityId, showTags(default true), updatedAt                                   | PK composite(userId,communityId), Cascade delete                   |
 
 ### Notifications (2 models - Phase 12)
-| Model | Champs cles | Notes |
-|-------|-------------|-------|
-| Notification | id, userId, type, category(NotificationCategory), title, message, actionUrl?, metadata?(Json), actorId?, communityId?, recipeId?, groupKey?, readAt?, createdAt | Index userId+readAt+createdAt, userId+createdAt, userId+groupKey+createdAt, createdAt. Cascade on user/community, SetNull on actor/recipe |
-| NotificationPreference | id, userId, communityId?(null=global), category(NotificationCategory), enabled(default true), updatedAt | @@unique(userId,communityId,category). Remplace ModeratorNotificationPreference |
+
+| Model                  | Champs cles                                                                                                                                                     | Notes                                                                                                                                     |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Notification           | id, userId, type, category(NotificationCategory), title, message, actionUrl?, metadata?(Json), actorId?, communityId?, recipeId?, groupKey?, readAt?, createdAt | Index userId+readAt+createdAt, userId+createdAt, userId+groupKey+createdAt, createdAt. Cascade on user/community, SetNull on actor/recipe |
+| NotificationPreference | id, userId, communityId?(null=global), category(NotificationCategory), enabled(default true), updatedAt                                                         | @@unique(userId,communityId,category). Remplace ModeratorNotificationPreference                                                           |
 
 ### Analytics (2 models - futur)
-| Model | Champs cles | Notes |
-|-------|-------------|-------|
+
+| Model           | Champs cles                            | Notes          |
+| --------------- | -------------------------------------- | -------------- |
 | RecipeAnalytics | recipeId(unique), views, shares, forks | Cascade delete |
-| RecipeView | recipeId, userId?, viewedAt | Cascade delete |
+| RecipeView      | recipeId, userId?, viewedAt            | Cascade delete |
 
 ### Activity (1 model)
-| Model | Champs cles | Notes |
-|-------|-------------|-------|
+
+| Model       | Champs cles                                                          | Notes                                   |
+| ----------- | -------------------------------------------------------------------- | --------------------------------------- |
 | ActivityLog | type(ActivityType), userId, communityId?, recipeId?, metadata?(Json) | Index communityId+userId+createdAt+type |
 
 ## Enums
@@ -132,8 +140,8 @@ AdminUser <-1:N-> AdminActivityLog
 
 ## Regles delete
 
-| Type | Modeles | Methode |
-|------|---------|---------|
-| Soft delete (deletedAt) | User, Community, UserCommunity, Recipe, RecipeUpdateProposal, CommunityInvite | Applicatif (where deletedAt: null) |
-| Hard delete (Cascade) | RecipeTag, RecipeIngredient, RecipeStep, ProposalIngredient, ProposalStep, RecipeAnalytics, RecipeView, TagSuggestion (via Recipe), UserCommunityTagPreference, Notification (via User/Community), NotificationPreference | DB cascade |
-| Soft revoke | CommunityFeature | revokedAt timestamp |
+| Type                    | Modeles                                                                                                                                                                                                                   | Methode                            |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Soft delete (deletedAt) | User, Community, UserCommunity, Recipe, RecipeUpdateProposal, CommunityInvite                                                                                                                                             | Applicatif (where deletedAt: null) |
+| Hard delete (Cascade)   | RecipeTag, RecipeIngredient, RecipeStep, ProposalIngredient, ProposalStep, RecipeAnalytics, RecipeView, TagSuggestion (via Recipe), UserCommunityTagPreference, Notification (via User/Community), NotificationPreference | DB cascade                         |
+| Soft revoke             | CommunityFeature                                                                                                                                                                                                          | revokedAt timestamp                |

@@ -22,7 +22,9 @@ export function useUnreadCount() {
       .finally(() => {
         if (!cancelled) setLoading(false);
       });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Mise a jour temps-reel via WebSocket

@@ -12,9 +12,7 @@ let httpServer: http.Server;
 let port: number;
 
 async function getSessionCookie(username: string, password: string): Promise<string> {
-  const res = await request(app)
-    .post("/api/auth/login")
-    .send({ username, password });
+  const res = await request(app).post("/api/auth/login").send({ username, password });
   const cookie = extractSessionCookie(res);
   if (!cookie) throw new Error("Failed to get session cookie");
   return cookie;
@@ -157,7 +155,12 @@ describe("WebSocket", () => {
 
     // Creer une recette pour le template
     const recipe = await testPrisma.recipe.create({
-      data: { title: "WS Test Recipe", servings: 4, creator: { connect: { id: actor.id } }, steps: { create: [{ order: 0, instruction: "content" }] } },
+      data: {
+        title: "WS Test Recipe",
+        servings: 4,
+        creator: { connect: { id: actor.id } },
+        steps: { create: [{ order: 0, instruction: "content" }] },
+      },
     });
 
     const memberCookie = await getSessionCookie(member.username, member.password);

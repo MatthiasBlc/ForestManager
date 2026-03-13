@@ -37,11 +37,7 @@ const InvitationBadge = ({ className = "" }: InvitationBadgeProps) => {
 
   if (count === 0) return null;
 
-  return (
-    <span className={`badge badge-sm badge-primary ${className}`}>
-      {count}
-    </span>
-  );
+  return <span className={`badge badge-sm badge-primary ${className}`}>{count}</span>;
 };
 
 export default InvitationBadge;

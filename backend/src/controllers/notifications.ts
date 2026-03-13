@@ -3,7 +3,12 @@ import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { NotificationCategory, Notification } from "@prisma/client";
-import { assertString } from "../util/validation";
+import { NOTIF_001, NOTIF_002, NOTIF_003, COMMUNITY_001 } from "../constants/errorCodes";
+import {
+  MarkBatchAsReadInput,
+  MarkAllAsReadInput,
+  UpdateNotificationPreferenceInput,
+} from "../schemas/notification.schema";
 
 const ALL_CATEGORIES = Object.values(NotificationCategory);
 const VALID_CATEGORIES: Set<string> = new Set(ALL_CATEGORIES);
@@ -81,8 +86,7 @@ function groupNotifications(
     for (const notif of notifs) {
       if (
         currentGroup.length === 0 ||
-        currentGroup[currentGroup.length - 1].createdAt.getTime() -
-          notif.createdAt.getTime() <=
+        currentGroup[currentGroup.length - 1].createdAt.getTime() - notif.createdAt.getTime() <=
           GROUP_WINDOW_MS
       ) {
         currentGroup.push(notif);
@@ -121,9 +125,7 @@ function groupNotifications(
           category: newest.category,
           title: newest.title,
           message: `${sg.length} ${getGroupMessage(newest.type, newest.community?.name ?? "")}`,
-          actionUrl: newest.community
-            ? `/communities/${newest.community.id}`
-            : null,
+          actionUrl: newest.community ? `/communities/${newest.community.id}` : null,
           actor: null,
           community: newest.community,
           readAt: allRead ? newest.readAt : null,
@@ -178,7 +180,7 @@ export const getNotifications: RequestHandler = async (req, res, next) => {
 
     // Validation categorie
     if (category && !VALID_CATEGORIES.has(category)) {
-      throw createHttpError(400, "NOTIF_003: Invalid notification category");
+      throw createHttpError(400, NOTIF_003);
     }
 
     // Construire le filtre
@@ -272,11 +274,7 @@ export const getUnreadCount: RequestHandler = async (req, res, next) => {
 // PATCH /api/notifications/:id/read
 // =============================================================================
 
-export const markAsRead: RequestHandler<{ id: string }> = async (
-  req,
-  res,
-  next
-) => {
+export const markAsRead: RequestHandler<{ id: string }> = async (req, res, next) => {
   const userId = req.session.userId;
   const { id } = req.params;
 
@@ -288,11 +286,11 @@ export const markAsRead: RequestHandler<{ id: string }> = async (
     });
 
     if (!notification) {
-      throw createHttpError(404, "NOTIF_001: Notification not found");
+      throw createHttpError(404, NOTIF_001);
     }
 
     if (notification.userId !== userId) {
-      throw createHttpError(403, "NOTIF_002: Notification belongs to another user");
+      throw createHttpError(403, NOTIF_002);
     }
 
     if (notification.readAt) {
@@ -316,29 +314,16 @@ export const markAsRead: RequestHandler<{ id: string }> = async (
 // PATCH /api/notifications/read (batch)
 // =============================================================================
 
-export const markBatchAsRead: RequestHandler<
-  unknown,
-  unknown,
-  { ids?: string[] }
-> = async (req, res, next) => {
+export const markBatchAsRead: RequestHandler<unknown, unknown, MarkBatchAsReadInput> = async (
+  req,
+  res,
+  next
+) => {
   const userId = req.session.userId;
   const { ids } = req.body;
 
   try {
     assertIsDefine(userId);
-
-    if (!Array.isArray(ids) || ids.length === 0) {
-      throw createHttpError(400, "NOTIF_004: ids must be a non-empty array");
-    }
-
-    if (ids.length > 100) {
-      throw createHttpError(400, "NOTIF_004: Maximum 100 ids per batch");
-    }
-
-    // Validate each id is a string
-    for (const id of ids) {
-      assertString(id, "ids[]");
-    }
 
     // Verifier que toutes les notifications appartiennent au user
     const notifications = await prisma.notification.findMany({
@@ -348,7 +333,7 @@ export const markBatchAsRead: RequestHandler<
 
     const invalidIds = notifications.filter((n) => n.userId !== userId);
     if (invalidIds.length > 0) {
-      throw createHttpError(403, "NOTIF_002: Some notifications belong to another user");
+      throw createHttpError(403, NOTIF_002);
     }
 
     const { count } = await prisma.notification.updateMany({
@@ -370,20 +355,16 @@ export const markBatchAsRead: RequestHandler<
 // PATCH /api/notifications/read-all
 // =============================================================================
 
-export const markAllAsRead: RequestHandler<
-  unknown,
-  unknown,
-  { category?: string }
-> = async (req, res, next) => {
+export const markAllAsRead: RequestHandler<unknown, unknown, MarkAllAsReadInput> = async (
+  req,
+  res,
+  next
+) => {
   const userId = req.session.userId;
   const { category } = req.body;
 
   try {
     assertIsDefine(userId);
-
-    if (category && !VALID_CATEGORIES.has(category)) {
-      throw createHttpError(400, "NOTIF_003: Invalid notification category");
-    }
 
     const where: Record<string, unknown> = { userId, readAt: null };
     if (category) where.category = category as NotificationCategory;
@@ -442,9 +423,7 @@ export const getPreferences: RequestHandler = async (req, res, next) => {
     const communities = memberships.map((m) => {
       const communityPrefs: Record<string, boolean> = {};
       for (const cat of allCategories) {
-        const pref = prefs.find(
-          (p) => p.communityId === m.communityId && p.category === cat
-        );
+        const pref = prefs.find((p) => p.communityId === m.communityId && p.category === cat);
         // Si pas de pref communaute, heriter de la globale
         communityPrefs[cat] = pref?.enabled ?? globalPrefs[cat];
       }
@@ -471,7 +450,7 @@ export const getPreferences: RequestHandler = async (req, res, next) => {
 export const updatePreference: RequestHandler<
   unknown,
   unknown,
-  { category?: string; enabled?: boolean; communityId?: string | null }
+  UpdateNotificationPreferenceInput
 > = async (req, res, next) => {
   const userId = req.session.userId;
   const { category, enabled, communityId } = req.body;
@@ -479,21 +458,13 @@ export const updatePreference: RequestHandler<
   try {
     assertIsDefine(userId);
 
-    if (!category || !VALID_CATEGORIES.has(category)) {
-      throw createHttpError(400, "NOTIF_003: Invalid notification category");
-    }
-
-    if (typeof enabled !== "boolean") {
-      throw createHttpError(400, "NOTIF_005: enabled must be a boolean");
-    }
-
     // Si communityId fourni, verifier le membership
     if (communityId) {
       const membership = await prisma.userCommunity.findFirst({
         where: { userId, communityId, deletedAt: null },
       });
       if (!membership) {
-        throw createHttpError(403, "COMMUNITY_001: Not a member of this community");
+        throw createHttpError(403, COMMUNITY_001);
       }
     }
 

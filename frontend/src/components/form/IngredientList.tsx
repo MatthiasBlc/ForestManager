@@ -32,21 +32,28 @@ const IngredientRow = ({ ingredient, index, units, onUpdate, onRemove }: Ingredi
   const [isLoading, setIsLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useDebouncedEffect(() => {
-    const search = ingredient.name.trim();
-    if (!search) {
-      setSuggestions([]);
-      return;
-    }
+  useDebouncedEffect(
+    () => {
+      const search = ingredient.name.trim();
+      if (!search) {
+        setSuggestions([]);
+        return;
+      }
 
-    setIsLoading(true);
-    APIManager.searchIngredients(search, 10)
-      .then(setSuggestions)
-      .catch(() => setSuggestions([]))
-      .finally(() => setIsLoading(false));
-  }, 300, [ingredient.name]);
+      setIsLoading(true);
+      APIManager.searchIngredients(search, 10)
+        .then(setSuggestions)
+        .catch(() => setSuggestions([]))
+        .finally(() => setIsLoading(false));
+    },
+    300,
+    [ingredient.name]
+  );
 
-  useClickOutside(containerRef, useCallback(() => setShowDropdown(false), []));
+  useClickOutside(
+    containerRef,
+    useCallback(() => setShowDropdown(false), [])
+  );
 
   const selectSuggestion = async (suggestion: IngredientSearchResult) => {
     setShowDropdown(false);
@@ -137,9 +144,7 @@ const IngredientRow = ({ ingredient, index, units, onUpdate, onRemove }: Ingredi
 
 const IngredientList = ({ value, onChange }: IngredientListProps) => {
   const nextId = useRef(0);
-  const [itemIds, setItemIds] = useState<number[]>(() =>
-    value.map(() => nextId.current++)
-  );
+  const [itemIds, setItemIds] = useState<number[]>(() => value.map(() => nextId.current++));
   const [units, setUnits] = useState<UnitsByCategory>({});
   const valueRef = useRef(value);
   valueRef.current = value;
@@ -186,11 +191,7 @@ const IngredientList = ({ value, onChange }: IngredientListProps) => {
           onRemove={removeIngredient}
         />
       ))}
-      <button
-        type="button"
-        onClick={addIngredient}
-        className="btn btn-outline btn-sm gap-2"
-      >
+      <button type="button" onClick={addIngredient} className="btn btn-outline btn-sm gap-2">
         <FaPlus size={12} />
         Add ingredient
       </button>

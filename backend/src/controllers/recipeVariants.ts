@@ -8,6 +8,7 @@ import { RECIPE_TAGS_SELECT } from "../util/prismaSelects";
 import { requireRecipeAccess } from "../services/membershipService";
 import { formatTags } from "../util/responseFormatters";
 import { buildImageUrl } from "../config/storage";
+import { RECIPE_001 } from "../constants/errorCodes";
 
 interface GetVariantsQuery {
   limit?: string;
@@ -48,7 +49,7 @@ export const getVariants: RequestHandler<
     });
 
     if (!recipe) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     await requireRecipeAccess(authenticatedUserId, recipe);
@@ -60,10 +61,7 @@ export const getVariants: RequestHandler<
     const whereClause: Prisma.RecipeWhereInput = {
       deletedAt: null,
       id: { not: recipeId },
-      OR: [
-        { id: rootId },
-        { originRecipeId: rootId, isVariant: true },
-      ],
+      OR: [{ id: rootId }, { originRecipeId: rootId, isVariant: true }],
     };
 
     // Si c'est une recette communautaire, ne retourner que celles de la meme communaute

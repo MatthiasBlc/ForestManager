@@ -89,17 +89,19 @@ describe("Admin Auth API", () => {
       });
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain("VALIDATION_001");
+      expect(res.body.error).toContain("ADMIN_003");
     });
 
     it("should return 400 when password is not a string", async () => {
-      const res = await request(app).post("/api/admin/auth/login").send({
-        email: "admin@example.com",
-        password: { obj: true },
-      });
+      const res = await request(app)
+        .post("/api/admin/auth/login")
+        .send({
+          email: "admin@example.com",
+          password: { obj: true },
+        });
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain("VALIDATION_001");
+      expect(res.body.error).toContain("ADMIN_003");
     });
   });
 
@@ -191,7 +193,7 @@ describe("Admin Auth API", () => {
         .send({});
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain("ADMIN_005");
+      expect(res.body.error).toContain("VALIDATION_001");
     });
   });
 
@@ -211,12 +213,19 @@ describe("Admin Auth API", () => {
       const sessionCookie = extractSessionCookie(loginRes, "forestmanager_admin_session");
 
       const validCode = generateTotpCode(admin.totpSecret);
-      await request(app).post("/api/admin/auth/totp/verify").set("Cookie", sessionCookie!).send({
-        code: validCode,
-      });
+      const totpRes = await request(app)
+        .post("/api/admin/auth/totp/verify")
+        .set("Cookie", sessionCookie!)
+        .send({
+          code: validCode,
+        });
+
+      // Capturer le nouveau cookie apres session.regenerate()
+      const finalCookie =
+        extractSessionCookie(totpRes, "forestmanager_admin_session") || sessionCookie;
 
       // Verifier /me
-      const res = await request(app).get("/api/admin/auth/me").set("Cookie", sessionCookie!);
+      const res = await request(app).get("/api/admin/auth/me").set("Cookie", finalCookie!);
 
       expect(res.status).toBe(200);
       expect(res.body.admin).toBeDefined();

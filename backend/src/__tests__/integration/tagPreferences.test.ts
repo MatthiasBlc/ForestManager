@@ -4,7 +4,6 @@ import app from "../../app";
 import { uniqueSuffix, extractSessionCookie } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
 
-
 describe("Tag Preferences API", () => {
   let _moderator: { id: string };
   let moderatorCookie: string;
@@ -17,11 +16,13 @@ describe("Tag Preferences API", () => {
     const suffix = uniqueSuffix();
 
     // Create moderator (creates community)
-    const modSignup = await request(app).post("/api/auth/signup").send({
-      username: `tpmod_${suffix}`,
-      email: `tpmod_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const modSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `tpmod_${suffix}`,
+        email: `tpmod_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     moderatorCookie = extractSessionCookie(modSignup)!;
     _moderator = (await testPrisma.user.findFirst({
       where: { email: `tpmod_${suffix}@example.com` },
@@ -42,11 +43,13 @@ describe("Tag Preferences API", () => {
     community2 = createRes2.body;
 
     // Create member
-    const memberSignup = await request(app).post("/api/auth/signup").send({
-      username: `tpmem_${suffix}`,
-      email: `tpmem_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const memberSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `tpmem_${suffix}`,
+        email: `tpmem_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     memberCookie = extractSessionCookie(memberSignup)!;
     member = (await testPrisma.user.findFirst({
       where: { email: `tpmem_${suffix}@example.com` },
@@ -145,11 +148,13 @@ describe("Tag Preferences API", () => {
 
     it("should return 403 if not a member", async () => {
       const suffix = uniqueSuffix();
-      const outsiderSignup = await request(app).post("/api/auth/signup").send({
-        username: `tpout_${suffix}`,
-        email: `tpout_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const outsiderSignup = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `tpout_${suffix}`,
+          email: `tpout_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       const outsiderCookie = extractSessionCookie(outsiderSignup)!;
 
       const res = await request(app)
@@ -286,11 +291,13 @@ describe("Tag Preferences API", () => {
 
     it("should return 403 for non-member community", async () => {
       const suffix = uniqueSuffix();
-      const outsiderSignup = await request(app).post("/api/auth/signup").send({
-        username: `tpout2_${suffix}`,
-        email: `tpout2_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const outsiderSignup = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `tpout2_${suffix}`,
+          email: `tpout2_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       const outsiderCookie = extractSessionCookie(outsiderSignup)!;
 
       const res = await request(app)
@@ -352,22 +359,26 @@ describe("Notification Service - getModeratorIdsForTagNotification", () => {
     const suffix = uniqueSuffix();
 
     // Create moderator1
-    const mod1Signup = await request(app).post("/api/auth/signup").send({
-      username: `nsmod1_${suffix}`,
-      email: `nsmod1_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const mod1Signup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `nsmod1_${suffix}`,
+        email: `nsmod1_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     extractSessionCookie(mod1Signup);
     moderator1 = (await testPrisma.user.findFirst({
       where: { email: `nsmod1_${suffix}@example.com` },
     }))!;
 
     // Create moderator2
-    const mod2Signup = await request(app).post("/api/auth/signup").send({
-      username: `nsmod2_${suffix}`,
-      email: `nsmod2_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const mod2Signup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `nsmod2_${suffix}`,
+        email: `nsmod2_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     extractSessionCookie(mod2Signup);
     moderator2 = (await testPrisma.user.findFirst({
       where: { email: `nsmod2_${suffix}@example.com` },
@@ -386,9 +397,8 @@ describe("Notification Service - getModeratorIdsForTagNotification", () => {
   });
 
   it("should return all moderators by default (no preferences set)", async () => {
-    const { getModeratorIdsForTagNotification } = await import(
-      "../../services/notificationService"
-    );
+    const { getModeratorIdsForTagNotification } =
+      await import("../../services/notificationService");
     const ids = await getModeratorIdsForTagNotification(community.id);
     expect(ids).toContain(moderator1.id);
     expect(ids).toContain(moderator2.id);
@@ -399,9 +409,8 @@ describe("Notification Service - getModeratorIdsForTagNotification", () => {
       data: { userId: moderator1.id, communityId: null, category: "TAG", enabled: false },
     });
 
-    const { getModeratorIdsForTagNotification } = await import(
-      "../../services/notificationService"
-    );
+    const { getModeratorIdsForTagNotification } =
+      await import("../../services/notificationService");
     const ids = await getModeratorIdsForTagNotification(community.id);
     expect(ids).not.toContain(moderator1.id);
     expect(ids).toContain(moderator2.id);
@@ -416,9 +425,8 @@ describe("Notification Service - getModeratorIdsForTagNotification", () => {
       data: { userId: moderator1.id, communityId: community.id, category: "TAG", enabled: true },
     });
 
-    const { getModeratorIdsForTagNotification } = await import(
-      "../../services/notificationService"
-    );
+    const { getModeratorIdsForTagNotification } =
+      await import("../../services/notificationService");
     const ids = await getModeratorIdsForTagNotification(community.id);
     expect(ids).toContain(moderator1.id);
     expect(ids).toContain(moderator2.id);
@@ -433,9 +441,8 @@ describe("Notification Service - getModeratorIdsForTagNotification", () => {
       data: { userId: moderator1.id, communityId: community.id, category: "TAG", enabled: false },
     });
 
-    const { getModeratorIdsForTagNotification } = await import(
-      "../../services/notificationService"
-    );
+    const { getModeratorIdsForTagNotification } =
+      await import("../../services/notificationService");
     const ids = await getModeratorIdsForTagNotification(community.id);
     expect(ids).not.toContain(moderator1.id);
     expect(ids).toContain(moderator2.id);

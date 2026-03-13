@@ -54,8 +54,16 @@ const activityConfig: Record<
   TAG_DELETED: { icon: FaTag, color: "text-error", label: "deleted a tag" },
   TAG_APPROVED: { icon: FaThumbsUp, color: "text-success", label: "approved a tag" },
   TAG_REJECTED: { icon: FaThumbsDown, color: "text-error", label: "rejected a tag" },
-  TAG_SUGGESTION_ACCEPTED: { icon: FaCheck, color: "text-success", label: "accepted a tag suggestion" },
-  TAG_SUGGESTION_REJECTED: { icon: FaTimes, color: "text-error", label: "rejected a tag suggestion" },
+  TAG_SUGGESTION_ACCEPTED: {
+    icon: FaCheck,
+    color: "text-success",
+    label: "accepted a tag suggestion",
+  },
+  TAG_SUGGESTION_REJECTED: {
+    icon: FaTimes,
+    color: "text-error",
+    label: "rejected a tag suggestion",
+  },
 };
 
 const ActivityFeed = ({ communityId, personal = false, limit = 20 }: ActivityFeedProps) => {
@@ -77,8 +85,8 @@ const ActivityFeed = ({ communityId, personal = false, limit = 20 }: ActivityFee
         const response = personal
           ? await APIManager.getMyActivity({ limit, offset: currentOffset })
           : communityId
-          ? await APIManager.getCommunityActivity(communityId, { limit, offset: currentOffset })
-          : null;
+            ? await APIManager.getCommunityActivity(communityId, { limit, offset: currentOffset })
+            : null;
 
         if (!response) {
           throw new Error("Invalid feed configuration");
@@ -145,7 +153,9 @@ const ActivityFeed = ({ communityId, personal = false, limit = 20 }: ActivityFee
               <>
                 {" "}
                 {activity.recipe.isDeleted ? (
-                  <span className="text-base-content/50 italic">{activity.recipe.title} (deleted)</span>
+                  <span className="text-base-content/50 italic">
+                    {activity.recipe.title} (deleted)
+                  </span>
                 ) : (
                   <Link
                     to={`/recipes/${activity.recipe.id}`}
@@ -161,7 +171,9 @@ const ActivityFeed = ({ communityId, personal = false, limit = 20 }: ActivityFee
                 {" "}
                 <span className="text-base-content/70">in</span>{" "}
                 {activity.community.isDeleted ? (
-                  <span className="text-base-content/50 italic">{activity.community.name} (deleted)</span>
+                  <span className="text-base-content/50 italic">
+                    {activity.community.name} (deleted)
+                  </span>
                 ) : (
                   <Link
                     to={`/communities/${activity.community.id}`}
@@ -217,16 +229,8 @@ const ActivityFeed = ({ communityId, personal = false, limit = 20 }: ActivityFee
 
       {hasMore && (
         <div className="text-center pt-4">
-          <button
-            className="btn btn-ghost btn-sm"
-            onClick={handleLoadMore}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <span className="loading loading-spinner loading-sm" />
-            ) : (
-              "Load more"
-            )}
+          <button className="btn btn-ghost btn-sm" onClick={handleLoadMore} disabled={isLoading}>
+            {isLoading ? <span className="loading loading-spinner loading-sm" /> : "Load more"}
           </button>
         </div>
       )}

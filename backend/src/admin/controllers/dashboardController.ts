@@ -7,31 +7,21 @@ import prisma from "../../util/db";
  */
 export const getStats: RequestHandler = async (req, res, next) => {
   try {
-    const [
-      userCount,
-      communityCount,
-      recipeCount,
-      tagCount,
-      ingredientCount,
-      featureCount,
-    ] = await Promise.all([
-      prisma.user.count({ where: { deletedAt: null } }),
-      prisma.community.count({ where: { deletedAt: null } }),
-      prisma.recipe.count({ where: { deletedAt: null } }),
-      prisma.tag.count(),
-      prisma.ingredient.count(),
-      prisma.feature.count(),
-    ]);
+    const [userCount, communityCount, recipeCount, tagCount, ingredientCount, featureCount] =
+      await Promise.all([
+        prisma.user.count({ where: { deletedAt: null } }),
+        prisma.community.count({ where: { deletedAt: null } }),
+        prisma.recipe.count({ where: { deletedAt: null } }),
+        prisma.tag.count(),
+        prisma.ingredient.count(),
+        prisma.feature.count(),
+      ]);
 
     // Stats recentes (7 derniers jours)
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const [
-      newUsersWeek,
-      newCommunitiesWeek,
-      newRecipesWeek,
-    ] = await Promise.all([
+    const [newUsersWeek, newCommunitiesWeek, newRecipesWeek] = await Promise.all([
       prisma.user.count({
         where: { createdAt: { gte: sevenDaysAgo }, deletedAt: null },
       }),

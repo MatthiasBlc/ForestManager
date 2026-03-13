@@ -2,8 +2,13 @@ import { RequestHandler } from "express";
 import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
-import { generatePresignedUploadUrl, validateUploadedFile, deleteObject } from "../services/storageService";
+import {
+  generatePresignedUploadUrl,
+  validateUploadedFile,
+  deleteObject,
+} from "../services/storageService";
 import { buildImageUrl } from "../config/storage";
+import { COMMUNITY_002 } from "../constants/errorCodes";
 
 /**
  * POST /api/communities/:communityId/upload-url
@@ -22,7 +27,7 @@ export const getUploadUrl: RequestHandler = async (req, res, next) => {
     });
 
     if (!community) {
-      throw createHttpError(404, "COMMUNITY_002: Community not found");
+      throw createHttpError(404, COMMUNITY_002);
     }
 
     const imageKey = `communities/${communityId}/avatar.webp`;
@@ -50,7 +55,7 @@ export const confirmUpload: RequestHandler = async (req, res, next) => {
     });
 
     if (!community) {
-      throw createHttpError(404, "COMMUNITY_002: Community not found");
+      throw createHttpError(404, COMMUNITY_002);
     }
 
     const imageKey = `communities/${communityId}/avatar.webp`;
@@ -91,7 +96,7 @@ export const deleteImage: RequestHandler = async (req, res, next) => {
     });
 
     if (!community) {
-      throw createHttpError(404, "COMMUNITY_002: Community not found");
+      throw createHttpError(404, COMMUNITY_002);
     }
 
     if (community.imageKey) {

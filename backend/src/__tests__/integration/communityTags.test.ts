@@ -4,7 +4,6 @@ import app from "../../app";
 import { uniqueSuffix, extractSessionCookie } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
 
-
 describe("Community Tags API", () => {
   let _moderator: { id: string };
   let moderatorCookie: string;
@@ -16,11 +15,13 @@ describe("Community Tags API", () => {
     const suffix = uniqueSuffix();
 
     // Create moderator
-    const modSignup = await request(app).post("/api/auth/signup").send({
-      username: `ctmod_${suffix}`,
-      email: `ctmod_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const modSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `ctmod_${suffix}`,
+        email: `ctmod_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     moderatorCookie = extractSessionCookie(modSignup)!;
     _moderator = (await testPrisma.user.findFirst({
       where: { email: `ctmod_${suffix}@example.com` },
@@ -34,11 +35,13 @@ describe("Community Tags API", () => {
     community = createRes.body;
 
     // Create member
-    const memSignup = await request(app).post("/api/auth/signup").send({
-      username: `ctmem_${suffix}`,
-      email: `ctmem_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const memSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `ctmem_${suffix}`,
+        email: `ctmem_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     memberCookie = extractSessionCookie(memSignup)!;
     member = (await testPrisma.user.findFirst({
       where: { email: `ctmem_${suffix}@example.com` },
@@ -56,10 +59,21 @@ describe("Community Tags API", () => {
     it("should list community tags for moderator", async () => {
       // Creer des tags communaute
       await testPrisma.tag.create({
-        data: { name: "approved_tag", scope: "COMMUNITY", status: "APPROVED", communityId: community.id },
+        data: {
+          name: "approved_tag",
+          scope: "COMMUNITY",
+          status: "APPROVED",
+          communityId: community.id,
+        },
       });
       await testPrisma.tag.create({
-        data: { name: "pending_tag", scope: "COMMUNITY", status: "PENDING", communityId: community.id, createdById: member.id },
+        data: {
+          name: "pending_tag",
+          scope: "COMMUNITY",
+          status: "PENDING",
+          communityId: community.id,
+          createdById: member.id,
+        },
       });
 
       const res = await request(app)
@@ -73,10 +87,20 @@ describe("Community Tags API", () => {
 
     it("should filter by status", async () => {
       await testPrisma.tag.create({
-        data: { name: "approved_only", scope: "COMMUNITY", status: "APPROVED", communityId: community.id },
+        data: {
+          name: "approved_only",
+          scope: "COMMUNITY",
+          status: "APPROVED",
+          communityId: community.id,
+        },
       });
       await testPrisma.tag.create({
-        data: { name: "pending_only", scope: "COMMUNITY", status: "PENDING", communityId: community.id },
+        data: {
+          name: "pending_only",
+          scope: "COMMUNITY",
+          status: "PENDING",
+          communityId: community.id,
+        },
       });
 
       const res = await request(app)
@@ -90,10 +114,20 @@ describe("Community Tags API", () => {
 
     it("should filter by search", async () => {
       await testPrisma.tag.create({
-        data: { name: "chocolate", scope: "COMMUNITY", status: "APPROVED", communityId: community.id },
+        data: {
+          name: "chocolate",
+          scope: "COMMUNITY",
+          status: "APPROVED",
+          communityId: community.id,
+        },
       });
       await testPrisma.tag.create({
-        data: { name: "vanilla", scope: "COMMUNITY", status: "APPROVED", communityId: community.id },
+        data: {
+          name: "vanilla",
+          scope: "COMMUNITY",
+          status: "APPROVED",
+          communityId: community.id,
+        },
       });
 
       const res = await request(app)
@@ -133,7 +167,12 @@ describe("Community Tags API", () => {
 
     it("should reject duplicate name in same community", async () => {
       await testPrisma.tag.create({
-        data: { name: "existing", scope: "COMMUNITY", status: "APPROVED", communityId: community.id },
+        data: {
+          name: "existing",
+          scope: "COMMUNITY",
+          status: "APPROVED",
+          communityId: community.id,
+        },
       });
 
       const res = await request(app)
@@ -207,7 +246,12 @@ describe("Community Tags API", () => {
   describe("PATCH /api/communities/:communityId/tags/:tagId", () => {
     it("should rename a community tag", async () => {
       const tag = await testPrisma.tag.create({
-        data: { name: "oldname", scope: "COMMUNITY", status: "APPROVED", communityId: community.id },
+        data: {
+          name: "oldname",
+          scope: "COMMUNITY",
+          status: "APPROVED",
+          communityId: community.id,
+        },
       });
 
       const res = await request(app)
@@ -221,10 +265,20 @@ describe("Community Tags API", () => {
 
     it("should reject renaming to existing name", async () => {
       const tag1 = await testPrisma.tag.create({
-        data: { name: "first_tag", scope: "COMMUNITY", status: "APPROVED", communityId: community.id },
+        data: {
+          name: "first_tag",
+          scope: "COMMUNITY",
+          status: "APPROVED",
+          communityId: community.id,
+        },
       });
       await testPrisma.tag.create({
-        data: { name: "second_tag", scope: "COMMUNITY", status: "APPROVED", communityId: community.id },
+        data: {
+          name: "second_tag",
+          scope: "COMMUNITY",
+          status: "APPROVED",
+          communityId: community.id,
+        },
       });
 
       const res = await request(app)
@@ -245,7 +299,12 @@ describe("Community Tags API", () => {
       const otherCommunity = otherRes.body;
 
       const otherTag = await testPrisma.tag.create({
-        data: { name: "other_comm_tag", scope: "COMMUNITY", status: "APPROVED", communityId: otherCommunity.id },
+        data: {
+          name: "other_comm_tag",
+          scope: "COMMUNITY",
+          status: "APPROVED",
+          communityId: otherCommunity.id,
+        },
       });
 
       const res = await request(app)
@@ -273,7 +332,12 @@ describe("Community Tags API", () => {
   describe("DELETE /api/communities/:communityId/tags/:tagId", () => {
     it("should delete a community tag (hard delete + cascade RecipeTag)", async () => {
       const tag = await testPrisma.tag.create({
-        data: { name: "to_delete", scope: "COMMUNITY", status: "APPROVED", communityId: community.id },
+        data: {
+          name: "to_delete",
+          scope: "COMMUNITY",
+          status: "APPROVED",
+          communityId: community.id,
+        },
       });
 
       // Attacher a une recette
@@ -308,7 +372,12 @@ describe("Community Tags API", () => {
         .set("Cookie", moderatorCookie)
         .send({ name: `Other ${uniqueSuffix()}` });
       const otherTag = await testPrisma.tag.create({
-        data: { name: "other_del", scope: "COMMUNITY", status: "APPROVED", communityId: otherRes.body.id },
+        data: {
+          name: "other_del",
+          scope: "COMMUNITY",
+          status: "APPROVED",
+          communityId: otherRes.body.id,
+        },
       });
 
       const res = await request(app)
@@ -320,7 +389,12 @@ describe("Community Tags API", () => {
 
     it("should return 403 for non-moderator", async () => {
       const tag = await testPrisma.tag.create({
-        data: { name: "nodelete", scope: "COMMUNITY", status: "APPROVED", communityId: community.id },
+        data: {
+          name: "nodelete",
+          scope: "COMMUNITY",
+          status: "APPROVED",
+          communityId: community.id,
+        },
       });
 
       const res = await request(app)
@@ -381,7 +455,12 @@ describe("Community Tags API", () => {
 
     it("should reject approving an already APPROVED tag", async () => {
       const tag = await testPrisma.tag.create({
-        data: { name: "already_approved", scope: "COMMUNITY", status: "APPROVED", communityId: community.id },
+        data: {
+          name: "already_approved",
+          scope: "COMMUNITY",
+          status: "APPROVED",
+          communityId: community.id,
+        },
       });
 
       const res = await request(app)
@@ -394,7 +473,12 @@ describe("Community Tags API", () => {
 
     it("should return 403 for non-moderator", async () => {
       const tag = await testPrisma.tag.create({
-        data: { name: "noapprove", scope: "COMMUNITY", status: "PENDING", communityId: community.id },
+        data: {
+          name: "noapprove",
+          scope: "COMMUNITY",
+          status: "PENDING",
+          communityId: community.id,
+        },
       });
 
       const res = await request(app)
@@ -466,7 +550,12 @@ describe("Community Tags API", () => {
 
     it("should reject rejecting an APPROVED tag", async () => {
       const tag = await testPrisma.tag.create({
-        data: { name: "no_reject_approved", scope: "COMMUNITY", status: "APPROVED", communityId: community.id },
+        data: {
+          name: "no_reject_approved",
+          scope: "COMMUNITY",
+          status: "APPROVED",
+          communityId: community.id,
+        },
       });
 
       const res = await request(app)
@@ -479,7 +568,12 @@ describe("Community Tags API", () => {
 
     it("should return 403 for non-moderator", async () => {
       const tag = await testPrisma.tag.create({
-        data: { name: "noreject", scope: "COMMUNITY", status: "PENDING", communityId: community.id },
+        data: {
+          name: "noreject",
+          scope: "COMMUNITY",
+          status: "PENDING",
+          communityId: community.id,
+        },
       });
 
       const res = await request(app)
@@ -534,7 +628,6 @@ describe("Community Tags API", () => {
   // T13.3 - Moderateur ne peut agir que sur sa communaute
   // =====================================
   describe("T13.3 - Moderator cannot manage tags of another community", () => {
-    let otherCommunity: { id: string };
     let otherModeratorCookie: string;
     let communityTag: { id: string };
 
@@ -542,22 +635,27 @@ describe("Community Tags API", () => {
       const suffix = uniqueSuffix();
 
       // Creer un autre utilisateur moderateur d'une autre communaute
-      const otherModSignup = await request(app).post("/api/auth/signup").send({
-        username: `othermod_${suffix}`,
-        email: `othermod_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const otherModSignup = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `othermod_${suffix}`,
+          email: `othermod_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       otherModeratorCookie = extractSessionCookie(otherModSignup)!;
 
-      const otherRes = await request(app)
+      await request(app)
         .post("/api/communities")
         .set("Cookie", otherModeratorCookie)
         .send({ name: `Other Community ${suffix}` });
-      otherCommunity = otherRes.body;
-
       // Creer un tag dans la communaute principale
       communityTag = await testPrisma.tag.create({
-        data: { name: `tag_${suffix}`, scope: "COMMUNITY", status: "PENDING", communityId: community.id },
+        data: {
+          name: `tag_${suffix}`,
+          scope: "COMMUNITY",
+          status: "PENDING",
+          communityId: community.id,
+        },
       });
     });
 

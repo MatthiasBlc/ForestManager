@@ -1,15 +1,15 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { screen, waitFor } from '@testing-library/react';
-import { renderWithUserAuth } from '../../setup/testUtils';
-import RecipesPage from '../../../pages/RecipesPage';
-import { setUserAuthenticated, resetAuthState } from '../../setup/mswHandlers';
+import { describe, it, expect, beforeEach } from "vitest";
+import { screen, waitFor } from "@testing-library/react";
+import { renderWithUserAuth } from "../../setup/testUtils";
+import RecipesPage from "../../../pages/RecipesPage";
+import { setUserAuthenticated, resetAuthState } from "../../setup/mswHandlers";
 
-describe('RecipesPage', () => {
+describe("RecipesPage", () => {
   beforeEach(() => {
     resetAuthState();
   });
 
-  it('should show logged out view when not authenticated', async () => {
+  it("should show logged out view when not authenticated", async () => {
     renderWithUserAuth(<RecipesPage />);
 
     await waitFor(() => {
@@ -18,7 +18,7 @@ describe('RecipesPage', () => {
     });
   });
 
-  it('should show logged in view when authenticated', async () => {
+  it("should show logged in view when authenticated", async () => {
     setUserAuthenticated(true);
     renderWithUserAuth(<RecipesPage />);
 
@@ -29,7 +29,7 @@ describe('RecipesPage', () => {
     });
   });
 
-  it('should render different content based on auth state', async () => {
+  it("should render different content based on auth state", async () => {
     // First render logged out
     const { unmount } = renderWithUserAuth(<RecipesPage />);
 

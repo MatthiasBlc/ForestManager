@@ -3,7 +3,17 @@ import createHttpError from "http-errors";
 import prisma from "../../util/db";
 import { assertIsDefine } from "../../util/assertIsDefine";
 import { parsePagination, buildPaginationMeta } from "../../util/pagination";
-import { validateTagName } from "../../util/validation";
+import {
+  ADMIN_TAG_002,
+  ADMIN_TAG_003,
+  ADMIN_TAG_005,
+  ADMIN_TAG_006,
+} from "../../constants/errorCodes";
+import {
+  AdminCreateTagInput,
+  AdminUpdateTagInput,
+  AdminMergeTagInput,
+} from "../schemas/tag.schema";
 
 /**
  * GET /api/admin/tags
@@ -50,19 +60,20 @@ export const getAll: RequestHandler = async (req, res, next) => {
 
     // Pour les tags COMMUNITY, ne compter que les recettes dans la communaute
     const tagIds = tags.filter((t) => t.communityId).map((t) => t.id);
-    const communityCountsRaw = tagIds.length > 0
-      ? await prisma.recipeTag.groupBy({
-          by: ["tagId"],
-          where: {
-            tagId: { in: tagIds },
-            recipe: {
-              deletedAt: null,
-              communityId: { not: null },
+    const communityCountsRaw =
+      tagIds.length > 0
+        ? await prisma.recipeTag.groupBy({
+            by: ["tagId"],
+            where: {
+              tagId: { in: tagIds },
+              recipe: {
+                deletedAt: null,
+                communityId: { not: null },
+              },
             },
-          },
-          _count: { tagId: true },
-        })
-      : [];
+            _count: { tagId: true },
+          })
+        : [];
     const communityCountMap = new Map(communityCountsRaw.map((c) => [c.tagId, c._count.tagId]));
 
     res.status(200).json({
@@ -73,9 +84,7 @@ export const getAll: RequestHandler = async (req, res, next) => {
         status: t.status,
         communityId: t.communityId,
         community: t.community,
-        recipeCount: t.communityId
-          ? (communityCountMap.get(t.id) ?? 0)
-          : t._count.recipes,
+        recipeCount: t.communityId ? (communityCountMap.get(t.id) ?? 0) : t._count.recipes,
       })),
       pagination: buildPaginationMeta(total, limit, offset, tags.length),
     });
@@ -90,22 +99,20 @@ export const getAll: RequestHandler = async (req, res, next) => {
  */
 export const create: RequestHandler = async (req, res, next) => {
   try {
-    const { name } = req.body;
+    const { name } = req.body as AdminCreateTagInput;
     const adminId = req.session.adminId;
     assertIsDefine(adminId);
 
-    const normalized = validateTagName(name, "ADMIN_TAG_001");
-
     const existing = await prisma.tag.findFirst({
-      where: { name: normalized, communityId: null },
+      where: { name, communityId: null },
     });
 
     if (existing) {
-      throw createHttpError(409, "ADMIN_TAG_002: Tag already exists");
+      throw createHttpError(409, ADMIN_TAG_002);
     }
 
     const tag = await prisma.tag.create({
-      data: { name: normalized },
+      data: { name },
     });
 
     await prisma.adminActivityLog.create({
@@ -114,7 +121,7 @@ export const create: RequestHandler = async (req, res, next) => {
         type: "TAG_CREATED",
         targetType: "Tag",
         targetId: tag.id,
-        metadata: { name: normalized },
+        metadata: { name },
       },
     });
 
@@ -131,33 +138,29 @@ export const create: RequestHandler = async (req, res, next) => {
 export const update: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name } = req.body;
+    const { name } = req.body as AdminUpdateTagInput;
     const adminId = req.session.adminId;
     assertIsDefine(adminId);
 
-    const normalized = validateTagName(name, "ADMIN_TAG_001");
-
     const tag = await prisma.tag.findUnique({ where: { id } });
     if (!tag) {
-      throw createHttpError(404, "ADMIN_TAG_003: Tag not found");
+      throw createHttpError(404, ADMIN_TAG_003);
     }
 
-    if (normalized !== tag.name) {
+    if (name !== tag.name) {
       // Verifier unicite dans le meme scope
       const existing = await prisma.tag.findFirst({
-        where: { name: normalized, communityId: tag.communityId, id: { not: tag.id } },
+        where: { name, communityId: tag.communityId, id: { not: tag.id } },
       });
       if (existing) {
-        throw createHttpError(409, "ADMIN_TAG_002: Tag already exists");
+        throw createHttpError(409, ADMIN_TAG_002);
       }
-      // Si c'est un tag global, verifier aussi qu'aucun tag communaute n'a ce nom
-      // (pas necessaire car la contrainte unique est [name, communityId])
     }
 
     const oldName = tag.name;
     const updated = await prisma.tag.update({
       where: { id },
-      data: { name: normalized },
+      data: { name },
     });
 
     await prisma.adminActivityLog.create({
@@ -166,7 +169,7 @@ export const update: RequestHandler = async (req, res, next) => {
         type: "TAG_UPDATED",
         targetType: "Tag",
         targetId: id,
-        metadata: { oldName, newName: normalized },
+        metadata: { oldName, newName: name },
       },
     });
 
@@ -188,7 +191,7 @@ export const remove: RequestHandler = async (req, res, next) => {
 
     const tag = await prisma.tag.findUnique({ where: { id } });
     if (!tag) {
-      throw createHttpError(404, "ADMIN_TAG_003: Tag not found");
+      throw createHttpError(404, ADMIN_TAG_003);
     }
 
     await prisma.tag.delete({ where: { id } });
@@ -217,16 +220,12 @@ export const remove: RequestHandler = async (req, res, next) => {
 export const merge: RequestHandler = async (req, res, next) => {
   try {
     const { id: sourceId } = req.params;
-    const { targetId } = req.body;
+    const { targetId } = req.body as AdminMergeTagInput;
     const adminId = req.session.adminId;
     assertIsDefine(adminId);
 
-    if (!targetId) {
-      throw createHttpError(400, "ADMIN_TAG_004: Target tag ID required");
-    }
-
     if (sourceId === targetId) {
-      throw createHttpError(400, "ADMIN_TAG_005: Cannot merge tag into itself");
+      throw createHttpError(400, ADMIN_TAG_005);
     }
 
     const [source, target] = await Promise.all([
@@ -235,10 +234,10 @@ export const merge: RequestHandler = async (req, res, next) => {
     ]);
 
     if (!source) {
-      throw createHttpError(404, "ADMIN_TAG_003: Source tag not found");
+      throw createHttpError(404, ADMIN_TAG_003);
     }
     if (!target) {
-      throw createHttpError(404, "ADMIN_TAG_006: Target tag not found");
+      throw createHttpError(404, ADMIN_TAG_006);
     }
 
     // Transferer les recettes du source vers le target

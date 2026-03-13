@@ -118,7 +118,7 @@ function AdminLoginPage() {
                   disabled={credentialsForm.formState.isSubmitting}
                 >
                   {credentialsForm.formState.isSubmitting ? (
-                    <span className="loading loading-spinner"></span>
+                    <span className="loading loading-spinner" />
                   ) : (
                     "Continue"
                   )}
@@ -146,8 +146,8 @@ function AdminLoginPage() {
                       />
                     </svg>
                     <span>
-                      First time setup: Scan this QR code with your authenticator app
-                      (Google Authenticator, Authy, etc.)
+                      First time setup: Scan this QR code with your authenticator app (Google
+                      Authenticator, Authy, etc.)
                     </span>
                   </div>
                   <div className="flex justify-center">
@@ -201,7 +201,7 @@ function AdminLoginPage() {
                     disabled={totpForm.formState.isSubmitting}
                   >
                     {totpForm.formState.isSubmitting ? (
-                      <span className="loading loading-spinner"></span>
+                      <span className="loading loading-spinner" />
                     ) : (
                       "Verify"
                     )}
@@ -209,7 +209,7 @@ function AdminLoginPage() {
                 </div>
               </form>
 
-              <div className="divider"></div>
+              <div className="divider" />
 
               <button
                 type="button"

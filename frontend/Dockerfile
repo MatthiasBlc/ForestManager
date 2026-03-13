@@ -53,7 +53,13 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 # Create nginx config for SPA with API proxy
 # Note: X-Forwarded-Proto is passed from Traefik, not redefined here
-RUN echo 'server { \
+RUN echo 'gzip on; \
+    gzip_vary on; \
+    gzip_min_length 1024; \
+    gzip_proxied any; \
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript image/svg+xml; \
+    \
+    server { \
     listen 80; \
     add_header Content-Security-Policy "default-src '"'"'self'"'"'; script-src '"'"'self'"'"'; style-src '"'"'self'"'"' '"'"'unsafe-inline'"'"'; img-src '"'"'self'"'"' data: https: blob:; connect-src '"'"'self'"'"' ws: wss: https://s3.matthias-bouloc.fr; font-src '"'"'self'"'"'; object-src '"'"'none'"'"'; frame-src '"'"'none'"'"'; frame-ancestors '"'"'none'"'"';" always; \
     add_header X-Content-Type-Options "nosniff" always; \

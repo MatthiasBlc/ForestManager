@@ -51,39 +51,39 @@ Forest Manager suit une architecture client-serveur classique avec separation fr
 
 ### Frontend
 
-| Technologie | Version | Role |
-|-------------|---------|------|
-| React | 18.x | UI Framework |
-| TypeScript | 5.x | Type safety |
-| Vite | 5.x | Build tool & dev server |
-| TailwindCSS | 3.x | Styling |
-| daisyUI | 4.x | Component library |
-| Axios | 1.x | HTTP client |
-| React Router | 6.x | Routing |
+| Technologie  | Version | Role                    |
+| ------------ | ------- | ----------------------- |
+| React        | 18.x    | UI Framework            |
+| TypeScript   | 5.x     | Type safety             |
+| Vite         | 5.x     | Build tool & dev server |
+| TailwindCSS  | 3.x     | Styling                 |
+| daisyUI      | 4.x     | Component library       |
+| Axios        | 1.x     | HTTP client             |
+| React Router | 6.x     | Routing                 |
 
 ### Backend
 
-| Technologie | Version | Role |
-|-------------|---------|------|
-| Node.js | 20.x | Runtime |
-| Express | 4.x | Web framework |
-| TypeScript | 5.x | Type safety |
-| Prisma | 6.x | ORM |
-| bcrypt | 5.x | Password hashing |
-| express-session | 1.x | Session management |
-| **@quixo3/prisma-session-store** | 3.x | **Session store (PostgreSQL via Prisma)** |
-| **otplib** | 12.x | **2FA TOTP (SuperAdmin)** |
-| **qrcode** | 1.x | **Generation QR code 2FA** |
+| Technologie                      | Version | Role                                      |
+| -------------------------------- | ------- | ----------------------------------------- |
+| Node.js                          | 20.x    | Runtime                                   |
+| Express                          | 4.x     | Web framework                             |
+| TypeScript                       | 5.x     | Type safety                               |
+| Prisma                           | 6.x     | ORM                                       |
+| bcrypt                           | 5.x     | Password hashing                          |
+| express-session                  | 1.x     | Session management                        |
+| **@quixo3/prisma-session-store** | 3.x     | **Session store (PostgreSQL via Prisma)** |
+| **otplib**                       | 12.x    | **2FA TOTP (SuperAdmin)**                 |
+| **qrcode**                       | 1.x     | **Generation QR code 2FA**                |
 
 ### Infrastructure
 
-| Technologie | Role |
-|-------------|------|
-| PostgreSQL 16 | Base de donnees |
-| Docker | Containerisation |
+| Technologie    | Role                 |
+| -------------- | -------------------- |
+| PostgreSQL 16  | Base de donnees      |
+| Docker         | Containerisation     |
 | Docker Compose | Orchestration locale |
-| GitHub Actions | CI/CD |
-| Portainer | Deploiement |
+| GitHub Actions | CI/CD                |
+| Portainer      | Deploiement          |
 
 ---
 
@@ -207,23 +207,23 @@ Configuration de express-session avec @quixo3/prisma-session-store :
 
 ```typescript
 // app.ts
-import session from 'express-session';
-import { PrismaSessionStore } from '@quixo3/prisma-session-store';
-import { prisma } from './util/db';
+import session from "express-session";
+import { PrismaSessionStore } from "@quixo3/prisma-session-store";
+import { prisma } from "./util/db";
 
 app.use(
   session({
     cookie: {
       maxAge: 60 * 60 * 1000, // 1 heure
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
     },
     secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: false,
     store: new PrismaSessionStore(prisma, {
-      checkPeriod: 2 * 60 * 1000,  // Nettoyage sessions expirees toutes les 2min
+      checkPeriod: 2 * 60 * 1000, // Nettoyage sessions expirees toutes les 2min
       dbRecordIdIsSessionId: true,
       dbRecordIdFunction: undefined,
     }),
@@ -232,6 +232,7 @@ app.use(
 ```
 
 #### Controllers
+
 Les controllers recoivent la requete, valident les donnees, appellent les services et retournent la reponse.
 
 ```typescript
@@ -249,6 +250,7 @@ export const createRecipe = async (req: Request, res: Response, next: NextFuncti
 ```
 
 #### Services
+
 Les services contiennent la logique metier complexe.
 
 ```typescript
@@ -273,17 +275,17 @@ export const create = async (userId: string, data: RecipeInput) => {
 
 ```typescript
 // middleware/memberOf.ts
-export const memberOf = (paramName: string = 'communityId') => {
+export const memberOf = (paramName: string = "communityId") => {
   return async (req: Request, res: Response, next: NextFunction) => {
     const communityId = req.params[paramName];
     const userId = req.session.userId;
 
     const membership = await prisma.userCommunity.findFirst({
-      where: { userId, communityId, deletedAt: null }
+      where: { userId, communityId, deletedAt: null },
     });
 
     if (!membership) {
-      throw createHttpError(403, 'Not a member of this community');
+      throw createHttpError(403, "Not a member of this community");
     }
 
     req.membership = membership;
@@ -292,17 +294,17 @@ export const memberOf = (paramName: string = 'communityId') => {
 };
 
 // middleware/adminOf.ts
-export const adminOf = (paramName: string = 'communityId') => {
+export const adminOf = (paramName: string = "communityId") => {
   return async (req: Request, res: Response, next: NextFunction) => {
     const communityId = req.params[paramName];
     const userId = req.session.userId;
 
     const membership = await prisma.userCommunity.findFirst({
-      where: { userId, communityId, role: 'ADMIN', deletedAt: null }
+      where: { userId, communityId, role: "ADMIN", deletedAt: null },
     });
 
     if (!membership) {
-      throw createHttpError(403, 'Admin access required');
+      throw createHttpError(403, "Admin access required");
     }
 
     req.membership = membership;
@@ -319,10 +321,17 @@ Toutes les queries doivent filtrer les entites soft-deleted :
 // Middleware Prisma recommande pour filtrage automatique
 // util/db.ts
 prisma.$use(async (params, next) => {
-  const softDeleteModels = ['User', 'Community', 'UserCommunity', 'Recipe', 'RecipeUpdateProposal', 'CommunityInvite'];
+  const softDeleteModels = [
+    "User",
+    "Community",
+    "UserCommunity",
+    "Recipe",
+    "RecipeUpdateProposal",
+    "CommunityInvite",
+  ];
 
-  if (softDeleteModels.includes(params.model || '')) {
-    if (params.action === 'findMany' || params.action === 'findFirst') {
+  if (softDeleteModels.includes(params.model || "")) {
+    if (params.action === "findMany" || params.action === "findFirst") {
       if (!params.args) params.args = {};
       if (!params.args.where) params.args.where = {};
       if (params.args.where.deletedAt === undefined) {
@@ -337,6 +346,7 @@ prisma.$use(async (params, next) => {
 ### Frontend
 
 #### API Client
+
 Utilisation d'Axios avec intercepteurs pour la gestion des erreurs.
 
 ```typescript
@@ -384,7 +394,7 @@ export const useInvites = () => {
 
   const fetchInvites = async () => {
     const data = await api.getMyInvites();
-    setInvites(data.filter(i => i.status === 'PENDING'));
+    setInvites(data.filter((i) => i.status === "PENDING"));
     setLoading(false);
   };
 
@@ -398,7 +408,9 @@ export const useInvites = () => {
     fetchInvites();
   };
 
-  useEffect(() => { fetchInvites(); }, []);
+  useEffect(() => {
+    fetchInvites();
+  }, []);
 
   return { invites, loading, acceptInvite, rejectInvite, pendingCount: invites.length };
 };
@@ -430,17 +442,17 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
       error: {
         code: err.code,
         message: err.message,
-        details: err.details
-      }
+        details: err.details,
+      },
     });
   }
 
   console.error(err);
   res.status(500).json({
     error: {
-      code: 'INTERNAL_ERROR',
-      message: 'An unexpected error occurred'
-    }
+      code: "INTERNAL_ERROR",
+      message: "An unexpected error occurred",
+    },
   });
 });
 ```
@@ -470,6 +482,7 @@ class ErrorBoundary extends Component {
 ## Securite
 
 ### Authentification Utilisateurs
+
 - Sessions stockees en base de donnees (PostgreSQL via @quixo3/prisma-session-store)
 - Cookie httpOnly, secure en production
 - CSRF protection via SameSite=Strict
@@ -479,14 +492,14 @@ class ErrorBoundary extends Component {
 
 **Isolation complete du systeme utilisateur:**
 
-| Aspect | Users | SuperAdmin |
-|--------|-------|------------|
-| Model | `User` | `AdminUser` |
-| Session | `Session` | `AdminSession` |
-| Cookie | `connect.sid` | `admin.sid` |
-| Duree | 1 heure | 30 minutes |
-| Secret | `SESSION_SECRET` | `ADMIN_SESSION_SECRET` |
-| 2FA | Non | **TOTP obligatoire** |
+| Aspect  | Users            | SuperAdmin             |
+| ------- | ---------------- | ---------------------- |
+| Model   | `User`           | `AdminUser`            |
+| Session | `Session`        | `AdminSession`         |
+| Cookie  | `connect.sid`    | `admin.sid`            |
+| Duree   | 1 heure          | 30 minutes             |
+| Secret  | `SESSION_SECRET` | `ADMIN_SESSION_SECRET` |
+| 2FA     | Non              | **TOTP obligatoire**   |
 
 **Flux d'authentification 2FA:**
 
@@ -516,50 +529,54 @@ class ErrorBoundary extends Component {
 ```typescript
 // app.ts - Sessions isolees via Routers separes
 
-import { Router } from 'express';
+import { Router } from "express";
 
 // Router API utilisateurs (exclu /api/admin)
 const userRouter = Router();
-userRouter.use(session({
-  name: 'connect.sid',
-  store: new PrismaSessionStore(prisma, {
-    checkPeriod: 2 * 60 * 1000,
-    dbRecordIdIsSessionId: true,
-  }),
-  secret: env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 60 * 60 * 1000, // 1h
-    httpOnly: true,
-    secure: env.NODE_ENV === 'production',
-    sameSite: 'strict',
-  },
-}));
+userRouter.use(
+  session({
+    name: "connect.sid",
+    store: new PrismaSessionStore(prisma, {
+      checkPeriod: 2 * 60 * 1000,
+      dbRecordIdIsSessionId: true,
+    }),
+    secret: env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 60 * 60 * 1000, // 1h
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "strict",
+    },
+  })
+);
 
 // Router API admin (completement isole)
 const adminRouter = Router();
-adminRouter.use(session({
-  name: 'admin.sid',
-  store: new PrismaSessionStore(prisma, {
-    checkPeriod: 2 * 60 * 1000,
-    dbRecordIdIsSessionId: true,
-    sessionModelName: 'AdminSession',
-  }),
-  secret: env.ADMIN_SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 30 * 60 * 1000, // 30min
-    httpOnly: true,
-    secure: env.NODE_ENV === 'production',
-    sameSite: 'strict',
-  },
-}));
+adminRouter.use(
+  session({
+    name: "admin.sid",
+    store: new PrismaSessionStore(prisma, {
+      checkPeriod: 2 * 60 * 1000,
+      dbRecordIdIsSessionId: true,
+      sessionModelName: "AdminSession",
+    }),
+    secret: env.ADMIN_SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 30 * 60 * 1000, // 30min
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "strict",
+    },
+  })
+);
 
 // Montage des routers (ordre important: admin AVANT api)
-app.use('/api/admin', adminRouter);
-app.use('/api', userRouter);
+app.use("/api/admin", adminRouter);
+app.use("/api", userRouter);
 ```
 
 **Note:** L'ordre de montage est critique. `/api/admin` doit etre monte AVANT `/api` pour eviter que le middleware user session ne s'applique aux routes admin.
@@ -570,10 +587,10 @@ app.use('/api', userRouter);
 // admin/middleware/requireSuperAdmin.ts
 export const requireSuperAdmin: RequestHandler = (req, res, next) => {
   if (!req.session.adminId) {
-    return next(createHttpError(401, 'Admin authentication required'));
+    return next(createHttpError(401, "Admin authentication required"));
   }
   if (!req.session.totpVerified) {
-    return next(createHttpError(401, '2FA verification required'));
+    return next(createHttpError(401, "2FA verification required"));
   }
   next();
 };
@@ -590,6 +607,7 @@ npm run admin:create
 ```
 
 ### Autorisation
+
 - Verification de session sur toutes les routes protegees
 - Verification de membership pour les ressources communautaires
 - Verification de role pour les actions admin communaute
@@ -597,11 +615,13 @@ npm run admin:create
 - SuperAdmin: requireSuperAdmin (isole)
 
 ### Validation
+
 - Validation des inputs cote serveur (format, longueur)
 - Sanitization des donnees avant stockage
 - Echappement HTML dans les reponses
 
 ### Mots de passe
+
 - Hashage bcrypt avec salt (cost factor: 10)
 - Pas de stockage en clair
 - Pas de transmission en clair (HTTPS en prod)
@@ -611,15 +631,18 @@ npm run admin:create
 ## Performance
 
 ### Base de donnees
+
 - Index sur les colonnes frequemment requetees
 - Pagination sur toutes les listes
 - Soft delete avec index partiel (WHERE deletedAt IS NULL)
 
 ### Caching (futur)
+
 - Cache des tags populaires
 - Cache des metadata communautes
 
 ### Frontend
+
 - Code splitting par route
 - Lazy loading des images
 - Optimistic updates pour UX
@@ -629,11 +652,13 @@ npm run admin:create
 ## Deploiement
 
 ### Developpement
+
 ```bash
 npm run docker:up:build
 ```
 
 ### Production
+
 - Build des images via GitHub Actions
 - Push vers registry prive
 - Deploiement via Portainer API
@@ -641,26 +666,28 @@ npm run docker:up:build
 
 ### Variables d'environnement
 
-| Variable | Description |
-|----------|-------------|
-| `DATABASE_URL` | URL PostgreSQL |
-| `SESSION_SECRET` | Secret pour les sessions utilisateurs (min 32 chars) |
+| Variable               | Description                                                                |
+| ---------------------- | -------------------------------------------------------------------------- |
+| `DATABASE_URL`         | URL PostgreSQL                                                             |
+| `SESSION_SECRET`       | Secret pour les sessions utilisateurs (min 32 chars)                       |
 | `ADMIN_SESSION_SECRET` | Secret pour les sessions admin (min 32 chars, different de SESSION_SECRET) |
-| `CORS_ORIGIN` | Origine autorisee CORS (ex: http://localhost:3000) |
-| `NODE_ENV` | development / production |
+| `CORS_ORIGIN`          | Origine autorisee CORS (ex: http://localhost:3000)                         |
+| `NODE_ENV`             | development / production                                                   |
 
 ### Configuration CORS
 
 ```typescript
 // app.ts - CORS avec credentials pour cookies
-import cors from 'cors';
+import cors from "cors";
 
-app.use(cors({
-  origin: env.CORS_ORIGIN,
-  credentials: true, // Requis pour cookies connect.sid et admin.sid
-  methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type'],
-}));
+app.use(
+  cors({
+    origin: env.CORS_ORIGIN,
+    credentials: true, // Requis pour cookies connect.sid et admin.sid
+    methods: ["GET", "POST", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type"],
+  })
+);
 ```
 
 **Note:** `credentials: true` est obligatoire pour que les cookies de session soient envoyes cross-origin. Le frontend doit utiliser `withCredentials: true` dans Axios.
@@ -673,11 +700,11 @@ app.use(cors({
 
 L'application est structuree en "briques" (modules/features) attribuables aux communautes :
 
-| Feature | Code | Default | Description |
-|---------|------|---------|-------------|
-| MVP | `MVP` | Oui | Catalogue recettes, communautes, partage |
-| Planificateur | `MEAL_PLANNER` | Non | Planification repas hebdomadaire |
-| (Futur) | `...` | Non | Autres fonctionnalites |
+| Feature       | Code           | Default | Description                              |
+| ------------- | -------------- | ------- | ---------------------------------------- |
+| MVP           | `MVP`          | Oui     | Catalogue recettes, communautes, partage |
+| Planificateur | `MEAL_PLANNER` | Non     | Planification repas hebdomadaire         |
+| (Futur)       | `...`          | Non     | Autres fonctionnalites                   |
 
 ### Attribution
 
@@ -714,7 +741,7 @@ export const hasFeature = (featureCode: string) => {
         communityId,
         feature: { code: featureCode },
         revokedAt: null,
-      }
+      },
     });
 
     if (!access) {
@@ -726,5 +753,5 @@ export const hasFeature = (featureCode: string) => {
 };
 
 // Utilisation
-router.get('/meal-plan', requireAuth, memberOf(), hasFeature('MEAL_PLANNER'), getMealPlan);
+router.get("/meal-plan", requireAuth, memberOf(), hasFeature("MEAL_PLANNER"), getMealPlan);
 ```

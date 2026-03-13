@@ -13,11 +13,11 @@ Le systeme actuel de tags est "plat" : une table globale unique, creation a la v
 
 ### 1.1 Les 3 niveaux de tags
 
-| Niveau | Cree par | Visible par | Cycle de vie |
-|--------|----------|-------------|--------------|
-| **Global** | SuperAdmin | Tout le monde, partout | Permanent (CRUD SuperAdmin) |
-| **Communaute** | Moderateur (ou valide par moderateur) | Membres de la communaute | Permanent tant que la communaute existe |
-| **Pending** | N'importe quel membre | Membres de la communaute (style different) | Temporaire, en attente de validation |
+| Niveau         | Cree par                              | Visible par                                | Cycle de vie                            |
+| -------------- | ------------------------------------- | ------------------------------------------ | --------------------------------------- |
+| **Global**     | SuperAdmin                            | Tout le monde, partout                     | Permanent (CRUD SuperAdmin)             |
+| **Communaute** | Moderateur (ou valide par moderateur) | Membres de la communaute                   | Permanent tant que la communaute existe |
+| **Pending**    | N'importe quel membre                 | Membres de la communaute (style different) | Temporaire, en attente de validation    |
 
 ### 1.2 Principe cle
 
@@ -133,15 +133,16 @@ RecipeTag
 
 ## 3. Regles d'unicite des noms
 
-| Situation | Autorise ? |
-|-----------|------------|
-| Tag global "Italien" + tag communaute "Italien" | **NON** - le global a la priorite |
-| Tag communaute A "Fait maison" + tag communaute B "Fait maison" | **OUI** - communautes isolees |
-| Tag communaute A "Pizza" (APPROVED) + tag pending communaute A "Pizza" | **NON** - doublon dans la meme communaute |
-| Tag pending communaute A "Pizza" + un autre user veut "Pizza" dans A | **OK** - reutilise le tag pending existant |
-| Tag global "Dessert" + creation d'un tag communaute "Dessert" | **NON** - erreur, le global existe deja |
+| Situation                                                              | Autorise ?                                 |
+| ---------------------------------------------------------------------- | ------------------------------------------ |
+| Tag global "Italien" + tag communaute "Italien"                        | **NON** - le global a la priorite          |
+| Tag communaute A "Fait maison" + tag communaute B "Fait maison"        | **OUI** - communautes isolees              |
+| Tag communaute A "Pizza" (APPROVED) + tag pending communaute A "Pizza" | **NON** - doublon dans la meme communaute  |
+| Tag pending communaute A "Pizza" + un autre user veut "Pizza" dans A   | **OK** - reutilise le tag pending existant |
+| Tag global "Dessert" + creation d'un tag communaute "Dessert"          | **NON** - erreur, le global existe deja    |
 
 **Regle de validation a la creation :**
+
 1. Verifier qu'aucun tag GLOBAL n'a le meme nom (normalise)
 2. Verifier qu'aucun tag (COMMUNITY, APPROVED ou PENDING) n'a le meme nom dans la meme communaute
 
@@ -240,24 +241,26 @@ ETAPE 2 - Le tag existe-t-il deja ?
 ### 5.1 Dans une communaute
 
 L'autocomplete propose :
+
 1. Tous les tags **GLOBAL** (status=APPROVED)
 2. Tous les tags **COMMUNITY** de cette communaute (status=APPROVED)
-3. *Pas* les tags pending, *pas* les tags d'autres communautes
+3. _Pas_ les tags pending, _pas_ les tags d'autres communautes
 
 ### 5.2 Dans le catalogue personnel
 
 L'autocomplete propose :
+
 1. Tous les tags **GLOBAL**
 2. Les tags **COMMUNITY** (APPROVED) des communautes auxquelles l'utilisateur appartient
    **ET** pour lesquelles `UserCommunityTagPreference.showTags = true` (defaut: true)
 
 ### 5.3 Affichage sur une recette
 
-| Type de tag | Style |
-|-------------|-------|
-| Global (APPROVED) | Normal (couleur principale) |
-| Communaute (APPROVED) | Normal (couleur principale) |
-| Pending | Couleur differente (ex: gris, contour pointille, badge "en attente") |
+| Type de tag           | Style                                                                |
+| --------------------- | -------------------------------------------------------------------- |
+| Global (APPROVED)     | Normal (couleur principale)                                          |
+| Communaute (APPROVED) | Normal (couleur principale)                                          |
+| Pending               | Couleur differente (ex: gris, contour pointille, badge "en attente") |
 
 ---
 
@@ -281,6 +284,7 @@ POUR CHAQUE TAG de la recette source :
 ## 7. Synchronisation (rappel)
 
 **Les tags restent LOCAUX a chaque recette.** Pas de synchronisation entre :
+
 - Recette personnelle et copies communautaires
 - Copies communautaires dans differentes communautes
 
@@ -293,6 +297,7 @@ Seuls titre, contenu, imageUrl et ingredients sont synchronises (comportement ex
 ### 8.1 SuperAdmin (existant, etendu)
 
 Les endpoints admin existants restent, avec adaptation :
+
 - **Lister tags** : filtre par scope (GLOBAL / COMMUNITY / tous)
 - **Creer tag** : scope=GLOBAL uniquement
 - **Renommer tag** : n'importe quel tag (global ou communaute)
@@ -315,6 +320,7 @@ POST   /api/communities/:id/tags/:tagId/reject     → Rejeter un tag pending
 ```
 
 **Contraintes :**
+
 - Seuls les MODERATOR/ADMIN de la communaute peuvent acceder
 - Un moderateur ne peut pas modifier/supprimer un tag GLOBAL (c'est le SuperAdmin)
 - Un moderateur ne peut agir que sur les tags de sa communaute
@@ -357,15 +363,15 @@ PUT    /api/users/me/notification-preferences/tags/:communityId → Toggle par c
 
 ### 10.1 Evenements emis
 
-| Evenement | Destinataires | Declencheur |
-|-----------|---------------|-------------|
-| `tag:pending` | Moderateurs de la communaute (si notifications activees) | Nouveau tag pending cree |
-| `tag:approved` | Createur du tag pending | Moderateur valide le tag |
-| `tag:rejected` | Createur du tag pending | Moderateur rejette le tag |
-| `tag-suggestion:new` | Proprietaire de la recette | Nouveau TagSuggestion |
-| `tag-suggestion:approved` | Auteur de la suggestion | Owner accepte |
-| `tag-suggestion:rejected` | Auteur de la suggestion | Owner rejette |
-| `tag-suggestion:pending-mod` | Moderateurs | Suggestion acceptee par owner mais tag inconnu |
+| Evenement                    | Destinataires                                            | Declencheur                                    |
+| ---------------------------- | -------------------------------------------------------- | ---------------------------------------------- |
+| `tag:pending`                | Moderateurs de la communaute (si notifications activees) | Nouveau tag pending cree                       |
+| `tag:approved`               | Createur du tag pending                                  | Moderateur valide le tag                       |
+| `tag:rejected`               | Createur du tag pending                                  | Moderateur rejette le tag                      |
+| `tag-suggestion:new`         | Proprietaire de la recette                               | Nouveau TagSuggestion                          |
+| `tag-suggestion:approved`    | Auteur de la suggestion                                  | Owner accepte                                  |
+| `tag-suggestion:rejected`    | Auteur de la suggestion                                  | Owner rejette                                  |
+| `tag-suggestion:pending-mod` | Moderateurs                                              | Suggestion acceptee par owner mais tag inconnu |
 
 ---
 
@@ -433,12 +439,12 @@ SI une communaute est supprimee (soft delete) :
 
 ## 15. Codes d'erreur (NOUVEAUX)
 
-| Code | Message | Contexte |
-|------|---------|----------|
-| `TAG_001` | Tag non trouve | ID invalide ou supprime |
-| `TAG_002` | Nom de tag deja utilise | Unicite violee (global ou meme communaute) |
-| `TAG_003` | Limite de tags atteinte | >10 sur une recette ou >100 dans une communaute |
-| `TAG_004` | Permission insuffisante | Non-moderateur essaie d'admin les tags |
-| `TAG_005` | Tag global non modifiable | Moderateur essaie de modifier un tag global |
+| Code      | Message                   | Contexte                                        |
+| --------- | ------------------------- | ----------------------------------------------- |
+| `TAG_001` | Tag non trouve            | ID invalide ou supprime                         |
+| `TAG_002` | Nom de tag deja utilise   | Unicite violee (global ou meme communaute)      |
+| `TAG_003` | Limite de tags atteinte   | >10 sur une recette ou >100 dans une communaute |
+| `TAG_004` | Permission insuffisante   | Non-moderateur essaie d'admin les tags          |
+| `TAG_005` | Tag global non modifiable | Moderateur essaie de modifier un tag global     |
 | `TAG_006` | Suggestion deja existante | Meme tag suggere par meme user sur meme recette |
-| `TAG_007` | Auto-suggestion interdite | User suggere un tag sur sa propre recette |
+| `TAG_007` | Auto-suggestion interdite | User suggere un tag sur sa propre recette       |

@@ -1,9 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import {
-  createTestUser,
-  createTestRecipe,
-  createTestCommunity,
-} from "../setup/testHelpers";
+import { createTestUser, createTestRecipe, createTestCommunity } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
 
 // Mock storageService

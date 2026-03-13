@@ -167,7 +167,7 @@ const CommunityTagsList = ({ communityId }: CommunityTagsListProps) => {
       {/* Tags list */}
       {isLoading ? (
         <div className="flex justify-center py-8">
-          <span className="loading loading-spinner loading-md"></span>
+          <span className="loading loading-spinner loading-md" />
         </div>
       ) : tags.length === 0 ? (
         <p className="text-center text-base-content/50 py-4">No tags found</p>
@@ -254,7 +254,9 @@ const CommunityTagsList = ({ communityId }: CommunityTagsListProps) => {
           <div className="modal-box">
             <h3 className="font-bold text-lg">{editingTag ? "Edit Tag" : "Create Tag"}</h3>
             <div className="form-control mt-4">
-              <label className="label"><span className="label-text">Name</span></label>
+              <label className="label">
+                <span className="label-text">Name</span>
+              </label>
               <input
                 type="text"
                 className="input input-bordered"
@@ -264,9 +266,15 @@ const CommunityTagsList = ({ communityId }: CommunityTagsListProps) => {
               />
             </div>
             <div className="modal-action">
-              <button className="btn btn-ghost" onClick={() => setModalOpen(false)}>Cancel</button>
-              <button className="btn btn-primary" onClick={handleSave} disabled={saving || !tagName.trim()}>
-                {saving ? <span className="loading loading-spinner loading-sm"></span> : "Save"}
+              <button className="btn btn-ghost" onClick={() => setModalOpen(false)}>
+                Cancel
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={handleSave}
+                disabled={saving || !tagName.trim()}
+              >
+                {saving ? <span className="loading loading-spinner loading-sm" /> : "Save"}
               </button>
             </div>
           </div>

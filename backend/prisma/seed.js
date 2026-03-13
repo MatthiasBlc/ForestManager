@@ -34,7 +34,11 @@ async function seed() {
   for (const unit of unitData) {
     units[unit.abbreviation] = await prisma.unit.upsert({
       where: { name: unit.name },
-      update: { abbreviation: unit.abbreviation, category: unit.category, sortOrder: unit.sortOrder },
+      update: {
+        abbreviation: unit.abbreviation,
+        category: unit.category,
+        sortOrder: unit.sortOrder,
+      },
       create: unit,
     });
   }
@@ -59,11 +63,23 @@ async function seed() {
   // Tags (always upsert - idempotent)
   // ===========================================
   const tagNames = [
-    "italien", "francais", "asiatique", "mexicain",
-    "vegetarien", "vegan", "sans-gluten",
-    "dessert", "entree", "plat-principal", "aperitif",
-    "rapide", "facile", "gastronomique",
-    "ete", "hiver", "comfort-food",
+    "italien",
+    "francais",
+    "asiatique",
+    "mexicain",
+    "vegetarien",
+    "vegan",
+    "sans-gluten",
+    "dessert",
+    "entree",
+    "plat-principal",
+    "aperitif",
+    "rapide",
+    "facile",
+    "gastronomique",
+    "ete",
+    "hiver",
+    "comfort-food",
   ];
   const tags = {};
   for (const name of tagNames) {
@@ -81,15 +97,42 @@ async function seed() {
   // Ingredients (always upsert - idempotent)
   // ===========================================
   const ingredientNames = [
-    "farine", "beurre", "oeufs", "sucre", "sel", "poivre",
-    "huile d'olive", "ail", "oignon", "tomate",
-    "mozzarella", "parmesan", "creme fraiche", "lait",
-    "poulet", "boeuf", "saumon",
-    "riz", "pates", "pomme de terre",
-    "carotte", "courgette", "aubergine", "poivron",
-    "basilic", "thym", "romarin", "persil", "coriandre",
-    "citron", "pomme", "chocolat", "vanille",
-    "sauce soja", "gingembre", "piment",
+    "farine",
+    "beurre",
+    "oeufs",
+    "sucre",
+    "sel",
+    "poivre",
+    "huile d'olive",
+    "ail",
+    "oignon",
+    "tomate",
+    "mozzarella",
+    "parmesan",
+    "creme fraiche",
+    "lait",
+    "poulet",
+    "boeuf",
+    "saumon",
+    "riz",
+    "pates",
+    "pomme de terre",
+    "carotte",
+    "courgette",
+    "aubergine",
+    "poivron",
+    "basilic",
+    "thym",
+    "romarin",
+    "persil",
+    "coriandre",
+    "citron",
+    "pomme",
+    "chocolat",
+    "vanille",
+    "sauce soja",
+    "gingembre",
+    "piment",
   ];
   const ingredients = {};
   for (const name of ingredientNames) {

@@ -1,11 +1,5 @@
 import { useState } from "react";
-import {
-  FaPlus,
-  FaArrowUp,
-  FaArrowDown,
-  FaTimes,
-  FaGripVertical,
-} from "react-icons/fa";
+import { FaPlus, FaArrowUp, FaArrowDown, FaTimes, FaGripVertical } from "react-icons/fa";
 import {
   DndContext,
   closestCenter,
@@ -46,22 +40,10 @@ interface SortableStepProps {
   onMove: (index: number, direction: -1 | 1) => void;
 }
 
-const SortableStep = ({
-  step,
-  index,
-  total,
-  onUpdate,
-  onRemove,
-  onMove,
-}: SortableStepProps) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: step.id });
+const SortableStep = ({ step, index, total, onUpdate, onRemove, onMove }: SortableStepProps) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: step.id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -179,18 +161,12 @@ const StepEditor = ({ value, onChange }: StepEditorProps) => {
     value.length !== stepsWithIds.length ||
     value.some((s, i) => s.instruction !== stepsWithIds[i]?.instruction);
   if (isOutOfSync) {
-    setStepsWithIds(
-      value.map((s, i) => ({ ...s, id: stepsWithIds[i]?.id || generateId() }))
-    );
+    setStepsWithIds(value.map((s, i) => ({ ...s, id: stepsWithIds[i]?.id || generateId() })));
   }
 
   return (
     <div className="space-y-3">
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext
           items={stepsWithIds.map((s) => s.id)}
           strategy={verticalListSortingStrategy}
@@ -208,11 +184,7 @@ const StepEditor = ({ value, onChange }: StepEditorProps) => {
           ))}
         </SortableContext>
       </DndContext>
-      <button
-        type="button"
-        className="btn btn-outline btn-sm gap-2"
-        onClick={addStep}
-      >
+      <button type="button" className="btn btn-outline btn-sm gap-2" onClick={addStep}>
         <FaPlus /> Ajouter une etape
       </button>
     </div>

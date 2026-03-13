@@ -51,8 +51,8 @@ const InviteCard = ({ invite, onRespond }: InviteCardProps) => {
           </p>
         )}
         <p className="text-sm text-base-content/60">
-          Invited by <span className="font-medium">{invite.inviter.username}</span>
-          {" "}on {new Date(invite.createdAt).toLocaleDateString()}
+          Invited by <span className="font-medium">{invite.inviter.username}</span> on{" "}
+          {new Date(invite.createdAt).toLocaleDateString()}
         </p>
 
         {error && (
@@ -90,7 +90,9 @@ const InviteCard = ({ invite, onRespond }: InviteCardProps) => {
           </div>
         ) : (
           <div className="mt-2">
-            <span className={`badge ${invite.status === "ACCEPTED" ? "badge-success" : "badge-error"}`}>
+            <span
+              className={`badge ${invite.status === "ACCEPTED" ? "badge-success" : "badge-error"}`}
+            >
               {invite.status}
             </span>
           </div>

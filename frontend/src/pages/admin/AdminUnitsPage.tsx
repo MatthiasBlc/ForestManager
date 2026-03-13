@@ -1,8 +1,10 @@
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { FaSortUp, FaSortDown, FaSort } from "react-icons/fa";
 import { AdminUnit } from "../../models/admin";
 import APIManager from "../../network/api";
 import { useConfirm } from "../../hooks/useConfirm";
+import DataContainer from "../../components/DataContainer";
+import { useAsyncData } from "../../hooks/useAsyncData";
 import toast from "react-hot-toast";
 
 type UnitSortColumn = "name" | "abbreviation" | "category" | "sortOrder" | "usageCount";
@@ -18,8 +20,6 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 function AdminUnitsPage() {
-  const [units, setUnits] = useState<AdminUnit[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -33,21 +33,19 @@ function AdminUnitsPage() {
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const { confirm, ConfirmDialog } = useConfirm();
 
-  const loadUnits = useCallback(async () => {
-    try {
-      const data = await APIManager.getAdminUnits(search || undefined, filterCategory || undefined);
-      setUnits(data);
-    } catch {
-      toast.error("Failed to load units");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [search, filterCategory]);
+  const {
+    data: units,
+    isLoading,
+    error,
+    refetch: loadUnits,
+  } = useAsyncData<AdminUnit[]>(
+    () => APIManager.getAdminUnits(search || undefined, filterCategory || undefined),
+    [search, filterCategory]
+  );
 
   useEffect(() => {
-    setIsLoading(true);
-    loadUnits();
-  }, [loadUnits]);
+    if (error) toast.error(error);
+  }, [error]);
 
   // --- Sorting ---
   const handleSort = (column: UnitSortColumn) => {
@@ -60,7 +58,7 @@ function AdminUnitsPage() {
   };
 
   const sortedUnits = useMemo(() => {
-    const sorted = [...units].sort((a, b) => {
+    const sorted = [...(units ?? [])].sort((a, b) => {
       let aVal: string | number = "";
       let bVal: string | number = "";
 
@@ -96,7 +94,11 @@ function AdminUnitsPage() {
 
   const SortIcon = ({ column }: { column: UnitSortColumn }) => {
     if (sortColumn !== column) return <FaSort className="ml-1 opacity-30" />;
-    return sortDirection === "asc" ? <FaSortUp className="ml-1" /> : <FaSortDown className="ml-1" />;
+    return sortDirection === "asc" ? (
+      <FaSortUp className="ml-1" />
+    ) : (
+      <FaSortDown className="ml-1" />
+    );
   };
 
   function openCreate() {
@@ -169,7 +171,9 @@ function AdminUnitsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Units</h1>
-        <button className="btn btn-primary" onClick={openCreate}>Add Unit</button>
+        <button className="btn btn-primary" onClick={openCreate}>
+          Add Unit
+        </button>
       </div>
 
       {/* Filters */}
@@ -188,36 +192,58 @@ function AdminUnitsPage() {
         >
           <option value="">All categories</option>
           {CATEGORIES.map((cat) => (
-            <option key={cat} value={cat}>{CATEGORY_LABELS[cat]}</option>
+            <option key={cat} value={cat}>
+              {CATEGORY_LABELS[cat]}
+            </option>
           ))}
         </select>
       </div>
 
       {/* Table */}
-      {isLoading ? (
-        <div className="flex justify-center py-12">
-          <span className="loading loading-spinner loading-lg"></span>
-        </div>
-      ) : (
+      <DataContainer isLoading={isLoading && !units} error={null}>
         <div className="card bg-base-100 shadow">
           <div className="overflow-x-auto">
             <table className="table">
               <thead>
                 <tr>
                   <th className="cursor-pointer select-none" onClick={() => handleSort("name")}>
-                    <span className="flex items-center">Name<SortIcon column="name" /></span>
+                    <span className="flex items-center">
+                      Name
+                      <SortIcon column="name" />
+                    </span>
                   </th>
-                  <th className="cursor-pointer select-none" onClick={() => handleSort("abbreviation")}>
-                    <span className="flex items-center">Abbreviation<SortIcon column="abbreviation" /></span>
+                  <th
+                    className="cursor-pointer select-none"
+                    onClick={() => handleSort("abbreviation")}
+                  >
+                    <span className="flex items-center">
+                      Abbreviation
+                      <SortIcon column="abbreviation" />
+                    </span>
                   </th>
                   <th className="cursor-pointer select-none" onClick={() => handleSort("category")}>
-                    <span className="flex items-center">Category<SortIcon column="category" /></span>
+                    <span className="flex items-center">
+                      Category
+                      <SortIcon column="category" />
+                    </span>
                   </th>
-                  <th className="cursor-pointer select-none text-right" onClick={() => handleSort("sortOrder")}>
-                    <span className="flex items-center justify-end">Order<SortIcon column="sortOrder" /></span>
+                  <th
+                    className="cursor-pointer select-none text-right"
+                    onClick={() => handleSort("sortOrder")}
+                  >
+                    <span className="flex items-center justify-end">
+                      Order
+                      <SortIcon column="sortOrder" />
+                    </span>
                   </th>
-                  <th className="cursor-pointer select-none text-right" onClick={() => handleSort("usageCount")}>
-                    <span className="flex items-center justify-end">Usage<SortIcon column="usageCount" /></span>
+                  <th
+                    className="cursor-pointer select-none text-right"
+                    onClick={() => handleSort("usageCount")}
+                  >
+                    <span className="flex items-center justify-end">
+                      Usage
+                      <SortIcon column="usageCount" />
+                    </span>
                   </th>
                   <th className="text-right">Actions</th>
                 </tr>
@@ -229,28 +255,39 @@ function AdminUnitsPage() {
                       <td className="font-medium">{item.name}</td>
                       <td>{item.abbreviation}</td>
                       <td>
-                        <span className="badge badge-outline badge-sm">{CATEGORY_LABELS[item.category]}</span>
+                        <span className="badge badge-outline badge-sm">
+                          {CATEGORY_LABELS[item.category]}
+                        </span>
                       </td>
                       <td className="text-right">{item.sortOrder}</td>
                       <td className="text-right">{item.usageCount}</td>
                       <td className="text-right">
                         <div className="flex justify-end gap-1">
-                          <button className="btn btn-ghost btn-xs" onClick={() => openEdit(item)}>Edit</button>
-                          <button className="btn btn-ghost btn-xs text-error" onClick={() => handleDelete(item)}>Delete</button>
+                          <button className="btn btn-ghost btn-xs" onClick={() => openEdit(item)}>
+                            Edit
+                          </button>
+                          <button
+                            className="btn btn-ghost btn-xs text-error"
+                            onClick={() => handleDelete(item)}
+                          >
+                            Delete
+                          </button>
                         </div>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="text-center text-base-content/50">No units found</td>
+                    <td colSpan={6} className="text-center text-base-content/50">
+                      No units found
+                    </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
         </div>
-      )}
+      </DataContainer>
 
       {/* Create/Edit Modal */}
       {modalOpen && (
@@ -258,7 +295,9 @@ function AdminUnitsPage() {
           <div className="modal-box">
             <h3 className="font-bold text-lg">{editingItem ? "Edit Unit" : "Create Unit"}</h3>
             <div className="form-control mt-4">
-              <label className="label"><span className="label-text">Name</span></label>
+              <label className="label">
+                <span className="label-text">Name</span>
+              </label>
               <input
                 type="text"
                 className="input input-bordered"
@@ -268,7 +307,9 @@ function AdminUnitsPage() {
               />
             </div>
             <div className="form-control mt-2">
-              <label className="label"><span className="label-text">Abbreviation</span></label>
+              <label className="label">
+                <span className="label-text">Abbreviation</span>
+              </label>
               <input
                 type="text"
                 className="input input-bordered"
@@ -278,19 +319,25 @@ function AdminUnitsPage() {
               />
             </div>
             <div className="form-control mt-2">
-              <label className="label"><span className="label-text">Category</span></label>
+              <label className="label">
+                <span className="label-text">Category</span>
+              </label>
               <select
                 className="select select-bordered"
                 value={formCategory}
                 onChange={(e) => setFormCategory(e.target.value)}
               >
                 {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>{CATEGORY_LABELS[cat]}</option>
+                  <option key={cat} value={cat}>
+                    {CATEGORY_LABELS[cat]}
+                  </option>
                 ))}
               </select>
             </div>
             <div className="form-control mt-2">
-              <label className="label"><span className="label-text">Sort Order</span></label>
+              <label className="label">
+                <span className="label-text">Sort Order</span>
+              </label>
               <input
                 type="number"
                 className="input input-bordered"
@@ -299,13 +346,15 @@ function AdminUnitsPage() {
               />
             </div>
             <div className="modal-action">
-              <button className="btn btn-ghost" onClick={() => setModalOpen(false)}>Cancel</button>
+              <button className="btn btn-ghost" onClick={() => setModalOpen(false)}>
+                Cancel
+              </button>
               <button
                 className="btn btn-primary"
                 onClick={handleSave}
                 disabled={saving || !formName.trim() || !formAbbreviation.trim()}
               >
-                {saving ? <span className="loading loading-spinner loading-sm"></span> : "Save"}
+                {saving ? <span className="loading loading-spinner loading-sm" /> : "Save"}
               </button>
             </div>
           </div>

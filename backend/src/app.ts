@@ -1,4 +1,16 @@
-import express, { NextFunction, Request, Response } from "express";
+import express from "express";
+import createHttpError from "http-errors";
+import cors from "cors";
+import env from "./util/validateEnv";
+import { httpLogger } from "./middleware/httpLogger";
+import { helmetMiddleware, adminRateLimiter, requireHttps } from "./middleware/security";
+import { csrfProtection } from "./middleware/csrf";
+import { requireAuth } from "./middleware/auth";
+import { requireSuperAdmin } from "./admin/middleware/requireSuperAdmin";
+import { userSession, adminSession } from "./config/session";
+import { errorHandler } from "./middleware/errorHandler";
+
+// User routes
 import authRoutes from "./routes/auth";
 import recipesRoutes from "./routes/recipes";
 import tagsRoutes from "./routes/tags";
@@ -10,6 +22,8 @@ import usersRoutes from "./routes/users";
 import proposalsRoutes from "./routes/proposals";
 import tagSuggestionsRoutes from "./routes/tagSuggestions";
 import notificationsRoutes from "./routes/notifications";
+
+// Admin routes
 import adminAuthRoutes from "./admin/routes/authRoutes";
 import adminTagsRoutes from "./admin/routes/tagsRoutes";
 import adminIngredientsRoutes from "./admin/routes/ingredientsRoutes";
@@ -19,88 +33,22 @@ import adminDashboardRoutes from "./admin/routes/dashboardRoutes";
 import adminActivityRoutes from "./admin/routes/activityRoutes";
 import adminUnitsRoutes from "./admin/routes/unitsRoutes";
 import adminRecipesRoutes from "./admin/routes/recipesRoutes";
-import createHttpError, { isHttpError } from "http-errors";
-import { httpLogger } from "./middleware/httpLogger";
-import logger from "./util/logger";
-import { ValidationError } from "./util/validation";
-import cors from "cors";
-import session from "express-session";
-import env from "./util/validateEnv";
-import { PrismaSessionStore } from "@quixo3/prisma-session-store";
-import { requireAuth } from "./middleware/auth";
-import { requireSuperAdmin } from "./admin/middleware/requireSuperAdmin";
-import { helmetMiddleware, adminRateLimiter, requireHttps } from "./middleware/security";
-import prisma from "./util/db";
 
 const app = express();
 
-// Security middlewares
-app.use(requireHttps); // Force HTTPS en production
-app.use(helmetMiddleware); // Headers de securite (CSP, X-Frame-Options, etc.)
-
-// Trust proxy for production (behind Traefik)
-if (env.NODE_ENV === "production") {
-  app.set("trust proxy", 1);
-}
-
-// CORS needed for dev environment (in prod, nginx proxy handles same-origin)
-if (env.CORS_ORIGIN) {
-  app.use(cors({ credentials: true, origin: env.CORS_ORIGIN }));
-}
-
+// Global middleware
+app.use(requireHttps);
+app.use(helmetMiddleware);
+if (env.NODE_ENV === "production") app.set("trust proxy", 1);
+if (env.CORS_ORIGIN) app.use(cors({ credentials: true, origin: env.CORS_ORIGIN }));
 app.use(httpLogger);
-
 app.use(express.json({ limit: "50kb" }));
+app.use(csrfProtection);
 
-// User session middleware (cookie: forestmanager_user_session, duree: 1h)
-export const userSession = session({
-  name: "forestmanager_user_session",
-  secret: env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 60 * 60 * 1000, // 1 hour
-    httpOnly: true,
-    secure: env.NODE_ENV === "production",
-    sameSite: "lax",
-  },
-  rolling: true,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  store: new PrismaSessionStore(prisma as any, {
-    checkPeriod: 2 * 60 * 1000,
-    dbRecordIdIsSessionId: true,
-    dbRecordIdFunction: undefined,
-  }),
-});
+// Health check
+app.get("/health", (_req, res) => res.status(200).json({ status: "ok" }));
 
-// Admin session middleware (cookie: forestmanager_admin_session, duree: 30min)
-const adminSession = session({
-  name: "forestmanager_admin_session",
-  secret: env.ADMIN_SESSION_SECRET,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 30 * 60 * 1000, // 30 minutes
-    httpOnly: true,
-    secure: env.NODE_ENV === "production",
-    sameSite: "strict",
-  },
-  rolling: false, // Pas de renouvellement automatique pour admin
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  store: new PrismaSessionStore(prisma as any, {
-    checkPeriod: 2 * 60 * 1000,
-    dbRecordIdIsSessionId: true,
-    dbRecordIdFunction: undefined,
-    sessionModelName: "AdminSession",
-  }),
-});
-
-// Health check endpoint (before auth, no logging)
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "ok" });
-});
-
-// User routes (avec user session)
+// User routes
 app.use("/api/auth", userSession, authRoutes);
 app.use("/api/recipes", userSession, requireAuth, recipesRoutes);
 app.use("/api/tags", userSession, requireAuth, tagsRoutes);
@@ -113,8 +61,8 @@ app.use("/api/proposals", userSession, requireAuth, proposalsRoutes);
 app.use("/api/tag-suggestions", userSession, requireAuth, tagSuggestionsRoutes);
 app.use("/api/notifications", userSession, requireAuth, notificationsRoutes);
 
-// Admin routes (avec admin session isolee + rate limiting global)
-app.use("/api/admin", adminRateLimiter); // Rate limit global admin (30 req/min)
+// Admin routes
+app.use("/api/admin", adminRateLimiter);
 app.use("/api/admin/auth", adminSession, adminAuthRoutes);
 app.use("/api/admin/tags", adminSession, requireSuperAdmin, adminTagsRoutes);
 app.use("/api/admin/ingredients", adminSession, requireSuperAdmin, adminIngredientsRoutes);
@@ -125,26 +73,9 @@ app.use("/api/admin/activity", adminSession, requireSuperAdmin, adminActivityRou
 app.use("/api/admin/units", adminSession, requireSuperAdmin, adminUnitsRoutes);
 app.use("/api/admin/recipes", adminSession, requireSuperAdmin, adminRecipesRoutes);
 
-app.use((req, res, next) => {
-  next(createHttpError(404, "Endpoint not found"));
-});
+// 404 + error handler
+app.use((_req, _res, next) => next(createHttpError(404, "Endpoint not found")));
+app.use(errorHandler);
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-app.use((error: unknown, req: Request, res: Response, next: NextFunction) => {
-  // ValidationError → 400 (input validation)
-  if (error instanceof ValidationError) {
-    res.status(400).json({ error: error.message });
-    return;
-  }
-
-  logger.error({ err: error, path: req.path, method: req.method }, "Unhandled error");
-  let errorMessage = "An unknown error occurred";
-  let statusCode = 500;
-  if (isHttpError(error)) {
-    statusCode = error.status;
-    errorMessage = error.message;
-  }
-  res.status(statusCode).json({ error: errorMessage });
-});
-
+export { userSession };
 export default app;

@@ -1,8 +1,8 @@
 import { RequestHandler } from "express";
 import prisma from "../util/db";
-import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { requireMembership } from "../services/membershipService";
+import { UpdateTagPreferenceInput } from "../schemas/tag.schema";
 // =============================================================================
 // TAG VISIBILITY PREFERENCES (UserCommunityTagPreference)
 // =============================================================================
@@ -53,7 +53,7 @@ export const getTagPreferences: RequestHandler = async (req, res, next) => {
 export const updateTagPreference: RequestHandler<
   { communityId: string },
   unknown,
-  { showTags?: boolean },
+  UpdateTagPreferenceInput,
   unknown
 > = async (req, res, next) => {
   const userId = req.session.userId;
@@ -62,10 +62,6 @@ export const updateTagPreference: RequestHandler<
 
   try {
     assertIsDefine(userId);
-
-    if (typeof showTags !== "boolean") {
-      throw createHttpError(400, "TAG_001: showTags must be a boolean");
-    }
 
     // Verifier membership
     await requireMembership(userId, communityId);
@@ -84,4 +80,3 @@ export const updateTagPreference: RequestHandler<
     next(error);
   }
 };
-

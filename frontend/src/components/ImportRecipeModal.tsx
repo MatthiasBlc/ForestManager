@@ -45,10 +45,7 @@ const ImportRecipeModal = ({ onImport, onClose }: ImportRecipeModalProps) => {
       // Import texte via parser local
       const parsed = parseRecipeText(trimmed);
 
-      const hasContent =
-        parsed.title ||
-        parsed.ingredients.length > 0 ||
-        parsed.steps.length > 0;
+      const hasContent = parsed.title || parsed.ingredients.length > 0 || parsed.steps.length > 0;
 
       if (!hasContent) {
         setError("Aucune recette detectee dans le texte. Verifiez le format.");
@@ -63,11 +60,7 @@ const ImportRecipeModal = ({ onImport, onClose }: ImportRecipeModalProps) => {
     <Modal onClose={onClose} className="max-w-2xl">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-bold">Importer une recette</h3>
-        <button
-          type="button"
-          className="btn btn-ghost btn-sm btn-square"
-          onClick={onClose}
-        >
+        <button type="button" className="btn btn-ghost btn-sm btn-square" onClick={onClose}>
           <FaTimes />
         </button>
       </div>
@@ -105,11 +98,7 @@ const ImportRecipeModal = ({ onImport, onClose }: ImportRecipeModalProps) => {
           disabled={!canAnalyze}
           onClick={handleAnalyze}
         >
-          {isLoading ? (
-            <span className="loading loading-spinner loading-sm" />
-          ) : (
-            "Analyser"
-          )}
+          {isLoading ? <span className="loading loading-spinner loading-sm" /> : "Analyser"}
         </button>
       </div>
     </Modal>

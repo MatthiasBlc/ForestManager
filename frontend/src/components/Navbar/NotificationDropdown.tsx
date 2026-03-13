@@ -1,11 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  FaBell,
-  FaCheckDouble,
-  FaChevronDown,
-  FaChevronUp,
-} from "react-icons/fa";
+import { FaBell, FaCheckDouble, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { Notification } from "../../models/notification";
 import { CATEGORY_CONFIG } from "../../config/notificationCategories";
 import { formatRelativeTime } from "../../utils/formatTime";
@@ -47,9 +42,7 @@ const NotificationItem = ({ notification, onClick }: NotificationItemProps) => {
         {/* Content */}
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">{notification.title}</p>
-          <p className="text-xs text-base-content/70 line-clamp-2">
-            {notification.message}
-          </p>
+          <p className="text-xs text-base-content/70 line-clamp-2">{notification.message}</p>
           <p className="text-xs text-base-content/50 mt-1">
             {formatRelativeTime(notification.createdAt)}
           </p>
@@ -96,18 +89,14 @@ const GroupedNotificationItem = ({ notification, onClick }: GroupedNotificationI
           onClick={() => onClick(notification)}
         >
           <p className="text-sm font-medium truncate">{notification.title}</p>
-          <p className="text-xs text-base-content/70 line-clamp-2">
-            {notification.message}
-          </p>
+          <p className="text-xs text-base-content/70 line-clamp-2">{notification.message}</p>
           <p className="text-xs text-base-content/50 mt-1">
             {formatRelativeTime(notification.createdAt)}
           </p>
         </button>
 
         <div className="flex items-center gap-2 flex-shrink-0 mt-0.5">
-          {isUnread && (
-            <span className="block w-2.5 h-2.5 rounded-full bg-primary" />
-          )}
+          {isUnread && <span className="block w-2.5 h-2.5 rounded-full bg-primary" />}
           <button
             className="btn btn-ghost btn-xs btn-circle"
             onClick={(e) => {
@@ -163,7 +152,10 @@ const NotificationDropdown = () => {
     refresh: refreshNotifications,
   } = useNotifications({ limit: 10 });
 
-  useClickOutside(menuRef, useCallback(() => setIsOpen(false), []));
+  useClickOutside(
+    menuRef,
+    useCallback(() => setIsOpen(false), [])
+  );
 
   // Auto-mark visible notifications as read after 3s of dropdown being open
   useEffect(() => {
@@ -295,10 +287,7 @@ const NotificationDropdown = () => {
 
           {/* Footer */}
           <div className="border-t border-base-300 p-2">
-            <button
-              className="btn btn-ghost btn-sm w-full"
-              onClick={handleViewAll}
-            >
+            <button className="btn btn-ghost btn-sm w-full" onClick={handleViewAll}>
               Voir tout
             </button>
           </div>

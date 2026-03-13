@@ -4,17 +4,15 @@ import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { InviteStatus } from "@prisma/client";
 import appEvents from "../services/eventEmitter";
-import { EMAIL_REGEX } from "../util/validation";
-
-// =====================================
-// Types
-// =====================================
-
-interface CreateInviteBody {
-  email?: string;
-  username?: string;
-  userId?: string;
-}
+import {
+  INVITE_001,
+  INVITE_002,
+  INVITE_003,
+  INVITE_006,
+  COMMUNITY_004,
+  COMMUNITY_005,
+} from "../constants/errorCodes";
+import { CreateInviteInput } from "../schemas/invite.schema";
 
 interface GetInvitesQuery {
   status?: string;
@@ -31,7 +29,7 @@ interface GetMyInvitesQuery {
 export const createInvite: RequestHandler<
   { communityId: string },
   unknown,
-  CreateInviteBody
+  CreateInviteInput
 > = async (req, res, next) => {
   const communityId = req.params.communityId;
   const email = req.body.email?.trim();
@@ -45,26 +43,6 @@ export const createInvite: RequestHandler<
 
     if (!userCommunity) {
       throw createHttpError(500, "Middleware memberOf required");
-    }
-
-    // Validate email format if provided
-    if (email && !EMAIL_REGEX.test(email)) {
-      throw createHttpError(400, "AUTH_003: Invalid email format");
-    }
-
-    // Validate that exactly one search field is provided
-    const providedFields = [email, username, userId].filter(Boolean);
-    if (providedFields.length === 0) {
-      throw createHttpError(
-        400,
-        "INVITE_004: One of email, username, or userId is required"
-      );
-    }
-    if (providedFields.length > 1) {
-      throw createHttpError(
-        400,
-        "INVITE_005: Only one of email, username, or userId should be provided"
-      );
     }
 
     // Find the user to invite
@@ -83,7 +61,7 @@ export const createInvite: RequestHandler<
     });
 
     if (!invitee) {
-      throw createHttpError(404, "INVITE_003: User not found");
+      throw createHttpError(404, INVITE_003);
     }
 
     // Check if user is already a member
@@ -96,7 +74,7 @@ export const createInvite: RequestHandler<
     });
 
     if (existingMembership) {
-      throw createHttpError(409, "COMMUNITY_004: User already member");
+      throw createHttpError(409, COMMUNITY_004);
     }
 
     // Check if there's already a pending invite
@@ -110,7 +88,7 @@ export const createInvite: RequestHandler<
     });
 
     if (existingInvite) {
-      throw createHttpError(409, "COMMUNITY_005: Invitation already pending");
+      throw createHttpError(409, COMMUNITY_005);
     }
 
     // Create the invite and log activity in a transaction
@@ -193,12 +171,7 @@ export const getInvites: RequestHandler<
     // Build status filter
     let statusFilter: { status?: InviteStatus } = {};
     if (status && status !== "all") {
-      const validStatuses: InviteStatus[] = [
-        "PENDING",
-        "ACCEPTED",
-        "REJECTED",
-        "CANCELLED",
-      ];
+      const validStatuses: InviteStatus[] = ["PENDING", "ACCEPTED", "REJECTED", "CANCELLED"];
       if (validStatuses.includes(status as InviteStatus)) {
         statusFilter = { status: status as InviteStatus };
       }
@@ -252,7 +225,11 @@ export const getInvites: RequestHandler<
 // DELETE /api/communities/:communityId/invites/:inviteId
 // Cancel an invitation (MODERATOR only)
 // =====================================
-export const cancelInvite: RequestHandler<{ communityId: string; inviteId: string }> = async (req, res, next) => {
+export const cancelInvite: RequestHandler<{ communityId: string; inviteId: string }> = async (
+  req,
+  res,
+  next
+) => {
   const communityId = req.params.communityId;
   const inviteId = req.params.inviteId;
   const userId = req.session.userId;
@@ -283,20 +260,17 @@ export const cancelInvite: RequestHandler<{ communityId: string; inviteId: strin
     });
 
     if (!invite) {
-      throw createHttpError(404, "INVITE_001: Invite not found");
+      throw createHttpError(404, INVITE_001);
     }
 
     // Check if invite is still pending
     if (invite.status !== "PENDING") {
-      throw createHttpError(400, "INVITE_002: Invite already processed");
+      throw createHttpError(400, INVITE_002);
     }
 
     // Only the inviter or a moderator can cancel
     if (invite.inviterId !== userId && userCommunity.role !== "MODERATOR") {
-      throw createHttpError(
-        403,
-        "INVITE_003: Only the inviter or a moderator can cancel"
-      );
+      throw createHttpError(403, INVITE_003);
     }
 
     // Cancel the invite and log activity in a transaction
@@ -340,12 +314,11 @@ export const cancelInvite: RequestHandler<{ communityId: string; inviteId: strin
 // GET /api/users/me/invites
 // Get my received invitations
 // =====================================
-export const getMyInvites: RequestHandler<
-  unknown,
-  unknown,
-  unknown,
-  GetMyInvitesQuery
-> = async (req, res, next) => {
+export const getMyInvites: RequestHandler<unknown, unknown, unknown, GetMyInvitesQuery> = async (
+  req,
+  res,
+  next
+) => {
   const userId = req.session.userId;
   const { status } = req.query;
 
@@ -438,17 +411,17 @@ export const acceptInvite: RequestHandler<{ inviteId: string }> = async (req, re
     });
 
     if (!invite) {
-      throw createHttpError(404, "INVITE_001: Invite not found");
+      throw createHttpError(404, INVITE_001);
     }
 
     // Check if user is the invitee
     if (invite.inviteeId !== userId) {
-      throw createHttpError(403, "INVITE_006: Not authorized to accept this invitation");
+      throw createHttpError(403, INVITE_006);
     }
 
     // Check if invite is still pending
     if (invite.status !== "PENDING") {
-      throw createHttpError(400, "INVITE_002: Invite already processed");
+      throw createHttpError(400, INVITE_002);
     }
 
     // Check if community is not deleted
@@ -540,17 +513,17 @@ export const rejectInvite: RequestHandler<{ inviteId: string }> = async (req, re
     });
 
     if (!invite) {
-      throw createHttpError(404, "INVITE_001: Invite not found");
+      throw createHttpError(404, INVITE_001);
     }
 
     // Check if user is the invitee
     if (invite.inviteeId !== userId) {
-      throw createHttpError(403, "INVITE_006: Not authorized to reject this invitation");
+      throw createHttpError(403, INVITE_006);
     }
 
     // Check if invite is still pending
     if (invite.status !== "PENDING") {
-      throw createHttpError(400, "INVITE_002: Invite already processed");
+      throw createHttpError(400, INVITE_002);
     }
 
     // Reject invite and log activity in a transaction

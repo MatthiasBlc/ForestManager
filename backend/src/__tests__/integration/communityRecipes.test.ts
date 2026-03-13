@@ -1,12 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../../app";
-import {
-  uniqueSuffix,
-  extractSessionCookie,
-} from "../setup/testHelpers";
+import { uniqueSuffix, extractSessionCookie } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
-
 
 describe("Community Recipes API", () => {
   let moderator: { id: string; username: string; email: string };
@@ -21,11 +17,13 @@ describe("Community Recipes API", () => {
     const suffix = uniqueSuffix();
 
     // Create moderator via signup
-    const modSignup = await request(app).post("/api/auth/signup").send({
-      username: `crmod_${suffix}`,
-      email: `crmod_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const modSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `crmod_${suffix}`,
+        email: `crmod_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     moderatorCookie = extractSessionCookie(modSignup)!;
     moderator = (await testPrisma.user.findFirst({
       where: { email: `crmod_${suffix}@example.com` },
@@ -39,11 +37,13 @@ describe("Community Recipes API", () => {
     community = createRes.body;
 
     // Create member via signup, add to community
-    const memSignup = await request(app).post("/api/auth/signup").send({
-      username: `crmem_${suffix}`,
-      email: `crmem_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const memSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `crmem_${suffix}`,
+        email: `crmem_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     memberCookie = extractSessionCookie(memSignup)!;
     member = (await testPrisma.user.findFirst({
       where: { email: `crmem_${suffix}@example.com` },
@@ -59,11 +59,13 @@ describe("Community Recipes API", () => {
     });
 
     // Create non-member via signup
-    const nonMemSignup = await request(app).post("/api/auth/signup").send({
-      username: `crnonm_${suffix}`,
-      email: `crnonm_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const nonMemSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `crnonm_${suffix}`,
+        email: `crnonm_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     nonMemberCookie = extractSessionCookie(nonMemSignup)!;
     _nonMember = (await testPrisma.user.findFirst({
       where: { email: `crnonm_${suffix}@example.com` },
@@ -238,13 +240,23 @@ describe("Community Recipes API", () => {
       await request(app)
         .post("/api/recipes")
         .set("Cookie", memberCookie)
-        .send({ title: "Perso", servings: 4, steps: [{ instruction: "c" }], tags: ["existing_global"] });
+        .send({
+          title: "Perso",
+          servings: 4,
+          steps: [{ instruction: "c" }],
+          tags: ["existing_global"],
+        });
 
       // Creer recette communautaire avec le meme tag
       const res = await request(app)
         .post(`/api/communities/${community.id}/recipes`)
         .set("Cookie", memberCookie)
-        .send({ title: "Comm", servings: 4, steps: [{ instruction: "c" }], tags: ["existing_global"] });
+        .send({
+          title: "Comm",
+          servings: 4,
+          steps: [{ instruction: "c" }],
+          tags: ["existing_global"],
+        });
 
       expect(res.status).toBe(201);
       const communityTags = res.body.community.tags;
@@ -258,7 +270,12 @@ describe("Community Recipes API", () => {
       const res = await request(app)
         .post(`/api/communities/${community.id}/recipes`)
         .set("Cookie", memberCookie)
-        .send({ title: "Recette", servings: 4, steps: [{ instruction: "c" }], tags: ["brand_new_tag"] });
+        .send({
+          title: "Recette",
+          servings: 4,
+          steps: [{ instruction: "c" }],
+          tags: ["brand_new_tag"],
+        });
 
       expect(res.status).toBe(201);
 
@@ -292,7 +309,12 @@ describe("Community Recipes API", () => {
       const res = await request(app)
         .post(`/api/communities/${community.id}/recipes`)
         .set("Cookie", memberCookie)
-        .send({ title: "R", servings: 4, steps: [{ instruction: "c" }], tags: ["approved_comm_tag"] });
+        .send({
+          title: "R",
+          servings: 4,
+          steps: [{ instruction: "c" }],
+          tags: ["approved_comm_tag"],
+        });
 
       expect(res.status).toBe(201);
       const communityTags = res.body.community.tags;
@@ -454,8 +476,7 @@ describe("Community Recipes API", () => {
     });
 
     it("should return 401 when not authenticated", async () => {
-      const res = await request(app)
-        .get(`/api/communities/${community.id}/recipes`);
+      const res = await request(app).get(`/api/communities/${community.id}/recipes`);
 
       expect(res.status).toBe(401);
     });
@@ -615,9 +636,7 @@ describe("Community Recipes API", () => {
     });
 
     it("should NOT delete personal recipe when deleting community recipe", async () => {
-      await request(app)
-        .delete(`/api/recipes/${communityRecipeId}`)
-        .set("Cookie", memberCookie);
+      await request(app).delete(`/api/recipes/${communityRecipeId}`).set("Cookie", memberCookie);
 
       // Personal recipe should still exist
       const getRes = await request(app)
@@ -628,9 +647,7 @@ describe("Community Recipes API", () => {
     });
 
     it("should NOT delete community recipe when deleting personal recipe", async () => {
-      await request(app)
-        .delete(`/api/recipes/${personalRecipeId}`)
-        .set("Cookie", memberCookie);
+      await request(app).delete(`/api/recipes/${personalRecipeId}`).set("Cookie", memberCookie);
 
       // Community recipe should still exist
       const getRes = await request(app)
@@ -656,17 +673,13 @@ describe("Community Recipes API", () => {
     });
 
     it("should not appear in community recipes list after delete", async () => {
-      await request(app)
-        .delete(`/api/recipes/${communityRecipeId}`)
-        .set("Cookie", memberCookie);
+      await request(app).delete(`/api/recipes/${communityRecipeId}`).set("Cookie", memberCookie);
 
       const listRes = await request(app)
         .get(`/api/communities/${community.id}/recipes`)
         .set("Cookie", memberCookie);
 
-      const found = listRes.body.data.find(
-        (r: { id: string }) => r.id === communityRecipeId
-      );
+      const found = listRes.body.data.find((r: { id: string }) => r.id === communityRecipeId);
       expect(found).toBeUndefined();
     });
   });

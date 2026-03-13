@@ -123,7 +123,9 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
   return (
     <div className="flex flex-col h-full">
       {/* Header with toggle button - Desktop only */}
-      <div className={`shrink-0 hidden pointer-fine:flex p-3 border-b border-base-300 ${isCompact ? "justify-center" : "justify-between items-center"}`}>
+      <div
+        className={`shrink-0 hidden pointer-fine:flex p-3 border-b border-base-300 ${isCompact ? "justify-center" : "justify-between items-center"}`}
+      >
         {!isCompact && <span className="text-lg font-bold">Menu</span>}
         <button
           onClick={onToggleCompact}
@@ -136,7 +138,9 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
       </div>
 
       {/* Mobile header */}
-      <div className={`shrink-0 p-3 border-b border-base-300 pointer-fine:hidden ${isCompact ? "text-center" : ""}`}>
+      <div
+        className={`shrink-0 p-3 border-b border-base-300 pointer-fine:hidden ${isCompact ? "text-center" : ""}`}
+      >
         <span className="text-xl font-bold">{isCompact ? "FM" : "Forest Manager"}</span>
       </div>
 
@@ -151,9 +155,13 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
           } ${isCompact ? "justify-center tooltip tooltip-right" : ""}`}
           data-tip={isCompact ? "Dashboard" : undefined}
         >
-          <div className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
-            isActive("/dashboard") ? "bg-primary text-primary-content rounded-xl" : "bg-base-300 text-base-content/70"
-          }`}>
+          <div
+            className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
+              isActive("/dashboard")
+                ? "bg-primary text-primary-content rounded-xl"
+                : "bg-base-300 text-base-content/70"
+            }`}
+          >
             <FaHome className="w-5 h-5" />
           </div>
           {!isCompact && <span className="text-sm font-medium">Dashboard</span>}
@@ -168,9 +176,13 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
           } ${isCompact ? "justify-center tooltip tooltip-right" : ""}`}
           data-tip={isCompact ? "My Recipes" : undefined}
         >
-          <div className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
-            isActive("/recipes") ? "bg-primary text-primary-content rounded-xl" : "bg-base-300 text-base-content/70"
-          }`}>
+          <div
+            className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
+              isActive("/recipes")
+                ? "bg-primary text-primary-content rounded-xl"
+                : "bg-base-300 text-base-content/70"
+            }`}
+          >
             <FaBook className="w-5 h-5" />
           </div>
           {!isCompact && <span className="text-sm font-medium">My Recipes</span>}
@@ -192,7 +204,9 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
       )}
 
       {/* Communities list - scrollable with hidden scrollbar */}
-      <div className={`flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide ${isCompact ? "p-2" : "px-3 pb-3"}`}>
+      <div
+        className={`flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide ${isCompact ? "p-2" : "px-3 pb-3"}`}
+      >
         <div className="space-y-1">
           {communities.map((community) => (
             <CommunityAvatar

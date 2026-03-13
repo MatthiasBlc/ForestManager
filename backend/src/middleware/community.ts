@@ -1,22 +1,19 @@
 import { Request, Response, NextFunction } from "express";
 import createHttpError from "http-errors";
 import prisma from "../util/db";
+import { AUTH_001, COMMUNITY_001, COMMUNITY_002 } from "../constants/errorCodes";
 
 /**
  * Middleware pour verifier que l'utilisateur est membre de la communaute.
  * Attend communityId dans req.params.
  * Ajoute req.userCommunity avec les infos du membership.
  */
-export const memberOf = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const memberOf = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const userId = req.session.userId;
   const communityId = req.params.communityId;
 
   if (!userId) {
-    return next(createHttpError(401, "AUTH_001: Not authenticated"));
+    return next(createHttpError(401, AUTH_001));
   }
 
   if (!communityId) {
@@ -56,7 +53,7 @@ export const memberOf = async (
         return next(createHttpError(404, "Community not found"));
       }
 
-      return next(createHttpError(403, "COMMUNITY_001: Not a member"));
+      return next(createHttpError(403, COMMUNITY_001));
     }
 
     // Attach membership info to request for use in controllers
@@ -77,9 +74,7 @@ export const requireCommunityRole = (requiredRole: "MEMBER" | "MODERATOR") => {
     const userCommunity = req.userCommunity;
 
     if (!userCommunity) {
-      return next(
-        createHttpError(500, "requireCommunityRole must be used after memberOf")
-      );
+      return next(createHttpError(500, "requireCommunityRole must be used after memberOf"));
     }
 
     // Role hierarchy: MODERATOR > MEMBER
@@ -92,9 +87,7 @@ export const requireCommunityRole = (requiredRole: "MEMBER" | "MODERATOR") => {
     const requiredRoleLevel = roleHierarchy[requiredRole] || 0;
 
     if (userRoleLevel < requiredRoleLevel) {
-      return next(
-        createHttpError(403, "COMMUNITY_002: Permission insufficient")
-      );
+      return next(createHttpError(403, COMMUNITY_002));
     }
 
     next();

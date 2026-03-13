@@ -4,7 +4,6 @@ import app from "../../app";
 import { uniqueSuffix, extractSessionCookie } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
 
-
 describe("Share Recipe API", () => {
   let _user1: { id: string };
   let user1Cookie: string;
@@ -18,11 +17,13 @@ describe("Share Recipe API", () => {
     const suffix = uniqueSuffix();
 
     // Create user1 (moderator in both communities)
-    const user1Signup = await request(app).post("/api/auth/signup").send({
-      username: `shareuser1_${suffix}`,
-      email: `shareuser1_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const user1Signup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `shareuser1_${suffix}`,
+        email: `shareuser1_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     user1Cookie = extractSessionCookie(user1Signup)!;
     _user1 = (await testPrisma.user.findFirst({
       where: { email: `shareuser1_${suffix}@example.com` },
@@ -43,11 +44,13 @@ describe("Share Recipe API", () => {
     targetCommunity = targetRes.body;
 
     // Create user2 (member)
-    const user2Signup = await request(app).post("/api/auth/signup").send({
-      username: `shareuser2_${suffix}`,
-      email: `shareuser2_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const user2Signup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `shareuser2_${suffix}`,
+        email: `shareuser2_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     user2Cookie = extractSessionCookie(user2Signup)!;
     user2 = (await testPrisma.user.findFirst({
       where: { email: `shareuser2_${suffix}@example.com` },
@@ -218,11 +221,13 @@ describe("Share Recipe API", () => {
     it("should reject if not member of source community", async () => {
       // Create user3 who is only member of target
       const suffix = uniqueSuffix();
-      const user3Signup = await request(app).post("/api/auth/signup").send({
-        username: `shareuser3_${suffix}`,
-        email: `shareuser3_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const user3Signup = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `shareuser3_${suffix}`,
+          email: `shareuser3_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       const user3Cookie = extractSessionCookie(user3Signup)!;
       const user3 = (await testPrisma.user.findFirst({
         where: { email: `shareuser3_${suffix}@example.com` },
@@ -304,7 +309,7 @@ describe("Share Recipe API", () => {
         .send({});
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain("SHARE_001");
+      expect(res.body.error).toContain("VALIDATION_001");
     });
 
     it("should reject unauthenticated requests", async () => {
@@ -352,7 +357,9 @@ describe("Share Recipe API", () => {
         .send({ targetCommunityId: targetCommunity.id });
 
       expect(res.status).toBe(201);
-      const forkGlobalTag = res.body.tags.find((t: { name: string }) => t.name === "global_fork_tag");
+      const forkGlobalTag = res.body.tags.find(
+        (t: { name: string }) => t.name === "global_fork_tag"
+      );
       expect(forkGlobalTag).toBeDefined();
       expect(forkGlobalTag.scope).toBe("GLOBAL");
       expect(forkGlobalTag.id).toBe(globalTag.id);
@@ -396,7 +403,9 @@ describe("Share Recipe API", () => {
       expect(pendingTag).not.toBeNull();
 
       // Verifier que le fork a ce tag
-      const forkTag = res.body.tags.find((t: { name: string }) => t.name === "source_community_tag");
+      const forkTag = res.body.tags.find(
+        (t: { name: string }) => t.name === "source_community_tag"
+      );
       expect(forkTag).toBeDefined();
       expect(forkTag.communityId).toBe(targetCommunity.id);
     });

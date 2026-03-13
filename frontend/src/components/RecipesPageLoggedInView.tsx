@@ -21,7 +21,7 @@ const RecipesPageLoggedInView = () => {
   const [shareRecipe, setShareRecipe] = useState<RecipeListItem | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem("recipesViewMode");
-    return (saved === "list" || saved === "card") ? saved : "card";
+    return saved === "list" || saved === "card" ? saved : "card";
   });
 
   const toggleViewMode = () => {
@@ -32,10 +32,7 @@ const RecipesPageLoggedInView = () => {
 
   const searchFilter = searchParams.get("search") || "";
   const tagsParam = searchParams.get("tags") || "";
-  const tagsFilter = useMemo(
-    () => tagsParam.split(",").filter(Boolean),
-    [tagsParam]
-  );
+  const tagsFilter = useMemo(() => tagsParam.split(",").filter(Boolean), [tagsParam]);
   const ingredientsParam = searchParams.get("ingredients") || "";
   const ingredientsFilter = useMemo(
     () => ingredientsParam.split(",").filter(Boolean),
@@ -54,8 +51,14 @@ const RecipesPageLoggedInView = () => {
   );
 
   const {
-    data: recipes, pagination, isLoading: recipesLoading, isLoadingMore: loadingMore,
-    error: showRecipesLoadingError, loadMore: handleLoadMore, setData: setRecipes, setPagination,
+    data: recipes,
+    pagination,
+    isLoading: recipesLoading,
+    isLoadingMore: loadingMore,
+    error: showRecipesLoadingError,
+    loadMore: handleLoadMore,
+    setData: setRecipes,
+    setPagination,
   } = usePaginatedList(fetchRecipes, RECIPES_PER_PAGE, [fetchRecipes]);
 
   const handleSearchChange = (search: string) => {
@@ -140,10 +143,7 @@ const RecipesPageLoggedInView = () => {
               <FaList />
             </button>
           </div>
-          <button
-            className="btn btn-primary gap-2"
-            onClick={() => navigate("/recipes/new")}
-          >
+          <button className="btn btn-primary gap-2" onClick={() => navigate("/recipes/new")}>
             <FaPlus />
             New Recipe
           </button>

@@ -48,10 +48,9 @@ describe("useSocketEvent", () => {
     mockSocket.off.mockClear();
 
     const handler = vi.fn();
-    const { rerender } = renderHook(
-      ({ event }) => useSocketEvent(event, handler),
-      { initialProps: { event: "event-a" } }
-    );
+    const { rerender } = renderHook(({ event }) => useSocketEvent(event, handler), {
+      initialProps: { event: "event-a" },
+    });
 
     expect(mockSocket.on).toHaveBeenCalledWith("event-a", handler);
 

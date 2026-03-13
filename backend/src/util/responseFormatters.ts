@@ -3,7 +3,9 @@
  * Centralise les mappings repetes dans les controllers.
  */
 
-type RawTag = { tag: { id: string; name: string; scope: string; status: string; communityId: string | null } };
+type RawTag = {
+  tag: { id: string; name: string; scope: string; status: string; communityId: string | null };
+};
 type RawIngredient = {
   id: string;
   quantity: number | null;

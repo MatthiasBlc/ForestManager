@@ -12,6 +12,7 @@ import CommunityTagsList from "../components/communities/CommunityTagsList";
 import { ActivityFeed } from "../components/activity";
 import SidePanel from "../components/communities/SidePanel";
 import { communityEvents } from "../utils/communityEvents";
+import { useAsyncData } from "../hooks/useAsyncData";
 
 type PanelContent = "members" | "activity" | "invitations" | "edit" | "tags";
 
@@ -23,15 +24,12 @@ const CommunityDetailPage = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  const [community, setCommunity] = useState<CommunityDetail | null>(null);
-  const [members, setMembers] = useState<CommunityMember[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const VALID_PANELS: PanelContent[] = ["members", "activity", "invitations", "edit", "tags"];
   const panelParam = searchParams.get("panel");
-  const initialPanel = panelParam && VALID_PANELS.includes(panelParam as PanelContent)
-    ? (panelParam as PanelContent)
-    : null;
+  const initialPanel =
+    panelParam && VALID_PANELS.includes(panelParam as PanelContent)
+      ? (panelParam as PanelContent)
+      : null;
 
   const [panelContent, setPanelContent] = useState<PanelContent | null>(initialPanel);
   const [panelWidth, setPanelWidth] = useState<number>(() => {
@@ -39,40 +37,35 @@ const CommunityDetailPage = () => {
     return saved ? parseInt(saved, 10) : DEFAULT_PANEL_WIDTH;
   });
 
+  const {
+    data: communityData,
+    isLoading,
+    error,
+    refetch: loadCommunity,
+  } = useAsyncData(
+    () =>
+      id
+        ? Promise.all([APIManager.getCommunity(id), APIManager.getCommunityMembers(id)]).then(
+            ([c, m]) => ({ community: c, members: m.data })
+          )
+        : Promise.reject(new Error("Missing community ID")),
+    [id]
+  );
+
+  const community: CommunityDetail | null = communityData?.community ?? null;
+  const members: CommunityMember[] = communityData?.members ?? [];
+
   // Synchroniser le panel avec le query param (navigation depuis notification)
   useEffect(() => {
     const p = searchParams.get("panel");
     if (p && VALID_PANELS.includes(p as PanelContent)) {
       setPanelContent(p as PanelContent);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   // Lire les filtres tags depuis les query params
   const initialTags = searchParams.get("tags");
-
-  const loadCommunity = useCallback(async () => {
-    if (!id) return;
-
-    try {
-      setIsLoading(true);
-      setError(null);
-      const [communityData, membersData] = await Promise.all([
-        APIManager.getCommunity(id),
-        APIManager.getCommunityMembers(id),
-      ]);
-      setCommunity(communityData);
-      setMembers(membersData.data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load community");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    loadCommunity();
-  }, [loadCommunity]);
 
   const handleMembersChange = () => {
     loadCommunity();
@@ -112,10 +105,7 @@ const CommunityDetailPage = () => {
         <div className="alert alert-error">
           <span>{error || "Community not found"}</span>
         </div>
-        <button
-          className="btn btn-ghost mt-4 gap-2"
-          onClick={() => navigate("/communities")}
-        >
+        <button className="btn btn-ghost mt-4 gap-2" onClick={() => navigate("/communities")}>
           <FaArrowLeft />
           Back to communities
         </button>
@@ -126,11 +116,17 @@ const CommunityDetailPage = () => {
   const isModerator = community.currentUserRole === "MODERATOR";
 
   const panelTitle =
-    panelContent === "members" ? "Members" :
-    panelContent === "activity" ? "Activity" :
-    panelContent === "invitations" ? "Invitations" :
-    panelContent === "edit" ? "Edit Community" :
-    panelContent === "tags" ? "Tags" : "";
+    panelContent === "members"
+      ? "Members"
+      : panelContent === "activity"
+        ? "Activity"
+        : panelContent === "invitations"
+          ? "Invitations"
+          : panelContent === "edit"
+            ? "Edit Community"
+            : panelContent === "tags"
+              ? "Tags"
+              : "";
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -146,21 +142,21 @@ const CommunityDetailPage = () => {
               />
             )}
             <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold">{community.name}</h1>
-              <span className={`badge ${isModerator ? "badge-primary" : "badge-ghost"}`}>
-                {community.currentUserRole}
-              </span>
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-3xl font-bold">{community.name}</h1>
+                <span className={`badge ${isModerator ? "badge-primary" : "badge-ghost"}`}>
+                  {community.currentUserRole}
+                </span>
+              </div>
+              {community.description && (
+                <p className="text-base-content/70 mb-2">{community.description}</p>
+              )}
+              <p className="text-sm text-base-content/50">
+                {community.membersCount} {community.membersCount === 1 ? "member" : "members"}{" "}
+                &middot; {community.recipesCount}{" "}
+                {community.recipesCount === 1 ? "recipe" : "recipes"}
+              </p>
             </div>
-            {community.description && (
-              <p className="text-base-content/70 mb-2">{community.description}</p>
-            )}
-            <p className="text-sm text-base-content/50">
-              {community.membersCount} {community.membersCount === 1 ? "member" : "members"}
-              {" "}&middot;{" "}
-              {community.recipesCount} {community.recipesCount === 1 ? "recipe" : "recipes"}
-            </p>
-          </div>
           </div>
           <div className="flex items-center gap-1">
             {/* Members button */}

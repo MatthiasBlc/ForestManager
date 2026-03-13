@@ -5,18 +5,19 @@ import { uniqueSuffix, extractSessionCookie } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
 import { cleanupReadNotifications } from "../../jobs/notificationCleanup";
 
-
 describe("Notification Cleanup Job", () => {
   let user: { id: string };
 
   beforeEach(async () => {
     const suffix = uniqueSuffix();
 
-    const signup = await request(app).post("/api/auth/signup").send({
-      username: `cleanup_${suffix}`,
-      email: `cleanup_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const signup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `cleanup_${suffix}`,
+        email: `cleanup_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     extractSessionCookie(signup);
     user = (await testPrisma.user.findFirst({
       where: { email: `cleanup_${suffix}@example.com` },

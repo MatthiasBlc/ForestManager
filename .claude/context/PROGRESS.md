@@ -49,16 +49,13 @@ Phases 0 a 9.3 terminees.
 - **Branche** : `Developement` (merged)
 - **Tests** : 704 backend + 404 frontend = 1108 total
 
-## Phase 15 - Photo Upload System : EN COURS
+## Phase 15 - Photo Upload System : COMPLETE
 
 - **Spec** : `docs/features/photo-upload/SPEC_PHOTO_UPLOAD.md`
 - **Roadmap** : `docs/features/photo-upload/ROADMAP.md`
 - **Guide infra** : `docs/features/photo-upload/GUIDE_MINIO.md`
-- **Branche** : `UploadImageSystem`
-- **Tests** : 746 backend + 404 frontend = 1150 total
-- **Phases A-G** : COMPLETE (infra MinIO, backend endpoints, frontend composant, tests)
-- **Phase H** : Tests manuels E2E + polish restants
-- **Phase A.3** : VPS MinIO (differe, necessaire avant deploy preprod/prod)
+- **Branche** : `UploadImageSystem` (merged)
+- **Tests** : 802 backend + 469 frontend = 1271 total
 
 ## Phase 16 - Recipe Import : EN COURS
 
@@ -66,7 +63,7 @@ Phases 0 a 9.3 terminees.
 - **Roadmap** : `docs/features/recipe-import/ROADMAP.md`
 - **Tests manuels** : `docs/features/recipe-import/MANUAL_TESTS.md`
 - **Branche** : `ImportRecipeSystem`
-- **Tests** : 798 backend + 463 frontend = 1261 total
+- **Tests** : 802 backend + 469 frontend = 1271 total
 - **Phases A-C** : COMPLETE (parser texte, import URL, modale + integration)
 - **Phase D** : Tests manuels restants
 

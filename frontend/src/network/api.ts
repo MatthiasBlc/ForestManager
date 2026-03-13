@@ -1,13 +1,51 @@
 import axios, { AxiosError } from "axios";
-import { RecipeDetail, RecipesResponse, CommunityRecipesResponse, TagSearchResult, IngredientSearchResult, Proposal, ProposalsResponse, ProposalInput, VariantsResponse, RejectProposalResponse, UnitsByCategory, SuggestedUnit } from "../models/recipe";
+import {
+  RecipeDetail,
+  RecipesResponse,
+  CommunityRecipesResponse,
+  TagSearchResult,
+  IngredientSearchResult,
+  Proposal,
+  ProposalsResponse,
+  ProposalInput,
+  VariantsResponse,
+  RejectProposalResponse,
+  UnitsByCategory,
+  SuggestedUnit,
+} from "../models/recipe";
 import { ActivityResponse } from "../models/activity";
 import { User } from "../models/user";
-import { AdminLoginResponse, AdminTotpResponse, AdminUser, DashboardStats, AdminTag, AdminIngredient, AdminUnit, AdminFeature, AdminCommunity, AdminCommunityDetail, AdminActivityResponse, AdminRecipeListItem, AdminRecipeDetail, AdminRecipeUpdateInput } from "../models/admin";
+import {
+  AdminLoginResponse,
+  AdminTotpResponse,
+  AdminUser,
+  DashboardStats,
+  AdminTag,
+  AdminIngredient,
+  AdminUnit,
+  AdminFeature,
+  AdminCommunity,
+  AdminCommunityDetail,
+  AdminActivityResponse,
+  AdminRecipeListItem,
+  AdminRecipeDetail,
+  AdminRecipeUpdateInput,
+} from "../models/admin";
 import { CommunityTag } from "../models/tag";
 import { TagSuggestion, TagSuggestionsResponse } from "../models/tagSuggestion";
 import { TagPreference } from "../models/preferences";
-import { NotificationsResponse, UnreadCountResponse, NotificationPreferencesResponse } from "../models/notification";
-import { CommunityListItem, CommunityDetail, CommunityMember, CommunityInvite, ReceivedInvite } from "../models/community";
+import {
+  NotificationsResponse,
+  UnreadCountResponse,
+  NotificationPreferencesResponse,
+} from "../models/notification";
+import {
+  CommunityListItem,
+  CommunityDetail,
+  CommunityMember,
+  CommunityInvite,
+  ReceivedInvite,
+} from "../models/community";
 import { ConflictError, UnauthorizedError } from "../errors/http_errors";
 
 const apiUrl = import.meta.env.VITE_BACKEND_URL;
@@ -29,6 +67,13 @@ function buildQueryString(params: Record<string, string | number | string[] | un
 
 API.interceptors.request.use((config) => {
   config.headers["Content-Type"] = "application/json";
+
+  // CSRF: lire le cookie XSRF-TOKEN et l'envoyer dans le header
+  const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+  if (match) {
+    config.headers["X-XSRF-TOKEN"] = decodeURIComponent(match[1]);
+  }
+
   return config;
 });
 
@@ -43,14 +88,12 @@ function handleApiError(error: AxiosError<{ error?: string }>): never {
   if (error.response.status === 409) {
     throw new ConflictError(error.response.data?.error || "Conflict");
   }
-  throw new Error(
-    error.response.data?.error || `Request failed (${error.response.status})`
-  );
+  throw new Error(error.response.data?.error || `Request failed (${error.response.status})`);
 }
 
 // Custom error handler with status-specific fallback messages
 function handleApiErrorWith(
-  overrides: Record<number, string | typeof ConflictError | typeof UnauthorizedError>,
+  overrides: Record<number, string | typeof ConflictError | typeof UnauthorizedError>
 ): (error: AxiosError<{ error?: string }>) => never {
   return (error: AxiosError<{ error?: string }>) => {
     const status = error.response?.status;
@@ -66,7 +109,6 @@ function handleApiErrorWith(
     return handleApiError(error);
   };
 }
-
 
 export interface RecipeInput {
   title: string;
@@ -88,21 +130,17 @@ export interface GetRecipesParams {
 }
 
 export interface SignUpCredentials {
-  username: string,
-  email: string,
-  password: string,
+  username: string;
+  email: string;
+  password: string;
 }
 
 export interface LoginCredentials {
-  username: string,
-  password: string,
+  username: string;
+  password: string;
 }
 
 export default class APIManager {
-
-
-
-
   // --------------- Recipes ---------------
 
   static async getRecipes(params: GetRecipesParams = {}): Promise<RecipesResponse> {
@@ -118,13 +156,18 @@ export default class APIManager {
   }
 
   static async getRecipe(recipeId: string): Promise<RecipeDetail> {
-    const response = await API.get(`/api/recipes/${recipeId}`)
-      .catch(handleApiErrorWith({ 404: "Recipe not found", 403: "Cannot access this recipe" }));
+    const response = await API.get(`/api/recipes/${recipeId}`).catch(
+      handleApiErrorWith({ 404: "Recipe not found", 403: "Cannot access this recipe" })
+    );
     return response.data;
   }
 
-  static async importRecipeFromUrl(url: string): Promise<import("../services/recipeParser").ParsedRecipe> {
-    const response = await API.post("/api/recipes/import-url", JSON.stringify({ url })).catch(handleApiError);
+  static async importRecipeFromUrl(
+    url: string
+  ): Promise<import("../services/recipeParser").ParsedRecipe> {
+    const response = await API.post("/api/recipes/import-url", JSON.stringify({ url })).catch(
+      handleApiError
+    );
     return response.data.data;
   }
 
@@ -134,7 +177,9 @@ export default class APIManager {
   }
 
   static async updateRecipe(recipeId: string, recipe: Partial<RecipeInput>): Promise<RecipeDetail> {
-    const response = await API.patch("/api/recipes/" + recipeId, JSON.stringify(recipe)).catch(handleApiError);
+    const response = await API.patch("/api/recipes/" + recipeId, JSON.stringify(recipe)).catch(
+      handleApiError
+    );
     return response.data;
   }
 
@@ -143,10 +188,12 @@ export default class APIManager {
     return response.data;
   }
 
-
   // --------------- Community Recipes ---------------
 
-  static async getCommunityRecipes(communityId: string, params: GetRecipesParams = {}): Promise<CommunityRecipesResponse> {
+  static async getCommunityRecipes(
+    communityId: string,
+    params: GetRecipesParams = {}
+  ): Promise<CommunityRecipesResponse> {
     const qs = buildQueryString({
       limit: params.limit,
       offset: params.offset,
@@ -154,27 +201,38 @@ export default class APIManager {
       ingredients: params.ingredients,
       search: params.search,
     });
-    const response = await API.get(`/api/communities/${communityId}/recipes${qs}`).catch(handleApiError);
+    const response = await API.get(`/api/communities/${communityId}/recipes${qs}`).catch(
+      handleApiError
+    );
     return response.data;
   }
 
-  static async createCommunityRecipe(communityId: string, recipe: RecipeInput): Promise<RecipeDetail> {
-    const response = await API.post(`/api/communities/${communityId}/recipes`, JSON.stringify(recipe)).catch(handleApiError);
+  static async createCommunityRecipe(
+    communityId: string,
+    recipe: RecipeInput
+  ): Promise<RecipeDetail> {
+    const response = await API.post(
+      `/api/communities/${communityId}/recipes`,
+      JSON.stringify(recipe)
+    ).catch(handleApiError);
     return response.data.community;
   }
-
 
   // --------------- Proposals ---------------
 
   static async getRecipeProposals(recipeId: string, status?: string): Promise<ProposalsResponse> {
     const params = buildQueryString({ status });
-    const response = await API.get(`/api/recipes/${recipeId}/proposals${params}`).catch(handleApiError);
+    const response = await API.get(`/api/recipes/${recipeId}/proposals${params}`).catch(
+      handleApiError
+    );
     return response.data;
   }
 
   static async createProposal(recipeId: string, proposal: ProposalInput): Promise<Proposal> {
-    const response = await API.post(`/api/recipes/${recipeId}/proposals`, JSON.stringify(proposal))
-      .catch(handleApiErrorWith({ 400: "Cannot create proposal" }));
+    const response = await API.post(
+      `/api/recipes/${recipeId}/proposals`,
+      JSON.stringify(proposal)
+    ).catch(handleApiErrorWith({ 400: "Cannot create proposal" }));
     return response.data;
   }
 
@@ -184,87 +242,123 @@ export default class APIManager {
   }
 
   static async acceptProposal(proposalId: string): Promise<Proposal> {
-    const response = await API.post(`/api/proposals/${proposalId}/accept`)
-      .catch(handleApiErrorWith({ 409: ConflictError, 400: "Cannot accept proposal" }));
+    const response = await API.post(`/api/proposals/${proposalId}/accept`).catch(
+      handleApiErrorWith({ 409: ConflictError, 400: "Cannot accept proposal" })
+    );
     return response.data;
   }
 
   static async rejectProposal(proposalId: string): Promise<RejectProposalResponse> {
-    const response = await API.post(`/api/proposals/${proposalId}/reject`)
-      .catch(handleApiErrorWith({ 400: "Cannot reject proposal" }));
+    const response = await API.post(`/api/proposals/${proposalId}/reject`).catch(
+      handleApiErrorWith({ 400: "Cannot reject proposal" })
+    );
     return response.data;
   }
-
 
   // --------------- Share (Fork) ---------------
 
   static async shareRecipe(recipeId: string, targetCommunityId: string): Promise<RecipeDetail> {
-    const response = await API.post(`/api/recipes/${recipeId}/share`, JSON.stringify({ targetCommunityId }))
-      .catch(handleApiErrorWith({ 403: "Cannot share this recipe", 400: "Invalid share request" }));
+    const response = await API.post(
+      `/api/recipes/${recipeId}/share`,
+      JSON.stringify({ targetCommunityId })
+    ).catch(handleApiErrorWith({ 403: "Cannot share this recipe", 400: "Invalid share request" }));
     return response.data;
   }
-
 
   // --------------- Publish (personal → communities) ---------------
 
-  static async publishToCommunities(recipeId: string, communityIds: string[]): Promise<{ data: { id: string; title: string; communityId: string; community: { id: string; name: string } }[] }> {
-    const response = await API.post(`/api/recipes/${recipeId}/publish`, JSON.stringify({ communityIds }))
-      .catch(handleApiErrorWith({ 403: "Cannot publish this recipe", 400: "Invalid publish request" }));
+  static async publishToCommunities(
+    recipeId: string,
+    communityIds: string[]
+  ): Promise<{
+    data: {
+      id: string;
+      title: string;
+      communityId: string;
+      community: { id: string; name: string };
+    }[];
+  }> {
+    const response = await API.post(
+      `/api/recipes/${recipeId}/publish`,
+      JSON.stringify({ communityIds })
+    ).catch(
+      handleApiErrorWith({ 403: "Cannot publish this recipe", 400: "Invalid publish request" })
+    );
     return response.data;
   }
 
-  static async getRecipeCommunities(recipeId: string): Promise<{ data: { id: string; name: string }[] }> {
+  static async getRecipeCommunities(
+    recipeId: string
+  ): Promise<{ data: { id: string; name: string }[] }> {
     const response = await API.get(`/api/recipes/${recipeId}/communities`).catch(handleApiError);
     return response.data;
   }
 
-
   // --------------- Variants ---------------
 
-  static async getRecipeVariants(recipeId: string, limit?: number, offset?: number): Promise<VariantsResponse> {
+  static async getRecipeVariants(
+    recipeId: string,
+    limit?: number,
+    offset?: number
+  ): Promise<VariantsResponse> {
     const qs = buildQueryString({ limit, offset });
     const response = await API.get(`/api/recipes/${recipeId}/variants${qs}`).catch(handleApiError);
     return response.data;
   }
 
-
   // --------------- Tag Suggestions ---------------
 
-  static async getTagSuggestions(recipeId: string, status?: string): Promise<TagSuggestionsResponse> {
+  static async getTagSuggestions(
+    recipeId: string,
+    status?: string
+  ): Promise<TagSuggestionsResponse> {
     const params = buildQueryString({ status });
-    const response = await API.get(`/api/recipes/${recipeId}/tag-suggestions${params}`).catch(handleApiError);
+    const response = await API.get(`/api/recipes/${recipeId}/tag-suggestions${params}`).catch(
+      handleApiError
+    );
     return response.data;
   }
 
   static async createTagSuggestion(recipeId: string, tagName: string): Promise<TagSuggestion> {
-    const response = await API.post(`/api/recipes/${recipeId}/tag-suggestions`, JSON.stringify({ tagName }))
-      .catch(handleApiErrorWith({ 409: ConflictError }));
+    const response = await API.post(
+      `/api/recipes/${recipeId}/tag-suggestions`,
+      JSON.stringify({ tagName })
+    ).catch(handleApiErrorWith({ 409: ConflictError }));
     return response.data;
   }
 
   static async acceptTagSuggestion(suggestionId: string): Promise<TagSuggestion> {
-    const response = await API.post(`/api/tag-suggestions/${suggestionId}/accept`).catch(handleApiError);
+    const response = await API.post(`/api/tag-suggestions/${suggestionId}/accept`).catch(
+      handleApiError
+    );
     return response.data;
   }
 
   static async rejectTagSuggestion(suggestionId: string): Promise<TagSuggestion> {
-    const response = await API.post(`/api/tag-suggestions/${suggestionId}/reject`).catch(handleApiError);
+    const response = await API.post(`/api/tag-suggestions/${suggestionId}/reject`).catch(
+      handleApiError
+    );
     return response.data;
   }
 
-
   // --------------- Tags ---------------
 
-  static async searchTags(search: string = "", limit: number = 20, communityId?: string): Promise<TagSearchResult[]> {
+  static async searchTags(
+    search: string = "",
+    limit: number = 20,
+    communityId?: string
+  ): Promise<TagSearchResult[]> {
     const qs = buildQueryString({ search: search || undefined, limit, communityId });
     const response = await API.get(`/api/tags${qs}`).catch(handleApiError);
     return response.data.data;
   }
 
-
   // --------------- Ingredients ---------------
 
-  static async searchIngredients(search: string = "", limit: number = 20): Promise<IngredientSearchResult[]> {
+  static async searchIngredients(
+    search: string = "",
+    limit: number = 20
+  ): Promise<IngredientSearchResult[]> {
     const qs = buildQueryString({ search: search || undefined, limit });
     const response = await API.get(`/api/ingredients${qs}`).catch(handleApiError);
     return response.data.data;
@@ -276,10 +370,11 @@ export default class APIManager {
   }
 
   static async getSuggestedUnit(ingredientId: string): Promise<SuggestedUnit> {
-    const response = await API.get(`/api/ingredients/${ingredientId}/suggested-unit`).catch(handleApiError);
+    const response = await API.get(`/api/ingredients/${ingredientId}/suggested-unit`).catch(
+      handleApiError
+    );
     return response.data;
   }
-
 
   // --------------- Users Auth ---------------
   // Need credentials in the header if front and back are on differents domain / sub-domains
@@ -289,12 +384,16 @@ export default class APIManager {
   }
 
   static async signUp(credentials: SignUpCredentials): Promise<User> {
-    const response = await API.post("/api/auth/signup", JSON.stringify(credentials)).catch(handleApiError);
+    const response = await API.post("/api/auth/signup", JSON.stringify(credentials)).catch(
+      handleApiError
+    );
     return response.data.user;
   }
 
   static async login(credentials: LoginCredentials): Promise<User> {
-    const response = await API.post("/api/auth/login", JSON.stringify(credentials)).catch(handleApiError);
+    const response = await API.post("/api/auth/login", JSON.stringify(credentials)).catch(
+      handleApiError
+    );
     return response.data.user;
   }
 
@@ -303,7 +402,6 @@ export default class APIManager {
     return response.data;
   }
 
-
   // --------------- Communities ---------------
 
   static async getCommunities(): Promise<{ data: CommunityListItem[] }> {
@@ -311,7 +409,10 @@ export default class APIManager {
     return response.data;
   }
 
-  static async createCommunity(data: { name: string; description?: string }): Promise<CommunityDetail> {
+  static async createCommunity(data: {
+    name: string;
+    description?: string;
+  }): Promise<CommunityDetail> {
     const response = await API.post("/api/communities", JSON.stringify(data)).catch(handleApiError);
     return response.data;
   }
@@ -321,21 +422,31 @@ export default class APIManager {
     return response.data;
   }
 
-  static async updateCommunity(id: string, data: { name?: string; description?: string }): Promise<CommunityDetail> {
-    const response = await API.patch(`/api/communities/${id}`, JSON.stringify(data)).catch(handleApiError);
+  static async updateCommunity(
+    id: string,
+    data: { name?: string; description?: string }
+  ): Promise<CommunityDetail> {
+    const response = await API.patch(`/api/communities/${id}`, JSON.stringify(data)).catch(
+      handleApiError
+    );
     return response.data;
   }
 
-
   // --------------- Recipe Images ---------------
 
-  static async getRecipeUploadUrl(recipeId: string): Promise<{ uploadUrl: string; imageKey: string }> {
+  static async getRecipeUploadUrl(
+    recipeId: string
+  ): Promise<{ uploadUrl: string; imageKey: string }> {
     const response = await API.post(`/api/recipes/${recipeId}/upload-url`).catch(handleApiError);
     return response.data;
   }
 
-  static async confirmRecipeUpload(recipeId: string): Promise<{ imageKey: string; imageUrl: string }> {
-    const response = await API.post(`/api/recipes/${recipeId}/confirm-upload`).catch(handleApiError);
+  static async confirmRecipeUpload(
+    recipeId: string
+  ): Promise<{ imageKey: string; imageUrl: string }> {
+    const response = await API.post(`/api/recipes/${recipeId}/confirm-upload`).catch(
+      handleApiError
+    );
     return response.data;
   }
 
@@ -343,23 +454,29 @@ export default class APIManager {
     await API.delete(`/api/recipes/${recipeId}/image`).catch(handleApiError);
   }
 
-
   // --------------- Community Images ---------------
 
-  static async getCommunityUploadUrl(communityId: string): Promise<{ uploadUrl: string; imageKey: string }> {
-    const response = await API.post(`/api/communities/${communityId}/upload-url`).catch(handleApiError);
+  static async getCommunityUploadUrl(
+    communityId: string
+  ): Promise<{ uploadUrl: string; imageKey: string }> {
+    const response = await API.post(`/api/communities/${communityId}/upload-url`).catch(
+      handleApiError
+    );
     return response.data;
   }
 
-  static async confirmCommunityUpload(communityId: string): Promise<{ imageKey: string; imageUrl: string }> {
-    const response = await API.post(`/api/communities/${communityId}/confirm-upload`).catch(handleApiError);
+  static async confirmCommunityUpload(
+    communityId: string
+  ): Promise<{ imageKey: string; imageUrl: string }> {
+    const response = await API.post(`/api/communities/${communityId}/confirm-upload`).catch(
+      handleApiError
+    );
     return response.data;
   }
 
   static async deleteCommunityImage(communityId: string): Promise<void> {
     await API.delete(`/api/communities/${communityId}/image`).catch(handleApiError);
   }
-
 
   // --------------- Members ---------------
 
@@ -377,30 +494,36 @@ export default class APIManager {
   }
 
   static async removeMember(communityId: string, userId: string): Promise<{ message: string }> {
-    const response = await API.delete(`/api/communities/${communityId}/members/${userId}`)
-      .catch((error: AxiosError<{ message?: string; error?: string }>) => {
+    const response = await API.delete(`/api/communities/${communityId}/members/${userId}`).catch(
+      (error: AxiosError<{ message?: string; error?: string }>) => {
         if (error.response?.status === 410) {
           // Community was destroyed (last member left) - treat as successful leave
           return error.response;
         }
         return handleApiError(error);
-      });
+      }
+    );
     return response.data;
   }
-
 
   // --------------- Users ---------------
 
   static async searchUsers(query: string): Promise<{ id: string; username: string }[]> {
-    const response = await API.get(`/api/users/search?q=${encodeURIComponent(query)}`).catch(handleApiError);
+    const response = await API.get(`/api/users/search?q=${encodeURIComponent(query)}`).catch(
+      handleApiError
+    );
     return response.data.data;
   }
 
-  static async updateProfile(data: { username?: string; email?: string; currentPassword?: string; newPassword?: string }): Promise<User> {
+  static async updateProfile(data: {
+    username?: string;
+    email?: string;
+    currentPassword?: string;
+    newPassword?: string;
+  }): Promise<User> {
     const response = await API.patch("/api/users/me", JSON.stringify(data)).catch(handleApiError);
     return response.data.user;
   }
-
 
   // --------------- User Preferences ---------------
 
@@ -409,14 +532,28 @@ export default class APIManager {
     return response.data;
   }
 
-  static async updateTagPreference(communityId: string, showTags: boolean): Promise<{ communityId: string; showTags: boolean }> {
-    const response = await API.put(`/api/users/me/tag-preferences/${communityId}`, JSON.stringify({ showTags })).catch(handleApiError);
+  static async updateTagPreference(
+    communityId: string,
+    showTags: boolean
+  ): Promise<{ communityId: string; showTags: boolean }> {
+    const response = await API.put(
+      `/api/users/me/tag-preferences/${communityId}`,
+      JSON.stringify({ showTags })
+    ).catch(handleApiError);
     return response.data;
   }
 
   // --------------- Notifications ---------------
 
-  static async getNotifications(params: { page?: number; limit?: number; category?: string; unreadOnly?: boolean; grouped?: boolean } = {}): Promise<NotificationsResponse> {
+  static async getNotifications(
+    params: {
+      page?: number;
+      limit?: number;
+      category?: string;
+      unreadOnly?: boolean;
+      grouped?: boolean;
+    } = {}
+  ): Promise<NotificationsResponse> {
     const qs = buildQueryString({
       page: params.page,
       limit: params.limit,
@@ -439,12 +576,17 @@ export default class APIManager {
   }
 
   static async markBatchAsRead(ids: string[]): Promise<{ updated: number }> {
-    const response = await API.patch("/api/notifications/read", JSON.stringify({ ids })).catch(handleApiError);
+    const response = await API.patch("/api/notifications/read", JSON.stringify({ ids })).catch(
+      handleApiError
+    );
     return response.data;
   }
 
   static async markAllAsRead(category?: string): Promise<{ updated: number }> {
-    const response = await API.patch("/api/notifications/read-all", JSON.stringify({ category })).catch(handleApiError);
+    const response = await API.patch(
+      "/api/notifications/read-all",
+      JSON.stringify({ category })
+    ).catch(handleApiError);
     return response.data;
   }
 
@@ -453,30 +595,48 @@ export default class APIManager {
     return response.data;
   }
 
-  static async updateNotificationPreference(category: string, enabled: boolean, communityId?: string): Promise<{ category: string; enabled: boolean; communityId: string | null }> {
-    const response = await API.put("/api/notifications/preferences", JSON.stringify({ category, enabled, communityId })).catch(handleApiError);
+  static async updateNotificationPreference(
+    category: string,
+    enabled: boolean,
+    communityId?: string
+  ): Promise<{ category: string; enabled: boolean; communityId: string | null }> {
+    const response = await API.put(
+      "/api/notifications/preferences",
+      JSON.stringify({ category, enabled, communityId })
+    ).catch(handleApiError);
     return response.data;
   }
-
 
   // --------------- Invitations (community admin) ---------------
 
-  static async getCommunityInvites(communityId: string, status?: string): Promise<{ data: CommunityInvite[] }> {
+  static async getCommunityInvites(
+    communityId: string,
+    status?: string
+  ): Promise<{ data: CommunityInvite[] }> {
     const params = buildQueryString({ status });
-    const response = await API.get(`/api/communities/${communityId}/invites${params}`).catch(handleApiError);
+    const response = await API.get(`/api/communities/${communityId}/invites${params}`).catch(
+      handleApiError
+    );
     return response.data;
   }
 
-  static async sendInvite(communityId: string, data: { username?: string; email?: string; userId?: string }): Promise<CommunityInvite> {
-    const response = await API.post(`/api/communities/${communityId}/invites`, JSON.stringify(data)).catch(handleApiError);
+  static async sendInvite(
+    communityId: string,
+    data: { username?: string; email?: string; userId?: string }
+  ): Promise<CommunityInvite> {
+    const response = await API.post(
+      `/api/communities/${communityId}/invites`,
+      JSON.stringify(data)
+    ).catch(handleApiError);
     return response.data;
   }
 
   static async cancelInvite(communityId: string, inviteId: string): Promise<{ message: string }> {
-    const response = await API.delete(`/api/communities/${communityId}/invites/${inviteId}`).catch(handleApiError);
+    const response = await API.delete(`/api/communities/${communityId}/invites/${inviteId}`).catch(
+      handleApiError
+    );
     return response.data;
   }
-
 
   // --------------- Invitations (user) ---------------
 
@@ -486,7 +646,9 @@ export default class APIManager {
     return response.data;
   }
 
-  static async acceptInvite(inviteId: string): Promise<{ message: string; community: { id: string; name: string } }> {
+  static async acceptInvite(
+    inviteId: string
+  ): Promise<{ message: string; community: { id: string; name: string } }> {
     const response = await API.post(`/api/invites/${inviteId}/accept`).catch(handleApiError);
     return response.data;
   }
@@ -496,18 +658,20 @@ export default class APIManager {
     return response.data;
   }
 
-
   // --------------- Admin Auth ---------------
 
   static async adminLogin(email: string, password: string): Promise<AdminLoginResponse> {
-    const response = await API.post("/api/admin/auth/login", JSON.stringify({ email, password }))
-      .catch(handleApiErrorWith({ 401: UnauthorizedError, 429: "Too many login attempts" }));
+    const response = await API.post(
+      "/api/admin/auth/login",
+      JSON.stringify({ email, password })
+    ).catch(handleApiErrorWith({ 401: UnauthorizedError, 429: "Too many login attempts" }));
     return response.data;
   }
 
   static async adminVerifyTotp(code: string): Promise<AdminTotpResponse> {
-    const response = await API.post("/api/admin/auth/totp/verify", JSON.stringify({ code }))
-      .catch(handleApiErrorWith({ 401: UnauthorizedError, 429: "Too many attempts" }));
+    const response = await API.post("/api/admin/auth/totp/verify", JSON.stringify({ code })).catch(
+      handleApiErrorWith({ 401: UnauthorizedError, 429: "Too many attempts" })
+    );
     return response.data;
   }
 
@@ -520,7 +684,6 @@ export default class APIManager {
     return response.data.admin;
   }
 
-
   // --------------- Admin Dashboard ---------------
 
   static async getAdminDashboardStats(): Promise<DashboardStats> {
@@ -528,39 +691,57 @@ export default class APIManager {
     return response.data;
   }
 
-
   // --------------- Activity Feed ---------------
 
-  static async getCommunityActivity(communityId: string, params: { limit?: number; offset?: number } = {}): Promise<ActivityResponse> {
+  static async getCommunityActivity(
+    communityId: string,
+    params: { limit?: number; offset?: number } = {}
+  ): Promise<ActivityResponse> {
     const qs = buildQueryString({ limit: params.limit, offset: params.offset });
-    const response = await API.get(`/api/communities/${communityId}/activity${qs}`).catch(handleApiError);
+    const response = await API.get(`/api/communities/${communityId}/activity${qs}`).catch(
+      handleApiError
+    );
     return response.data;
   }
 
-  static async getMyActivity(params: { limit?: number; offset?: number } = {}): Promise<ActivityResponse> {
+  static async getMyActivity(
+    params: { limit?: number; offset?: number } = {}
+  ): Promise<ActivityResponse> {
     const qs = buildQueryString({ limit: params.limit, offset: params.offset });
     const response = await API.get(`/api/users/me/activity${qs}`).catch(handleApiError);
     return response.data;
   }
 
-
   // --------------- Community Tags (moderator) ---------------
 
-  static async getCommunityTags(communityId: string, params?: { status?: string; search?: string }): Promise<{ data: CommunityTag[]; total: number }> {
+  static async getCommunityTags(
+    communityId: string,
+    params?: { status?: string; search?: string }
+  ): Promise<{ data: CommunityTag[]; total: number }> {
     const qs = buildQueryString({ status: params?.status, search: params?.search });
-    const response = await API.get(`/api/communities/${communityId}/tags${qs}`).catch(handleApiError);
+    const response = await API.get(`/api/communities/${communityId}/tags${qs}`).catch(
+      handleApiError
+    );
     return response.data;
   }
 
   static async createCommunityTag(communityId: string, name: string): Promise<CommunityTag> {
-    const response = await API.post(`/api/communities/${communityId}/tags`, JSON.stringify({ name }))
-      .catch(handleApiErrorWith({ 409: ConflictError }));
+    const response = await API.post(
+      `/api/communities/${communityId}/tags`,
+      JSON.stringify({ name })
+    ).catch(handleApiErrorWith({ 409: ConflictError }));
     return response.data;
   }
 
-  static async updateCommunityTag(communityId: string, tagId: string, name: string): Promise<CommunityTag> {
-    const response = await API.patch(`/api/communities/${communityId}/tags/${tagId}`, JSON.stringify({ name }))
-      .catch(handleApiErrorWith({ 409: ConflictError }));
+  static async updateCommunityTag(
+    communityId: string,
+    tagId: string,
+    name: string
+  ): Promise<CommunityTag> {
+    const response = await API.patch(
+      `/api/communities/${communityId}/tags/${tagId}`,
+      JSON.stringify({ name })
+    ).catch(handleApiErrorWith({ 409: ConflictError }));
     return response.data;
   }
 
@@ -569,14 +750,15 @@ export default class APIManager {
   }
 
   static async approveCommunityTag(communityId: string, tagId: string): Promise<CommunityTag> {
-    const response = await API.post(`/api/communities/${communityId}/tags/${tagId}/approve`).catch(handleApiError);
+    const response = await API.post(`/api/communities/${communityId}/tags/${tagId}/approve`).catch(
+      handleApiError
+    );
     return response.data;
   }
 
   static async rejectCommunityTag(communityId: string, tagId: string): Promise<void> {
     await API.post(`/api/communities/${communityId}/tags/${tagId}/reject`).catch(handleApiError);
   }
-
 
   // --------------- Admin Tags ---------------
 
@@ -587,14 +769,16 @@ export default class APIManager {
   }
 
   static async createAdminTag(name: string): Promise<AdminTag> {
-    const response = await API.post("/api/admin/tags", JSON.stringify({ name }))
-      .catch(handleApiErrorWith({ 409: ConflictError }));
+    const response = await API.post("/api/admin/tags", JSON.stringify({ name })).catch(
+      handleApiErrorWith({ 409: ConflictError })
+    );
     return response.data.tag;
   }
 
   static async updateAdminTag(id: string, name: string): Promise<AdminTag> {
-    const response = await API.patch(`/api/admin/tags/${id}`, JSON.stringify({ name }))
-      .catch(handleApiErrorWith({ 409: ConflictError }));
+    const response = await API.patch(`/api/admin/tags/${id}`, JSON.stringify({ name })).catch(
+      handleApiErrorWith({ 409: ConflictError })
+    );
     return response.data.tag;
   }
 
@@ -603,13 +787,17 @@ export default class APIManager {
   }
 
   static async mergeAdminTags(sourceId: string, targetId: string): Promise<void> {
-    await API.post(`/api/admin/tags/${sourceId}/merge`, JSON.stringify({ targetId })).catch(handleApiError);
+    await API.post(`/api/admin/tags/${sourceId}/merge`, JSON.stringify({ targetId })).catch(
+      handleApiError
+    );
   }
-
 
   // --------------- Admin Recipes ---------------
 
-  static async getAdminTagRecipes(tagId: string, includeDeleted?: boolean): Promise<{ recipes: AdminRecipeListItem[]; pagination: { total: number; hasMore: boolean } }> {
+  static async getAdminTagRecipes(
+    tagId: string,
+    includeDeleted?: boolean
+  ): Promise<{ recipes: AdminRecipeListItem[]; pagination: { total: number; hasMore: boolean } }> {
     const qs = buildQueryString({ includeDeleted: includeDeleted ? "true" : undefined });
     const response = await API.get(`/api/admin/tags/${tagId}/recipes${qs}`).catch(handleApiError);
     return response.data;
@@ -628,7 +816,6 @@ export default class APIManager {
     await API.delete(`/api/admin/recipes/${recipeId}`).catch(handleApiError);
   }
 
-
   // --------------- Admin Ingredients ---------------
 
   static async getAdminIngredients(search?: string, status?: string): Promise<AdminIngredient[]> {
@@ -637,15 +824,24 @@ export default class APIManager {
     return response.data.ingredients;
   }
 
-  static async createAdminIngredient(name: string, defaultUnitId?: string): Promise<AdminIngredient> {
-    const response = await API.post("/api/admin/ingredients", JSON.stringify({ name, defaultUnitId }))
-      .catch(handleApiErrorWith({ 409: ConflictError }));
+  static async createAdminIngredient(
+    name: string,
+    defaultUnitId?: string
+  ): Promise<AdminIngredient> {
+    const response = await API.post(
+      "/api/admin/ingredients",
+      JSON.stringify({ name, defaultUnitId })
+    ).catch(handleApiErrorWith({ 409: ConflictError }));
     return response.data.ingredient;
   }
 
-  static async updateAdminIngredient(id: string, data: { name?: string; defaultUnitId?: string | null }): Promise<AdminIngredient> {
-    const response = await API.patch(`/api/admin/ingredients/${id}`, JSON.stringify(data))
-      .catch(handleApiErrorWith({ 409: ConflictError }));
+  static async updateAdminIngredient(
+    id: string,
+    data: { name?: string; defaultUnitId?: string | null }
+  ): Promise<AdminIngredient> {
+    const response = await API.patch(`/api/admin/ingredients/${id}`, JSON.stringify(data)).catch(
+      handleApiErrorWith({ 409: ConflictError })
+    );
     return response.data.ingredient;
   }
 
@@ -654,20 +850,25 @@ export default class APIManager {
   }
 
   static async mergeAdminIngredients(sourceId: string, targetId: string): Promise<void> {
-    await API.post(`/api/admin/ingredients/${sourceId}/merge`, JSON.stringify({ targetId })).catch(handleApiError);
+    await API.post(`/api/admin/ingredients/${sourceId}/merge`, JSON.stringify({ targetId })).catch(
+      handleApiError
+    );
   }
 
   static async approveAdminIngredient(id: string, newName?: string): Promise<AdminIngredient> {
     const body = newName ? { newName } : {};
-    const response = await API.post(`/api/admin/ingredients/${id}/approve`, JSON.stringify(body))
-      .catch(handleApiErrorWith({ 409: ConflictError }));
+    const response = await API.post(
+      `/api/admin/ingredients/${id}/approve`,
+      JSON.stringify(body)
+    ).catch(handleApiErrorWith({ 409: ConflictError }));
     return response.data.ingredient;
   }
 
   static async rejectAdminIngredient(id: string, reason: string): Promise<void> {
-    await API.post(`/api/admin/ingredients/${id}/reject`, JSON.stringify({ reason })).catch(handleApiError);
+    await API.post(`/api/admin/ingredients/${id}/reject`, JSON.stringify({ reason })).catch(
+      handleApiError
+    );
   }
-
 
   // --------------- Admin Units ---------------
 
@@ -677,23 +878,33 @@ export default class APIManager {
     return response.data.units;
   }
 
-  static async createAdminUnit(data: { name: string; abbreviation: string; category: string; sortOrder?: number }): Promise<AdminUnit> {
-    const response = await API.post("/api/admin/units", JSON.stringify(data))
-      .catch(handleApiErrorWith({ 409: ConflictError }));
+  static async createAdminUnit(data: {
+    name: string;
+    abbreviation: string;
+    category: string;
+    sortOrder?: number;
+  }): Promise<AdminUnit> {
+    const response = await API.post("/api/admin/units", JSON.stringify(data)).catch(
+      handleApiErrorWith({ 409: ConflictError })
+    );
     return response.data.unit;
   }
 
-  static async updateAdminUnit(id: string, data: { name?: string; abbreviation?: string; category?: string; sortOrder?: number }): Promise<AdminUnit> {
-    const response = await API.patch(`/api/admin/units/${id}`, JSON.stringify(data))
-      .catch(handleApiErrorWith({ 409: ConflictError }));
+  static async updateAdminUnit(
+    id: string,
+    data: { name?: string; abbreviation?: string; category?: string; sortOrder?: number }
+  ): Promise<AdminUnit> {
+    const response = await API.patch(`/api/admin/units/${id}`, JSON.stringify(data)).catch(
+      handleApiErrorWith({ 409: ConflictError })
+    );
     return response.data.unit;
   }
 
   static async deleteAdminUnit(id: string): Promise<void> {
-    await API.delete(`/api/admin/units/${id}`)
-      .catch(handleApiErrorWith({ 409: "Cannot delete unit that is in use" }));
+    await API.delete(`/api/admin/units/${id}`).catch(
+      handleApiErrorWith({ 409: "Cannot delete unit that is in use" })
+    );
   }
-
 
   // --------------- Admin Features ---------------
 
@@ -702,21 +913,34 @@ export default class APIManager {
     return response.data.features;
   }
 
-  static async createAdminFeature(data: { code: string; name: string; description?: string; isDefault?: boolean }): Promise<AdminFeature> {
-    const response = await API.post("/api/admin/features", JSON.stringify(data))
-      .catch(handleApiErrorWith({ 409: ConflictError }));
+  static async createAdminFeature(data: {
+    code: string;
+    name: string;
+    description?: string;
+    isDefault?: boolean;
+  }): Promise<AdminFeature> {
+    const response = await API.post("/api/admin/features", JSON.stringify(data)).catch(
+      handleApiErrorWith({ 409: ConflictError })
+    );
     return response.data.feature;
   }
 
-  static async updateAdminFeature(id: string, data: { name?: string; description?: string; isDefault?: boolean }): Promise<AdminFeature> {
-    const response = await API.patch(`/api/admin/features/${id}`, JSON.stringify(data)).catch(handleApiError);
+  static async updateAdminFeature(
+    id: string,
+    data: { name?: string; description?: string; isDefault?: boolean }
+  ): Promise<AdminFeature> {
+    const response = await API.patch(`/api/admin/features/${id}`, JSON.stringify(data)).catch(
+      handleApiError
+    );
     return response.data.feature;
   }
-
 
   // --------------- Admin Communities ---------------
 
-  static async getAdminCommunities(search?: string, includeDeleted?: boolean): Promise<AdminCommunity[]> {
+  static async getAdminCommunities(
+    search?: string,
+    includeDeleted?: boolean
+  ): Promise<AdminCommunity[]> {
     const qs = buildQueryString({ search, includeDeleted: includeDeleted ? "true" : undefined });
     const response = await API.get(`/api/admin/communities${qs}`).catch(handleApiError);
     return response.data.communities;
@@ -736,20 +960,24 @@ export default class APIManager {
   }
 
   static async grantFeature(communityId: string, featureId: string): Promise<void> {
-    await API.post(`/api/admin/communities/${communityId}/features/${featureId}`).catch(handleApiError);
+    await API.post(`/api/admin/communities/${communityId}/features/${featureId}`).catch(
+      handleApiError
+    );
   }
 
   static async revokeFeature(communityId: string, featureId: string): Promise<void> {
-    await API.delete(`/api/admin/communities/${communityId}/features/${featureId}`).catch(handleApiError);
+    await API.delete(`/api/admin/communities/${communityId}/features/${featureId}`).catch(
+      handleApiError
+    );
   }
-
 
   // --------------- Admin Activity ---------------
 
-  static async getAdminActivity(params: { type?: string; limit?: number; offset?: number } = {}): Promise<AdminActivityResponse> {
+  static async getAdminActivity(
+    params: { type?: string; limit?: number; offset?: number } = {}
+  ): Promise<AdminActivityResponse> {
     const qs = buildQueryString({ type: params.type, limit: params.limit, offset: params.offset });
     const response = await API.get(`/api/admin/activity${qs}`).catch(handleApiError);
     return response.data;
   }
-
 }

@@ -60,18 +60,18 @@ Le parsing (texte ou URL) produit un `ParsedRecipe` qui sera mappe vers le state
 interface ParsedRecipe {
   title: string | null;
   servings: number | null;
-  prepTime: number | null;       // en minutes
-  cookTime: number | null;       // en minutes
-  restTime: number | null;       // en minutes
+  prepTime: number | null; // en minutes
+  cookTime: number | null; // en minutes
+  restTime: number | null; // en minutes
   ingredients: ParsedIngredient[];
-  steps: string[];               // textes bruts des etapes
+  steps: string[]; // textes bruts des etapes
 }
 
 interface ParsedIngredient {
-  raw: string;                   // texte original (ex: "200g de farine")
-  quantity: number | null;       // 200
+  raw: string; // texte original (ex: "200g de farine")
+  quantity: number | null; // 200
   unitAbbreviation: string | null; // "g"
-  name: string | null;           // "farine"
+  name: string | null; // "farine"
 }
 ```
 
@@ -102,14 +102,15 @@ Le parser fonctionne par detection de sections et extraction ligne par ligne.
 
 Scanner chaque ligne pour detecter les headers de section :
 
-| Pattern (case-insensitive) | Section |
-|---|---|
-| `ingr[ée]dients?` | INGREDIENTS |
-| `pr[ée]paration`, `[ée]tapes?`, `instructions?`, `directions?`, `method`, `proc[ée]d[ée]` | STEPS |
+| Pattern (case-insensitive)                                                                | Section     |
+| ----------------------------------------------------------------------------------------- | ----------- |
+| `ingr[ée]dients?`                                                                         | INGREDIENTS |
+| `pr[ée]paration`, `[ée]tapes?`, `instructions?`, `directions?`, `method`, `proc[ée]d[ée]` | STEPS       |
 
 Les lignes entre un header de section et le suivant appartiennent a cette section.
 
 **Fallback** si aucun header n'est detecte :
+
 - Les lignes qui matchent le pattern ingredient (voir 3.3) → section INGREDIENTS
 - Les lignes numerotees (`1.`, `2.`) ou les paragraphes restants → section STEPS
 
@@ -135,22 +136,22 @@ Fallback : pas de match → raw=ligne, quantity=null, unit=null, name=ligne enti
 
 3. Mapping des unites parsees vers les abbreviations existantes en DB :
 
-| Parse | Abbreviation DB |
-|---|---|
-| `g` | `g` |
-| `kg` | `kg` |
-| `ml` | `ml` |
-| `cl` | `cl` |
-| `l` | `L` |
-| `cs`, `cas` | `c. a s.` |
-| `cc`, `cac` | `c. a c.` |
-| `pincee`, `pincees` | `pincee` |
-| `gousse`, `gousses` | `gousse` |
-| `tranche`, `tranches` | `tranche` |
-| `feuille`, `feuilles` | `feuille` |
-| `brin`, `brins` | `brin` |
-| `botte`, `bottes` | `botte` |
-| `piece`, `pieces` | `piece` |
+| Parse                 | Abbreviation DB |
+| --------------------- | --------------- |
+| `g`                   | `g`             |
+| `kg`                  | `kg`            |
+| `ml`                  | `ml`            |
+| `cl`                  | `cl`            |
+| `l`                   | `L`             |
+| `cs`, `cas`           | `c. a s.`       |
+| `cc`, `cac`           | `c. a c.`       |
+| `pincee`, `pincees`   | `pincee`        |
+| `gousse`, `gousses`   | `gousse`        |
+| `tranche`, `tranches` | `tranche`       |
+| `feuille`, `feuilles` | `feuille`       |
+| `brin`, `brins`       | `brin`          |
+| `botte`, `bottes`     | `botte`         |
+| `piece`, `pieces`     | `piece`         |
 
 **Note** : le mapping exact des abbreviations devra etre verifie/ajuste avec les valeurs reelles en base au moment de l'implementation. La table `Unit` contient les abbreviations de reference.
 
@@ -167,12 +168,12 @@ Pour chaque ligne de la section etapes :
 
 Scanner toutes les lignes pour extraire :
 
-| Donnee | Patterns (case-insensitive) |
-|---|---|
-| servings | `/(\d+)\s*(?:personnes?\|pers\.?\|parts?\|portions?\|servings?)/i` |
-| prepTime | `/(?:pr[ée]p(?:aration)?)\s*:?\s*(\d+)\s*(?:min(?:utes?)?)/i` |
-| cookTime | `/(?:cu(?:isson\|ire))\s*:?\s*(\d+)\s*(?:min(?:utes?)?)/i` |
-| restTime | `/(?:repos?\|pause)\s*:?\s*(\d+)\s*(?:min(?:utes?)?)/i` |
+| Donnee          | Patterns (case-insensitive)                                                     |
+| --------------- | ------------------------------------------------------------------------------- |
+| servings        | `/(\d+)\s*(?:personnes?\|pers\.?\|parts?\|portions?\|servings?)/i`              |
+| prepTime        | `/(?:pr[ée]p(?:aration)?)\s*:?\s*(\d+)\s*(?:min(?:utes?)?)/i`                   |
+| cookTime        | `/(?:cu(?:isson\|ire))\s*:?\s*(\d+)\s*(?:min(?:utes?)?)/i`                      |
+| restTime        | `/(?:repos?\|pause)\s*:?\s*(\d+)\s*(?:min(?:utes?)?)/i`                         |
 | temps generique | `/(?:temps)\s*:?\s*(\d+)\s*(?:min(?:utes?)?)/i` → prepTime si aucun autre temps |
 
 Pour les durees en heures : `/(\d+)\s*h(?:eures?)?\s*(\d+)?/` → convertir en minutes.
@@ -180,6 +181,7 @@ Pour les durees en heures : `/(\d+)\s*h(?:eures?)?\s*(\d+)?/` → convertir en m
 ### 3.3 Exemples de parsing
 
 **Input :**
+
 ```
 Gateau au chocolat
 
@@ -205,6 +207,7 @@ Preparation :
 ```
 
 **Output :**
+
 ```typescript
 {
   title: "Gateau au chocolat",
@@ -246,6 +249,7 @@ POST /api/recipes/import-url
 ```
 
 **Request :**
+
 ```json
 {
   "url": "https://www.marmiton.org/recettes/recette_gateau-au-chocolat_12345.aspx"
@@ -253,6 +257,7 @@ POST /api/recipes/import-url
 ```
 
 **Response (succes) :**
+
 ```json
 {
   "data": {
@@ -277,11 +282,11 @@ POST /api/recipes/import-url
 
 **Erreurs :**
 
-| Code | HTTP | Message | Contexte |
-|---|---|---|---|
-| `IMPORT_001` | 400 | Invalid URL format | URL mal formee |
-| `IMPORT_002` | 422 | Could not fetch URL | Timeout, DNS, connexion refusee |
-| `IMPORT_003` | 422 | No recipe data found | Pas de JSON-LD Recipe ni de donnees extractibles |
+| Code         | HTTP | Message              | Contexte                                         |
+| ------------ | ---- | -------------------- | ------------------------------------------------ |
+| `IMPORT_001` | 400  | Invalid URL format   | URL mal formee                                   |
+| `IMPORT_002` | 422  | Could not fetch URL  | Timeout, DNS, connexion refusee                  |
+| `IMPORT_003` | 422  | No recipe data found | Pas de JSON-LD Recipe ni de donnees extractibles |
 
 ### 4.3 Logique backend
 
@@ -302,35 +307,39 @@ POST /api/recipes/import-url
 Chercher dans le HTML les balises `<script type="application/ld+json">` et parser le JSON.
 
 Patterns a detecter :
+
 1. Objet direct : `{ "@type": "Recipe", ... }`
 2. Dans un `@graph` : `{ "@graph": [ { "@type": "Recipe", ... }, ... ] }`
 3. Type avec namespace : `"@type": "schema:Recipe"` ou `"@type": ["Recipe"]`
 
 Champs a extraire depuis le JSON-LD `schema.org/Recipe` :
 
-| Champ JSON-LD | Champ ParsedRecipe | Transformation |
-|---|---|---|
-| `name` | `title` | Tel quel |
-| `recipeYield` | `servings` | Extraire le nombre : `/(\d+)/` |
-| `prepTime` | `prepTime` | ISO 8601 duration → minutes (`PT30M` → 30, `PT1H` → 60) |
-| `cookTime` | `cookTime` | ISO 8601 duration → minutes |
-| `totalTime` | `prepTime` (fallback) | Si aucun autre temps, utiliser comme prepTime |
-| `recipeIngredient` | `ingredients` | Array de strings → parser chaque string comme niveau 1 |
-| `recipeInstructions` | `steps` | Voir ci-dessous |
+| Champ JSON-LD        | Champ ParsedRecipe    | Transformation                                          |
+| -------------------- | --------------------- | ------------------------------------------------------- |
+| `name`               | `title`               | Tel quel                                                |
+| `recipeYield`        | `servings`            | Extraire le nombre : `/(\d+)/`                          |
+| `prepTime`           | `prepTime`            | ISO 8601 duration → minutes (`PT30M` → 30, `PT1H` → 60) |
+| `cookTime`           | `cookTime`            | ISO 8601 duration → minutes                             |
+| `totalTime`          | `prepTime` (fallback) | Si aucun autre temps, utiliser comme prepTime           |
+| `recipeIngredient`   | `ingredients`         | Array de strings → parser chaque string comme niveau 1  |
+| `recipeInstructions` | `steps`               | Voir ci-dessous                                         |
 
 **Parsing de `recipeInstructions`** (format variable selon les sites) :
+
 - Array de strings : chaque string = une etape
 - Array d'objets `HowToStep` : `item.text` = une etape
 - Array d'objets `HowToSection` : `section.itemListElement` → array de `HowToStep`
 - String unique : splitter par `\n` ou numeros
 
 **Parsing ISO 8601 durations** :
+
 ```
 PT30M → 30
 PT1H → 60
 PT1H30M → 90
 PT2H → 120
 ```
+
 Regex : `/^PT(?:(\d+)H)?(?:(\d+)M)?$/` → `hours * 60 + minutes`
 
 #### Pas de fallback HTML
@@ -359,6 +368,7 @@ Si aucun JSON-LD Recipe n'est trouve, renvoyer directement l'erreur `IMPORT_003`
 #### ImportRecipeModal
 
 Modale avec :
+
 - Textarea (10 lignes minimum, redimensionnable)
 - Placeholder : `"Collez un texte de recette ou une URL (ex: https://marmiton.org/...)"`
 - Bouton "Analyser" (disabled si textarea vide)
@@ -376,15 +386,15 @@ Modale avec :
 
 Quand le parsing retourne un `ParsedRecipe`, le formulaire est pre-rempli :
 
-| Champ ParsedRecipe | State du formulaire | Logique |
-|---|---|---|
-| `title` | `reset({ title })` via react-hook-form | Si non null |
-| `servings` | `setServings(value)` | Si non null, sinon garder 4 |
-| `prepTime` | `setPrepTime(String(value))` | Si non null |
-| `cookTime` | `setCookTime(String(value))` | Si non null |
-| `restTime` | `setRestTime(String(value))` | Si non null |
-| `steps` | `setSteps(steps.map(s => ({ instruction: s })))` | Si non vide |
-| `ingredients` | `setIngredients(mapped)` | Voir 5.3 |
+| Champ ParsedRecipe | State du formulaire                              | Logique                     |
+| ------------------ | ------------------------------------------------ | --------------------------- |
+| `title`            | `reset({ title })` via react-hook-form           | Si non null                 |
+| `servings`         | `setServings(value)`                             | Si non null, sinon garder 4 |
+| `prepTime`         | `setPrepTime(String(value))`                     | Si non null                 |
+| `cookTime`         | `setCookTime(String(value))`                     | Si non null                 |
+| `restTime`         | `setRestTime(String(value))`                     | Si non null                 |
+| `steps`            | `setSteps(steps.map(s => ({ instruction: s })))` | Si non vide                 |
+| `ingredients`      | `setIngredients(mapped)`                         | Voir 5.3                    |
 
 ### 5.3 Matching des ingredients
 
@@ -412,7 +422,7 @@ Pour chaque `ParsedIngredient`, le frontend doit tenter de matcher avec les ingr
 ```typescript
 // Pour chaque ParsedIngredient
 const mapped: IngredientInput = {
-  name: parsed.name ?? parsed.raw,    // fallback sur le texte brut
+  name: parsed.name ?? parsed.raw, // fallback sur le texte brut
   quantity: parsed.quantity ?? undefined,
   unitId: matchedUnitId ?? undefined,
   ingredientId: matchedIngredientId ?? undefined,
@@ -422,19 +432,20 @@ const mapped: IngredientInput = {
 ### 5.4 Feedback utilisateur
 
 Apres le pre-remplissage, afficher un toast de succes avec un resume :
+
 - `"Import reussi : titre, X ingredients, Y etapes detectes"`
 - Si certains champs n'ont pas pu etre extraits, le mentionner : `"Import partiel : aucun ingredient detecte"`
 
 ### 5.5 Gestion des erreurs
 
-| Situation | Comportement |
-|---|---|
-| Textarea vide | Bouton "Analyser" desactive |
+| Situation                                                                | Comportement                                                                          |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| Textarea vide                                                            | Bouton "Analyser" desactive                                                           |
 | Parsing texte qui ne detecte rien (0 ingredients, 0 steps, pas de titre) | Message dans la modale : "Aucune recette detectee dans le texte. Verifiez le format." |
-| URL invalide | Message : "URL invalide" |
-| URL inaccessible (timeout, 404...) | Message : "Impossible d'acceder a cette URL" |
-| URL sans donnees de recette | Message : "Aucune recette detectee sur cette page" |
-| Erreur reseau | Message : "Erreur de connexion" |
+| URL invalide                                                             | Message : "URL invalide"                                                              |
+| URL inaccessible (timeout, 404...)                                       | Message : "Impossible d'acceder a cette URL"                                          |
+| URL sans donnees de recette                                              | Message : "Aucune recette detectee sur cette page"                                    |
+| Erreur reseau                                                            | Message : "Erreur de connexion"                                                       |
 
 La modale reste ouverte en cas d'erreur pour permettre a l'utilisateur de corriger.
 
@@ -486,14 +497,14 @@ L'import ne valide rien. Le formulaire existant se charge de la validation au mo
 
 ## 8. Limites acceptees
 
-| Limite | Raison |
-|---|---|
-| Pas de parsing parfait des ingredients | Trop de formats differents, l'utilisateur corrige |
-| Pas de detection de tags | Les tags sont specifiques a l'app, impossible a deviner |
-| Pas de detection d'image | Complexe (droits d'auteur, hotlinking), hors scope |
-| Pas de support des sites en SPA (React/Vue rendus cote client) | Necessiterait Puppeteer, trop lourd |
-| Pas de support des sites avec anti-bot (Cloudflare, captcha) | Impossible sans headless browser |
-| Unites non reconnues ignorees | L'utilisateur selectionne manuellement |
+| Limite                                                         | Raison                                                  |
+| -------------------------------------------------------------- | ------------------------------------------------------- |
+| Pas de parsing parfait des ingredients                         | Trop de formats differents, l'utilisateur corrige       |
+| Pas de detection de tags                                       | Les tags sont specifiques a l'app, impossible a deviner |
+| Pas de detection d'image                                       | Complexe (droits d'auteur, hotlinking), hors scope      |
+| Pas de support des sites en SPA (React/Vue rendus cote client) | Necessiterait Puppeteer, trop lourd                     |
+| Pas de support des sites avec anti-bot (Cloudflare, captcha)   | Impossible sans headless browser                        |
+| Unites non reconnues ignorees                                  | L'utilisateur selectionne manuellement                  |
 
 ---
 
@@ -510,8 +521,8 @@ L'import ne valide rien. Le formulaire existant se charge de la validation au mo
 
 ## 10. Codes erreur (resume)
 
-| Code | HTTP | Message |
-|---|---|---|
-| `IMPORT_001` | 400 | Invalid URL format |
-| `IMPORT_002` | 422 | Could not fetch URL |
-| `IMPORT_003` | 422 | No recipe data found |
+| Code         | HTTP | Message              |
+| ------------ | ---- | -------------------- |
+| `IMPORT_001` | 400  | Invalid URL format   |
+| `IMPORT_002` | 422  | Could not fetch URL  |
+| `IMPORT_003` | 422  | No recipe data found |

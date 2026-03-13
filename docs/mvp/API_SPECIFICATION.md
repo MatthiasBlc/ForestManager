@@ -11,9 +11,11 @@ Toutes les routes (sauf auth) necessitent une session valide.
 ## Authentication
 
 ### POST /api/auth/signup
+
 Inscription d'un nouvel utilisateur.
 
 **Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -23,6 +25,7 @@ Inscription d'un nouvel utilisateur.
 ```
 
 **Response 201:**
+
 ```json
 {
   "id": "uuid",
@@ -33,15 +36,18 @@ Inscription d'un nouvel utilisateur.
 ```
 
 **Errors:**
+
 - `400` - Validation error
 - `409` - Email or username already exists
 
 ---
 
 ### POST /api/auth/login
+
 Authentification d'un utilisateur.
 
 **Body:**
+
 ```json
 {
   "email": "user@example.com",
@@ -50,6 +56,7 @@ Authentification d'un utilisateur.
 ```
 
 **Response 200:**
+
 ```json
 {
   "id": "uuid",
@@ -59,15 +66,18 @@ Authentification d'un utilisateur.
 ```
 
 **Errors:**
+
 - `400` - Invalid credentials
 - `401` - Unauthorized
 
 ---
 
 ### POST /api/auth/logout
+
 Deconnexion.
 
 **Response 200:**
+
 ```json
 {
   "message": "Logged out successfully"
@@ -77,9 +87,11 @@ Deconnexion.
 ---
 
 ### GET /api/auth/me
+
 Recupere l'utilisateur courant.
 
 **Response 200:**
+
 ```json
 {
   "id": "uuid",
@@ -90,6 +102,7 @@ Recupere l'utilisateur courant.
 ```
 
 **Errors:**
+
 - `401` - Not authenticated
 
 ---
@@ -97,9 +110,11 @@ Recupere l'utilisateur courant.
 ## Users
 
 ### GET /api/users/:id
+
 Recupere un profil utilisateur public.
 
 **Response 200:**
+
 ```json
 {
   "id": "uuid",
@@ -113,13 +128,16 @@ Recupere un profil utilisateur public.
 ---
 
 ### GET /api/users/:id/recipes
+
 Liste des recettes personnelles d'un utilisateur (seulement les siennes si authentifie comme cet utilisateur).
 
 **Query params:**
+
 - `page` (default: 1)
 - `limit` (default: 20, max: 100)
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -142,12 +160,15 @@ Liste des recettes personnelles d'un utilisateur (seulement les siennes si authe
 ---
 
 ### GET /api/users/me/invites
+
 Liste des invitations recues par l'utilisateur connecte.
 
 **Query params:**
+
 - `status` (default: "PENDING") - PENDING, ACCEPTED, REJECTED, ou "all"
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -172,13 +193,16 @@ Liste des invitations recues par l'utilisateur connecte.
 ---
 
 ### GET /api/users/me/activity
+
 Feed d'activite personnel (propositions sur mes recettes, etc.).
 
 **Query params:**
+
 - `page` (default: 1)
 - `limit` (default: 20, max: 100)
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -209,9 +233,11 @@ Feed d'activite personnel (propositions sur mes recettes, etc.).
 ## Invites
 
 ### POST /api/invites/:id/accept
+
 Accepte une invitation recue.
 
 **Response 200:**
+
 ```json
 {
   "message": "Invitation accepted",
@@ -223,6 +249,7 @@ Accepte une invitation recue.
 ```
 
 **Errors:**
+
 - `404` - Invite not found
 - `400` - Invite not pending (already processed)
 - `403` - Not the invitee
@@ -230,9 +257,11 @@ Accepte une invitation recue.
 ---
 
 ### POST /api/invites/:id/reject
+
 Refuse une invitation recue.
 
 **Response 200:**
+
 ```json
 {
   "message": "Invitation rejected"
@@ -240,6 +269,7 @@ Refuse une invitation recue.
 ```
 
 **Errors:**
+
 - `404` - Invite not found
 - `400` - Invite not pending
 - `403` - Not the invitee
@@ -249,9 +279,11 @@ Refuse une invitation recue.
 ## Communities
 
 ### GET /api/communities
+
 Liste les communautes de l'utilisateur connecte.
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -271,9 +303,11 @@ Liste les communautes de l'utilisateur connecte.
 ---
 
 ### POST /api/communities
+
 Cree une nouvelle communaute.
 
 **Body:**
+
 ```json
 {
   "name": "Les Gourmands",
@@ -282,6 +316,7 @@ Cree une nouvelle communaute.
 ```
 
 **Response 201:**
+
 ```json
 {
   "id": "uuid",
@@ -295,9 +330,11 @@ Cree une nouvelle communaute.
 ---
 
 ### GET /api/communities/:id
+
 Details d'une communaute.
 
 **Response 200:**
+
 ```json
 {
   "id": "uuid",
@@ -312,15 +349,18 @@ Details d'une communaute.
 ```
 
 **Errors:**
+
 - `403` - Not a member
 - `404` - Community not found
 
 ---
 
 ### PATCH /api/communities/:id
+
 Modifie une communaute (admin only).
 
 **Body:**
+
 ```json
 {
   "name": "Nouveau nom",
@@ -331,14 +371,17 @@ Modifie une communaute (admin only).
 **Response 200:** Communaute mise a jour
 
 **Errors:**
+
 - `403` - Not admin
 
 ---
 
 ### GET /api/communities/:id/members
+
 Liste les membres d'une communaute.
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -355,15 +398,19 @@ Liste les membres d'une communaute.
 ---
 
 ### DELETE /api/communities/:id/members/:userId
+
 Quitte la communaute (self) ou retire un membre (admin kick).
 
 **Response 200:**
+
 ```json
 {
   "message": "Left community successfully"
 }
 ```
+
 ou
+
 ```json
 {
   "message": "Member removed successfully"
@@ -371,6 +418,7 @@ ou
 ```
 
 **Errors:**
+
 - `403` - Last admin must promote another first
 - `403` - Cannot kick an admin
 - `410` - Community deleted (was last member)
@@ -378,9 +426,11 @@ ou
 ---
 
 ### PATCH /api/communities/:id/members/:userId
+
 Modifie le role d'un membre (promotion uniquement, admin only).
 
 **Body:**
+
 ```json
 {
   "role": "ADMIN"
@@ -388,6 +438,7 @@ Modifie le role d'un membre (promotion uniquement, admin only).
 ```
 
 **Response 200:**
+
 ```json
 {
   "message": "User promoted to ADMIN"
@@ -395,17 +446,21 @@ Modifie le role d'un membre (promotion uniquement, admin only).
 ```
 
 **Errors:**
+
 - `403` - Not admin or trying to demote
 
 ---
 
 ### GET /api/communities/:id/invites
+
 Liste les invitations d'une communaute (admin only).
 
 **Query params:**
+
 - `status` (default: "PENDING") - PENDING, ACCEPTED, REJECTED, CANCELLED, ou "all"
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -428,26 +483,33 @@ Liste les invitations d'une communaute (admin only).
 ```
 
 **Errors:**
+
 - `403` - Not admin
 
 ---
 
 ### POST /api/communities/:id/invites
+
 Envoie une invitation (admin only).
 
 **Body:**
+
 ```json
 {
   "userId": "uuid"
 }
 ```
+
 ou
+
 ```json
 {
   "email": "user@example.com"
 }
 ```
+
 ou
+
 ```json
 {
   "username": "johndoe"
@@ -455,6 +517,7 @@ ou
 ```
 
 **Response 201:**
+
 ```json
 {
   "id": "uuid",
@@ -469,6 +532,7 @@ ou
 ```
 
 **Errors:**
+
 - `403` - Not admin
 - `404` - User not found
 - `409` - Already a member
@@ -477,9 +541,11 @@ ou
 ---
 
 ### DELETE /api/communities/:id/invites/:inviteId
+
 Annule une invitation en attente (admin only).
 
 **Response 200:**
+
 ```json
 {
   "message": "Invitation cancelled"
@@ -487,6 +553,7 @@ Annule une invitation en attente (admin only).
 ```
 
 **Errors:**
+
 - `403` - Not admin
 - `404` - Invite not found
 - `400` - Invite not pending
@@ -494,13 +561,16 @@ Annule une invitation en attente (admin only).
 ---
 
 ### GET /api/communities/:id/activity
+
 Feed d'activite de la communaute.
 
 **Query params:**
+
 - `page` (default: 1)
 - `limit` (default: 20, max: 100)
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -527,15 +597,18 @@ Feed d'activite de la communaute.
 ## Recipes
 
 ### GET /api/recipes
+
 Liste des recettes (catalogue personnel de l'utilisateur connecte).
 
 **Query params:**
+
 - `page` (default: 1)
 - `limit` (default: 20)
 - `tags` - Filtre par tags (comma-separated)
 - `search` - Recherche par titre
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -554,9 +627,11 @@ Liste des recettes (catalogue personnel de l'utilisateur connecte).
 ---
 
 ### GET /api/communities/:communityId/recipes
+
 Liste des recettes d'une communaute.
 
 **Query params:**
+
 - `page`, `limit`, `tags`, `search`
 
 **Response 200:** Meme format que GET /api/recipes
@@ -564,9 +639,11 @@ Liste des recettes d'une communaute.
 ---
 
 ### POST /api/recipes
+
 Cree une recette dans le catalogue personnel.
 
 **Body:**
+
 ```json
 {
   "title": "Tarte aux pommes",
@@ -585,11 +662,13 @@ Cree une recette dans le catalogue personnel.
 ---
 
 ### POST /api/communities/:communityId/recipes
+
 Cree une recette dans une communaute (+ copie dans catalogue personnel).
 
 **Body:** Meme format que POST /api/recipes
 
 **Response 201:**
+
 ```json
 {
   "personal": { ... },
@@ -600,9 +679,11 @@ Cree une recette dans une communaute (+ copie dans catalogue personnel).
 ---
 
 ### GET /api/recipes/:id
+
 Details d'une recette.
 
 **Response 200:**
+
 ```json
 {
   "id": "uuid",
@@ -634,9 +715,11 @@ Details d'une recette.
 ---
 
 ### GET /api/recipes/:id/variants
+
 Liste les variantes d'une recette.
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -656,9 +739,11 @@ Liste les variantes d'une recette.
 ---
 
 ### PATCH /api/recipes/:id
+
 Modifie une recette (createur only).
 
 **Body:**
+
 ```json
 {
   "title": "Nouveau titre",
@@ -673,9 +758,11 @@ Modifie une recette (createur only).
 ---
 
 ### DELETE /api/recipes/:id
+
 Supprime une recette (soft delete, createur only).
 
 **Response 200:**
+
 ```json
 {
   "message": "Recipe deleted"
@@ -685,9 +772,11 @@ Supprime une recette (soft delete, createur only).
 ---
 
 ### POST /api/recipes/:id/share
+
 Fork une recette vers une autre communaute.
 
 **Body:**
+
 ```json
 {
   "targetCommunityId": "uuid"
@@ -695,6 +784,7 @@ Fork une recette vers une autre communaute.
 ```
 
 **Response 201:**
+
 ```json
 {
   "message": "Recipe shared successfully",
@@ -703,6 +793,7 @@ Fork une recette vers une autre communaute.
 ```
 
 **Errors:**
+
 - `403` - Not member of both communities or insufficient permissions
 
 ---
@@ -710,12 +801,15 @@ Fork une recette vers une autre communaute.
 ## Proposals
 
 ### GET /api/recipes/:id/proposals
+
 Liste des propositions sur une recette.
 
 **Query params:**
+
 - `status` - Filtre: PENDING, ACCEPTED, REJECTED (default: all)
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -736,9 +830,11 @@ Liste des propositions sur une recette.
 ---
 
 ### POST /api/recipes/:id/proposals
+
 Cree une proposition de mise a jour.
 
 **Body:**
+
 ```json
 {
   "proposedTitle": "Tarte aux pommes - amelioree",
@@ -749,14 +845,17 @@ Cree une proposition de mise a jour.
 **Response 201:** Proposition creee
 
 **Errors:**
+
 - `403` - Not a community member or proposing on own recipe
 
 ---
 
 ### GET /api/proposals/:id
+
 Details d'une proposition.
 
 **Response 200:**
+
 ```json
 {
   "id": "uuid",
@@ -779,9 +878,11 @@ Details d'une proposition.
 ---
 
 ### POST /api/proposals/:id/accept
+
 Accepte une proposition (createur de la recette only).
 
 **Response 200:**
+
 ```json
 {
   "message": "Proposal accepted",
@@ -792,9 +893,11 @@ Accepte une proposition (createur de la recette only).
 ---
 
 ### POST /api/proposals/:id/reject
+
 Refuse une proposition et cree une variante.
 
 **Response 200:**
+
 ```json
 {
   "message": "Proposal rejected, variant created",
@@ -807,12 +910,15 @@ Refuse une proposition et cree une variante.
 ## Tags
 
 ### GET /api/tags
+
 Liste tous les tags (avec nombre d'utilisations).
 
 **Query params:**
+
 - `search` - Recherche par nom
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -828,6 +934,7 @@ Liste tous les tags (avec nombre d'utilisations).
 ---
 
 ### GET /api/communities/:id/tags
+
 Tags utilises dans une communaute.
 
 **Response 200:** Meme format
@@ -837,12 +944,15 @@ Tags utilises dans une communaute.
 ## Ingredients
 
 ### GET /api/ingredients
+
 Liste tous les ingredients (avec nombre d'utilisations).
 
 **Query params:**
+
 - `search` - Recherche par nom
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -860,12 +970,15 @@ Liste tous les ingredients (avec nombre d'utilisations).
 ## Users Search (pour invitations)
 
 ### GET /api/users/search
+
 Recherche d'utilisateurs par username ou email (pour invitations).
 
 **Query params:**
+
 - `q` - Terme de recherche (min 3 caracteres)
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -918,26 +1031,26 @@ Toutes les routes paginees utilisent le format:
 
 ## Error Codes
 
-| Code | HTTP Status | Message |
-|------|-------------|---------|
-| `AUTH_001` | 401 | Non authentifie |
-| `AUTH_002` | 401 | Session expiree |
-| `COMMUNITY_001` | 403 | Non membre |
-| `COMMUNITY_002` | 403 | Permission insuffisante |
-| `COMMUNITY_003` | 400 | Dernier admin |
-| `COMMUNITY_004` | 409 | Utilisateur deja membre |
-| `COMMUNITY_005` | 409 | Invitation deja envoyee |
-| `COMMUNITY_006` | 403 | Impossible de retirer un admin |
-| `RECIPE_001` | 404 | Recette non trouvee |
-| `RECIPE_002` | 403 | Non proprietaire |
-| `PROPOSAL_001` | 403 | Proposition invalide |
-| `PROPOSAL_002` | 400 | Deja decidee |
-| `SHARE_001` | 403 | Non membre source |
-| `SHARE_002` | 403 | Non membre cible |
-| `SHARE_003` | 403 | Permission partage |
-| `INVITE_001` | 404 | Invitation non trouvee |
-| `INVITE_002` | 400 | Invitation deja traitee (status non PENDING) |
-| `INVITE_003` | 404 | Utilisateur non trouve |
+| Code            | HTTP Status | Message                                      |
+| --------------- | ----------- | -------------------------------------------- |
+| `AUTH_001`      | 401         | Non authentifie                              |
+| `AUTH_002`      | 401         | Session expiree                              |
+| `COMMUNITY_001` | 403         | Non membre                                   |
+| `COMMUNITY_002` | 403         | Permission insuffisante                      |
+| `COMMUNITY_003` | 400         | Dernier admin                                |
+| `COMMUNITY_004` | 409         | Utilisateur deja membre                      |
+| `COMMUNITY_005` | 409         | Invitation deja envoyee                      |
+| `COMMUNITY_006` | 403         | Impossible de retirer un admin               |
+| `RECIPE_001`    | 404         | Recette non trouvee                          |
+| `RECIPE_002`    | 403         | Non proprietaire                             |
+| `PROPOSAL_001`  | 403         | Proposition invalide                         |
+| `PROPOSAL_002`  | 400         | Deja decidee                                 |
+| `SHARE_001`     | 403         | Non membre source                            |
+| `SHARE_002`     | 403         | Non membre cible                             |
+| `SHARE_003`     | 403         | Permission partage                           |
+| `INVITE_001`    | 404         | Invitation non trouvee                       |
+| `INVITE_002`    | 400         | Invitation deja traitee (status non PENDING) |
+| `INVITE_003`    | 404         | Utilisateur non trouve                       |
 
 ---
 
@@ -962,11 +1075,13 @@ API d'administration plateforme. Completement isolee de l'API utilisateur.
 ## Admin Authentication
 
 ### POST /api/admin/auth/login
+
 Authentification SuperAdmin.
 
 **Premiere connexion (2FA non configure):**
 
 **Body:**
+
 ```json
 {
   "username": "admin",
@@ -975,6 +1090,7 @@ Authentification SuperAdmin.
 ```
 
 **Response 200 (setup required):**
+
 ```json
 {
   "requireTotpSetup": true,
@@ -986,6 +1102,7 @@ Authentification SuperAdmin.
 **Connexions suivantes:**
 
 **Body:**
+
 ```json
 {
   "username": "admin",
@@ -995,6 +1112,7 @@ Authentification SuperAdmin.
 ```
 
 **Response 200:**
+
 ```json
 {
   "id": "uuid",
@@ -1005,6 +1123,7 @@ Authentification SuperAdmin.
 ```
 
 **Errors:**
+
 - `401` - Invalid credentials
 - `401` - Invalid TOTP token
 - `403` - 2FA not configured
@@ -1012,9 +1131,11 @@ Authentification SuperAdmin.
 ---
 
 ### POST /api/admin/auth/totp/verify
+
 Verifie le token TOTP lors du setup initial.
 
 **Body:**
+
 ```json
 {
   "token": "123456"
@@ -1022,6 +1143,7 @@ Verifie le token TOTP lors du setup initial.
 ```
 
 **Response 200:**
+
 ```json
 {
   "message": "2FA configured successfully",
@@ -1033,15 +1155,18 @@ Verifie le token TOTP lors du setup initial.
 ```
 
 **Errors:**
+
 - `400` - Invalid token
 - `400` - 2FA already configured
 
 ---
 
 ### POST /api/admin/auth/logout
+
 Deconnexion admin.
 
 **Response 200:**
+
 ```json
 {
   "message": "Logged out successfully"
@@ -1051,9 +1176,11 @@ Deconnexion admin.
 ---
 
 ### GET /api/admin/auth/me
+
 Recupere l'admin courant.
 
 **Response 200:**
+
 ```json
 {
   "id": "uuid",
@@ -1068,15 +1195,18 @@ Recupere l'admin courant.
 ## Admin Tags Management
 
 ### GET /api/admin/tags
+
 Liste tous les tags avec statistiques.
 
 **Query params:**
+
 - `search` - Recherche par nom
 - `page` (default: 1)
 - `limit` (default: 50)
 - `sortBy` - name, recipesCount (default: name)
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -1094,9 +1224,11 @@ Liste tous les tags avec statistiques.
 ---
 
 ### POST /api/admin/tags
+
 Cree un nouveau tag.
 
 **Body:**
+
 ```json
 {
   "name": "nouveau-tag"
@@ -1104,6 +1236,7 @@ Cree un nouveau tag.
 ```
 
 **Response 201:**
+
 ```json
 {
   "id": "uuid",
@@ -1114,9 +1247,11 @@ Cree un nouveau tag.
 ---
 
 ### PATCH /api/admin/tags/:id
+
 Renomme un tag.
 
 **Body:**
+
 ```json
 {
   "name": "nouveau-nom"
@@ -1128,9 +1263,11 @@ Renomme un tag.
 ---
 
 ### DELETE /api/admin/tags/:id
+
 Supprime un tag (hard delete).
 
 **Response 200:**
+
 ```json
 {
   "message": "Tag deleted",
@@ -1141,9 +1278,11 @@ Supprime un tag (hard delete).
 ---
 
 ### POST /api/admin/tags/:id/merge
+
 Fusionne un tag dans un autre.
 
 **Body:**
+
 ```json
 {
   "targetTagId": "uuid"
@@ -1151,6 +1290,7 @@ Fusionne un tag dans un autre.
 ```
 
 **Response 200:**
+
 ```json
 {
   "message": "Tag merged successfully",
@@ -1168,11 +1308,13 @@ Fusionne un tag dans un autre.
 ## Admin Ingredients Management
 
 ### GET /api/admin/ingredients
+
 Liste tous les ingredients avec statistiques.
 
 **Query params:** Memes que tags
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -1189,9 +1331,11 @@ Liste tous les ingredients avec statistiques.
 ---
 
 ### POST /api/admin/ingredients
+
 Cree un nouvel ingredient.
 
 **Body:**
+
 ```json
 {
   "name": "Nouvel ingredient"
@@ -1201,19 +1345,23 @@ Cree un nouvel ingredient.
 ---
 
 ### PATCH /api/admin/ingredients/:id
+
 Renomme un ingredient.
 
 ---
 
 ### DELETE /api/admin/ingredients/:id
+
 Supprime un ingredient (hard delete).
 
 ---
 
 ### POST /api/admin/ingredients/:id/merge
+
 Fusionne un ingredient dans un autre.
 
 **Body:**
+
 ```json
 {
   "targetIngredientId": "uuid"
@@ -1225,14 +1373,17 @@ Fusionne un ingredient dans un autre.
 ## Admin Communities Management
 
 ### GET /api/admin/communities
+
 Liste toutes les communautes avec statistiques.
 
 **Query params:**
+
 - `search` - Recherche par nom
 - `page`, `limit`
 - `sortBy` - name, membersCount, recipesCount, createdAt
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -1259,9 +1410,11 @@ Liste toutes les communautes avec statistiques.
 ---
 
 ### GET /api/admin/communities/:id
+
 Details complets d'une communaute.
 
 **Response 200:**
+
 ```json
 {
   "id": "uuid",
@@ -1295,9 +1448,11 @@ Details complets d'une communaute.
 ---
 
 ### PATCH /api/admin/communities/:id
+
 Modifie une communaute.
 
 **Body:**
+
 ```json
 {
   "name": "Nouveau nom",
@@ -1308,9 +1463,11 @@ Modifie une communaute.
 ---
 
 ### DELETE /api/admin/communities/:id
+
 Soft delete une communaute (et tous ses membres).
 
 **Response 200:**
+
 ```json
 {
   "message": "Community deleted",
@@ -1324,9 +1481,11 @@ Soft delete une communaute (et tous ses membres).
 ## Admin Features Management
 
 ### GET /api/admin/features
+
 Liste toutes les features disponibles.
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -1353,9 +1512,11 @@ Liste toutes les features disponibles.
 ---
 
 ### POST /api/admin/features
+
 Cree une nouvelle feature.
 
 **Body:**
+
 ```json
 {
   "code": "NEW_FEATURE",
@@ -1368,9 +1529,11 @@ Cree une nouvelle feature.
 ---
 
 ### PATCH /api/admin/features/:id
+
 Modifie une feature.
 
 **Body:**
+
 ```json
 {
   "name": "Nouveau nom",
@@ -1383,9 +1546,11 @@ Modifie une feature.
 ---
 
 ### GET /api/admin/communities/:id/features
+
 Liste les features d'une communaute.
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -1410,9 +1575,11 @@ Liste les features d'une communaute.
 ---
 
 ### POST /api/admin/communities/:id/features/:featureId
+
 Attribue une feature a une communaute.
 
 **Response 201:**
+
 ```json
 {
   "message": "Feature granted",
@@ -1425,14 +1592,17 @@ Attribue une feature a une communaute.
 ```
 
 **Errors:**
+
 - `409` - Feature already granted
 
 ---
 
 ### DELETE /api/admin/communities/:id/features/:featureId
+
 Revoque une feature d'une communaute.
 
 **Response 200:**
+
 ```json
 {
   "message": "Feature revoked"
@@ -1440,6 +1610,7 @@ Revoque une feature d'une communaute.
 ```
 
 **Errors:**
+
 - `400` - Cannot revoke default feature (MVP)
 
 ---
@@ -1447,9 +1618,11 @@ Revoque une feature d'une communaute.
 ## Admin Dashboard
 
 ### GET /api/admin/dashboard/stats
+
 Statistiques globales de la plateforme.
 
 **Response 200:**
+
 ```json
 {
   "users": {
@@ -1480,14 +1653,17 @@ Statistiques globales de la plateforme.
 ---
 
 ### GET /api/admin/activity
+
 Journal d'activite admin.
 
 **Query params:**
+
 - `page`, `limit`
 - `type` - Filtre par type d'action
 - `adminId` - Filtre par admin
 
 **Response 200:**
+
 ```json
 {
   "data": [
@@ -1516,17 +1692,17 @@ Journal d'activite admin.
 
 ## Admin Error Codes
 
-| Code | HTTP Status | Message |
-|------|-------------|---------|
-| `ADMIN_001` | 401 | Non authentifie (admin) |
-| `ADMIN_002` | 401 | 2FA requis |
-| `ADMIN_003` | 401 | Token TOTP invalide |
-| `ADMIN_004` | 400 | 2FA deja configure |
-| `ADMIN_005` | 404 | Tag non trouve |
-| `ADMIN_006` | 404 | Ingredient non trouve |
-| `ADMIN_007` | 404 | Community non trouvee |
-| `ADMIN_008` | 404 | Feature non trouvee |
-| `ADMIN_009` | 409 | Feature deja attribuee |
-| `ADMIN_010` | 400 | Impossible de revoquer feature par defaut |
-| `ADMIN_011` | 409 | Tag/Ingredient existe deja |
-| `ADMIN_012` | 400 | Fusion sur soi-meme interdite |
+| Code        | HTTP Status | Message                                   |
+| ----------- | ----------- | ----------------------------------------- |
+| `ADMIN_001` | 401         | Non authentifie (admin)                   |
+| `ADMIN_002` | 401         | 2FA requis                                |
+| `ADMIN_003` | 401         | Token TOTP invalide                       |
+| `ADMIN_004` | 400         | 2FA deja configure                        |
+| `ADMIN_005` | 404         | Tag non trouve                            |
+| `ADMIN_006` | 404         | Ingredient non trouve                     |
+| `ADMIN_007` | 404         | Community non trouvee                     |
+| `ADMIN_008` | 404         | Feature non trouvee                       |
+| `ADMIN_009` | 409         | Feature deja attribuee                    |
+| `ADMIN_010` | 400         | Impossible de revoquer feature par defaut |
+| `ADMIN_011` | 409         | Tag/Ingredient existe deja                |
+| `ADMIN_012` | 400         | Fusion sur soi-meme interdite             |

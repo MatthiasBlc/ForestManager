@@ -148,18 +148,18 @@
 
 - [x] Mettre a jour `.claude/context/API_MAP.md` (nouveau endpoint)
 - [x] Mettre a jour `.claude/context/FILE_MAP.md` (nouveaux fichiers)
-- [ ] Mettre a jour `.claude/context/PROGRESS.md`
+- [x] Mettre a jour `.claude/context/PROGRESS.md`
 
 ---
 
 ## Resume
 
-| Phase | Scope | Dependances |
-|-------|-------|-------------|
-| **A** | Parser texte (frontend, pur TS) | Aucune |
-| **B** | Import URL (backend, cheerio) | Aucune (independant de A) |
-| **C** | Modale + integration formulaire | A + B |
-| **D** | Polish + docs | C |
+| Phase | Scope                           | Dependances               |
+| ----- | ------------------------------- | ------------------------- |
+| **A** | Parser texte (frontend, pur TS) | Aucune                    |
+| **B** | Import URL (backend, cheerio)   | Aucune (independant de A) |
+| **C** | Modale + integration formulaire | A + B                     |
+| **D** | Polish + docs                   | C                         |
 
 Phases A et B sont independantes et peuvent etre developpees en parallele.
 
@@ -167,8 +167,8 @@ Phases A et B sont independantes et peuvent etre developpees en parallele.
 
 ## Resume tests
 
-- **Frontend** : 463 tests (59 parser + 404 existants)
-- **Backend** : 798 tests (52 import + 746 existants)
+- **Frontend** : 469 tests (65 parser + 404 existants)
+- **Backend** : 802 tests (56 import + 746 existants)
 
 ---
 

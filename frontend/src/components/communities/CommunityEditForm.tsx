@@ -91,11 +91,7 @@ const CommunityEditForm = ({
         />
       </div>
       <div className="flex justify-end gap-2 pt-2">
-        <button
-          className="btn btn-ghost btn-sm"
-          onClick={onCancel}
-          disabled={isSaving}
-        >
+        <button className="btn btn-ghost btn-sm" onClick={onCancel} disabled={isSaving}>
           Cancel
         </button>
         <button

@@ -289,8 +289,8 @@ Le script demande un username et un mot de passe, puis genere un QR code TOTP a 
 
 ## Documentation
 
-| Document                                       | Description                        |
-| ---------------------------------------------- | ---------------------------------- |
+| Document                                           | Description                        |
+| -------------------------------------------------- | ---------------------------------- |
 | [Architecture](docs/mvp/ARCHITECTURE.md)           | Architecture technique et patterns |
 | [Specification API](docs/mvp/API_SPECIFICATION.md) | Contrat REST complet               |
 | [Regles metier](docs/mvp/BUSINESS_RULES.md)        | Regles metier detaillees           |
@@ -299,14 +299,14 @@ Le script demande un username et un mot de passe, puis genere un QR code TOTP a 
 
 ### Features post-MVP
 
-| Feature | Spec | Description |
-| ------- | ---- | ----------- |
-| Tags Rework | [SPEC](docs/features/tags-rework/SPEC_TAGS_REWORK.md) | Systeme de tags scope-aware (global/community) |
-| Ingredients Rework | [SPEC](docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md) | Base ingredients avec unites et moderation |
-| Recipe Rework v2 | [SPEC](docs/features/recipe-rework-v2/SPEC_RECIPE_REWORK_V2.md) | Etapes numerotees, temps, portions |
-| Notifications | [SPEC](docs/features/notifications-rework/SPEC_NOTIFICATIONS_REWORK.md) | Notifications temps reel (WebSocket) |
-| Input Validation | [SPEC](docs/features/input-validation-security/SPEC_INPUT_VALIDATION.md) | Validation et securite renforcees |
-| Photo Upload | [SPEC](docs/features/photo-upload/SPEC_PHOTO_UPLOAD.md) | Upload images via MinIO |
+| Feature            | Spec                                                                     | Description                                    |
+| ------------------ | ------------------------------------------------------------------------ | ---------------------------------------------- |
+| Tags Rework        | [SPEC](docs/features/tags-rework/SPEC_TAGS_REWORK.md)                    | Systeme de tags scope-aware (global/community) |
+| Ingredients Rework | [SPEC](docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md)      | Base ingredients avec unites et moderation     |
+| Recipe Rework v2   | [SPEC](docs/features/recipe-rework-v2/SPEC_RECIPE_REWORK_V2.md)          | Etapes numerotees, temps, portions             |
+| Notifications      | [SPEC](docs/features/notifications-rework/SPEC_NOTIFICATIONS_REWORK.md)  | Notifications temps reel (WebSocket)           |
+| Input Validation   | [SPEC](docs/features/input-validation-security/SPEC_INPUT_VALIDATION.md) | Validation et securite renforcees              |
+| Photo Upload       | [SPEC](docs/features/photo-upload/SPEC_PHOTO_UPLOAD.md)                  | Upload images via MinIO                        |
 
 ## Auteur
 

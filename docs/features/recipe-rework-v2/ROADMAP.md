@@ -8,6 +8,7 @@
 ## Phase 13.1 - Migration DB & modeles Prisma
 
 ### 13.1.1 Migration Prisma
+
 - [x] Creer migration `recipe_rework_v2`
   - Ajouter `Recipe.servings` (Int, NOT NULL, default 4)
   - Ajouter `Recipe.prepTime` (Int?, nullable)
@@ -23,16 +24,19 @@
   - Index sur `ProposalStep(proposalId, order)`
 
 ### 13.1.2 Migration des donnees existantes
+
 - [x] Script SQL dans la migration :
   - Pour chaque `Recipe` avec `content` non vide → inserer un `RecipeStep` (order=0, instruction=content)
   - Pour chaque `RecipeUpdateProposal` avec `proposedContent` non vide → inserer un `ProposalStep` (order=0, instruction=proposedContent)
   - Propositions existantes : `proposedServings` = NULL (pas de changement propose)
 
 ### 13.1.3 Suppression des anciens champs
+
 - [x] Supprimer `Recipe.content`
 - [x] Supprimer `RecipeUpdateProposal.proposedContent`
 
 ### 13.1.4 Mise a jour schema.prisma
+
 - [x] Modele `Recipe` : ajouter champs + relation `steps RecipeStep[]`
 - [x] Modele `RecipeStep` : complet avec relation + index
 - [x] Modele `RecipeUpdateProposal` : supprimer `proposedContent`, ajouter 4 champs temps/servings + relation `proposedSteps ProposalStep[]`
@@ -40,6 +44,7 @@
 - [x] `npx prisma generate` + verifier compilation TS
 
 ### 13.1.5 Validation
+
 - [x] Migration appliquee sans erreur sur DB dev
 - [x] Donnees existantes migrees (recettes existantes ont chacune 1 step)
 - [x] `npx prisma studio` : verifier les tables RecipeStep et ProposalStep
@@ -50,39 +55,48 @@
 ## Phase 13.2 - Backend : services & helpers
 
 ### 13.2.1 Helpers steps
+
 - [x] `recipeService.ts` : creer `upsertSteps(tx, recipeId, steps[])` (meme pattern que `upsertIngredients`)
 - [x] `recipeService.ts` : creer `upsertProposalSteps(tx, proposalId, steps[])` (meme pattern que `upsertProposalIngredients`)
 
 ### 13.2.2 Prisma selects
+
 - [x] `util/prismaSelects.ts` : ajouter `RECIPE_STEPS_SELECT` + `PROPOSAL_STEPS_SELECT`
 - [x] Mettre a jour `RECIPE_RESULT_SELECT` dans `recipeService.ts` : ajouter steps + servings/times
 
 ### 13.2.3 Validation backend
+
 - [x] `util/validation.ts` : ajouter fonctions de validation
   - `validateServings(value)` : entier, 1-100
   - `validateTime(value)` : null OK, sinon entier >= 0, <= 10000
   - `validateSteps(steps[])` : array non vide, chaque instruction non vide, max 5000 chars
 
 ### 13.2.4 Response formatters
+
 - [x] `util/responseFormatters.ts` : ajouter `formatSteps(steps)` (comme `formatTags`/`formatIngredients`)
 
 ### 13.2.5 Service recipeService.ts
+
 - [x] `createRecipe()` : accepter `servings`, `prepTime`, `cookTime`, `restTime`, `steps[]` au lieu de `content`
 - [x] `updateRecipe()` : accepter nouveaux champs, remplacer steps si fournis (deleteMany + upsertSteps)
 - [x] `syncLinkedRecipes()` : synchroniser `servings`, `prepTime`, `cookTime`, `restTime`, `steps[]` vers recettes liees
 
 ### 13.2.6 Service communityRecipeService.ts
+
 - [x] `createCommunityRecipe()` : accepter et propager les nouveaux champs (servings, times, steps)
 
 ### 13.2.7 Service shareService.ts
+
 - [x] `forkRecipe()` : copier `servings`, `prepTime`, `cookTime`, `restTime` + dupliquer les `RecipeStep` (nouveaux UUIDs)
 - [x] `publishRecipe()` : idem
 
 ### 13.2.8 Service proposalService.ts (bonus)
+
 - [x] `acceptProposal()` : appliquer proposedServings/times/steps sur recette + propager
 - [x] `rejectProposal()` : variante avec proposedSteps + proposedServings/times
 
 ### 13.2.9 Service orphanHandling.ts (bonus)
+
 - [x] Variantes creees avec les bons champs (servings/times/steps au lieu de content)
 
 ---
@@ -90,16 +104,19 @@
 ## Phase 13.3 - Backend : controllers & routes
 
 ### 13.3.1 Controller recipes.ts
+
 - [x] `createRecipe` : remplacer validation `content` par validation `servings` + `steps[]` + `times`
 - [x] `updateRecipe` : idem, champs optionnels pour patch partiel
 - [x] `getRecipe` : inclure `steps` (ordonnees), `servings`, `prepTime`, `cookTime`, `restTime` dans la reponse. Supprimer `content`
 - [x] `getRecipes` (liste) : inclure `servings`, `prepTime`, `cookTime`, `restTime` dans chaque item
 
 ### 13.3.2 Controller communityRecipes.ts
+
 - [x] `createCommunityRecipe` : memes changements que createRecipe
 - [x] `getCommunityRecipes` (liste) : inclure servings + times
 
 ### 13.3.3 Controller proposals.ts
+
 - [x] `createProposal` : accepter `proposedServings`, `proposedPrepTime`, `proposedCookTime`, `proposedRestTime`, `proposedSteps[]` au lieu de `proposedContent`
 - [x] `getProposal` : inclure les nouveaux champs + `proposedSteps[]` dans la reponse
 - [x] `listProposals` : inclure les nouveaux champs
@@ -107,18 +124,22 @@
 - [x] `rejectProposal` : la variante creee doit heriter des proposedSteps (pas de content)
 
 ### 13.3.4 Codes erreur
+
 - [x] Ajouter `RECIPE_006` a `RECIPE_008` dans les controllers avec messages clairs
 
 ### 13.3.5 Validation
+
 - [x] Compilation backend OK (source code, hors tests)
 - [ ] Tests manuels API (Postman/curl) : create, get, update, delete recette avec nouveau format
 - [ ] Verifier sync bidirectionnelle avec les nouveaux champs
 
 ### 13.3.6 Controller recipeShare.ts (bonus)
+
 - [x] `shareRecipe` : inclure steps + servings/times dans le fork
 - [x] `publishToCommunities` : inclure steps + servings/times dans le publish
 
 ### 13.3.7 Controller recipeVariants.ts (bonus)
+
 - [x] `getVariants` : inclure servings/times dans la reponse
 
 ---
@@ -126,6 +147,7 @@
 ## Phase 13.4 - Backend : tests
 
 ### 13.4.1 Tests integration recipes
+
 - [x] Adapter `__tests__/integration/recipes.test.ts` :
   - Create : envoyer `servings` + `steps[]` au lieu de `content`
   - Get : verifier presence `steps[]`, `servings`, `prepTime`, `cookTime`, `restTime`
@@ -138,23 +160,28 @@
   - Scaling : pas de test backend (client-side only)
 
 ### 13.4.2 Tests integration communityRecipes
+
 - [x] Adapter `__tests__/integration/communityRecipes.test.ts` : memes changements
 
 ### 13.4.3 Tests integration proposals
+
 - [x] Adapter `__tests__/integration/proposals.test.ts` :
   - Creer proposal avec `proposedSteps[]` au lieu de `proposedContent`
   - Accepter proposal → verifier que la recette a les nouveaux steps/servings/times
   - Rejeter proposal → verifier que la variante a les proposedSteps
 
 ### 13.4.4 Tests integration share & variants
+
 - [x] Adapter `__tests__/integration/share.test.ts` : verifier copie des steps + servings + times lors du fork
 - [x] Adapter `__tests__/integration/variants.test.ts` : verifier que les variantes ont les steps
 
 ### 13.4.5 Tests unitaires
+
 - [x] `validation.test.ts` : tester `validateServings`, `validateTime`, `validateSteps`
 - [x] `responseFormatters.test.ts` : tester `formatSteps`
 
 ### 13.4.6 Validation
+
 - [x] `npm run test:backend` → tous les tests passent (649 tests, 34 fichiers)
 
 ---
@@ -162,6 +189,7 @@
 ## Phase 13.5 - Frontend : types & API client
 
 ### 13.5.1 Types frontend
+
 - [x] `models/recipe.ts` :
   - Ajouter `RecipeStep` interface (`id`, `order`, `instruction`)
   - `RecipeDetail` : supprimer `content`, ajouter `servings`, `prepTime`, `cookTime`, `restTime`, `steps: RecipeStep[]`
@@ -171,11 +199,13 @@
   - `ProposalInput` : supprimer `proposedContent`, ajouter `proposedServings`, `proposedPrepTime?`, `proposedCookTime?`, `proposedRestTime?`, `proposedSteps: { instruction: string }[]`
 
 ### 13.5.2 API client
+
 - [x] `network/api.ts` :
   - `RecipeInput` : supprimer `content`, ajouter `servings`, `prepTime?`, `cookTime?`, `restTime?`, `steps: { instruction: string }[]`
   - Verifier que `createRecipe`, `updateRecipe`, `createCommunityRecipe`, `createProposal` envoient les bons champs
 
 ### 13.5.3 Validation
+
 - [x] Compilation frontend OK (`npx tsc --noEmit` dans frontend)
 
 ---
@@ -183,6 +213,7 @@
 ## Phase 13.6 - Frontend : composants utilitaires
 
 ### 13.6.1 Utilitaire formatDuration
+
 - [x] `utils/formatDuration.ts` : fonction `formatDuration(minutes: number): string`
   - `45` → `"45 min"`
   - `90` → `"1h30"`
@@ -190,12 +221,14 @@
   - `0` → `"0 min"`
 
 ### 13.6.2 Utilitaire scaleQuantity
+
 - [x] `utils/scaleQuantity.ts` : fonction `scaleQuantity(baseQty: number | null, baseServings: number, selectedServings: number): number | null`
   - Retourne null si baseQty est null
   - Calcul : `baseQty * (selectedServings / baseServings)`
   - Arrondi 2 decimales, suppression zeros inutiles
 
 ### 13.6.3 Composant TimeBadges
+
 - [x] `components/recipes/TimeBadges.tsx`
   - Props : `prepTime`, `cookTime`, `restTime` (tous `number | null`)
   - Affiche uniquement les temps definis (non null)
@@ -213,7 +246,9 @@ Composants DaisyUI utilises :
 **Choix recommande** : badges en ligne (plus compact, coherent avec les tags)
 
 ```jsx
-{/* Exemple structure */}
+{
+  /* Exemple structure */
+}
 <div className="flex flex-wrap gap-2">
   {prepTime != null && (
     <div className="badge badge-outline gap-1">
@@ -231,14 +266,13 @@ Composants DaisyUI utilises :
     </div>
   )}
   {totalTime > 0 && (
-    <div className="badge badge-primary gap-1">
-      Total {formatDuration(totalTime)}
-    </div>
+    <div className="badge badge-primary gap-1">Total {formatDuration(totalTime)}</div>
   )}
-</div>
+</div>;
 ```
 
 ### 13.6.4 Composant ServingsSelector
+
 - [x] `components/recipes/ServingsSelector.tsx`
   - Props : `baseServings: number`, `value: number`, `onChange: (n: number) => void`
   - DaisyUI `join` pour grouper les elements : bouton `-` + input + bouton `+`
@@ -248,24 +282,32 @@ Composants DaisyUI utilises :
   - Label "personnes" a cote
 
 ```jsx
-{/* Exemple structure */}
+{
+  /* Exemple structure */
+}
 <div className="flex items-center gap-2">
   <div className="join">
-    <button className="btn btn-sm join-item" onClick={decrement}>-</button>
+    <button className="btn btn-sm join-item" onClick={decrement}>
+      -
+    </button>
     <input
       type="number"
       className="input input-bordered input-sm join-item w-16 text-center"
       value={value}
       onChange={handleChange}
-      min={1} max={100}
+      min={1}
+      max={100}
     />
-    <button className="btn btn-sm join-item" onClick={increment}>+</button>
+    <button className="btn btn-sm join-item" onClick={increment}>
+      +
+    </button>
   </div>
   <span className="text-sm text-base-content/70">personnes</span>
-</div>
+</div>;
 ```
 
 ### 13.6.5 Composant StepEditor (formulaire)
+
 - [x] `components/form/StepEditor.tsx`
   - Props : `value: { instruction: string }[]`, `onChange: (steps) => void`
   - Liste ordonnee de textareas numeros
@@ -301,10 +343,12 @@ Composants DaisyUI utilises :
 ```
 
 ### 13.6.6 Tests unitaires utils
+
 - [x] `__tests__/unit/utils/formatDuration.test.ts`
 - [x] `__tests__/unit/utils/scaleQuantity.test.ts`
 
 ### 13.6.7 Validation
+
 - [x] Compilation frontend OK
 - [x] Tests frontend passent (375 tests, 59 fichiers)
 
@@ -313,6 +357,7 @@ Composants DaisyUI utilises :
 ## Phase 13.7 - Frontend : RecipeDetailPage
 
 ### 13.7.1 Rework RecipeDetailPage
+
 - [x] Supprimer l'affichage de `recipe.content`
 - [x] Ajouter section `TimeBadges` apres le titre et les meta-infos
 - [x] Ajouter section tags (inchange, mais deplace apres les temps)
@@ -325,7 +370,9 @@ Composants DaisyUI utilises :
   - Ou utilisation du composant DaisyUI `timeline timeline-vertical` avec numero dans `timeline-middle` et instruction dans `timeline-end timeline-box`
 
 ```jsx
-{/* Proposition: steps avec timeline DaisyUI */}
+{
+  /* Proposition: steps avec timeline DaisyUI */
+}
 <ul className="timeline timeline-vertical timeline-compact">
   {recipe.steps.map((step, i) => (
     <li key={step.id}>
@@ -333,16 +380,15 @@ Composants DaisyUI utilises :
       <div className="timeline-middle">
         <div className="badge badge-primary">{i + 1}</div>
       </div>
-      <div className="timeline-end timeline-box">
-        {step.instruction}
-      </div>
+      <div className="timeline-end timeline-box">{step.instruction}</div>
       {i < recipe.steps.length - 1 && <hr />}
     </li>
   ))}
-</ul>
+</ul>;
 ```
 
 **Alternative plus simple** (blocs cartes numerotees) :
+
 ```jsx
 <div className="space-y-4">
   {recipe.steps.map((step, i) => (
@@ -355,6 +401,7 @@ Composants DaisyUI utilises :
 ```
 
 ### 13.7.2 Validation
+
 - [ ] Test visuel : verifier le layout sequentiel complet (tests manuels phase 13.12)
 - [ ] Tester le scaling des quantites (tests manuels phase 13.12)
 - [ ] Tester avec recette sans temps (tests manuels phase 13.12)
@@ -365,6 +412,7 @@ Composants DaisyUI utilises :
 ## Phase 13.8 - Frontend : RecipeFormPage
 
 ### 13.8.1 Rework RecipeFormPage
+
 - [x] Supprimer le champ `content` (textarea unique)
 - [x] Ajouter champ `servings` (obligatoire) : `input input-bordered w-24` type number
 - [x] Ajouter ligne de temps optionnels : 3 inputs en ligne (prep, cuisson, repos)
@@ -375,6 +423,7 @@ Composants DaisyUI utilises :
 - [x] Mettre a jour le `loadRecipe` (mode edition) : charger et pre-remplir les nouveaux champs
 
 ### 13.8.2 Validation
+
 - [ ] Creation recette avec tous les champs → succes (tests manuels phase 13.12)
 - [ ] Edition recette existante → pre-remplissage correct (tests manuels phase 13.12)
 - [ ] Validation : servings vide → erreur, 0 steps → erreur (tests manuels phase 13.12)
@@ -385,6 +434,7 @@ Composants DaisyUI utilises :
 ## Phase 13.9 - Frontend : Proposals
 
 ### 13.9.1 ProposeModificationModal
+
 - [x] Supprimer le textarea `proposedContent`
 - [x] Ajouter champ `proposedServings` (pre-rempli avec valeur actuelle)
 - [x] Ajouter champs temps (pre-remplis avec valeurs actuelles)
@@ -393,10 +443,12 @@ Composants DaisyUI utilises :
 - [x] Mettre a jour le `handleSubmit` : envoyer les nouveaux champs
 
 ### 13.9.2 ProposalsList
+
 - [x] Adapter l'affichage des proposals : montrer les steps proposes au lieu du texte
 - [x] Afficher les changements de servings/temps proposes
 
 ### 13.9.3 Validation
+
 - [ ] Creer une proposition avec changements de steps → succes (tests manuels phase 13.12)
 - [ ] Accepter → recette mise a jour avec les nouveaux steps (tests manuels phase 13.12)
 - [ ] Rejeter → variante creee avec les steps proposes (tests manuels phase 13.12)
@@ -406,14 +458,17 @@ Composants DaisyUI utilises :
 ## Phase 13.10 - Frontend : RecipeCard & listes
 
 ### 13.10.1 RecipeCard
+
 - [x] Ajouter badges compacts : temps total + servings
   - Sous les tags existants
   - `badge badge-ghost badge-sm gap-1` avec icone
 
 ### 13.10.2 RecipeListRow
+
 - [x] Memes ajouts que RecipeCard si utilise en mode liste
 
 ### 13.10.3 Validation
+
 - [ ] Verifier les cartes sur la page recettes perso (tests manuels phase 13.12)
 - [ ] Verifier les cartes sur la page communaute (tests manuels phase 13.12)
 
@@ -422,17 +477,20 @@ Composants DaisyUI utilises :
 ## Phase 13.11 - Tests frontend
 
 ### 13.11.1 Tests composants nouveaux
+
 - [x] `__tests__/unit/components/recipes/TimeBadges.test.tsx`
 - [x] `__tests__/unit/components/recipes/ServingsSelector.test.tsx`
 - [x] `__tests__/unit/components/form/StepEditor.test.tsx`
 
 ### 13.11.2 Tests pages adaptees
+
 - [x] Adapter `__tests__/unit/pages/RecipeFormPage.test.tsx` : nouveau format formulaire
 - [x] Adapter `__tests__/unit/components/proposals/ProposeModificationModal.test.tsx`
 - [x] Adapter `__tests__/unit/components/recipes/RecipeCard.test.tsx` : nouveaux badges
 - [x] Adapter MSW handlers (`mswHandlers.ts`) : retourner les nouveaux champs dans les mocks
 
 ### 13.11.3 Validation
+
 - [x] `npm run test:frontend` → tous les tests passent (403 tests, 62 fichiers)
 
 ---
@@ -440,6 +498,7 @@ Composants DaisyUI utilises :
 ## Phase 13.12 - Finalisation
 
 ### 13.12.1 Tests manuels complets
+
 - [ ] Creer une recette complete (servings + temps + ingredients + steps)
 - [ ] Editer la recette (modifier steps, servings, temps)
 - [ ] Consulter la recette : layout sequentiel, scaling fonctionne
@@ -451,13 +510,16 @@ Composants DaisyUI utilises :
 - [ ] Verifier recettes migrees (1 step, servings=4, pas de temps)
 
 ### 13.12.2 Tests complets suite
+
 - [x] `npm test` → backend (649 tests, 34 fichiers) + frontend (403 tests, 62 fichiers) passent
 
 ### 13.12.3 Nettoyage
+
 - [x] Supprimer le code mort (references a `content`, `proposedContent`) — audit OK, aucun code mort trouve
 - [x] Supprimer les interfaces legacy non utilisees — audit OK, aucune interface legacy restante
 
 ### 13.12.4 Mise a jour contexte projet
+
 - [x] `.claude/context/DB_MODELS.md` : RecipeStep, ProposalStep, nouveaux champs (deja a jour depuis 13.1)
 - [x] `.claude/context/API_MAP.md` : inputs/outputs des endpoints recettes et proposals (deja a jour depuis 13.3)
 - [x] `.claude/context/FILE_MAP.md` : nouveaux fichiers (composants, utils, tests)
@@ -465,8 +527,10 @@ Composants DaisyUI utilises :
 - [x] `.claude/context/PROGRESS.md` : Phase 13 marquee complete
 
 ### 13.12.5 Documentation
+
 - [x] `docs/features/recipe-rework-v2/MANUAL_TESTS.md` : checklist tests manuels detailles
 - [x] `docs/0 - brainstorming futur.md` : "Rework des pages recettes (v2)" marque DONE
 
 ### 13.12.6 Brainstorm update
+
 - [x] Feature marquee DONE dans le brainstorming

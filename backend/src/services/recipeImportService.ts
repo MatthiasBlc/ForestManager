@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio";
 import createHttpError from "http-errors";
+import { IMPORT_001, IMPORT_002, IMPORT_003 } from "../constants/errorCodes";
 
 // --- Types ---
 
@@ -111,9 +112,21 @@ export function parseIsoDuration(duration: string | null | undefined): number | 
 // --- Unicode fraction normalization ---
 
 const UNICODE_FRACTIONS: Record<string, string> = {
-  "\u00BD": "1/2", "\u2153": "1/3", "\u2154": "2/3", "\u00BC": "1/4", "\u00BE": "3/4",
-  "\u2155": "1/5", "\u2156": "2/5", "\u2157": "3/5", "\u2158": "4/5",
-  "\u2159": "1/6", "\u215A": "5/6", "\u215B": "1/8", "\u215C": "3/8", "\u215D": "5/8", "\u215E": "7/8",
+  "\u00BD": "1/2",
+  "\u2153": "1/3",
+  "\u2154": "2/3",
+  "\u00BC": "1/4",
+  "\u00BE": "3/4",
+  "\u2155": "1/5",
+  "\u2156": "2/5",
+  "\u2157": "3/5",
+  "\u2158": "4/5",
+  "\u2159": "1/6",
+  "\u215A": "5/6",
+  "\u215B": "1/8",
+  "\u215C": "3/8",
+  "\u215D": "5/8",
+  "\u215E": "7/8",
 };
 
 function normalizeUnicodeFractions(text: string): string {
@@ -123,9 +136,7 @@ function normalizeUnicodeFractions(text: string): string {
 // --- Ingredient parsing ---
 
 export function parseIngredientLine(line: string): ParsedIngredient {
-  const cleaned = normalizeUnicodeFractions(
-    line.replace(/^[-*\u2022\u2013\u2014]\s*/, "")
-  ).trim();
+  const cleaned = normalizeUnicodeFractions(line.replace(/^[-*\u2022\u2013\u2014]\s*/, "")).trim();
 
   if (!cleaned) {
     return { raw: line, quantity: null, unitAbbreviation: null, name: null };
@@ -133,7 +144,7 @@ export function parseIngredientLine(line: string): ParsedIngredient {
 
   // Variante "a gout" / sans quantite
   const tasteMatch = cleaned.match(
-    /^(.+?)[\s,]*(?:[aà]\s*go[uû]t|selon\s*(?:besoin|envie|go[uû]t))$/i,
+    /^(.+?)[\s,]*(?:[aà]\s*go[uû]t|selon\s*(?:besoin|envie|go[uû]t))$/i
   );
   if (tasteMatch) {
     return {
@@ -147,14 +158,14 @@ export function parseIngredientLine(line: string): ParsedIngredient {
   // Variante fractions en premier (1/2, 3/4) pour eviter que "1" de "1/2" matche le pattern principal
   const fractionPattern = new RegExp(
     `^(\\d+/\\d+)\\s*(${UNIT_PATTERNS})?\\s*(?:de\\s+|d')?(.+)$`,
-    "i",
+    "i"
   );
   const fractionMatch = cleaned.match(fractionPattern);
   if (fractionMatch) {
     const [num, den] = fractionMatch[1].split("/");
     const quantity = parseInt(num, 10) / parseInt(den, 10);
     const unitRaw = fractionMatch[2]?.toLowerCase() || null;
-    const unitAbbreviation = unitRaw ? (UNIT_ALIAS_MAP[unitRaw] || null) : null;
+    const unitAbbreviation = unitRaw ? UNIT_ALIAS_MAP[unitRaw] || null : null;
     return {
       raw: cleaned,
       quantity: isNaN(quantity) ? null : quantity,
@@ -166,13 +177,13 @@ export function parseIngredientLine(line: string): ParsedIngredient {
   // Pattern principal : nombre (entier/decimal) + unite optionnelle + nom
   const mainPattern = new RegExp(
     `^(\\d+[.,]?\\d*)\\s*(${UNIT_PATTERNS})?\\s*(?:de\\s+|d')?(.+)$`,
-    "i",
+    "i"
   );
   const mainMatch = cleaned.match(mainPattern);
   if (mainMatch) {
     const quantity = parseFloat(mainMatch[1].replace(",", "."));
     const unitRaw = mainMatch[2]?.toLowerCase() || null;
-    const unitAbbreviation = unitRaw ? (UNIT_ALIAS_MAP[unitRaw] || null) : null;
+    const unitAbbreviation = unitRaw ? UNIT_ALIAS_MAP[unitRaw] || null : null;
     return {
       raw: cleaned,
       quantity: isNaN(quantity) ? null : quantity,
@@ -194,7 +205,7 @@ function parseInstructions(instructions: unknown): string[] {
   if (typeof instructions === "string") {
     return instructions
       .split(/\n/)
-      .map((s) => s.replace(/^\d+[\.\)]\s*/, "").trim())
+      .map((s) => s.replace(/^\d+[.)]\s*/, "").trim())
       .filter(Boolean);
   }
 
@@ -204,7 +215,7 @@ function parseInstructions(instructions: unknown): string[] {
 
     for (const item of instructions) {
       if (typeof item === "string") {
-        const trimmed = item.replace(/^\d+[\.\)]\s*/, "").trim();
+        const trimmed = item.replace(/^\d+[.)]\s*/, "").trim();
         if (trimmed) steps.push(trimmed);
       } else if (item && typeof item === "object") {
         // HowToStep
@@ -333,23 +344,23 @@ function mapJsonLdToRecipe(recipe: Record<string, unknown>): ParsedRecipe {
 export async function importFromUrl(url: string): Promise<ParsedRecipe> {
   // Validation URL
   if (!url || typeof url !== "string" || url.length > 2000) {
-    throw createHttpError(400, "IMPORT_001: Invalid URL format");
+    throw createHttpError(400, IMPORT_001);
   }
 
   let parsedUrl: URL;
   try {
     parsedUrl = new URL(url);
   } catch {
-    throw createHttpError(400, "IMPORT_001: Invalid URL format");
+    throw createHttpError(400, IMPORT_001);
   }
 
   if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
-    throw createHttpError(400, "IMPORT_001: Invalid URL format");
+    throw createHttpError(400, IMPORT_001);
   }
 
   // SSRF protection
   if (isPrivateHost(parsedUrl.hostname)) {
-    throw createHttpError(400, "IMPORT_001: Invalid URL format");
+    throw createHttpError(400, IMPORT_001);
   }
 
   // Fetch la page
@@ -372,24 +383,24 @@ export async function importFromUrl(url: string): Promise<ParsedRecipe> {
     // Verifier la taille du contenu
     const contentLength = response.headers.get("content-length");
     if (contentLength && parseInt(contentLength, 10) > 5 * 1024 * 1024) {
-      throw createHttpError(422, "IMPORT_002: Could not fetch URL");
+      throw createHttpError(422, IMPORT_002);
     }
 
     if (!response.ok) {
-      throw createHttpError(422, "IMPORT_002: Could not fetch URL");
+      throw createHttpError(422, IMPORT_002);
     }
 
     html = await response.text();
 
     // Verifier la taille apres telechargement aussi
     if (html.length > 5 * 1024 * 1024) {
-      throw createHttpError(422, "IMPORT_002: Could not fetch URL");
+      throw createHttpError(422, IMPORT_002);
     }
   } catch (error) {
     if (error instanceof Error && "statusCode" in error) {
       throw error; // Re-throw createHttpError
     }
-    throw createHttpError(422, "IMPORT_002: Could not fetch URL");
+    throw createHttpError(422, IMPORT_002);
   }
 
   // Extraire les JSON-LD
@@ -416,7 +427,7 @@ export async function importFromUrl(url: string): Promise<ParsedRecipe> {
   });
 
   if (!recipeData) {
-    throw createHttpError(422, "IMPORT_003: No recipe data found");
+    throw createHttpError(422, IMPORT_003);
   }
 
   return mapJsonLdToRecipe(recipeData);

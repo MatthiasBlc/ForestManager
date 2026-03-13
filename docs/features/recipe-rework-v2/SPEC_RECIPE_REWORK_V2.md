@@ -87,13 +87,13 @@ model ProposalStep {
 
 ### 1.5 Resume des changements DB
 
-| Action | Modele | Detail |
-|--------|--------|--------|
-| Ajouter champs | Recipe | `servings`, `prepTime`, `cookTime`, `restTime` |
-| Supprimer champ | Recipe | `content` |
-| Creer table | RecipeStep | `id`, `recipeId`, `order`, `instruction` |
+| Action          | Modele               | Detail                                                                                                              |
+| --------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Ajouter champs  | Recipe               | `servings`, `prepTime`, `cookTime`, `restTime`                                                                      |
+| Supprimer champ | Recipe               | `content`                                                                                                           |
+| Creer table     | RecipeStep           | `id`, `recipeId`, `order`, `instruction`                                                                            |
 | Modifier champs | RecipeUpdateProposal | Supprimer `proposedContent`, ajouter `proposedServings`, `proposedPrepTime`, `proposedCookTime`, `proposedRestTime` |
-| Creer table | ProposalStep | `id`, `proposalId`, `order`, `instruction` |
+| Creer table     | ProposalStep         | `id`, `proposalId`, `order`, `instruction`                                                                          |
 
 ---
 
@@ -108,11 +108,11 @@ model ProposalStep {
 
 ### 2.2 Temps
 
-| Champ | Obligatoire | Type | Validation |
-|-------|------------|------|------------|
-| `prepTime` | Non | Int (minutes) | `>= 0, <= 10000` |
-| `cookTime` | Non | Int (minutes) | `>= 0, <= 10000` |
-| `restTime` | Non | Int (minutes) | `>= 0, <= 10000` |
+| Champ      | Obligatoire | Type          | Validation       |
+| ---------- | ----------- | ------------- | ---------------- |
+| `prepTime` | Non         | Int (minutes) | `>= 0, <= 10000` |
+| `cookTime` | Non         | Int (minutes) | `>= 0, <= 10000` |
+| `restTime` | Non         | Int (minutes) | `>= 0, <= 10000` |
 
 - **Total** calcule cote client : `totalTime = (prepTime ?? 0) + (cookTime ?? 0) + (restTime ?? 0)`
 - Affiche uniquement si au moins un temps est defini
@@ -141,12 +141,12 @@ displayedQuantity = baseQuantity * (selectedServings / recipe.servings)
 
 ### 2.5 Codes erreur
 
-| Code | Message | Contexte |
-|------|---------|----------|
-| `RECIPE_006` | At least one step is required | Create/Update sans steps |
+| Code         | Message                          | Contexte                   |
+| ------------ | -------------------------------- | -------------------------- |
+| `RECIPE_006` | At least one step is required    | Create/Update sans steps   |
 | `RECIPE_007` | Step instruction cannot be empty | Step avec instruction vide |
-| `RECIPE_008` | Invalid servings value | servings < 1 ou > 100 |
-| `RECIPE_009` | Invalid time value | Temps negatif ou > 10000 |
+| `RECIPE_008` | Invalid servings value           | servings < 1 ou > 100      |
+| `RECIPE_009` | Invalid time value               | Temps negatif ou > 10000   |
 
 ---
 
@@ -155,6 +155,7 @@ displayedQuantity = baseQuantity * (selectedServings / recipe.servings)
 ### 3.1 Create Recipe - `POST /api/recipes/`
 
 **Input (nouveau format) :**
+
 ```json
 {
   "title": "Brioche a la praline",
@@ -180,6 +181,7 @@ displayedQuantity = baseQuantity * (selectedServings / recipe.servings)
 **Champ supprime** : `content`
 
 **Validations ajoutees** :
+
 - `servings` : requis, entier, 1-100
 - `steps` : requis, array non vide
 - `steps[].instruction` : requis, non vide, max 5000 chars
@@ -192,6 +194,7 @@ Memes champs que create, tous optionnels (patch partiel). Si `steps` est fourni,
 ### 3.3 Get Recipe - `GET /api/recipes/:recipeId`
 
 **Output (nouveau format) :**
+
 ```json
 {
   "id": "uuid",
@@ -223,6 +226,7 @@ Memes champs que create, tous optionnels (patch partiel). Si `steps` est fourni,
 ### 3.4 Create Proposal - `POST /api/recipes/:recipeId/proposals`
 
 **Input (nouveau format) :**
+
 ```json
 {
   "proposedTitle": "Brioche a la praline rose",
@@ -247,6 +251,7 @@ Output inclut les nouveaux champs : `proposedServings`, `proposedPrepTime`, `pro
 ### 3.6 Accept Proposal
 
 Lors de l'acceptation d'une proposition, la recette est mise a jour avec :
+
 - `servings` → `proposedServings` (si non null)
 - `prepTime` → `proposedPrepTime` (si non null)
 - `cookTime` → `proposedCookTime` (si non null)
@@ -261,17 +266,17 @@ Lors de l'acceptation d'une proposition, la recette est mise a jour avec :
 
 ### 4.1 Champs synchronises
 
-| Champ | Synchro | Notes |
-|-------|---------|-------|
-| `title` | Oui | Inchange |
-| `imageUrl` | Oui | Inchange |
-| `ingredients` | Oui | Inchange |
-| `steps` | **Oui** | Nouveau - delete all + recreate |
-| `servings` | **Oui** | Nouveau |
-| `prepTime` | **Oui** | Nouveau |
-| `cookTime` | **Oui** | Nouveau |
-| `restTime` | **Oui** | Nouveau |
-| `tags` | Non | Inchange - tags sont locaux |
+| Champ         | Synchro | Notes                           |
+| ------------- | ------- | ------------------------------- |
+| `title`       | Oui     | Inchange                        |
+| `imageUrl`    | Oui     | Inchange                        |
+| `ingredients` | Oui     | Inchange                        |
+| `steps`       | **Oui** | Nouveau - delete all + recreate |
+| `servings`    | **Oui** | Nouveau                         |
+| `prepTime`    | **Oui** | Nouveau                         |
+| `cookTime`    | **Oui** | Nouveau                         |
+| `restTime`    | **Oui** | Nouveau                         |
+| `tags`        | Non     | Inchange - tags sont locaux     |
 
 ### 4.2 Logique de sync pour les steps
 
@@ -336,17 +341,19 @@ Structure de haut en bas (identique mobile et desktop, max-w-3xl centre) :
 ### 5.2 Composants de temps
 
 **TimeBadges** : badges en ligne affichant chaque temps defini.
+
 - Icones distinctes par type (horloge prep, flamme cuisson, pause repos)
 - Le total est affiche separement, en gras
 - Non affiche si aucun temps defini
 
 **Formatage** :
+
 ```typescript
 function formatDuration(minutes: number): string {
   if (minutes < 60) return `${minutes} min`;
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  return m > 0 ? `${h}h${m.toString().padStart(2, '0')}` : `${h}h`;
+  return m > 0 ? `${h}h${m.toString().padStart(2, "0")}` : `${h}h`;
 }
 // 45 → "45 min", 90 → "1h30", 120 → "2h"
 ```
@@ -354,6 +361,7 @@ function formatDuration(minutes: number): string {
 ### 5.3 Selecteur de personnes
 
 **ServingsSelector** : composant `[- ] 6 personnes [+]`
+
 - Boutons `-` et `+` pour incrementer/decrementer
 - Input editable directement (l'utilisateur peut taper un nombre)
 - Min 1, max 100
@@ -393,6 +401,7 @@ function formatDuration(minutes: number): string {
 ```
 
 **StepEditor** : composant de liste d'etapes
+
 - Chaque etape : numero + textarea auto-resize + bouton supprimer
 - Bouton "Ajouter une etape" en bas
 - Reordonnancement par boutons haut/bas (ou drag & drop si souhaite en v2+)
@@ -408,6 +417,7 @@ function formatDuration(minutes: number): string {
 ### 5.6 RecipeCard (vues liste)
 
 Ajouts legers sur les cartes recettes :
+
 - Badge temps total (si defini) : ex: `[3h15]`
 - Badge servings : ex: `[6 pers.]`
 - Positionnement sous les tags existants
@@ -467,13 +477,13 @@ Migration en 2 temps (dans une seule migration Prisma) :
 
 ### 6.2 Valeurs par defaut pour les recettes existantes
 
-| Champ | Valeur migration | Raison |
-|-------|-----------------|--------|
-| `servings` | 4 | Standard le plus courant |
-| `prepTime` | null | Pas de donnee existante |
-| `cookTime` | null | Pas de donnee existante |
-| `restTime` | null | Pas de donnee existante |
-| `steps` | 1 step avec le contenu actuel | Preservation des donnees |
+| Champ      | Valeur migration              | Raison                   |
+| ---------- | ----------------------------- | ------------------------ |
+| `servings` | 4                             | Standard le plus courant |
+| `prepTime` | null                          | Pas de donnee existante  |
+| `cookTime` | null                          | Pas de donnee existante  |
+| `restTime` | null                          | Pas de donnee existante  |
+| `steps`    | 1 step avec le contenu actuel | Preservation des donnees |
 
 ---
 
@@ -482,6 +492,7 @@ Migration en 2 temps (dans une seule migration Prisma) :
 ### 7.1 Fork / Share
 
 `forkRecipe` dans `shareService.ts` doit copier les nouveaux champs :
+
 - `servings`, `prepTime`, `cookTime`, `restTime`
 - Copie de tous les `RecipeStep` (avec nouveaux UUIDs)
 
@@ -505,15 +516,15 @@ Pas d'impact - les notifications existantes fonctionnent par type d'event, pas p
 
 ## 8. Cas limites et edge cases
 
-| Cas | Comportement |
-|-----|-------------|
-| Recette migree non editee (servings=4 par defaut) | Le selecteur affiche 4, l'utilisateur peut modifier en editant la recette |
-| Ingredients sans quantite dans le scaling | Affiches tels quels, pas de calcul |
-| Scaling avec valeur non entiere (ex: 3 oeufs pour 4 pers, demande pour 6) | Affiche 4.5, arrondi a 2 decimales |
-| Suppression de toutes les etapes dans le form | Impossible - le bouton supprimer est desactive quand il reste 1 seule etape |
-| Proposal sans changement de servings | `proposedServings` envoi la valeur actuelle. Comparaison frontend pour detection |
-| Temps a 0 | Valide (ex: prepTime=0 pour une recette sans prep). Affiche "0 min" |
-| Tous les temps a null | Pas de section temps affichee |
+| Cas                                                                       | Comportement                                                                     |
+| ------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Recette migree non editee (servings=4 par defaut)                         | Le selecteur affiche 4, l'utilisateur peut modifier en editant la recette        |
+| Ingredients sans quantite dans le scaling                                 | Affiches tels quels, pas de calcul                                               |
+| Scaling avec valeur non entiere (ex: 3 oeufs pour 4 pers, demande pour 6) | Affiche 4.5, arrondi a 2 decimales                                               |
+| Suppression de toutes les etapes dans le form                             | Impossible - le bouton supprimer est desactive quand il reste 1 seule etape      |
+| Proposal sans changement de servings                                      | `proposedServings` envoi la valeur actuelle. Comparaison frontend pour detection |
+| Temps a 0                                                                 | Valide (ex: prepTime=0 pour une recette sans prep). Affiche "0 min"              |
+| Tous les temps a null                                                     | Pas de section temps affichee                                                    |
 
 ---
 

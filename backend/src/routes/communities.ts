@@ -8,6 +8,12 @@ import * as MembersController from "../controllers/members";
 import * as ActivityController from "../controllers/activity";
 import { memberOf, requireCommunityRole } from "../middleware/community";
 import { validateUUID } from "../middleware/validateUUID";
+import { validateBody } from "../middleware/validateBody";
+import { createRecipeSchema } from "../schemas/recipe.schema";
+import { createCommunitySchema, updateCommunitySchema } from "../schemas/community.schema";
+import { createInviteSchema } from "../schemas/invite.schema";
+import { promoteMemberSchema } from "../schemas/member.schema";
+import { communityTagSchema } from "../schemas/tag.schema";
 
 const router = express.Router();
 
@@ -15,7 +21,7 @@ const router = express.Router();
 router.get("/", CommunitiesController.getCommunities);
 
 // Create a new community
-router.post("/", CommunitiesController.createCommunity);
+router.post("/", validateBody(createCommunitySchema), CommunitiesController.createCommunity);
 
 // Get community details (requires membership)
 router.get("/:communityId", validateUUID, memberOf, CommunitiesController.getCommunity);
@@ -26,6 +32,7 @@ router.patch(
   validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
+  validateBody(updateCommunitySchema),
   CommunitiesController.updateCommunity
 );
 
@@ -62,10 +69,21 @@ router.delete(
 // =====================================
 
 // List community recipes
-router.get("/:communityId/recipes", validateUUID, memberOf, CommunityRecipesController.getCommunityRecipes);
+router.get(
+  "/:communityId/recipes",
+  validateUUID,
+  memberOf,
+  CommunityRecipesController.getCommunityRecipes
+);
 
 // Create a community recipe
-router.post("/:communityId/recipes", validateUUID, memberOf, CommunityRecipesController.createCommunityRecipe);
+router.post(
+  "/:communityId/recipes",
+  validateUUID,
+  memberOf,
+  validateBody(createRecipeSchema),
+  CommunityRecipesController.createCommunityRecipe
+);
 
 // =====================================
 // Member routes
@@ -80,6 +98,7 @@ router.patch(
   validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
+  validateBody(promoteMemberSchema),
   MembersController.promoteMember
 );
 
@@ -110,6 +129,7 @@ router.post(
   validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
+  validateBody(createInviteSchema),
   InvitesController.createInvite
 );
 
@@ -141,6 +161,7 @@ router.post(
   validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
+  validateBody(communityTagSchema),
   CommunityTagsController.createCommunityTag
 );
 
@@ -150,6 +171,7 @@ router.patch(
   validateUUID,
   memberOf,
   requireCommunityRole("MODERATOR"),
+  validateBody(communityTagSchema),
   CommunityTagsController.updateCommunityTag
 );
 
@@ -185,6 +207,11 @@ router.post(
 // =====================================
 
 // Get community activity feed (any member)
-router.get("/:communityId/activity", validateUUID, memberOf, ActivityController.getCommunityActivity);
+router.get(
+  "/:communityId/activity",
+  validateUUID,
+  memberOf,
+  ActivityController.getCommunityActivity
+);
 
 export default router;

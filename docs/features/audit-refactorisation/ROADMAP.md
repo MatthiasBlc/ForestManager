@@ -1,0 +1,355 @@
+# Roadmap - Audit & Refactorisation Complete
+
+## Phase A : Securite (Priorite critique)
+
+### A1 - CSRF Protection ✅
+
+- [x] Implementer le double-submit cookie pattern cote backend (`middleware/csrf.ts`)
+- [x] Ajouter l'intercepteur Axios cote frontend pour envoyer le header CSRF
+- [x] Desactive en test env (coherent avec rate limiters)
+- [x] Test unitaire du middleware
+
+### A2 - Audit IDOR ✅
+
+- [x] Audit complet de tous les endpoints (21 user controllers + 9 admin controllers)
+- [x] 1 issue trouvee et corrigee : `GET /api/recipes/:recipeId/communities` manquait `requireRecipeAccess`
+- [x] Tous les autres endpoints correctement proteges (memberOf, requireCommunityRole, requireRecipeAccess/Ownership)
+
+### A3 - Audit Mass Assignment ✅
+
+- [x] Audit complet de tous les controllers (30 fichiers)
+- [x] Aucune vulnerabilite trouvee : tous les controllers utilisent l'extraction explicite des champs
+- [x] Pas de spread `req.body`, pas de passage direct a Prisma
+- [x] Champs sensibles (role, deletedAt, password, totpSecret) jamais settables depuis le body
+
+### A4 - Audit XSS ✅
+
+- [x] Rechercher `dangerouslySetInnerHTML` dans le frontend → aucun usage
+- [x] Rechercher `innerHTML`, `document.write`, `eval` → aucun usage (sauf assertions test)
+- [x] Verifier la config CSP de Helmet → stricte (self-only, no object/frame)
+- [x] Verifier la config CSP Nginx (frontend Dockerfile) → coherente avec Helmet
+- [x] X-Content-Type-Options: nosniff active
+- [x] Aucune correction necessaire
+
+### A5 - Session Security ✅
+
+- [x] Ajouter `req.session.regenerate()` apres login user (signup + login)
+- [x] Ajouter `req.session.regenerate()` apres login admin (step1 + verifyTotp)
+- [x] Verifier cookies secure + sameSite en production → OK (secure: prod, sameSite: lax/strict, httpOnly)
+- [x] Verifier que logout detruit la session → OK (destroy + clearCookie)
+- [x] Session fixation corrigee par regenerate()
+
+### A6 - Upload Security ✅
+
+- [x] Verifier validation type MIME → OK (webp, jpeg, png via validateUploadedFile)
+- [x] Verifier taille max → OK (2 MB verifie cote backend via headObject)
+- [x] Verifier expiration des presigned URLs → OK (60 secondes)
+- [x] ContentType force a image/webp dans le PutObjectCommand
+- [x] Aucune correction necessaire
+
+### A7 - Logging & Secrets ✅
+
+- [x] Rechercher les logs de donnees sensibles → aucun (password/secret/token jamais loggues)
+- [x] Verifier .gitignore pour .env → OK (.env et .env.\* ignores, sauf .env.example)
+- [x] Verifier qu'en production les stack traces ne sont pas exposees → OK (error handler retourne { error: message } uniquement, stack loggue serveur-side via pino)
+- [x] Aucune correction necessaire
+
+---
+
+## Phase B : NPM Audit & Dependencies
+
+### B1 - Audit des dependances ✅
+
+- [x] `npm audit` backend - 26 vulns (1 critical, 23 high) → toutes corrigees via `npm audit fix`
+- [x] `npm audit` frontend - 3 vulns (2 high, 1 moderate) → toutes corrigees via `npm audit fix`
+- [x] 0 vulnerabilites restantes (backend + frontend)
+- [x] Principales corrections : fast-xml-parser (critical), express-rate-limit, minimatch, rollup, qs, ajv
+
+### B2 - CI Integration ✅
+
+- [x] Ajouter `npm audit --audit-level=high` dans GitHub Actions (backend + frontend)
+- [x] Build echoue si vulnerabilite high+ detectee
+
+---
+
+## Phase C : Lint & Formatage
+
+### C1 - Prettier ✅
+
+- [x] Installer Prettier (racine du projet) → prettier 3.8.1
+- [x] `.prettierrc` deja existant (semi, double quotes, tabWidth 2, trailing comma es5, printWidth 100)
+- [x] Installer `eslint-config-prettier` (backend + frontend)
+- [x] Creer `.prettierignore` (node_modules, dist, build, coverage, lockfiles, migrations)
+- [x] Ajouter scripts `format` et `format:check` au root package.json
+- [x] Formater tout le codebase + verifier format:check OK
+- [x] Tests backend (802) + frontend (469) passent apres formatage
+
+### C2 - ESLint strict ✅
+
+- [x] Backend : ajouter `no-explicit-any` (warn), `no-console` (warn, avec exception scripts CLI)
+- [x] Frontend : ajouter `no-explicit-any` (warn), `self-closing-comp` (warn)
+- [x] Corriger 10 erreurs existantes (unused imports, useless escapes, unused vars)
+- [x] Auto-fix 28 self-closing-comp warnings frontend
+- [x] 0 errors, 0 warnings (backend + frontend)
+
+### C3 - Pre-commit hooks ✅
+
+- [x] Installer Husky 9 + lint-staged 15 (racine)
+- [x] Configurer : Prettier sur fichiers stages (ESLint en CI uniquement, incompatible chemins Docker)
+- [x] Tester le hook
+
+### C4 - CI Lint ✅
+
+- [x] Ajouter `npx eslint .` dans GitHub Actions (backend + frontend jobs)
+- [x] Ajouter job `format-check` avec `npx prettier --check .` dans GitHub Actions
+
+---
+
+## Phase D : DRY Backend
+
+### D1 - Error Codes centralises ✅
+
+- [x] Creer `constants/errorCodes.ts` avec tous les codes existants (~90 constantes)
+- [x] Migrer tous les controllers, middleware et services (32 fichiers)
+- [x] 1 seul string literal restant volontairement (COMMUNITY_001 message different selon contexte)
+
+### D2 - Rate Limiter Factory ✅
+
+- [x] Creer `config/rateLimiter.ts` avec factory `createRateLimiter()` (bypass auto en test)
+- [x] Remplacer les 3 definitions existantes (authRateLimiter, adminRateLimiter, adminAuthLimiter)
+- [x] 802 tests passent
+
+### D3 - Extraction config app.ts ✅
+
+- [x] Extraire session config dans `config/session.ts`
+- [x] Extraire error handler dans `middleware/errorHandler.ts`
+- [x] Verifier que app.ts est lisible (~82 lignes, 50 sans imports)
+
+### D4 - Zod : Phase 1 (fondations) ✅
+
+- [x] Installer Zod (v4.3.6)
+- [x] Creer le middleware `validateBody`
+- [x] Creer `schemas/common.schema.ts` (pagination, uuid)
+- [x] Creer `schemas/auth.schema.ts` (signup, login)
+- [x] Migrer auth controllers vers Zod
+- [x] Tests : 802/802 passent
+
+### D5 - Zod : Phase 2 (recipes) ✅
+
+- [x] Creer `schemas/recipe.schema.ts` (create + update)
+- [x] Migrer recipe create/update controllers (recipes.ts + communityRecipes.ts)
+- [x] Creer `schemas/proposal.schema.ts`
+- [x] Migrer proposal controller (createProposal)
+- [x] Tests : 802/802 passent
+
+### D6a - Zod : User + Community ✅
+
+- [x] Creer `schemas/user.schema.ts` (updateProfile)
+- [x] Creer `schemas/community.schema.ts` (create, update)
+- [x] Migrer `controllers/users.ts` et `controllers/communities.ts`
+- [x] Tests (Docker requis)
+
+### D6b - Zod : Invites + Members + Share ✅
+
+- [x] Creer `schemas/invite.schema.ts` (createInvite)
+- [x] Creer `schemas/member.schema.ts` (promoteMember)
+- [x] Creer `schemas/recipeShare.schema.ts` (share, publish)
+- [x] Migrer `controllers/invites.ts`, `controllers/members.ts`, `controllers/recipeShare.ts`
+- [x] Tests (Docker requis)
+
+### D6c - Zod : Tags + Notifications ✅
+
+- [x] Creer `schemas/tag.schema.ts` (tagSuggestion, communityTag, tagPreference)
+- [x] Creer `schemas/notification.schema.ts` (markBatch, markAll, updatePreference)
+- [x] Migrer `controllers/tagSuggestions.ts`, `controllers/communityTags.ts`, `controllers/tagPreferences.ts`, `controllers/notifications.ts`
+- [x] Tests (Docker requis)
+
+### D6d - Zod : Import + Admin auth ✅
+
+- [x] Creer `schemas/recipeImport.schema.ts` (importUrl)
+- [x] Creer `admin/schemas/auth.schema.ts` (login, verifyTotp)
+- [x] Migrer `controllers/recipeImport.ts`, `admin/controllers/authController.ts`
+- [x] Tests (Docker requis)
+
+### D6e - Zod : Admin CRUD simple ✅
+
+- [x] Creer `admin/schemas/tag.schema.ts` (create, update, merge)
+- [x] Creer `admin/schemas/community.schema.ts` (update)
+- [x] Creer `admin/schemas/feature.schema.ts` (create, update)
+- [x] Migrer `admin/controllers/tagsController.ts`, `admin/controllers/communitiesController.ts`, `admin/controllers/featuresController.ts`
+- [x] Tests (Docker requis)
+
+### D6f - Zod : Admin CRUD complexe ✅
+
+- [x] Creer `admin/schemas/recipe.schema.ts` (update)
+- [x] Creer `admin/schemas/ingredient.schema.ts` (create, update, approve, reject, merge)
+- [x] Creer `admin/schemas/unit.schema.ts` (create, update)
+- [x] Migrer `admin/controllers/recipesController.ts`, `admin/controllers/ingredientsController.ts`, `admin/controllers/unitsController.ts`
+- [x] Tests (Docker requis)
+
+### D6g - Zod : Nettoyage ✅
+
+- [x] Supprimer les assertions devenues inutiles dans `validation.ts` (assertString, assertOptionalString, assertArray, assertNumber, assertOptionalNumber, validateStringLength, validateQuantity, validateTagName)
+- [x] Garder les constantes et regex dans `validation.ts` (reutilisees dans les schemas)
+
+---
+
+## Interlude ✅
+
+- [x] Decomposition des taches consequentes en sous-taches (voir ci-dessous)
+
+---
+
+## Phase E : DRY Frontend
+
+### E1 - useAsyncData hook ✅
+
+- [x] Creer le hook `useAsyncData<T>(fetchFn, deps)` avec gestion loading/error/data
+- [x] Migrer pages pilotes pour valider le pattern :
+  - [x] DashboardPage.tsx (185 lignes)
+  - [x] CommunitiesPage.tsx (81 lignes)
+  - [x] InvitationsPage.tsx (87 lignes)
+- [x] Migrer pages admin simples :
+  - [x] AdminDashboardPage.tsx (120 lignes)
+  - [x] AdminActivityPage.tsx (164 lignes)
+  - [x] AdminFeaturesPage.tsx (222 lignes)
+- [x] Migrer pages admin complexes :
+  - [x] AdminCommunitiesPage.tsx (327 lignes)
+  - [x] AdminUnitsPage.tsx (376 lignes)
+  - [x] AdminIngredientsPage.tsx (660 lignes)
+  - [x] AdminTagsPage.tsx (821 lignes)
+- [x] Migrer pages user complexes :
+  - [x] CommunityDetailPage.tsx (285 lignes)
+  - [x] CommunityEditPage.tsx (199 lignes)
+  - [x] NotificationsPage.tsx - Skip (utilise deja useNotifications hook)
+  - [x] RecipeDetailPage.tsx (416 lignes)
+
+### E2 - DataContainer composant ✅
+
+- [x] Creer le composant `DataContainer` (loading, error, empty, emptyMessage, children)
+- [x] Integrer dans les pages migrées avec useAsyncData (10 pages : Dashboard, Communities, Invitations, AdminDashboard, AdminActivity, AdminFeatures, AdminCommunities, AdminUnits, AdminIngredients, AdminTags)
+- [x] Pages detail (CommunityDetail, RecipeDetail, CommunityEdit) conservent le pattern early return (UI custom avec bouton retour)
+
+### E3 - SearchSelector generique ✅
+
+- [x] Creer `SearchSelector<T>` a partir de TagSelector
+- [x] Refactorer TagSelector pour utiliser SearchSelector
+- [x] Refactorer IngredientSelector pour utiliser SearchSelector
+- [x] Verifier que le comportement est identique
+
+### E4 - useImageUpload hook ✅
+
+- [x] Creer le hook `useImageUpload(entityType, entityId)`
+- [x] Refactorer RecipeFormPage (498 lignes)
+- [x] Refactorer CommunityEditPage (199 lignes)
+- [x] Tester les deux flows d'upload
+
+### E5 - Extraction routes App.tsx ✅
+
+- [x] Creer `routes/userRoutes.tsx`
+- [x] Creer `routes/adminRoutes.tsx`
+- [x] Simplifier App.tsx
+- [x] Deplacer NotificationHandler dans MainLayout
+
+---
+
+## Phase F : Clean Code
+
+### F1 - Code mort ✅
+
+- [x] Scanner avec ESLint strict (no-unused-vars, no-unused-imports)
+- [x] Supprimer les imports inutilises (1 import backend: COMMUNITY_001 dans invites.ts)
+- [x] Pas de fonctions non appelees detectees
+- [x] Pas de code commente a supprimer
+- [x] Corriger 4 warnings frontend (react-hooks/exhaustive-deps + react-refresh)
+
+### F2 - Fichiers longs (>300 lignes identifies) ✅
+
+Frontend pages decoupees :
+
+- [x] AdminTagsPage.tsx (814→311) → extraire TagEditModal, TagMergeModal, AdminRecipeListModal, AdminRecipeDetailModal
+- [x] AdminIngredientsPage.tsx (645→409) → extraire IngredientEditModal, IngredientMergeModal, IngredientApproveModal, IngredientRejectModal
+- [x] RecipeFormPage.tsx (487) → deja reduit par E4 (useImageUpload), coherent
+- [x] RecipeDetailPage.tsx (405) → structure lineaire, pas de modal a extraire
+- [x] AdminUnitsPage.tsx (370) → proche du seuil, pas de gain significatif
+- [x] AdminCommunitiesPage.tsx (321) → proche du seuil, pas de gain significatif
+
+Frontend components :
+
+- [x] RecipesPageLoggedInView.tsx (258 lignes) → pas de besoin de decoupage
+- [x] ImageUpload.tsx (204 lignes) → OK (composant complexe mais cohesif)
+
+### F3 - Coherence patterns ✅
+
+- [x] Format de reponse : uniforme (`{ data }` / `{ data, pagination }`) — quelques endpoints retournent l'entite directement (proposals, recipeShare), variation mineure acceptee
+- [x] Status codes : coherents (201 create, 200 update/delete) — 1 exception : recipeImage.delete utilise 204
+- [x] Tous les controllers suivent try/catch → next(error) : 100% coherent
+
+---
+
+## Phase G : Tests
+
+### G1 - Couverture actuelle ✅
+
+- [x] Backend : 91.81% statements, 83.31% branches, 79.59% functions (802 tests)
+- [x] Frontend : 66.44% statements, 76.31% branches, 59.66% functions (469 tests)
+- [x] Zones faibles frontend : pages non testees (RecipeDetailPage, NotificationsPage, InvitationsPage), hooks (useImageUpload, useNotifications), utils (imageUtils, formatTime)
+- [x] Backend bien couvert, aucune zone critique manquante
+
+### G2 - Tests manquants ✅
+
+- [x] Corriger 12 tests en echec (assertions d'erreur Zod desynchronisees apres migration D6)
+- [x] Ajouter messages d'erreur manquants dans schemas Zod (recipe.schema, unit.schema)
+- [x] 802 backend + 469 frontend = 1271 tests passent
+
+### G3 - Seuil de couverture ✅
+
+- [x] Backend : 80% statements, 70% branches (vitest.config.ts)
+- [x] Frontend : 50% statements, 50% branches (vitest.config.ts)
+- [x] CI : `npx vitest run --coverage` dans GitHub Actions (echoue si seuil non atteint)
+
+### G4 - Tests E2E (externalise)
+
+- [x] Externalise en feature dediee : `docs/features/e2e-testing/`
+
+---
+
+## Phase H : Performances ✅
+
+### H1 - Backend performances ✅
+
+- [x] Activer query logging Prisma en dev (event-based, seuil 100ms via Pino)
+- [x] EXPLAIN ANALYZE sur les requetes critiques (identifie les patterns WHERE + ORDER BY)
+- [x] Ajouter les index manquants :
+  - `Recipe(creatorId, communityId, deletedAt)` — listing recettes perso
+  - `Recipe(communityId, deletedAt, isVariant)` — listing recettes communaute
+  - `RecipeIngredient(ingredientId)` — filtre par ingredient + admin popular units
+- [x] Evaluer Redis pour cache → differe : echelle actuelle ne justifie pas l'infra. In-memory TTL suffisant si besoin (units = ~20 rows, tags trop parametres)
+
+### H2 - Frontend performances ✅
+
+- [x] Analyse bundle size : 833 KB → 388 KB main chunk (manualChunks: react 347KB, socketio 48KB, dndkit 46KB, icons 2.5KB)
+- [x] React.lazy() : 8 pages admin + 8 pages user lazy-loaded (Suspense + spinner)
+- [x] Profiler re-renders : pas de probleme majeur identifie (debounce hooks en place, contexts stables)
+- [x] Lazy loading images : `loading="lazy"` sur RecipeCard, RecipeListRow, CommunityCard
+
+### H3 - Infrastructure ✅
+
+- [x] Docker multi-stage build : deja OK (backend 2 stages, frontend 3 stages)
+- [x] Compression gzip : ajoute dans nginx config (gzip on, gzip_vary, gzip_proxied any)
+- [x] Health checks : deja OK (tous services avec healthcheck + depends_on condition)
+
+---
+
+## Resume par phase
+
+| Phase | Chantier          | Estimation  |
+| ----- | ----------------- | ----------- |
+| A     | Securite          | Substanciel |
+| B     | NPM Audit         | Rapide      |
+| C     | Lint & Formatage  | Rapide      |
+| D     | DRY Backend + Zod | Substanciel |
+| E     | DRY Frontend      | Moyen       |
+| F     | Clean Code        | Moyen       |
+| G     | Tests             | Substanciel |
+| H     | Performances      | Moyen       |

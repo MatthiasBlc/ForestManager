@@ -7,14 +7,14 @@ Il permet de stocker des fichiers (images, documents...) et d'y acceder via HTTP
 
 ### Concepts cles
 
-| Concept | Equivalent simple | Exemple |
-|---------|-------------------|---------|
-| **Bucket** | Un dossier racine | `forestmanager-images-prod` |
-| **Object** | Un fichier dans le bucket | `recipes/abc-123/cover.webp` |
-| **Policy** | Regles d'acces (qui peut lire/ecrire) | Public read, private write |
-| **Presigned URL** | URL temporaire avec autorisation integree | Upload direct depuis le navigateur |
-| **Access Key / Secret Key** | Login / mot de passe pour l'API | Utilise par le backend |
-| **Console** | Interface web d'administration | Gestion des buckets, users, policies |
+| Concept                     | Equivalent simple                         | Exemple                              |
+| --------------------------- | ----------------------------------------- | ------------------------------------ |
+| **Bucket**                  | Un dossier racine                         | `forestmanager-images-prod`          |
+| **Object**                  | Un fichier dans le bucket                 | `recipes/abc-123/cover.webp`         |
+| **Policy**                  | Regles d'acces (qui peut lire/ecrire)     | Public read, private write           |
+| **Presigned URL**           | URL temporaire avec autorisation integree | Upload direct depuis le navigateur   |
+| **Access Key / Secret Key** | Login / mot de passe pour l'API           | Utilise par le backend               |
+| **Console**                 | Interface web d'administration            | Gestion des buckets, users, policies |
 
 ### Pourquoi MinIO et pas S3/R2 ?
 
@@ -56,10 +56,10 @@ VPS (preprod + prod)
 
 ### Pourquoi cette separation ?
 
-| | Local | VPS |
-|--|-------|-----|
-| MinIO | Dans la stack app (simplicite) | Stack separee (partage entre preprod/prod/futurs projets) |
-| Raison | Un seul `docker compose up` pour tout demarrer | Meme instance, buckets separes, 1 seul process |
+|        | Local                                          | VPS                                                       |
+| ------ | ---------------------------------------------- | --------------------------------------------------------- |
+| MinIO  | Dans la stack app (simplicite)                 | Stack separee (partage entre preprod/prod/futurs projets) |
+| Raison | Un seul `docker compose up` pour tout demarrer | Meme instance, buckets separes, 1 seul process            |
 
 ---
 
@@ -76,8 +76,8 @@ services:
     container_name: forestmanager-minio
     command: server /data --console-address ":9001"
     ports:
-      - "9000:9000"   # API S3
-      - "9001:9001"   # Console web
+      - "9000:9000" # API S3
+      - "9001:9001" # Console web
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
@@ -96,10 +96,10 @@ volumes:
 
 ### Acces local
 
-| Service | URL |
-|---------|-----|
-| API S3 | `http://localhost:9000` |
-| Console admin | `http://localhost:9001` |
+| Service       | URL                         |
+| ------------- | --------------------------- |
+| API S3        | `http://localhost:9000`     |
+| Console admin | `http://localhost:9001`     |
 | Login console | `minioadmin` / `minioadmin` |
 
 ### Configuration initiale (a faire une fois)
@@ -206,9 +206,9 @@ MINIO_ROOT_PASSWORD=<generer un mot de passe fort, 32+ chars>
 
 ### Acces VPS
 
-| Service | URL |
-|---------|-----|
-| API S3 | `https://s3.matthias-bouloc.fr` |
+| Service       | URL                                |
+| ------------- | ---------------------------------- |
+| API S3        | `https://s3.matthias-bouloc.fr`    |
 | Console admin | `https://minio.matthias-bouloc.fr` |
 
 ### Configuration initiale (via la console ou mc)
@@ -231,16 +231,8 @@ MINIO_ROOT_PASSWORD=<generer un mot de passe fort, 32+ chars>
   "Statement": [
     {
       "Effect": "Allow",
-      "Action": [
-        "s3:PutObject",
-        "s3:GetObject",
-        "s3:DeleteObject",
-        "s3:ListBucket"
-      ],
-      "Resource": [
-        "arn:aws:s3:::forestmanager-images-*",
-        "arn:aws:s3:::forestmanager-images-*/*"
-      ]
+      "Action": ["s3:PutObject", "s3:GetObject", "s3:DeleteObject", "s3:ListBucket"],
+      "Resource": ["arn:aws:s3:::forestmanager-images-*", "arn:aws:s3:::forestmanager-images-*/*"]
     }
   ]
 }
@@ -294,6 +286,7 @@ networks:
 ### Variables d'environnement backend
 
 **Preprod :**
+
 ```env
 MINIO_ENDPOINT=minio
 MINIO_PORT=9000
@@ -305,6 +298,7 @@ MINIO_USE_SSL=false
 ```
 
 **Prod :**
+
 ```env
 MINIO_ENDPOINT=minio
 MINIO_PORT=9000
@@ -326,23 +320,24 @@ MINIO_USE_SSL=false
 Pour eviter la config manuelle a chaque `docker compose up` en dev, on peut ajouter un container d'init :
 
 ```yaml
-  minio-init:
-    image: minio/mc:latest
-    depends_on:
-      minio:
-        condition: service_healthy
-    entrypoint: >
-      /bin/sh -c "
-      mc alias set local http://minio:9000 minioadmin minioadmin &&
-      mc mb --ignore-existing local/forestmanager-images-dev &&
-      mc anonymous set download local/forestmanager-images-dev &&
-      echo 'MinIO init done'
-      "
-    networks:
-      - default
+minio-init:
+  image: minio/mc:latest
+  depends_on:
+    minio:
+      condition: service_healthy
+  entrypoint: >
+    /bin/sh -c "
+    mc alias set local http://minio:9000 minioadmin minioadmin &&
+    mc mb --ignore-existing local/forestmanager-images-dev &&
+    mc anonymous set download local/forestmanager-images-dev &&
+    echo 'MinIO init done'
+    "
+  networks:
+    - default
 ```
 
 Ce container :
+
 - Attend que MinIO soit healthy
 - Cree le bucket s'il n'existe pas
 - Configure la policy public read
@@ -365,9 +360,9 @@ Recommandation minimale : credentials root forts (32+ chars) + HTTPS via Traefik
 
 ### Credentials
 
-| Niveau | Usage | Scope |
-|--------|-------|-------|
-| Root (`MINIO_ROOT_USER`) | Administration MinIO | Tout (ne jamais utiliser dans l'app) |
+| Niveau                   | Usage                 | Scope                                       |
+| ------------------------ | --------------------- | ------------------------------------------- |
+| Root (`MINIO_ROOT_USER`) | Administration MinIO  | Tout (ne jamais utiliser dans l'app)        |
 | Projet (`forestmanager`) | Backend ForestManager | Buckets `forestmanager-images-*` uniquement |
 
 ### Pas de donnees sensibles dans les images
@@ -433,7 +428,7 @@ docker compose up -d minio
 
 ## Resume des URLs par environnement
 
-| Env | API S3 (backend) | API S3 (public) | Console |
-|-----|-------------------|-----------------|---------|
-| Local | `http://minio:9000` | `http://localhost:9000` | `http://localhost:9001` |
-| VPS | `http://minio:9000` | `https://s3.matthias-bouloc.fr` | `https://minio.matthias-bouloc.fr` |
+| Env   | API S3 (backend)    | API S3 (public)                 | Console                            |
+| ----- | ------------------- | ------------------------------- | ---------------------------------- |
+| Local | `http://minio:9000` | `http://localhost:9000`         | `http://localhost:9001`            |
+| VPS   | `http://minio:9000` | `https://s3.matthias-bouloc.fr` | `https://minio.matthias-bouloc.fr` |

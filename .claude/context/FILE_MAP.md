@@ -3,6 +3,7 @@
 ## Backend (backend/src/)
 
 ### Controllers (logique metier)
+
 ```
 controllers/
 ├── activity.ts        # getCommunityActivity, getMyActivity
@@ -28,6 +29,7 @@ controllers/
 ```
 
 ### Routes (endpoints API)
+
 ```
 routes/
 ├── auth.ts            # /api/auth/*
@@ -43,16 +45,19 @@ routes/
 ```
 
 ### Middleware
+
 ```
 middleware/
 ├── auth.ts            # requireAuth (verifie session.userId)
 ├── community.ts       # memberOf, requireCommunityRole
 ├── httpLogger.ts      # pino-http middleware (remplace morgan)
 ├── security.ts        # helmet, CORS, rate limiting
+├── csrf.ts            # CSRF protection middleware
 └── validateUUID.ts    # Validation UUID v4 dans les params
 ```
 
 ### Admin (module isole)
+
 ```
 admin/
 ├── controllers/
@@ -81,6 +86,7 @@ admin/
 ```
 
 ### Services
+
 ```
 services/
 ├── tagService.ts      # Logique scope-aware tags (resolve, autocomplete, fork)
@@ -99,6 +105,7 @@ services/
 ```
 
 ### Autres backend
+
 ```
 app.ts                 # Config Express, montage routes, sessions
 server.ts              # Entry point (listen + notification cleanup job)
@@ -123,6 +130,7 @@ scripts/
 ```
 
 ### Tests backend
+
 ```
 __tests__/
 ├── setup/
@@ -138,7 +146,8 @@ __tests__/
 │   └── middleware/
 │       ├── auth.test.ts           # requireAuth
 │       ├── requireSuperAdmin.test.ts # requireSuperAdmin, requireAdminSession
-│       └── security.test.ts       # requireHttps, rate limiters
+│       ├── security.test.ts       # requireHttps, rate limiters
+│       └── csrf.test.ts           # CSRF protection
 └── integration/
     ├── websocket.test.ts
     ├── activity.test.ts
@@ -154,6 +163,8 @@ __tests__/
     ├── adminAuth.test.ts
     ├── adminTags.test.ts
     ├── adminIngredients.test.ts
+    ├── adminUnits.test.ts
+    ├── adminRecipes.test.ts
     ├── adminFeatures.test.ts
     ├── adminCommunities.test.ts
     ├── adminDashboard.test.ts
@@ -164,12 +175,13 @@ __tests__/
     ├── notificationService.test.ts
     ├── notifications.test.ts
     ├── tagPreferences.test.ts
-    ├── websocket.test.ts
+    ├── tagSuggestions.test.ts
     ├── notificationCleanup.test.ts
     ├── recipeImport.test.ts       # Recipe import endpoint (auth, validation, SSRF)
     ├── recipeImage.test.ts        # Recipe image upload endpoints
     ├── communityImage.test.ts     # Community image upload endpoints
-    └── imageCleanup.test.ts       # Image cleanup cron job
+    ├── imageCleanup.test.ts       # Image cleanup cron job
+    └── users.test.ts              # User profile update
 ```
 
 ---
@@ -177,6 +189,7 @@ __tests__/
 ## Frontend (frontend/src/)
 
 ### Pages
+
 ```
 pages/
 ├── HomePage.tsx              # Accueil (redirect vers dashboard si connecte)
@@ -206,6 +219,7 @@ pages/
 ```
 
 ### Components
+
 ```
 components/
 ├── Layout/
@@ -252,15 +266,17 @@ components/
 │   ├── TagPreferencesSection.tsx     # Toggle tag visibility per community
 │   └── NotificationPreferencesSection.tsx # Notification preferences (5 categories, per-community overrides)
 ├── form/
-│   ├── TagSelector.tsx       # Multi-select tags (debounce, create on-the-fly)
-│   ├── IngredientSelector.tsx # Selecteur ingredients
+│   ├── SearchSelector.tsx    # Composant generique recherche + selection (debounce, create on-the-fly)
+│   ├── TagSelector.tsx       # Multi-select tags (utilise SearchSelector)
+│   ├── IngredientSelector.tsx # Selecteur ingredients (utilise SearchSelector)
 │   ├── IngredientList.tsx    # Liste ingredients dynamique (autocomplete, units, PENDING badge)
 │   ├── UnitSelector.tsx      # Dropdown unites groupee par categorie
 │   └── StepEditor.tsx        # Editeur etapes numerotees reorder/delete (Phase 13)
 ├── admin/
 │   ├── AdminLayout.tsx       # Layout admin (sidebar + header + outlet)
 │   └── AdminProtectedRoute.tsx # Guard admin
-├── ImageUpload.tsx           # Composant upload image (drag&drop, preview, presigned URL)
+├── ImageUpload.tsx           # Upload image existante (drag&drop, preview, presigned URL)
+├── ImagePicker.tsx           # Selection image pour creation (preview, processImage)
 ├── ImportRecipeModal.tsx     # Modal import recette (texte brut ou URL)
 ├── AddEditRecipeDialog.tsx   # Dialog creation/edition
 ├── ErrorBoundary.tsx         # Error boundary React (crash → fallback UI)
@@ -271,6 +287,7 @@ components/
 ```
 
 ### Contexts & Network
+
 ```
 contexts/
 ├── AuthContext.tsx            # Auth user (session, login/logout)
@@ -286,6 +303,7 @@ services/
 ```
 
 ### Models & Types
+
 ```
 models/
 ├── user.ts                   # User types
@@ -299,10 +317,16 @@ models/
 ```
 
 ### Autres frontend
+
 ```
-App.tsx                       # Routes React Router
+App.tsx                       # Routes React Router (simplifie, delegue a routes/)
 main.tsx                      # Entry point React
+routes/
+├── userRoutes.tsx            # Routes utilisateur (public + protegees)
+└── adminRoutes.tsx           # Routes admin (protegees)
 hooks/
+├── useAsyncData.ts           # Generic async data fetching (loading/error/data/refetch)
+├── useImageUpload.ts         # Upload image (state + API wiring recipe/community)
 ├── useClickOutside.ts        # Detect clicks outside a ref element
 ├── useDebouncedEffect.ts     # Effect with configurable delay
 ├── useConfirm.tsx            # Confirmation dialog hook (promise-based)
@@ -325,6 +349,7 @@ styles/                       # CSS
 ```
 
 ### Tests frontend
+
 ```
 __tests__/
 ├── setup/
@@ -370,6 +395,8 @@ __tests__/
     │       ├── AdminFeaturesPage.test.tsx
     │       ├── AdminCommunitiesPage.test.tsx
     │       └── AdminActivityPage.test.tsx
+    ├── services/
+    │   └── recipeParser.test.ts   # Parsing texte brut recette (65 tests)
     └── components/
         ├── profile/
         │   ├── TagPreferencesSection.test.tsx

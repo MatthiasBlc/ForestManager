@@ -54,7 +54,11 @@ const SuggestTagModal = ({
   };
 
   return (
-    <Modal onClose={onClose} disableClickOutside={isSubmitting} className="overflow-visible w-11/12 max-w-lg p-8">
+    <Modal
+      onClose={onClose}
+      disableClickOutside={isSubmitting}
+      className="overflow-visible w-11/12 max-w-lg p-8"
+    >
       <h3 className="font-bold text-lg mb-2">Suggest a tag</h3>
       <p className="text-sm text-base-content/70 mb-6">
         Suggest a tag to add to this recipe. The owner will review your suggestion.
@@ -81,12 +85,7 @@ const SuggestTagModal = ({
         )}
 
         <div className="modal-action pt-2">
-          <button
-            type="button"
-            className="btn btn-ghost"
-            onClick={onClose}
-            disabled={isSubmitting}
-          >
+          <button type="button" className="btn btn-ghost" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </button>
           <button

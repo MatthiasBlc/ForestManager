@@ -1,6 +1,15 @@
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { AdminAuthProvider, useAdminAuth } from "../../contexts/AdminAuthContext";
-import { FaHome, FaTags, FaCarrot, FaBalanceScale, FaStar, FaUsers, FaClipboardList, FaSignOutAlt } from "react-icons/fa";
+import {
+  FaHome,
+  FaTags,
+  FaCarrot,
+  FaBalanceScale,
+  FaStar,
+  FaUsers,
+  FaClipboardList,
+  FaSignOutAlt,
+} from "react-icons/fa";
 
 const adminNavItems = [
   { to: "/admin/dashboard", label: "Dashboard", icon: FaHome },
@@ -59,7 +68,10 @@ function AdminShell() {
 
         <div className="p-4 border-t border-base-300">
           <div className="text-sm text-base-content/70 truncate mb-2">{admin?.email}</div>
-          <button className="btn btn-ghost btn-sm w-full justify-start gap-2" onClick={handleLogout}>
+          <button
+            className="btn btn-ghost btn-sm w-full justify-start gap-2"
+            onClick={handleLogout}
+          >
             <FaSignOutAlt className="w-4 h-4" />
             Logout
           </button>

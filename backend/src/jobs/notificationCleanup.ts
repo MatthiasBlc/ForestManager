@@ -42,7 +42,10 @@ export async function cleanupReadNotifications(): Promise<number> {
   } while (batchDeleted === BATCH_SIZE);
 
   if (totalDeleted > 0) {
-    logger.info({ totalDeleted, cutoffDate: cutoffDate.toISOString() }, "Notification cleanup completed");
+    logger.info(
+      { totalDeleted, cutoffDate: cutoffDate.toISOString() },
+      "Notification cleanup completed"
+    );
   } else {
     logger.debug("Notification cleanup: nothing to delete");
   }

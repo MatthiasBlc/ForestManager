@@ -14,11 +14,29 @@ interface RecipeListRowProps {
   canDelete?: boolean;
 }
 
-const RecipeListRow = ({ recipe, onDelete, onTagClick, onShare, showCreator = false, canEdit = true, canDelete = true }: RecipeListRowProps) => {
+const RecipeListRow = ({
+  recipe,
+  onDelete,
+  onTagClick,
+  onShare,
+  showCreator = false,
+  canEdit = true,
+  canDelete = true,
+}: RecipeListRowProps) => {
   const {
-    title, imageUrl, tags, displayedTags, remainingTagsCount, dateText,
-    communityRecipe, isSharedRecipe,
-    handleClick, handleEdit, handleDelete, handleTagClick, handleShare,
+    title,
+    imageUrl,
+    tags,
+    displayedTags,
+    remainingTagsCount,
+    dateText,
+    communityRecipe,
+    isSharedRecipe,
+    handleClick,
+    handleEdit,
+    handleDelete,
+    handleTagClick,
+    handleShare,
     ConfirmDialog,
   } = useRecipeActions({ recipe, onDelete, onTagClick, onShare });
 
@@ -31,7 +49,7 @@ const RecipeListRow = ({ recipe, onDelete, onTagClick, onShare, showCreator = fa
     >
       {imageUrl ? (
         <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-          <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
+          <img src={imageUrl} alt={title} className="w-full h-full object-cover" loading="lazy" />
         </div>
       ) : (
         <div className="w-16 h-16 rounded-lg bg-base-200 flex items-center justify-center flex-shrink-0">

@@ -9,17 +9,20 @@ Ce document decrit toutes les regles metier et la logique applicative de Forest 
 ## 1. Gestion des utilisateurs
 
 ### 1.1 Inscription
+
 - L'email doit etre unique
 - Le username doit etre unique
 - Le mot de passe est hashe avec bcrypt (salt rounds: 10)
 - Un utilisateur nouvellement inscrit n'appartient a aucune communaute
 
 ### 1.2 Authentification
+
 - Authentification par session (express-session)
 - Sessions persistees en base de donnees via `@quixo3/prisma-session-store`
 - Duree de session: 1 heure
 
 ### 1.3 Catalogue personnel
+
 - Chaque utilisateur possede un catalogue personnel de recettes
 - Les recettes personnelles ont `communityId = null`
 - Les recettes personnelles ne sont visibles que par leur createur
@@ -29,27 +32,30 @@ Ce document decrit toutes les regles metier et la logique applicative de Forest 
 ## 2. Gestion des communautes
 
 ### 2.1 Creation de communaute
+
 - Tout utilisateur authentifie peut creer une communaute
 - Le createur devient automatiquement **ADMIN** de la communaute
 - Visibilite: toujours **INVITE_ONLY** (MVP)
 
 ### 2.2 Roles
 
-| Role | Permissions |
-|------|-------------|
-| **MEMBER** | Voir les recettes, creer des recettes, proposer des mises a jour, quitter |
-| **ADMIN** | Tout ce que MEMBER + inviter, retirer un membre, promouvoir, modifier la description, annuler des invitations |
+| Role       | Permissions                                                                                                   |
+| ---------- | ------------------------------------------------------------------------------------------------------------- |
+| **MEMBER** | Voir les recettes, creer des recettes, proposer des mises a jour, quitter                                     |
+| **ADMIN**  | Tout ce que MEMBER + inviter, retirer un membre, promouvoir, modifier la description, annuler des invitations |
 
 ### 2.3 Systeme d'invitation (NOUVEAU)
 
 **Principe:** Les invitations necessitent une acceptation explicite de l'invite.
 
 #### Qui peut inviter ?
+
 - **Seuls les ADMIN** peuvent envoyer des invitations
 - L'invite doit etre un utilisateur **deja inscrit** sur la plateforme
 - Recherche de l'invite par username ou email
 
 #### Workflow d'invitation
+
 ```
 1. Admin envoie une invitation (POST /api/communities/:id/invites)
    → CommunityInvite cree avec status: PENDING
@@ -75,16 +81,19 @@ Ce document decrit toutes les regles metier et la logique applicative de Forest 
 ```
 
 #### Contraintes
+
 - Une seule invitation PENDING par couple (communityId, inviteeId)
 - Si l'utilisateur est deja membre → erreur
 - Si une invitation PENDING existe deja → erreur
 
 ### 2.4 Promotion en administrateur
+
 - **Seuls les ADMIN** peuvent promouvoir un MEMBER en ADMIN
 - Un ADMIN **ne peut pas retrograder** un autre ADMIN
 - Le role ADMIN est permanent (sauf si l'utilisateur quitte)
 
 ### 2.5 Retirer un membre (Kick) (NOUVEAU)
+
 ```
 CONDITIONS:
 - L'utilisateur qui kick DOIT etre ADMIN
@@ -118,6 +127,7 @@ SI l'utilisateur veut quitter:
 ```
 
 ### 2.7 Suppression de communaute
+
 - Declenchee automatiquement quand le dernier utilisateur quitte
 - **Cascade applicative (soft delete):**
   - Toutes les recettes de la communaute → `deletedAt = now()`
@@ -136,10 +146,12 @@ SI l'utilisateur veut quitter:
 ### 3.1 Creation de recette
 
 **Dans le catalogue personnel:**
+
 - La recette est creee avec `communityId = null`
 - Seul le createur peut la voir
 
 **Dans une communaute:**
+
 ```
 CONDITION: l'utilisateur DOIT etre membre de la communaute
 
@@ -150,10 +162,12 @@ CONDITION: l'utilisateur DOIT etre membre de la communaute
 ```
 
 **Lien recette personnelle ↔ communautaire:**
+
 - La recette communautaire pointe vers la recette personnelle via `originRecipeId`
 - Pour retrouver la recette perso: `originRecipe.communityId == null`
 
 ### 3.2 Modification de recette
+
 - **Catalogue personnel:** Le createur peut modifier librement
 - **Communaute:** Seul le createur de la recette communautaire peut modifier directement
 - Les autres membres doivent passer par le systeme de propositions
@@ -185,6 +199,7 @@ SCOPE DE LA SYNCHRONISATION:
 La synchronisation passe TOUJOURS par la version privee de l'utilisateur.
 
 ### 3.3 Suppression de recette (soft delete)
+
 - Le createur peut supprimer sa recette
 - La suppression est un soft delete (`deletedAt = now()`)
 - Supprimer une recette personnelle **ne supprime pas** les copies communautaires
@@ -218,11 +233,13 @@ SUPPRESSION COMPTE UTILISATEUR:
 ```
 
 ### 3.4 Tags
+
 - Une recette peut avoir **plusieurs tags**
 - Les tags sont globaux (partages entre communautes)
 - Creation de tag a la volee si inexistant
 
 ### 3.5 Ingredients
+
 - Une recette peut avoir **plusieurs ingredients** avec quantites
 - Les ingredients sont globaux (comme les tags)
 - Creation a la volee si inexistant
@@ -232,6 +249,7 @@ SUPPRESSION COMPTE UTILISATEUR:
 ## 4. Systeme de propositions
 
 ### 4.1 Creer une proposition
+
 ```
 CONDITIONS:
 - L'utilisateur DOIT etre membre de la communaute
@@ -244,6 +262,7 @@ ACTIONS:
 ```
 
 ### 4.2 Accepter une proposition
+
 ```
 CONDITIONS:
 - L'utilisateur DOIT etre le createur de la recette cible
@@ -267,6 +286,7 @@ ACTIONS:
 ```
 
 ### 4.3 Refuser une proposition
+
 ```
 CONDITIONS:
 - L'utilisateur DOIT etre le createur de la recette cible
@@ -284,6 +304,7 @@ ACTIONS:
 ```
 
 ### 4.4 Visualisation des variantes
+
 - Sur la page d'une recette, afficher toutes les recettes ou `originRecipeId = recette.id` ET `isVariant = true`
 - **Visibilite:** Seulement les variantes de CETTE communaute (pas cross-communaute)
 - Presentation en liste deroulante (dropdown) PLATE (pas d'arbre)
@@ -291,6 +312,7 @@ ACTIONS:
 - **Tri:** par date la plus recente (createdAt ET updatedAt confondus), plus recent en premier
 
 **Coexistence des variantes (NOUVEAU):**
+
 ```
 - Les variantes COEXISTENT dans la communaute (pas de remplacement)
 - Chaque variante a son propre createur
@@ -310,6 +332,7 @@ VARIANTES DE VARIANTES:
 ## 5. Partage inter-communautes (Fork)
 
 ### 5.1 Conditions de partage
+
 ```
 L'utilisateur DOIT:
 - Etre membre de la communaute SOURCE
@@ -318,6 +341,7 @@ L'utilisateur DOIT:
 ```
 
 ### 5.2 Processus de fork
+
 ```
 1. Creer une NOUVELLE recette dans la communaute cible:
    - Copier title, content, tags, ingredients
@@ -333,6 +357,7 @@ L'utilisateur DOIT:
 ```
 
 ### 5.3 Independance des forks
+
 - La recette forkee est **totalement independante**
 - Elle peut recevoir ses propres propositions et variantes
 - Les modifications sur l'originale n'affectent pas les forks
@@ -340,6 +365,7 @@ L'utilisateur DOIT:
 - **Pas de synchronisation** - la synchro passe par la version privee, le fork n'en a pas
 
 ### 5.4 Chaines de forks (NOUVEAU)
+
 ```
 FORK DE FORK:
 - On peut forker un fork (A → B → C)
@@ -358,26 +384,27 @@ ANALYTICS EN CHAINE:
 
 ### 6.1 Evenements trackes
 
-| Type | Declencheur | Donnees |
-|------|-------------|---------|
-| `RECIPE_CREATED` | Creation de recette dans communaute | recipeId, communityId |
-| `RECIPE_UPDATED` | Modification de recette | recipeId |
-| `RECIPE_DELETED` | Suppression de recette | recipeId |
-| `RECIPE_SHARED` | Fork d'une recette | recipeId, communityId, metadata.fromCommunityId |
-| `VARIANT_PROPOSED` | Nouvelle proposition | recipeId, proposalId |
-| `VARIANT_CREATED` | Proposition refusee | recipeId (variante), originRecipeId |
-| `PROPOSAL_ACCEPTED` | Proposition acceptee | recipeId, proposalId |
-| `PROPOSAL_REJECTED` | Proposition refusee | recipeId, proposalId |
-| `USER_JOINED` | Invitation acceptee | communityId |
-| `USER_LEFT` | Membre quitte | communityId |
-| `USER_KICKED` | Membre retire par admin | communityId, metadata.kickedUserId |
-| `USER_PROMOTED` | Promotion en admin | communityId, metadata.promotedUserId |
-| `INVITE_SENT` | Invitation envoyee | communityId, metadata.inviteeId |
-| `INVITE_ACCEPTED` | Invitation acceptee | communityId |
-| `INVITE_REJECTED` | Invitation refusee | communityId |
-| `INVITE_CANCELLED` | Invitation annulee | communityId, metadata.inviteeId |
+| Type                | Declencheur                         | Donnees                                         |
+| ------------------- | ----------------------------------- | ----------------------------------------------- |
+| `RECIPE_CREATED`    | Creation de recette dans communaute | recipeId, communityId                           |
+| `RECIPE_UPDATED`    | Modification de recette             | recipeId                                        |
+| `RECIPE_DELETED`    | Suppression de recette              | recipeId                                        |
+| `RECIPE_SHARED`     | Fork d'une recette                  | recipeId, communityId, metadata.fromCommunityId |
+| `VARIANT_PROPOSED`  | Nouvelle proposition                | recipeId, proposalId                            |
+| `VARIANT_CREATED`   | Proposition refusee                 | recipeId (variante), originRecipeId             |
+| `PROPOSAL_ACCEPTED` | Proposition acceptee                | recipeId, proposalId                            |
+| `PROPOSAL_REJECTED` | Proposition refusee                 | recipeId, proposalId                            |
+| `USER_JOINED`       | Invitation acceptee                 | communityId                                     |
+| `USER_LEFT`         | Membre quitte                       | communityId                                     |
+| `USER_KICKED`       | Membre retire par admin             | communityId, metadata.kickedUserId              |
+| `USER_PROMOTED`     | Promotion en admin                  | communityId, metadata.promotedUserId            |
+| `INVITE_SENT`       | Invitation envoyee                  | communityId, metadata.inviteeId                 |
+| `INVITE_ACCEPTED`   | Invitation acceptee                 | communityId                                     |
+| `INVITE_REJECTED`   | Invitation refusee                  | communityId                                     |
+| `INVITE_CANCELLED`  | Invitation annulee                  | communityId, metadata.inviteeId                 |
 
 ### 6.2 Requetes feed
+
 - **Feed par communaute:** `WHERE communityId = X ORDER BY createdAt DESC`
 - **Feed personnel:** `WHERE userId = X OR recipeId IN (user's recipes) ORDER BY createdAt DESC`
 
@@ -401,11 +428,13 @@ ORPHELINAT AUTO-REFUS:
 ## 7. Analytics (prepare mais desactive MVP)
 
 ### 7.1 Compteurs
+
 - `views`: Incremente a chaque consultation de la page recette
 - `shares`: Incremente lors d'un fork
 - `forks`: Incremente lors d'un fork
 
 ### 7.2 Tracking detaille
+
 - RecipeView stocke chaque vue individuelle
 - Permet l'analyse par utilisateur et par periode
 - Desactive par defaut pour le MVP
@@ -415,6 +444,7 @@ ORPHELINAT AUTO-REFUS:
 ## 8. Regles de validation
 
 ### 8.1 Recette
+
 ```typescript
 {
   title: string, min: 3, max: 200
@@ -426,6 +456,7 @@ ORPHELINAT AUTO-REFUS:
 ```
 
 ### 8.2 Communaute
+
 ```typescript
 {
   name: string, min: 3, max: 100
@@ -434,6 +465,7 @@ ORPHELINAT AUTO-REFUS:
 ```
 
 ### 8.3 Proposition
+
 ```typescript
 {
   proposedTitle: string, min: 3, max: 200      // Requis
@@ -445,6 +477,7 @@ ORPHELINAT AUTO-REFUS:
 ```
 
 ### 8.4 Invitation
+
 ```typescript
 {
   inviteeId?: string, format: UUID
@@ -458,38 +491,40 @@ ORPHELINAT AUTO-REFUS:
 
 ## 9. Codes d'erreur
 
-| Code | Message | Contexte |
-|------|---------|----------|
-| `AUTH_001` | Non authentifie | Acces route protegee |
-| `AUTH_002` | Session expiree | Session invalide |
-| `COMMUNITY_001` | Non membre | Acces communaute sans membership |
-| `COMMUNITY_002` | Permission insuffisante | Action admin sans etre admin |
-| `COMMUNITY_003` | Dernier admin | Tentative de quitter en tant que dernier admin |
-| `COMMUNITY_004` | Utilisateur deja membre | Invitation d'un membre existant |
-| `COMMUNITY_005` | Invitation deja envoyee | Invitation PENDING existe deja |
-| `COMMUNITY_006` | Impossible de retirer un admin | Tentative de kick un admin |
-| `RECIPE_001` | Recette non trouvee | ID invalide ou soft deleted |
-| `RECIPE_002` | Non proprietaire | Modification sans etre createur |
-| `PROPOSAL_001` | Proposition invalide | Auto-proposition interdite |
-| `PROPOSAL_002` | Deja decidee | Proposition non-pending |
-| `PROPOSAL_003` | Recette modifiee depuis | Conflit: recipe.updatedAt > proposal.createdAt |
-| `SHARE_001` | Non membre source | Pas dans la communaute source |
-| `SHARE_002` | Non membre cible | Pas dans la communaute cible |
-| `SHARE_003` | Permission partage | Ni admin ni createur |
-| `INVITE_001` | Invitation non trouvee | ID invalide |
-| `INVITE_002` | Invitation deja traitee | Status non PENDING |
-| `INVITE_003` | Utilisateur non trouve | Email/username inexistant |
+| Code            | Message                        | Contexte                                       |
+| --------------- | ------------------------------ | ---------------------------------------------- |
+| `AUTH_001`      | Non authentifie                | Acces route protegee                           |
+| `AUTH_002`      | Session expiree                | Session invalide                               |
+| `COMMUNITY_001` | Non membre                     | Acces communaute sans membership               |
+| `COMMUNITY_002` | Permission insuffisante        | Action admin sans etre admin                   |
+| `COMMUNITY_003` | Dernier admin                  | Tentative de quitter en tant que dernier admin |
+| `COMMUNITY_004` | Utilisateur deja membre        | Invitation d'un membre existant                |
+| `COMMUNITY_005` | Invitation deja envoyee        | Invitation PENDING existe deja                 |
+| `COMMUNITY_006` | Impossible de retirer un admin | Tentative de kick un admin                     |
+| `RECIPE_001`    | Recette non trouvee            | ID invalide ou soft deleted                    |
+| `RECIPE_002`    | Non proprietaire               | Modification sans etre createur                |
+| `PROPOSAL_001`  | Proposition invalide           | Auto-proposition interdite                     |
+| `PROPOSAL_002`  | Deja decidee                   | Proposition non-pending                        |
+| `PROPOSAL_003`  | Recette modifiee depuis        | Conflit: recipe.updatedAt > proposal.createdAt |
+| `SHARE_001`     | Non membre source              | Pas dans la communaute source                  |
+| `SHARE_002`     | Non membre cible               | Pas dans la communaute cible                   |
+| `SHARE_003`     | Permission partage             | Ni admin ni createur                           |
+| `INVITE_001`    | Invitation non trouvee         | ID invalide                                    |
+| `INVITE_002`    | Invitation deja traitee        | Status non PENDING                             |
+| `INVITE_003`    | Utilisateur non trouve         | Email/username inexistant                      |
 
 ---
 
 ## 10. Soft Delete - Implementation
 
 ### 10.1 Principe
+
 - Toutes les entites principales ont un champ `deletedAt`
 - Une entite avec `deletedAt != null` est consideree supprimee
 - Toutes les requetes doivent filtrer `WHERE deletedAt IS NULL`
 
 ### 10.2 Entites concernees
+
 - User
 - Community
 - UserCommunity
@@ -498,16 +533,18 @@ ORPHELINAT AUTO-REFUS:
 - CommunityInvite
 
 ### 10.3 Tables pivot (hard delete)
+
 - RecipeTag → Cascade quand Recipe supprime
 - RecipeIngredient → Cascade quand Recipe supprime
 - RecipeAnalytics → Cascade quand Recipe supprime
 - RecipeView → Cascade quand Recipe supprime
 
 ### 10.4 Middleware Prisma recommande
+
 ```typescript
 // Filtrer automatiquement les entites soft-deleted
 prisma.$use(async (params, next) => {
-  if (params.action === 'findMany' || params.action === 'findFirst') {
+  if (params.action === "findMany" || params.action === "findFirst") {
     if (!params.args.where?.deletedAt) {
       params.args.where = { ...params.args.where, deletedAt: null };
     }
@@ -534,13 +571,13 @@ Le SuperAdmin est un compte d'administration plateforme **completement isole** d
 
 ### 11.2 Capacites SuperAdmin
 
-| Domaine | Actions |
-|---------|---------|
-| **Tags** | Lister, creer, renommer, supprimer, fusionner |
-| **Ingredients** | Lister, creer, renommer, supprimer, fusionner |
+| Domaine         | Actions                                          |
+| --------------- | ------------------------------------------------ |
+| **Tags**        | Lister, creer, renommer, supprimer, fusionner    |
+| **Ingredients** | Lister, creer, renommer, supprimer, fusionner    |
 | **Communautes** | Lister toutes, voir details, renommer, supprimer |
-| **Features** | Lister, creer, modifier, attribuer, revoquer |
-| **Dashboard** | Stats globales, logs d'activite admin |
+| **Features**    | Lister, creer, modifier, attribuer, revoquer     |
+| **Dashboard**   | Stats globales, logs d'activite admin            |
 
 ### 11.3 Authentification 2FA TOTP
 
@@ -585,6 +622,7 @@ CONNEXIONS SUIVANTES:
 ### 11.5 Gestion des Tags/Ingredients
 
 **Fusion (merge):**
+
 ```
 CONDITIONS:
 - Le tag/ingredient source existe
@@ -602,6 +640,7 @@ ACTIONS:
 ### 11.6 Gestion des Communautes (Admin)
 
 **Suppression par SuperAdmin:**
+
 ```
 ACTIONS:
 1. Soft delete la communaute (deletedAt = now)
@@ -617,20 +656,20 @@ ACTIONS:
 
 Toutes les actions SuperAdmin sont enregistrees dans `AdminActivityLog`:
 
-| Type | Declencheur | Donnees |
-|------|-------------|---------|
-| `TAG_CREATED` | Nouveau tag | targetType: "Tag", targetId |
-| `TAG_UPDATED` | Renommage tag | targetId, metadata.oldName, metadata.newName |
-| `TAG_DELETED` | Suppression tag | targetId, metadata.recipesAffected |
-| `TAG_MERGED` | Fusion tags | targetId, metadata.sourceId, metadata.recipesUpdated |
-| `INGREDIENT_*` | (idem que tags) | ... |
-| `COMMUNITY_RENAMED` | Renommage communaute | targetId, metadata |
-| `COMMUNITY_DELETED` | Suppression communaute | targetId, metadata.membersAffected |
-| `FEATURE_GRANTED` | Attribution feature | metadata.communityId, metadata.featureCode |
-| `FEATURE_REVOKED` | Revocation feature | metadata.communityId, metadata.featureCode |
-| `ADMIN_LOGIN` | Connexion reussie | adminId |
-| `ADMIN_LOGOUT` | Deconnexion | adminId |
-| `ADMIN_TOTP_SETUP` | Configuration 2FA | adminId |
+| Type                | Declencheur            | Donnees                                              |
+| ------------------- | ---------------------- | ---------------------------------------------------- |
+| `TAG_CREATED`       | Nouveau tag            | targetType: "Tag", targetId                          |
+| `TAG_UPDATED`       | Renommage tag          | targetId, metadata.oldName, metadata.newName         |
+| `TAG_DELETED`       | Suppression tag        | targetId, metadata.recipesAffected                   |
+| `TAG_MERGED`        | Fusion tags            | targetId, metadata.sourceId, metadata.recipesUpdated |
+| `INGREDIENT_*`      | (idem que tags)        | ...                                                  |
+| `COMMUNITY_RENAMED` | Renommage communaute   | targetId, metadata                                   |
+| `COMMUNITY_DELETED` | Suppression communaute | targetId, metadata.membersAffected                   |
+| `FEATURE_GRANTED`   | Attribution feature    | metadata.communityId, metadata.featureCode           |
+| `FEATURE_REVOKED`   | Revocation feature     | metadata.communityId, metadata.featureCode           |
+| `ADMIN_LOGIN`       | Connexion reussie      | adminId                                              |
+| `ADMIN_LOGOUT`      | Deconnexion            | adminId                                              |
+| `ADMIN_TOTP_SETUP`  | Configuration 2FA      | adminId                                              |
 
 ---
 
@@ -640,15 +679,16 @@ Toutes les actions SuperAdmin sont enregistrees dans `AdminActivityLog`:
 
 L'application est structuree en "briques" (modules/features) que les communautes peuvent ou non avoir:
 
-| Feature | Code | Description | Default |
-|---------|------|-------------|---------|
-| MVP | `MVP` | Catalogue recettes, communautes, partage | Oui |
-| Planificateur | `MEAL_PLANNER` | Planification repas hebdomadaire | Non |
-| (Futur) | `...` | Autres fonctionnalites | Non |
+| Feature       | Code           | Description                              | Default |
+| ------------- | -------------- | ---------------------------------------- | ------- |
+| MVP           | `MVP`          | Catalogue recettes, communautes, partage | Oui     |
+| Planificateur | `MEAL_PLANNER` | Planification repas hebdomadaire         | Non     |
+| (Futur)       | `...`          | Autres fonctionnalites                   | Non     |
 
 ### 12.2 Attribution automatique
 
 **A la creation d'une communaute:**
+
 ```
 1. Requete: SELECT * FROM Feature WHERE isDefault = true
 2. Pour chaque feature default:
@@ -657,6 +697,7 @@ L'application est structuree en "briques" (modules/features) que les communautes
 ```
 
 **Ajout d'une nouvelle feature par defaut (NOUVEAU):**
+
 ```
 Quand une nouvelle feature est creee avec isDefault = true:
 1. Toutes les communautes EXISTANTES la recoivent automatiquement
@@ -667,6 +708,7 @@ Quand une nouvelle feature est creee avec isDefault = true:
 ### 12.3 Attribution manuelle
 
 **Par SuperAdmin:**
+
 ```
 POST /api/admin/communities/:id/features/:featureId
 
@@ -683,6 +725,7 @@ ACTIONS:
 ### 12.4 Revocation
 
 **Par SuperAdmin:**
+
 ```
 DELETE /api/admin/communities/:id/features/:featureId
 
@@ -702,7 +745,7 @@ Middleware pour verifier qu'une communaute a acces a une feature:
 
 ```typescript
 // Usage:
-router.get('/meal-plan', requireAuth, memberOf(), hasFeature('MEAL_PLANNER'), getMealPlan);
+router.get("/meal-plan", requireAuth, memberOf(), hasFeature("MEAL_PLANNER"), getMealPlan);
 ```
 
 **Note:** Pour le MVP, seule la feature "MVP" existe. Le middleware `hasFeature` sera implemente quand de nouvelles briques seront ajoutees.
@@ -711,17 +754,17 @@ router.get('/meal-plan', requireAuth, memberOf(), hasFeature('MEAL_PLANNER'), ge
 
 ## 13. Codes d'erreur Admin
 
-| Code | Message | Contexte |
-|------|---------|----------|
-| `ADMIN_001` | Non authentifie (admin) | Acces route admin sans session |
-| `ADMIN_002` | 2FA requis | Session admin sans totpVerified |
-| `ADMIN_003` | Token TOTP invalide | Code 2FA incorrect |
-| `ADMIN_004` | 2FA deja configure | Setup TOTP sur admin avec totpEnabled=true |
-| `ADMIN_005` | Tag non trouve | ID tag invalide |
-| `ADMIN_006` | Ingredient non trouve | ID ingredient invalide |
-| `ADMIN_007` | Communaute non trouvee | ID communaute invalide |
-| `ADMIN_008` | Feature non trouvee | ID feature invalide |
-| `ADMIN_009` | Feature deja attribuee | Attribution en double |
-| `ADMIN_010` | Impossible de revoquer feature par defaut | Tentative revocation MVP |
-| `ADMIN_011` | Tag/Ingredient existe deja | Creation avec nom existant |
-| `ADMIN_012` | Fusion sur soi-meme interdite | sourceId == targetId |
+| Code        | Message                                   | Contexte                                   |
+| ----------- | ----------------------------------------- | ------------------------------------------ |
+| `ADMIN_001` | Non authentifie (admin)                   | Acces route admin sans session             |
+| `ADMIN_002` | 2FA requis                                | Session admin sans totpVerified            |
+| `ADMIN_003` | Token TOTP invalide                       | Code 2FA incorrect                         |
+| `ADMIN_004` | 2FA deja configure                        | Setup TOTP sur admin avec totpEnabled=true |
+| `ADMIN_005` | Tag non trouve                            | ID tag invalide                            |
+| `ADMIN_006` | Ingredient non trouve                     | ID ingredient invalide                     |
+| `ADMIN_007` | Communaute non trouvee                    | ID communaute invalide                     |
+| `ADMIN_008` | Feature non trouvee                       | ID feature invalide                        |
+| `ADMIN_009` | Feature deja attribuee                    | Attribution en double                      |
+| `ADMIN_010` | Impossible de revoquer feature par defaut | Tentative revocation MVP                   |
+| `ADMIN_011` | Tag/Ingredient existe deja                | Creation avec nom existant                 |
+| `ADMIN_012` | Fusion sur soi-meme interdite             | sourceId == targetId                       |

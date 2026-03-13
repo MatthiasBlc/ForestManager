@@ -7,19 +7,34 @@ import * as RecipeImportController from "../controllers/recipeImport";
 import * as ProposalsController from "../controllers/proposals";
 import * as TagSuggestionsController from "../controllers/tagSuggestions";
 import { validateUUID } from "../middleware/validateUUID";
+import { validateBody } from "../middleware/validateBody";
+import { createRecipeSchema, updateRecipeSchema } from "../schemas/recipe.schema";
+import { createProposalSchema } from "../schemas/proposal.schema";
+import { shareRecipeSchema, publishToCommunitySchema } from "../schemas/recipeShare.schema";
+import { createTagSuggestionSchema } from "../schemas/tag.schema";
+import { importRecipeUrlSchema } from "../schemas/recipeImport.schema";
 
 const router = express.Router();
 
 // Import route (must be before /:recipeId to avoid UUID validation)
-router.post("/import-url", RecipeImportController.importRecipeFromUrl);
+router.post(
+  "/import-url",
+  validateBody(importRecipeUrlSchema),
+  RecipeImportController.importRecipeFromUrl
+);
 
 router.get("/", RecipesController.getRecipes);
 
 router.get("/:recipeId", validateUUID, RecipesController.getRecipe);
 
-router.post("/", RecipesController.createRecipe);
+router.post("/", validateBody(createRecipeSchema), RecipesController.createRecipe);
 
-router.patch("/:recipeId", validateUUID, RecipesController.updateRecipe);
+router.patch(
+  "/:recipeId",
+  validateUUID,
+  validateBody(updateRecipeSchema),
+  RecipesController.updateRecipe
+);
 
 router.delete("/:recipeId", validateUUID, RecipesController.deleteRecipe);
 
@@ -34,18 +49,38 @@ router.get("/:recipeId/variants", validateUUID, RecipeVariantsController.getVari
 // Proposals routes on recipes
 router.get("/:recipeId/proposals", validateUUID, ProposalsController.getProposals);
 
-router.post("/:recipeId/proposals", validateUUID, ProposalsController.createProposal);
+router.post(
+  "/:recipeId/proposals",
+  validateUUID,
+  validateBody(createProposalSchema),
+  ProposalsController.createProposal
+);
 
 // Tag suggestions routes on recipes
 router.get("/:recipeId/tag-suggestions", validateUUID, TagSuggestionsController.getTagSuggestions);
 
-router.post("/:recipeId/tag-suggestions", validateUUID, TagSuggestionsController.createTagSuggestion);
+router.post(
+  "/:recipeId/tag-suggestions",
+  validateUUID,
+  validateBody(createTagSuggestionSchema),
+  TagSuggestionsController.createTagSuggestion
+);
 
 // Share recipe to another community (fork)
-router.post("/:recipeId/share", validateUUID, RecipeShareController.shareRecipe);
+router.post(
+  "/:recipeId/share",
+  validateUUID,
+  validateBody(shareRecipeSchema),
+  RecipeShareController.shareRecipe
+);
 
 // Publish personal recipe to communities
-router.post("/:recipeId/publish", validateUUID, RecipeShareController.publishToCommunities);
+router.post(
+  "/:recipeId/publish",
+  validateUUID,
+  validateBody(publishToCommunitySchema),
+  RecipeShareController.publishToCommunities
+);
 
 // Get communities where a recipe has copies
 router.get("/:recipeId/communities", validateUUID, RecipeShareController.getRecipeCommunities);

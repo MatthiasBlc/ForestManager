@@ -31,11 +31,15 @@ const RecipeFilters = ({
     setLocalSearch(search);
   }, [search]);
 
-  useDebouncedEffect(() => {
-    if (localSearch !== search) {
-      onSearchChange(localSearch);
-    }
-  }, 300, [localSearch, search, onSearchChange]);
+  useDebouncedEffect(
+    () => {
+      if (localSearch !== search) {
+        onSearchChange(localSearch);
+      }
+    },
+    300,
+    [localSearch, search, onSearchChange]
+  );
 
   const hasFilters = search || tags.length > 0 || ingredients.length > 0;
 
@@ -85,11 +89,7 @@ const RecipeFilters = ({
 
       {hasFilters && (
         <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={onReset}
-            className="btn btn-ghost btn-sm gap-2"
-          >
+          <button type="button" onClick={onReset} className="btn btn-ghost btn-sm gap-2">
             <FaTimes size={12} />
             Clear filters
           </button>

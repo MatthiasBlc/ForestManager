@@ -119,7 +119,6 @@ async function main() {
     console.log(`  Email:    ${adminUser.email}`);
     console.log("========================================");
     console.log("\n⚠️  A la premiere connexion, vous devrez configurer le 2FA (TOTP).\n");
-
   } catch (error) {
     console.error("\n❌ Erreur lors de la creation:", error);
     process.exit(1);

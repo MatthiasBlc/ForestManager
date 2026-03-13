@@ -31,13 +31,13 @@ export async function processImage(file: File): Promise<Blob> {
     canvas.toBlob(
       (b) => (b ? resolve(b) : reject(new Error("La conversion de l'image a echoue."))),
       "image/webp",
-      0.8,
+      0.8
     );
   });
 
   if (blob.size > MAX_FILE_SIZE) {
     throw new Error(
-      `Image trop volumineuse apres conversion (${(blob.size / 1024 / 1024).toFixed(1)} Mo). Maximum : 2 Mo.`,
+      `Image trop volumineuse apres conversion (${(blob.size / 1024 / 1024).toFixed(1)} Mo). Maximum : 2 Mo.`
     );
   }
 

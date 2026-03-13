@@ -14,11 +14,29 @@ interface RecipeCardProps {
   canDelete?: boolean;
 }
 
-const RecipeCard = ({ recipe, onDelete, onTagClick, onShare, showCreator = false, canEdit = true, canDelete = true }: RecipeCardProps) => {
+const RecipeCard = ({
+  recipe,
+  onDelete,
+  onTagClick,
+  onShare,
+  showCreator = false,
+  canEdit = true,
+  canDelete = true,
+}: RecipeCardProps) => {
   const {
-    title, imageUrl, tags, displayedTags, remainingTagsCount, dateText,
-    communityRecipe, isSharedRecipe,
-    handleClick, handleEdit, handleDelete, handleTagClick, handleShare,
+    title,
+    imageUrl,
+    tags,
+    displayedTags,
+    remainingTagsCount,
+    dateText,
+    communityRecipe,
+    isSharedRecipe,
+    handleClick,
+    handleEdit,
+    handleDelete,
+    handleTagClick,
+    handleShare,
     ConfirmDialog,
   } = useRecipeActions({ recipe, onDelete, onTagClick, onShare });
 
@@ -31,7 +49,7 @@ const RecipeCard = ({ recipe, onDelete, onTagClick, onShare, showCreator = false
     >
       {imageUrl ? (
         <figure className="h-48 overflow-hidden">
-          <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
+          <img src={imageUrl} alt={title} className="w-full h-full object-cover" loading="lazy" />
         </figure>
       ) : (
         <figure className="h-48 bg-base-200 flex items-center justify-center">
