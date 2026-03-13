@@ -27,17 +27,21 @@ import { ShareRecipeInput, PublishToCommunityInput } from "../schemas/recipeShar
  * POST /api/recipes/:recipeId/share
  * Partager (fork) une recette vers une autre communaute
  */
-export const shareRecipe: RequestHandler<{ recipeId: string }, unknown, ShareRecipeInput, unknown> =
-  async (req, res, next) => {
-    const authenticatedUserId = req.session.userId;
-    const { recipeId } = req.params;
-    const { targetCommunityId } = req.body;
+export const shareRecipe: RequestHandler<
+  { recipeId: string },
+  unknown,
+  ShareRecipeInput,
+  unknown
+> = async (req, res, next) => {
+  const authenticatedUserId = req.session.userId;
+  const { recipeId } = req.params;
+  const { targetCommunityId } = req.body;
 
-    try {
-      assertIsDefine(authenticatedUserId);
+  try {
+    assertIsDefine(authenticatedUserId);
 
-      // 1. Recuperer la recette source avec ses relations
-      const sourceRecipe = await prisma.recipe.findFirst({
+    // 1. Recuperer la recette source avec ses relations
+    const sourceRecipe = await prisma.recipe.findFirst({
       where: { id: recipeId, deletedAt: null },
       select: {
         id: true,

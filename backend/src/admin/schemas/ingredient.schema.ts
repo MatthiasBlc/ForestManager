@@ -1,9 +1,5 @@
 import { z } from "zod";
-import {
-  ADMIN_ING_001,
-  ADMIN_ING_004,
-  ADMIN_ING_009,
-} from "../../constants/errorCodes";
+import { ADMIN_ING_001, ADMIN_ING_004, ADMIN_ING_009 } from "../../constants/errorCodes";
 import { MAX_NAME_LENGTH, MAX_REASON_LENGTH } from "../../util/validation";
 
 const uuidSchema = z.string().uuid();

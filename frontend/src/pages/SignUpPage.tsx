@@ -195,11 +195,7 @@ const SignUpPage = () => {
             />
 
             <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <span className="loading loading-spinner loading-sm" />
-              ) : (
-                "Sign Up"
-              )}
+              {isSubmitting ? <span className="loading loading-spinner loading-sm" /> : "Sign Up"}
             </button>
           </form>
 

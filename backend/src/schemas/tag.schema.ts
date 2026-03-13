@@ -9,7 +9,9 @@ const tagNameSchema = z
   .min(1, TAG_001("Tag name is required"))
   .max(50, TAG_001("Tag name must be between 2 and 50 characters"))
   .transform((val) => val.trim().toLowerCase())
-  .refine((val) => val.length >= 2, { message: TAG_001("Tag name must be between 2 and 50 characters") });
+  .refine((val) => val.length >= 2, {
+    message: TAG_001("Tag name must be between 2 and 50 characters"),
+  });
 
 /** Schema for creating a tag suggestion on a recipe */
 export const createTagSuggestionSchema = z.object({

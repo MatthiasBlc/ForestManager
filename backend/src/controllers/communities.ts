@@ -124,51 +124,55 @@ export const getCommunity: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const createCommunity: RequestHandler<unknown, unknown, CreateCommunityInput, unknown> =
-  async (req, res, next) => {
-    const { name, description } = req.body;
-    const authenticatedUserId = req.session.userId;
+export const createCommunity: RequestHandler<
+  unknown,
+  unknown,
+  CreateCommunityInput,
+  unknown
+> = async (req, res, next) => {
+  const { name, description } = req.body;
+  const authenticatedUserId = req.session.userId;
 
-    try {
-      assertIsDefine(authenticatedUserId);
+  try {
+    assertIsDefine(authenticatedUserId);
 
-      // Get default features
-      const defaultFeatures = await prisma.feature.findMany({
-        where: { isDefault: true },
-      });
+    // Get default features
+    const defaultFeatures = await prisma.feature.findMany({
+      where: { isDefault: true },
+    });
 
-      const newCommunity = await prisma.community.create({
-        data: {
-          name,
-          description: description || null,
-          members: {
-            create: {
-              userId: authenticatedUserId,
-              role: "MODERATOR",
-            },
-          },
-          // Auto-assign default features
-          features: {
-            create: defaultFeatures.map((f) => ({
-              featureId: f.id,
-              // grantedById: null = automatic attribution
-            })),
+    const newCommunity = await prisma.community.create({
+      data: {
+        name,
+        description: description || null,
+        members: {
+          create: {
+            userId: authenticatedUserId,
+            role: "MODERATOR",
           },
         },
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          visibility: true,
-          createdAt: true,
+        // Auto-assign default features
+        features: {
+          create: defaultFeatures.map((f) => ({
+            featureId: f.id,
+            // grantedById: null = automatic attribution
+          })),
         },
-      });
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        visibility: true,
+        createdAt: true,
+      },
+    });
 
-      res.status(201).json(newCommunity);
-    } catch (error) {
-      next(error);
-    }
-  };
+    res.status(201).json(newCommunity);
+  } catch (error) {
+    next(error);
+  }
+};
 
 interface UpdateCommunityParams extends Record<string, string> {
   communityId: string;

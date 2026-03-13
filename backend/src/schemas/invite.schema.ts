@@ -8,7 +8,10 @@ const VALIDATION_001_TYPE = "VALIDATION_001: must be a string";
 /** Schema for creating an invite (exactly one of email, username, userId required) */
 export const createInviteSchema = z
   .object({
-    email: z.string({ error: () => VALIDATION_001_TYPE }).regex(EMAIL_REGEX, AUTH_003).optional(),
+    email: z
+      .string({ error: () => VALIDATION_001_TYPE })
+      .regex(EMAIL_REGEX, AUTH_003)
+      .optional(),
     username: z.string({ error: () => VALIDATION_001_TYPE }).optional(),
     userId: uuidSchema.optional(),
   })

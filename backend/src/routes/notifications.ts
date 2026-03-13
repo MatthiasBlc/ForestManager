@@ -20,11 +20,7 @@ router.get("/unread-count", notificationsController.getUnreadCount);
 router.patch("/read", validateBody(markBatchAsReadSchema), notificationsController.markBatchAsRead);
 
 // PATCH /api/notifications/read-all
-router.patch(
-  "/read-all",
-  validateBody(markAllAsReadSchema),
-  notificationsController.markAllAsRead
-);
+router.patch("/read-all", validateBody(markAllAsReadSchema), notificationsController.markAllAsRead);
 
 // PATCH /api/notifications/:id/read
 router.patch("/:id/read", validateUUID, notificationsController.markAsRead);

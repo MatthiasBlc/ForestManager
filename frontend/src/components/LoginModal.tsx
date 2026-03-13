@@ -106,11 +106,7 @@ const LoginModal = () => {
           />
           <div className="modal-action flex-col gap-2">
             <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <span className="loading loading-spinner loading-sm" />
-              ) : (
-                "Log In"
-              )}
+              {isSubmitting ? <span className="loading loading-spinner loading-sm" /> : "Log In"}
             </button>
             <p className="text-center text-sm text-base-content/70 mt-2">
               Don't have an account?{" "}

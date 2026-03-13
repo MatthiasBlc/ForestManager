@@ -6,10 +6,7 @@ const VALID_CATEGORIES = ["INVITATION", "RECIPE_PROPOSAL", "TAG", "INGREDIENT", 
 
 /** Schema for batch marking notifications as read */
 export const markBatchAsReadSchema = z.object({
-  ids: z
-    .array(z.string())
-    .min(1, NOTIF_004)
-    .max(100, NOTIF_004),
+  ids: z.array(z.string()).min(1, NOTIF_004).max(100, NOTIF_004),
 });
 
 /** Schema for marking all notifications as read */

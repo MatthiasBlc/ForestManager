@@ -11,7 +11,10 @@ export const adminCreateFeatureSchema = z.object({
     .string({ error: () => ADMIN_FEAT_002 })
     .min(1, ADMIN_FEAT_002)
     .transform((val) => val.trim()),
-  description: z.string().transform((val) => val?.trim() || null).optional(),
+  description: z
+    .string()
+    .transform((val) => val?.trim() || null)
+    .optional(),
   isDefault: z.boolean().optional().default(false),
 });
 
@@ -22,7 +25,10 @@ export const adminUpdateFeatureSchema = z.object({
     .min(1, ADMIN_FEAT_002)
     .transform((val) => val.trim())
     .optional(),
-  description: z.string().transform((val) => val?.trim() || null).optional(),
+  description: z
+    .string()
+    .transform((val) => val?.trim() || null)
+    .optional(),
   isDefault: z.boolean().optional(),
 });
 
