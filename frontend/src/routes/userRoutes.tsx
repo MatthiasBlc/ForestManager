@@ -1,22 +1,27 @@
 /* eslint-disable react-refresh/only-export-components */
+import { lazy, Suspense } from "react";
 import { Route } from "react-router-dom";
 import ProtectedRoute from "../components/ProtectedRoute";
 import MainLayout from "../components/Layout/MainLayout";
 import HomePage from "../pages/HomePage";
+import NotFoundPage from "../pages/NotFoundPage";
+
+// Eager: pages les plus visitees
+import DashboardPage from "../pages/DashboardPage";
 import RecipesPage from "../pages/RecipesPage";
 import RecipeDetailPage from "../pages/RecipeDetailPage";
-import RecipeFormPage from "../pages/RecipeFormPage";
-import PrivacyPage from "../pages/PrivacyPage";
-import SignUpPage from "../pages/SignUpPage";
-import NotFoundPage from "../pages/NotFoundPage";
-import DashboardPage from "../pages/DashboardPage";
-import CommunitiesPage from "../pages/CommunitiesPage";
-import CommunityCreatePage from "../pages/CommunityCreatePage";
 import CommunityDetailPage from "../pages/CommunityDetailPage";
-import CommunityEditPage from "../pages/CommunityEditPage";
-import InvitationsPage from "../pages/InvitationsPage";
-import NotificationsPage from "../pages/NotificationsPage";
-import ProfilePage from "../pages/ProfilePage";
+import CommunitiesPage from "../pages/CommunitiesPage";
+
+// Lazy: pages moins frequentes
+const RecipeFormPage = lazy(() => import("../pages/RecipeFormPage"));
+const SignUpPage = lazy(() => import("../pages/SignUpPage"));
+const PrivacyPage = lazy(() => import("../pages/PrivacyPage"));
+const CommunityCreatePage = lazy(() => import("../pages/CommunityCreatePage"));
+const CommunityEditPage = lazy(() => import("../pages/CommunityEditPage"));
+const InvitationsPage = lazy(() => import("../pages/InvitationsPage"));
+const NotificationsPage = lazy(() => import("../pages/NotificationsPage"));
+const ProfilePage = lazy(() => import("../pages/ProfilePage"));
 
 function ProtectedPage({ children }: { children: React.ReactNode }) {
   return (
@@ -26,12 +31,36 @@ function ProtectedPage({ children }: { children: React.ReactNode }) {
   );
 }
 
+const fallback = (
+  <div className="flex items-center justify-center h-64">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-forest-accent" />
+  </div>
+);
+
+function LazyPage({ children }: { children: React.ReactNode }) {
+  return <Suspense fallback={fallback}>{children}</Suspense>;
+}
+
 const userRoutes = (
   <>
     {/* Public routes */}
     <Route path="/" element={<HomePage />} />
-    <Route path="/signup" element={<SignUpPage />} />
-    <Route path="/privacy" element={<PrivacyPage />} />
+    <Route
+      path="/signup"
+      element={
+        <LazyPage>
+          <SignUpPage />
+        </LazyPage>
+      }
+    />
+    <Route
+      path="/privacy"
+      element={
+        <LazyPage>
+          <PrivacyPage />
+        </LazyPage>
+      }
+    />
 
     {/* Dashboard */}
     <Route
@@ -56,7 +85,9 @@ const userRoutes = (
       path="/recipes/new"
       element={
         <ProtectedPage>
-          <RecipeFormPage />
+          <LazyPage>
+            <RecipeFormPage />
+          </LazyPage>
         </ProtectedPage>
       }
     />
@@ -72,7 +103,9 @@ const userRoutes = (
       path="/recipes/:id/edit"
       element={
         <ProtectedPage>
-          <RecipeFormPage />
+          <LazyPage>
+            <RecipeFormPage />
+          </LazyPage>
         </ProtectedPage>
       }
     />
@@ -90,7 +123,9 @@ const userRoutes = (
       path="/communities/create"
       element={
         <ProtectedPage>
-          <CommunityCreatePage />
+          <LazyPage>
+            <CommunityCreatePage />
+          </LazyPage>
         </ProtectedPage>
       }
     />
@@ -106,7 +141,9 @@ const userRoutes = (
       path="/communities/:id/edit"
       element={
         <ProtectedPage>
-          <CommunityEditPage />
+          <LazyPage>
+            <CommunityEditPage />
+          </LazyPage>
         </ProtectedPage>
       }
     />
@@ -114,7 +151,9 @@ const userRoutes = (
       path="/communities/:communityId/recipes/new"
       element={
         <ProtectedPage>
-          <RecipeFormPage />
+          <LazyPage>
+            <RecipeFormPage />
+          </LazyPage>
         </ProtectedPage>
       }
     />
@@ -124,7 +163,9 @@ const userRoutes = (
       path="/profile"
       element={
         <ProtectedPage>
-          <ProfilePage />
+          <LazyPage>
+            <ProfilePage />
+          </LazyPage>
         </ProtectedPage>
       }
     />
@@ -134,7 +175,9 @@ const userRoutes = (
       path="/notifications"
       element={
         <ProtectedPage>
-          <NotificationsPage />
+          <LazyPage>
+            <NotificationsPage />
+          </LazyPage>
         </ProtectedPage>
       }
     />
@@ -144,7 +187,9 @@ const userRoutes = (
       path="/invitations"
       element={
         <ProtectedPage>
-          <InvitationsPage />
+          <LazyPage>
+            <InvitationsPage />
+          </LazyPage>
         </ProtectedPage>
       }
     />

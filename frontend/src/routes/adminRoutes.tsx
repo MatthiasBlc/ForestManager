@@ -1,28 +1,45 @@
 /* eslint-disable react-refresh/only-export-components */
+import { lazy, Suspense } from "react";
 import { Route } from "react-router-dom";
 import AdminProtectedRoute from "../components/admin/AdminProtectedRoute";
 import AdminLayout from "../components/admin/AdminLayout";
-import AdminLoginPage from "../pages/admin/AdminLoginPage";
-import AdminDashboardPage from "../pages/admin/AdminDashboardPage";
-import AdminTagsPage from "../pages/admin/AdminTagsPage";
-import AdminIngredientsPage from "../pages/admin/AdminIngredientsPage";
-import AdminUnitsPage from "../pages/admin/AdminUnitsPage";
-import AdminFeaturesPage from "../pages/admin/AdminFeaturesPage";
-import AdminCommunitiesPage from "../pages/admin/AdminCommunitiesPage";
-import AdminActivityPage from "../pages/admin/AdminActivityPage";
+
+const AdminLoginPage = lazy(() => import("../pages/admin/AdminLoginPage"));
+const AdminDashboardPage = lazy(() => import("../pages/admin/AdminDashboardPage"));
+const AdminTagsPage = lazy(() => import("../pages/admin/AdminTagsPage"));
+const AdminIngredientsPage = lazy(() => import("../pages/admin/AdminIngredientsPage"));
+const AdminUnitsPage = lazy(() => import("../pages/admin/AdminUnitsPage"));
+const AdminFeaturesPage = lazy(() => import("../pages/admin/AdminFeaturesPage"));
+const AdminCommunitiesPage = lazy(() => import("../pages/admin/AdminCommunitiesPage"));
+const AdminActivityPage = lazy(() => import("../pages/admin/AdminActivityPage"));
 
 function AdminPage({ children }: { children: React.ReactNode }) {
   return <AdminProtectedRoute>{children}</AdminProtectedRoute>;
 }
 
+const fallback = (
+  <div className="flex items-center justify-center h-64">
+    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-forest-accent" />
+  </div>
+);
+
 const adminRoutes = (
   <Route path="/admin" element={<AdminLayout />}>
-    <Route path="login" element={<AdminLoginPage />} />
+    <Route
+      path="login"
+      element={
+        <Suspense fallback={fallback}>
+          <AdminLoginPage />
+        </Suspense>
+      }
+    />
     <Route
       path="dashboard"
       element={
         <AdminPage>
-          <AdminDashboardPage />
+          <Suspense fallback={fallback}>
+            <AdminDashboardPage />
+          </Suspense>
         </AdminPage>
       }
     />
@@ -30,7 +47,9 @@ const adminRoutes = (
       path="tags"
       element={
         <AdminPage>
-          <AdminTagsPage />
+          <Suspense fallback={fallback}>
+            <AdminTagsPage />
+          </Suspense>
         </AdminPage>
       }
     />
@@ -38,7 +57,9 @@ const adminRoutes = (
       path="ingredients"
       element={
         <AdminPage>
-          <AdminIngredientsPage />
+          <Suspense fallback={fallback}>
+            <AdminIngredientsPage />
+          </Suspense>
         </AdminPage>
       }
     />
@@ -46,7 +67,9 @@ const adminRoutes = (
       path="units"
       element={
         <AdminPage>
-          <AdminUnitsPage />
+          <Suspense fallback={fallback}>
+            <AdminUnitsPage />
+          </Suspense>
         </AdminPage>
       }
     />
@@ -54,7 +77,9 @@ const adminRoutes = (
       path="features"
       element={
         <AdminPage>
-          <AdminFeaturesPage />
+          <Suspense fallback={fallback}>
+            <AdminFeaturesPage />
+          </Suspense>
         </AdminPage>
       }
     />
@@ -62,7 +87,9 @@ const adminRoutes = (
       path="communities"
       element={
         <AdminPage>
-          <AdminCommunitiesPage />
+          <Suspense fallback={fallback}>
+            <AdminCommunitiesPage />
+          </Suspense>
         </AdminPage>
       }
     />
@@ -70,7 +97,9 @@ const adminRoutes = (
       path="activity"
       element={
         <AdminPage>
-          <AdminActivityPage />
+          <Suspense fallback={fallback}>
+            <AdminActivityPage />
+          </Suspense>
         </AdminPage>
       }
     />

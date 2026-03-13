@@ -49,7 +49,7 @@ const RecipeListRow = ({
     >
       {imageUrl ? (
         <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-          <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
+          <img src={imageUrl} alt={title} className="w-full h-full object-cover" loading="lazy" />
         </div>
       ) : (
         <div className="w-16 h-16 rounded-lg bg-base-200 flex items-center justify-center flex-shrink-0">

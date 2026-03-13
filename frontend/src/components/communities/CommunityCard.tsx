@@ -21,7 +21,7 @@ const CommunityCard = ({ community }: CommunityCardProps) => {
     >
       {imageUrl && (
         <figure>
-          <img src={imageUrl} alt={name} className="w-full h-40 object-cover" />
+          <img src={imageUrl} alt={name} className="w-full h-40 object-cover" loading="lazy" />
         </figure>
       )}
       <div className="card-body">

@@ -11,4 +11,16 @@ export default defineConfig({
       usePolling: true,
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ["react", "react-dom", "react-router-dom"],
+          icons: ["react-icons"],
+          dndkit: ["@dnd-kit/core", "@dnd-kit/sortable", "@dnd-kit/utilities"],
+          socketio: ["socket.io-client"],
+        },
+      },
+    },
+  },
 });

@@ -49,7 +49,7 @@ const RecipeCard = ({
     >
       {imageUrl ? (
         <figure className="h-48 overflow-hidden">
-          <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
+          <img src={imageUrl} alt={title} className="w-full h-full object-cover" loading="lazy" />
         </figure>
       ) : (
         <figure className="h-48 bg-base-200 flex items-center justify-center">

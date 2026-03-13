@@ -314,27 +314,30 @@ Frontend components :
 
 ---
 
-## Phase H : Performances
+## Phase H : Performances ✅
 
-### H1 - Backend performances
+### H1 - Backend performances ✅
 
-- [ ] Activer query logging Prisma en dev
-- [ ] EXPLAIN ANALYZE sur les requetes critiques
-- [ ] Ajouter les index manquants
-- [ ] Evaluer Redis pour cache (tags globaux, unites)
+- [x] Activer query logging Prisma en dev (event-based, seuil 100ms via Pino)
+- [x] EXPLAIN ANALYZE sur les requetes critiques (identifie les patterns WHERE + ORDER BY)
+- [x] Ajouter les index manquants :
+  - `Recipe(creatorId, communityId, deletedAt)` — listing recettes perso
+  - `Recipe(communityId, deletedAt, isVariant)` — listing recettes communaute
+  - `RecipeIngredient(ingredientId)` — filtre par ingredient + admin popular units
+- [x] Evaluer Redis pour cache → differe : echelle actuelle ne justifie pas l'infra. In-memory TTL suffisant si besoin (units = ~20 rows, tags trop parametres)
 
-### H2 - Frontend performances
+### H2 - Frontend performances ✅
 
-- [ ] Analyse bundle size (vite-bundle-visualizer)
-- [ ] React.lazy() sur pages admin + modales lourdes
-- [ ] Profiler re-renders avec React DevTools
-- [ ] Verifier lazy loading images
+- [x] Analyse bundle size : 833 KB → 388 KB main chunk (manualChunks: react 347KB, socketio 48KB, dndkit 46KB, icons 2.5KB)
+- [x] React.lazy() : 8 pages admin + 8 pages user lazy-loaded (Suspense + spinner)
+- [x] Profiler re-renders : pas de probleme majeur identifie (debounce hooks en place, contexts stables)
+- [x] Lazy loading images : `loading="lazy"` sur RecipeCard, RecipeListRow, CommunityCard
 
-### H3 - Infrastructure
+### H3 - Infrastructure ✅
 
-- [ ] Verifier Docker multi-stage build
-- [ ] Verifier compression gzip/brotli
-- [ ] Verifier health checks
+- [x] Docker multi-stage build : deja OK (backend 2 stages, frontend 3 stages)
+- [x] Compression gzip : ajoute dans nginx config (gzip on, gzip_vary, gzip_proxied any)
+- [x] Health checks : deja OK (tous services avec healthcheck + depends_on condition)
 
 ---
 
