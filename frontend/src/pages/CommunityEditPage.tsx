@@ -58,7 +58,7 @@ const CommunityEditPage = () => {
       description: community.description || "",
     });
     setImageUrl(community.imageUrl);
-  }, [community, id, navigate, reset]);
+  }, [community, id, navigate, reset, setImageUrl]);
 
   const onSubmit = async (data: FormData) => {
     if (!id) return;

@@ -9,7 +9,6 @@ import {
   INVITE_002,
   INVITE_003,
   INVITE_006,
-  COMMUNITY_001,
   COMMUNITY_004,
   COMMUNITY_005,
 } from "../constants/errorCodes";
@@ -27,24 +26,27 @@ interface GetMyInvitesQuery {
 // POST /api/communities/:communityId/invites
 // Create an invitation (MODERATOR only)
 // =====================================
-export const createInvite: RequestHandler<{ communityId: string }, unknown, CreateInviteInput> =
-  async (req, res, next) => {
-    const communityId = req.params.communityId;
-    const email = req.body.email?.trim();
-    const username = req.body.username?.trim();
-    const userId = req.body.userId?.trim();
-    const inviterId = req.session.userId;
-    const userCommunity = req.userCommunity;
+export const createInvite: RequestHandler<
+  { communityId: string },
+  unknown,
+  CreateInviteInput
+> = async (req, res, next) => {
+  const communityId = req.params.communityId;
+  const email = req.body.email?.trim();
+  const username = req.body.username?.trim();
+  const userId = req.body.userId?.trim();
+  const inviterId = req.session.userId;
+  const userCommunity = req.userCommunity;
 
-    try {
-      assertIsDefine(inviterId);
+  try {
+    assertIsDefine(inviterId);
 
-      if (!userCommunity) {
-        throw createHttpError(500, "Middleware memberOf required");
-      }
+    if (!userCommunity) {
+      throw createHttpError(500, "Middleware memberOf required");
+    }
 
-      // Find the user to invite
-      const invitee = await prisma.user.findFirst({
+    // Find the user to invite
+    const invitee = await prisma.user.findFirst({
       where: {
         deletedAt: null,
         ...(email && { email }),

@@ -92,7 +92,7 @@ const RecipeFormPage = () => {
     }
 
     loadRecipe();
-  }, [id, reset]);
+  }, [id, reset, setCurrentImageUrl]);
 
   const parseOptionalTime = (value: string): number | null => {
     if (value.trim() === "") return null;

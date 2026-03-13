@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { Route } from "react-router-dom";
 import ProtectedRoute from "../components/ProtectedRoute";
 import MainLayout from "../components/Layout/MainLayout";

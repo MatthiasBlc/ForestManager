@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { Route } from "react-router-dom";
 import AdminProtectedRoute from "../components/admin/AdminProtectedRoute";
 import AdminLayout from "../components/admin/AdminLayout";
