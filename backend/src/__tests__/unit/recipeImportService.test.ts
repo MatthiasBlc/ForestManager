@@ -176,6 +176,41 @@ describe("parseIngredientLine", () => {
     expect(result.unitAbbreviation).toBe("kg");
     expect(result.name).toBe("sucre");
   });
+
+  // --- HelloFresh formats ---
+
+  it("should parse unit with parentheses: 2 pièce(s) Aubergine", () => {
+    const result = parseIngredientLine("2 pièce(s) Aubergine");
+    expect(result.quantity).toBe(2);
+    expect(result.unitAbbreviation).toBe("piece");
+    expect(result.name).toBe("Aubergine");
+  });
+
+  it("should parse sachet(s) unit: 1 sachet(s) Noix de cajou", () => {
+    const result = parseIngredientLine("1 sachet(s) Noix de cajou");
+    expect(result.quantity).toBe(1);
+    expect(result.unitAbbreviation).toBe("sachet");
+    expect(result.name).toBe("Noix de cajou");
+  });
+
+  it("should parse botte(s) with fraction: ½ botte(s) Oignon nouveau", () => {
+    const result = parseIngredientLine("½ botte(s) Oignon nouveau");
+    expect(result.quantity).toBe(0.5);
+    expect(result.unitAbbreviation).toBe("botte");
+    expect(result.name).toBe("Oignon nouveau");
+  });
+
+  it("should parse 'selon le goût' prefix: selon le goût Poivre et sel", () => {
+    const result = parseIngredientLine("selon le goût Poivre et sel");
+    expect(result.quantity).toBeNull();
+    expect(result.unitAbbreviation).toBeNull();
+    expect(result.name).toBe("Poivre et sel");
+  });
+
+  it("should preserve accents in ingredient name: 2 pièce(s) Échalote", () => {
+    const result = parseIngredientLine("2 pièce(s) Échalote");
+    expect(result.name).toBe("Échalote");
+  });
 });
 
 // --- Unit tests for importFromUrl ---
@@ -510,6 +545,71 @@ describe("importFromUrl", () => {
 
     const result = await importFromUrl("https://example.com/recipe");
     expect(result.servings).toBe(6);
+  });
+
+  // --- HTML stripping in instructions (HelloFresh) ---
+
+  it("should strip HTML tags from HowToStep text", async () => {
+    const jsonLd = {
+      "@type": "Recipe",
+      name: "Test HTML",
+      recipeInstructions: [
+        {
+          "@type": "HowToStep",
+          text: "<ul>\n<li>Prechauffer le four a 200C.</li>\n<li>Couper les legumes.</li>\n</ul>",
+        },
+      ],
+    };
+
+    mockFetch(makeHtml(jsonLd));
+
+    const result = await importFromUrl("https://example.com/recipe");
+
+    expect(result.steps).toContain("Prechauffer le four a 200C.");
+    expect(result.steps).toContain("Couper les legumes.");
+    // Pas de balises HTML
+    result.steps.forEach((step) => {
+      expect(step).not.toMatch(/<[^>]+>/);
+    });
+  });
+
+  it("should handle HowToStep with HTML entities", async () => {
+    const jsonLd = {
+      "@type": "Recipe",
+      name: "Test entities",
+      recipeInstructions: [
+        {
+          "@type": "HowToStep",
+          text: "<p>Ajoutez l&#39;huile d&#39;olive.</p>",
+        },
+      ],
+    };
+
+    mockFetch(makeHtml(jsonLd));
+
+    const result = await importFromUrl("https://example.com/recipe");
+
+    expect(result.steps[0]).toBe("Ajoutez l'huile d'olive.");
+  });
+
+  it("should handle mixed HTML with <li> and <p> tags", async () => {
+    const jsonLd = {
+      "@type": "Recipe",
+      name: "Test mixed",
+      recipeInstructions: [
+        {
+          "@type": "HowToStep",
+          text: "<ul><li>Etape dans une liste.</li></ul><p>CONSEIL : un tip utile.</p>",
+        },
+      ],
+    };
+
+    mockFetch(makeHtml(jsonLd));
+
+    const result = await importFromUrl("https://example.com/recipe");
+
+    expect(result.steps).toContain("Etape dans une liste.");
+    expect(result.steps).toContain("CONSEIL : un tip utile.");
   });
 
   // --- Non-authenticated test is handled by integration tests ---

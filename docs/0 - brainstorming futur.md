@@ -66,7 +66,7 @@ Je cherche tout à de même à avoir une solution la plus professionnelle et sé
 Je ne sais pas si c'est vraiment nécessaire, mais il serait bien pratique de pouvoir importer des recettes depuis un copier coller. Le problème est que le format d'origine varie beaucoup. Un LLM pourrait aider à parser le format d'origine et à le convertir en format interne mais je ne veux pas de solution payante. Dans un monde idéal j'aimerais pouvoir coller un texte ou un lien, que le llm préremplit le formulaire de recette, l'utilisateur vérifie, ajuste et valide.
 S'il existe une solution autre qu'un LLM c'est l'idéal mais pour le coup je ne maitrise pas du tout le sujet. Que peux-tu me proposer comme solutions ? Si c'est trop complexe, je suis ouvert à des solutions moins sophistiquées, et je suis également ouvert à ne pas réaliser cette fonctionnalité.
 
-# audit refactorisation complete
+# ~~audit refactorisation complete~~ DONE (Phase 17)
 
 back + front
 Clean code
@@ -82,17 +82,17 @@ npm audit
 lint
 tests
 
+# ~~Corrections des imports depuis Hello Fresh~~ DONE
+
+exemple : https://www.hellofresh.fr/recipes/aubergine-laquee-au-miso-and-oeuf-64fb2da9786cce2df0e01899
+(pas de nom d'ingrédients, des balises html dans les étapes etc )
+
 # Update des docs et petit ménage dans Progress.md ?
 
 Mettre à jour les différents doc, archiver les features terminées (pourquoi pas même les delete si ce n'est plus nécessaire, en conservant le nécessaire dans une documentation globale un wiki dans le github ? autre?)
 Mettre à jour les fichiers claude et les suivi du travail.
 On considère ici le mvp propre, ce qui arrivera par la suite sera des features qui viendront se greffer sur la production.
 Progress.md a toujours besoin de conserver des références aux étapes de construction du mvp ?
-
-# Corrections des imports depuis Hello Fresh
-
-exemple : https://www.hellofresh.fr/recipes/aubergine-laquee-au-miso-and-oeuf-64fb2da9786cce2df0e01899
-(pas de nom d'ingrédients, des balises html dans les étapes etc )
 
 # Version mobile inutilisable
 

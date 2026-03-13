@@ -73,11 +73,23 @@ const UNIT_ALIAS_MAP: Record<string, string> = {
   bottes: "botte",
   piece: "piece",
   pieces: "piece",
+  sachet: "sachet",
+  sachets: "sachet",
+  // Variantes avec parentheses (HelloFresh: "2 piece(s) Aubergine")
+  "piece(s)": "piece",
+  "pincee(s)": "pincee",
+  "gousse(s)": "gousse",
+  "tranche(s)": "tranche",
+  "feuille(s)": "feuille",
+  "brin(s)": "brin",
+  "botte(s)": "botte",
+  "sachet(s)": "sachet",
 };
 
 // Tous les patterns d'unites reconnus (tries par longueur decroissante pour le regex)
 const UNIT_PATTERNS = Object.keys(UNIT_ALIAS_MAP)
   .sort((a, b) => b.length - a.length)
+  .map((k) => k.replace(/[()]/g, "\\$&"))
   .join("|");
 
 // --- SSRF protection ---
@@ -133,25 +145,47 @@ function normalizeUnicodeFractions(text: string): string {
   return text.replace(/[\u00BC\u00BD\u00BE\u2153-\u215E]/g, (ch) => UNICODE_FRACTIONS[ch] ?? ch);
 }
 
+// Supprime les accents pour la normalisation des unites
+function stripAccents(text: string): string {
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
 // --- Ingredient parsing ---
 
 export function parseIngredientLine(line: string): ParsedIngredient {
   const cleaned = normalizeUnicodeFractions(line.replace(/^[-*\u2022\u2013\u2014]\s*/, "")).trim();
+  // Version sans accents pour le matching des unites (piece vs piece)
+  const cleanedNorm = stripAccents(cleaned);
 
   if (!cleaned) {
     return { raw: line, quantity: null, unitAbbreviation: null, name: null };
   }
 
-  // Variante "a gout" / sans quantite
-  const tasteMatch = cleaned.match(
-    /^(.+?)[\s,]*(?:[aà]\s*go[uû]t|selon\s*(?:besoin|envie|go[uû]t))$/i
+  // Variante "selon le gout" en debut de ligne (HelloFresh: "selon le gout Poivre et sel")
+  const tastePrefix = cleanedNorm.match(
+    /^(?:selon\s+(?:le\s+)?(?:besoin|envie|gout)|a\s*gout)\s+(.+)$/i
+  );
+  if (tastePrefix) {
+    // Extraire le nom depuis la chaine originale (avec accents)
+    const prefixLen = cleaned.length - tastePrefix[1].length;
+    return {
+      raw: cleaned,
+      quantity: null,
+      unitAbbreviation: null,
+      name: cleaned.substring(prefixLen).trim(),
+    };
+  }
+
+  // Variante "a gout" / sans quantite en fin de ligne
+  const tasteMatch = cleanedNorm.match(
+    /^(.+?)[\s,]*(?:a\s*gout|selon\s*(?:le\s+)?(?:besoin|envie|gout))$/i
   );
   if (tasteMatch) {
     return {
       raw: cleaned,
       quantity: null,
       unitAbbreviation: null,
-      name: tasteMatch[1].trim(),
+      name: cleaned.substring(0, tasteMatch[1].length).trim(),
     };
   }
 
@@ -160,17 +194,19 @@ export function parseIngredientLine(line: string): ParsedIngredient {
     `^(\\d+/\\d+)\\s*(${UNIT_PATTERNS})?\\s*(?:de\\s+|d')?(.+)$`,
     "i"
   );
-  const fractionMatch = cleaned.match(fractionPattern);
+  const fractionMatch = cleanedNorm.match(fractionPattern);
   if (fractionMatch) {
     const [num, den] = fractionMatch[1].split("/");
     const quantity = parseInt(num, 10) / parseInt(den, 10);
     const unitRaw = fractionMatch[2]?.toLowerCase() || null;
     const unitAbbreviation = unitRaw ? UNIT_ALIAS_MAP[unitRaw] || null : null;
+    // Extraire le nom depuis la chaine originale
+    const nameStart = cleaned.length - fractionMatch[3].length;
     return {
       raw: cleaned,
       quantity: isNaN(quantity) ? null : quantity,
       unitAbbreviation,
-      name: fractionMatch[3].trim(),
+      name: cleaned.substring(nameStart).trim(),
     };
   }
 
@@ -179,21 +215,51 @@ export function parseIngredientLine(line: string): ParsedIngredient {
     `^(\\d+[.,]?\\d*)\\s*(${UNIT_PATTERNS})?\\s*(?:de\\s+|d')?(.+)$`,
     "i"
   );
-  const mainMatch = cleaned.match(mainPattern);
+  const mainMatch = cleanedNorm.match(mainPattern);
   if (mainMatch) {
     const quantity = parseFloat(mainMatch[1].replace(",", "."));
     const unitRaw = mainMatch[2]?.toLowerCase() || null;
     const unitAbbreviation = unitRaw ? UNIT_ALIAS_MAP[unitRaw] || null : null;
+    // Extraire le nom depuis la chaine originale
+    const nameStart = cleaned.length - mainMatch[3].length;
     return {
       raw: cleaned,
       quantity: isNaN(quantity) ? null : quantity,
       unitAbbreviation,
-      name: mainMatch[3].trim(),
+      name: cleaned.substring(nameStart).trim(),
     };
   }
 
   // Fallback : pas de match
   return { raw: cleaned, quantity: null, unitAbbreviation: null, name: cleaned };
+}
+
+// --- HTML stripping ---
+
+function stripHtml(text: string): string[] {
+  // Si pas de balises HTML, retourner tel quel
+  if (!/<[^>]+>/.test(text)) return [text];
+
+  const $ = cheerio.load(text, { xml: false });
+
+  // Extraire chaque <li> comme un step separe
+  const items = $("li");
+  if (items.length > 0) {
+    const results: string[] = [];
+    items.each((_, el) => {
+      const t = $(el).text().trim();
+      if (t) results.push(t);
+    });
+    // Aussi extraire le texte hors des listes (<p>, texte libre)
+    $("ul, ol").remove();
+    const remaining = $.text().trim();
+    if (remaining) results.push(remaining);
+    return results;
+  }
+
+  // Pas de <li>, juste extraire le texte
+  const plain = $.text().trim();
+  return plain ? [plain] : [];
 }
 
 // --- recipeInstructions parsing ---
@@ -216,12 +282,12 @@ function parseInstructions(instructions: unknown): string[] {
     for (const item of instructions) {
       if (typeof item === "string") {
         const trimmed = item.replace(/^\d+[.)]\s*/, "").trim();
-        if (trimmed) steps.push(trimmed);
+        if (trimmed) steps.push(...stripHtml(trimmed));
       } else if (item && typeof item === "object") {
         // HowToStep
         if (item["@type"] === "HowToStep" || item["@type"] === "schema:HowToStep") {
           const text = (item.text || item.name || "").toString().trim();
-          if (text) steps.push(text);
+          if (text) steps.push(...stripHtml(text));
         }
         // HowToSection
         else if (item["@type"] === "HowToSection" || item["@type"] === "schema:HowToSection") {
@@ -233,7 +299,7 @@ function parseInstructions(instructions: unknown): string[] {
                 if (trimmed) steps.push(trimmed);
               } else if (subItem && typeof subItem === "object") {
                 const text = (subItem.text || subItem.name || "").toString().trim();
-                if (text) steps.push(text);
+                if (text) steps.push(...stripHtml(text));
               }
             }
           }
@@ -241,7 +307,7 @@ function parseInstructions(instructions: unknown): string[] {
         // Objet generique avec .text
         else if ("text" in item) {
           const text = (item.text || "").toString().trim();
-          if (text) steps.push(text);
+          if (text) steps.push(...stripHtml(text));
         }
       }
     }
