@@ -5,6 +5,7 @@ import { FaArrowLeft, FaSave } from "react-icons/fa";
 import APIManager from "../network/api";
 import ImageUpload from "../components/ImageUpload";
 import { useAsyncData } from "../hooks/useAsyncData";
+import { useImageUpload } from "../hooks/useImageUpload";
 
 interface FormData {
   name: string;
@@ -15,7 +16,13 @@ const CommunityEditPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const {
+    currentImageUrl: imageUrl,
+    setCurrentImageUrl: setImageUrl,
+    getUploadUrl,
+    confirmUpload,
+    deleteImage,
+  } = useImageUpload("community");
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
@@ -158,9 +165,9 @@ const CommunityEditPage = () => {
                 currentImageUrl={imageUrl}
                 onUploadComplete={(url) => setImageUrl(url)}
                 onDeleteComplete={() => setImageUrl(null)}
-                getUploadUrl={() => APIManager.getCommunityUploadUrl(id)}
-                confirmUpload={() => APIManager.confirmCommunityUpload(id)}
-                deleteImage={() => APIManager.deleteCommunityImage(id)}
+                getUploadUrl={() => getUploadUrl(id)}
+                confirmUpload={() => confirmUpload(id)}
+                deleteImage={() => deleteImage(id)}
               />
             </div>
           )}

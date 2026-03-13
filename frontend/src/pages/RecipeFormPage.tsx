@@ -10,6 +10,7 @@ import StepEditor from "../components/form/StepEditor";
 import ImageUpload from "../components/ImageUpload";
 import ImagePicker from "../components/ImagePicker";
 import ImportRecipeModal from "../components/ImportRecipeModal";
+import { useImageUpload } from "../hooks/useImageUpload";
 import { ParsedRecipe } from "../services/recipeParser";
 import { Unit } from "../models/recipe";
 
@@ -32,9 +33,17 @@ const RecipeFormPage = () => {
   const [restTime, setRestTime] = useState<string>("");
   const [steps, setSteps] = useState<{ instruction: string }[]>([{ instruction: "" }]);
   const [stepsError, setStepsError] = useState<string | null>(null);
-  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
-  const [pendingImage, setPendingImage] = useState<Blob | null>(null);
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const {
+    currentImageUrl,
+    setCurrentImageUrl,
+    pendingImage,
+    setPendingImage,
+    isUploadingImage,
+    uploadPendingImage,
+    getUploadUrl,
+    confirmUpload,
+    deleteImage,
+  } = useImageUpload("recipe");
   const [showImportModal, setShowImportModal] = useState(false);
 
   const {
@@ -89,26 +98,6 @@ const RecipeFormPage = () => {
     if (value.trim() === "") return null;
     const n = parseInt(value, 10);
     return isNaN(n) ? null : n;
-  };
-
-  const uploadImageForRecipe = async (recipeId: string, imageBlob: Blob): Promise<boolean> => {
-    try {
-      setIsUploadingImage(true);
-      const { uploadUrl } = await APIManager.getRecipeUploadUrl(recipeId);
-      const uploadRes = await fetch(uploadUrl, {
-        method: "PUT",
-        body: imageBlob,
-        headers: { "Content-Type": "image/webp" },
-      });
-      if (!uploadRes.ok) throw new Error("Upload failed");
-      await APIManager.confirmRecipeUpload(recipeId);
-      return true;
-    } catch {
-      toast.error("La recette a ete creee mais l'image n'a pas pu etre ajoutee.");
-      return false;
-    } finally {
-      setIsUploadingImage(false);
-    }
   };
 
   const handleImport = useCallback(
@@ -247,13 +236,13 @@ const RecipeFormPage = () => {
       } else if (communityId) {
         const newCommunityRecipe = await APIManager.createCommunityRecipe(communityId, recipeData);
         if (pendingImage) {
-          await uploadImageForRecipe(newCommunityRecipe.id, pendingImage);
+          await uploadPendingImage(newCommunityRecipe.id);
         }
         navigate(`/recipes/${newCommunityRecipe.id}`);
       } else {
         const newRecipe = await APIManager.createRecipe(recipeData);
         if (pendingImage) {
-          await uploadImageForRecipe(newRecipe.id, pendingImage);
+          await uploadPendingImage(newRecipe.id);
         }
         navigate(`/recipes/${newRecipe.id}`);
       }
@@ -353,9 +342,9 @@ const RecipeFormPage = () => {
                 currentImageUrl={currentImageUrl}
                 onUploadComplete={(imageUrl) => setCurrentImageUrl(imageUrl)}
                 onDeleteComplete={() => setCurrentImageUrl(null)}
-                getUploadUrl={() => APIManager.getRecipeUploadUrl(id)}
-                confirmUpload={() => APIManager.confirmRecipeUpload(id)}
-                deleteImage={() => APIManager.deleteRecipeImage(id)}
+                getUploadUrl={() => getUploadUrl(id)}
+                confirmUpload={() => confirmUpload(id)}
+                deleteImage={() => deleteImage(id)}
               />
             ) : (
               <ImagePicker onImageSelected={setPendingImage} />
