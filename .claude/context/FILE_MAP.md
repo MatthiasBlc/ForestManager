@@ -261,15 +261,17 @@ components/
 │   ├── TagPreferencesSection.tsx     # Toggle tag visibility per community
 │   └── NotificationPreferencesSection.tsx # Notification preferences (5 categories, per-community overrides)
 ├── form/
-│   ├── TagSelector.tsx       # Multi-select tags (debounce, create on-the-fly)
-│   ├── IngredientSelector.tsx # Selecteur ingredients
+│   ├── SearchSelector.tsx    # Composant generique recherche + selection (debounce, create on-the-fly)
+│   ├── TagSelector.tsx       # Multi-select tags (utilise SearchSelector)
+│   ├── IngredientSelector.tsx # Selecteur ingredients (utilise SearchSelector)
 │   ├── IngredientList.tsx    # Liste ingredients dynamique (autocomplete, units, PENDING badge)
 │   ├── UnitSelector.tsx      # Dropdown unites groupee par categorie
 │   └── StepEditor.tsx        # Editeur etapes numerotees reorder/delete (Phase 13)
 ├── admin/
 │   ├── AdminLayout.tsx       # Layout admin (sidebar + header + outlet)
 │   └── AdminProtectedRoute.tsx # Guard admin
-├── ImageUpload.tsx           # Composant upload image (drag&drop, preview, presigned URL)
+├── ImageUpload.tsx           # Upload image existante (drag&drop, preview, presigned URL)
+├── ImagePicker.tsx           # Selection image pour creation (preview, processImage)
 ├── ImportRecipeModal.tsx     # Modal import recette (texte brut ou URL)
 ├── AddEditRecipeDialog.tsx   # Dialog creation/edition
 ├── ErrorBoundary.tsx         # Error boundary React (crash → fallback UI)
@@ -312,10 +314,14 @@ models/
 ### Autres frontend
 
 ```
-App.tsx                       # Routes React Router
+App.tsx                       # Routes React Router (simplifie, delegue a routes/)
 main.tsx                      # Entry point React
+routes/
+├── userRoutes.tsx            # Routes utilisateur (public + protegees)
+└── adminRoutes.tsx           # Routes admin (protegees)
 hooks/
 ├── useAsyncData.ts           # Generic async data fetching (loading/error/data/refetch)
+├── useImageUpload.ts         # Upload image (state + API wiring recipe/community)
 ├── useClickOutside.ts        # Detect clicks outside a ref element
 ├── useDebouncedEffect.ts     # Effect with configurable delay
 ├── useConfirm.tsx            # Confirmation dialog hook (promise-based)

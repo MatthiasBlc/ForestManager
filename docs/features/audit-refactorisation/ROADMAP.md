@@ -230,26 +230,26 @@
 - [x] Integrer dans les pages migrées avec useAsyncData (10 pages : Dashboard, Communities, Invitations, AdminDashboard, AdminActivity, AdminFeatures, AdminCommunities, AdminUnits, AdminIngredients, AdminTags)
 - [x] Pages detail (CommunityDetail, RecipeDetail, CommunityEdit) conservent le pattern early return (UI custom avec bouton retour)
 
-### E3 - SearchSelector generique
+### E3 - SearchSelector generique ✅
 
-- [ ] Creer `SearchSelector<T>` a partir de TagSelector
-- [ ] Refactorer TagSelector pour utiliser SearchSelector
-- [ ] Refactorer IngredientSelector pour utiliser SearchSelector
-- [ ] Verifier que le comportement est identique
+- [x] Creer `SearchSelector<T>` a partir de TagSelector
+- [x] Refactorer TagSelector pour utiliser SearchSelector
+- [x] Refactorer IngredientSelector pour utiliser SearchSelector
+- [x] Verifier que le comportement est identique
 
-### E4 - useImageUpload hook
+### E4 - useImageUpload hook ✅
 
-- [ ] Creer le hook `useImageUpload(entityType, entityId)`
-- [ ] Refactorer RecipeFormPage (498 lignes)
-- [ ] Refactorer CommunityEditPage (199 lignes)
-- [ ] Tester les deux flows d'upload
+- [x] Creer le hook `useImageUpload(entityType, entityId)`
+- [x] Refactorer RecipeFormPage (498 lignes)
+- [x] Refactorer CommunityEditPage (199 lignes)
+- [x] Tester les deux flows d'upload
 
-### E5 - Extraction routes App.tsx
+### E5 - Extraction routes App.tsx ✅
 
-- [ ] Creer `routes/userRoutes.tsx`
-- [ ] Creer `routes/adminRoutes.tsx`
-- [ ] Simplifier App.tsx
-- [ ] Deplacer NotificationHandler dans MainLayout
+- [x] Creer `routes/userRoutes.tsx`
+- [x] Creer `routes/adminRoutes.tsx`
+- [x] Simplifier App.tsx
+- [x] Deplacer NotificationHandler dans MainLayout
 
 ---
 
