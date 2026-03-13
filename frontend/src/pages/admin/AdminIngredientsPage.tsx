@@ -5,6 +5,10 @@ import APIManager from "../../network/api";
 import { useConfirm } from "../../hooks/useConfirm";
 import DataContainer from "../../components/DataContainer";
 import { useAsyncData } from "../../hooks/useAsyncData";
+import IngredientEditModal from "../../components/admin/IngredientEditModal";
+import IngredientMergeModal from "../../components/admin/IngredientMergeModal";
+import IngredientApproveModal from "../../components/admin/IngredientApproveModal";
+import IngredientRejectModal from "../../components/admin/IngredientRejectModal";
 import toast from "react-hot-toast";
 
 type StatusFilter = "" | "APPROVED" | "PENDING";
@@ -17,27 +21,10 @@ function AdminIngredientsPage() {
   const [sortColumn, setSortColumn] = useState<SortColumn>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
-  // Create/Edit modal
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState<AdminIngredient | null>(null);
-  const [itemName, setItemName] = useState("");
-  const [itemDefaultUnitId, setItemDefaultUnitId] = useState<string>("");
-  const [saving, setSaving] = useState(false);
-
-  // Merge modal
+  const [editModalItem, setEditModalItem] = useState<AdminIngredient | null | "create">(null);
   const [mergeSource, setMergeSource] = useState<AdminIngredient | null>(null);
-  const [mergeModalOpen, setMergeModalOpen] = useState(false);
-  const [mergeSearch, setMergeSearch] = useState("");
-
-  // Approve with rename modal
   const [approveItem, setApproveItem] = useState<AdminIngredient | null>(null);
-  const [approveModalOpen, setApproveModalOpen] = useState(false);
-  const [approveNewName, setApproveNewName] = useState("");
-
-  // Reject modal
   const [rejectItem, setRejectItem] = useState<AdminIngredient | null>(null);
-  const [rejectModalOpen, setRejectModalOpen] = useState(false);
-  const [rejectReason, setRejectReason] = useState("");
 
   const { confirm, ConfirmDialog } = useConfirm();
 
@@ -115,45 +102,22 @@ function AdminIngredientsPage() {
     );
   };
 
-  // --- Create / Edit ---
-  function openCreate() {
-    setEditingItem(null);
-    setItemName("");
-    setItemDefaultUnitId("");
-    setModalOpen(true);
-  }
-
-  function openEdit(item: AdminIngredient) {
-    setEditingItem(item);
-    setItemName(item.name);
-    setItemDefaultUnitId(item.defaultUnit?.id ?? "");
-    setModalOpen(true);
-  }
-
-  async function handleSave() {
-    if (!itemName.trim()) return;
-    setSaving(true);
+  async function handleSave(name: string, defaultUnitId: string | null) {
     try {
-      if (editingItem) {
-        await APIManager.updateAdminIngredient(editingItem.id, {
-          name: itemName.trim(),
-          defaultUnitId: itemDefaultUnitId || null,
-        });
+      if (editModalItem && editModalItem !== "create") {
+        await APIManager.updateAdminIngredient(editModalItem.id, { name, defaultUnitId });
         toast.success("Ingredient updated");
       } else {
-        await APIManager.createAdminIngredient(itemName.trim(), itemDefaultUnitId || undefined);
+        await APIManager.createAdminIngredient(name, defaultUnitId ?? undefined);
         toast.success("Ingredient created");
       }
-      setModalOpen(false);
+      setEditModalItem(null);
       loadIngredients();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to save ingredient");
-    } finally {
-      setSaving(false);
     }
   }
 
-  // --- Delete ---
   async function handleDelete(item: AdminIngredient) {
     const confirmed = await confirm({
       title: "Delete Ingredient",
@@ -171,19 +135,11 @@ function AdminIngredientsPage() {
     }
   }
 
-  // --- Merge ---
-  function openMerge(item: AdminIngredient) {
-    setMergeSource(item);
-    setMergeSearch("");
-    setMergeModalOpen(true);
-  }
-
   async function handleMerge(target: AdminIngredient) {
     if (!mergeSource) return;
     try {
       await APIManager.mergeAdminIngredients(mergeSource.id, target.id);
       toast.success(`Merged "${mergeSource.name}" into "${target.name}"`);
-      setMergeModalOpen(false);
       setMergeSource(null);
       loadIngredients();
     } catch (err) {
@@ -191,7 +147,6 @@ function AdminIngredientsPage() {
     }
   }
 
-  // --- Approve ---
   async function handleApproveSimple(item: AdminIngredient) {
     try {
       await APIManager.approveAdminIngredient(item.id);
@@ -202,52 +157,29 @@ function AdminIngredientsPage() {
     }
   }
 
-  function openApproveWithRename(item: AdminIngredient) {
-    setApproveItem(item);
-    setApproveNewName(item.name);
-    setApproveModalOpen(true);
-  }
-
-  async function handleApproveWithRename() {
+  async function handleApproveWithRename(newName?: string) {
     if (!approveItem) return;
-    setSaving(true);
     try {
-      const newName =
-        approveNewName.trim() !== approveItem.name ? approveNewName.trim() : undefined;
       await APIManager.approveAdminIngredient(approveItem.id, newName);
       toast.success(
         newName ? `Approved as "${newName}"` : `Ingredient "${approveItem.name}" approved`
       );
-      setApproveModalOpen(false);
       setApproveItem(null);
       loadIngredients();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to approve ingredient");
-    } finally {
-      setSaving(false);
     }
   }
 
-  // --- Reject ---
-  function openReject(item: AdminIngredient) {
-    setRejectItem(item);
-    setRejectReason("");
-    setRejectModalOpen(true);
-  }
-
-  async function handleReject() {
-    if (!rejectItem || !rejectReason.trim()) return;
-    setSaving(true);
+  async function handleReject(reason: string) {
+    if (!rejectItem) return;
     try {
-      await APIManager.rejectAdminIngredient(rejectItem.id, rejectReason.trim());
+      await APIManager.rejectAdminIngredient(rejectItem.id, reason);
       toast.success(`Ingredient "${rejectItem.name}" rejected`);
-      setRejectModalOpen(false);
       setRejectItem(null);
       loadIngredients();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to reject ingredient");
-    } finally {
-      setSaving(false);
     }
   }
 
@@ -256,7 +188,7 @@ function AdminIngredientsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Ingredients</h1>
-        <button className="btn btn-primary" onClick={openCreate}>
+        <button className="btn btn-primary" onClick={() => setEditModalItem("create")}>
           Add Ingredient
         </button>
       </div>
@@ -389,22 +321,28 @@ function AdminIngredientsPage() {
                               </button>
                               <button
                                 className="btn btn-ghost btn-xs"
-                                onClick={() => openApproveWithRename(item)}
+                                onClick={() => setApproveItem(item)}
                               >
                                 Rename
                               </button>
                               <button
                                 className="btn btn-error btn-xs"
-                                onClick={() => openReject(item)}
+                                onClick={() => setRejectItem(item)}
                               >
                                 Reject
                               </button>
                             </>
                           )}
-                          <button className="btn btn-ghost btn-xs" onClick={() => openEdit(item)}>
+                          <button
+                            className="btn btn-ghost btn-xs"
+                            onClick={() => setEditModalItem(item)}
+                          >
                             Edit
                           </button>
-                          <button className="btn btn-ghost btn-xs" onClick={() => openMerge(item)}>
+                          <button
+                            className="btn btn-ghost btn-xs"
+                            onClick={() => setMergeSource(item)}
+                          >
                             Merge
                           </button>
                           <button
@@ -430,211 +368,39 @@ function AdminIngredientsPage() {
         </div>
       </DataContainer>
 
-      {/* Create/Edit Modal */}
-      {modalOpen && (
-        <div className="modal modal-open">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg">
-              {editingItem ? "Edit Ingredient" : "Create Ingredient"}
-            </h3>
-            <div className="form-control mt-4">
-              <label className="label">
-                <span className="label-text">Name</span>
-              </label>
-              <input
-                type="text"
-                className="input input-bordered"
-                value={itemName}
-                onChange={(e) => setItemName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSave()}
-              />
-            </div>
-            <div className="form-control mt-2">
-              <label className="label">
-                <span className="label-text">Default Unit</span>
-              </label>
-              <select
-                className="select select-bordered"
-                value={itemDefaultUnitId}
-                onChange={(e) => setItemDefaultUnitId(e.target.value)}
-              >
-                <option value="">None</option>
-                {(units ?? []).map((u) => (
-                  <option key={u.id} value={u.id}>
-                    {u.name} ({u.abbreviation})
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="modal-action">
-              <button className="btn btn-ghost" onClick={() => setModalOpen(false)}>
-                Cancel
-              </button>
-              <button
-                className="btn btn-primary"
-                onClick={handleSave}
-                disabled={saving || !itemName.trim()}
-              >
-                {saving ? <span className="loading loading-spinner loading-sm" /> : "Save"}
-              </button>
-            </div>
-          </div>
-          <div className="modal-backdrop bg-black/50" onClick={() => setModalOpen(false)} />
-        </div>
+      {/* Modals */}
+      {editModalItem && (
+        <IngredientEditModal
+          editingItem={editModalItem === "create" ? null : editModalItem}
+          units={units ?? []}
+          onSave={handleSave}
+          onClose={() => setEditModalItem(null)}
+        />
       )}
 
-      {/* Merge Modal */}
-      {mergeModalOpen && mergeSource && (
-        <div className="modal modal-open">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg">Merge &quot;{mergeSource.name}&quot; into...</h3>
-            <p className="text-sm text-base-content/70 mt-2">
-              Select the target ingredient. All recipes will be moved to the target.
-            </p>
-            <input
-              type="text"
-              placeholder="Search target ingredient..."
-              className="input input-bordered input-sm w-full mt-3"
-              value={mergeSearch}
-              onChange={(e) => setMergeSearch(e.target.value)}
-              autoFocus
-            />
-            <div className="mt-3 max-h-60 overflow-y-auto">
-              {(ingredients ?? [])
-                .filter(
-                  (i) =>
-                    i.id !== mergeSource.id &&
-                    i.name.toLowerCase().includes(mergeSearch.toLowerCase())
-                )
-                .map((item) => (
-                  <button
-                    key={item.id}
-                    className="btn btn-ghost btn-sm w-full justify-start mb-1"
-                    onClick={() => handleMerge(item)}
-                  >
-                    {item.name} ({item.recipeCount} recipes)
-                  </button>
-                ))}
-            </div>
-            <div className="modal-action">
-              <button
-                className="btn btn-ghost"
-                onClick={() => {
-                  setMergeModalOpen(false);
-                  setMergeSource(null);
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-          <div
-            className="modal-backdrop bg-black/50"
-            onClick={() => {
-              setMergeModalOpen(false);
-              setMergeSource(null);
-            }}
-          />
-        </div>
+      {mergeSource && (
+        <IngredientMergeModal
+          source={mergeSource}
+          ingredients={ingredients ?? []}
+          onMerge={handleMerge}
+          onClose={() => setMergeSource(null)}
+        />
       )}
 
-      {/* Approve + Rename Modal */}
-      {approveModalOpen && approveItem && (
-        <div className="modal modal-open">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg">Approve &amp; Rename</h3>
-            <p className="text-sm text-base-content/70 mt-2">
-              Approve ingredient &quot;{approveItem.name}&quot;. Optionally change the name.
-            </p>
-            <div className="form-control mt-4">
-              <label className="label">
-                <span className="label-text">Name</span>
-              </label>
-              <input
-                type="text"
-                className="input input-bordered"
-                value={approveNewName}
-                onChange={(e) => setApproveNewName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleApproveWithRename()}
-              />
-            </div>
-            <div className="modal-action">
-              <button
-                className="btn btn-ghost"
-                onClick={() => {
-                  setApproveModalOpen(false);
-                  setApproveItem(null);
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn btn-success"
-                onClick={handleApproveWithRename}
-                disabled={saving || !approveNewName.trim()}
-              >
-                {saving ? <span className="loading loading-spinner loading-sm" /> : "Approve"}
-              </button>
-            </div>
-          </div>
-          <div
-            className="modal-backdrop bg-black/50"
-            onClick={() => {
-              setApproveModalOpen(false);
-              setApproveItem(null);
-            }}
-          />
-        </div>
+      {approveItem && (
+        <IngredientApproveModal
+          item={approveItem}
+          onApprove={handleApproveWithRename}
+          onClose={() => setApproveItem(null)}
+        />
       )}
 
-      {/* Reject Modal */}
-      {rejectModalOpen && rejectItem && (
-        <div className="modal modal-open">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg">Reject Ingredient</h3>
-            <p className="text-sm text-base-content/70 mt-2">
-              Reject ingredient &quot;{rejectItem.name}&quot;. This will permanently delete it and
-              remove it from all recipes.
-            </p>
-            <div className="form-control mt-4">
-              <label className="label">
-                <span className="label-text">Reason (required)</span>
-              </label>
-              <textarea
-                className="textarea textarea-bordered"
-                value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
-                placeholder="Explain why this ingredient is rejected..."
-                rows={3}
-              />
-            </div>
-            <div className="modal-action">
-              <button
-                className="btn btn-ghost"
-                onClick={() => {
-                  setRejectModalOpen(false);
-                  setRejectItem(null);
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                className="btn btn-error"
-                onClick={handleReject}
-                disabled={saving || !rejectReason.trim()}
-              >
-                {saving ? <span className="loading loading-spinner loading-sm" /> : "Reject"}
-              </button>
-            </div>
-          </div>
-          <div
-            className="modal-backdrop bg-black/50"
-            onClick={() => {
-              setRejectModalOpen(false);
-              setRejectItem(null);
-            }}
-          />
-        </div>
+      {rejectItem && (
+        <IngredientRejectModal
+          item={rejectItem}
+          onReject={handleReject}
+          onClose={() => setRejectItem(null)}
+        />
       )}
 
       {ConfirmDialog}
