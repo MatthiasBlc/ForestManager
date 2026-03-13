@@ -308,11 +308,9 @@ Frontend components :
 - [x] Frontend : 50% statements, 50% branches (vitest.config.ts)
 - [x] CI : `npx vitest run --coverage` dans GitHub Actions (echoue si seuil non atteint)
 
-### G4 - Tests E2E (differe)
+### G4 - Tests E2E (externalise)
 
-- [ ] Evaluer Playwright vs Cypress
-- [ ] POC sur 1 flux critique (signup → create recipe)
-- [ ] Decider si on integre dans le CI
+- [x] Externalise en feature dediee : `docs/features/e2e-testing/`
 
 ---
 

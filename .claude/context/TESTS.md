@@ -49,7 +49,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Backend : 91.81% statements, 83.31% branches (seuil: 80%/70%)
 - Frontend : 66.44% statements, 76.31% branches (seuil: 50%/50%)
 
-### Backend Integration (29 fichiers, ~678 tests)
+### Backend Integration (33 fichiers, ~665 tests)
 
 | Fichier                     | Module                                                                        | Tests |
 | --------------------------- | ----------------------------------------------------------------------------- | ----- |
@@ -84,31 +84,38 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | recipeImage.test.ts         | Recipe image upload endpoints (presigned URL, confirm, delete, permissions)   | 12    |
 | communityImage.test.ts      | Community image upload endpoints (presigned URL, confirm, delete, role-based) | 13    |
 | imageCleanup.test.ts        | Image cleanup cron (recipes, communities, retention, error resilience)        | 8     |
+| recipeImport.test.ts        | Recipe import endpoint (auth, validation, SSRF)                               | 6     |
+| users.test.ts               | User profile update (username, email, password)                               | 4     |
 
-### Backend Unit (8 fichiers, ~69 tests)
+### Backend Unit (10 fichiers, ~137 tests)
 
 | Fichier                              | Module                                                                                   | Tests |
 | ------------------------------------ | ---------------------------------------------------------------------------------------- | ----- |
 | eventEmitter.test.ts                 | Event emitter                                                                            | 3     |
 | pagination.test.ts                   | parsePagination, buildPaginationMeta                                                     | 14    |
 | validation.test.ts                   | normalizeNames, isValidHttpUrl, constants, validateServings, validateTime, validateSteps | 37    |
-| responseFormatters.test.ts           | formatTags, formatIngredients, formatSteps                                               | 7     |
+| responseFormatters.test.ts           | formatTags, formatIngredients, formatSteps                                               | 8     |
 | middleware/auth.test.ts              | requireAuth                                                                              | 4     |
 | middleware/requireSuperAdmin.test.ts | requireSuperAdmin, requireAdminSession                                                   | 6     |
 | middleware/security.test.ts          | requireHttps, rateLimiters, helmet                                                       | 5     |
+| middleware/csrf.test.ts              | CSRF protection middleware                                                               | 2     |
 | storageService.test.ts               | S3/MinIO service (presigned URL, head, delete, validate)                                 | 10    |
+| recipeImportService.test.ts          | Recipe import (URL validation, SSRF, JSON-LD parsing, ingredient parsing)                | 48    |
 
-### Frontend Unit (62 fichiers, ~404 tests)
+### Frontend Unit (63 fichiers, ~469 tests)
 
 | Fichier                                         | Composant                                                             | Tests |
 | ----------------------------------------------- | --------------------------------------------------------------------- | ----- |
 | AuthContext.test.tsx                            | Context auth user                                                     | 6     |
 | AdminAuthContext.test.tsx                       | Context auth admin                                                    | 7     |
+| ThemeContext.test.tsx                           | Context theme (forest/winter)                                         | 7     |
+| SocketContext.test.tsx                          | Context Socket.IO                                                     | 2     |
 | LoginModal.test.tsx                             | Modal login                                                           | 6     |
 | Modal.test.tsx                                  | Composant modal                                                       | 4     |
-| SignUpPage.test.tsx                             | Page inscription                                                      | 6     |
+| ErrorBoundary.test.tsx                          | Error boundary React                                                  | 2     |
+| SignUpPage.test.tsx                             | Page inscription                                                      | 7     |
 | ProtectedRoute.test.tsx                         | Guard user                                                            | 5     |
-| NavBar.test.tsx                                 | Navigation                                                            | 4     |
+| NavBar.test.tsx                                 | Navigation                                                            | 6     |
 | AdminProtectedRoute.test.tsx                    | Guard admin                                                           | 4     |
 | AdminLoginPage.test.tsx                         | Page login admin                                                      | 8     |
 | AdminDashboardPage.test.tsx                     | Page dashboard                                                        | 4     |
@@ -119,12 +126,13 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | pages/admin/AdminFeaturesPage.test.tsx          | Page features admin                                                   | 6     |
 | pages/admin/AdminCommunitiesPage.test.tsx       | Page communities admin                                                | 8     |
 | pages/admin/AdminActivityPage.test.tsx          | Page activity admin                                                   | 5     |
-| RecipeCard.test.tsx                             | Carte recette                                                         | 8     |
-| RecipeFilters.test.tsx                          | Filtres recettes                                                      | 8     |
-| TagSelector.test.tsx                            | Selecteur tags                                                        | 6     |
-| IngredientList.test.tsx                         | Liste ingredients (autocomplete, units, PENDING)                      | 8     |
-| UnitSelector.test.tsx                           | Selecteur unites par categorie                                        | 7     |
-| form/StepEditor.test.tsx                        | Editeur etapes numerotees reorder/delete                              | 8     |
+| RecipeCard.test.tsx                             | Carte recette (+ image)                                               | 12    |
+| RecipeFilters.test.tsx                          | Filtres recettes                                                      | 9     |
+| TagSelector.test.tsx                            | Selecteur tags                                                        | 9     |
+| TagBadge.test.tsx                               | Badge tag avec style pending/approved                                 | 10    |
+| IngredientList.test.tsx                         | Liste ingredients (autocomplete, units, PENDING)                      | 10    |
+| UnitSelector.test.tsx                           | Selecteur unites par categorie                                        | 8     |
+| form/StepEditor.test.tsx                        | Editeur etapes numerotees reorder/delete                              | 9     |
 | RecipesPage.test.tsx                            | Page recettes                                                         | 3     |
 | MainLayout.test.tsx                             | Layout principal                                                      | 6     |
 | Sidebar.test.tsx                                | Sidebar navigation                                                    | 10    |
@@ -137,7 +145,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | InviteUserModal.test.tsx                        | Modal invitation                                                      | 5     |
 | ActivityFeed.test.tsx                           | Feed activite                                                         | 8     |
 | ShareRecipeModal.test.tsx                       | Modal partage recette                                                 | 7     |
-| recipes/SuggestTagModal.test.tsx                | Modal suggestion tag                                                  | 5     |
+| recipes/SuggestTagModal.test.tsx                | Modal suggestion tag                                                  | 6     |
 | recipes/TagSuggestionsList.test.tsx             | Liste suggestions tags owner                                          | 5     |
 | recipes/TimeBadges.test.tsx                     | Badges temps prep/cuisson/repos/total                                 | 7     |
 | recipes/ServingsSelector.test.tsx               | Selecteur portions -/input/+                                          | 6     |
@@ -154,12 +162,13 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | utils/formatDuration.test.ts                    | Format duree min → "1h30"                                             | 4     |
 | utils/scaleQuantity.test.ts                     | Scale proportionnel arrondi 2 dec                                     | 8     |
 | utils/communityEvents.test.ts                   | Community events bus                                                  | 2     |
+| services/recipeParser.test.ts                   | Parsing texte brut recette (ingredients, etapes, metadonnees)         | 65    |
 | pages/DashboardPage.test.tsx                    | Page dashboard user                                                   | 8     |
 | pages/ProfilePage.test.tsx                      | Page profil user                                                      | 8     |
 | pages/NotFoundPage.test.tsx                     | Page 404                                                              | 2     |
-| pages/RecipeFormPage.test.tsx                   | Page formulaire recette                                               | 2     |
-| proposals/ProposeModificationModal.test.tsx     | Modal proposition avec ingredients                                    | 7     |
-| proposals/ProposalsList.test.tsx                | Liste propositions (diff ingredients, accept/reject)                  | 7     |
+| pages/RecipeFormPage.test.tsx                   | Page formulaire recette                                               | 5     |
+| proposals/ProposeModificationModal.test.tsx     | Modal proposition avec ingredients                                    | 9     |
+| proposals/ProposalsList.test.tsx                | Liste propositions (diff ingredients, accept/reject)                  | 6     |
 
 ## Couverture cible
 

@@ -38,7 +38,7 @@ npx prisma studio              # DB GUI :5555
 
 ## Phase actuelle
 
-**Phase 15** - Photo Upload System (MinIO) : EN COURS.
+**Phase 16** - Recipe Import : EN COURS.
 Voir `.claude/context/PROGRESS.md` pour le detail et les liens vers spec/roadmap.
 
 ## Codes erreur
@@ -129,6 +129,9 @@ Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une 
 | **Feature : Audit Refactorisation** |                                                                     |
 | Spec Audit Refactorisation          | `docs/features/audit-refactorisation/SPEC_AUDIT_REFACTORISATION.md` |
 | Roadmap Audit Refactorisation       | `docs/features/audit-refactorisation/ROADMAP.md`                    |
+| **Feature : E2E Testing**           |                                                                     |
+| Spec E2E Testing                    | `docs/features/e2e-testing/SPEC_E2E_TESTING.md`                     |
+| Roadmap E2E Testing                 | `docs/features/e2e-testing/ROADMAP.md`                              |
 | **Archive MVP**                     |                                                                     |
 | Regles metier                       | `docs/mvp/BUSINESS_RULES.md`                                        |
 | User stories                        | `docs/mvp/USER_STORIES.md`                                          |

@@ -148,7 +148,7 @@
 
 - [x] Mettre a jour `.claude/context/API_MAP.md` (nouveau endpoint)
 - [x] Mettre a jour `.claude/context/FILE_MAP.md` (nouveaux fichiers)
-- [ ] Mettre a jour `.claude/context/PROGRESS.md`
+- [x] Mettre a jour `.claude/context/PROGRESS.md`
 
 ---
 
@@ -167,8 +167,8 @@ Phases A et B sont independantes et peuvent etre developpees en parallele.
 
 ## Resume tests
 
-- **Frontend** : 463 tests (59 parser + 404 existants)
-- **Backend** : 798 tests (52 import + 746 existants)
+- **Frontend** : 469 tests (65 parser + 404 existants)
+- **Backend** : 802 tests (56 import + 746 existants)
 
 ---
 

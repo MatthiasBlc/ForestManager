@@ -52,6 +52,7 @@ middleware/
 ├── community.ts       # memberOf, requireCommunityRole
 ├── httpLogger.ts      # pino-http middleware (remplace morgan)
 ├── security.ts        # helmet, CORS, rate limiting
+├── csrf.ts            # CSRF protection middleware
 └── validateUUID.ts    # Validation UUID v4 dans les params
 ```
 
@@ -145,7 +146,8 @@ __tests__/
 │   └── middleware/
 │       ├── auth.test.ts           # requireAuth
 │       ├── requireSuperAdmin.test.ts # requireSuperAdmin, requireAdminSession
-│       └── security.test.ts       # requireHttps, rate limiters
+│       ├── security.test.ts       # requireHttps, rate limiters
+│       └── csrf.test.ts           # CSRF protection
 └── integration/
     ├── websocket.test.ts
     ├── activity.test.ts
@@ -161,6 +163,8 @@ __tests__/
     ├── adminAuth.test.ts
     ├── adminTags.test.ts
     ├── adminIngredients.test.ts
+    ├── adminUnits.test.ts
+    ├── adminRecipes.test.ts
     ├── adminFeatures.test.ts
     ├── adminCommunities.test.ts
     ├── adminDashboard.test.ts
@@ -171,12 +175,13 @@ __tests__/
     ├── notificationService.test.ts
     ├── notifications.test.ts
     ├── tagPreferences.test.ts
-    ├── websocket.test.ts
+    ├── tagSuggestions.test.ts
     ├── notificationCleanup.test.ts
     ├── recipeImport.test.ts       # Recipe import endpoint (auth, validation, SSRF)
     ├── recipeImage.test.ts        # Recipe image upload endpoints
     ├── communityImage.test.ts     # Community image upload endpoints
-    └── imageCleanup.test.ts       # Image cleanup cron job
+    ├── imageCleanup.test.ts       # Image cleanup cron job
+    └── users.test.ts              # User profile update
 ```
 
 ---
@@ -390,6 +395,8 @@ __tests__/
     │       ├── AdminFeaturesPage.test.tsx
     │       ├── AdminCommunitiesPage.test.tsx
     │       └── AdminActivityPage.test.tsx
+    ├── services/
+    │   └── recipeParser.test.ts   # Parsing texte brut recette (65 tests)
     └── components/
         ├── profile/
         │   ├── TagPreferencesSection.test.tsx

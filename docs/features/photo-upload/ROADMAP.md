@@ -171,12 +171,12 @@ Tests manuels : `MANUAL_TESTS.md`
 
 ## Phase H - Tests end-to-end et polish
 
-- [ ] Test manuel du flux complet : upload, affichage, remplacement, suppression
-- [ ] Test du cron de nettoyage (simuler un soft delete > 7 jours)
-- [ ] Verifier le comportement avec des images invalides (trop grandes, mauvais format)
-- [ ] Verifier les permissions (non-auteur ne peut pas uploader)
-- [ ] Tests sur l'environnement preprod
-- [ ] Mettre a jour API_MAP, DB_MODELS, FILE_MAP, TESTS dans `.claude/context/`
+- [x] Test manuel du flux complet : upload, affichage, remplacement, suppression
+- [x] Test du cron de nettoyage (simuler un soft delete > 7 jours)
+- [x] Verifier le comportement avec des images invalides (trop grandes, mauvais format)
+- [x] Verifier les permissions (non-auteur ne peut pas uploader)
+- [x] Tests sur l'environnement preprod
+- [x] Mettre a jour API_MAP, DB_MODELS, FILE_MAP, TESTS dans `.claude/context/`
 
 ### H.1 - Bugfixes preprod (decouverts lors des tests)
 
