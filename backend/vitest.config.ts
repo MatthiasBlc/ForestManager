@@ -16,6 +16,10 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "json", "html"],
       exclude: ["node_modules/**", "dist/**", "src/__tests__/**", "prisma/**", "**/*.d.ts"],
+      thresholds: {
+        statements: 80,
+        branches: 70,
+      },
     },
     // singleFork requis: les tests partagent une seule DB et afterEach
     // fait deleteMany() sur toutes les tables. Des workers paralleles
