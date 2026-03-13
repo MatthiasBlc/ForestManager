@@ -1,6 +1,7 @@
 import { ReactNode, useState, useEffect, useCallback } from "react";
 import { FaBars } from "react-icons/fa";
 import Sidebar from "./Sidebar";
+import { useNotificationToasts } from "../../hooks/useNotificationToasts";
 
 const COMPACT_BREAKPOINT = 768;
 
@@ -9,6 +10,7 @@ interface MainLayoutProps {
 }
 
 const MainLayout = ({ children }: MainLayoutProps) => {
+  useNotificationToasts();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
   const [userPreference, setUserPreference] = useState<boolean | null>(null);
