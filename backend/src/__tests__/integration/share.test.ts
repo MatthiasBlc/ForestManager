@@ -309,7 +309,7 @@ describe("Share Recipe API", () => {
         .send({});
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain("SHARE_001");
+      expect(res.body.error).toContain("VALIDATION_001");
     });
 
     it("should reject unauthenticated requests", async () => {

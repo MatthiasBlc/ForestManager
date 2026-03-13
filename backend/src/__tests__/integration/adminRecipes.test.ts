@@ -223,7 +223,7 @@ describe("Admin Recipes API", () => {
         .send({ title: 123 });
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain("VALIDATION_001");
+      expect(res.body.error).toContain("RECIPE_003");
     });
 
     it("should return 400 when title is too long", async () => {
@@ -236,7 +236,7 @@ describe("Admin Recipes API", () => {
         .send({ title: "a".repeat(201) });
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain("VALIDATION_001");
+      expect(res.body.error).toContain("RECIPE_003");
     });
 
     it("should return 400 when servings is invalid", async () => {
@@ -262,7 +262,7 @@ describe("Admin Recipes API", () => {
         .send({ prepTime: "abc" });
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain("VALIDATION_001");
+      expect(res.body.error).toContain("RECIPE_008");
     });
 
     it("should return 401 without admin authentication", async () => {

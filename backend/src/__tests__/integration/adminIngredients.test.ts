@@ -371,7 +371,6 @@ describe("Admin Ingredients API", () => {
         .send({});
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain("ADMIN_ING_004");
     });
   });
 

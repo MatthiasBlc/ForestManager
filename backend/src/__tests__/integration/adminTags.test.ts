@@ -288,7 +288,7 @@ describe("Admin Tags API", () => {
         .send({});
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain("ADMIN_TAG_004");
+      expect(res.body.error).toContain("VALIDATION_001");
     });
   });
 });

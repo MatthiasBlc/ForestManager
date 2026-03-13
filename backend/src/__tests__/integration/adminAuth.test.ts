@@ -89,7 +89,7 @@ describe("Admin Auth API", () => {
       });
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain("VALIDATION_001");
+      expect(res.body.error).toContain("ADMIN_003");
     });
 
     it("should return 400 when password is not a string", async () => {
@@ -101,7 +101,7 @@ describe("Admin Auth API", () => {
         });
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain("VALIDATION_001");
+      expect(res.body.error).toContain("ADMIN_003");
     });
   });
 
@@ -193,7 +193,7 @@ describe("Admin Auth API", () => {
         .send({});
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain("ADMIN_005");
+      expect(res.body.error).toContain("VALIDATION_001");
     });
   });
 

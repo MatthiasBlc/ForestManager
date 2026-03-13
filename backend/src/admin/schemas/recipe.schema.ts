@@ -1,13 +1,13 @@
 import { z } from "zod";
-import { RECIPE_006, RECIPE_008 } from "../../constants/errorCodes";
+import { RECIPE_003, RECIPE_006, RECIPE_008 } from "../../constants/errorCodes";
 import { MAX_TITLE_LENGTH } from "../../util/validation";
 
 /** Schema for admin updating a recipe */
 export const adminUpdateRecipeSchema = z.object({
   title: z
-    .string()
-    .min(1)
-    .max(MAX_TITLE_LENGTH)
+    .string({ message: RECIPE_003 })
+    .min(1, RECIPE_003)
+    .max(MAX_TITLE_LENGTH, RECIPE_003)
     .transform((val) => val.trim())
     .optional(),
   servings: z

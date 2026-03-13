@@ -180,7 +180,7 @@ describe("Admin Units API", () => {
         .send({ name: "a".repeat(51), abbreviation: "tl", category: "WEIGHT" });
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain("VALIDATION_001");
+      expect(res.body.error).toContain("ADMIN_UNIT_001");
     });
 
     it("should reject abbreviation too long (> 10 chars)", async () => {
@@ -190,7 +190,7 @@ describe("Admin Units API", () => {
         .send({ name: "valid_name", abbreviation: "a".repeat(11), category: "WEIGHT" });
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain("VALIDATION_001");
+      expect(res.body.error).toContain("ADMIN_UNIT_002");
     });
 
     it("should reject non-integer sortOrder", async () => {
