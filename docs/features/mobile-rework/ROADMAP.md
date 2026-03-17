@@ -167,39 +167,39 @@ Optimiser les composants de saisie pour le tactile.
 
 ### 4.1 - IngredientList
 
-- [ ] Layout stacke sur mobile : quantite + unite sur 1 ligne, ingredient sur la ligne suivante
-- [ ] Touch targets 44px sur boutons supprimer/ajouter
+- [x] Layout stacke sur mobile : quantite + unite sur 1 ligne, ingredient sur la ligne suivante
+- [x] Touch targets 44px sur boutons supprimer/ajouter
 
 ### 4.2 - StepEditor
 
-- [ ] Layout mobile : boutons (supprimer, deplacer) sous le textarea au lieu de sur le cote
-- [ ] Touch targets 44px sur boutons drag handle, supprimer
-- [ ] Verification drag-and-drop tactile (@dnd-kit touch sensors)
+- [x] Layout mobile : boutons (supprimer, deplacer) sous le textarea au lieu de sur le cote
+- [x] Touch targets 44px sur boutons drag handle, supprimer
+- [x] Verification drag-and-drop tactile (@dnd-kit touch sensors)
 
 ### 4.3 - SearchSelector
 
-- [ ] Touch targets 44px sur les items du dropdown de resultats
-- [ ] Padding augmente sur les chips (faciliter la suppression)
+- [x] Touch targets 44px sur les items du dropdown de resultats
+- [x] Padding augmente sur les chips (faciliter la suppression)
 
 ### 4.4 - RecipeCard
 
-- [ ] Touch targets 44px sur les boutons d'action (edit, delete, share)
-- [ ] Espacement suffisant entre les boutons
+- [x] Touch targets 44px sur les boutons d'action (edit, delete, share)
+- [x] Espacement suffisant entre les boutons
 
 ### 4.5 - Modales complexes
 
-- [ ] `ProposeModificationModal.tsx` : plein ecran sur mobile (`inset-0` au lieu de modal centree)
-- [ ] Gestion back button via `history.pushState` si necessaire
+- [x] `ProposeModificationModal.tsx` : plein ecran sur mobile (`inset-0` au lieu de modal centree)
+- [x] Gestion back button via `history.pushState` si necessaire
 
 ### 4.6 - Upload images
 
-- [ ] `ImageUpload.tsx` / `ImagePicker.tsx` : texte adapte au tactile ("Appuyez pour ajouter" au lieu de "Glissez-deposez")
+- [x] `ImageUpload.tsx` / `ImagePicker.tsx` : texte adapte au tactile ("Appuyez pour ajouter" au lieu de "Glissez-deposez")
 
 ### 4.7 - Tests Phase 4
 
-- [ ] Tests IngredientList layout mobile (stacked)
-- [ ] Tests StepEditor layout mobile (boutons en dessous)
-- [ ] Tests ProposeModificationModal plein ecran mobile
+- [x] Tests IngredientList layout mobile (stacked)
+- [x] Tests StepEditor layout mobile (boutons en dessous)
+- [x] Tests ProposeModificationModal plein ecran mobile
 
 ---
 
