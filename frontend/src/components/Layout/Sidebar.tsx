@@ -124,7 +124,7 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
     <div className="flex flex-col h-full">
       {/* Header with toggle button - Desktop only */}
       <div
-        className={`shrink-0 hidden pointer-fine:flex p-3 border-b border-base-300 ${isCompact ? "justify-center" : "justify-between items-center"}`}
+        className={`shrink-0 hidden md:flex p-3 border-b border-base-300 ${isCompact ? "justify-center" : "justify-between items-center"}`}
       >
         {!isCompact && <span className="text-lg font-bold">Menu</span>}
         <button
@@ -139,7 +139,7 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
 
       {/* Mobile header */}
       <div
-        className={`shrink-0 p-3 border-b border-base-300 pointer-fine:hidden ${isCompact ? "text-center" : ""}`}
+        className={`shrink-0 p-3 border-b border-base-300 md:hidden ${isCompact ? "text-center" : ""}`}
       >
         <span className="text-xl font-bold">{isCompact ? "FM" : "Forest Manager"}</span>
       </div>

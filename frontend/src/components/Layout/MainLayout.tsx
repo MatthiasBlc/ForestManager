@@ -44,7 +44,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
   }, [userPreference]);
 
   return (
-    <div className="drawer pointer-fine:drawer-open h-screen overflow-hidden">
+    <div className="drawer md:drawer-open h-screen overflow-hidden">
       {/* Drawer toggle (hidden checkbox for DaisyUI) */}
       <input
         id="main-drawer"
@@ -57,7 +57,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       {/* Main content */}
       <div className="drawer-content flex flex-col h-full overflow-hidden z-0">
         {/* Mobile menu button - only shows on touch devices */}
-        <div className="p-2 border-b border-base-300 pointer-fine:hidden">
+        <div className="p-2 border-b border-base-300 md:hidden">
           <label htmlFor="main-drawer" className="btn btn-ghost btn-sm drawer-button">
             <FaBars className="w-4 h-4" />
             <span className="ml-2">Menu</span>
@@ -65,11 +65,11 @@ const MainLayout = ({ children }: MainLayoutProps) => {
         </div>
 
         {/* Page content */}
-        <main className="flex-1 p-4 pointer-fine:p-6 overflow-y-auto">{children}</main>
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto">{children}</main>
       </div>
 
       {/* Sidebar drawer */}
-      <div className="drawer-side z-40 pointer-fine:z-20">
+      <div className="drawer-side z-40 md:z-20">
         <label htmlFor="main-drawer" aria-label="close sidebar" className="drawer-overlay" />
         <aside
           className={`bg-base-200 h-full border-r border-base-300 transition-all duration-300 relative z-50 ${
