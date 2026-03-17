@@ -7,6 +7,7 @@ import { formatRelativeTime } from "../../utils/formatTime";
 import { useUnreadCount } from "../../hooks/useUnreadCount";
 import { useNotifications } from "../../hooks/useNotifications";
 import { useClickOutside } from "../../hooks/useClickOutside";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 function formatBadgeCount(count: number): string {
   return count > 99 ? "99+" : String(count);
@@ -139,6 +140,7 @@ const GroupedNotificationItem = ({ notification, onClick }: GroupedNotificationI
 
 const NotificationDropdown = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const autoMarkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -184,6 +186,10 @@ const NotificationDropdown = () => {
   }, [isOpen, unreadCount, notifications, markAsRead, refreshCount]);
 
   const handleToggle = () => {
+    if (isMobile) {
+      navigate("/notifications");
+      return;
+    }
     const willOpen = !isOpen;
     setIsOpen(willOpen);
     if (willOpen) {
