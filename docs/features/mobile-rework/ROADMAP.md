@@ -121,43 +121,43 @@ Fixer les debordements et les layouts casses.
 
 ### 3.1 - RecipeDetailPage
 
-- [ ] Action buttons (6) : remplacer par un bouton "..." ouvrant un `ActionSheet` sur mobile
-- [ ] Image hero : hauteur `h-48` au lieu de `h-64` sur mobile
-- [ ] Layout general : adaptation responsive existante a verifier
+- [x] Action buttons (6) : remplacer par un bouton "..." ouvrant un `ActionSheet` sur mobile
+- [x] Image hero : hauteur `h-48` au lieu de `h-64` sur mobile
+- [x] Layout general : adaptation responsive existante a verifier
 
 ### 3.2 - CommunityDetailPage
 
-- [ ] SidePanel : `BottomSheet` sur mobile au lieu du panneau lateral
-- [ ] Boutons header : labels visibles au lieu de tooltips sur mobile (touch targets)
-- [ ] Suppression du resize handle sur mobile (inutile en BottomSheet)
+- [x] SidePanel : `BottomSheet` sur mobile au lieu du panneau lateral
+- [x] Boutons header : labels visibles au lieu de tooltips sur mobile (touch targets)
+- [x] Suppression du resize handle sur mobile (inutile en BottomSheet)
 
 ### 3.3 - Filtres recettes
 
-- [ ] `RecipeFilters.tsx` : supprimer `min-w-[200px]` sur mobile
-- [ ] Layout vertical (un filtre par ligne) sur mobile
-- [ ] Filtres repliables : bouton "Filtres" avec badge nombre actifs, collapse/expand slide-down
+- [x] `RecipeFilters.tsx` : supprimer `min-w-[200px]` sur mobile
+- [x] Layout vertical (un filtre par ligne) sur mobile
+- [x] Filtres repliables : bouton "Filtres" avec badge nombre actifs, collapse/expand slide-down
 
 ### 3.4 - Listes et grilles
 
-- [ ] `MembersList.tsx` : cartes au lieu de table sur mobile
-- [ ] `RecipesPageLoggedInView.tsx` : masquer toggle card/list sur mobile, forcer card view
-- [ ] `CommunityRecipesList.tsx` : idem, forcer card view mobile
+- [x] `MembersList.tsx` : cartes au lieu de table sur mobile
+- [x] `RecipesPageLoggedInView.tsx` : masquer toggle card/list sur mobile, forcer card view
+- [x] `CommunityRecipesList.tsx` : idem, forcer card view mobile
 
 ### 3.5 - Pages formulaires
 
-- [ ] `RecipeFormPage.tsx` : stacker titre + bouton import verticalement sur mobile
-- [ ] `NotificationsPage.tsx` : layout filtres adapte mobile (vertical, toggle en dessous)
+- [x] `RecipeFormPage.tsx` : stacker titre + bouton import verticalement sur mobile
+- [x] `NotificationsPage.tsx` : layout filtres adapte mobile (vertical, toggle en dessous)
 
 ### 3.6 - Etats vides
 
-- [ ] CTA dans la thumb zone (centre-bas), boutons 48px (`btn-lg`), messages courts
-- [ ] Concerne : `DataContainer.tsx`, `DashboardPage.tsx`, `RecipesPageLoggedInView.tsx`, `CommunityRecipesList.tsx`
+- [x] CTA dans la thumb zone (centre-bas), boutons 48px (`btn-lg`), messages courts
+- [x] Concerne : `DataContainer.tsx`, `DashboardPage.tsx`, `RecipesPageLoggedInView.tsx`, `CommunityRecipesList.tsx`
 
 ### 3.7 - Tests Phase 3
 
-- [ ] Tests visuels RecipeDetailPage (ActionSheet au lieu de boutons en ligne)
-- [ ] Tests MembersList (cards vs table selon viewport)
-- [ ] Tests filtres repliables (collapse/expand, badge compteur)
+- [x] Tests visuels RecipeDetailPage (ActionSheet au lieu de boutons en ligne)
+- [x] Tests MembersList (cards vs table selon viewport)
+- [x] Tests filtres repliables (collapse/expand, badge compteur)
 
 ---
 
