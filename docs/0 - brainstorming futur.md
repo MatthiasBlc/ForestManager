@@ -101,31 +101,14 @@ Bottom tab bar, bottom sheets, breakpoints md:, touch targets 44px, safe areas, 
 
 Des codes erreurs utilisent des string literal au lieu de constantes car le code erreur est le même. Peut être qu'il faudrait créer de nouveaux code erreur pour ces cas spécifiques et les centraliser pour éviter les string literal et les doublons.
 
-## Version application ?
-
-comment faire ?
-
 ## système + page de changelog automatique
 
-(Bouton à ajouter dans le footer du menu sidebar lorsqu'un user est connecté)
+(Bouton pour y accéder à ajouter dans le footer du menu sidebar lorsqu'un user est connecté)
 Le changelog représente des blocs de texte type "blog" du plus récent au plus ancien. Lorsqu'une merge à Master est faite et validée, lors de la phase de "deploy_prod", un résumé de tout les commits de manière organisé (Nouvelle feature, updates, bug) doit être généré et stocké en base.
 L'idée est d'avoir un véritable changelog automatisé. Pas besoin de retranscrire tout ce qui touche au tests, déploiement, update de docs etc. Il faut retranscrire uniquement ce qui impacte une correction ou une évolution de l'expérience utilisateur.
 Dans l'interface admin, il faut pouvoir modifier et supprimer ces message (toujours avec une confirmation de validation)
 
 - Mise en place d'un système de version propre pour suivre les patch du changelog ?
-
-## upload de photo suite
-
-faire ne sorte que les photos de communauté, s'il y en a une, soient utilisée pour la miniature de la communauté dans la sidebar
-
-## Mobile v2 (post rework mobile v1)
-
-- **Swipe gestures** : swipe depuis le bord gauche pour ouvrir le drawer sidebar, swipe down pour fermer les bottom sheets, swipe-back pour naviguer en arriere. Necessite une gestion fine des conflits avec le scroll horizontal/vertical.
-- **Long-press sur RecipeCard** : ouvrir l'ActionSheet (Edit, Delete, Share) via long-press au lieu du bouton "...". Pattern standard iOS/Android. Conflit potentiel avec le scroll de la liste a gerer.
-- **Pull-to-refresh** : sur les listes (recettes, communautes, notifications). Necessite un composant custom ou une lib.
-- **Haptic feedback** : `navigator.vibrate()` sur les actions de confirmation (suppression, validation de proposition). Support navigateur variable.
-
-## Bouton pour exporter ses recettes ou celles d'une de nos communautés (backup local)
 
 ## Gestionnaire de planning de repas dans une communauté
 
@@ -147,6 +130,24 @@ Possibilité de marquer un article comme acheté.
 Archiver une liste.
 avoir des sous listes suivant les "type de shop favoris" (type de shop = supermarché, boucherie, poissonnerie, etc).
 poivoir associer les ingrédients et articles à un shop favori.
+
+## upload de photo suite
+
+faire ne sorte que les photos de communauté, s'il y en a une, soient utilisée pour la miniature de la communauté dans la sidebar
+
+## Mobile v2 (post rework mobile v1)
+
+- **Swipe gestures** : swipe depuis le bord gauche pour ouvrir le drawer sidebar, swipe down pour fermer les bottom sheets, swipe-back pour naviguer en arriere. Necessite une gestion fine des conflits avec le scroll horizontal/vertical.
+- **Long-press sur RecipeCard** : ouvrir l'ActionSheet (Edit, Delete, Share) via long-press au lieu du bouton "...". Pattern standard iOS/Android. Conflit potentiel avec le scroll de la liste a gerer.
+- **Pull-to-refresh** : sur les listes (recettes, communautes, notifications). Necessite un composant custom ou une lib.
+- **Haptic feedback** : `navigator.vibrate()` sur les actions de confirmation (suppression, validation de proposition). Support navigateur variable.
+
+## Bouton pour exporter ses recettes ou celles d'une de nos communautés (backup local)
+
+## Version application ?
+
+comment faire une application mobile ?
+Est-ce nécessaire ?
 
 ## Recipe Rework v3 - Sous-sections de recettes
 
