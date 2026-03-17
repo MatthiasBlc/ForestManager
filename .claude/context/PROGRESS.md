@@ -4,7 +4,12 @@
 
 Phases 0 a 17 terminees (tags rework, ingredients rework, notifications, recipe v2, input validation, photo upload, recipe import, audit refactorisation, fix HelloFresh).
 
-## Feature en cours : Recipe Import (finalisation)
+## Feature en cours : Mobile Rework (Phase 1 terminee)
+
+- **Spec** : `docs/features/mobile-rework/SPEC_MOBILE_REWORK.md`
+- **Roadmap** : `docs/features/mobile-rework/ROADMAP.md`
+
+## Feature terminee : Recipe Import
 
 - **Spec** : `docs/features/recipe-import/SPEC_RECIPE_IMPORT.md`
 - **Roadmap** : `docs/features/recipe-import/ROADMAP.md`

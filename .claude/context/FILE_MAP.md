@@ -272,6 +272,10 @@ components/
 │   ├── IngredientList.tsx    # Liste ingredients dynamique (autocomplete, units, PENDING badge)
 │   ├── UnitSelector.tsx      # Dropdown unites groupee par categorie
 │   └── StepEditor.tsx        # Editeur etapes numerotees reorder/delete (Phase 13)
+├── mobile/
+│   ├── BottomTabBar.tsx      # Navigation onglets bas mobile (4 tabs, badge notifs, keyboard hide)
+│   ├── BottomSheet.tsx       # Sheet reutilisable (overlay, slide-up, focus trap, Escape)
+│   └── ActionSheet.tsx       # Variante BottomSheet pour listes d'actions contextuelles
 ├── admin/
 │   ├── AdminLayout.tsx       # Layout admin (sidebar + header + outlet)
 │   └── AdminProtectedRoute.tsx # Guard admin
@@ -336,7 +340,9 @@ hooks/
 ├── useCommunityRoom.ts       # Join/leave community socket room
 ├── useNotificationToasts.ts  # Toast notifications from notification:new socket event
 ├── useNotifications.ts       # Paginated notifications with filters and mark as read
-└── useUnreadCount.ts         # Real-time unread count (REST init + WebSocket updates)
+├── useUnreadCount.ts         # Real-time unread count (REST init + WebSocket updates)
+├── useIsMobile.ts            # Detect viewport < 768px via matchMedia (mobile rework)
+└── useKeyboardVisible.ts     # Detect virtual keyboard via visualViewport API (mobile rework)
 utils/
 ├── format.Date.ts            # formatDate, formatDateShort
 ├── formatDuration.ts         # formatDuration: 45→"45 min", 90→"1h30" (Phase 13)
@@ -370,7 +376,9 @@ __tests__/
     │   ├── useSocketEvent.test.ts
     │   ├── useCommunityRoom.test.ts
     │   ├── useNotificationToasts.test.ts
-    │   └── usePaginatedList.test.ts
+    │   ├── usePaginatedList.test.ts
+    │   ├── useIsMobile.test.ts          # Mobile rework (4 tests)
+    │   └── useKeyboardVisible.test.ts   # Mobile rework (5 tests)
     ├── utils/
     │   ├── formatDate.test.ts
     │   ├── formatDuration.test.ts       # Phase 13 (4 tests)
@@ -434,7 +442,11 @@ __tests__/
         ├── Modal.test.tsx
         ├── NavBar.test.tsx
         ├── ProtectedRoute.test.tsx
-        └── ShareRecipeModal.test.tsx
+        ├── ShareRecipeModal.test.tsx
+        └── mobile/
+            ├── BottomTabBar.test.tsx       # Mobile rework (8 tests)
+            ├── BottomSheet.test.tsx        # Mobile rework (9 tests)
+            └── ActionSheet.test.tsx        # Mobile rework (7 tests)
 ```
 
 ---
