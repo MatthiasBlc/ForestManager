@@ -42,7 +42,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~1271 tests)
+## Inventaire des tests (~802 backend + ~469 frontend = ~1271 tests)
 
 ### Couverture (seuils CI)
 

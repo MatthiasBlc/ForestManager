@@ -38,8 +38,7 @@ npx prisma studio              # DB GUI :5555
 
 ## Phase actuelle
 
-**Phase 16** - Recipe Import : EN COURS.
-Voir `.claude/context/PROGRESS.md` pour le detail et les liens vers spec/roadmap.
+MVP complet (phases 0-17). Voir `.claude/context/PROGRESS.md` pour les features en cours.
 
 ## Codes erreur
 
@@ -60,36 +59,33 @@ Si une tache est en cours et que les tokens arrivent a leur limite, generer `.cl
 
 - Juste un lien vers la phase en cours (spec + roadmap dans `docs/features/`)
 - Pas de duplication de la roadmap dans PROGRESS
-- Le detail du MVP est dans `docs/mvp/DEVELOPMENT_ROADMAP.md` (archive, ne plus modifier)
 
 ## Organisation docs/
 
 ```
 docs/
   0 - brainstorming futur.md       # Idees futures (transversal)
-  mvp/                              # Docs du MVP (archive, phases 0-8)
-  features/                         # Specs + roadmaps par feature post-MVP
+  features/                         # Specs par feature post-MVP
     tags-rework/
       SPEC_TAGS_REWORK.md
-      ROADMAP.md
     ingredients-rework/
       SPEC_INGREDIENTS_REWORK.md
-      ROADMAP.md
     recipe-rework-v2/
       SPEC_RECIPE_REWORK_V2.md
-      ROADMAP.md
     notifications-rework/
       SPEC_NOTIFICATIONS_REWORK.md
-      ROADMAP.md
     input-validation-security/
       SPEC_INPUT_VALIDATION.md
-      ROADMAP.md
     photo-upload/
       SPEC_PHOTO_UPLOAD.md
-      ROADMAP.md
       GUIDE_MINIO.md
     audit-refactorisation/
       SPEC_AUDIT_REFACTORISATION.md
+    recipe-import/                    # EN COURS
+      SPEC_RECIPE_IMPORT.md
+      ROADMAP.md
+    e2e-testing/                      # PLANIFIE
+      SPEC_E2E_TESTING.md
       ROADMAP.md
 ```
 
@@ -104,37 +100,19 @@ Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une 
 | Endpoints API complets              | `.claude/context/API_MAP.md`                                        |
 | Schema DB & modeles Prisma          | `.claude/context/DB_MODELS.md`                                      |
 | Arborescence fichiers source        | `.claude/context/FILE_MAP.md`                                       |
-| **Feature : Tags Rework**           |                                                                     |
-| Spec Tags Rework                    | `docs/features/tags-rework/SPEC_TAGS_REWORK.md`                     |
-| Roadmap Tags Rework                 | `docs/features/tags-rework/ROADMAP.md`                              |
-| **Feature : Ingredients Rework**    |                                                                     |
-| Spec Ingredients Rework             | `docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md`       |
-| Roadmap Ingredients Rework          | `docs/features/ingredients-rework/ROADMAP.md`                       |
-| **Feature : Recipe Rework v2**      |                                                                     |
-| Spec Recipe Rework v2               | `docs/features/recipe-rework-v2/SPEC_RECIPE_REWORK_V2.md`           |
-| Roadmap Recipe Rework v2            | `docs/features/recipe-rework-v2/ROADMAP.md`                         |
-| **Feature : Input Validation**      |                                                                     |
-| Spec Input Validation               | `docs/features/input-validation-security/SPEC_INPUT_VALIDATION.md`  |
-| Roadmap Input Validation            | `docs/features/input-validation-security/ROADMAP.md`                |
-| **Feature : Notifications Rework**  |                                                                     |
-| Spec Notifications Rework           | `docs/features/notifications-rework/SPEC_NOTIFICATIONS_REWORK.md`   |
-| Roadmap Notifications Rework        | `docs/features/notifications-rework/ROADMAP.md`                     |
-| **Feature : Photo Upload**          |                                                                     |
-| Spec Photo Upload                   | `docs/features/photo-upload/SPEC_PHOTO_UPLOAD.md`                   |
-| Roadmap Photo Upload                | `docs/features/photo-upload/ROADMAP.md`                             |
-| Guide MinIO                         | `docs/features/photo-upload/GUIDE_MINIO.md`                         |
+| Idees futures                       | `docs/0 - brainstorming futur.md`                                   |
 | **Feature : Recipe Import**         |                                                                     |
 | Spec Recipe Import                  | `docs/features/recipe-import/SPEC_RECIPE_IMPORT.md`                 |
 | Roadmap Recipe Import               | `docs/features/recipe-import/ROADMAP.md`                            |
-| **Feature : Audit Refactorisation** |                                                                     |
-| Spec Audit Refactorisation          | `docs/features/audit-refactorisation/SPEC_AUDIT_REFACTORISATION.md` |
-| Roadmap Audit Refactorisation       | `docs/features/audit-refactorisation/ROADMAP.md`                    |
 | **Feature : E2E Testing**           |                                                                     |
 | Spec E2E Testing                    | `docs/features/e2e-testing/SPEC_E2E_TESTING.md`                     |
 | Roadmap E2E Testing                 | `docs/features/e2e-testing/ROADMAP.md`                              |
-| **Archive MVP**                     |                                                                     |
-| Regles metier                       | `docs/mvp/BUSINESS_RULES.md`                                        |
-| User stories                        | `docs/mvp/USER_STORIES.md`                                          |
-| Architecture & patterns             | `docs/mvp/ARCHITECTURE.md`                                          |
-| Roadmap MVP (archive)               | `docs/mvp/DEVELOPMENT_ROADMAP.md`                                   |
-| Spec API (contrat REST)             | `docs/mvp/API_SPECIFICATION.md`                                     |
+| **Specs features (reference)**      |                                                                     |
+| Tags Rework                         | `docs/features/tags-rework/SPEC_TAGS_REWORK.md`                     |
+| Ingredients Rework                  | `docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md`       |
+| Recipe Rework v2                    | `docs/features/recipe-rework-v2/SPEC_RECIPE_REWORK_V2.md`           |
+| Input Validation                    | `docs/features/input-validation-security/SPEC_INPUT_VALIDATION.md`  |
+| Notifications Rework                | `docs/features/notifications-rework/SPEC_NOTIFICATIONS_REWORK.md`   |
+| Photo Upload                        | `docs/features/photo-upload/SPEC_PHOTO_UPLOAD.md`                   |
+| Guide MinIO                         | `docs/features/photo-upload/GUIDE_MINIO.md`                         |
+| Audit Refactorisation               | `docs/features/audit-refactorisation/SPEC_AUDIT_REFACTORISATION.md` |

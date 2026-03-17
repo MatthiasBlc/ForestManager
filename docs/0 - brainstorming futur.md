@@ -87,12 +87,10 @@ tests
 exemple : https://www.hellofresh.fr/recipes/aubergine-laquee-au-miso-and-oeuf-64fb2da9786cce2df0e01899
 (pas de nom d'ingrédients, des balises html dans les étapes etc )
 
-# Update des docs et petit ménage dans Progress.md ?
+# ~~Update des docs et petit ménage dans Progress.md ?~~ DONE
 
-Mettre à jour les différents doc, archiver les features terminées (pourquoi pas même les delete si ce n'est plus nécessaire, en conservant le nécessaire dans une documentation globale un wiki dans le github ? autre?)
-Mettre à jour les fichiers claude et les suivi du travail.
-On considère ici le mvp propre, ce qui arrivera par la suite sera des features qui viendront se greffer sur la production.
-Progress.md a toujours besoin de conserver des références aux étapes de construction du mvp ?
+docs/mvp/ supprime, roadmaps des features terminees supprimees, PROGRESS/CLAUDE.md simplifies.
+Les specs fonctionnelles (SPEC\_\*.md) sont conservees dans docs/features/ comme reference.
 
 # Version mobile inutilisable
 
