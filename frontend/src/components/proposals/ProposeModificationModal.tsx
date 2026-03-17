@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaPaperPlane } from "react-icons/fa";
 import Modal from "../Modal";
+import { useIsMobile } from "../../hooks/useIsMobile";
 import APIManager from "../../network/api";
 import IngredientList, { IngredientInput } from "../form/IngredientList";
 import StepEditor from "../form/StepEditor";
@@ -59,6 +60,18 @@ const ProposeModificationModal = ({
   );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isMobile = useIsMobile();
+
+  useEffect(() => {
+    if (!isMobile) return;
+    // Push a history entry so the back button closes the modal
+    window.history.pushState({ modal: "propose" }, "");
+    const handlePopState = () => onClose();
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [isMobile, onClose]);
 
   const parseTime = (val: string): number | null => {
     if (val.trim() === "") return null;
@@ -135,7 +148,13 @@ const ProposeModificationModal = ({
   };
 
   return (
-    <Modal onClose={onClose} disableClickOutside={isSubmitting}>
+    <Modal
+      onClose={onClose}
+      disableClickOutside={isSubmitting}
+      className={
+        isMobile ? "!w-full !max-w-full !h-full !max-h-full !rounded-none !m-0" : undefined
+      }
+    >
       <h3 className="font-bold text-lg mb-4">Propose a modification</h3>
       <p className="text-sm text-base-content/70 mb-4">
         Suggest changes to this recipe. The owner can accept your proposal to update the recipe, or
