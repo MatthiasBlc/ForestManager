@@ -106,12 +106,6 @@ Des codes erreurs utilisent des string literal au lieu de constantes car le code
 Spec complete : `docs/features/changelog/SPEC_CHANGELOG.md`
 Generation auto via CI, versioning semver, page user blog-like, CRUD admin, API key CI, conventional commits.
 
-### Idees futures liees au changelog
-
-- **Notification de nouveau changelog** : badge/notification in-app quand une nouvelle version est publiee. Potentiellement une categorie `CHANGELOG` dans NotificationCategory.
-- **Changelog public** : rendre le changelog accessible sans connexion (flag `isPublic` sur le modele)
-- **Markdown dans le contenu** : enrichir les items avec du markdown (liens, gras, etc.)
-
 ## Gestionnaire de planning de repas dans une communauté
 
 Nous sommes ici à notre première nouvelle feature majeure. (penser à utiliser le système de feature)
@@ -206,6 +200,12 @@ Barre de recherche unique (navbar) qui cherche simultanement dans les recettes, 
 Comptage vues (RecipeView, RecipeAnalytics)
 Affichage statistiques sur recettes
 Dashboard analytics utilisateur
+
+### Idees futures liees au changelog
+
+- **Notification de nouveau changelog** : badge/notification in-app quand une nouvelle version est publiee. Potentiellement une categorie `CHANGELOG` dans NotificationCategory.
+- **Changelog public** : rendre le changelog accessible sans connexion (flag `isPublic` sur le modele)
+- **Markdown dans le contenu** : enrichir les items avec du markdown (liens, gras, etc.)
 
 ---
 
