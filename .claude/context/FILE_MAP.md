@@ -390,9 +390,10 @@ __tests__/
     │   ├── DashboardPage.test.tsx
     │   ├── HomePage.test.tsx
     │   ├── NotFoundPage.test.tsx
-    │   ├── ProfilePage.test.tsx
+    │   ├── ProfilePage.test.tsx             # incl. Mobile rework Phase 2 (3 tests)
     │   ├── RecipesPage.test.tsx
     │   ├── RecipeFormPage.test.tsx
+    │   ├── RecipeDetailPage.mobile.test.tsx  # Mobile rework Phase 3 (4 tests)
     │   ├── SignUpPage.test.tsx
     │   └── admin/
     │       ├── AdminLoginPage.test.tsx
@@ -420,6 +421,7 @@ __tests__/
         ├── recipes/
         │   ├── RecipeCard.test.tsx
         │   ├── RecipeFilters.test.tsx
+        │   ├── RecipeFilters.mobile.test.tsx    # Mobile rework Phase 3 (8 tests)
         │   ├── TimeBadges.test.tsx           # Phase 13 (7 tests)
         │   ├── ServingsSelector.test.tsx     # Phase 13 (6 tests)
         │   ├── SuggestTagModal.test.tsx
@@ -427,18 +429,22 @@ __tests__/
         │   └── TagSuggestionsList.test.tsx
         ├── proposals/
         │   ├── ProposeModificationModal.test.tsx
+        │   ├── ProposeModificationModal.mobile.test.tsx  # Mobile rework Phase 4 (3 tests)
         │   └── ProposalsList.test.tsx
         ├── form/
         │   ├── TagSelector.test.tsx
         │   ├── IngredientList.test.tsx
+        │   ├── IngredientList.mobile.test.tsx  # Mobile rework Phase 4 (3 tests)
         │   ├── UnitSelector.test.tsx
-        │   └── StepEditor.test.tsx          # Phase 13 (8 tests)
+        │   ├── StepEditor.test.tsx          # Phase 13 (8 tests)
+        │   └── StepEditor.mobile.test.tsx   # Mobile rework Phase 4 (3 tests)
         ├── ActivityFeed.test.tsx
         ├── ErrorBoundary.test.tsx
         ├── InviteCard.test.tsx
         ├── InviteUserModal.test.tsx
         ├── LoginModal.test.tsx
         ├── MembersList.test.tsx
+        ├── MembersList.mobile.test.tsx    # Mobile rework Phase 3 (4 tests)
         ├── Modal.test.tsx
         ├── NavBar.test.tsx
         ├── ProtectedRoute.test.tsx

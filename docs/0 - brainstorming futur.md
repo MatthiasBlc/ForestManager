@@ -92,7 +92,7 @@ exemple : https://www.hellofresh.fr/recipes/aubergine-laquee-au-miso-and-oeuf-64
 docs/mvp/ supprime, roadmaps des features terminees supprimees, PROGRESS/CLAUDE.md simplifies.
 Les specs fonctionnelles (SPEC\_\*.md) sont conservees dans docs/features/ comme reference.
 
-# ~~Version mobile inutilisable~~ SPEC PRETE
+# ~~Version mobile inutilisable~~ DONE
 
 Spec complete : `docs/features/mobile-rework/SPEC_MOBILE_REWORK.md`
 Bottom tab bar, bottom sheets, breakpoints md:, touch targets 44px, safe areas, layout adaptatif par composant.
