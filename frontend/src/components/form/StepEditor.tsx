@@ -5,10 +5,12 @@ import {
   closestCenter,
   KeyboardSensor,
   PointerSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
 } from "@dnd-kit/core";
+import { useIsMobile } from "../../hooks/useIsMobile";
 import {
   SortableContext,
   sortableKeyboardCoordinates,
@@ -35,12 +37,21 @@ interface SortableStepProps {
   step: StepWithId;
   index: number;
   total: number;
+  isMobile: boolean;
   onUpdate: (index: number, instruction: string) => void;
   onRemove: (index: number) => void;
   onMove: (index: number, direction: -1 | 1) => void;
 }
 
-const SortableStep = ({ step, index, total, onUpdate, onRemove, onMove }: SortableStepProps) => {
+const SortableStep = ({
+  step,
+  index,
+  total,
+  isMobile,
+  onUpdate,
+  onRemove,
+  onMove,
+}: SortableStepProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: step.id,
   });
@@ -50,6 +61,66 @@ const SortableStep = ({ step, index, total, onUpdate, onRemove, onMove }: Sortab
     transition,
     opacity: isDragging ? 0.5 : 1,
   };
+
+  const btnSize = isMobile
+    ? "btn btn-ghost btn-sm min-h-[44px] min-w-[44px]"
+    : "btn btn-ghost btn-xs";
+
+  if (isMobile) {
+    return (
+      <div ref={setNodeRef} style={style} className="space-y-2">
+        <div className="flex gap-2 items-start">
+          <button
+            type="button"
+            className={`${btnSize} cursor-grab active:cursor-grabbing`}
+            aria-label="Drag to reorder"
+            {...attributes}
+            {...listeners}
+          >
+            <FaGripVertical />
+          </button>
+          <div className="badge badge-neutral mt-2">{index + 1}</div>
+          <textarea
+            className="textarea textarea-bordered flex-1"
+            value={step.instruction}
+            onChange={(e) => onUpdate(index, e.target.value)}
+            rows={3}
+            placeholder={`Etape ${index + 1}...`}
+            maxLength={5000}
+          />
+        </div>
+        <div className="flex gap-2 justify-end">
+          <button
+            type="button"
+            className={btnSize}
+            onClick={() => onMove(index, -1)}
+            disabled={index === 0}
+            aria-label="Move up"
+          >
+            <FaArrowUp />
+          </button>
+          <button
+            type="button"
+            className={btnSize}
+            onClick={() => onMove(index, 1)}
+            disabled={index === total - 1}
+            aria-label="Move down"
+          >
+            <FaArrowDown />
+          </button>
+          <button
+            type="button"
+            className={`${btnSize} text-error`}
+            onClick={() => onRemove(index)}
+            disabled={total === 1}
+            aria-label="Remove step"
+          >
+            <FaTimes />
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div ref={setNodeRef} style={style} className="flex gap-2 items-start">
@@ -111,9 +182,13 @@ const StepEditor = ({ value, onChange }: StepEditorProps) => {
   const [stepsWithIds, setStepsWithIds] = useState<StepWithId[]>(() =>
     value.map((s) => ({ ...s, id: generateId() }))
   );
+  const isMobile = useIsMobile();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
+    useSensor(TouchSensor, {
+      activationConstraint: { delay: 200, tolerance: 5 },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -177,6 +252,7 @@ const StepEditor = ({ value, onChange }: StepEditorProps) => {
               step={step}
               index={index}
               total={stepsWithIds.length}
+              isMobile={isMobile}
               onUpdate={updateStep}
               onRemove={removeStep}
               onMove={moveStep}
@@ -184,7 +260,11 @@ const StepEditor = ({ value, onChange }: StepEditorProps) => {
           ))}
         </SortableContext>
       </DndContext>
-      <button type="button" className="btn btn-outline btn-sm gap-2" onClick={addStep}>
+      <button
+        type="button"
+        className="btn btn-outline btn-sm min-h-[44px] md:min-h-0 gap-2"
+        onClick={addStep}
+      >
         <FaPlus /> Ajouter une etape
       </button>
     </div>
