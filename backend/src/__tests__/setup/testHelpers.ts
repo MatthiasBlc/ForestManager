@@ -490,13 +490,31 @@ export async function loginAsAdmin(admin: TestAdmin): Promise<string> {
   }
 
   // Step 2: Verifier TOTP (regenerate() cree un nouveau session ID)
-  const totpCode = generateTotpCode(admin.totpSecret);
-  const totpRes = await supertest(app)
+  // Retry once si le code TOTP tombe sur une frontiere de fenetre 30s
+  let totpRes = await supertest(app)
     .post("/api/admin/auth/totp/verify")
     .set("Cookie", step1Cookie)
-    .send({ code: totpCode });
+    .send({ code: generateTotpCode(admin.totpSecret) });
+
+  if (totpRes.status !== 200) {
+    // Attendre que la fenetre TOTP change puis retenter
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    totpRes = await supertest(app)
+      .post("/api/admin/auth/totp/verify")
+      .set("Cookie", step1Cookie)
+      .send({ code: generateTotpCode(admin.totpSecret) });
+  }
+
+  if (totpRes.status !== 200) {
+    throw new Error(
+      `TOTP verification failed with status ${totpRes.status}: ${JSON.stringify(totpRes.body)}`
+    );
+  }
 
   // Capturer le nouveau cookie apres regenerate() du step 2
   const finalCookie = extractSessionCookie(totpRes, "forestmanager_admin_session");
-  return finalCookie || step1Cookie;
+  if (!finalCookie) {
+    throw new Error("Failed to get admin session cookie after TOTP verification");
+  }
+  return finalCookie;
 }
