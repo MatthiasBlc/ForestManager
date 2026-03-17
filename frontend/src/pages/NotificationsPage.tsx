@@ -81,7 +81,7 @@ const NotificationsPage = () => {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 mb-6">
+      <div className="flex flex-col md:flex-row md:items-center gap-3 mb-6">
         {/* Category chips */}
         <div className="flex flex-wrap gap-2">
           <button
@@ -115,7 +115,7 @@ const NotificationsPage = () => {
         </div>
 
         {/* Unread toggle */}
-        <label className="label cursor-pointer gap-2 ml-auto">
+        <label className="label cursor-pointer gap-2 md:ml-auto">
           <span className="label-text text-sm">Non lues uniquement</span>
           <input
             type="checkbox"
