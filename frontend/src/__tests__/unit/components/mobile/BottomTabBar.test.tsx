@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithUserAuth } from "../../../setup/testUtils";
 import BottomTabBar from "../../../../components/mobile/BottomTabBar";
