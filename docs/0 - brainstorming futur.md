@@ -92,10 +92,10 @@ exemple : https://www.hellofresh.fr/recipes/aubergine-laquee-au-miso-and-oeuf-64
 docs/mvp/ supprime, roadmaps des features terminees supprimees, PROGRESS/CLAUDE.md simplifies.
 Les specs fonctionnelles (SPEC\_\*.md) sont conservees dans docs/features/ comme reference.
 
-# Version mobile inutilisable
+# ~~Version mobile inutilisable~~ SPEC PRETE
 
-La version mobile a des boutons hors champs, n'est pas utilisable et a un design contre intuitif. A revoir totalement.
-S'inspirer de la version mobile / app de discord ?
+Spec complete : `docs/features/mobile-rework/SPEC_MOBILE_REWORK.md`
+Bottom tab bar, bottom sheets, breakpoints md:, touch targets 44px, safe areas, layout adaptatif par composant.
 
 # ~~codes erreur doublons : string literal~~ DONE
 
@@ -117,6 +117,13 @@ Dans l'interface admin, il faut pouvoir modifier et supprimer ces message (toujo
 ## upload de photo suite
 
 faire ne sorte que les photos de communauté, s'il y en a une, soient utilisée pour la miniature de la communauté dans la sidebar
+
+## Mobile v2 (post rework mobile v1)
+
+- **Swipe gestures** : swipe depuis le bord gauche pour ouvrir le drawer sidebar, swipe down pour fermer les bottom sheets, swipe-back pour naviguer en arriere. Necessite une gestion fine des conflits avec le scroll horizontal/vertical.
+- **Long-press sur RecipeCard** : ouvrir l'ActionSheet (Edit, Delete, Share) via long-press au lieu du bouton "...". Pattern standard iOS/Android. Conflit potentiel avec le scroll de la liste a gerer.
+- **Pull-to-refresh** : sur les listes (recettes, communautes, notifications). Necessite un composant custom ou une lib.
+- **Haptic feedback** : `navigator.vibrate()` sur les actions de confirmation (suppression, validation de proposition). Support navigateur variable.
 
 ## Bouton pour exporter ses recettes ou celles d'une de nos communautés (backup local)
 

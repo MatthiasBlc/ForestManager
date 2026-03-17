@@ -81,9 +81,11 @@ docs/
       GUIDE_MINIO.md
     audit-refactorisation/
       SPEC_AUDIT_REFACTORISATION.md
-    recipe-import/                    # EN COURS
+    recipe-import/
       SPEC_RECIPE_IMPORT.md
       ROADMAP.md
+    mobile-rework/                    # EN COURS (spec)
+      SPEC_MOBILE_REWORK.md
     e2e-testing/                      # PLANIFIE
       SPEC_E2E_TESTING.md
       ROADMAP.md
@@ -104,6 +106,8 @@ Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une 
 | **Feature : Recipe Import**         |                                                                     |
 | Spec Recipe Import                  | `docs/features/recipe-import/SPEC_RECIPE_IMPORT.md`                 |
 | Roadmap Recipe Import               | `docs/features/recipe-import/ROADMAP.md`                            |
+| **Feature : Mobile Rework**         |                                                                     |
+| Spec Mobile Rework                  | `docs/features/mobile-rework/SPEC_MOBILE_REWORK.md`                 |
 | **Feature : E2E Testing**           |                                                                     |
 | Spec E2E Testing                    | `docs/features/e2e-testing/SPEC_E2E_TESTING.md`                     |
 | Roadmap E2E Testing                 | `docs/features/e2e-testing/ROADMAP.md`                              |
