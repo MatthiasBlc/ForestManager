@@ -207,41 +207,41 @@ Optimiser les composants de saisie pour le tactile.
 
 ### 5.1 - Audit touch targets
 
-- [ ] Audit systematique 44px minimum sur tous les elements interactifs
-- [ ] Corriger les elements detectes en dessous du seuil
+- [x] Audit systematique 44px minimum sur tous les elements interactifs
+- [x] Corriger les elements detectes en dessous du seuil
 
 ### 5.2 - Scroll et spacing
 
-- [ ] Verifier scroll derriere la bottom tab bar (padding-bottom adequat)
-- [ ] Verifier que les derniers elements des listes sont visibles au-dessus de la tab bar
-- [ ] Verifier comportement clavier virtuel (input focus, scroll, tab bar masquee)
+- [x] Verifier scroll derriere la bottom tab bar (padding-bottom adequat)
+- [x] Verifier que les derniers elements des listes sont visibles au-dessus de la tab bar
+- [x] Verifier comportement clavier virtuel (input focus, scroll, tab bar masquee)
 
 ### 5.3 - Tests multi-devices
 
-- [ ] iPhone SE (375px) — plus petit ecran supporte
-- [ ] iPhone 14 (390px) — taille standard
-- [ ] iPhone 14 Pro Max (430px) — grand ecran
-- [ ] Samsung Galaxy (360px) — Android petit
-- [ ] Pixel (412px) — Android standard
-- [ ] Mode paysage sur chaque device
+- [x] iPhone SE (375px) — plus petit ecran supporte
+- [x] iPhone 14 (390px) — taille standard
+- [x] iPhone 14 Pro Max (430px) — grand ecran
+- [x] Samsung Galaxy (360px) — Android petit
+- [x] Pixel (412px) — Android standard
+- [x] Mode paysage sur chaque device
 
 ### 5.4 - Tests themes et accessibilite
 
-- [ ] Theme coffee sur mobile — contraste, lisibilite
-- [ ] Theme winter sur mobile — contraste, lisibilite
-- [ ] `prefers-reduced-motion` : verifier que toutes les animations sont desactivees
+- [x] Theme coffee sur mobile — contraste, lisibilite
+- [x] Theme winter sur mobile — contraste, lisibilite
+- [x] `prefers-reduced-motion` : verifier que toutes les animations sont desactivees
 
 ### 5.5 - Performance
 
-- [ ] Verifier que les re-renders lies a `useIsMobile()` sont minimaux
-- [ ] Profiler la bottom tab bar (pas de re-render a chaque scroll)
-- [ ] Verifier le poids des nouveaux composants sur le bundle
+- [x] Verifier que les re-renders lies a `useIsMobile()` sont minimaux
+- [x] Profiler la bottom tab bar (pas de re-render a chaque scroll)
+- [x] Verifier le poids des nouveaux composants sur le bundle
 
 ### 5.6 - Mise a jour documentation
 
-- [ ] Mettre a jour `.claude/context/FILE_MAP.md` (nouveaux fichiers)
-- [ ] Mettre a jour `.claude/context/PROGRESS.md`
-- [ ] Cocher la feature dans `docs/0 - brainstorming futur.md`
+- [x] Mettre a jour `.claude/context/FILE_MAP.md` (nouveaux fichiers)
+- [x] Mettre a jour `.claude/context/PROGRESS.md`
+- [x] Cocher la feature dans `docs/0 - brainstorming futur.md`
 
 ---
 
