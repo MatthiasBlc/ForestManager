@@ -1,0 +1,3 @@
+-- AlterEnum
+ALTER TYPE "AdminActionType" ADD VALUE 'RECIPE_UPDATED';
+ALTER TYPE "AdminActionType" ADD VALUE 'RECIPE_DELETED';

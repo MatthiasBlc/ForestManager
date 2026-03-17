@@ -1,11 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../../app";
-import { extractSessionCookie } from "../setup/testHelpers";
+import { uniqueSuffix, extractSessionCookie } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
-
-const uniqueSuffix = () =>
-  `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 
 describe("Variants API", () => {
   let recipeCreator: { id: string; username: string; email: string };
@@ -21,11 +18,13 @@ describe("Variants API", () => {
     const suffix = uniqueSuffix();
 
     // Create recipe creator (moderator) via signup
-    const creatorSignup = await request(app).post("/api/auth/signup").send({
-      username: `varcreator_${suffix}`,
-      email: `varcreator_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const creatorSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `varcreator_${suffix}`,
+        email: `varcreator_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     recipeCreatorCookie = extractSessionCookie(creatorSignup)!;
     recipeCreator = (await testPrisma.user.findFirst({
       where: { email: `varcreator_${suffix}@example.com` },
@@ -39,11 +38,13 @@ describe("Variants API", () => {
     community = createRes.body;
 
     // Create member via signup
-    const memberSignup = await request(app).post("/api/auth/signup").send({
-      username: `varmem_${suffix}`,
-      email: `varmem_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const memberSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `varmem_${suffix}`,
+        email: `varmem_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     memberCookie = extractSessionCookie(memberSignup)!;
     member = (await testPrisma.user.findFirst({
       where: { email: `varmem_${suffix}@example.com` },
@@ -59,11 +60,13 @@ describe("Variants API", () => {
     });
 
     // Create non-member via signup
-    const nonMemberSignup = await request(app).post("/api/auth/signup").send({
-      username: `varnonm_${suffix}`,
-      email: `varnonm_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const nonMemberSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `varnonm_${suffix}`,
+        email: `varnonm_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     nonMemberCookie = extractSessionCookie(nonMemberSignup)!;
     _nonMember = (await testPrisma.user.findFirst({
       where: { email: `varnonm_${suffix}@example.com` },
@@ -75,7 +78,8 @@ describe("Variants API", () => {
       .set("Cookie", recipeCreatorCookie)
       .send({
         title: "Original Recipe",
-        content: "Original content for the recipe",
+        servings: 4,
+        steps: [{ instruction: "Original step for the recipe" }],
       });
     communityRecipeId = recipeRes.body.community.id;
   });
@@ -101,7 +105,7 @@ describe("Variants API", () => {
         .set("Cookie", memberCookie)
         .send({
           proposedTitle: "Variant Title",
-          proposedContent: "Variant content",
+          proposedSteps: [{ instruction: "Variant step" }],
         });
 
       // Reject the proposal (creates a variant)
@@ -129,7 +133,7 @@ describe("Variants API", () => {
         .set("Cookie", memberCookie)
         .send({
           proposedTitle: "Variant with Creator",
-          proposedContent: "Content",
+          proposedSteps: [{ instruction: "Step" }],
         });
 
       await request(app)
@@ -146,6 +150,33 @@ describe("Variants API", () => {
       expect(res.body.data[0].creator.username).toBeDefined();
     });
 
+    it("should include servings and times in variant response", async () => {
+      // Create and reject a proposal with servings/times
+      const proposalRes = await request(app)
+        .post(`/api/recipes/${communityRecipeId}/proposals`)
+        .set("Cookie", memberCookie)
+        .send({
+          proposedTitle: "Variant with times",
+          proposedServings: 8,
+          proposedPrepTime: 15,
+          proposedSteps: [{ instruction: "Step" }],
+        });
+
+      await request(app)
+        .post(`/api/proposals/${proposalRes.body.id}/reject`)
+        .set("Cookie", recipeCreatorCookie);
+
+      const res = await request(app)
+        .get(`/api/recipes/${communityRecipeId}/variants`)
+        .set("Cookie", recipeCreatorCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data[0]).toHaveProperty("servings");
+      expect(res.body.data[0]).toHaveProperty("prepTime");
+      expect(res.body.data[0]).toHaveProperty("cookTime");
+      expect(res.body.data[0]).toHaveProperty("restTime");
+    });
+
     it("should allow any community member to view variants", async () => {
       // Create and reject a proposal
       const proposalRes = await request(app)
@@ -153,7 +184,7 @@ describe("Variants API", () => {
         .set("Cookie", memberCookie)
         .send({
           proposedTitle: "Member Visible Variant",
-          proposedContent: "Content",
+          proposedSteps: [{ instruction: "Step" }],
         });
 
       await request(app)
@@ -180,7 +211,7 @@ describe("Variants API", () => {
 
     it("should return 404 for non-existent recipe", async () => {
       const res = await request(app)
-        .get(`/api/recipes/00000000-0000-0000-0000-000000000000/variants`)
+        .get(`/api/recipes/00000000-0000-4000-8000-000000000000/variants`)
         .set("Cookie", recipeCreatorCookie);
 
       expect(res.status).toBe(404);
@@ -188,8 +219,7 @@ describe("Variants API", () => {
     });
 
     it("should return 401 when not authenticated", async () => {
-      const res = await request(app)
-        .get(`/api/recipes/${communityRecipeId}/variants`);
+      const res = await request(app).get(`/api/recipes/${communityRecipeId}/variants`);
 
       expect(res.status).toBe(401);
     });
@@ -201,7 +231,7 @@ describe("Variants API", () => {
         .set("Cookie", memberCookie)
         .send({
           proposedTitle: "First Variant",
-          proposedContent: "Content 1",
+          proposedSteps: [{ instruction: "Step 1" }],
         });
 
       await request(app)
@@ -214,7 +244,7 @@ describe("Variants API", () => {
         .set("Cookie", memberCookie)
         .send({
           proposedTitle: "Second Variant",
-          proposedContent: "Content 2",
+          proposedSteps: [{ instruction: "Step 2" }],
         });
 
       await request(app)
@@ -240,7 +270,7 @@ describe("Variants API", () => {
           .set("Cookie", memberCookie)
           .send({
             proposedTitle: `Variant ${i}`,
-            proposedContent: `Content ${i}`,
+            proposedSteps: [{ instruction: `Step ${i}` }],
           });
 
         await request(app)
@@ -284,7 +314,7 @@ describe("Variants API", () => {
         .set("Cookie", memberCookie)
         .send({
           proposedTitle: "Community 1 Variant",
-          proposedContent: "Content",
+          proposedSteps: [{ instruction: "Step" }],
         });
 
       await request(app)
@@ -295,11 +325,14 @@ describe("Variants API", () => {
       await testPrisma.recipe.create({
         data: {
           title: "Community 2 Variant",
-          content: "Different community content",
+          servings: 4,
           creatorId: recipeCreator.id,
           communityId: community2.id,
           originRecipeId: communityRecipeId,
           isVariant: true,
+          steps: {
+            create: [{ order: 0, instruction: "Different community step" }],
+          },
         },
       });
 

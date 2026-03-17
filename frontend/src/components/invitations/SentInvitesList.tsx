@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { FaTimes, FaPlus } from "react-icons/fa";
 import { CommunityInvite } from "../../models/community";
 import APIManager from "../../network/api";
+import { useConfirm } from "../../hooks/useConfirm";
 import InviteUserModal from "./InviteUserModal";
 
 interface SentInvitesListProps {
@@ -15,6 +16,7 @@ const SentInvitesList = ({ communityId }: SentInvitesListProps) => {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   const loadInvites = async () => {
     try {
@@ -35,7 +37,14 @@ const SentInvitesList = ({ communityId }: SentInvitesListProps) => {
   }, [communityId, statusFilter]);
 
   const handleCancel = async (inviteId: string) => {
-    if (!window.confirm("Cancel this invitation?")) return;
+    if (
+      !(await confirm({
+        message: "Cancel this invitation?",
+        confirmLabel: "Cancel invitation",
+        confirmClass: "btn btn-error",
+      }))
+    )
+      return;
 
     try {
       setCancellingId(inviteId);
@@ -69,10 +78,7 @@ const SentInvitesList = ({ communityId }: SentInvitesListProps) => {
             <option value="CANCELLED">Cancelled</option>
           </select>
         </div>
-        <button
-          className="btn btn-primary btn-sm gap-2"
-          onClick={() => setShowInviteModal(true)}
-        >
+        <button className="btn btn-primary btn-sm gap-2" onClick={() => setShowInviteModal(true)}>
           <FaPlus className="w-3 h-3" />
           Invite user
         </button>
@@ -109,12 +115,17 @@ const SentInvitesList = ({ communityId }: SentInvitesListProps) => {
                   <td>{invite.invitee.username}</td>
                   <td className="text-base-content/60">{invite.invitee.email}</td>
                   <td>
-                    <span className={`badge badge-sm ${
-                      invite.status === "PENDING" ? "badge-warning" :
-                      invite.status === "ACCEPTED" ? "badge-success" :
-                      invite.status === "REJECTED" ? "badge-error" :
-                      "badge-ghost"
-                    }`}>
+                    <span
+                      className={`badge badge-sm ${
+                        invite.status === "PENDING"
+                          ? "badge-warning"
+                          : invite.status === "ACCEPTED"
+                            ? "badge-success"
+                            : invite.status === "REJECTED"
+                              ? "badge-error"
+                              : "badge-ghost"
+                      }`}
+                    >
                       {invite.status}
                     </span>
                   </td>
@@ -125,7 +136,7 @@ const SentInvitesList = ({ communityId }: SentInvitesListProps) => {
                   <td>
                     {invite.status === "PENDING" && (
                       <button
-                        className="btn btn-ghost btn-xs text-error"
+                        className="btn btn-ghost btn-xs min-h-[44px] md:min-h-0 text-error"
                         onClick={() => handleCancel(invite.id)}
                         disabled={cancellingId === invite.id}
                       >
@@ -154,6 +165,8 @@ const SentInvitesList = ({ communityId }: SentInvitesListProps) => {
           onInviteSent={handleInviteSent}
         />
       )}
+
+      {ConfirmDialog}
     </div>
   );
 };

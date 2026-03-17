@@ -1,29 +1,33 @@
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse } from "msw";
 
-const API_URL = 'http://localhost:3001';
+const API_URL = "http://localhost:3001";
 
 // Donnees mock
 export const mockUser = {
-  id: 'test-user-id',
-  username: 'testuser',
-  email: 'test@example.com',
+  id: "test-user-id",
+  username: "testuser",
+  email: "test@example.com",
 };
 
 export const mockAdmin = {
-  id: 'test-admin-id',
-  username: 'testadmin',
-  email: 'admin@example.com',
+  id: "test-admin-id",
+  username: "testadmin",
+  email: "admin@example.com",
 };
 
 export const mockRecipe = {
-  id: 'test-recipe-id',
-  title: 'Test Recipe',
-  content: 'Test recipe content',
+  id: "test-recipe-id",
+  title: "Test Recipe",
+  servings: 4,
+  prepTime: 15,
+  cookTime: 30,
+  restTime: null,
+  steps: [{ id: "step-1", order: 0, instruction: "Test recipe content" }],
   imageUrl: null,
-  creatorId: 'test-user-id',
-  creator: { id: 'test-user-id', username: 'testuser' },
-  tags: [{ id: 'tag-1', name: 'dessert' }],
-  ingredients: [{ id: 'ing-1', name: 'sugar', quantity: '100g', order: 0 }],
+  creatorId: "test-user-id",
+  creator: { id: "test-user-id", username: "testuser" },
+  tags: [{ id: "tag-1", name: "dessert" }],
+  ingredients: [{ id: "ing-1", name: "sugar", quantity: "100g", order: 0 }],
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
 };
@@ -32,31 +36,140 @@ export const mockRecipes = [mockRecipe];
 
 // Mock admin data
 export const mockTags = [
-  { id: 'tag-1', name: 'dessert', recipeCount: 5 },
-  { id: 'tag-2', name: 'dinner', recipeCount: 3 },
-  { id: 'tag-3', name: 'breakfast', recipeCount: 2 },
+  {
+    id: "tag-1",
+    name: "dessert",
+    recipeCount: 5,
+    scope: "GLOBAL" as const,
+    status: "APPROVED" as const,
+    communityId: null,
+    community: null,
+  },
+  {
+    id: "tag-2",
+    name: "dinner",
+    recipeCount: 3,
+    scope: "GLOBAL" as const,
+    status: "APPROVED" as const,
+    communityId: null,
+    community: null,
+  },
+  {
+    id: "tag-3",
+    name: "breakfast",
+    recipeCount: 2,
+    scope: "COMMUNITY" as const,
+    status: "APPROVED" as const,
+    communityId: "com-1",
+    community: { name: "Test Community" },
+  },
 ];
 
-export const mockIngredients = [
-  { id: 'ing-1', name: 'sugar', recipeCount: 10 },
-  { id: 'ing-2', name: 'flour', recipeCount: 8 },
-  { id: 'ing-3', name: 'butter', recipeCount: 5 },
+export const mockAdminIngredients = [
+  {
+    id: "ing-1",
+    name: "sugar",
+    recipeCount: 10,
+    status: "APPROVED",
+    createdBy: null,
+    defaultUnit: { id: "unit-1", name: "gramme", abbreviation: "g" },
+    popularUnit: { id: "unit-1", abbreviation: "g", useCount: 8 },
+    proposalCount: 0,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "ing-2",
+    name: "flour",
+    recipeCount: 8,
+    status: "APPROVED",
+    createdBy: null,
+    defaultUnit: null,
+    popularUnit: { id: "unit-1", abbreviation: "g", useCount: 6 },
+    proposalCount: 1,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "ing-3",
+    name: "butter",
+    recipeCount: 5,
+    status: "PENDING",
+    createdBy: { id: "user-1", username: "alice" },
+    defaultUnit: null,
+    popularUnit: null,
+    proposalCount: 0,
+    createdAt: new Date().toISOString(),
+  },
 ];
+
+export const mockAdminUnits = [
+  {
+    id: "unit-1",
+    name: "gramme",
+    abbreviation: "g",
+    category: "WEIGHT",
+    sortOrder: 1,
+    usageCount: 15,
+    defaultIngredientCount: 3,
+  },
+  {
+    id: "unit-2",
+    name: "kilogramme",
+    abbreviation: "kg",
+    category: "WEIGHT",
+    sortOrder: 2,
+    usageCount: 5,
+    defaultIngredientCount: 1,
+  },
+  {
+    id: "unit-3",
+    name: "centilitre",
+    abbreviation: "cl",
+    category: "VOLUME",
+    sortOrder: 1,
+    usageCount: 8,
+    defaultIngredientCount: 2,
+  },
+];
+
+export const mockUnits = {
+  WEIGHT: [
+    { id: "unit-1", name: "gramme", abbreviation: "g", category: "WEIGHT", sortOrder: 1 },
+    { id: "unit-2", name: "kilogramme", abbreviation: "kg", category: "WEIGHT", sortOrder: 2 },
+  ],
+  VOLUME: [
+    { id: "unit-3", name: "centilitre", abbreviation: "cl", category: "VOLUME", sortOrder: 2 },
+  ],
+  COUNT: [{ id: "unit-4", name: "piece", abbreviation: "pc", category: "COUNT", sortOrder: 1 }],
+};
 
 export const mockFeatures = [
-  { id: 'feat-1', code: 'MVP', name: 'MVP Feature', description: 'Default feature', isDefault: true, communityCount: 3 },
-  { id: 'feat-2', code: 'PREMIUM', name: 'Premium Feature', description: 'Premium only', isDefault: false, communityCount: 1 },
+  {
+    id: "feat-1",
+    code: "MVP",
+    name: "MVP Feature",
+    description: "Default feature",
+    isDefault: true,
+    communityCount: 3,
+  },
+  {
+    id: "feat-2",
+    code: "PREMIUM",
+    name: "Premium Feature",
+    description: "Premium only",
+    isDefault: false,
+    communityCount: 1,
+  },
 ];
 
 export const mockCommunities = [
   {
-    id: 'com-1',
-    name: 'Test Community',
-    description: 'A test community',
-    visibility: 'PRIVATE',
+    id: "com-1",
+    name: "Test Community",
+    description: "A test community",
+    visibility: "PRIVATE",
     memberCount: 5,
     recipeCount: 10,
-    features: ['MVP'],
+    features: ["MVP"],
     createdAt: new Date().toISOString(),
     deletedAt: null,
   },
@@ -64,11 +177,11 @@ export const mockCommunities = [
 
 export const mockActivities = [
   {
-    id: 'act-1',
-    type: 'TAG_CREATED',
-    targetType: 'Tag',
-    targetId: 'tag-1',
-    metadata: { name: 'dessert' },
+    id: "act-1",
+    type: "TAG_CREATED",
+    targetType: "Tag",
+    targetId: "tag-1",
+    metadata: { name: "dessert" },
     createdAt: new Date().toISOString(),
     admin: mockAdmin,
   },
@@ -77,19 +190,19 @@ export const mockActivities = [
 // Mock community data for user-side endpoints
 export const mockUserCommunities = [
   {
-    id: 'community-1',
-    name: 'Baking Club',
-    description: 'A community for baking enthusiasts',
-    role: 'MODERATOR' as const,
+    id: "community-1",
+    name: "Baking Club",
+    description: "A community for baking enthusiasts",
+    role: "MODERATOR" as const,
     membersCount: 5,
     recipesCount: 10,
     joinedAt: new Date().toISOString(),
   },
   {
-    id: 'community-2',
-    name: 'Vegan Recipes',
-    description: 'Plant-based recipes',
-    role: 'MEMBER' as const,
+    id: "community-2",
+    name: "Vegan Recipes",
+    description: "Plant-based recipes",
+    role: "MEMBER" as const,
     membersCount: 12,
     recipesCount: 25,
     joinedAt: new Date().toISOString(),
@@ -97,72 +210,135 @@ export const mockUserCommunities = [
 ];
 
 export const mockCommunityDetail = {
-  id: 'community-1',
-  name: 'Baking Club',
-  description: 'A community for baking enthusiasts',
-  visibility: 'PRIVATE',
+  id: "community-1",
+  name: "Baking Club",
+  description: "A community for baking enthusiasts",
+  visibility: "PRIVATE",
   createdAt: new Date().toISOString(),
   membersCount: 3,
   recipesCount: 10,
-  currentUserRole: 'MODERATOR' as const,
+  currentUserRole: "MODERATOR" as const,
 };
 
 export const mockMembers = [
-  { id: 'test-user-id', username: 'testuser', role: 'MODERATOR' as const, joinedAt: new Date().toISOString() },
-  { id: 'user-2', username: 'alice', role: 'MEMBER' as const, joinedAt: new Date().toISOString() },
-  { id: 'user-3', username: 'bob', role: 'MEMBER' as const, joinedAt: new Date().toISOString() },
+  {
+    id: "test-user-id",
+    username: "testuser",
+    role: "MODERATOR" as const,
+    joinedAt: new Date().toISOString(),
+  },
+  { id: "user-2", username: "alice", role: "MEMBER" as const, joinedAt: new Date().toISOString() },
+  { id: "user-3", username: "bob", role: "MEMBER" as const, joinedAt: new Date().toISOString() },
 ];
 
 export const mockCommunityInvites = [
   {
-    id: 'invite-1',
-    status: 'PENDING' as const,
+    id: "invite-1",
+    status: "PENDING" as const,
     createdAt: new Date().toISOString(),
     respondedAt: null,
-    invitee: { id: 'user-4', username: 'charlie', email: 'charlie@example.com' },
-    inviter: { id: 'test-user-id', username: 'testuser' },
+    invitee: { id: "user-4", username: "charlie", email: "charlie@example.com" },
+    inviter: { id: "test-user-id", username: "testuser" },
   },
 ];
 
 export const mockReceivedInvites = [
   {
-    id: 'recv-invite-1',
-    status: 'PENDING' as const,
+    id: "recv-invite-1",
+    status: "PENDING" as const,
     createdAt: new Date().toISOString(),
     respondedAt: null,
-    community: { id: 'community-3', name: 'Italian Cooking', description: 'Best pasta recipes' },
-    inviter: { id: 'user-5', username: 'david' },
+    community: { id: "community-3", name: "Italian Cooking", description: "Best pasta recipes" },
+    inviter: { id: "user-5", username: "david" },
+  },
+];
+
+// Mock tag suggestions data
+export const mockTagSuggestions = [
+  {
+    id: "suggestion-1",
+    tagName: "vegan",
+    status: "PENDING_OWNER" as const,
+    createdAt: new Date().toISOString(),
+    decidedAt: null,
+    recipeId: "test-recipe-id",
+    suggestedById: "user-2",
+    suggestedBy: { id: "user-2", username: "alice" },
+  },
+  {
+    id: "suggestion-2",
+    tagName: "gluten-free",
+    status: "PENDING_OWNER" as const,
+    createdAt: new Date().toISOString(),
+    decidedAt: null,
+    recipeId: "test-recipe-id",
+    suggestedById: "user-3",
+    suggestedBy: { id: "user-3", username: "bob" },
+  },
+];
+
+// Mock community tags data
+export const mockCommunityTags = [
+  {
+    id: "ctag-1",
+    name: "appetizer",
+    scope: "COMMUNITY" as const,
+    status: "APPROVED" as const,
+    communityId: "community-1",
+    createdBy: { id: "test-user-id", username: "testuser" },
+    recipeCount: 3,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "ctag-2",
+    name: "spicy",
+    scope: "COMMUNITY" as const,
+    status: "PENDING" as const,
+    communityId: "community-1",
+    createdBy: { id: "user-2", username: "alice" },
+    recipeCount: 1,
+    createdAt: new Date().toISOString(),
+  },
+  {
+    id: "ctag-3",
+    name: "healthy",
+    scope: "COMMUNITY" as const,
+    status: "APPROVED" as const,
+    communityId: "community-1",
+    createdBy: null,
+    recipeCount: 5,
+    createdAt: new Date().toISOString(),
   },
 ];
 
 // Mock user activity feed data
 export const mockUserActivityFeed = [
   {
-    id: 'activity-1',
-    type: 'RECIPE_CREATED' as const,
+    id: "activity-1",
+    type: "RECIPE_CREATED" as const,
     metadata: null,
     createdAt: new Date().toISOString(),
-    user: { id: 'test-user-id', username: 'testuser' },
-    recipe: { id: 'test-recipe-id', title: 'Test Recipe', isDeleted: false },
-    community: { id: 'community-1', name: 'Baking Club', isDeleted: false },
+    user: { id: "test-user-id", username: "testuser" },
+    recipe: { id: "test-recipe-id", title: "Test Recipe", isDeleted: false },
+    community: { id: "community-1", name: "Baking Club", isDeleted: false },
   },
   {
-    id: 'activity-2',
-    type: 'VARIANT_PROPOSED' as const,
+    id: "activity-2",
+    type: "VARIANT_PROPOSED" as const,
     metadata: null,
     createdAt: new Date(Date.now() - 3600000).toISOString(),
-    user: { id: 'user-2', username: 'alice' },
-    recipe: { id: 'test-recipe-id', title: 'Test Recipe', isDeleted: false },
-    community: { id: 'community-1', name: 'Baking Club', isDeleted: false },
+    user: { id: "user-2", username: "alice" },
+    recipe: { id: "test-recipe-id", title: "Test Recipe", isDeleted: false },
+    community: { id: "community-1", name: "Baking Club", isDeleted: false },
   },
   {
-    id: 'activity-3',
-    type: 'USER_JOINED' as const,
+    id: "activity-3",
+    type: "USER_JOINED" as const,
     metadata: null,
     createdAt: new Date(Date.now() - 7200000).toISOString(),
-    user: { id: 'user-3', username: 'bob' },
+    user: { id: "user-3", username: "bob" },
     recipe: null,
-    community: { id: 'community-1', name: 'Baking Club', isDeleted: false },
+    community: { id: "community-1", name: "Baking Club", isDeleted: false },
   },
 ];
 
@@ -199,30 +375,21 @@ export const handlers = [
   // GET /api/auth/me
   http.get(`${API_URL}/api/auth/me`, () => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
     return HttpResponse.json({ user: mockUser });
   }),
 
   // POST /api/auth/signup
   http.post(`${API_URL}/api/auth/signup`, async ({ request }) => {
-    const body = await request.json() as Record<string, string>;
+    const body = (await request.json()) as Record<string, string>;
 
     if (!body.username || !body.email || !body.password) {
-      return HttpResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      );
+      return HttpResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    if (body.email === 'existing@example.com') {
-      return HttpResponse.json(
-        { error: 'AUTH_002: Email already exists' },
-        { status: 409 }
-      );
+    if (body.email === "existing@example.com") {
+      return HttpResponse.json({ error: "AUTH_002: Email already exists" }, { status: 409 });
     }
 
     isUserAuthenticated = true;
@@ -234,23 +401,20 @@ export const handlers = [
 
   // POST /api/auth/login
   http.post(`${API_URL}/api/auth/login`, async ({ request }) => {
-    const body = await request.json() as Record<string, string>;
+    const body = (await request.json()) as Record<string, string>;
 
-    if (body.username === 'testuser' && body.password === 'Test123!') {
+    if (body.username === "testuser" && body.password === "Test123!") {
       isUserAuthenticated = true;
       return HttpResponse.json({ user: mockUser });
     }
 
-    return HttpResponse.json(
-      { error: 'AUTH_008: Invalid credentials' },
-      { status: 401 }
-    );
+    return HttpResponse.json({ error: "AUTH_008: Invalid credentials" }, { status: 401 });
   }),
 
   // POST /api/auth/logout
   http.post(`${API_URL}/api/auth/logout`, () => {
     isUserAuthenticated = false;
-    return HttpResponse.json({ message: 'Logged out' });
+    return HttpResponse.json({ message: "Logged out" });
   }),
 
   // =====================================
@@ -260,73 +424,64 @@ export const handlers = [
   // GET /api/admin/auth/me
   http.get(`${API_URL}/api/admin/auth/me`, () => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
     return HttpResponse.json({ admin: mockAdmin });
   }),
 
   // POST /api/admin/auth/login
   http.post(`${API_URL}/api/admin/auth/login`, async ({ request }) => {
-    const body = await request.json() as Record<string, string>;
+    const body = (await request.json()) as Record<string, string>;
 
-    if (body.email === 'admin@example.com' && body.password === 'AdminTest123!') {
+    if (body.email === "admin@example.com" && body.password === "AdminTest123!") {
       isAdminTotpPending = true;
       return HttpResponse.json({
-        message: 'TOTP verification required',
+        message: "TOTP verification required",
         requiresTotpSetup: false,
         // Pas de qrCode car TOTP deja configure
       });
     }
 
-    if (body.email === 'newadmin@example.com' && body.password === 'AdminTest123!') {
+    if (body.email === "newadmin@example.com" && body.password === "AdminTest123!") {
       isAdminTotpPending = true;
       return HttpResponse.json({
-        message: 'TOTP setup required',
+        message: "TOTP setup required",
         requiresTotpSetup: true,
-        qrCode: 'data:image/png;base64,mockQrCode',
+        qrCode: "data:image/png;base64,mockQrCode",
       });
     }
 
-    return HttpResponse.json(
-      { error: 'ADMIN_003: Invalid credentials' },
-      { status: 401 }
-    );
+    return HttpResponse.json({ error: "ADMIN_003: Invalid credentials" }, { status: 401 });
   }),
 
   // POST /api/admin/auth/totp/verify
   http.post(`${API_URL}/api/admin/auth/totp/verify`, async ({ request }) => {
     if (!isAdminTotpPending) {
       return HttpResponse.json(
-        { error: 'ADMIN_005: No pending TOTP verification' },
+        { error: "ADMIN_005: No pending TOTP verification" },
         { status: 401 }
       );
     }
 
-    const body = await request.json() as Record<string, string>;
+    const body = (await request.json()) as Record<string, string>;
 
-    if (body.code === '123456') {
+    if (body.code === "123456") {
       isAdminTotpPending = false;
       isAdminAuthenticated = true;
       return HttpResponse.json({
-        message: 'TOTP verified',
+        message: "TOTP verified",
         admin: mockAdmin,
       });
     }
 
-    return HttpResponse.json(
-      { error: 'ADMIN_006: Invalid TOTP code' },
-      { status: 401 }
-    );
+    return HttpResponse.json({ error: "ADMIN_006: Invalid TOTP code" }, { status: 401 });
   }),
 
   // POST /api/admin/auth/logout
   http.post(`${API_URL}/api/admin/auth/logout`, () => {
     isAdminAuthenticated = false;
     isAdminTotpPending = false;
-    return HttpResponse.json({ message: 'Admin logged out' });
+    return HttpResponse.json({ message: "Admin logged out" });
   }),
 
   // =====================================
@@ -336,20 +491,17 @@ export const handlers = [
   // GET /api/recipes
   http.get(`${API_URL}/api/recipes`, ({ request }) => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
 
     const url = new URL(request.url);
-    const search = url.searchParams.get('search');
-    const limit = parseInt(url.searchParams.get('limit') || '20');
+    const search = url.searchParams.get("search");
+    const limit = parseInt(url.searchParams.get("limit") || "20");
 
     let filteredRecipes = [...mockRecipes];
 
     if (search) {
-      filteredRecipes = filteredRecipes.filter(r =>
+      filteredRecipes = filteredRecipes.filter((r) =>
         r.title.toLowerCase().includes(search.toLowerCase())
       );
     }
@@ -368,19 +520,13 @@ export const handlers = [
   // GET /api/recipes/:id
   http.get(`${API_URL}/api/recipes/:id`, ({ params }) => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
 
-    const recipe = mockRecipes.find(r => r.id === params.id);
+    const recipe = mockRecipes.find((r) => r.id === params.id);
 
     if (!recipe) {
-      return HttpResponse.json(
-        { error: 'RECIPE_001: Recipe not found' },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: "RECIPE_001: Recipe not found" }, { status: 404 });
     }
 
     return HttpResponse.json(recipe);
@@ -389,33 +535,29 @@ export const handlers = [
   // POST /api/recipes
   http.post(`${API_URL}/api/recipes`, async ({ request }) => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
 
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
 
     if (!body.title) {
-      return HttpResponse.json(
-        { error: 'RECIPE_003: Title is required' },
-        { status: 400 }
-      );
+      return HttpResponse.json({ error: "RECIPE_003: Title is required" }, { status: 400 });
     }
 
-    if (!body.content) {
-      return HttpResponse.json(
-        { error: 'RECIPE_004: Content is required' },
-        { status: 400 }
-      );
+    if (!body.steps) {
+      return HttpResponse.json({ error: "RECIPE_007: Steps are required" }, { status: 400 });
     }
 
     const newRecipe = {
       ...mockRecipe,
       id: `recipe-${Date.now()}`,
       title: body.title as string,
-      content: body.content as string,
+      servings: (body.servings as number) || 4,
+      steps: (body.steps as { instruction: string }[]).map((s, i) => ({
+        id: `step-${i}`,
+        order: i,
+        instruction: s.instruction,
+      })),
     };
 
     return HttpResponse.json(newRecipe, { status: 201 });
@@ -424,22 +566,16 @@ export const handlers = [
   // PATCH /api/recipes/:id
   http.patch(`${API_URL}/api/recipes/:id`, async ({ params, request }) => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
 
-    const recipe = mockRecipes.find(r => r.id === params.id);
+    const recipe = mockRecipes.find((r) => r.id === params.id);
 
     if (!recipe) {
-      return HttpResponse.json(
-        { error: 'RECIPE_001: Recipe not found' },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: "RECIPE_001: Recipe not found" }, { status: 404 });
     }
 
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
 
     return HttpResponse.json({
       ...recipe,
@@ -451,22 +587,141 @@ export const handlers = [
   // DELETE /api/recipes/:id
   http.delete(`${API_URL}/api/recipes/:id`, ({ params }) => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
 
-    const recipe = mockRecipes.find(r => r.id === params.id);
+    const recipe = mockRecipes.find((r) => r.id === params.id);
 
     if (!recipe) {
-      return HttpResponse.json(
-        { error: 'RECIPE_001: Recipe not found' },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: "RECIPE_001: Recipe not found" }, { status: 404 });
     }
 
     return new HttpResponse(null, { status: 204 });
+  }),
+
+  // =====================================
+  // Proposals
+  // =====================================
+
+  http.get(`${API_URL}/api/recipes/:recipeId/proposals`, ({ request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status");
+
+    const proposals = [
+      {
+        id: "proposal-1",
+        proposedTitle: "Updated Recipe Title",
+        proposedServings: 6,
+        proposedPrepTime: 20,
+        proposedCookTime: 45,
+        proposedRestTime: null,
+        proposedSteps: [
+          { id: "ps-1", order: 0, instruction: "Updated recipe content with new instructions" },
+        ],
+        status: "PENDING",
+        createdAt: new Date().toISOString(),
+        decidedAt: null,
+        recipeId: "test-recipe-id",
+        proposerId: "user-2",
+        proposer: { id: "user-2", username: "alice" },
+        proposedIngredients: [
+          {
+            id: "pi-1",
+            ingredientId: "ing-1",
+            ingredient: { id: "ing-1", name: "sugar", status: "APPROVED" },
+            quantity: 200,
+            unitId: "unit-1",
+            order: 0,
+          },
+          {
+            id: "pi-2",
+            ingredientId: "ing-new",
+            ingredient: { id: "ing-new", name: "vanilla extract", status: "PENDING" },
+            quantity: 5,
+            unitId: "unit-3",
+            order: 1,
+          },
+        ],
+      },
+    ];
+
+    const filtered = status ? proposals.filter((p) => p.status === status) : proposals;
+
+    return HttpResponse.json({
+      data: filtered,
+      pagination: { total: filtered.length, limit: 20, offset: 0, hasMore: false },
+    });
+  }),
+
+  http.post(`${API_URL}/api/recipes/:recipeId/proposals`, async ({ params, request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+
+    const body = (await request.json()) as Record<string, unknown>;
+
+    if (!body.proposedTitle) {
+      return HttpResponse.json({ error: "RECIPE_003: Title is required" }, { status: 400 });
+    }
+
+    return HttpResponse.json(
+      {
+        id: `proposal-${Date.now()}`,
+        proposedTitle: body.proposedTitle,
+        proposedServings: body.proposedServings || null,
+        proposedPrepTime: body.proposedPrepTime ?? null,
+        proposedCookTime: body.proposedCookTime ?? null,
+        proposedRestTime: body.proposedRestTime ?? null,
+        proposedSteps: ((body.proposedSteps as { instruction: string }[]) || []).map((s, i) => ({
+          id: `ps-${i}`,
+          order: i,
+          instruction: s.instruction,
+        })),
+        proposedIngredients: body.proposedIngredients || [],
+        status: "PENDING",
+        createdAt: new Date().toISOString(),
+        decidedAt: null,
+        recipeId: params.recipeId,
+        proposerId: mockUser.id,
+        proposer: { id: mockUser.id, username: mockUser.username },
+      },
+      { status: 201 }
+    );
+  }),
+
+  http.post(`${API_URL}/api/proposals/:id/accept`, ({ params }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+
+    return HttpResponse.json({
+      id: params.id,
+      status: "ACCEPTED",
+      decidedAt: new Date().toISOString(),
+    });
+  }),
+
+  http.post(`${API_URL}/api/proposals/:id/reject`, ({ params }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+
+    return HttpResponse.json({
+      proposal: {
+        id: params.id,
+        status: "REJECTED",
+        decidedAt: new Date().toISOString(),
+      },
+      variant: {
+        id: `variant-${Date.now()}`,
+        title: "Variant Recipe",
+        isVariant: true,
+      },
+    });
   }),
 
   // =====================================
@@ -475,16 +730,13 @@ export const handlers = [
 
   http.get(`${API_URL}/api/tags`, () => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
 
     return HttpResponse.json({
       data: [
-        { id: 'tag-1', name: 'dessert', recipeCount: 5 },
-        { id: 'tag-2', name: 'dinner', recipeCount: 3 },
+        { id: "tag-1", name: "dessert", recipeCount: 5 },
+        { id: "tag-2", name: "dinner", recipeCount: 3 },
       ],
     });
   }),
@@ -495,18 +747,36 @@ export const handlers = [
 
   http.get(`${API_URL}/api/ingredients`, () => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
 
     return HttpResponse.json({
       data: [
-        { id: 'ing-1', name: 'sugar', recipeCount: 10 },
-        { id: 'ing-2', name: 'flour', recipeCount: 8 },
+        { id: "ing-1", name: "sugar", recipeCount: 10, status: "APPROVED" },
+        { id: "ing-2", name: "flour", recipeCount: 8, status: "APPROVED" },
+        { id: "ing-3", name: "new_pending", recipeCount: 1, status: "PENDING" },
       ],
     });
+  }),
+
+  // GET /api/units
+  http.get(`${API_URL}/api/units`, () => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+    return HttpResponse.json({ data: mockUnits });
+  }),
+
+  // GET /api/ingredients/:id/suggested-unit
+  http.get(`${API_URL}/api/ingredients/:id/suggested-unit`, ({ params }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+    // ing-1 (sugar) -> suggest gramme unit
+    if (params.id === "ing-1") {
+      return HttpResponse.json({ suggestedUnitId: "unit-1", source: "popular" });
+    }
+    return HttpResponse.json({ suggestedUnitId: null, source: null });
   }),
 
   // =====================================
@@ -515,10 +785,7 @@ export const handlers = [
 
   http.get(`${API_URL}/api/admin/dashboard/stats`, () => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
 
     return HttpResponse.json({
@@ -535,9 +802,7 @@ export const handlers = [
         newCommunities: 1,
         newRecipes: 20,
       },
-      topCommunities: [
-        { id: 'com-1', name: 'Test Community', memberCount: 5, recipeCount: 10 },
-      ],
+      topCommunities: [{ id: "com-1", name: "Test Community", memberCount: 5, recipeCount: 10 }],
     });
   }),
 
@@ -547,20 +812,21 @@ export const handlers = [
 
   http.get(`${API_URL}/api/admin/tags`, ({ request }) => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
 
     const url = new URL(request.url);
-    const search = url.searchParams.get('search');
+    const search = url.searchParams.get("search");
+    const scope = url.searchParams.get("scope");
 
     let filteredTags = [...mockTags];
     if (search) {
-      filteredTags = filteredTags.filter(t =>
+      filteredTags = filteredTags.filter((t) =>
         t.name.toLowerCase().includes(search.toLowerCase())
       );
+    }
+    if (scope) {
+      filteredTags = filteredTags.filter((t) => t.scope === scope);
     }
 
     return HttpResponse.json({ tags: filteredTags });
@@ -568,19 +834,13 @@ export const handlers = [
 
   http.post(`${API_URL}/api/admin/tags`, async ({ request }) => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
 
-    const body = await request.json() as Record<string, string>;
+    const body = (await request.json()) as Record<string, string>;
 
     if (!body.name) {
-      return HttpResponse.json(
-        { error: 'ADMIN_TAG_001: Name is required' },
-        { status: 400 }
-      );
+      return HttpResponse.json({ error: "ADMIN_TAG_001: Name is required" }, { status: 400 });
     }
 
     const newTag = {
@@ -594,21 +854,15 @@ export const handlers = [
 
   http.patch(`${API_URL}/api/admin/tags/:id`, async ({ params, request }) => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
 
-    const tag = mockTags.find(t => t.id === params.id);
+    const tag = mockTags.find((t) => t.id === params.id);
     if (!tag) {
-      return HttpResponse.json(
-        { error: 'ADMIN_TAG_003: Tag not found' },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: "ADMIN_TAG_003: Tag not found" }, { status: 404 });
     }
 
-    const body = await request.json() as Record<string, string>;
+    const body = (await request.json()) as Record<string, string>;
 
     return HttpResponse.json({
       tag: { ...tag, name: body.name?.toLowerCase().trim() || tag.name },
@@ -617,40 +871,28 @@ export const handlers = [
 
   http.delete(`${API_URL}/api/admin/tags/:id`, ({ params }) => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
 
-    const tag = mockTags.find(t => t.id === params.id);
+    const tag = mockTags.find((t) => t.id === params.id);
     if (!tag) {
-      return HttpResponse.json(
-        { error: 'ADMIN_TAG_003: Tag not found' },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: "ADMIN_TAG_003: Tag not found" }, { status: 404 });
     }
 
-    return HttpResponse.json({ message: 'Tag deleted' });
+    return HttpResponse.json({ message: "Tag deleted" });
   }),
 
   http.post(`${API_URL}/api/admin/tags/:id/merge`, async ({ request }) => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
 
-    const body = await request.json() as Record<string, string>;
+    const body = (await request.json()) as Record<string, string>;
     if (!body.targetId) {
-      return HttpResponse.json(
-        { error: 'ADMIN_TAG_004: Target ID required' },
-        { status: 400 }
-      );
+      return HttpResponse.json({ error: "ADMIN_TAG_004: Target ID required" }, { status: 400 });
     }
 
-    return HttpResponse.json({ message: 'Tags merged' });
+    return HttpResponse.json({ message: "Tags merged" });
   }),
 
   // =====================================
@@ -659,20 +901,21 @@ export const handlers = [
 
   http.get(`${API_URL}/api/admin/ingredients`, ({ request }) => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
 
     const url = new URL(request.url);
-    const search = url.searchParams.get('search');
+    const search = url.searchParams.get("search");
+    const status = url.searchParams.get("status");
 
-    let filteredIngredients = [...mockIngredients];
+    let filteredIngredients = [...mockAdminIngredients];
     if (search) {
-      filteredIngredients = filteredIngredients.filter(i =>
+      filteredIngredients = filteredIngredients.filter((i) =>
         i.name.toLowerCase().includes(search.toLowerCase())
       );
+    }
+    if (status) {
+      filteredIngredients = filteredIngredients.filter((i) => i.status === status);
     }
 
     return HttpResponse.json({ ingredients: filteredIngredients });
@@ -680,19 +923,13 @@ export const handlers = [
 
   http.post(`${API_URL}/api/admin/ingredients`, async ({ request }) => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
 
-    const body = await request.json() as Record<string, string>;
+    const body = (await request.json()) as Record<string, string>;
 
     if (!body.name) {
-      return HttpResponse.json(
-        { error: 'ADMIN_ING_001: Name is required' },
-        { status: 400 }
-      );
+      return HttpResponse.json({ error: "ADMIN_ING_001: Name is required" }, { status: 400 });
     }
 
     const newIngredient = {
@@ -706,21 +943,15 @@ export const handlers = [
 
   http.patch(`${API_URL}/api/admin/ingredients/:id`, async ({ params, request }) => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
 
-    const ingredient = mockIngredients.find(i => i.id === params.id);
+    const ingredient = mockAdminIngredients.find((i) => i.id === params.id);
     if (!ingredient) {
-      return HttpResponse.json(
-        { error: 'ADMIN_ING_003: Ingredient not found' },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: "ADMIN_ING_003: Ingredient not found" }, { status: 404 });
     }
 
-    const body = await request.json() as Record<string, string>;
+    const body = (await request.json()) as Record<string, string>;
 
     return HttpResponse.json({
       ingredient: { ...ingredient, name: body.name?.toLowerCase().trim() || ingredient.name },
@@ -729,40 +960,141 @@ export const handlers = [
 
   http.delete(`${API_URL}/api/admin/ingredients/:id`, ({ params }) => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
 
-    const ingredient = mockIngredients.find(i => i.id === params.id);
+    const ingredient = mockAdminIngredients.find((i) => i.id === params.id);
     if (!ingredient) {
-      return HttpResponse.json(
-        { error: 'ADMIN_ING_003: Ingredient not found' },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: "ADMIN_ING_003: Ingredient not found" }, { status: 404 });
     }
 
-    return HttpResponse.json({ message: 'Ingredient deleted' });
+    return HttpResponse.json({ message: "Ingredient deleted" });
   }),
 
   http.post(`${API_URL}/api/admin/ingredients/:id/merge`, async ({ request }) => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
 
-    const body = await request.json() as Record<string, string>;
+    const body = (await request.json()) as Record<string, string>;
     if (!body.targetId) {
+      return HttpResponse.json({ error: "ADMIN_ING_004: Target ID required" }, { status: 400 });
+    }
+
+    return HttpResponse.json({ message: "Ingredients merged" });
+  }),
+
+  http.post(`${API_URL}/api/admin/ingredients/:id/approve`, async ({ params, request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
+    }
+
+    const ingredient = mockAdminIngredients.find((i) => i.id === params.id);
+    if (!ingredient) {
+      return HttpResponse.json({ error: "ADMIN_ING_003: Ingredient not found" }, { status: 404 });
+    }
+
+    const body = (await request.json()) as Record<string, string>;
+    return HttpResponse.json({
+      ingredient: { ...ingredient, status: "APPROVED", name: body.newName || ingredient.name },
+    });
+  }),
+
+  http.post(`${API_URL}/api/admin/ingredients/:id/reject`, async ({ params }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
+    }
+
+    const ingredient = mockAdminIngredients.find((i) => i.id === params.id);
+    if (!ingredient) {
+      return HttpResponse.json({ error: "ADMIN_ING_003: Ingredient not found" }, { status: 404 });
+    }
+
+    return HttpResponse.json({ message: "Ingredient rejected" });
+  }),
+
+  // =====================================
+  // Admin Units
+  // =====================================
+
+  http.get(`${API_URL}/api/admin/units`, ({ request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
+    }
+
+    const url = new URL(request.url);
+    const search = url.searchParams.get("search");
+    const category = url.searchParams.get("category");
+
+    let filtered = [...mockAdminUnits];
+    if (search) {
+      filtered = filtered.filter(
+        (u) =>
+          u.name.toLowerCase().includes(search.toLowerCase()) ||
+          u.abbreviation.toLowerCase().includes(search.toLowerCase())
+      );
+    }
+    if (category) {
+      filtered = filtered.filter((u) => u.category === category);
+    }
+
+    return HttpResponse.json({ units: filtered });
+  }),
+
+  http.post(`${API_URL}/api/admin/units`, async ({ request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
+    }
+
+    const body = (await request.json()) as Record<string, unknown>;
+
+    if (!body.name || !body.abbreviation) {
       return HttpResponse.json(
-        { error: 'ADMIN_ING_004: Target ID required' },
+        { error: "ADMIN_UNIT_001: Name and abbreviation are required" },
         { status: 400 }
       );
     }
 
-    return HttpResponse.json({ message: 'Ingredients merged' });
+    const newUnit = {
+      id: `unit-${Date.now()}`,
+      name: body.name,
+      abbreviation: body.abbreviation,
+      category: body.category || "WEIGHT",
+      sortOrder: body.sortOrder || 0,
+      usageCount: 0,
+      defaultIngredientCount: 0,
+    };
+
+    return HttpResponse.json({ unit: newUnit }, { status: 201 });
+  }),
+
+  http.patch(`${API_URL}/api/admin/units/:id`, async ({ params, request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
+    }
+
+    const unit = mockAdminUnits.find((u) => u.id === params.id);
+    if (!unit) {
+      return HttpResponse.json({ error: "ADMIN_UNIT_003: Unit not found" }, { status: 404 });
+    }
+
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({
+      unit: { ...unit, ...body },
+    });
+  }),
+
+  http.delete(`${API_URL}/api/admin/units/:id`, ({ params }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
+    }
+
+    const unit = mockAdminUnits.find((u) => u.id === params.id);
+    if (!unit) {
+      return HttpResponse.json({ error: "ADMIN_UNIT_003: Unit not found" }, { status: 404 });
+    }
+
+    return HttpResponse.json({ message: "Unit deleted" });
   }),
 
   // =====================================
@@ -771,10 +1103,7 @@ export const handlers = [
 
   http.get(`${API_URL}/api/admin/features`, () => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
 
     return HttpResponse.json({ features: mockFeatures });
@@ -782,26 +1111,17 @@ export const handlers = [
 
   http.post(`${API_URL}/api/admin/features`, async ({ request }) => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
 
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
 
     if (!body.code) {
-      return HttpResponse.json(
-        { error: 'ADMIN_FEAT_001: Code is required' },
-        { status: 400 }
-      );
+      return HttpResponse.json({ error: "ADMIN_FEAT_001: Code is required" }, { status: 400 });
     }
 
     if (!body.name) {
-      return HttpResponse.json(
-        { error: 'ADMIN_FEAT_002: Name is required' },
-        { status: 400 }
-      );
+      return HttpResponse.json({ error: "ADMIN_FEAT_002: Name is required" }, { status: 400 });
     }
 
     const newFeature = {
@@ -818,21 +1138,15 @@ export const handlers = [
 
   http.patch(`${API_URL}/api/admin/features/:id`, async ({ params, request }) => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
 
-    const feature = mockFeatures.find(f => f.id === params.id);
+    const feature = mockFeatures.find((f) => f.id === params.id);
     if (!feature) {
-      return HttpResponse.json(
-        { error: 'ADMIN_FEAT_003: Feature not found' },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: "ADMIN_FEAT_003: Feature not found" }, { status: 404 });
     }
 
-    const body = await request.json() as Record<string, unknown>;
+    const body = (await request.json()) as Record<string, unknown>;
 
     return HttpResponse.json({
       feature: {
@@ -850,18 +1164,15 @@ export const handlers = [
 
   http.get(`${API_URL}/api/admin/communities`, ({ request }) => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
 
     const url = new URL(request.url);
-    const search = url.searchParams.get('search');
+    const search = url.searchParams.get("search");
 
     let filteredCommunities = [...mockCommunities];
     if (search) {
-      filteredCommunities = filteredCommunities.filter(c =>
+      filteredCommunities = filteredCommunities.filter((c) =>
         c.name.toLowerCase().includes(search.toLowerCase())
       );
     }
@@ -871,28 +1182,35 @@ export const handlers = [
 
   http.get(`${API_URL}/api/admin/communities/:id`, ({ params }) => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
 
-    const community = mockCommunities.find(c => c.id === params.id);
+    const community = mockCommunities.find((c) => c.id === params.id);
     if (!community) {
-      return HttpResponse.json(
-        { error: 'ADMIN_COM_001: Community not found' },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: "ADMIN_COM_001: Community not found" }, { status: 404 });
     }
 
     return HttpResponse.json({
       community: {
         ...community,
         members: [
-          { id: 'user-1', username: 'user1', email: 'user1@test.com', role: 'ADMIN', joinedAt: new Date().toISOString() },
+          {
+            id: "user-1",
+            username: "user1",
+            email: "user1@test.com",
+            role: "ADMIN",
+            joinedAt: new Date().toISOString(),
+          },
         ],
         features: [
-          { id: 'feat-1', code: 'MVP', name: 'MVP Feature', grantedAt: new Date().toISOString(), grantedBy: 'system', revokedAt: null },
+          {
+            id: "feat-1",
+            code: "MVP",
+            name: "MVP Feature",
+            grantedAt: new Date().toISOString(),
+            grantedBy: "system",
+            revokedAt: null,
+          },
         ],
         updatedAt: new Date().toISOString(),
         pendingInvites: 0,
@@ -902,41 +1220,29 @@ export const handlers = [
 
   http.delete(`${API_URL}/api/admin/communities/:id`, ({ params }) => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
 
-    const community = mockCommunities.find(c => c.id === params.id);
+    const community = mockCommunities.find((c) => c.id === params.id);
     if (!community) {
-      return HttpResponse.json(
-        { error: 'ADMIN_COM_001: Community not found' },
-        { status: 404 }
-      );
+      return HttpResponse.json({ error: "ADMIN_COM_001: Community not found" }, { status: 404 });
     }
 
-    return HttpResponse.json({ message: 'Community deleted' });
+    return HttpResponse.json({ message: "Community deleted" });
   }),
 
   http.post(`${API_URL}/api/admin/communities/:communityId/features/:featureId`, () => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
-    return HttpResponse.json({ message: 'Feature granted' });
+    return HttpResponse.json({ message: "Feature granted" });
   }),
 
   http.delete(`${API_URL}/api/admin/communities/:communityId/features/:featureId`, () => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
-    return HttpResponse.json({ message: 'Feature revoked' });
+    return HttpResponse.json({ message: "Feature revoked" });
   }),
 
   // =====================================
@@ -945,56 +1251,44 @@ export const handlers = [
 
   http.get(`${API_URL}/api/communities`, () => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
     return HttpResponse.json({ data: mockUserCommunities });
   }),
 
   http.post(`${API_URL}/api/communities`, async ({ request }) => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
 
-    const body = await request.json() as Record<string, string>;
+    const body = (await request.json()) as Record<string, string>;
 
     if (!body.name) {
-      return HttpResponse.json(
-        { error: 'Community must have a name' },
-        { status: 400 }
-      );
+      return HttpResponse.json({ error: "Community must have a name" }, { status: 400 });
     }
 
-    return HttpResponse.json({
-      id: `community-${Date.now()}`,
-      name: body.name,
-      description: body.description || null,
-      visibility: 'PRIVATE',
-      createdAt: new Date().toISOString(),
-      membersCount: 1,
-      recipesCount: 0,
-      currentUserRole: 'MODERATOR',
-    }, { status: 201 });
+    return HttpResponse.json(
+      {
+        id: `community-${Date.now()}`,
+        name: body.name,
+        description: body.description || null,
+        visibility: "PRIVATE",
+        createdAt: new Date().toISOString(),
+        membersCount: 1,
+        recipesCount: 0,
+        currentUserRole: "MODERATOR",
+      },
+      { status: 201 }
+    );
   }),
 
   http.get(`${API_URL}/api/communities/:communityId`, ({ params }) => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
 
-    if (params.communityId === 'not-found') {
-      return HttpResponse.json(
-        { error: 'Community not found' },
-        { status: 404 }
-      );
+    if (params.communityId === "not-found") {
+      return HttpResponse.json({ error: "Community not found" }, { status: 404 });
     }
 
     return HttpResponse.json({
@@ -1005,13 +1299,10 @@ export const handlers = [
 
   http.patch(`${API_URL}/api/communities/:communityId`, async ({ params, request }) => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
 
-    const body = await request.json() as Record<string, string>;
+    const body = (await request.json()) as Record<string, string>;
 
     return HttpResponse.json({
       ...mockCommunityDetail,
@@ -1026,32 +1317,23 @@ export const handlers = [
 
   http.get(`${API_URL}/api/communities/:communityId/members`, () => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
     return HttpResponse.json({ data: mockMembers });
   }),
 
   http.patch(`${API_URL}/api/communities/:communityId/members/:userId`, () => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
-    return HttpResponse.json({ message: 'User promoted to MODERATOR' });
+    return HttpResponse.json({ message: "User promoted to MODERATOR" });
   }),
 
   http.delete(`${API_URL}/api/communities/:communityId/members/:userId`, () => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
-    return HttpResponse.json({ message: 'Left community successfully' });
+    return HttpResponse.json({ message: "Left community successfully" });
   }),
 
   // =====================================
@@ -1060,49 +1342,44 @@ export const handlers = [
 
   http.get(`${API_URL}/api/communities/:communityId/invites`, () => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
     return HttpResponse.json({ data: mockCommunityInvites });
   }),
 
   http.post(`${API_URL}/api/communities/:communityId/invites`, async ({ request }) => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
 
-    const body = await request.json() as Record<string, string>;
+    const body = (await request.json()) as Record<string, string>;
 
-    if (body.username === 'notfound') {
-      return HttpResponse.json(
-        { error: 'INVITE_003: User not found' },
-        { status: 404 }
-      );
+    if (body.username === "notfound") {
+      return HttpResponse.json({ error: "INVITE_003: User not found" }, { status: 404 });
     }
 
-    return HttpResponse.json({
-      id: `invite-${Date.now()}`,
-      status: 'PENDING',
-      createdAt: new Date().toISOString(),
-      respondedAt: null,
-      invitee: { id: 'user-new', username: body.username || 'invited', email: body.email || 'invited@example.com' },
-      inviter: { id: 'test-user-id', username: 'testuser' },
-    }, { status: 201 });
+    return HttpResponse.json(
+      {
+        id: `invite-${Date.now()}`,
+        status: "PENDING",
+        createdAt: new Date().toISOString(),
+        respondedAt: null,
+        invitee: {
+          id: "user-new",
+          username: body.username || "invited",
+          email: body.email || "invited@example.com",
+        },
+        inviter: { id: "test-user-id", username: "testuser" },
+      },
+      { status: 201 }
+    );
   }),
 
   http.delete(`${API_URL}/api/communities/:communityId/invites/:inviteId`, () => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
-    return HttpResponse.json({ message: 'Invitation cancelled' });
+    return HttpResponse.json({ message: "Invitation cancelled" });
   }),
 
   // =====================================
@@ -1111,19 +1388,13 @@ export const handlers = [
 
   http.patch(`${API_URL}/api/users/me`, async ({ request }) => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
 
-    const body = await request.json() as Record<string, string>;
+    const body = (await request.json()) as Record<string, string>;
 
-    if (body.email === 'taken@example.com') {
-      return HttpResponse.json(
-        { error: 'Email already in use' },
-        { status: 409 }
-      );
+    if (body.email === "taken@example.com") {
+      return HttpResponse.json({ error: "Email already in use" }, { status: 409 });
     }
 
     return HttpResponse.json({
@@ -1138,35 +1409,26 @@ export const handlers = [
 
   http.get(`${API_URL}/api/users/me/invites`, () => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
     return HttpResponse.json({ data: mockReceivedInvites });
   }),
 
   http.post(`${API_URL}/api/invites/:inviteId/accept`, () => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
     return HttpResponse.json({
-      message: 'Invitation accepted',
-      community: { id: 'community-3', name: 'Italian Cooking' },
+      message: "Invitation accepted",
+      community: { id: "community-3", name: "Italian Cooking" },
     });
   }),
 
   http.post(`${API_URL}/api/invites/:inviteId/reject`, () => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
-    return HttpResponse.json({ message: 'Invitation rejected' });
+    return HttpResponse.json({ message: "Invitation rejected" });
   }),
 
   // =====================================
@@ -1175,15 +1437,12 @@ export const handlers = [
 
   http.get(`${API_URL}/api/communities/:communityId/activity`, ({ request }) => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
 
     const url = new URL(request.url);
-    const limit = parseInt(url.searchParams.get('limit') || '20');
-    const offset = parseInt(url.searchParams.get('offset') || '0');
+    const limit = parseInt(url.searchParams.get("limit") || "20");
+    const offset = parseInt(url.searchParams.get("offset") || "0");
 
     const activities = mockUserActivityFeed.slice(offset, offset + limit);
 
@@ -1200,15 +1459,12 @@ export const handlers = [
 
   http.get(`${API_URL}/api/users/me/activity`, ({ request }) => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
 
     const url = new URL(request.url);
-    const limit = parseInt(url.searchParams.get('limit') || '20');
-    const offset = parseInt(url.searchParams.get('offset') || '0');
+    const limit = parseInt(url.searchParams.get("limit") || "20");
+    const offset = parseInt(url.searchParams.get("offset") || "0");
 
     const activities = mockUserActivityFeed.slice(offset, offset + limit);
 
@@ -1224,17 +1480,274 @@ export const handlers = [
   }),
 
   // =====================================
+  // Community Tags (moderator)
+  // =====================================
+
+  http.get(`${API_URL}/api/communities/:communityId/tags`, ({ request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+
+    const url = new URL(request.url);
+    const search = url.searchParams.get("search");
+    const status = url.searchParams.get("status");
+
+    let filtered = [...mockCommunityTags];
+    if (search) {
+      filtered = filtered.filter((t) => t.name.toLowerCase().includes(search.toLowerCase()));
+    }
+    if (status) {
+      filtered = filtered.filter((t) => t.status === status);
+    }
+
+    return HttpResponse.json({ data: filtered, total: filtered.length });
+  }),
+
+  http.post(`${API_URL}/api/communities/:communityId/tags`, async ({ request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+
+    const body = (await request.json()) as Record<string, string>;
+    if (!body.name) {
+      return HttpResponse.json({ error: "TAG_001: Tag name is required" }, { status: 400 });
+    }
+
+    return HttpResponse.json(
+      {
+        id: `ctag-${Date.now()}`,
+        name: body.name.toLowerCase().trim(),
+        scope: "COMMUNITY",
+        status: "APPROVED",
+        communityId: "community-1",
+      },
+      { status: 201 }
+    );
+  }),
+
+  http.patch(`${API_URL}/api/communities/:communityId/tags/:tagId`, async ({ params, request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+
+    const tag = mockCommunityTags.find((t) => t.id === params.tagId);
+    if (!tag) {
+      return HttpResponse.json({ error: "TAG_001: Tag not found" }, { status: 404 });
+    }
+
+    const body = (await request.json()) as Record<string, string>;
+    return HttpResponse.json({
+      ...tag,
+      name: body.name?.toLowerCase().trim() || tag.name,
+    });
+  }),
+
+  http.delete(`${API_URL}/api/communities/:communityId/tags/:tagId`, ({ params }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+
+    const tag = mockCommunityTags.find((t) => t.id === params.tagId);
+    if (!tag) {
+      return HttpResponse.json({ error: "TAG_001: Tag not found" }, { status: 404 });
+    }
+
+    return HttpResponse.json({ message: "Tag deleted" });
+  }),
+
+  http.post(`${API_URL}/api/communities/:communityId/tags/:tagId/approve`, ({ params }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+
+    const tag = mockCommunityTags.find((t) => t.id === params.tagId);
+    if (!tag) {
+      return HttpResponse.json({ error: "TAG_001: Tag not found" }, { status: 404 });
+    }
+
+    return HttpResponse.json({
+      ...tag,
+      status: "APPROVED",
+    });
+  }),
+
+  http.post(`${API_URL}/api/communities/:communityId/tags/:tagId/reject`, ({ params }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+
+    const tag = mockCommunityTags.find((t) => t.id === params.tagId);
+    if (!tag) {
+      return HttpResponse.json({ error: "TAG_001: Tag not found" }, { status: 404 });
+    }
+
+    return HttpResponse.json({ message: "Tag rejected and removed" });
+  }),
+
+  // =====================================
   // Recipe Communities (for share modal)
   // =====================================
 
   http.get(`${API_URL}/api/recipes/:recipeId/communities`, () => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
     return HttpResponse.json({ data: [] });
+  }),
+
+  // =====================================
+  // Tag Suggestions
+  // =====================================
+
+  http.get(`${API_URL}/api/recipes/:recipeId/tag-suggestions`, ({ request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status");
+
+    let filtered = [...mockTagSuggestions];
+    if (status) {
+      filtered = filtered.filter((s) => s.status === status);
+    }
+
+    return HttpResponse.json({
+      data: filtered,
+      pagination: { total: filtered.length, limit: 20, offset: 0, hasMore: false },
+    });
+  }),
+
+  http.post(`${API_URL}/api/recipes/:recipeId/tag-suggestions`, async ({ params, request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+
+    const body = (await request.json()) as Record<string, string>;
+    if (!body.tagName) {
+      return HttpResponse.json({ error: "TAG_001: Tag name is required" }, { status: 400 });
+    }
+
+    if (body.tagName === "duplicate") {
+      return HttpResponse.json({ error: "TAG_005: Tag already suggested" }, { status: 409 });
+    }
+
+    return HttpResponse.json(
+      {
+        id: `suggestion-${Date.now()}`,
+        tagName: body.tagName,
+        status: "PENDING_OWNER",
+        createdAt: new Date().toISOString(),
+        decidedAt: null,
+        recipeId: params.recipeId,
+        suggestedById: mockUser.id,
+        suggestedBy: { id: mockUser.id, username: mockUser.username },
+      },
+      { status: 201 }
+    );
+  }),
+
+  http.post(`${API_URL}/api/tag-suggestions/:id/accept`, ({ params }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+
+    const suggestion = mockTagSuggestions.find((s) => s.id === params.id);
+    if (!suggestion) {
+      return HttpResponse.json({ error: "TAG_006: Suggestion not found" }, { status: 404 });
+    }
+
+    return HttpResponse.json({
+      ...suggestion,
+      status: "ACCEPTED",
+      decidedAt: new Date().toISOString(),
+    });
+  }),
+
+  http.post(`${API_URL}/api/tag-suggestions/:id/reject`, ({ params }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+
+    const suggestion = mockTagSuggestions.find((s) => s.id === params.id);
+    if (!suggestion) {
+      return HttpResponse.json({ error: "TAG_006: Suggestion not found" }, { status: 404 });
+    }
+
+    return HttpResponse.json({
+      ...suggestion,
+      status: "REJECTED",
+      decidedAt: new Date().toISOString(),
+    });
+  }),
+
+  // =====================================
+  // User Tag Preferences
+  // =====================================
+
+  http.get(`${API_URL}/api/users/me/tag-preferences`, () => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+    return HttpResponse.json({
+      data: [
+        { communityId: "community-1", communityName: "Baking Club", showTags: true },
+        { communityId: "community-2", communityName: "Vegan Recipes", showTags: false },
+      ],
+    });
+  }),
+
+  http.put(`${API_URL}/api/users/me/tag-preferences/:communityId`, async ({ params, request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+
+    const body = (await request.json()) as Record<string, boolean>;
+    return HttpResponse.json({
+      communityId: params.communityId,
+      showTags: body.showTags,
+    });
+  }),
+
+  // =====================================
+  // Notification Preferences
+  // =====================================
+
+  http.get(`${API_URL}/api/notifications/preferences`, () => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+    return HttpResponse.json({
+      global: {
+        INVITATION: true,
+        RECIPE_PROPOSAL: true,
+        TAG: true,
+        INGREDIENT: true,
+        MODERATION: true,
+      },
+      communities: [
+        {
+          communityId: "community-1",
+          communityName: "Baking Club",
+          preferences: {
+            INVITATION: true,
+            RECIPE_PROPOSAL: true,
+            TAG: true,
+            INGREDIENT: true,
+            MODERATION: true,
+          },
+        },
+      ],
+    });
+  }),
+
+  http.put(`${API_URL}/api/notifications/preferences`, async ({ request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({ category: body.category, enabled: body.enabled });
   }),
 
   // =====================================
@@ -1243,41 +1756,39 @@ export const handlers = [
 
   http.post(`${API_URL}/api/recipes/:recipeId/share`, async ({ params, request }) => {
     if (!isUserAuthenticated) {
-      return HttpResponse.json(
-        { error: 'AUTH_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
     }
 
-    const body = await request.json() as Record<string, string>;
+    const body = (await request.json()) as Record<string, string>;
     const { targetCommunityId } = body;
 
     if (!targetCommunityId) {
-      return HttpResponse.json(
-        { error: 'RECIPE_006: Target community required' },
-        { status: 400 }
-      );
+      return HttpResponse.json({ error: "RECIPE_006: Target community required" }, { status: 400 });
     }
 
     // Simulate permission error for specific test case
-    if (targetCommunityId === 'no-permission') {
+    if (targetCommunityId === "no-permission") {
       return HttpResponse.json(
-        { error: 'RECIPE_007: Cannot share - must be MODERATOR or recipe creator' },
+        { error: "RECIPE_007: Cannot share - must be MODERATOR or recipe creator" },
         { status: 403 }
       );
     }
 
     const newRecipe = {
       id: `shared-recipe-${Date.now()}`,
-      title: 'Shared Recipe',
-      content: 'Shared recipe content',
+      title: "Shared Recipe",
+      servings: 4,
+      prepTime: null,
+      cookTime: null,
+      restTime: null,
+      steps: [{ id: "step-shared-1", order: 0, instruction: "Shared recipe content" }],
       imageUrl: null,
       creatorId: mockUser.id,
       creator: mockUser,
       communityId: targetCommunityId,
       originRecipeId: params.recipeId,
-      sharedFromCommunityId: 'community-1',
-      sharedFromCommunity: { id: 'community-1', name: 'Baking Club' },
+      sharedFromCommunityId: "community-1",
+      sharedFromCommunity: { id: "community-1", name: "Baking Club" },
       tags: [],
       ingredients: [],
       createdAt: new Date().toISOString(),
@@ -1293,20 +1804,17 @@ export const handlers = [
 
   http.get(`${API_URL}/api/admin/activity`, ({ request }) => {
     if (!isAdminAuthenticated) {
-      return HttpResponse.json(
-        { error: 'ADMIN_001: Not authenticated' },
-        { status: 401 }
-      );
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
     }
 
     const url = new URL(request.url);
-    const limit = parseInt(url.searchParams.get('limit') || '50');
-    const offset = parseInt(url.searchParams.get('offset') || '0');
-    const type = url.searchParams.get('type');
+    const limit = parseInt(url.searchParams.get("limit") || "50");
+    const offset = parseInt(url.searchParams.get("offset") || "0");
+    const type = url.searchParams.get("type");
 
     let filteredActivities = [...mockActivities];
     if (type) {
-      filteredActivities = filteredActivities.filter(a => a.type === type);
+      filteredActivities = filteredActivities.filter((a) => a.type === type);
     }
 
     const remaining = Math.max(0, filteredActivities.length - offset - limit);

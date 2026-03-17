@@ -2,17 +2,26 @@ import { RequestHandler } from "express";
 import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
-import { formatTags, formatIngredients } from "../util/responseFormatters";
-import {
-  forkRecipe,
-  publishRecipe,
-  getRecipeFamilyCommunities,
-} from "../services/shareService";
+import { formatTags, formatIngredients, formatSteps } from "../util/responseFormatters";
+import { buildImageUrl } from "../config/storage";
+import { forkRecipe, publishRecipe, getRecipeFamilyCommunities } from "../services/shareService";
+import { requireRecipeAccess } from "../services/membershipService";
 import appEvents from "../services/eventEmitter";
-
-interface ShareRecipeBody {
-  targetCommunityId: string;
-}
+import { getModeratorIdsForTagNotification } from "../services/notificationService";
+import {
+  SHARE_002,
+  SHARE_003,
+  SHARE_004,
+  SHARE_005,
+  SHARE_006,
+  RECIPE_001,
+  RECIPE_002,
+  COMMUNITY_001,
+  COMMUNITY_002,
+  PUBLISH_002,
+  PUBLISH_003,
+} from "../constants/errorCodes";
+import { ShareRecipeInput, PublishToCommunityInput } from "../schemas/recipeShare.schema";
 
 /**
  * POST /api/recipes/:recipeId/share
@@ -21,7 +30,7 @@ interface ShareRecipeBody {
 export const shareRecipe: RequestHandler<
   { recipeId: string },
   unknown,
-  ShareRecipeBody,
+  ShareRecipeInput,
   unknown
 > = async (req, res, next) => {
   const authenticatedUserId = req.session.userId;
@@ -31,38 +40,46 @@ export const shareRecipe: RequestHandler<
   try {
     assertIsDefine(authenticatedUserId);
 
-    if (!targetCommunityId?.trim()) {
-      throw createHttpError(400, "SHARE_001: Target community ID required");
-    }
-
     // 1. Recuperer la recette source avec ses relations
     const sourceRecipe = await prisma.recipe.findFirst({
       where: { id: recipeId, deletedAt: null },
       select: {
         id: true,
         title: true,
-        content: true,
-        imageUrl: true,
+        servings: true,
+        prepTime: true,
+        cookTime: true,
+        restTime: true,
+        imageKey: true,
         communityId: true,
         creatorId: true,
-        tags: { select: { tagId: true } },
+        tags: {
+          select: {
+            tagId: true,
+            tag: { select: { id: true, name: true, scope: true, communityId: true } },
+          },
+        },
         ingredients: {
-          select: { ingredientId: true, quantity: true, order: true },
+          select: { ingredientId: true, quantity: true, unitId: true, order: true },
+          orderBy: { order: "asc" },
+        },
+        steps: {
+          select: { order: true, instruction: true },
           orderBy: { order: "asc" },
         },
       },
     });
 
     if (!sourceRecipe) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     if (sourceRecipe.communityId === null) {
-      throw createHttpError(400, "SHARE_002: Cannot share personal recipes");
+      throw createHttpError(400, SHARE_002);
     }
 
     if (sourceRecipe.communityId === targetCommunityId) {
-      throw createHttpError(400, "SHARE_003: Cannot share to same community");
+      throw createHttpError(400, SHARE_003);
     }
 
     // Verifier que la communaute cible existe
@@ -71,13 +88,17 @@ export const shareRecipe: RequestHandler<
     });
 
     if (!targetCommunity) {
-      throw createHttpError(404, "COMMUNITY_002: Target community not found");
+      throw createHttpError(404, COMMUNITY_002);
     }
 
     // Verifier membership dans les deux communautes
     const [sourceMembership, targetMembership] = await Promise.all([
       prisma.userCommunity.findFirst({
-        where: { userId: authenticatedUserId, communityId: sourceRecipe.communityId, deletedAt: null },
+        where: {
+          userId: authenticatedUserId,
+          communityId: sourceRecipe.communityId,
+          deletedAt: null,
+        },
       }),
       prisma.userCommunity.findFirst({
         where: { userId: authenticatedUserId, communityId: targetCommunityId, deletedAt: null },
@@ -85,11 +106,11 @@ export const shareRecipe: RequestHandler<
     ]);
 
     if (!sourceMembership) {
-      throw createHttpError(403, "COMMUNITY_001: Not a member of source community");
+      throw createHttpError(403, COMMUNITY_001);
     }
 
     if (!targetMembership) {
-      throw createHttpError(403, "SHARE_004: Not a member of target community");
+      throw createHttpError(403, SHARE_004);
     }
 
     // Verifier permission: MODERATOR dans une des deux OU createur de la recette
@@ -98,10 +119,7 @@ export const shareRecipe: RequestHandler<
     const isModeratorInTarget = targetMembership.role === "MODERATOR";
 
     if (!isRecipeCreator && !isModeratorInSource && !isModeratorInTarget) {
-      throw createHttpError(
-        403,
-        "SHARE_005: Must be recipe creator or moderator in one of the communities"
-      );
+      throw createHttpError(403, SHARE_005);
     }
 
     // Verifier qu'il n'existe pas deja un partage vers cette communaute
@@ -110,35 +128,39 @@ export const shareRecipe: RequestHandler<
     });
 
     if (existingShare) {
-      throw createHttpError(400, "SHARE_006: Recipe already shared with this community");
+      throw createHttpError(400, SHARE_006);
     }
 
-    const result = await forkRecipe(
+    const { recipe: forkResult, pendingTagIds } = await forkRecipe(
       authenticatedUserId,
       { ...sourceRecipe, communityId: sourceRecipe.communityId },
       targetCommunityId,
       targetCommunity.name
     );
 
-    if (!result) {
+    if (!forkResult) {
       throw createHttpError(500, "Failed to share recipe");
     }
 
     const responseData = {
-      id: result.id,
-      title: result.title,
-      content: result.content,
-      imageUrl: result.imageUrl,
-      createdAt: result.createdAt,
-      updatedAt: result.updatedAt,
-      creatorId: result.creatorId,
-      communityId: result.communityId,
-      community: result.community,
-      originRecipeId: result.originRecipeId,
-      sharedFromCommunityId: result.sharedFromCommunityId,
-      isVariant: result.isVariant,
-      tags: formatTags(result.tags),
-      ingredients: formatIngredients(result.ingredients),
+      id: forkResult.id,
+      title: forkResult.title,
+      servings: forkResult.servings,
+      prepTime: forkResult.prepTime,
+      cookTime: forkResult.cookTime,
+      restTime: forkResult.restTime,
+      imageUrl: forkResult.imageKey ? buildImageUrl(forkResult.imageKey) : null,
+      createdAt: forkResult.createdAt,
+      updatedAt: forkResult.updatedAt,
+      creatorId: forkResult.creatorId,
+      communityId: forkResult.communityId,
+      community: forkResult.community,
+      originRecipeId: forkResult.originRecipeId,
+      sharedFromCommunityId: forkResult.sharedFromCommunityId,
+      isVariant: forkResult.isVariant,
+      steps: formatSteps(forkResult.steps),
+      tags: formatTags(forkResult.tags),
+      ingredients: formatIngredients(forkResult.ingredients),
     };
 
     // Emit to both source and target communities
@@ -152,18 +174,29 @@ export const shareRecipe: RequestHandler<
       type: "RECIPE_SHARED",
       userId: authenticatedUserId,
       communityId: targetCommunityId,
-      recipeId: result.id,
+      recipeId: forkResult.id,
     });
+
+    // Notifier les moderateurs si des tags PENDING ont ete crees
+    if (pendingTagIds.length > 0) {
+      const moderatorIds = await getModeratorIdsForTagNotification(targetCommunityId);
+      if (moderatorIds.length > 0) {
+        appEvents.emitActivity({
+          type: "tag:pending",
+          userId: authenticatedUserId,
+          communityId: targetCommunityId,
+          recipeId: forkResult.id,
+          targetUserIds: moderatorIds,
+          metadata: { pendingTagIds },
+        });
+      }
+    }
 
     res.status(201).json(responseData);
   } catch (error) {
     next(error);
   }
 };
-
-interface PublishToCommunityBody {
-  communityIds: string[];
-}
 
 /**
  * POST /api/recipes/:recipeId/publish
@@ -172,7 +205,7 @@ interface PublishToCommunityBody {
 export const publishToCommunities: RequestHandler<
   { recipeId: string },
   unknown,
-  PublishToCommunityBody,
+  PublishToCommunityInput,
   unknown
 > = async (req, res, next) => {
   const authenticatedUserId = req.session.userId;
@@ -182,37 +215,45 @@ export const publishToCommunities: RequestHandler<
   try {
     assertIsDefine(authenticatedUserId);
 
-    if (!communityIds || !Array.isArray(communityIds) || communityIds.length === 0) {
-      throw createHttpError(400, "PUBLISH_001: At least one community ID required");
-    }
-
     const sourceRecipe = await prisma.recipe.findFirst({
       where: { id: recipeId, deletedAt: null },
       select: {
         id: true,
         title: true,
-        content: true,
-        imageUrl: true,
+        servings: true,
+        prepTime: true,
+        cookTime: true,
+        restTime: true,
+        imageKey: true,
         creatorId: true,
         communityId: true,
-        tags: { select: { tagId: true } },
+        tags: {
+          select: {
+            tagId: true,
+            tag: { select: { id: true, name: true, scope: true, communityId: true } },
+          },
+        },
         ingredients: {
-          select: { ingredientId: true, quantity: true, order: true },
+          select: { ingredientId: true, quantity: true, unitId: true, order: true },
+          orderBy: { order: "asc" },
+        },
+        steps: {
+          select: { order: true, instruction: true },
           orderBy: { order: "asc" },
         },
       },
     });
 
     if (!sourceRecipe) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     if (sourceRecipe.communityId !== null) {
-      throw createHttpError(400, "PUBLISH_002: Can only publish personal recipes");
+      throw createHttpError(400, PUBLISH_002);
     }
 
     if (sourceRecipe.creatorId !== authenticatedUserId) {
-      throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
+      throw createHttpError(403, RECIPE_002);
     }
 
     // Verifier membership
@@ -223,7 +264,7 @@ export const publishToCommunities: RequestHandler<
     const memberCommunityIds = new Set(memberships.map((m) => m.communityId));
     for (const cid of communityIds) {
       if (!memberCommunityIds.has(cid)) {
-        throw createHttpError(403, `PUBLISH_003: Not a member of community ${cid}`);
+        throw createHttpError(403, PUBLISH_003(cid));
       }
     }
 
@@ -236,11 +277,34 @@ export const publishToCommunities: RequestHandler<
     const newCommunityIds = communityIds.filter((cid) => !alreadySharedCommunityIds.has(cid));
 
     if (newCommunityIds.length === 0) {
-      res.status(200).json({ data: [], message: "Recipe already shared to all selected communities" });
+      res
+        .status(200)
+        .json({ data: [], message: "Recipe already shared to all selected communities" });
       return;
     }
 
-    const createdRecipes = await publishRecipe(authenticatedUserId, sourceRecipe, newCommunityIds);
+    const { recipes: createdRecipes, pendingTagIds } = await publishRecipe(
+      authenticatedUserId,
+      sourceRecipe,
+      newCommunityIds
+    );
+
+    // Notifier les moderateurs si des tags PENDING ont ete crees
+    if (pendingTagIds.length > 0) {
+      for (const cid of newCommunityIds) {
+        const moderatorIds = await getModeratorIdsForTagNotification(cid);
+        if (moderatorIds.length > 0) {
+          appEvents.emitActivity({
+            type: "tag:pending",
+            userId: authenticatedUserId,
+            communityId: cid,
+            recipeId: recipeId,
+            targetUserIds: moderatorIds,
+            metadata: { pendingTagIds },
+          });
+        }
+      }
+    }
 
     res.status(201).json({ data: createdRecipes.filter(Boolean) });
   } catch (error) {
@@ -264,10 +328,22 @@ export const getRecipeCommunities: RequestHandler<
   try {
     assertIsDefine(authenticatedUserId);
 
+    // Verifier que l'utilisateur a acces a la recette
+    const recipe = await prisma.recipe.findFirst({
+      where: { id: recipeId, deletedAt: null },
+      select: { creatorId: true, communityId: true },
+    });
+
+    if (!recipe) {
+      throw createHttpError(404, RECIPE_001);
+    }
+
+    await requireRecipeAccess(authenticatedUserId, recipe);
+
     const communities = await getRecipeFamilyCommunities(recipeId);
 
     if (communities === null) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     res.status(200).json({ data: communities });

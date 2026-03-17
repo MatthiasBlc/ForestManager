@@ -2,17 +2,127 @@ import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import { FaCheck, FaTimes, FaUser, FaClock } from "react-icons/fa";
 import APIManager from "../../network/api";
-import { Proposal } from "../../models/recipe";
+import { Proposal, ProposalIngredient, RecipeIngredient } from "../../models/recipe";
 import { ConflictError } from "../../errors/http_errors";
 import { formatDate } from "../../utils/format.Date";
+import { formatDuration } from "../../utils/formatDuration";
 
 interface ProposalsListProps {
   recipeId: string;
+  currentTitle: string;
+  currentSteps: { instruction: string }[];
+  currentIngredients: RecipeIngredient[];
   refreshSignal?: number;
   onProposalDecided: () => void;
 }
 
-const ProposalsList = ({ recipeId, refreshSignal, onProposalDecided }: ProposalsListProps) => {
+function formatIngredient(ing: {
+  name: string;
+  quantity?: number | null;
+  unit?: { abbreviation: string } | null;
+}): string {
+  const unitStr = ing.unit?.abbreviation ?? "";
+  if (ing.quantity != null) {
+    return `${ing.name} (${ing.quantity}${unitStr ? ` ${unitStr}` : ""})`;
+  }
+  if (unitStr) {
+    return `${ing.name} (${unitStr})`;
+  }
+  return ing.name;
+}
+
+function IngredientsComparison({
+  current,
+  proposed,
+}: {
+  current: RecipeIngredient[];
+  proposed: ProposalIngredient[];
+}) {
+  const currentNames = new Set(current.map((i) => i.name));
+  const proposedNames = new Set(proposed.map((i) => i.ingredient.name));
+
+  const added = proposed.filter((i) => !currentNames.has(i.ingredient.name));
+  const removed = current.filter((i) => !proposedNames.has(i.name));
+  const kept = proposed.filter((i) => currentNames.has(i.ingredient.name));
+
+  if (added.length === 0 && removed.length === 0 && kept.length === proposed.length) {
+    // Check if quantities changed
+    const hasQuantityChanges = kept.some((pi) => {
+      const ci = current.find((c) => c.name === pi.ingredient.name);
+      return ci && (ci.quantity !== pi.quantity || (ci.unitId ?? null) !== pi.unitId);
+    });
+    if (!hasQuantityChanges) {
+      return <p className="text-sm text-base-content/60 italic">No ingredient changes</p>;
+    }
+  }
+
+  return (
+    <div className="space-y-2">
+      {added.length > 0 && (
+        <div>
+          <span className="text-xs font-semibold text-success">+ Added:</span>
+          <ul className="list-disc list-inside text-sm ml-2">
+            {added.map((i) => (
+              <li key={i.id} className="text-success">
+                {formatIngredient({ name: i.ingredient.name, quantity: i.quantity, unit: i.unit })}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {removed.length > 0 && (
+        <div>
+          <span className="text-xs font-semibold text-error">- Removed:</span>
+          <ul className="list-disc list-inside text-sm ml-2">
+            {removed.map((i) => (
+              <li key={i.id} className="text-error line-through">
+                {formatIngredient({ name: i.name, quantity: i.quantity, unit: i.unit })}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {kept.length > 0 && (
+        <div>
+          <span className="text-xs font-semibold text-base-content/70">Kept:</span>
+          <ul className="list-disc list-inside text-sm ml-2">
+            {kept.map((i) => {
+              const ci = current.find((c) => c.name === i.ingredient.name);
+              const qtyChanged = ci && ci.quantity !== i.quantity;
+              const unitChanged = ci && (ci.unitId ?? null) !== i.unitId;
+              const changed = qtyChanged || unitChanged;
+              return (
+                <li key={i.id} className={changed ? "text-warning" : "text-base-content/70"}>
+                  {formatIngredient({
+                    name: i.ingredient.name,
+                    quantity: i.quantity,
+                    unit: i.unit,
+                  })}
+                  {changed && ci && (
+                    <span className="text-xs">
+                      {" "}
+                      (was {ci.quantity ?? "no qty"}
+                      {ci.unit?.abbreviation ? ` ${ci.unit.abbreviation}` : ""})
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const ProposalsList = ({
+  recipeId,
+  currentTitle,
+  currentSteps,
+  currentIngredients,
+  refreshSignal,
+  onProposalDecided,
+}: ProposalsListProps) => {
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +156,9 @@ const ProposalsList = ({ recipeId, refreshSignal, onProposalDecided }: Proposals
       loadProposals();
     } catch (err) {
       if (err instanceof ConflictError) {
-        setError("The recipe has been modified since this proposal was created. Please refresh and review the changes.");
+        setError(
+          "The recipe has been modified since this proposal was created. Please refresh and review the changes."
+        );
       } else {
         setError(err instanceof Error ? err.message : "Failed to accept proposal");
       }
@@ -97,10 +209,7 @@ const ProposalsList = ({ recipeId, refreshSignal, onProposalDecided }: Proposals
 
       <div className="space-y-3">
         {proposals.map((proposal) => (
-          <div
-            key={proposal.id}
-            className="card bg-base-200 shadow-sm"
-          >
+          <div key={proposal.id} className="card bg-base-200 shadow-sm">
             <div className="card-body p-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
@@ -151,17 +260,98 @@ const ProposalsList = ({ recipeId, refreshSignal, onProposalDecided }: Proposals
 
               {expandedId === proposal.id && (
                 <div className="mt-4 p-3 bg-base-100 rounded-lg">
-                  <div className="text-sm space-y-2">
+                  <div className="text-sm space-y-3">
                     <div>
-                      <span className="font-medium">Proposed title:</span>
-                      <p className="mt-1">{proposal.proposedTitle}</p>
+                      <span className="font-medium">Title:</span>
+                      {proposal.proposedTitle !== currentTitle ? (
+                        <div className="mt-1">
+                          <p className="text-error line-through text-xs">{currentTitle}</p>
+                          <p className="text-success">{proposal.proposedTitle}</p>
+                        </div>
+                      ) : (
+                        <p className="mt-1 text-base-content/60 italic">No change</p>
+                      )}
                     </div>
-                    <div>
-                      <span className="font-medium">Proposed content:</span>
-                      <pre className="mt-1 whitespace-pre-wrap text-xs bg-base-200 p-2 rounded max-h-48 overflow-y-auto">
-                        {proposal.proposedContent}
-                      </pre>
-                    </div>
+                    {(proposal.proposedServings != null ||
+                      proposal.proposedPrepTime != null ||
+                      proposal.proposedCookTime != null ||
+                      proposal.proposedRestTime != null) && (
+                      <div className="flex flex-wrap gap-2">
+                        {proposal.proposedServings != null && (
+                          <span className="badge badge-outline badge-sm">
+                            {proposal.proposedServings} pers.
+                          </span>
+                        )}
+                        {proposal.proposedPrepTime != null && (
+                          <span className="badge badge-outline badge-sm">
+                            Prep {formatDuration(proposal.proposedPrepTime)}
+                          </span>
+                        )}
+                        {proposal.proposedCookTime != null && (
+                          <span className="badge badge-outline badge-sm">
+                            Cuisson {formatDuration(proposal.proposedCookTime)}
+                          </span>
+                        )}
+                        {proposal.proposedRestTime != null && (
+                          <span className="badge badge-outline badge-sm">
+                            Repos {formatDuration(proposal.proposedRestTime)}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    {proposal.proposedIngredients && proposal.proposedIngredients.length > 0 && (
+                      <div>
+                        <span className="font-medium">Proposed ingredients:</span>
+                        <div className="mt-1">
+                          <IngredientsComparison
+                            current={currentIngredients}
+                            proposed={proposal.proposedIngredients}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {proposal.proposedSteps && proposal.proposedSteps.length > 0 && (
+                      <div>
+                        <span className="font-medium">Steps:</span>
+                        <div className="mt-1 space-y-2 max-h-48 overflow-y-auto">
+                          {proposal.proposedSteps.map((step, i) => {
+                            const currentStep = currentSteps[i];
+                            const isNew = !currentStep;
+                            const isChanged =
+                              currentStep && currentStep.instruction !== step.instruction;
+                            return (
+                              <div key={step.id} className="text-xs">
+                                {isChanged && currentStep && (
+                                  <div className="flex gap-2 bg-base-200 p-2 rounded mb-1 text-error line-through">
+                                    <span className="badge badge-sm badge-neutral">{i + 1}</span>
+                                    <span className="whitespace-pre-wrap">
+                                      {currentStep.instruction}
+                                    </span>
+                                  </div>
+                                )}
+                                <div
+                                  className={`flex gap-2 bg-base-200 p-2 rounded ${isNew ? "text-success" : isChanged ? "text-success" : "text-base-content/60"}`}
+                                >
+                                  <span className="badge badge-sm badge-neutral">{i + 1}</span>
+                                  <span className="whitespace-pre-wrap">{step.instruction}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                          {currentSteps.slice(proposal.proposedSteps.length).map((step, i) => (
+                            <div
+                              key={`removed-${i}`}
+                              className="flex gap-2 text-xs bg-base-200 p-2 rounded text-error line-through"
+                            >
+                              <span className="badge badge-sm badge-neutral">
+                                {proposal.proposedSteps!.length + i + 1}
+                              </span>
+                              <span className="whitespace-pre-wrap">{step.instruction}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

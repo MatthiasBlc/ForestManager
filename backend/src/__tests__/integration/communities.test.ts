@@ -1,9 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../../app";
-import {
-  extractSessionCookie,
-} from "../setup/testHelpers";
+import { extractSessionCookie } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
 
 describe("Communities API", () => {
@@ -23,13 +21,10 @@ describe("Communities API", () => {
     });
 
     it("should create a new community with valid data", async () => {
-      const res = await request(app)
-        .post("/api/communities")
-        .set("Cookie", userCookie)
-        .send({
-          name: "Test Community",
-          description: "A test community description",
-        });
+      const res = await request(app).post("/api/communities").set("Cookie", userCookie).send({
+        name: "Test Community",
+        description: "A test community description",
+      });
 
       expect(res.status).toBe(201);
       expect(res.body.id).toBeDefined();
@@ -39,12 +34,9 @@ describe("Communities API", () => {
     });
 
     it("should create a community without description", async () => {
-      const res = await request(app)
-        .post("/api/communities")
-        .set("Cookie", userCookie)
-        .send({
-          name: "No Description Community",
-        });
+      const res = await request(app).post("/api/communities").set("Cookie", userCookie).send({
+        name: "No Description Community",
+      });
 
       expect(res.status).toBe(201);
       expect(res.body.name).toBe("No Description Community");
@@ -52,12 +44,9 @@ describe("Communities API", () => {
     });
 
     it("should add creator as MODERATOR", async () => {
-      const res = await request(app)
-        .post("/api/communities")
-        .set("Cookie", userCookie)
-        .send({
-          name: "Creator Test Community",
-        });
+      const res = await request(app).post("/api/communities").set("Cookie", userCookie).send({
+        name: "Creator Test Community",
+      });
 
       expect(res.status).toBe(201);
 
@@ -73,21 +62,15 @@ describe("Communities API", () => {
     });
 
     it("should return 400 when name is missing", async () => {
-      const res = await request(app)
-        .post("/api/communities")
-        .set("Cookie", userCookie)
-        .send({});
+      const res = await request(app).post("/api/communities").set("Cookie", userCookie).send({});
 
       expect(res.status).toBe(400);
     });
 
     it("should return 400 when name is too short", async () => {
-      const res = await request(app)
-        .post("/api/communities")
-        .set("Cookie", userCookie)
-        .send({
-          name: "AB",
-        });
+      const res = await request(app).post("/api/communities").set("Cookie", userCookie).send({
+        name: "AB",
+      });
 
       expect(res.status).toBe(400);
       expect(res.body.error).toContain("at least 3");
@@ -143,9 +126,7 @@ describe("Communities API", () => {
     });
 
     it("should return empty list when user has no communities", async () => {
-      const res = await request(app)
-        .get("/api/communities")
-        .set("Cookie", userCookie);
+      const res = await request(app).get("/api/communities").set("Cookie", userCookie);
 
       expect(res.status).toBe(200);
       expect(res.body.data).toEqual([]);
@@ -153,17 +134,12 @@ describe("Communities API", () => {
 
     it("should return user's communities with role and counts", async () => {
       // Create a community
-      const createRes = await request(app)
-        .post("/api/communities")
-        .set("Cookie", userCookie)
-        .send({
-          name: "My Community",
-          description: "My community description",
-        });
+      const createRes = await request(app).post("/api/communities").set("Cookie", userCookie).send({
+        name: "My Community",
+        description: "My community description",
+      });
 
-      const res = await request(app)
-        .get("/api/communities")
-        .set("Cookie", userCookie);
+      const res = await request(app).get("/api/communities").set("Cookie", userCookie);
 
       expect(res.status).toBe(200);
       expect(res.body.data).toHaveLength(1);
@@ -188,9 +164,7 @@ describe("Communities API", () => {
         data: { deletedAt: new Date() },
       });
 
-      const res = await request(app)
-        .get("/api/communities")
-        .set("Cookie", userCookie);
+      const res = await request(app).get("/api/communities").set("Cookie", userCookie);
 
       expect(res.status).toBe(200);
       expect(res.body.data).toHaveLength(0);
@@ -229,13 +203,10 @@ describe("Communities API", () => {
 
     it("should return community details for a member", async () => {
       // Create a community
-      const createRes = await request(app)
-        .post("/api/communities")
-        .set("Cookie", userCookie)
-        .send({
-          name: "Detail Community",
-          description: "Community for detail tests",
-        });
+      const createRes = await request(app).post("/api/communities").set("Cookie", userCookie).send({
+        name: "Detail Community",
+        description: "Community for detail tests",
+      });
 
       const res = await request(app)
         .get(`/api/communities/${createRes.body.id}`)
@@ -269,7 +240,7 @@ describe("Communities API", () => {
 
     it("should return 404 for non-existent community", async () => {
       const res = await request(app)
-        .get("/api/communities/00000000-0000-0000-0000-000000000000")
+        .get("/api/communities/00000000-0000-4000-8000-000000000000")
         .set("Cookie", userCookie);
 
       expect(res.status).toBe(404);
@@ -295,9 +266,7 @@ describe("Communities API", () => {
     });
 
     it("should return 401 when not authenticated", async () => {
-      const res = await request(app).get(
-        "/api/communities/00000000-0000-0000-0000-000000000000"
-      );
+      const res = await request(app).get("/api/communities/00000000-0000-4000-8000-000000000000");
 
       expect(res.status).toBe(401);
     });
@@ -478,7 +447,7 @@ describe("Communities API", () => {
 
     it("should return 401 when not authenticated", async () => {
       const res = await request(app)
-        .patch("/api/communities/00000000-0000-0000-0000-000000000000")
+        .patch("/api/communities/00000000-0000-4000-8000-000000000000")
         .send({ name: "Test" });
 
       expect(res.status).toBe(401);

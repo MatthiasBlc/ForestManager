@@ -14,7 +14,14 @@ export type ActivityType =
   | "INVITE_SENT"
   | "INVITE_ACCEPTED"
   | "INVITE_REJECTED"
-  | "INVITE_CANCELLED";
+  | "INVITE_CANCELLED"
+  | "TAG_CREATED"
+  | "TAG_UPDATED"
+  | "TAG_DELETED"
+  | "TAG_APPROVED"
+  | "TAG_REJECTED"
+  | "TAG_SUGGESTION_ACCEPTED"
+  | "TAG_SUGGESTION_REJECTED";
 
 export interface ActivityUser {
   id: string;

@@ -1,5 +1,8 @@
 name: Build and Deploy
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   push:
     branches: [master]
@@ -8,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       skip_build:
-        description: 'Skip build (use existing images)'
+        description: "Skip build (use existing images)"
         required: false
         default: false
         type: boolean
@@ -41,6 +44,27 @@ jobs:
               - 'docker-compose.preprod.yml'
 
   # ========================================
+  # Format check
+  # ========================================
+  format-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Prettier
+        run: npm install --save-dev prettier
+
+      - name: Check formatting
+        run: npx prettier --check .
+
+  # ========================================
   # Test Backend
   # ========================================
   test-backend:
@@ -70,13 +94,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
           cache-dependency-path: backend/package-lock.json
 
       - name: Install dependencies
         working-directory: ./backend
         run: npm ci
+
+      - name: Security audit
+        working-directory: ./backend
+        run: npm audit --audit-level=high
 
       - name: Generate Prisma Client
         working-directory: ./backend
@@ -88,7 +116,11 @@ jobs:
           DATABASE_URL: postgresql://forestmanager:test_password@localhost:5432/forestmanager_test?schema=public
         run: npx prisma migrate deploy
 
-      - name: Run tests
+      - name: Lint
+        working-directory: ./backend
+        run: npx eslint .
+
+      - name: Run tests with coverage
         working-directory: ./backend
         env:
           DATABASE_URL: postgresql://forestmanager:test_password@localhost:5432/forestmanager_test?schema=public
@@ -96,7 +128,7 @@ jobs:
           PORT: 3001
           SESSION_SECRET: test_session_secret
           ADMIN_SESSION_SECRET: test_admin_session_secret
-        run: npm test
+        run: npx vitest run --coverage
 
   # ========================================
   # Test Frontend
@@ -113,19 +145,27 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
         working-directory: ./frontend
         run: npm ci
 
-      - name: Run tests
+      - name: Security audit
+        working-directory: ./frontend
+        run: npm audit --audit-level=high
+
+      - name: Lint
+        working-directory: ./frontend
+        run: npx eslint .
+
+      - name: Run tests with coverage
         working-directory: ./frontend
         env:
           VITE_BACKEND_URL: http://localhost:3001
-        run: npm test
+        run: npx vitest run --coverage
 
   # ========================================
   # Build Backend Image

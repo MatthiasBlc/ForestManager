@@ -52,7 +52,9 @@ export const ShareModal = (props: ShareModalProps) => {
         });
 
         setCommunities(available);
-        setAllShared(available.length === 0 && communitiesRes.data.length > (currentCommunityId ? 1 : 0));
+        setAllShared(
+          available.length === 0 && communitiesRes.data.length > (currentCommunityId ? 1 : 0)
+        );
       } catch {
         setError("Failed to load communities");
       } finally {
@@ -102,22 +104,23 @@ export const ShareModal = (props: ShareModalProps) => {
   };
 
   const title = mode === "community" ? "Share Recipe" : "Share to Communities";
-  const description = mode === "community"
-    ? `Share "${recipeTitle}" to another community. A copy will be created in each selected community.`
-    : `Share "${recipeTitle}" to your communities. A copy will be created in each selected community.`;
+  const description =
+    mode === "community"
+      ? `Share "${recipeTitle}" to another community. A copy will be created in each selected community.`
+      : `Share "${recipeTitle}" to your communities. A copy will be created in each selected community.`;
   const emptyMessage = allShared
-    ? (mode === "community"
-        ? "This recipe is already shared to all your other communities."
-        : "This recipe is already shared to all your communities.")
-    : (mode === "community"
-        ? "You are not a member of any other communities to share to."
-        : "You are not a member of any communities yet.");
+    ? mode === "community"
+      ? "This recipe is already shared to all your other communities."
+      : "This recipe is already shared to all your communities."
+    : mode === "community"
+      ? "You are not a member of any other communities to share to."
+      : "You are not a member of any communities yet.";
 
   return (
     <div className="modal modal-open">
       <div className="modal-box">
         <button
-          className="btn btn-sm btn-circle absolute right-2 top-2"
+          className="btn btn-circle min-h-[44px] min-w-[44px] absolute right-2 top-2"
           onClick={onClose}
           disabled={isSubmitting}
         >
@@ -173,11 +176,7 @@ export const ShareModal = (props: ShareModalProps) => {
         )}
 
         <div className="modal-action">
-          <button
-            className="btn btn-ghost"
-            onClick={onClose}
-            disabled={isSubmitting}
-          >
+          <button className="btn btn-ghost" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </button>
           <button

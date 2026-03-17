@@ -46,7 +46,8 @@ describe("usePaginatedList", () => {
   });
 
   it("should append data on loadMore", async () => {
-    const fetchFn = vi.fn()
+    const fetchFn = vi
+      .fn()
       .mockResolvedValueOnce({
         data: [{ id: "1" }],
         pagination: { total: 3, limit: 1, offset: 0, hasMore: true },
@@ -95,7 +96,8 @@ describe("usePaginatedList", () => {
   });
 
   it("should reset data when deps change", async () => {
-    const fetchFn = vi.fn()
+    const fetchFn = vi
+      .fn()
       .mockResolvedValueOnce({
         data: [{ id: "1" }],
         pagination: { total: 1, limit: 10, offset: 0, hasMore: false },

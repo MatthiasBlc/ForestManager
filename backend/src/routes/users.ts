@@ -2,6 +2,11 @@ import express from "express";
 import * as InvitesController from "../controllers/invites";
 import * as UsersController from "../controllers/users";
 import * as ActivityController from "../controllers/activity";
+import * as TagPreferencesController from "../controllers/tagPreferences";
+import { validateUUID } from "../middleware/validateUUID";
+import { validateBody } from "../middleware/validateBody";
+import { updateProfileSchema } from "../schemas/user.schema";
+import { updateTagPreferenceSchema } from "../schemas/tag.schema";
 
 const router = express.Router();
 
@@ -9,12 +14,21 @@ const router = express.Router();
 router.get("/search", UsersController.searchUsers);
 
 // Update my profile
-router.patch("/me", UsersController.updateProfile);
+router.patch("/me", validateBody(updateProfileSchema), UsersController.updateProfile);
 
 // Get my received invitations
 router.get("/me/invites", InvitesController.getMyInvites);
 
 // Get my activity feed
 router.get("/me/activity", ActivityController.getMyActivity);
+
+// Tag visibility preferences
+router.get("/me/tag-preferences", TagPreferencesController.getTagPreferences);
+router.put(
+  "/me/tag-preferences/:communityId",
+  validateUUID,
+  validateBody(updateTagPreferenceSchema),
+  TagPreferencesController.updateTagPreference
+);
 
 export default router;

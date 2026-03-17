@@ -2,12 +2,8 @@ import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import prisma from "../util/db";
 import bcrypt from "bcrypt";
-import {
-  EMAIL_REGEX,
-  USERNAME_REGEX,
-  MIN_USERNAME_LENGTH,
-  MIN_PASSWORD_LENGTH,
-} from "../util/validation";
+import { AUTH_001, AUTH_006, AUTH_007, AUTH_008, AUTH_009 } from "../constants/errorCodes";
+import type { SignupInput, LoginInput } from "../schemas/auth.schema";
 
 /**
  * GET /api/auth/me
@@ -16,7 +12,7 @@ import {
 export const getMe: RequestHandler = async (req, res, next) => {
   try {
     if (!req.session.userId) {
-      throw createHttpError(401, "AUTH_001: Not authenticated");
+      throw createHttpError(401, AUTH_001);
     }
 
     const user = await prisma.user.findUnique({
@@ -35,7 +31,7 @@ export const getMe: RequestHandler = async (req, res, next) => {
     if (!user) {
       // User was deleted or not found
       req.session.destroy(() => {});
-      throw createHttpError(401, "AUTH_009: Account deactivated");
+      throw createHttpError(401, AUTH_009);
     }
 
     res.status(200).json({ user });
@@ -44,43 +40,18 @@ export const getMe: RequestHandler = async (req, res, next) => {
   }
 };
 
-interface SignUpBody {
-  username?: string;
-  email?: string;
-  password?: string;
-}
-
 /**
  * POST /api/auth/signup
- * Cree un nouvel utilisateur
+ * Cree un nouvel utilisateur (body valide par signupSchema)
  */
-export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = async (req, res, next) => {
+export const signUp: RequestHandler<unknown, unknown, SignupInput, unknown> = async (
+  req,
+  res,
+  next
+) => {
   const { username, email, password } = req.body;
 
   try {
-    // Validation des parametres requis
-    if (!username || !email || !password) {
-      throw createHttpError(400, "AUTH_002: Missing required parameters");
-    }
-
-    // Validation email
-    if (!EMAIL_REGEX.test(email)) {
-      throw createHttpError(400, "AUTH_003: Invalid email format");
-    }
-
-    // Validation username format et longueur
-    if (username.length < MIN_USERNAME_LENGTH) {
-      throw createHttpError(400, `AUTH_004: Username must be at least ${MIN_USERNAME_LENGTH} characters`);
-    }
-    if (!USERNAME_REGEX.test(username)) {
-      throw createHttpError(400, "AUTH_004: Username can only contain letters, numbers, and underscores");
-    }
-
-    // Validation password longueur
-    if (password.length < MIN_PASSWORD_LENGTH) {
-      throw createHttpError(400, `AUTH_005: Password must be at least ${MIN_PASSWORD_LENGTH} characters`);
-    }
-
     // Verification username unique (excluant les comptes supprimes)
     const existingUsername = await prisma.user.findFirst({
       where: {
@@ -93,7 +64,7 @@ export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = asy
     });
 
     if (existingUsername) {
-      throw createHttpError(409, "AUTH_006: Username already taken");
+      throw createHttpError(409, AUTH_006);
     }
 
     // Verification email unique (excluant les comptes supprimes)
@@ -108,7 +79,7 @@ export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = asy
     });
 
     if (existingEmail) {
-      throw createHttpError(409, "AUTH_007: Email already in use");
+      throw createHttpError(409, AUTH_007);
     }
 
     const passwordHashed = await bcrypt.hash(password, 10);
@@ -127,31 +98,29 @@ export const signUp: RequestHandler<unknown, unknown, SignUpBody, unknown> = asy
       },
     });
 
-    req.session.userId = newUser.id;
-
-    res.status(201).json({ user: newUser });
+    // Regenerer la session pour prevenir la session fixation
+    req.session.regenerate((err) => {
+      if (err) return next(err);
+      req.session.userId = newUser.id;
+      res.status(201).json({ user: newUser });
+    });
   } catch (error) {
     next(error);
   }
 };
 
-interface LoginBody {
-  username?: string;
-  password?: string;
-}
-
 /**
  * POST /api/auth/login
- * Authentifie un utilisateur existant
+ * Authentifie un utilisateur existant (body valide par loginSchema)
  */
-export const login: RequestHandler<unknown, unknown, LoginBody, unknown> = async (req, res, next) => {
+export const login: RequestHandler<unknown, unknown, LoginInput, unknown> = async (
+  req,
+  res,
+  next
+) => {
   const { username, password } = req.body;
 
   try {
-    if (!username || !password) {
-      throw createHttpError(400, "AUTH_002: Missing required parameters");
-    }
-
     const user = await prisma.user.findUnique({
       where: {
         username: username,
@@ -167,30 +136,33 @@ export const login: RequestHandler<unknown, unknown, LoginBody, unknown> = async
     });
 
     if (!user) {
-      throw createHttpError(401, "AUTH_008: Invalid credentials");
+      throw createHttpError(401, AUTH_008);
     }
 
     // Verifier si le compte est desactive (soft deleted)
     if (user.deletedAt !== null) {
-      throw createHttpError(401, "AUTH_009: Account deactivated");
+      throw createHttpError(401, AUTH_009);
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      throw createHttpError(401, "AUTH_008: Invalid credentials");
+      throw createHttpError(401, AUTH_008);
     }
 
-    req.session.userId = user.id;
+    // Regenerer la session pour prevenir la session fixation
+    req.session.regenerate((err) => {
+      if (err) return next(err);
+      req.session.userId = user.id;
 
-    // Ne pas retourner le password
-    res.status(200).json({
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        createdAt: user.createdAt,
-      },
+      res.status(200).json({
+        user: {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          createdAt: user.createdAt,
+        },
+      });
     });
   } catch (error) {
     next(error);

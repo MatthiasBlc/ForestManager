@@ -9,6 +9,7 @@ import RecipeListRow from "./recipes/RecipeListRow";
 import RecipeFilters from "./recipes/RecipeFilters";
 import { SharePersonalRecipeModal } from "./share";
 import { usePaginatedList } from "../hooks/usePaginatedList";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 type ViewMode = "card" | "list";
 
@@ -17,11 +18,12 @@ const RECIPES_PER_PAGE = 12;
 const RecipesPageLoggedInView = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const isMobile = useIsMobile();
 
   const [shareRecipe, setShareRecipe] = useState<RecipeListItem | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem("recipesViewMode");
-    return (saved === "list" || saved === "card") ? saved : "card";
+    return saved === "list" || saved === "card" ? saved : "card";
   });
 
   const toggleViewMode = () => {
@@ -32,10 +34,7 @@ const RecipesPageLoggedInView = () => {
 
   const searchFilter = searchParams.get("search") || "";
   const tagsParam = searchParams.get("tags") || "";
-  const tagsFilter = useMemo(
-    () => tagsParam.split(",").filter(Boolean),
-    [tagsParam]
-  );
+  const tagsFilter = useMemo(() => tagsParam.split(",").filter(Boolean), [tagsParam]);
   const ingredientsParam = searchParams.get("ingredients") || "";
   const ingredientsFilter = useMemo(
     () => ingredientsParam.split(",").filter(Boolean),
@@ -54,8 +53,14 @@ const RecipesPageLoggedInView = () => {
   );
 
   const {
-    data: recipes, pagination, isLoading: recipesLoading, isLoadingMore: loadingMore,
-    error: showRecipesLoadingError, loadMore: handleLoadMore, setData: setRecipes, setPagination,
+    data: recipes,
+    pagination,
+    isLoading: recipesLoading,
+    isLoadingMore: loadingMore,
+    error: showRecipesLoadingError,
+    loadMore: handleLoadMore,
+    setData: setRecipes,
+    setPagination,
   } = usePaginatedList(fetchRecipes, RECIPES_PER_PAGE, [fetchRecipes]);
 
   const handleSearchChange = (search: string) => {
@@ -124,26 +129,25 @@ const RecipesPageLoggedInView = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">My Recipes</h1>
         <div className="flex gap-2">
-          <div className="join">
-            <button
-              className={`btn btn-sm join-item ${viewMode === "card" ? "btn-active" : ""}`}
-              onClick={() => viewMode !== "card" && toggleViewMode()}
-              aria-label="Card view"
-            >
-              <FaTh />
-            </button>
-            <button
-              className={`btn btn-sm join-item ${viewMode === "list" ? "btn-active" : ""}`}
-              onClick={() => viewMode !== "list" && toggleViewMode()}
-              aria-label="List view"
-            >
-              <FaList />
-            </button>
-          </div>
-          <button
-            className="btn btn-primary gap-2"
-            onClick={() => navigate("/recipes/new")}
-          >
+          {!isMobile && (
+            <div className="join">
+              <button
+                className={`btn btn-sm join-item ${viewMode === "card" ? "btn-active" : ""}`}
+                onClick={() => viewMode !== "card" && toggleViewMode()}
+                aria-label="Card view"
+              >
+                <FaTh />
+              </button>
+              <button
+                className={`btn btn-sm join-item ${viewMode === "list" ? "btn-active" : ""}`}
+                onClick={() => viewMode !== "list" && toggleViewMode()}
+                aria-label="List view"
+              >
+                <FaList />
+              </button>
+            </div>
+          )}
+          <button className="btn btn-primary gap-2" onClick={() => navigate("/recipes/new")}>
             <FaPlus />
             New Recipe
           </button>
@@ -178,7 +182,7 @@ const RecipesPageLoggedInView = () => {
         <>
           {recipes.length > 0 ? (
             <>
-              {viewMode === "card" ? (
+              {isMobile || viewMode === "card" ? (
                 <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {recipes.map((recipe) => (
                     <RecipeCard
@@ -227,14 +231,14 @@ const RecipesPageLoggedInView = () => {
               )}
             </>
           ) : (
-            <div className="text-center py-12">
+            <div className="flex flex-col items-center justify-center min-h-[40vh] md:min-h-0 text-center py-12">
               <p className="text-lg text-base-content/60 mb-4">
                 {searchFilter || tagsFilter.length > 0 || ingredientsFilter.length > 0
                   ? "No recipes match your filters"
                   : "You don't have any recipes yet"}
               </p>
               {(searchFilter || tagsFilter.length > 0 || ingredientsFilter.length > 0) && (
-                <button className="btn btn-ghost" onClick={handleResetFilters}>
+                <button className="btn btn-ghost btn-lg md:btn-md" onClick={handleResetFilters}>
                   Clear filters
                 </button>
               )}

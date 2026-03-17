@@ -1,6 +1,8 @@
-import { FaEdit, FaTrash, FaCodeBranch, FaShare } from "react-icons/fa";
+import { FaEdit, FaTrash, FaCodeBranch, FaShare, FaClock, FaUsers } from "react-icons/fa";
 import { RecipeListItem, CommunityRecipeListItem } from "../../models/recipe";
 import { useRecipeActions } from "../../hooks/useRecipeActions";
+import TagBadge from "./TagBadge";
+import { formatDuration } from "../../utils/formatDuration";
 
 interface RecipeListRowProps {
   recipe: RecipeListItem | CommunityRecipeListItem;
@@ -12,13 +14,33 @@ interface RecipeListRowProps {
   canDelete?: boolean;
 }
 
-const RecipeListRow = ({ recipe, onDelete, onTagClick, onShare, showCreator = false, canEdit = true, canDelete = true }: RecipeListRowProps) => {
+const RecipeListRow = ({
+  recipe,
+  onDelete,
+  onTagClick,
+  onShare,
+  showCreator = false,
+  canEdit = true,
+  canDelete = true,
+}: RecipeListRowProps) => {
   const {
-    title, imageUrl, tags, displayedTags, remainingTagsCount, dateText,
-    communityRecipe, isSharedRecipe,
-    handleClick, handleEdit, handleDelete, handleTagClick, handleShare,
+    title,
+    imageUrl,
+    tags,
+    displayedTags,
+    remainingTagsCount,
+    dateText,
+    communityRecipe,
+    isSharedRecipe,
+    handleClick,
+    handleEdit,
+    handleDelete,
+    handleTagClick,
+    handleShare,
     ConfirmDialog,
   } = useRecipeActions({ recipe, onDelete, onTagClick, onShare });
+
+  const totalTime = (recipe.prepTime ?? 0) + (recipe.cookTime ?? 0) + (recipe.restTime ?? 0);
 
   return (
     <div
@@ -27,7 +49,7 @@ const RecipeListRow = ({ recipe, onDelete, onTagClick, onShare, showCreator = fa
     >
       {imageUrl ? (
         <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-          <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
+          <img src={imageUrl} alt={title} className="w-full h-full object-cover" loading="lazy" />
         </div>
       ) : (
         <div className="w-16 h-16 rounded-lg bg-base-200 flex items-center justify-center flex-shrink-0">
@@ -48,19 +70,28 @@ const RecipeListRow = ({ recipe, onDelete, onTagClick, onShare, showCreator = fa
             </span>
           )}
         </div>
-        <p className="text-sm text-base-content/60">{dateText}</p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm text-base-content/60">{dateText}</p>
+          <span className="badge badge-ghost badge-xs gap-1">
+            <FaUsers className="w-2 h-2" /> {recipe.servings}
+          </span>
+          {totalTime > 0 && (
+            <span className="badge badge-ghost badge-xs gap-1">
+              <FaClock className="w-2 h-2" /> {formatDuration(totalTime)}
+            </span>
+          )}
+        </div>
       </div>
 
       {tags.length > 0 && (
         <div className="hidden sm:flex flex-wrap gap-1 max-w-48">
           {displayedTags.map((tag) => (
-            <span
+            <TagBadge
               key={tag.id}
+              tag={tag}
+              size="sm"
               onClick={(e) => handleTagClick(e, tag.name)}
-              className="badge badge-primary badge-sm cursor-pointer hover:badge-secondary"
-            >
-              {tag.name}
-            </span>
+            />
           ))}
           {remainingTagsCount > 0 && (
             <span className="badge badge-ghost badge-sm">+{remainingTagsCount}</span>

@@ -30,9 +30,7 @@ describe("requireAuth", () => {
   it("should call next with 401 when session has no userId (undefined)", () => {
     const { req, res, next } = mockReqResNext({ userId: undefined });
     requireAuth(req, res, next);
-    expect(next).toHaveBeenCalledWith(
-      expect.objectContaining({ status: 401 })
-    );
+    expect(next).toHaveBeenCalledWith(expect.objectContaining({ status: 401 }));
   });
 
   it("should pass when userId is a valid string", () => {

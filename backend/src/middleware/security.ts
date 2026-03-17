@@ -1,7 +1,8 @@
 import helmet from "helmet";
-import rateLimit from "express-rate-limit";
 import { RequestHandler } from "express";
 import env from "../util/validateEnv";
+import { ADMIN_011, AUTH_012 } from "../constants/errorCodes";
+import { createRateLimiter } from "../config/rateLimiter";
 
 /**
  * Helmet configuration with strict security headers
@@ -26,41 +27,29 @@ export const helmetMiddleware = helmet({
   xFrameOptions: { action: "deny" },
   xContentTypeOptions: true, // X-Content-Type-Options: nosniff
   referrerPolicy: { policy: "strict-origin-when-cross-origin" },
-  hsts: env.NODE_ENV === "production" ? {
-    maxAge: 31536000, // 1 an
-    includeSubDomains: true,
-    preload: true,
-  } : false,
+  hsts:
+    env.NODE_ENV === "production"
+      ? {
+          maxAge: 31536000, // 1 an
+          includeSubDomains: true,
+          preload: true,
+        }
+      : false,
 });
 
-/**
- * Rate limiter global pour les routes admin (hors auth)
- * Plus permissif que le rate limiter auth (30 req/min)
- */
-/**
- * Rate limiter pour les routes d'authentification user (signup/login).
- * 10 tentatives par IP par fenetre de 15 minutes.
- */
-export const authRateLimiter: RequestHandler = env.NODE_ENV === "test"
-  ? ((_req, _res, next) => next())
-  : rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 10,
-      message: { error: "AUTH_002: Too many attempts, please try again later" },
-      standardHeaders: true,
-      legacyHeaders: false,
-    });
+/** Rate limiter user auth (signup/login) : 10 req / 15 min */
+export const authRateLimiter: RequestHandler = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: AUTH_012,
+});
 
-export const adminRateLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 30, // 30 requetes par minute
-  message: { error: "ADMIN_011: Too many requests, please slow down" },
-  standardHeaders: true,
-  legacyHeaders: false,
-  skip: (req) => {
-    // Skip pour les routes auth (elles ont leur propre rate limiter plus strict)
-    return req.path.startsWith("/auth");
-  },
+/** Rate limiter global admin (hors auth) : 30 req / min */
+export const adminRateLimiter: RequestHandler = createRateLimiter({
+  windowMs: 60 * 1000,
+  max: 30,
+  message: ADMIN_011,
+  skip: (req) => req.path.startsWith("/auth"),
 });
 
 /**

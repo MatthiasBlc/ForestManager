@@ -1,38 +1,37 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { AdminActivityLog } from "../../models/admin";
 import APIManager from "../../network/api";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
+import DataContainer from "../../components/DataContainer";
+import { useAsyncData } from "../../hooks/useAsyncData";
 
 const PAGE_SIZE = 20;
 
 function AdminActivityPage() {
-  const [activities, setActivities] = useState<AdminActivityLog[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState("");
   const [offset, setOffset] = useState(0);
-  const [total, setTotal] = useState(0);
 
-  const loadActivity = useCallback(async () => {
-    try {
-      const data = await APIManager.getAdminActivity({
+  const {
+    data: activityData,
+    isLoading,
+    error,
+  } = useAsyncData(
+    () =>
+      APIManager.getAdminActivity({
         type: typeFilter || undefined,
         limit: PAGE_SIZE,
         offset,
-      });
-      setActivities(data.activities);
-      setTotal(data.pagination.total);
-    } catch {
-      toast.error("Failed to load activity");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [typeFilter, offset]);
+      }),
+    [typeFilter, offset]
+  );
 
   useEffect(() => {
-    setIsLoading(true);
-    loadActivity();
-  }, [loadActivity]);
+    if (error) toast.error(error);
+  }, [error]);
+
+  const activities: AdminActivityLog[] = activityData?.activities ?? [];
+  const total = activityData?.pagination?.total ?? 0;
 
   function handleFilterChange(type: string) {
     setTypeFilter(type);
@@ -44,10 +43,12 @@ function AdminActivityPage() {
 
   function formatMetadata(metadata: Record<string, unknown>): string {
     if (!metadata || Object.keys(metadata).length === 0) return "-";
-    return Object.entries(metadata)
-      .filter(([key]) => key !== "ip")
-      .map(([key, val]) => `${key}: ${val}`)
-      .join(", ") || "-";
+    return (
+      Object.entries(metadata)
+        .filter(([key]) => key !== "ip")
+        .map(([key, val]) => `${key}: ${val}`)
+        .join(", ") || "-"
+    );
   }
 
   return (
@@ -86,11 +87,7 @@ function AdminActivityPage() {
       </div>
 
       {/* Table */}
-      {isLoading ? (
-        <div className="flex justify-center py-12">
-          <span className="loading loading-spinner loading-lg"></span>
-        </div>
-      ) : (
+      <DataContainer isLoading={isLoading && !activityData} error={null}>
         <>
           <div className="card bg-base-100 shadow">
             <div className="overflow-x-auto">
@@ -121,7 +118,9 @@ function AdminActivityPage() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} className="text-center text-base-content/50">No activity found</td>
+                      <td colSpan={4} className="text-center text-base-content/50">
+                        No activity found
+                      </td>
                     </tr>
                   )}
                 </tbody>
@@ -152,7 +151,7 @@ function AdminActivityPage() {
             </div>
           )}
         </>
-      )}
+      </DataContainer>
     </div>
   );
 }

@@ -59,7 +59,7 @@ const LoginModal = () => {
           <h3 className="font-bold text-lg">Log In</h3>
           <button
             type="button"
-            className="btn btn-sm btn-circle btn-ghost"
+            className="btn btn-circle btn-ghost min-h-[44px] min-w-[44px]"
             onClick={handleClose}
           >
             X
@@ -109,24 +109,12 @@ const LoginModal = () => {
             error={errors.password}
           />
           <div className="modal-action flex-col gap-2">
-            <button
-              type="submit"
-              className="btn btn-primary w-full"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <span className="loading loading-spinner loading-sm"></span>
-              ) : (
-                "Log In"
-              )}
+            <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
+              {isSubmitting ? <span className="loading loading-spinner loading-sm" /> : "Log In"}
             </button>
             <p className="text-center text-sm text-base-content/70 mt-2">
               Don't have an account?{" "}
-              <Link
-                to="/signup"
-                className="link link-primary"
-                onClick={handleSignUpClick}
-              >
+              <Link to="/signup" className="link link-primary" onClick={handleSignUpClick}>
                 Create one
               </Link>
             </p>

@@ -1,6 +1,6 @@
 import { ReactNode, useState, useEffect, useCallback } from "react";
-import { FaBars } from "react-icons/fa";
 import Sidebar from "./Sidebar";
+import { useNotificationToasts } from "../../hooks/useNotificationToasts";
 
 const COMPACT_BREAKPOINT = 768;
 
@@ -9,6 +9,7 @@ interface MainLayoutProps {
 }
 
 const MainLayout = ({ children }: MainLayoutProps) => {
+  useNotificationToasts();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCompact, setIsCompact] = useState(false);
   const [userPreference, setUserPreference] = useState<boolean | null>(null);
@@ -42,7 +43,7 @@ const MainLayout = ({ children }: MainLayoutProps) => {
   }, [userPreference]);
 
   return (
-    <div className="drawer pointer-fine:drawer-open h-screen overflow-hidden">
+    <div className="drawer md:drawer-open h-screen overflow-hidden">
       {/* Drawer toggle (hidden checkbox for DaisyUI) */}
       <input
         id="main-drawer"
@@ -54,36 +55,25 @@ const MainLayout = ({ children }: MainLayoutProps) => {
 
       {/* Main content */}
       <div className="drawer-content flex flex-col h-full overflow-hidden z-0">
-        {/* Mobile menu button - only shows on touch devices */}
-        <div className="p-2 border-b border-base-300 pointer-fine:hidden">
-          <label
-            htmlFor="main-drawer"
-            className="btn btn-ghost btn-sm drawer-button"
-          >
-            <FaBars className="w-4 h-4" />
-            <span className="ml-2">Menu</span>
-          </label>
-        </div>
-
-        {/* Page content */}
-        <main className="flex-1 p-4 pointer-fine:p-6 overflow-y-auto">
+        {/* Page content - padding-bottom on mobile for BottomTabBar */}
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto pb-[calc(56px+var(--safe-area-bottom,0px))] md:pb-6">
           {children}
         </main>
       </div>
 
       {/* Sidebar drawer */}
-      <div className="drawer-side z-40 pointer-fine:z-20">
-        <label
-          htmlFor="main-drawer"
-          aria-label="close sidebar"
-          className="drawer-overlay"
-        />
+      <div className="drawer-side z-40 md:z-20">
+        <label htmlFor="main-drawer" aria-label="close sidebar" className="drawer-overlay" />
         <aside
           className={`bg-base-200 h-full border-r border-base-300 transition-all duration-300 relative z-50 ${
             isCompact ? "w-16" : "w-64"
           }`}
         >
-          <Sidebar onNavigate={closeSidebar} isCompact={isCompact} onToggleCompact={toggleCompact} />
+          <Sidebar
+            onNavigate={closeSidebar}
+            isCompact={isCompact}
+            onToggleCompact={toggleCompact}
+          />
         </aside>
       </div>
     </div>

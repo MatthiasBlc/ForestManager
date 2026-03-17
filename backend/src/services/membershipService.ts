@@ -1,5 +1,6 @@
 import prisma from "../util/db";
 import createHttpError from "http-errors";
+import { COMMUNITY_001, RECIPE_002 } from "../constants/errorCodes";
 
 /**
  * Verifie qu'un utilisateur est membre d'une communaute.
@@ -9,7 +10,7 @@ import createHttpError from "http-errors";
 export async function requireMembership(
   userId: string,
   communityId: string,
-  errorMessage = "COMMUNITY_001: Not a member of this community"
+  errorMessage = COMMUNITY_001
 ) {
   const membership = await prisma.userCommunity.findFirst({
     where: {
@@ -38,16 +39,12 @@ export async function requireRecipeAccess(
 ) {
   if (recipe.communityId === null) {
     if (recipe.creatorId !== userId) {
-      throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
+      throw createHttpError(403, RECIPE_002);
     }
     return null;
   }
 
-  return requireMembership(
-    userId,
-    recipe.communityId,
-    "RECIPE_002: Cannot access this recipe"
-  );
+  return requireMembership(userId, recipe.communityId, RECIPE_002);
 }
 
 /**
@@ -61,15 +58,11 @@ export async function requireRecipeOwnership(
   recipe: { creatorId: string; communityId: string | null }
 ) {
   if (recipe.creatorId !== userId) {
-    throw createHttpError(403, "RECIPE_002: Cannot access this recipe");
+    throw createHttpError(403, RECIPE_002);
   }
 
   if (recipe.communityId !== null) {
-    return requireMembership(
-      userId,
-      recipe.communityId,
-      "RECIPE_002: Cannot access this recipe"
-    );
+    return requireMembership(userId, recipe.communityId, RECIPE_002);
   }
 
   return null;

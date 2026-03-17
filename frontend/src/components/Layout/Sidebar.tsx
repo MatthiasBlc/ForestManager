@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef, useCallback, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
-import { FaBook, FaPlus, FaBars, FaHome } from "react-icons/fa";
+import { FaBook, FaPlus, FaBars, FaHome, FaSun, FaMoon } from "react-icons/fa";
 import { CommunityListItem } from "../../models/community";
 import APIManager from "../../network/api";
 import { communityEvents } from "../../utils/communityEvents";
+import { useTheme } from "../../contexts/ThemeContext";
 
 interface SidebarProps {
   onNavigate?: () => void;
@@ -62,7 +63,7 @@ const CommunityAvatar = ({
     <Link
       to={`/communities/${community.id}`}
       onClick={onClick}
-      className={`group flex items-center gap-3 p-2 rounded-lg transition-colors ${
+      className={`group flex items-center gap-3 p-2 rounded-lg transition-colors min-h-[44px] ${
         isActive ? "bg-base-300" : "hover:bg-base-300/50"
       } ${isCompact ? "justify-center" : ""}`}
     >
@@ -97,6 +98,7 @@ const CommunityAvatar = ({
 
 const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProps) => {
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
   const [communities, setCommunities] = useState<CommunityListItem[]>([]);
 
   const loadCommunities = useCallback(async () => {
@@ -123,7 +125,9 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
   return (
     <div className="flex flex-col h-full">
       {/* Header with toggle button - Desktop only */}
-      <div className={`shrink-0 hidden pointer-fine:flex p-3 border-b border-base-300 ${isCompact ? "justify-center" : "justify-between items-center"}`}>
+      <div
+        className={`shrink-0 hidden md:flex p-3 border-b border-base-300 ${isCompact ? "justify-center" : "justify-between items-center"}`}
+      >
         {!isCompact && <span className="text-lg font-bold">Menu</span>}
         <button
           onClick={onToggleCompact}
@@ -136,7 +140,9 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
       </div>
 
       {/* Mobile header */}
-      <div className={`shrink-0 p-3 border-b border-base-300 pointer-fine:hidden ${isCompact ? "text-center" : ""}`}>
+      <div
+        className={`shrink-0 p-3 border-b border-base-300 md:hidden ${isCompact ? "text-center" : ""}`}
+      >
         <span className="text-xl font-bold">{isCompact ? "FM" : "Forest Manager"}</span>
       </div>
 
@@ -146,14 +152,18 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
         <Link
           to="/dashboard"
           onClick={onNavigate}
-          className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
+          className={`flex items-center gap-3 p-2 rounded-lg transition-colors min-h-[44px] ${
             isActive("/dashboard") ? "bg-base-300" : "hover:bg-base-300/50"
           } ${isCompact ? "justify-center tooltip tooltip-right" : ""}`}
           data-tip={isCompact ? "Dashboard" : undefined}
         >
-          <div className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
-            isActive("/dashboard") ? "bg-primary text-primary-content rounded-xl" : "bg-base-300 text-base-content/70"
-          }`}>
+          <div
+            className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
+              isActive("/dashboard")
+                ? "bg-primary text-primary-content rounded-xl"
+                : "bg-base-300 text-base-content/70"
+            }`}
+          >
             <FaHome className="w-5 h-5" />
           </div>
           {!isCompact && <span className="text-sm font-medium">Dashboard</span>}
@@ -163,14 +173,18 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
         <Link
           to="/recipes"
           onClick={onNavigate}
-          className={`flex items-center gap-3 p-2 rounded-lg transition-colors mt-1 ${
+          className={`flex items-center gap-3 p-2 rounded-lg transition-colors mt-1 min-h-[44px] ${
             isActive("/recipes") ? "bg-base-300" : "hover:bg-base-300/50"
           } ${isCompact ? "justify-center tooltip tooltip-right" : ""}`}
           data-tip={isCompact ? "My Recipes" : undefined}
         >
-          <div className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
-            isActive("/recipes") ? "bg-primary text-primary-content rounded-xl" : "bg-base-300 text-base-content/70"
-          }`}>
+          <div
+            className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${
+              isActive("/recipes")
+                ? "bg-primary text-primary-content rounded-xl"
+                : "bg-base-300 text-base-content/70"
+            }`}
+          >
             <FaBook className="w-5 h-5" />
           </div>
           {!isCompact && <span className="text-sm font-medium">My Recipes</span>}
@@ -192,7 +206,9 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
       )}
 
       {/* Communities list - scrollable with hidden scrollbar */}
-      <div className={`flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide ${isCompact ? "p-2" : "px-3 pb-3"}`}>
+      <div
+        className={`flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide ${isCompact ? "p-2" : "px-3 pb-3"}`}
+      >
         <div className="space-y-1">
           {communities.map((community) => (
             <CommunityAvatar
@@ -234,9 +250,20 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
 
       {/* Footer */}
       <div className={`shrink-0 border-t border-base-300 ${isCompact ? "p-2" : "p-3"}`}>
-        <p className={`text-xs text-base-content/50 text-center`}>
-          {isCompact ? "v0.1" : "Forest Manager v0.1"}
-        </p>
+        <div
+          className={`flex items-center ${isCompact ? "justify-center" : "justify-between"} mb-1`}
+        >
+          {!isCompact && <p className="text-xs text-base-content/50">Forest Manager v0.1</p>}
+          <button
+            onClick={toggleTheme}
+            className={`btn btn-ghost btn-sm btn-circle ${isCompact ? "tooltip tooltip-right" : ""}`}
+            data-tip={isCompact ? (theme === "coffee" ? "Light mode" : "Dark mode") : undefined}
+            aria-label={theme === "coffee" ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {theme === "coffee" ? <FaSun className="w-4 h-4" /> : <FaMoon className="w-4 h-4" />}
+          </button>
+        </div>
+        {isCompact && <p className="text-xs text-base-content/50 text-center">v0.1</p>}
       </div>
     </div>
   );

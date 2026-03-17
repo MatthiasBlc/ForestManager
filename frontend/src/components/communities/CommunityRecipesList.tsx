@@ -9,6 +9,7 @@ import RecipeCard from "../recipes/RecipeCard";
 import RecipeListRow from "../recipes/RecipeListRow";
 import RecipeFilters from "../recipes/RecipeFilters";
 import { usePaginatedList } from "../../hooks/usePaginatedList";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 type ViewMode = "card" | "list";
 
@@ -22,10 +23,11 @@ interface CommunityRecipesListProps {
 const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesListProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
 
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem("recipesViewMode");
-    return (saved === "list" || saved === "card") ? saved : "card";
+    return saved === "list" || saved === "card" ? saved : "card";
   });
 
   const [searchFilter, setSearchFilter] = useState("");
@@ -52,8 +54,14 @@ const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesList
   );
 
   const {
-    data: recipes, pagination, isLoading: recipesLoading, isLoadingMore: loadingMore,
-    error, loadMore: handleLoadMore, setData: setRecipes, setPagination,
+    data: recipes,
+    pagination,
+    isLoading: recipesLoading,
+    isLoadingMore: loadingMore,
+    error,
+    loadMore: handleLoadMore,
+    setData: setRecipes,
+    setPagination,
   } = usePaginatedList<CommunityRecipeListItem>(fetchRecipes, RECIPES_PER_PAGE, [fetchRecipes]);
 
   const handleTagClick = (tag: string) => {
@@ -88,22 +96,24 @@ const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesList
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold">Recipes</h2>
         <div className="flex gap-2">
-          <div className="join">
-            <button
-              className={`btn btn-sm join-item ${viewMode === "card" ? "btn-active" : ""}`}
-              onClick={() => viewMode !== "card" && toggleViewMode()}
-              aria-label="Card view"
-            >
-              <FaTh />
-            </button>
-            <button
-              className={`btn btn-sm join-item ${viewMode === "list" ? "btn-active" : ""}`}
-              onClick={() => viewMode !== "list" && toggleViewMode()}
-              aria-label="List view"
-            >
-              <FaList />
-            </button>
-          </div>
+          {!isMobile && (
+            <div className="join">
+              <button
+                className={`btn btn-sm join-item ${viewMode === "card" ? "btn-active" : ""}`}
+                onClick={() => viewMode !== "card" && toggleViewMode()}
+                aria-label="Card view"
+              >
+                <FaTh />
+              </button>
+              <button
+                className={`btn btn-sm join-item ${viewMode === "list" ? "btn-active" : ""}`}
+                onClick={() => viewMode !== "list" && toggleViewMode()}
+                aria-label="List view"
+              >
+                <FaList />
+              </button>
+            </div>
+          )}
           <button
             className="btn btn-primary btn-sm gap-2"
             onClick={() => navigate(`/communities/${communityId}/recipes/new`)}
@@ -123,6 +133,7 @@ const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesList
           onTagsChange={setTagsFilter}
           onIngredientsChange={setIngredientsFilter}
           onReset={handleResetFilters}
+          communityId={communityId}
         />
       </div>
 
@@ -142,7 +153,7 @@ const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesList
         <>
           {recipes.length > 0 ? (
             <>
-              {viewMode === "card" ? (
+              {isMobile || viewMode === "card" ? (
                 <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                   {recipes.map((recipe) => (
                     <RecipeCard
@@ -195,14 +206,12 @@ const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesList
               )}
             </>
           ) : (
-            <div className="text-center py-12">
+            <div className="flex flex-col items-center justify-center min-h-[40vh] md:min-h-0 text-center py-12">
               <p className="text-lg text-base-content/60 mb-4">
-                {hasFilters
-                  ? "No recipes match your filters"
-                  : "No recipes in this community yet"}
+                {hasFilters ? "No recipes match your filters" : "No recipes in this community yet"}
               </p>
               {hasFilters && (
-                <button className="btn btn-ghost" onClick={handleResetFilters}>
+                <button className="btn btn-ghost btn-lg md:btn-md" onClick={handleResetFilters}>
                   Clear filters
                 </button>
               )}

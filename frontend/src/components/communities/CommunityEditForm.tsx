@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { FaSave } from "react-icons/fa";
 import APIManager from "../../network/api";
+import ImageUpload from "../ImageUpload";
 
 interface CommunityEditFormProps {
   communityId: string;
   initialName: string;
   initialDescription: string;
+  initialImageUrl: string | null;
   onSaved: () => void;
   onCancel: () => void;
 }
@@ -14,11 +16,13 @@ const CommunityEditForm = ({
   communityId,
   initialName,
   initialDescription,
+  initialImageUrl,
   onSaved,
   onCancel,
 }: CommunityEditFormProps) => {
   const [name, setName] = useState(initialName);
   const [description, setDescription] = useState(initialDescription);
+  const [imageUrl, setImageUrl] = useState<string | null>(initialImageUrl);
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -73,12 +77,21 @@ const CommunityEditForm = ({
           disabled={isSaving}
         />
       </div>
+      <div className="form-control">
+        <label className="label">
+          <span className="label-text font-medium">Image</span>
+        </label>
+        <ImageUpload
+          currentImageUrl={imageUrl}
+          onUploadComplete={(url) => setImageUrl(url)}
+          onDeleteComplete={() => setImageUrl(null)}
+          getUploadUrl={() => APIManager.getCommunityUploadUrl(communityId)}
+          confirmUpload={() => APIManager.confirmCommunityUpload(communityId)}
+          deleteImage={() => APIManager.deleteCommunityImage(communityId)}
+        />
+      </div>
       <div className="flex justify-end gap-2 pt-2">
-        <button
-          className="btn btn-ghost btn-sm"
-          onClick={onCancel}
-          disabled={isSaving}
-        >
+        <button className="btn btn-ghost btn-sm" onClick={onCancel} disabled={isSaving}>
           Cancel
         </button>
         <button

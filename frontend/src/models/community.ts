@@ -2,6 +2,7 @@ export interface CommunityListItem {
   id: string;
   name: string;
   description: string | null;
+  imageUrl: string | null;
   role: "MEMBER" | "MODERATOR";
   membersCount: number;
   recipesCount: number;
@@ -12,6 +13,7 @@ export interface CommunityDetail {
   id: string;
   name: string;
   description: string | null;
+  imageUrl: string | null;
   visibility: string;
   createdAt: string;
   membersCount: number;

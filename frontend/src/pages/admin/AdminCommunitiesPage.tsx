@@ -1,13 +1,13 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { AdminCommunity, AdminCommunityDetail, AdminFeature } from "../../models/admin";
 import APIManager from "../../network/api";
 import { useConfirm } from "../../hooks/useConfirm";
+import DataContainer from "../../components/DataContainer";
+import { useAsyncData } from "../../hooks/useAsyncData";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 
 function AdminCommunitiesPage() {
-  const [communities, setCommunities] = useState<AdminCommunity[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [showDeleted, setShowDeleted] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
@@ -16,21 +16,19 @@ function AdminCommunitiesPage() {
   const [allFeatures, setAllFeatures] = useState<AdminFeature[]>([]);
   const { confirm, ConfirmDialog } = useConfirm();
 
-  const loadCommunities = useCallback(async () => {
-    try {
-      const data = await APIManager.getAdminCommunities(search || undefined, showDeleted);
-      setCommunities(data);
-    } catch {
-      toast.error("Failed to load communities");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [search, showDeleted]);
+  const {
+    data: communities,
+    isLoading,
+    error,
+    refetch: loadCommunities,
+  } = useAsyncData<AdminCommunity[]>(
+    () => APIManager.getAdminCommunities(search || undefined, showDeleted),
+    [search, showDeleted]
+  );
 
   useEffect(() => {
-    setIsLoading(true);
-    loadCommunities();
-  }, [loadCommunities]);
+    if (error) toast.error(error);
+  }, [error]);
 
   async function openDetail(communityId: string) {
     setDetailLoading(true);
@@ -124,11 +122,7 @@ function AdminCommunitiesPage() {
       </div>
 
       {/* Table */}
-      {isLoading ? (
-        <div className="flex justify-center py-12">
-          <span className="loading loading-spinner loading-lg"></span>
-        </div>
-      ) : (
+      <DataContainer isLoading={isLoading && !communities} error={null}>
         <div className="card bg-base-100 shadow">
           <div className="overflow-x-auto">
             <table className="table">
@@ -143,8 +137,8 @@ function AdminCommunitiesPage() {
                 </tr>
               </thead>
               <tbody>
-                {communities.length > 0 ? (
-                  communities.map((community) => (
+                {(communities ?? []).length > 0 ? (
+                  (communities ?? []).map((community) => (
                     <tr
                       key={community.id}
                       className={`cursor-pointer hover ${community.deletedAt ? "opacity-50" : ""}`}
@@ -152,23 +146,32 @@ function AdminCommunitiesPage() {
                     >
                       <td className="font-medium">
                         {community.name}
-                        {community.deletedAt && <span className="badge badge-error badge-xs ml-2">Deleted</span>}
+                        {community.deletedAt && (
+                          <span className="badge badge-error badge-xs ml-2">Deleted</span>
+                        )}
                       </td>
                       <td className="text-right">{community.memberCount}</td>
                       <td className="text-right">{community.recipeCount}</td>
                       <td>
                         <div className="flex gap-1 flex-wrap">
                           {community.features.map((f) => (
-                            <span key={f} className="badge badge-outline badge-xs">{f}</span>
+                            <span key={f} className="badge badge-outline badge-xs">
+                              {f}
+                            </span>
                           ))}
                         </div>
                       </td>
-                      <td className="text-sm">{format(new Date(community.createdAt), "MMM d, yyyy")}</td>
+                      <td className="text-sm">
+                        {format(new Date(community.createdAt), "MMM d, yyyy")}
+                      </td>
                       <td className="text-right">
                         {!community.deletedAt && (
                           <button
                             className="btn btn-ghost btn-xs text-error"
-                            onClick={(e) => { e.stopPropagation(); handleDelete(community); }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(community);
+                            }}
                           >
                             Delete
                           </button>
@@ -178,14 +181,16 @@ function AdminCommunitiesPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={6} className="text-center text-base-content/50">No communities found</td>
+                    <td colSpan={6} className="text-center text-base-content/50">
+                      No communities found
+                    </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
         </div>
-      )}
+      </DataContainer>
 
       {/* Detail Modal */}
       {detailOpen && (
@@ -193,17 +198,27 @@ function AdminCommunitiesPage() {
           <div className="modal-box max-w-3xl">
             {detailLoading ? (
               <div className="flex justify-center py-8">
-                <span className="loading loading-spinner loading-lg"></span>
+                <span className="loading loading-spinner loading-lg" />
               </div>
             ) : detail ? (
               <>
                 <h3 className="font-bold text-lg mb-4">{detail.name}</h3>
 
                 <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
-                  <div><span className="text-base-content/70">Visibility:</span> {detail.visibility}</div>
-                  <div><span className="text-base-content/70">Recipes:</span> {detail.recipeCount}</div>
-                  <div><span className="text-base-content/70">Pending Invites:</span> {detail.pendingInvites}</div>
-                  <div><span className="text-base-content/70">Created:</span> {format(new Date(detail.createdAt), "MMM d, yyyy")}</div>
+                  <div>
+                    <span className="text-base-content/70">Visibility:</span> {detail.visibility}
+                  </div>
+                  <div>
+                    <span className="text-base-content/70">Recipes:</span> {detail.recipeCount}
+                  </div>
+                  <div>
+                    <span className="text-base-content/70">Pending Invites:</span>{" "}
+                    {detail.pendingInvites}
+                  </div>
+                  <div>
+                    <span className="text-base-content/70">Created:</span>{" "}
+                    {format(new Date(detail.createdAt), "MMM d, yyyy")}
+                  </div>
                 </div>
 
                 {/* Members */}
@@ -223,7 +238,9 @@ function AdminCommunitiesPage() {
                         <tr key={m.id}>
                           <td>{m.username}</td>
                           <td>{m.email}</td>
-                          <td><span className="badge badge-sm">{m.role}</span></td>
+                          <td>
+                            <span className="badge badge-sm">{m.role}</span>
+                          </td>
                           <td>{format(new Date(m.joinedAt), "MMM d, yyyy")}</td>
                         </tr>
                       ))}
@@ -234,29 +251,38 @@ function AdminCommunitiesPage() {
                 {/* Features */}
                 <h4 className="font-semibold mb-2">Features</h4>
                 <div className="mb-4">
-                  {detail.features.filter((f) => !f.revokedAt).map((f) => (
-                    <div key={f.id} className="flex items-center justify-between py-1">
-                      <div>
-                        <span className="font-medium">{f.code}</span>
-                        <span className="text-sm text-base-content/70 ml-2">{f.name}</span>
+                  {detail.features
+                    .filter((f) => !f.revokedAt)
+                    .map((f) => (
+                      <div key={f.id} className="flex items-center justify-between py-1">
+                        <div>
+                          <span className="font-medium">{f.code}</span>
+                          <span className="text-sm text-base-content/70 ml-2">{f.name}</span>
+                        </div>
+                        <button
+                          className="btn btn-ghost btn-xs text-error"
+                          onClick={() => handleRevokeFeature(f.id)}
+                        >
+                          Revoke
+                        </button>
                       </div>
-                      <button
-                        className="btn btn-ghost btn-xs text-error"
-                        onClick={() => handleRevokeFeature(f.id)}
-                      >
-                        Revoke
-                      </button>
-                    </div>
-                  ))}
+                    ))}
                 </div>
 
                 {grantableFeatures.length > 0 && (
                   <div className="dropdown dropdown-top">
-                    <label tabIndex={0} className="btn btn-sm btn-outline">Grant Feature</label>
-                    <ul tabIndex={0} className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-10">
+                    <label tabIndex={0} className="btn btn-sm btn-outline">
+                      Grant Feature
+                    </label>
+                    <ul
+                      tabIndex={0}
+                      className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52 z-10"
+                    >
                       {grantableFeatures.map((f) => (
                         <li key={f.id}>
-                          <button onClick={() => handleGrantFeature(f.id)}>{f.code} - {f.name}</button>
+                          <button onClick={() => handleGrantFeature(f.id)}>
+                            {f.code} - {f.name}
+                          </button>
                         </li>
                       ))}
                     </ul>
@@ -266,10 +292,24 @@ function AdminCommunitiesPage() {
             ) : null}
 
             <div className="modal-action">
-              <button className="btn btn-ghost" onClick={() => { setDetailOpen(false); setDetail(null); }}>Close</button>
+              <button
+                className="btn btn-ghost"
+                onClick={() => {
+                  setDetailOpen(false);
+                  setDetail(null);
+                }}
+              >
+                Close
+              </button>
             </div>
           </div>
-          <div className="modal-backdrop bg-black/50" onClick={() => { setDetailOpen(false); setDetail(null); }} />
+          <div
+            className="modal-backdrop bg-black/50"
+            onClick={() => {
+              setDetailOpen(false);
+              setDetail(null);
+            }}
+          />
         </div>
       )}
 

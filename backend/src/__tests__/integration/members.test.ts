@@ -2,16 +2,13 @@ import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../../app";
 import {
+  uniqueSuffix,
   createTestUser,
   createTestCommunity,
   createTestInvite,
   extractSessionCookie,
 } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
-
-// Helper to generate unique suffix
-const uniqueSuffix = () =>
-  `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 
 describe("Members API", () => {
   // =====================================
@@ -28,11 +25,13 @@ describe("Members API", () => {
       const suffix = uniqueSuffix();
 
       // Create moderator and get cookie
-      const signupRes = await request(app).post("/api/auth/signup").send({
-        username: `getmembermod_${suffix}`,
-        email: `getmembermod_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const signupRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `getmembermod_${suffix}`,
+          email: `getmembermod_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       moderatorCookie = extractSessionCookie(signupRes)!;
       moderator = (await testPrisma.user.findFirst({
         where: { email: `getmembermod_${suffix}@example.com` },
@@ -76,12 +75,8 @@ describe("Members API", () => {
       expect(res.body.data).toHaveLength(2);
 
       // Ordered by joinedAt asc, moderator first
-      const modEntry = res.body.data.find(
-        (m: { id: string }) => m.id === moderator.id
-      );
-      const memEntry = res.body.data.find(
-        (m: { id: string }) => m.id === member.id
-      );
+      const modEntry = res.body.data.find((m: { id: string }) => m.id === moderator.id);
+      const memEntry = res.body.data.find((m: { id: string }) => m.id === member.id);
 
       expect(modEntry.role).toBe("MODERATOR");
       expect(modEntry.username).toBe(moderator.username);
@@ -109,11 +104,13 @@ describe("Members API", () => {
 
     it("should return 403 for non-member", async () => {
       const suffix2 = uniqueSuffix();
-      const outsiderRes = await request(app).post("/api/auth/signup").send({
-        username: `outsider_${suffix2}`,
-        email: `outsider_${suffix2}@example.com`,
-        password: "Test123!Password",
-      });
+      const outsiderRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `outsider_${suffix2}`,
+          email: `outsider_${suffix2}@example.com`,
+          password: "Test123!Password",
+        });
       const outsiderCookie = extractSessionCookie(outsiderRes)!;
 
       const res = await request(app)
@@ -125,9 +122,7 @@ describe("Members API", () => {
     });
 
     it("should return 401 without authentication", async () => {
-      const res = await request(app).get(
-        `/api/communities/${community.id}/members`
-      );
+      const res = await request(app).get(`/api/communities/${community.id}/members`);
 
       expect(res.status).toBe(401);
     });
@@ -147,11 +142,13 @@ describe("Members API", () => {
       const suffix = uniqueSuffix();
 
       // Create moderator
-      const signupRes = await request(app).post("/api/auth/signup").send({
-        username: `promotemod_${suffix}`,
-        email: `promotemod_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const signupRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `promotemod_${suffix}`,
+          email: `promotemod_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       moderatorCookie = extractSessionCookie(signupRes)!;
       moderator = (await testPrisma.user.findFirst({
         where: { email: `promotemod_${suffix}@example.com` },
@@ -217,9 +214,7 @@ describe("Members API", () => {
 
       expect(activity).not.toBeNull();
       expect(activity!.userId).toBe(moderator.id);
-      expect((activity!.metadata as { promotedUserId: string }).promotedUserId).toBe(
-        member.id
-      );
+      expect((activity!.metadata as { promotedUserId: string }).promotedUserId).toBe(member.id);
     });
 
     it("should return 400 when role is missing", async () => {
@@ -257,9 +252,7 @@ describe("Members API", () => {
 
     it("should return 404 when target is not a member", async () => {
       const res = await request(app)
-        .patch(
-          `/api/communities/${community.id}/members/00000000-0000-0000-0000-000000000000`
-        )
+        .patch(`/api/communities/${community.id}/members/00000000-0000-4000-8000-000000000000`)
         .set("Cookie", moderatorCookie)
         .send({ role: "MODERATOR" });
 
@@ -298,11 +291,13 @@ describe("Members API", () => {
       const suffix = uniqueSuffix();
 
       // Create moderator
-      const modRes = await request(app).post("/api/auth/signup").send({
-        username: `leavemod_${suffix}`,
-        email: `leavemod_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const modRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `leavemod_${suffix}`,
+          email: `leavemod_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       const modCookie = extractSessionCookie(modRes)!;
       const _moderator = (await testPrisma.user.findFirst({
         where: { email: `leavemod_${suffix}@example.com` },
@@ -316,11 +311,13 @@ describe("Members API", () => {
       const community = createRes.body;
 
       // Create member
-      const memRes = await request(app).post("/api/auth/signup").send({
-        username: `leavemem_${suffix}`,
-        email: `leavemem_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const memRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `leavemem_${suffix}`,
+          email: `leavemem_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       const memCookie = extractSessionCookie(memRes)!;
       const member = (await testPrisma.user.findFirst({
         where: { email: `leavemem_${suffix}@example.com` },
@@ -362,11 +359,13 @@ describe("Members API", () => {
       const suffix = uniqueSuffix();
 
       // Create first moderator
-      const mod1Res = await request(app).post("/api/auth/signup").send({
-        username: `leavemod1_${suffix}`,
-        email: `leavemod1_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const mod1Res = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `leavemod1_${suffix}`,
+          email: `leavemod1_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       const mod1Cookie = extractSessionCookie(mod1Res)!;
       const mod1 = (await testPrisma.user.findFirst({
         where: { email: `leavemod1_${suffix}@example.com` },
@@ -404,11 +403,13 @@ describe("Members API", () => {
       const suffix = uniqueSuffix();
 
       // Create moderator
-      const modRes = await request(app).post("/api/auth/signup").send({
-        username: `lastmod_${suffix}`,
-        email: `lastmod_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const modRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `lastmod_${suffix}`,
+          email: `lastmod_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       const modCookie = extractSessionCookie(modRes)!;
       const moderator = (await testPrisma.user.findFirst({
         where: { email: `lastmod_${suffix}@example.com` },
@@ -446,11 +447,13 @@ describe("Members API", () => {
       const suffix = uniqueSuffix();
 
       // Create moderator (sole member)
-      const modRes = await request(app).post("/api/auth/signup").send({
-        username: `solemem_${suffix}`,
-        email: `solemem_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const modRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `solemem_${suffix}`,
+          email: `solemem_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       const modCookie = extractSessionCookie(modRes)!;
       const moderator = (await testPrisma.user.findFirst({
         where: { email: `solemem_${suffix}@example.com` },
@@ -480,11 +483,13 @@ describe("Members API", () => {
       const suffix = uniqueSuffix();
 
       // Create moderator (sole member)
-      const modRes = await request(app).post("/api/auth/signup").send({
-        username: `invcancel_${suffix}`,
-        email: `invcancel_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const modRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `invcancel_${suffix}`,
+          email: `invcancel_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       const modCookie = extractSessionCookie(modRes)!;
       const moderator = (await testPrisma.user.findFirst({
         where: { email: `invcancel_${suffix}@example.com` },
@@ -502,12 +507,7 @@ describe("Members API", () => {
         username: `invcancelinv_${suffix}`,
         email: `invcancelinv_${suffix}@example.com`,
       });
-      const invite = await createTestInvite(
-        community.id,
-        moderator.id,
-        invitee.id,
-        "PENDING"
-      );
+      const invite = await createTestInvite(community.id, moderator.id, invitee.id, "PENDING");
 
       // Last member leaves
       await request(app)
@@ -525,11 +525,13 @@ describe("Members API", () => {
       const suffix = uniqueSuffix();
 
       // Create moderator (sole member)
-      const modRes = await request(app).post("/api/auth/signup").send({
-        username: `recdelete_${suffix}`,
-        email: `recdelete_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const modRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `recdelete_${suffix}`,
+          email: `recdelete_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       const modCookie = extractSessionCookie(modRes)!;
       const moderator = (await testPrisma.user.findFirst({
         where: { email: `recdelete_${suffix}@example.com` },
@@ -546,9 +548,10 @@ describe("Members API", () => {
       const recipe = await testPrisma.recipe.create({
         data: {
           title: `Community Recipe ${suffix}`,
-          content: "Test content",
+          servings: 4,
           creatorId: moderator.id,
           communityId: community.id,
+          steps: { create: [{ order: 0, instruction: "Test content" }] },
         },
       });
 
@@ -579,11 +582,13 @@ describe("Members API", () => {
       const suffix = uniqueSuffix();
 
       // Create moderator
-      const modRes = await request(app).post("/api/auth/signup").send({
-        username: `kickmod_${suffix}`,
-        email: `kickmod_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const modRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `kickmod_${suffix}`,
+          email: `kickmod_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       moderatorCookie = extractSessionCookie(modRes)!;
       moderator = (await testPrisma.user.findFirst({
         where: { email: `kickmod_${suffix}@example.com` },
@@ -597,11 +602,13 @@ describe("Members API", () => {
       community = createRes.body;
 
       // Create member
-      const memRes = await request(app).post("/api/auth/signup").send({
-        username: `kickmem_${suffix}`,
-        email: `kickmem_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const memRes = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `kickmem_${suffix}`,
+          email: `kickmem_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       memberCookie = extractSessionCookie(memRes)!;
       member = (await testPrisma.user.findFirst({
         where: { email: `kickmem_${suffix}@example.com` },
@@ -639,9 +646,7 @@ describe("Members API", () => {
       });
       expect(activity).not.toBeNull();
       expect(activity!.userId).toBe(moderator.id);
-      expect(
-        (activity!.metadata as { kickedUserId: string }).kickedUserId
-      ).toBe(member.id);
+      expect((activity!.metadata as { kickedUserId: string }).kickedUserId).toBe(member.id);
     });
 
     it("should return 403 when trying to kick a MODERATOR (COMMUNITY_006)", async () => {
@@ -692,9 +697,7 @@ describe("Members API", () => {
 
     it("should return 404 when target is not a member", async () => {
       const res = await request(app)
-        .delete(
-          `/api/communities/${community.id}/members/00000000-0000-0000-0000-000000000000`
-        )
+        .delete(`/api/communities/${community.id}/members/00000000-0000-4000-8000-000000000000`)
         .set("Cookie", moderatorCookie);
 
       expect(res.status).toBe(404);
@@ -718,11 +721,13 @@ describe("Members API", () => {
         const suffix = uniqueSuffix();
 
         // Create moderator (recipe owner who will leave)
-        const ownerRes = await request(app).post("/api/auth/signup").send({
-          username: `orphanowner_${suffix}`,
-          email: `orphanowner_${suffix}@example.com`,
-          password: "Test123!Password",
-        });
+        const ownerRes = await request(app)
+          .post("/api/auth/signup")
+          .send({
+            username: `orphanowner_${suffix}`,
+            email: `orphanowner_${suffix}@example.com`,
+            password: "Test123!Password",
+          });
         const ownerCookie = extractSessionCookie(ownerRes)!;
         const owner = (await testPrisma.user.findFirst({
           where: { email: `orphanowner_${suffix}@example.com` },
@@ -765,9 +770,10 @@ describe("Members API", () => {
         const recipe = await testPrisma.recipe.create({
           data: {
             title: `Orphan Recipe ${suffix}`,
-            content: "Original content",
+            servings: 4,
             creatorId: owner.id,
             communityId: community.id,
+            steps: { create: [{ order: 0, instruction: "Original content" }] },
           },
         });
 
@@ -775,10 +781,10 @@ describe("Members API", () => {
         const proposal = await testPrisma.recipeUpdateProposal.create({
           data: {
             proposedTitle: `Modified Title ${suffix}`,
-            proposedContent: "Modified content",
             status: "PENDING",
             recipeId: recipe.id,
             proposerId: proposer.id,
+            proposedSteps: { create: [{ order: 0, instruction: "Modified content" }] },
           },
         });
 
@@ -806,7 +812,6 @@ describe("Members API", () => {
         });
         expect(variant).not.toBeNull();
         expect(variant!.title).toBe(`Modified Title ${suffix}`);
-        expect(variant!.content).toBe("Modified content");
         expect(variant!.communityId).toBe(community.id);
 
         // Verify ActivityLog VARIANT_CREATED
@@ -826,11 +831,13 @@ describe("Members API", () => {
         const suffix = uniqueSuffix();
 
         // Create owner
-        const ownerRes = await request(app).post("/api/auth/signup").send({
-          username: `multiorphan_${suffix}`,
-          email: `multiorphan_${suffix}@example.com`,
-          password: "Test123!Password",
-        });
+        const ownerRes = await request(app)
+          .post("/api/auth/signup")
+          .send({
+            username: `multiorphan_${suffix}`,
+            email: `multiorphan_${suffix}@example.com`,
+            password: "Test123!Password",
+          });
         const ownerCookie = extractSessionCookie(ownerRes)!;
         const owner = (await testPrisma.user.findFirst({
           where: { email: `multiorphan_${suffix}@example.com` },
@@ -876,45 +883,49 @@ describe("Members API", () => {
         const recipe1 = await testPrisma.recipe.create({
           data: {
             title: `Recipe 1 ${suffix}`,
-            content: "Content 1",
+            servings: 4,
             creatorId: owner.id,
             communityId: community.id,
+            steps: { create: [{ order: 0, instruction: "Content 1" }] },
           },
         });
         const recipe2 = await testPrisma.recipe.create({
           data: {
             title: `Recipe 2 ${suffix}`,
-            content: "Content 2",
+            servings: 4,
             creatorId: owner.id,
             communityId: community.id,
+            steps: { create: [{ order: 0, instruction: "Content 2" }] },
           },
         });
 
         // Create proposals
-        await testPrisma.recipeUpdateProposal.createMany({
-          data: [
-            {
-              proposedTitle: "Prop 1",
-              proposedContent: "Prop content 1",
-              status: "PENDING",
-              recipeId: recipe1.id,
-              proposerId: proposer1.id,
-            },
-            {
-              proposedTitle: "Prop 2",
-              proposedContent: "Prop content 2",
-              status: "PENDING",
-              recipeId: recipe1.id,
-              proposerId: proposer2.id,
-            },
-            {
-              proposedTitle: "Prop 3",
-              proposedContent: "Prop content 3",
-              status: "PENDING",
-              recipeId: recipe2.id,
-              proposerId: proposer1.id,
-            },
-          ],
+        await testPrisma.recipeUpdateProposal.create({
+          data: {
+            proposedTitle: "Prop 1",
+            status: "PENDING",
+            recipeId: recipe1.id,
+            proposerId: proposer1.id,
+            proposedSteps: { create: [{ order: 0, instruction: "Prop content 1" }] },
+          },
+        });
+        await testPrisma.recipeUpdateProposal.create({
+          data: {
+            proposedTitle: "Prop 2",
+            status: "PENDING",
+            recipeId: recipe1.id,
+            proposerId: proposer2.id,
+            proposedSteps: { create: [{ order: 0, instruction: "Prop content 2" }] },
+          },
+        });
+        await testPrisma.recipeUpdateProposal.create({
+          data: {
+            proposedTitle: "Prop 3",
+            status: "PENDING",
+            recipeId: recipe2.id,
+            proposerId: proposer1.id,
+            proposedSteps: { create: [{ order: 0, instruction: "Prop content 3" }] },
+          },
         });
 
         // Owner leaves
@@ -945,11 +956,13 @@ describe("Members API", () => {
         const suffix = uniqueSuffix();
 
         // Create owner
-        const ownerRes = await request(app).post("/api/auth/signup").send({
-          username: `decidedorphan_${suffix}`,
-          email: `decidedorphan_${suffix}@example.com`,
-          password: "Test123!Password",
-        });
+        const ownerRes = await request(app)
+          .post("/api/auth/signup")
+          .send({
+            username: `decidedorphan_${suffix}`,
+            email: `decidedorphan_${suffix}@example.com`,
+            password: "Test123!Password",
+          });
         const ownerCookie = extractSessionCookie(ownerRes)!;
         const owner = (await testPrisma.user.findFirst({
           where: { email: `decidedorphan_${suffix}@example.com` },
@@ -992,9 +1005,10 @@ describe("Members API", () => {
         const recipe = await testPrisma.recipe.create({
           data: {
             title: `Decided Recipe ${suffix}`,
-            content: "Original",
+            servings: 4,
             creatorId: owner.id,
             communityId: community.id,
+            steps: { create: [{ order: 0, instruction: "Original" }] },
           },
         });
 
@@ -1002,11 +1016,11 @@ describe("Members API", () => {
         const acceptedProposal = await testPrisma.recipeUpdateProposal.create({
           data: {
             proposedTitle: "Accepted",
-            proposedContent: "Accepted content",
             status: "ACCEPTED",
             decidedAt: new Date(),
             recipeId: recipe.id,
             proposerId: proposer.id,
+            proposedSteps: { create: [{ order: 0, instruction: "Accepted content" }] },
           },
         });
 
@@ -1037,11 +1051,13 @@ describe("Members API", () => {
         const suffix = uniqueSuffix();
 
         // Create moderator
-        const modRes = await request(app).post("/api/auth/signup").send({
-          username: `kickorphanmod_${suffix}`,
-          email: `kickorphanmod_${suffix}@example.com`,
-          password: "Test123!Password",
-        });
+        const modRes = await request(app)
+          .post("/api/auth/signup")
+          .send({
+            username: `kickorphanmod_${suffix}`,
+            email: `kickorphanmod_${suffix}@example.com`,
+            password: "Test123!Password",
+          });
         const modCookie = extractSessionCookie(modRes)!;
 
         // Create community
@@ -1081,9 +1097,10 @@ describe("Members API", () => {
         const recipe = await testPrisma.recipe.create({
           data: {
             title: `Kick Orphan Recipe ${suffix}`,
-            content: "Original content",
+            servings: 4,
             creatorId: member.id,
             communityId: community.id,
+            steps: { create: [{ order: 0, instruction: "Original content" }] },
           },
         });
 
@@ -1091,10 +1108,10 @@ describe("Members API", () => {
         const proposal = await testPrisma.recipeUpdateProposal.create({
           data: {
             proposedTitle: `Kick Modified ${suffix}`,
-            proposedContent: "Kick modified content",
             status: "PENDING",
             recipeId: recipe.id,
             proposerId: proposer.id,
+            proposedSteps: { create: [{ order: 0, instruction: "Kick modified content" }] },
           },
         });
 

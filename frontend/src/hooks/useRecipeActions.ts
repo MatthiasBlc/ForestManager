@@ -38,7 +38,13 @@ export function useRecipeActions({ recipe, onDelete, onTagClick, onShare }: UseR
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (await confirm({ message: "Are you sure you want to delete this recipe?", confirmLabel: "Delete", confirmClass: "btn btn-error" })) {
+    if (
+      await confirm({
+        message: "Are you sure you want to delete this recipe?",
+        confirmLabel: "Delete",
+        confirmClass: "btn btn-error",
+      })
+    ) {
       onDelete(recipe);
     }
   };
@@ -48,10 +54,12 @@ export function useRecipeActions({ recipe, onDelete, onTagClick, onShare }: UseR
     onTagClick?.(tag);
   };
 
-  const handleShare = onShare ? (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onShare(recipe);
-  } : undefined;
+  const handleShare = onShare
+    ? (e: React.MouseEvent) => {
+        e.stopPropagation();
+        onShare(recipe);
+      }
+    : undefined;
 
   return {
     title,

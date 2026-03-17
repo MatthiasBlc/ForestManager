@@ -4,6 +4,15 @@ import bcrypt from "bcrypt";
 import { generateURI, verifySync } from "otplib";
 import * as QRCode from "qrcode";
 import prisma from "../../util/db";
+import {
+  ADMIN_001,
+  ADMIN_004,
+  ADMIN_006,
+  ADMIN_007,
+  ADMIN_008,
+  ADMIN_009,
+} from "../../constants/errorCodes";
+import { AdminLoginInput, VerifyTotpInput } from "../schemas/auth.schema";
 
 const MAX_TOTP_ATTEMPTS = 3;
 const APP_NAME = "ForestManager";
@@ -13,13 +22,9 @@ const APP_NAME = "ForestManager";
  * Premiere etape: verification email/password
  * Si totpEnabled = false, retourne le QR code pour configurer TOTP
  */
-export const login: RequestHandler = async (req, res, next) => {
+export const login: RequestHandler<unknown, unknown, AdminLoginInput> = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
-    if (!email || !password) {
-      throw createHttpError(400, "ADMIN_003: Email and password required");
-    }
 
     const admin = await prisma.adminUser.findUnique({
       where: { email },
@@ -27,34 +32,43 @@ export const login: RequestHandler = async (req, res, next) => {
 
     if (!admin) {
       // Message generique pour eviter l'enumeration
-      throw createHttpError(401, "ADMIN_004: Invalid credentials");
+      throw createHttpError(401, ADMIN_004);
     }
 
     const isPasswordValid = await bcrypt.compare(password, admin.password);
     if (!isPasswordValid) {
-      throw createHttpError(401, "ADMIN_004: Invalid credentials");
+      throw createHttpError(401, ADMIN_004);
     }
 
-    // Stocke l'adminId en session (mais totpVerified reste false)
-    req.session.adminId = admin.id;
-    req.session.totpVerified = false;
-    req.session.totpAttempts = 0;
+    // Regenerer la session pour prevenir la session fixation
+    const adminId = admin.id;
+    const totpEnabled = admin.totpEnabled;
+    const adminEmail = admin.email;
+    const totpSecret = admin.totpSecret;
 
-    // Si TOTP pas encore configure, generer le QR code
-    if (!admin.totpEnabled) {
-      const otpauth = generateURI({ secret: admin.totpSecret, issuer: APP_NAME, label: admin.email });
-      const qrCodeDataUrl = await QRCode.toDataURL(otpauth);
+    req.session.regenerate(async (err) => {
+      if (err) return next(err);
 
-      return res.status(200).json({
-        requiresTotpSetup: true,
-        qrCode: qrCodeDataUrl,
-        message: "Scan this QR code with your authenticator app, then verify with a code",
+      req.session.adminId = adminId;
+      req.session.totpVerified = false;
+      req.session.totpAttempts = 0;
+
+      // Si TOTP pas encore configure, generer le QR code
+      if (!totpEnabled) {
+        const otpauth = generateURI({ secret: totpSecret, issuer: APP_NAME, label: adminEmail });
+        const qrCodeDataUrl = await QRCode.toDataURL(otpauth);
+
+        return res.status(200).json({
+          requiresTotpSetup: true,
+          qrCode: qrCodeDataUrl,
+          message: "Scan this QR code with your authenticator app, then verify with a code",
+        });
+      }
+
+      res.status(200).json({
+        requiresTotpSetup: false,
+        message: "Please enter your TOTP code",
       });
-    }
-
-    res.status(200).json({
-      requiresTotpSetup: false,
-      message: "Please enter your TOTP code",
     });
   } catch (error) {
     next(error);
@@ -66,17 +80,17 @@ export const login: RequestHandler = async (req, res, next) => {
  * Deuxieme etape: verification du code TOTP
  * Finalise l'authentification si le code est valide
  */
-export const verifyTotp: RequestHandler = async (req, res, next) => {
+export const verifyTotp: RequestHandler<unknown, unknown, VerifyTotpInput> = async (
+  req,
+  res,
+  next
+) => {
   try {
     const { code } = req.body;
     const adminId = req.session.adminId;
 
     if (!adminId) {
-      throw createHttpError(401, "ADMIN_001: Not authenticated");
-    }
-
-    if (!code) {
-      throw createHttpError(400, "ADMIN_005: TOTP code required");
+      throw createHttpError(401, ADMIN_001);
     }
 
     // Verifier le nombre de tentatives
@@ -84,7 +98,7 @@ export const verifyTotp: RequestHandler = async (req, res, next) => {
     if (attempts >= MAX_TOTP_ATTEMPTS) {
       // Reset la session et bloquer
       req.session.destroy(() => {});
-      throw createHttpError(429, "ADMIN_006: Too many failed attempts, please login again");
+      throw createHttpError(429, ADMIN_006);
     }
 
     const admin = await prisma.adminUser.findUnique({
@@ -92,7 +106,7 @@ export const verifyTotp: RequestHandler = async (req, res, next) => {
     });
 
     if (!admin) {
-      throw createHttpError(401, "ADMIN_001: Not authenticated");
+      throw createHttpError(401, ADMIN_001);
     }
 
     const result = verifySync({
@@ -103,7 +117,7 @@ export const verifyTotp: RequestHandler = async (req, res, next) => {
 
     if (!isValid) {
       req.session.totpAttempts = attempts + 1;
-      throw createHttpError(401, "ADMIN_007: Invalid TOTP code");
+      throw createHttpError(401, ADMIN_007);
     }
 
     // TOTP valide - marquer comme configure si premiere fois
@@ -123,10 +137,6 @@ export const verifyTotp: RequestHandler = async (req, res, next) => {
       });
     }
 
-    // Finaliser l'authentification
-    req.session.totpVerified = true;
-    req.session.totpAttempts = 0;
-
     // Mettre a jour lastLoginAt et logger
     await prisma.adminUser.update({
       where: { id: adminId },
@@ -141,13 +151,25 @@ export const verifyTotp: RequestHandler = async (req, res, next) => {
       },
     });
 
-    res.status(200).json({
-      message: "Authentication successful",
-      admin: {
-        id: admin.id,
-        username: admin.username,
-        email: admin.email,
-      },
+    // Regenerer la session apres authentification complete
+    const finalAdminId = admin.id;
+    const adminUsername = admin.username;
+    const adminEmail = admin.email;
+
+    req.session.regenerate((err) => {
+      if (err) return next(err);
+      req.session.adminId = finalAdminId;
+      req.session.totpVerified = true;
+      req.session.totpAttempts = 0;
+
+      res.status(200).json({
+        message: "Authentication successful",
+        admin: {
+          id: finalAdminId,
+          username: adminUsername,
+          email: adminEmail,
+        },
+      });
     });
   } catch (error) {
     next(error);
@@ -174,7 +196,7 @@ export const logout: RequestHandler = async (req, res, next) => {
 
     req.session.destroy((err) => {
       if (err) {
-        return next(createHttpError(500, "ADMIN_008: Logout failed"));
+        return next(createHttpError(500, ADMIN_008));
       }
       res.clearCookie("admin.sid");
       res.status(200).json({ message: "Logged out successfully" });
@@ -193,7 +215,7 @@ export const getMe: RequestHandler = async (req, res, next) => {
     const adminId = req.session.adminId;
 
     if (!adminId) {
-      throw createHttpError(401, "ADMIN_001: Not authenticated");
+      throw createHttpError(401, ADMIN_001);
     }
 
     const admin = await prisma.adminUser.findUnique({
@@ -207,7 +229,7 @@ export const getMe: RequestHandler = async (req, res, next) => {
     });
 
     if (!admin) {
-      throw createHttpError(404, "ADMIN_009: Admin not found");
+      throw createHttpError(404, ADMIN_009);
     }
 
     res.status(200).json({ admin });

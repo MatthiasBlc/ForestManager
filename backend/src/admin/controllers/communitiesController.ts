@@ -2,6 +2,9 @@ import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import prisma from "../../util/db";
 import { assertIsDefine } from "../../util/assertIsDefine";
+import { parsePagination, buildPaginationMeta } from "../../util/pagination";
+import { ADMIN_COM_001, ADMIN_COM_003 } from "../../constants/errorCodes";
+import { AdminUpdateCommunityInput } from "../schemas/community.schema";
 
 /**
  * GET /api/admin/communities
@@ -10,28 +13,34 @@ import { assertIsDefine } from "../../util/assertIsDefine";
 export const getAll: RequestHandler = async (req, res, next) => {
   try {
     const { search, includeDeleted } = req.query;
+    const { limit, offset } = parsePagination(req.query as Record<string, string>, 100);
 
-    const communities = await prisma.community.findMany({
-      where: {
-        ...(search
-          ? { name: { contains: String(search), mode: "insensitive" } }
-          : {}),
-        ...(includeDeleted !== "true" ? { deletedAt: null } : {}),
-      },
-      include: {
-        _count: {
-          select: {
-            members: true,
-            recipes: true,
+    const where = {
+      ...(search ? { name: { contains: String(search), mode: "insensitive" as const } } : {}),
+      ...(includeDeleted !== "true" ? { deletedAt: null } : {}),
+    };
+
+    const [communities, total] = await Promise.all([
+      prisma.community.findMany({
+        where,
+        include: {
+          _count: {
+            select: {
+              members: true,
+              recipes: true,
+            },
+          },
+          features: {
+            where: { revokedAt: null },
+            include: { feature: true },
           },
         },
-        features: {
-          where: { revokedAt: null },
-          include: { feature: true },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+        orderBy: { createdAt: "desc" },
+        skip: offset,
+        take: limit,
+      }),
+      prisma.community.count({ where }),
+    ]);
 
     res.status(200).json({
       communities: communities.map((c) => ({
@@ -45,6 +54,7 @@ export const getAll: RequestHandler = async (req, res, next) => {
         createdAt: c.createdAt,
         deletedAt: c.deletedAt,
       })),
+      pagination: buildPaginationMeta(total, limit, offset, communities.length),
     });
   } catch (error) {
     next(error);
@@ -82,7 +92,7 @@ export const getOne: RequestHandler = async (req, res, next) => {
     });
 
     if (!community) {
-      throw createHttpError(404, "ADMIN_COM_001: Community not found");
+      throw createHttpError(404, ADMIN_COM_001);
     }
 
     res.status(200).json({
@@ -125,23 +135,19 @@ export const getOne: RequestHandler = async (req, res, next) => {
 export const update: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name } = req.body;
+    const { name } = req.body as AdminUpdateCommunityInput;
     const adminId = req.session.adminId;
     assertIsDefine(adminId);
 
     const community = await prisma.community.findUnique({ where: { id } });
     if (!community) {
-      throw createHttpError(404, "ADMIN_COM_001: Community not found");
-    }
-
-    if (!name || typeof name !== "string" || name.trim().length === 0) {
-      throw createHttpError(400, "ADMIN_COM_002: Name is required");
+      throw createHttpError(404, ADMIN_COM_001);
     }
 
     const oldName = community.name;
     const updated = await prisma.community.update({
       where: { id },
-      data: { name: name.trim() },
+      data: { name },
     });
 
     await prisma.adminActivityLog.create({
@@ -150,7 +156,7 @@ export const update: RequestHandler = async (req, res, next) => {
         type: "COMMUNITY_RENAMED",
         targetType: "Community",
         targetId: id,
-        metadata: { oldName, newName: name.trim() },
+        metadata: { oldName, newName: name },
       },
     });
 
@@ -172,11 +178,11 @@ export const remove: RequestHandler = async (req, res, next) => {
 
     const community = await prisma.community.findUnique({ where: { id } });
     if (!community) {
-      throw createHttpError(404, "ADMIN_COM_001: Community not found");
+      throw createHttpError(404, ADMIN_COM_001);
     }
 
     if (community.deletedAt) {
-      throw createHttpError(400, "ADMIN_COM_003: Community already deleted");
+      throw createHttpError(400, ADMIN_COM_003);
     }
 
     await prisma.community.update({

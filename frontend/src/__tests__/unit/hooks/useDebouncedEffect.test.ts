@@ -30,10 +30,9 @@ describe("useDebouncedEffect", () => {
 
   it("should cancel previous timer when deps change", () => {
     const callback = vi.fn();
-    const { rerender } = renderHook(
-      ({ deps }) => useDebouncedEffect(callback, 300, deps),
-      { initialProps: { deps: [1] } }
-    );
+    const { rerender } = renderHook(({ deps }) => useDebouncedEffect(callback, 300, deps), {
+      initialProps: { deps: [1] },
+    });
 
     vi.advanceTimersByTime(200);
     rerender({ deps: [2] });
@@ -48,9 +47,7 @@ describe("useDebouncedEffect", () => {
 
   it("should cleanup timer on unmount", () => {
     const callback = vi.fn();
-    const { unmount } = renderHook(() =>
-      useDebouncedEffect(callback, 300, [1])
-    );
+    const { unmount } = renderHook(() => useDebouncedEffect(callback, 300, [1]));
 
     vi.advanceTimersByTime(100);
     unmount();
@@ -61,10 +58,9 @@ describe("useDebouncedEffect", () => {
 
   it("should re-trigger when deps change", () => {
     const callback = vi.fn();
-    const { rerender } = renderHook(
-      ({ deps }) => useDebouncedEffect(callback, 100, deps),
-      { initialProps: { deps: [1] } }
-    );
+    const { rerender } = renderHook(({ deps }) => useDebouncedEffect(callback, 100, deps), {
+      initialProps: { deps: [1] },
+    });
 
     vi.advanceTimersByTime(100);
     expect(callback).toHaveBeenCalledOnce();

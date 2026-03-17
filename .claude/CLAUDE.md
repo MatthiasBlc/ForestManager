@@ -33,41 +33,92 @@ npx prisma studio              # DB GUI :5555
 ## Git
 
 - **Main**: master
-- **Branche courante**: CommunitiesBases
+- **Branche courante**: Developement
 - **Commits**: Ne JAMAIS ajouter de Co-Authored-By pour Claude
 
 ## Phase actuelle
 
-**Phase 4** (Recettes communautaires) - Backend 4.1 COMPLETE, Frontend 4.2 COMPLETE.
-Voir `.claude/context/PROGRESS.md` pour le detail.
+MVP complet (phases 0-17). Voir `.claude/context/PROGRESS.md` pour les features en cours.
 
 ## Codes erreur
 
-AUTH_001 (non auth) | COMMUNITY_001-006 | RECIPE_001-002 | INVITE_001-003 | ADMIN_001-012
+**User API** : AUTH_001-012 | USER_001 | COMMUNITY_001-006 | RECIPE_001-009 | INVITE_001-006 | MEMBER_001-004 | PROPOSAL_001-004 | SHARE_001-006 | PUBLISH_001-003 | TAG_001-007 | INGREDIENT_003 | NOTIF_001-005 | IMPORT_001-003 | VALIDATION_001
+
+**Admin API** : ADMIN_001-011 | ADMIN_TAG_001-006 | ADMIN_ING_001-009 | ADMIN_UNIT_001-007 | ADMIN_REC_001-003 | ADMIN_COM_001-003 | ADMIN_FEAT_001-006
 
 ## Regle: maintenir `.claude/` a jour
 
-Apres chaque modification (nouveau fichier, endpoint, migration, test, phase, branche), mettre a jour les fichiers `.claude/context/` concernes **ET `docs/DEVELOPMENT_ROADMAP.md`** (cocher les taches, maj checklist MVP, maj compteur tests) avant de terminer la session.
+Apres chaque modification (nouveau fichier, endpoint, migration, test, phase, branche), mettre a jour :
+
+- `.claude/context/` (PROGRESS, TESTS, API_MAP, DB_MODELS, FILE_MAP selon pertinence)
+- La **roadmap de la feature en cours** (cocher les taches dans `docs/features/*/ROADMAP.md`)
+
 Si une tache est en cours et que les tokens arrivent a leur limite, generer `.claude/context/RESUME.md` avec: tache en cours, etapes faites, etapes restantes, fichiers modifies, et tout contexte necessaire pour reprendre sans perte.
 
 ### PROGRESS.md : garder le fichier compact
-- Le tableau des phases completees = 1 ligne par phase, suffisant comme historique
-- Section "Phase en cours" : detail uniquement pour la phase active (checklist, sous-etapes)
-- **Quand une phase est terminee** : supprimer sa section de detail, ajouter la ligne au tableau, c'est tout
-- Le detail des anciennes phases reste tracable via git log et les docs (DEVELOPMENT_ROADMAP, etc.)
+
+- Juste un lien vers la phase en cours (spec + roadmap dans `docs/features/`)
+- Pas de duplication de la roadmap dans PROGRESS
+
+## Organisation docs/
+
+```
+docs/
+  0 - brainstorming futur.md       # Idees futures (transversal)
+  features/                         # Specs par feature post-MVP
+    tags-rework/
+      SPEC_TAGS_REWORK.md
+    ingredients-rework/
+      SPEC_INGREDIENTS_REWORK.md
+    recipe-rework-v2/
+      SPEC_RECIPE_REWORK_V2.md
+    notifications-rework/
+      SPEC_NOTIFICATIONS_REWORK.md
+    input-validation-security/
+      SPEC_INPUT_VALIDATION.md
+    photo-upload/
+      SPEC_PHOTO_UPLOAD.md
+      GUIDE_MINIO.md
+    audit-refactorisation/
+      SPEC_AUDIT_REFACTORISATION.md
+    recipe-import/
+      SPEC_RECIPE_IMPORT.md
+      ROADMAP.md
+    mobile-rework/                    # EN COURS
+      SPEC_MOBILE_REWORK.md
+      ROADMAP.md
+    e2e-testing/                      # PLANIFIE
+      SPEC_E2E_TESTING.md
+      ROADMAP.md
+```
+
+Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une spec et une roadmap.
 
 ## Contexte approfondi (lire selon le besoin)
 
-| Besoin | Fichier |
-|--------|---------|
-| Avancement phases & resume | `.claude/context/PROGRESS.md` |
-| Tests: commandes, fichiers, infra | `.claude/context/TESTS.md` |
-| Endpoints API complets | `.claude/context/API_MAP.md` |
-| Schema DB & modeles Prisma | `.claude/context/DB_MODELS.md` |
-| Arborescence fichiers source | `.claude/context/FILE_MAP.md` |
-| Regles metier detaillees | `docs/BUSINESS_RULES.md` |
-| User stories | `docs/USER_STORIES.md` |
-| Architecture & patterns | `docs/ARCHITECTURE.md` |
-| Roadmap & plan de tests | `docs/DEVELOPMENT_ROADMAP.md` |
-| Spec API (contrat REST) | `docs/API_SPECIFICATION.md` |
-| Roadmap tests par sprint | `docs/TESTS_IMPLEMENTATION_PLAN.md` |
+| Besoin                              | Fichier                                                             |
+| ----------------------------------- | ------------------------------------------------------------------- |
+| Avancement & phase en cours         | `.claude/context/PROGRESS.md`                                       |
+| Tests: commandes, inventaire, infra | `.claude/context/TESTS.md`                                          |
+| Endpoints API complets              | `.claude/context/API_MAP.md`                                        |
+| Schema DB & modeles Prisma          | `.claude/context/DB_MODELS.md`                                      |
+| Arborescence fichiers source        | `.claude/context/FILE_MAP.md`                                       |
+| Idees futures                       | `docs/0 - brainstorming futur.md`                                   |
+| **Feature : Recipe Import**         |                                                                     |
+| Spec Recipe Import                  | `docs/features/recipe-import/SPEC_RECIPE_IMPORT.md`                 |
+| Roadmap Recipe Import               | `docs/features/recipe-import/ROADMAP.md`                            |
+| **Feature : Mobile Rework**         |                                                                     |
+| Spec Mobile Rework                  | `docs/features/mobile-rework/SPEC_MOBILE_REWORK.md`                 |
+| Roadmap Mobile Rework               | `docs/features/mobile-rework/ROADMAP.md`                            |
+| **Feature : E2E Testing**           |                                                                     |
+| Spec E2E Testing                    | `docs/features/e2e-testing/SPEC_E2E_TESTING.md`                     |
+| Roadmap E2E Testing                 | `docs/features/e2e-testing/ROADMAP.md`                              |
+| **Specs features (reference)**      |                                                                     |
+| Tags Rework                         | `docs/features/tags-rework/SPEC_TAGS_REWORK.md`                     |
+| Ingredients Rework                  | `docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md`       |
+| Recipe Rework v2                    | `docs/features/recipe-rework-v2/SPEC_RECIPE_REWORK_V2.md`           |
+| Input Validation                    | `docs/features/input-validation-security/SPEC_INPUT_VALIDATION.md`  |
+| Notifications Rework                | `docs/features/notifications-rework/SPEC_NOTIFICATIONS_REWORK.md`   |
+| Photo Upload                        | `docs/features/photo-upload/SPEC_PHOTO_UPLOAD.md`                   |
+| Guide MinIO                         | `docs/features/photo-upload/GUIDE_MINIO.md`                         |
+| Audit Refactorisation               | `docs/features/audit-refactorisation/SPEC_AUDIT_REFACTORISATION.md` |

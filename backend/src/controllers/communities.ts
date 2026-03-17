@@ -3,7 +3,8 @@ import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
-import { COMMUNITY_VALIDATION as VALIDATION } from "../util/validation";
+import { buildImageUrl } from "../config/storage";
+import { CreateCommunityInput, UpdateCommunityInput } from "../schemas/community.schema";
 
 export const getCommunities: RequestHandler = async (req, res, next) => {
   const authenticatedUserId = req.session.userId;
@@ -26,6 +27,7 @@ export const getCommunities: RequestHandler = async (req, res, next) => {
             id: true,
             name: true,
             description: true,
+            imageKey: true,
             createdAt: true,
             updatedAt: true,
             _count: {
@@ -48,6 +50,7 @@ export const getCommunities: RequestHandler = async (req, res, next) => {
       id: membership.community.id,
       name: membership.community.name,
       description: membership.community.description,
+      imageUrl: membership.community.imageKey ? buildImageUrl(membership.community.imageKey) : null,
       role: membership.role,
       membersCount: membership.community._count.members,
       recipesCount: membership.community._count.recipes,
@@ -83,6 +86,7 @@ export const getCommunity: RequestHandler = async (req, res, next) => {
         id: true,
         name: true,
         description: true,
+        imageKey: true,
         visibility: true,
         createdAt: true,
         updatedAt: true,
@@ -108,6 +112,7 @@ export const getCommunity: RequestHandler = async (req, res, next) => {
       id: community.id,
       name: community.name,
       description: community.description,
+      imageUrl: community.imageKey ? buildImageUrl(community.imageKey) : null,
       visibility: community.visibility,
       createdAt: community.createdAt,
       membersCount: community._count.members,
@@ -117,17 +122,12 @@ export const getCommunity: RequestHandler = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-}
-
-interface CreateCommunityBody {
-  name?: string;
-  description?: string;
-}
+};
 
 export const createCommunity: RequestHandler<
   unknown,
   unknown,
-  CreateCommunityBody,
+  CreateCommunityInput,
   unknown
 > = async (req, res, next) => {
   const { name, description } = req.body;
@@ -135,32 +135,6 @@ export const createCommunity: RequestHandler<
 
   try {
     assertIsDefine(authenticatedUserId);
-
-    // Validation
-    if (!name) {
-      throw createHttpError(400, "Community must have a name");
-    }
-
-    if (name.length < VALIDATION.NAME_MIN) {
-      throw createHttpError(
-        400,
-        `Name must be at least ${VALIDATION.NAME_MIN} characters`
-      );
-    }
-
-    if (name.length > VALIDATION.NAME_MAX) {
-      throw createHttpError(
-        400,
-        `Name must be at most ${VALIDATION.NAME_MAX} characters`
-      );
-    }
-
-    if (description && description.length > VALIDATION.DESCRIPTION_MAX) {
-      throw createHttpError(
-        400,
-        `Description must be at most ${VALIDATION.DESCRIPTION_MAX} characters`
-      );
-    }
 
     // Get default features
     const defaultFeatures = await prisma.feature.findMany({
@@ -200,14 +174,8 @@ export const createCommunity: RequestHandler<
   }
 };
 
-
 interface UpdateCommunityParams extends Record<string, string> {
   communityId: string;
-}
-
-interface UpdateCommunityBody {
-  name?: string;
-  description?: string;
 }
 
 /**
@@ -217,7 +185,7 @@ interface UpdateCommunityBody {
 export const updateCommunity: RequestHandler<
   UpdateCommunityParams,
   unknown,
-  UpdateCommunityBody,
+  UpdateCommunityInput,
   unknown
 > = async (req, res, next) => {
   const communityId = req.params.communityId;
@@ -229,36 +197,6 @@ export const updateCommunity: RequestHandler<
     // Role check is done by requireCommunityRole middleware
     if (!userCommunity) {
       throw createHttpError(500, "Middleware memberOf required");
-    }
-
-    // At least one field must be provided
-    if (name === undefined && description === undefined) {
-      throw createHttpError(400, "No fields to update");
-    }
-
-    // Validate name if provided
-    if (name !== undefined) {
-      if (name.length < VALIDATION.NAME_MIN) {
-        throw createHttpError(
-          400,
-          `Name must be at least ${VALIDATION.NAME_MIN} characters`
-        );
-      }
-
-      if (name.length > VALIDATION.NAME_MAX) {
-        throw createHttpError(
-          400,
-          `Name must be at most ${VALIDATION.NAME_MAX} characters`
-        );
-      }
-    }
-
-    // Validate description if provided
-    if (description !== undefined && description.length > VALIDATION.DESCRIPTION_MAX) {
-      throw createHttpError(
-        400,
-        `Description must be at most ${VALIDATION.DESCRIPTION_MAX} characters`
-      );
     }
 
     // Build update data
@@ -280,6 +218,7 @@ export const updateCommunity: RequestHandler<
         id: true,
         name: true,
         description: true,
+        imageKey: true,
         visibility: true,
         createdAt: true,
         updatedAt: true,
@@ -300,6 +239,7 @@ export const updateCommunity: RequestHandler<
       id: updatedCommunity.id,
       name: updatedCommunity.name,
       description: updatedCommunity.description,
+      imageUrl: updatedCommunity.imageKey ? buildImageUrl(updatedCommunity.imageKey) : null,
       visibility: updatedCommunity.visibility,
       createdAt: updatedCommunity.createdAt,
       updatedAt: updatedCommunity.updatedAt,

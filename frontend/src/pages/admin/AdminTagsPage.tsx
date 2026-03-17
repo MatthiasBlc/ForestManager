@@ -1,66 +1,108 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { FaSortUp, FaSortDown, FaSort } from "react-icons/fa";
 import { AdminTag } from "../../models/admin";
 import APIManager from "../../network/api";
 import { useConfirm } from "../../hooks/useConfirm";
+import DataContainer from "../../components/DataContainer";
+import { useAsyncData } from "../../hooks/useAsyncData";
+import TagEditModal from "../../components/admin/TagEditModal";
+import TagMergeModal from "../../components/admin/TagMergeModal";
+import AdminRecipeListModal from "../../components/admin/AdminRecipeListModal";
+import AdminRecipeDetailModal from "../../components/admin/AdminRecipeDetailModal";
 import toast from "react-hot-toast";
 
+type ScopeFilter = "ALL" | "GLOBAL" | "COMMUNITY";
+type TagSortColumn = "name" | "scope" | "status" | "recipeCount";
+type SortDirection = "asc" | "desc";
+
 function AdminTagsPage() {
-  const [tags, setTags] = useState<AdminTag[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingTag, setEditingTag] = useState<AdminTag | null>(null);
-  const [tagName, setTagName] = useState("");
-  const [saving, setSaving] = useState(false);
+  const [scopeFilter, setScopeFilter] = useState<ScopeFilter>("ALL");
+  const [editModalTag, setEditModalTag] = useState<AdminTag | null | "create">(null);
   const [mergeSource, setMergeSource] = useState<AdminTag | null>(null);
-  const [mergeModalOpen, setMergeModalOpen] = useState(false);
+  const [recipesModalTag, setRecipesModalTag] = useState<AdminTag | null>(null);
+  const [recipeDetailId, setRecipeDetailId] = useState<string | null>(null);
+  const [sortColumn, setSortColumn] = useState<TagSortColumn>("name");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const { confirm, ConfirmDialog } = useConfirm();
 
-  const loadTags = useCallback(async () => {
-    try {
-      const data = await APIManager.getAdminTags(search || undefined);
-      setTags(data);
-    } catch {
-      toast.error("Failed to load tags");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [search]);
+  const {
+    data: tags,
+    isLoading,
+    error,
+    refetch: loadTags,
+  } = useAsyncData<AdminTag[]>(() => {
+    const scope = scopeFilter !== "ALL" ? scopeFilter : undefined;
+    return APIManager.getAdminTags(search || undefined, scope);
+  }, [search, scopeFilter]);
 
   useEffect(() => {
-    setIsLoading(true);
-    loadTags();
-  }, [loadTags]);
+    if (error) toast.error(error);
+  }, [error]);
 
-  function openCreate() {
-    setEditingTag(null);
-    setTagName("");
-    setModalOpen(true);
-  }
+  // --- Sorting ---
+  const handleSort = (column: TagSortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
 
-  function openEdit(tag: AdminTag) {
-    setEditingTag(tag);
-    setTagName(tag.name);
-    setModalOpen(true);
-  }
+  const sortedTags = useMemo(() => {
+    const sorted = [...(tags ?? [])].sort((a, b) => {
+      let aVal: string | number = "";
+      let bVal: string | number = "";
 
-  async function handleSave() {
-    if (!tagName.trim()) return;
-    setSaving(true);
+      switch (sortColumn) {
+        case "name":
+          aVal = a.name.toLowerCase();
+          bVal = b.name.toLowerCase();
+          break;
+        case "scope":
+          aVal = a.scope ?? "";
+          bVal = b.scope ?? "";
+          break;
+        case "status":
+          aVal = a.status ?? "";
+          bVal = b.status ?? "";
+          break;
+        case "recipeCount":
+          aVal = a.recipeCount;
+          bVal = b.recipeCount;
+          break;
+      }
+
+      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  }, [tags, sortColumn, sortDirection]);
+
+  const SortIcon = ({ column }: { column: TagSortColumn }) => {
+    if (sortColumn !== column) return <FaSort className="ml-1 opacity-30" />;
+    return sortDirection === "asc" ? (
+      <FaSortUp className="ml-1" />
+    ) : (
+      <FaSortDown className="ml-1" />
+    );
+  };
+
+  async function handleSave(name: string) {
     try {
-      if (editingTag) {
-        await APIManager.updateAdminTag(editingTag.id, tagName.trim());
+      if (editModalTag && editModalTag !== "create") {
+        await APIManager.updateAdminTag(editModalTag.id, name);
         toast.success("Tag updated");
       } else {
-        await APIManager.createAdminTag(tagName.trim());
+        await APIManager.createAdminTag(name);
         toast.success("Tag created");
       }
-      setModalOpen(false);
+      setEditModalTag(null);
       loadTags();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to save tag");
-    } finally {
-      setSaving(false);
     }
   }
 
@@ -81,17 +123,11 @@ function AdminTagsPage() {
     }
   }
 
-  function openMerge(tag: AdminTag) {
-    setMergeSource(tag);
-    setMergeModalOpen(true);
-  }
-
   async function handleMerge(target: AdminTag) {
     if (!mergeSource) return;
     try {
       await APIManager.mergeAdminTags(mergeSource.id, target.id);
       toast.success(`Merged "${mergeSource.name}" into "${target.name}"`);
-      setMergeModalOpen(false);
       setMergeSource(null);
       loadTags();
     } catch (err) {
@@ -104,11 +140,13 @@ function AdminTagsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold">Tags</h1>
-        <button className="btn btn-primary" onClick={openCreate}>Add Tag</button>
+        <button className="btn btn-primary" onClick={() => setEditModalTag("create")}>
+          Add Tag
+        </button>
       </div>
 
-      {/* Search */}
-      <div className="mb-4">
+      {/* Filters */}
+      <div className="flex gap-4 mb-4 items-center flex-wrap">
         <input
           type="text"
           placeholder="Search tags..."
@@ -116,99 +154,153 @@ function AdminTagsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
+        <select
+          className="select select-bordered select-sm"
+          value={scopeFilter}
+          onChange={(e) => setScopeFilter(e.target.value as ScopeFilter)}
+          aria-label="Filter by scope"
+        >
+          <option value="ALL">All scopes</option>
+          <option value="GLOBAL">Global</option>
+          <option value="COMMUNITY">Community</option>
+        </select>
       </div>
 
       {/* Table */}
-      {isLoading ? (
-        <div className="flex justify-center py-12">
-          <span className="loading loading-spinner loading-lg"></span>
-        </div>
-      ) : (
+      <DataContainer isLoading={isLoading && !tags} error={null}>
         <div className="card bg-base-100 shadow">
           <div className="overflow-x-auto">
             <table className="table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th className="text-right">Recipes</th>
+                  <th className="cursor-pointer select-none" onClick={() => handleSort("name")}>
+                    <span className="flex items-center">
+                      Name
+                      <SortIcon column="name" />
+                    </span>
+                  </th>
+                  <th className="cursor-pointer select-none" onClick={() => handleSort("scope")}>
+                    <span className="flex items-center">
+                      Scope
+                      <SortIcon column="scope" />
+                    </span>
+                  </th>
+                  <th>Community</th>
+                  <th
+                    className="cursor-pointer select-none text-right"
+                    onClick={() => handleSort("recipeCount")}
+                  >
+                    <span className="flex items-center justify-end">
+                      Recipes
+                      <SortIcon column="recipeCount" />
+                    </span>
+                  </th>
                   <th className="text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {tags.length > 0 ? (
-                  tags.map((tag) => (
+                {sortedTags.length > 0 ? (
+                  sortedTags.map((tag) => (
                     <tr key={tag.id}>
                       <td className="font-medium">{tag.name}</td>
-                      <td className="text-right">{tag.recipeCount}</td>
+                      <td>
+                        <span
+                          className={`badge badge-sm ${tag.scope === "GLOBAL" ? "badge-primary" : "badge-secondary"}`}
+                        >
+                          {tag.scope || "GLOBAL"}
+                        </span>
+                      </td>
+                      <td className="text-base-content/60">{tag.community?.name || "-"}</td>
+                      <td className="text-right">
+                        {tag.recipeCount > 0 ? (
+                          <button
+                            className="btn btn-ghost btn-xs"
+                            onClick={() => setRecipesModalTag(tag)}
+                          >
+                            {tag.recipeCount}
+                          </button>
+                        ) : (
+                          <span>{tag.recipeCount}</span>
+                        )}
+                      </td>
                       <td className="text-right">
                         <div className="flex justify-end gap-1">
-                          <button className="btn btn-ghost btn-xs" onClick={() => openEdit(tag)}>Edit</button>
-                          <button className="btn btn-ghost btn-xs" onClick={() => openMerge(tag)}>Merge</button>
-                          <button className="btn btn-ghost btn-xs text-error" onClick={() => handleDelete(tag)}>Delete</button>
+                          <button
+                            className="btn btn-ghost btn-xs"
+                            onClick={() => setEditModalTag(tag)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="btn btn-ghost btn-xs"
+                            onClick={() => setMergeSource(tag)}
+                          >
+                            Merge
+                          </button>
+                          <button
+                            className="btn btn-ghost btn-xs text-error"
+                            onClick={() => handleDelete(tag)}
+                          >
+                            Delete
+                          </button>
                         </div>
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={3} className="text-center text-base-content/50">No tags found</td>
+                    <td colSpan={5} className="text-center text-base-content/50">
+                      No tags found
+                    </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
         </div>
+      </DataContainer>
+
+      {/* Modals */}
+      {editModalTag && (
+        <TagEditModal
+          editingTag={editModalTag === "create" ? null : editModalTag}
+          onSave={handleSave}
+          onClose={() => setEditModalTag(null)}
+        />
       )}
 
-      {/* Create/Edit Modal */}
-      {modalOpen && (
-        <div className="modal modal-open">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg">{editingTag ? "Edit Tag" : "Create Tag"}</h3>
-            <div className="form-control mt-4">
-              <label className="label"><span className="label-text">Name</span></label>
-              <input
-                type="text"
-                className="input input-bordered"
-                value={tagName}
-                onChange={(e) => setTagName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSave()}
-              />
-            </div>
-            <div className="modal-action">
-              <button className="btn btn-ghost" onClick={() => setModalOpen(false)}>Cancel</button>
-              <button className="btn btn-primary" onClick={handleSave} disabled={saving || !tagName.trim()}>
-                {saving ? <span className="loading loading-spinner loading-sm"></span> : "Save"}
-              </button>
-            </div>
-          </div>
-          <div className="modal-backdrop bg-black/50" onClick={() => setModalOpen(false)} />
-        </div>
+      {mergeSource && (
+        <TagMergeModal
+          source={mergeSource}
+          tags={tags ?? []}
+          onMerge={handleMerge}
+          onClose={() => setMergeSource(null)}
+        />
       )}
 
-      {/* Merge Modal */}
-      {mergeModalOpen && mergeSource && (
-        <div className="modal modal-open">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg">Merge &quot;{mergeSource.name}&quot; into...</h3>
-            <p className="text-sm text-base-content/70 mt-2">Select the target tag. All recipes will be moved to the target.</p>
-            <div className="mt-4 max-h-60 overflow-y-auto">
-              {tags.filter((t) => t.id !== mergeSource.id).map((tag) => (
-                <button
-                  key={tag.id}
-                  className="btn btn-ghost btn-sm w-full justify-start mb-1"
-                  onClick={() => handleMerge(tag)}
-                >
-                  {tag.name} ({tag.recipeCount} recipes)
-                </button>
-              ))}
-            </div>
-            <div className="modal-action">
-              <button className="btn btn-ghost" onClick={() => { setMergeModalOpen(false); setMergeSource(null); }}>Cancel</button>
-            </div>
-          </div>
-          <div className="modal-backdrop bg-black/50" onClick={() => { setMergeModalOpen(false); setMergeSource(null); }} />
-        </div>
+      {recipesModalTag && (
+        <AdminRecipeListModal
+          tagId={recipesModalTag.id}
+          tagName={recipesModalTag.name}
+          onSelectRecipe={setRecipeDetailId}
+          onClose={() => setRecipesModalTag(null)}
+        />
+      )}
+
+      {recipeDetailId && (
+        <AdminRecipeDetailModal
+          recipeId={recipeDetailId}
+          onClose={() => setRecipeDetailId(null)}
+          onRecipeChanged={() => {
+            loadTags();
+            if (recipesModalTag) {
+              // Force re-mount of recipe list to refresh
+              const tag = recipesModalTag;
+              setRecipesModalTag(null);
+              setTimeout(() => setRecipesModalTag(tag), 0);
+            }
+          }}
+        />
       )}
 
       {ConfirmDialog}

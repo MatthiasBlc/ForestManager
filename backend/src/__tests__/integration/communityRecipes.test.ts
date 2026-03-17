@@ -1,13 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../../app";
-import {
-  extractSessionCookie,
-} from "../setup/testHelpers";
+import { uniqueSuffix, extractSessionCookie } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
-
-const uniqueSuffix = () =>
-  `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 
 describe("Community Recipes API", () => {
   let moderator: { id: string; username: string; email: string };
@@ -22,11 +17,13 @@ describe("Community Recipes API", () => {
     const suffix = uniqueSuffix();
 
     // Create moderator via signup
-    const modSignup = await request(app).post("/api/auth/signup").send({
-      username: `crmod_${suffix}`,
-      email: `crmod_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const modSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `crmod_${suffix}`,
+        email: `crmod_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     moderatorCookie = extractSessionCookie(modSignup)!;
     moderator = (await testPrisma.user.findFirst({
       where: { email: `crmod_${suffix}@example.com` },
@@ -40,11 +37,13 @@ describe("Community Recipes API", () => {
     community = createRes.body;
 
     // Create member via signup, add to community
-    const memSignup = await request(app).post("/api/auth/signup").send({
-      username: `crmem_${suffix}`,
-      email: `crmem_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const memSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `crmem_${suffix}`,
+        email: `crmem_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     memberCookie = extractSessionCookie(memSignup)!;
     member = (await testPrisma.user.findFirst({
       where: { email: `crmem_${suffix}@example.com` },
@@ -60,11 +59,13 @@ describe("Community Recipes API", () => {
     });
 
     // Create non-member via signup
-    const nonMemSignup = await request(app).post("/api/auth/signup").send({
-      username: `crnonm_${suffix}`,
-      email: `crnonm_${suffix}@example.com`,
-      password: "Test123!Password",
-    });
+    const nonMemSignup = await request(app)
+      .post("/api/auth/signup")
+      .send({
+        username: `crnonm_${suffix}`,
+        email: `crnonm_${suffix}@example.com`,
+        password: "Test123!Password",
+      });
     nonMemberCookie = extractSessionCookie(nonMemSignup)!;
     _nonMember = (await testPrisma.user.findFirst({
       where: { email: `crnonm_${suffix}@example.com` },
@@ -81,7 +82,8 @@ describe("Community Recipes API", () => {
         .set("Cookie", memberCookie)
         .send({
           title: "Tarte aux pommes",
-          content: "Faire une tarte avec des pommes",
+          servings: 4,
+          steps: [{ instruction: "Faire une tarte avec des pommes" }],
         });
 
       expect(res.status).toBe(201);
@@ -106,11 +108,12 @@ describe("Community Recipes API", () => {
         .set("Cookie", memberCookie)
         .send({
           title: "Recette complete",
-          content: "Contenu detaille",
+          servings: 6,
+          steps: [{ instruction: "Contenu detaille" }],
           tags: ["dessert", "rapide"],
           ingredients: [
-            { name: "sucre", quantity: "100g" },
-            { name: "farine", quantity: "200g" },
+            { name: "sucre", quantity: 100 },
+            { name: "farine", quantity: 200 },
           ],
         });
 
@@ -131,7 +134,8 @@ describe("Community Recipes API", () => {
         .set("Cookie", moderatorCookie)
         .send({
           title: "Recette du mod",
-          content: "Contenu du mod",
+          servings: 4,
+          steps: [{ instruction: "Contenu du mod" }],
         });
 
       expect(res.status).toBe(201);
@@ -143,23 +147,38 @@ describe("Community Recipes API", () => {
         .post(`/api/communities/${community.id}/recipes`)
         .set("Cookie", memberCookie)
         .send({
-          content: "Contenu",
+          servings: 4,
+          steps: [{ instruction: "Contenu" }],
         });
 
       expect(res.status).toBe(400);
       expect(res.body.error).toContain("RECIPE_003");
     });
 
-    it("should return 400 when content is missing", async () => {
+    it("should return 400 when steps is missing", async () => {
       const res = await request(app)
         .post(`/api/communities/${community.id}/recipes`)
         .set("Cookie", memberCookie)
         .send({
           title: "Titre",
+          servings: 4,
         });
 
       expect(res.status).toBe(400);
-      expect(res.body.error).toContain("RECIPE_004");
+      expect(res.body.error).toContain("RECIPE_007");
+    });
+
+    it("should return 400 when servings is missing", async () => {
+      const res = await request(app)
+        .post(`/api/communities/${community.id}/recipes`)
+        .set("Cookie", memberCookie)
+        .send({
+          title: "Titre",
+          steps: [{ instruction: "Step" }],
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain("RECIPE_006");
     });
 
     it("should return 403 for non-member", async () => {
@@ -168,7 +187,8 @@ describe("Community Recipes API", () => {
         .set("Cookie", nonMemberCookie)
         .send({
           title: "Recette",
-          content: "Contenu",
+          servings: 4,
+          steps: [{ instruction: "Contenu" }],
         });
 
       expect(res.status).toBe(403);
@@ -179,7 +199,8 @@ describe("Community Recipes API", () => {
         .post(`/api/communities/${community.id}/recipes`)
         .send({
           title: "Recette",
-          content: "Contenu",
+          servings: 4,
+          steps: [{ instruction: "Contenu" }],
         });
 
       expect(res.status).toBe(401);
@@ -191,7 +212,8 @@ describe("Community Recipes API", () => {
         .set("Cookie", memberCookie)
         .send({
           title: "Recette avec log",
-          content: "Contenu",
+          servings: 4,
+          steps: [{ instruction: "Contenu" }],
         });
 
       expect(res.status).toBe(201);
@@ -210,6 +232,143 @@ describe("Community Recipes API", () => {
   });
 
   // =====================================
+  // Tags scope-aware
+  // =====================================
+  describe("Tags scope-aware (POST /api/communities/:communityId/recipes)", () => {
+    it("should use existing GLOBAL APPROVED tag directly", async () => {
+      // Creer un tag global via recette perso
+      await request(app)
+        .post("/api/recipes")
+        .set("Cookie", memberCookie)
+        .send({
+          title: "Perso",
+          servings: 4,
+          steps: [{ instruction: "c" }],
+          tags: ["existing_global"],
+        });
+
+      // Creer recette communautaire avec le meme tag
+      const res = await request(app)
+        .post(`/api/communities/${community.id}/recipes`)
+        .set("Cookie", memberCookie)
+        .send({
+          title: "Comm",
+          servings: 4,
+          steps: [{ instruction: "c" }],
+          tags: ["existing_global"],
+        });
+
+      expect(res.status).toBe(201);
+      const communityTags = res.body.community.tags;
+      expect(communityTags).toHaveLength(1);
+      expect(communityTags[0].name).toBe("existing_global");
+      expect(communityTags[0].scope).toBe("GLOBAL");
+      expect(communityTags[0].status).toBe("APPROVED");
+    });
+
+    it("should create PENDING community tag for unknown tag", async () => {
+      const res = await request(app)
+        .post(`/api/communities/${community.id}/recipes`)
+        .set("Cookie", memberCookie)
+        .send({
+          title: "Recette",
+          servings: 4,
+          steps: [{ instruction: "c" }],
+          tags: ["brand_new_tag"],
+        });
+
+      expect(res.status).toBe(201);
+
+      // La recette communautaire doit avoir un tag PENDING
+      const communityTags = res.body.community.tags;
+      expect(communityTags).toHaveLength(1);
+      expect(communityTags[0].name).toBe("brand_new_tag");
+      expect(communityTags[0].scope).toBe("COMMUNITY");
+      expect(communityTags[0].status).toBe("PENDING");
+      expect(communityTags[0].communityId).toBe(community.id);
+
+      // La recette perso reutilise le meme tag COMMUNITY PENDING (pas de doublon global)
+      const personalTags = res.body.personal.tags;
+      expect(personalTags).toHaveLength(1);
+      expect(personalTags[0].name).toBe("brand_new_tag");
+      expect(personalTags[0].scope).toBe("COMMUNITY");
+      expect(personalTags[0].status).toBe("PENDING");
+    });
+
+    it("should reuse existing COMMUNITY APPROVED tag", async () => {
+      // Creer un tag APPROVED dans la communaute
+      await testPrisma.tag.create({
+        data: {
+          name: "approved_comm_tag",
+          scope: "COMMUNITY",
+          status: "APPROVED",
+          communityId: community.id,
+        },
+      });
+
+      const res = await request(app)
+        .post(`/api/communities/${community.id}/recipes`)
+        .set("Cookie", memberCookie)
+        .send({
+          title: "R",
+          servings: 4,
+          steps: [{ instruction: "c" }],
+          tags: ["approved_comm_tag"],
+        });
+
+      expect(res.status).toBe(201);
+      const communityTags = res.body.community.tags;
+      expect(communityTags).toHaveLength(1);
+      expect(communityTags[0].name).toBe("approved_comm_tag");
+      expect(communityTags[0].scope).toBe("COMMUNITY");
+      expect(communityTags[0].status).toBe("APPROVED");
+    });
+
+    it("should reuse existing PENDING tag in same community (no duplicate)", async () => {
+      // Creer un tag PENDING directement en DB
+      const pendingTag = await testPrisma.tag.create({
+        data: {
+          name: "pending_reuse",
+          scope: "COMMUNITY",
+          status: "PENDING",
+          communityId: community.id,
+          createdById: member.id,
+        },
+      });
+
+      // Creer une recette avec ce tag → doit reutiliser le PENDING existant
+      const res = await request(app)
+        .post(`/api/communities/${community.id}/recipes`)
+        .set("Cookie", memberCookie)
+        .send({ title: "R2", servings: 4, steps: [{ instruction: "c" }], tags: ["pending_reuse"] });
+
+      expect(res.status).toBe(201);
+      const communityTags = res.body.community.tags;
+      expect(communityTags).toHaveLength(1);
+      expect(communityTags[0].name).toBe("pending_reuse");
+      expect(communityTags[0].status).toBe("PENDING");
+      expect(communityTags[0].id).toBe(pendingTag.id);
+
+      // Verifier qu'il n'y a qu'un seul tag COMMUNITY dans la DB
+      const dbTags = await testPrisma.tag.findMany({
+        where: { name: "pending_reuse", communityId: community.id },
+      });
+      expect(dbTags).toHaveLength(1);
+    });
+
+    it("should reject more than 10 tags per recipe (TAG_003)", async () => {
+      const tags = Array.from({ length: 11 }, (_, i) => `tag_${i}`);
+      const res = await request(app)
+        .post(`/api/communities/${community.id}/recipes`)
+        .set("Cookie", memberCookie)
+        .send({ title: "Too many tags", servings: 4, steps: [{ instruction: "c" }], tags });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain("TAG_003");
+    });
+  });
+
+  // =====================================
   // GET /api/communities/:communityId/recipes
   // =====================================
   describe("GET /api/communities/:communityId/recipes", () => {
@@ -218,14 +377,15 @@ describe("Community Recipes API", () => {
       await request(app)
         .post(`/api/communities/${community.id}/recipes`)
         .set("Cookie", memberCookie)
-        .send({ title: "Recette 1", content: "Contenu 1" });
+        .send({ title: "Recette 1", servings: 4, steps: [{ instruction: "Contenu 1" }] });
 
       await request(app)
         .post(`/api/communities/${community.id}/recipes`)
         .set("Cookie", memberCookie)
         .send({
           title: "Recette 2",
-          content: "Contenu 2",
+          servings: 4,
+          steps: [{ instruction: "Contenu 2" }],
           tags: ["dessert"],
         });
 
@@ -234,7 +394,8 @@ describe("Community Recipes API", () => {
         .set("Cookie", moderatorCookie)
         .send({
           title: "Gateau chocolat",
-          content: "Contenu 3",
+          servings: 4,
+          steps: [{ instruction: "Contenu 3" }],
           tags: ["dessert", "chocolat"],
         });
     });
@@ -261,6 +422,19 @@ describe("Community Recipes API", () => {
       expect(recipe.creator).toBeDefined();
       expect(recipe.creator.id).toBeDefined();
       expect(recipe.creator.username).toBeDefined();
+    });
+
+    it("should include servings and times in list response", async () => {
+      const res = await request(app)
+        .get(`/api/communities/${community.id}/recipes`)
+        .set("Cookie", memberCookie);
+
+      expect(res.status).toBe(200);
+      const recipe = res.body.data[0];
+      expect(recipe).toHaveProperty("servings");
+      expect(recipe).toHaveProperty("prepTime");
+      expect(recipe).toHaveProperty("cookTime");
+      expect(recipe).toHaveProperty("restTime");
     });
 
     it("should respect limit parameter", async () => {
@@ -302,8 +476,7 @@ describe("Community Recipes API", () => {
     });
 
     it("should return 401 when not authenticated", async () => {
-      const res = await request(app)
-        .get(`/api/communities/${community.id}/recipes`);
+      const res = await request(app).get(`/api/communities/${community.id}/recipes`);
 
       expect(res.status).toBe(401);
     });
@@ -321,9 +494,10 @@ describe("Community Recipes API", () => {
         .set("Cookie", memberCookie)
         .send({
           title: "Recette detail",
-          content: "Contenu detail",
+          servings: 4,
+          steps: [{ instruction: "Contenu detail" }],
           tags: ["tag1"],
-          ingredients: [{ name: "ingredient1", quantity: "50g" }],
+          ingredients: [{ name: "ingredient1", quantity: 50 }],
         });
       communityRecipeId = createRes.body.community.id;
     });
@@ -373,7 +547,8 @@ describe("Community Recipes API", () => {
         .set("Cookie", memberCookie)
         .send({
           title: "Recette a modifier",
-          content: "Contenu original",
+          servings: 4,
+          steps: [{ instruction: "Contenu original" }],
         });
       communityRecipeId = createRes.body.community.id;
     });
@@ -439,7 +614,8 @@ describe("Community Recipes API", () => {
         .set("Cookie", memberCookie)
         .send({
           title: "Recette a supprimer",
-          content: "Contenu",
+          servings: 4,
+          steps: [{ instruction: "Contenu" }],
         });
       communityRecipeId = createRes.body.community.id;
       personalRecipeId = createRes.body.personal.id;
@@ -460,9 +636,7 @@ describe("Community Recipes API", () => {
     });
 
     it("should NOT delete personal recipe when deleting community recipe", async () => {
-      await request(app)
-        .delete(`/api/recipes/${communityRecipeId}`)
-        .set("Cookie", memberCookie);
+      await request(app).delete(`/api/recipes/${communityRecipeId}`).set("Cookie", memberCookie);
 
       // Personal recipe should still exist
       const getRes = await request(app)
@@ -473,9 +647,7 @@ describe("Community Recipes API", () => {
     });
 
     it("should NOT delete community recipe when deleting personal recipe", async () => {
-      await request(app)
-        .delete(`/api/recipes/${personalRecipeId}`)
-        .set("Cookie", memberCookie);
+      await request(app).delete(`/api/recipes/${personalRecipeId}`).set("Cookie", memberCookie);
 
       // Community recipe should still exist
       const getRes = await request(app)
@@ -501,17 +673,13 @@ describe("Community Recipes API", () => {
     });
 
     it("should not appear in community recipes list after delete", async () => {
-      await request(app)
-        .delete(`/api/recipes/${communityRecipeId}`)
-        .set("Cookie", memberCookie);
+      await request(app).delete(`/api/recipes/${communityRecipeId}`).set("Cookie", memberCookie);
 
       const listRes = await request(app)
         .get(`/api/communities/${community.id}/recipes`)
         .set("Cookie", memberCookie);
 
-      const found = listRes.body.data.find(
-        (r: { id: string }) => r.id === communityRecipeId
-      );
+      const found = listRes.body.data.find((r: { id: string }) => r.id === communityRecipeId);
       expect(found).toBeUndefined();
     });
   });

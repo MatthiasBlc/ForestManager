@@ -1,32 +1,23 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { FaEnvelope } from "react-icons/fa";
 import { ReceivedInvite } from "../models/community";
 import APIManager from "../network/api";
 import InviteCard from "../components/invitations/InviteCard";
+import DataContainer from "../components/DataContainer";
+import { useAsyncData } from "../hooks/useAsyncData";
 
 const InvitationsPage = () => {
-  const [invites, setInvites] = useState<ReceivedInvite[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("");
 
-  const loadInvites = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await APIManager.getMyInvites(statusFilter || undefined);
-      setInvites(response.data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load invitations");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadInvites();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter]);
+  const {
+    data: invites,
+    isLoading,
+    error,
+    refetch: loadInvites,
+  } = useAsyncData<ReceivedInvite[]>(
+    () => APIManager.getMyInvites(statusFilter || undefined).then((r) => r.data),
+    [statusFilter]
+  );
 
   const handleRespond = () => {
     loadInvites();
@@ -51,35 +42,18 @@ const InvitationsPage = () => {
         </select>
       </div>
 
-      {isLoading && (
-        <div className="flex justify-center py-12">
-          <span className="loading loading-spinner loading-lg" />
+      <DataContainer
+        isLoading={isLoading}
+        error={error}
+        isEmpty={(invites?.length ?? 0) === 0}
+        emptyMessage={statusFilter ? "No invitations found" : "No pending invitations"}
+      >
+        <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+          {(invites ?? []).map((invite) => (
+            <InviteCard key={invite.id} invite={invite} onRespond={handleRespond} />
+          ))}
         </div>
-      )}
-
-      {error && (
-        <div className="alert alert-error">
-          <span>{error}</span>
-        </div>
-      )}
-
-      {!isLoading && !error && (
-        <>
-          {invites.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-              {invites.map((invite) => (
-                <InviteCard key={invite.id} invite={invite} onRespond={handleRespond} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-12">
-              <p className="text-lg text-base-content/60">
-                {statusFilter ? "No invitations found" : "No pending invitations"}
-              </p>
-            </div>
-          )}
-        </>
-      )}
+      </DataContainer>
     </div>
   );
 };

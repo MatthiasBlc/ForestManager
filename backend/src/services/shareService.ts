@@ -1,14 +1,37 @@
+import { PrismaClient } from "@prisma/client";
 import prisma from "../util/db";
-import { RECIPE_TAGS_SELECT, RECIPE_INGREDIENTS_SELECT } from "../util/prismaSelects";
+import {
+  RECIPE_TAGS_SELECT,
+  RECIPE_INGREDIENTS_SELECT,
+  RECIPE_STEPS_SELECT,
+} from "../util/prismaSelects";
+import { resolveTagsForFork } from "./tagService";
+
+type TransactionClient = Omit<
+  PrismaClient,
+  "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
+>;
 
 interface SourceRecipeForShare {
   id: string;
   title: string;
-  content: string;
-  imageUrl: string | null;
+  servings: number;
+  prepTime: number | null;
+  cookTime: number | null;
+  restTime: number | null;
+  imageKey: string | null;
   communityId: string;
-  tags: { tagId: string }[];
-  ingredients: { ingredientId: string; quantity: string | null; order: number }[];
+  tags: {
+    tagId: string;
+    tag: { id: string; name: string; scope: string; communityId: string | null };
+  }[];
+  ingredients: {
+    ingredientId: string;
+    quantity: number | null;
+    unitId: string | null;
+    order: number;
+  }[];
+  steps: { order: number; instruction: string }[];
 }
 
 /**
@@ -26,8 +49,11 @@ export async function forkRecipe(
     const forkedRecipe = await tx.recipe.create({
       data: {
         title: sourceRecipe.title,
-        content: sourceRecipe.content,
-        imageUrl: sourceRecipe.imageUrl,
+        servings: sourceRecipe.servings,
+        prepTime: sourceRecipe.prepTime,
+        cookTime: sourceRecipe.cookTime,
+        restTime: sourceRecipe.restTime,
+        imageKey: sourceRecipe.imageKey,
         creatorId: userId,
         communityId: targetCommunityId,
         originRecipeId: sourceRecipe.id,
@@ -36,14 +62,41 @@ export async function forkRecipe(
       },
     });
 
-    // Copier les tags
-    if (sourceRecipe.tags.length > 0) {
-      await tx.recipeTag.createMany({
-        data: sourceRecipe.tags.map((rt) => ({
+    // Copier les steps
+    if (sourceRecipe.steps.length > 0) {
+      await tx.recipeStep.createMany({
+        data: sourceRecipe.steps.map((s) => ({
           recipeId: forkedRecipe.id,
-          tagId: rt.tagId,
+          order: s.order,
+          instruction: s.instruction,
         })),
       });
+    }
+
+    // Copier les tags (scope-aware)
+    let forkPendingTagIds: string[] = [];
+    if (sourceRecipe.tags.length > 0) {
+      const sourceTags = sourceRecipe.tags.map((rt) => ({
+        id: rt.tag.id,
+        name: rt.tag.name,
+        scope: rt.tag.scope,
+        communityId: rt.tag.communityId,
+      }));
+      const { tagIds, pendingTagIds } = await resolveTagsForFork(
+        tx,
+        sourceTags,
+        targetCommunityId,
+        userId
+      );
+      forkPendingTagIds = pendingTagIds;
+      if (tagIds.length > 0) {
+        await tx.recipeTag.createMany({
+          data: tagIds.map((tagId) => ({
+            recipeId: forkedRecipe.id,
+            tagId,
+          })),
+        });
+      }
     }
 
     // Copier les ingredients
@@ -53,6 +106,7 @@ export async function forkRecipe(
           recipeId: forkedRecipe.id,
           ingredientId: ri.ingredientId,
           quantity: ri.quantity,
+          unitId: ri.unitId,
           order: ri.order,
         })),
       });
@@ -91,13 +145,16 @@ export async function forkRecipe(
     });
 
     // Recuperer la recette forkee avec toutes ses relations
-    return tx.recipe.findUnique({
+    const forkedResult = await tx.recipe.findUnique({
       where: { id: forkedRecipe.id },
       select: {
         id: true,
         title: true,
-        content: true,
-        imageUrl: true,
+        servings: true,
+        prepTime: true,
+        cookTime: true,
+        restTime: true,
+        imageKey: true,
         createdAt: true,
         updatedAt: true,
         creatorId: true,
@@ -108,18 +165,33 @@ export async function forkRecipe(
         community: { select: { id: true, name: true } },
         tags: RECIPE_TAGS_SELECT,
         ingredients: RECIPE_INGREDIENTS_SELECT,
+        steps: RECIPE_STEPS_SELECT,
       },
     });
+
+    return { recipe: forkedResult, pendingTagIds: forkPendingTagIds };
   });
 }
 
 interface SourceRecipeForPublish {
   id: string;
   title: string;
-  content: string;
-  imageUrl: string | null;
-  tags: { tagId: string }[];
-  ingredients: { ingredientId: string; quantity: string | null; order: number }[];
+  servings: number;
+  prepTime: number | null;
+  cookTime: number | null;
+  restTime: number | null;
+  imageKey: string | null;
+  tags: {
+    tagId: string;
+    tag: { id: string; name: string; scope: string; communityId: string | null };
+  }[];
+  ingredients: {
+    ingredientId: string;
+    quantity: number | null;
+    unitId: string | null;
+    order: number;
+  }[];
+  steps: { order: number; instruction: string }[];
 }
 
 /**
@@ -132,26 +204,54 @@ export async function publishRecipe(
 ) {
   return prisma.$transaction(async (tx) => {
     const results = [];
+    const allPendingTagIds: string[] = [];
 
     for (const communityId of communityIds) {
       const communityRecipe = await tx.recipe.create({
         data: {
           title: sourceRecipe.title,
-          content: sourceRecipe.content,
-          imageUrl: sourceRecipe.imageUrl,
+          servings: sourceRecipe.servings,
+          prepTime: sourceRecipe.prepTime,
+          cookTime: sourceRecipe.cookTime,
+          restTime: sourceRecipe.restTime,
+          imageKey: sourceRecipe.imageKey,
           creatorId: userId,
           communityId,
           originRecipeId: sourceRecipe.id,
         },
       });
 
-      if (sourceRecipe.tags.length > 0) {
-        await tx.recipeTag.createMany({
-          data: sourceRecipe.tags.map((rt) => ({
+      // Copier les steps
+      if (sourceRecipe.steps.length > 0) {
+        await tx.recipeStep.createMany({
+          data: sourceRecipe.steps.map((s) => ({
             recipeId: communityRecipe.id,
-            tagId: rt.tagId,
+            order: s.order,
+            instruction: s.instruction,
           })),
         });
+      }
+
+      // Copier les tags (scope-aware via resolveTagsForFork)
+      if (sourceRecipe.tags.length > 0) {
+        const sourceTags = sourceRecipe.tags.map((rt) => ({
+          id: rt.tag.id,
+          name: rt.tag.name,
+          scope: rt.tag.scope,
+          communityId: rt.tag.communityId,
+        }));
+        const { tagIds, pendingTagIds } = await resolveTagsForFork(
+          tx,
+          sourceTags,
+          communityId,
+          userId
+        );
+        allPendingTagIds.push(...pendingTagIds);
+        if (tagIds.length > 0) {
+          await tx.recipeTag.createMany({
+            data: tagIds.map((tagId) => ({ recipeId: communityRecipe.id, tagId })),
+          });
+        }
       }
 
       if (sourceRecipe.ingredients.length > 0) {
@@ -160,6 +260,7 @@ export async function publishRecipe(
             recipeId: communityRecipe.id,
             ingredientId: ri.ingredientId,
             quantity: ri.quantity,
+            unitId: ri.unitId,
             order: ri.order,
           })),
         });
@@ -177,7 +278,7 @@ export async function publishRecipe(
       results.push(communityRecipe);
     }
 
-    return Promise.all(
+    const recipes = await Promise.all(
       results.map((r) =>
         tx.recipe.findUnique({
           where: { id: r.id },
@@ -191,6 +292,8 @@ export async function publishRecipe(
         })
       )
     );
+
+    return { recipes, pendingTagIds: allPendingTagIds };
   });
 }
 
@@ -255,17 +358,15 @@ export async function getRecipeFamilyCommunities(recipeId: string) {
 
 // --- Helper interne ---
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function updateAncestorAnalytics(tx: any, sourceRecipeId: string) {
+async function updateAncestorAnalytics(tx: TransactionClient, sourceRecipeId: string) {
   const recipesToUpdate: string[] = [sourceRecipeId];
   let currentRecipeId: string | null = sourceRecipeId;
 
   while (currentRecipeId) {
-    const parentRecipe: { originRecipeId: string | null } | null =
-      await tx.recipe.findFirst({
-        where: { id: currentRecipeId },
-        select: { originRecipeId: true },
-      });
+    const parentRecipe: { originRecipeId: string | null } | null = await tx.recipe.findFirst({
+      where: { id: currentRecipeId },
+      select: { originRecipeId: true },
+    });
 
     if (parentRecipe?.originRecipeId) {
       recipesToUpdate.push(parentRecipe.originRecipeId);

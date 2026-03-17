@@ -4,10 +4,11 @@ import { useOnClickOutside } from "usehooks-ts";
 type Props = {
   children: React.ReactNode;
   disableClickOutside?: boolean;
+  className?: string;
   onClose(): void;
 };
 
-const Modal = ({ children, disableClickOutside, onClose }: Props) => {
+const Modal = ({ children, disableClickOutside, className, onClose }: Props) => {
   const ref = useRef(null);
   useOnClickOutside(ref, () => {
     if (!disableClickOutside) {
@@ -21,7 +22,7 @@ const Modal = ({ children, disableClickOutside, onClose }: Props) => {
   });
   return (
     <div className={modalClass}>
-      <div className="modal-box" ref={ref}>
+      <div className={cn("modal-box", className)} ref={ref}>
         {children}
       </div>
     </div>

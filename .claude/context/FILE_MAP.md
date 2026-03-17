@@ -3,24 +3,33 @@
 ## Backend (backend/src/)
 
 ### Controllers (logique metier)
+
 ```
 controllers/
 ├── activity.ts        # getCommunityActivity, getMyActivity
 ├── auth.ts            # signup, login, logout, me
 ├── communities.ts     # CRUD communautes
+├── communityImage.ts  # upload-url, confirm-upload, delete avatar communaute
 ├── communityRecipes.ts # create, list recettes communautaires
+├── communityTags.ts   # CRUD + approve/reject tags communaute (moderateur)
 ├── members.ts         # list, promote, kick/leave membres
 ├── invites.ts         # create, list, cancel, accept, reject invitations
 ├── proposals.ts       # create, list, detail, accept, reject propositions
 ├── recipes.ts         # CRUD recettes personnelles (get, create, update, delete)
+├── recipeImage.ts     # upload-url, confirm-upload, delete image recette
 ├── recipeVariants.ts  # getVariants (liste variantes d'une recette)
+├── recipeImport.ts    # importRecipeFromUrl (URL import endpoint)
 ├── recipeShare.ts     # shareRecipe, publishToCommunities, getRecipeCommunities
-├── tags.ts            # autocomplete tags
-├── ingredients.ts     # autocomplete ingredients
+├── tagPreferences.ts  # tag visibility & moderator notification prefs (5 handlers)
+├── tagSuggestions.ts  # create, accept, reject tag suggestions
+├── tags.ts            # autocomplete tags (scope-aware)
+├── ingredients.ts     # autocomplete ingredients + suggested-unit
+├── units.ts           # list units grouped by category
 └── users.ts           # search users, update profile
 ```
 
 ### Routes (endpoints API)
+
 ```
 routes/
 ├── auth.ts            # /api/auth/*
@@ -28,21 +37,27 @@ routes/
 ├── invites.ts         # /api/invites/:id/accept|reject
 ├── proposals.ts       # /api/proposals/:id, /api/proposals/:id/accept|reject
 ├── recipes.ts         # /api/recipes/* (incl. /api/recipes/:id/proposals)
+├── tagSuggestions.ts  # /api/tag-suggestions/*
 ├── tags.ts            # /api/tags
 ├── ingredients.ts     # /api/ingredients
-└── users.ts           # /api/users/search, /api/users/me, /api/users/me/invites
+├── units.ts           # /api/units
+└── users.ts           # /api/users/* (incl. tag-preferences, notification-preferences)
 ```
 
 ### Middleware
+
 ```
 middleware/
 ├── auth.ts            # requireAuth (verifie session.userId)
 ├── community.ts       # memberOf, requireCommunityRole
 ├── httpLogger.ts      # pino-http middleware (remplace morgan)
-└── security.ts        # helmet, CORS, rate limiting
+├── security.ts        # helmet, CORS, rate limiting
+├── csrf.ts            # CSRF protection middleware
+└── validateUUID.ts    # Validation UUID v4 dans les params
 ```
 
 ### Admin (module isole)
+
 ```
 admin/
 ├── controllers/
@@ -50,15 +65,19 @@ admin/
 │   ├── communitiesController.ts  # list, detail, update, delete, grant/revoke feature
 │   ├── membersController.ts      # admin member management
 │   ├── tagsController.ts         # CRUD + merge tags
-│   ├── ingredientsController.ts  # CRUD + merge ingredients
+│   ├── recipesController.ts     # tag recipes list, detail, update, soft delete
+│   ├── ingredientsController.ts  # CRUD + merge + approve/reject ingredients
+│   ├── unitsController.ts        # CRUD units (+ usage protection)
 │   ├── featuresController.ts     # CRUD features
 │   ├── dashboardController.ts    # stats globales
 │   └── activityController.ts     # logs activite admin
 ├── routes/
 │   ├── authRoutes.ts
 │   ├── communitiesRoutes.ts
-│   ├── tagsRoutes.ts
+│   ├── tagsRoutes.ts             # + GET /:id/recipes
+│   ├── recipesRoutes.ts
 │   ├── ingredientsRoutes.ts
+│   ├── unitsRoutes.ts
 │   ├── featuresRoutes.ts
 │   ├── dashboardRoutes.ts
 │   └── activityRoutes.ts
@@ -67,32 +86,51 @@ admin/
 ```
 
 ### Services
+
 ```
 services/
+├── tagService.ts      # Logique scope-aware tags (resolve, autocomplete, fork)
+├── recipeService.ts   # upsertTags, upsertIngredients, upsertSteps, upsertProposalSteps, createRecipe, updateRecipe, syncLinkedRecipes
+├── communityRecipeService.ts # createCommunityRecipe (perso + comm)
+├── shareService.ts    # forkRecipe, publishRecipe, getRecipeFamilyCommunities
+├── membershipService.ts # requireRecipeAccess, requireRecipeOwnership
+├── proposalService.ts # acceptProposal (steps/servings/times + sync), rejectProposal (variant with steps)
 ├── orphanHandling.ts  # Gestion recettes orphelines (auto-reject proposals)
+├── notificationService.ts  # create, broadcast, preferences, templates, grouping
+├── recipeImportService.ts # importFromUrl, parseIngredientLine, parseIsoDuration (JSON-LD extraction)
+├── tagSuggestionService.ts # create, accept, reject tag suggestions
+├── storageService.ts  # MinIO/S3 : presigned URL, headObject, deleteObject, validateUploadedFile
 ├── eventEmitter.ts    # AppEventEmitter singleton (emit activity events)
-└── socketServer.ts    # Socket.IO server init, auth middleware, room management
+└── socketServer.ts    # Socket.IO server init, auth, rooms, notification persistence
 ```
 
 ### Autres backend
+
 ```
 app.ts                 # Config Express, montage routes, sessions
-server.ts              # Entry point (listen)
+server.ts              # Entry point (listen + notification cleanup job)
 types/
 ├── express.d.ts       # Extension types Express
 └── session.d.ts       # Types session
+config/
+└── storage.ts         # MinIO/S3 config (storageConfig, buildImageUrl)
 util/
 ├── logger.ts          # Logger Pino central (silent test, pretty dev, JSON prod)
 ├── pagination.ts      # parsePagination, buildPaginationMeta
-├── validation.ts      # normalizeNames, isValidHttpUrl, regex constants
-├── responseFormatters.ts # formatTags, formatIngredients
+├── validation.ts      # normalizeNames, isValidHttpUrl, regex constants, validateServings, validateTime, validateSteps
+├── responseFormatters.ts # formatTags, formatIngredients, formatSteps
+├── prismaSelects.ts   # RECIPE_TAGS_SELECT, RECIPE_STEPS_SELECT, PROPOSAL_STEPS_SELECT, PROPOSAL_INGREDIENTS_SELECT
 ├── db.ts              # Prisma client singleton
 └── validateEnv.ts     # envalid env vars
+jobs/
+├── notificationCleanup.ts # Cron daily cleanup read notifications > 30 days
+└── imageCleanup.ts    # Cron daily 3h30 cleanup orphan images (soft-deleted > 7 days)
 scripts/
 └── createAdmin.ts     # CLI creation SuperAdmin
 ```
 
 ### Tests backend
+
 ```
 __tests__/
 ├── setup/
@@ -103,10 +141,13 @@ __tests__/
 │   ├── pagination.test.ts         # Pagination utils
 │   ├── validation.test.ts         # Validation utils & constants
 │   ├── responseFormatters.test.ts # Response formatters
+│   ├── storageService.test.ts   # Storage service (mock S3)
+│   ├── recipeImportService.test.ts # Recipe import (URL validation, SSRF, JSON-LD parsing, ingredient parsing)
 │   └── middleware/
 │       ├── auth.test.ts           # requireAuth
 │       ├── requireSuperAdmin.test.ts # requireSuperAdmin, requireAdminSession
-│       └── security.test.ts       # requireHttps, rate limiters
+│       ├── security.test.ts       # requireHttps, rate limiters
+│       └── csrf.test.ts           # CSRF protection
 └── integration/
     ├── websocket.test.ts
     ├── activity.test.ts
@@ -116,18 +157,31 @@ __tests__/
     ├── ingredients.test.ts
     ├── communities.test.ts
     ├── communityRecipes.test.ts
+    ├── communityTags.test.ts
     ├── invitations.test.ts
     ├── members.test.ts
     ├── adminAuth.test.ts
     ├── adminTags.test.ts
     ├── adminIngredients.test.ts
+    ├── adminUnits.test.ts
+    ├── adminRecipes.test.ts
     ├── adminFeatures.test.ts
     ├── adminCommunities.test.ts
     ├── adminDashboard.test.ts
     ├── adminActivity.test.ts
     ├── proposals.test.ts
     ├── share.test.ts
-    └── variants.test.ts
+    ├── variants.test.ts
+    ├── notificationService.test.ts
+    ├── notifications.test.ts
+    ├── tagPreferences.test.ts
+    ├── tagSuggestions.test.ts
+    ├── notificationCleanup.test.ts
+    ├── recipeImport.test.ts       # Recipe import endpoint (auth, validation, SSRF)
+    ├── recipeImage.test.ts        # Recipe image upload endpoints
+    ├── communityImage.test.ts     # Community image upload endpoints
+    ├── imageCleanup.test.ts       # Image cleanup cron job
+    └── users.test.ts              # User profile update
 ```
 
 ---
@@ -135,6 +189,7 @@ __tests__/
 ## Frontend (frontend/src/)
 
 ### Pages
+
 ```
 pages/
 ├── HomePage.tsx              # Accueil (redirect vers dashboard si connecte)
@@ -147,6 +202,7 @@ pages/
 ├── CommunityDetailPage.tsx   # Detail communaute (icones + side panel)
 ├── CommunityEditPage.tsx     # Edition communaute (fallback route, edit inline via SidePanel)
 ├── InvitationsPage.tsx       # Invitations recues
+├── NotificationsPage.tsx     # Page notifications (filtres, pagination, groupement)
 ├── ProfilePage.tsx           # Profil utilisateur (edit username/email/password)
 ├── SignUpPage.tsx            # Inscription
 ├── PrivacyPage.tsx           # Politique confidentialite
@@ -155,13 +211,15 @@ pages/
     ├── AdminLoginPage.tsx         # Login admin 2FA
     ├── AdminDashboardPage.tsx     # Dashboard admin (stats)
     ├── AdminTagsPage.tsx          # CRUD + merge tags
-    ├── AdminIngredientsPage.tsx   # CRUD + merge ingredients
+    ├── AdminIngredientsPage.tsx   # CRUD + merge + approve/reject ingredients
+    ├── AdminUnitsPage.tsx         # CRUD units (category filter, sortOrder)
     ├── AdminFeaturesPage.tsx      # CRUD features (code, name, isDefault)
     ├── AdminCommunitiesPage.tsx   # Liste, detail, delete, grant/revoke features
     └── AdminActivityPage.tsx      # Logs activite admin paginee
 ```
 
 ### Components
+
 ```
 components/
 ├── Layout/
@@ -169,14 +227,15 @@ components/
 │   └── Sidebar.tsx           # Sidebar navigation communautes
 ├── Navbar/
 │   ├── NavBar.tsx            # Barre navigation
-│   ├── NotificationDropdown.tsx # Dropdown notifications (invitations)
+│   ├── NotificationDropdown.tsx # Dropdown notifications (5 categories, grouping, auto-mark)
 │   ├── NavBarLoggedInView/   # Nav connecte (icone user + dropdown menu)
 │   └── NavBarLoggedOutView/  # Nav deconnecte
 ├── communities/
 │   ├── CommunityCard.tsx     # Carte communaute (grille)
 │   ├── CommunityRecipesList.tsx # Liste recettes communaute (filtres, pagination, permissions)
+│   ├── CommunityTagsList.tsx # Gestion tags communaute moderateur (CRUD, approve/reject)
 │   ├── MembersList.tsx       # Liste membres (promote, kick, leave)
-│   └── SidePanel.tsx         # Volet lateral redimensionnable (members/activity/invitations)
+│   └── SidePanel.tsx         # Volet lateral redimensionnable (members/activity/invitations/tags)
 ├── invitations/
 │   ├── InviteCard.tsx        # Carte invitation recue (accept/reject)
 │   ├── InviteUserModal.tsx   # Modal inviter un utilisateur
@@ -196,15 +255,33 @@ components/
 │   └── SharePersonalRecipeModal.tsx # Modal publier recette perso vers communautes
 ├── recipes/
 │   ├── RecipeCard.tsx        # Carte recette (grille)
-│   ├── RecipeFilters.tsx     # Filtres search/tags
-│   └── RecipeListRow.tsx     # Ligne recette (liste)
+│   ├── RecipeFilters.tsx     # Filtres search/tags (scope-aware via communityId)
+│   ├── RecipeListRow.tsx     # Ligne recette (liste)
+│   ├── TimeBadges.tsx        # Badges temps prep/cuisson/repos/total (Phase 13)
+│   ├── ServingsSelector.tsx  # Selecteur portions -/input/+ (Phase 13)
+│   ├── SuggestTagModal.tsx   # Modal suggestion de tag sur recette d'autrui
+│   ├── TagBadge.tsx          # Badge tag avec style pending/approved
+│   └── TagSuggestionsList.tsx # Liste suggestions de tags (owner view, accept/reject)
+├── profile/
+│   ├── TagPreferencesSection.tsx     # Toggle tag visibility per community
+│   └── NotificationPreferencesSection.tsx # Notification preferences (5 categories, per-community overrides)
 ├── form/
-│   ├── TagSelector.tsx       # Multi-select tags (debounce, create on-the-fly)
-│   ├── IngredientSelector.tsx # Selecteur ingredients
-│   └── IngredientList.tsx    # Liste ingredients dynamique
+│   ├── SearchSelector.tsx    # Composant generique recherche + selection (debounce, create on-the-fly)
+│   ├── TagSelector.tsx       # Multi-select tags (utilise SearchSelector)
+│   ├── IngredientSelector.tsx # Selecteur ingredients (utilise SearchSelector)
+│   ├── IngredientList.tsx    # Liste ingredients dynamique (autocomplete, units, PENDING badge)
+│   ├── UnitSelector.tsx      # Dropdown unites groupee par categorie
+│   └── StepEditor.tsx        # Editeur etapes numerotees reorder/delete (Phase 13)
+├── mobile/
+│   ├── BottomTabBar.tsx      # Navigation onglets bas mobile (4 tabs, badge notifs, keyboard hide)
+│   ├── BottomSheet.tsx       # Sheet reutilisable (overlay, slide-up, focus trap, Escape)
+│   └── ActionSheet.tsx       # Variante BottomSheet pour listes d'actions contextuelles
 ├── admin/
 │   ├── AdminLayout.tsx       # Layout admin (sidebar + header + outlet)
 │   └── AdminProtectedRoute.tsx # Guard admin
+├── ImageUpload.tsx           # Upload image existante (drag&drop, preview, presigned URL)
+├── ImagePicker.tsx           # Selection image pour creation (preview, processImage)
+├── ImportRecipeModal.tsx     # Modal import recette (texte brut ou URL)
 ├── AddEditRecipeDialog.tsx   # Dialog creation/edition
 ├── ErrorBoundary.tsx         # Error boundary React (crash → fallback UI)
 ├── LoginModal.tsx            # Modal login
@@ -214,6 +291,7 @@ components/
 ```
 
 ### Contexts & Network
+
 ```
 contexts/
 ├── AuthContext.tsx            # Auth user (session, login/logout)
@@ -223,23 +301,36 @@ contexts/
 
 network/
 └── api.ts                    # Client Axios, fonctions API
+
+services/
+└── recipeParser.ts           # parseRecipeText() — parsing texte brut (ingredients, etapes, metadonnees)
 ```
 
 ### Models & Types
+
 ```
 models/
 ├── user.ts                   # User types
 ├── recipe.ts                 # Recipe, Tag, Ingredient types
 ├── tag.ts                    # Tag types
+├── tagSuggestion.ts          # TagSuggestion types
 ├── community.ts              # Community, Member, Invite types
+├── preferences.ts            # TagPreference types
+├── notification.ts           # Notification, NotificationCategory, preferences types
 └── admin.ts                  # AdminUser types
 ```
 
 ### Autres frontend
+
 ```
-App.tsx                       # Routes React Router
+App.tsx                       # Routes React Router (simplifie, delegue a routes/)
 main.tsx                      # Entry point React
+routes/
+├── userRoutes.tsx            # Routes utilisateur (public + protegees)
+└── adminRoutes.tsx           # Routes admin (protegees)
 hooks/
+├── useAsyncData.ts           # Generic async data fetching (loading/error/data/refetch)
+├── useImageUpload.ts         # Upload image (state + API wiring recipe/community)
 ├── useClickOutside.ts        # Detect clicks outside a ref element
 ├── useDebouncedEffect.ts     # Effect with configurable delay
 ├── useConfirm.tsx            # Confirmation dialog hook (promise-based)
@@ -247,9 +338,16 @@ hooks/
 ├── useRecipeActions.ts       # Recipe CRUD actions
 ├── useSocketEvent.ts         # Subscribe/unsubscribe to socket events
 ├── useCommunityRoom.ts       # Join/leave community socket room
-└── useNotificationToasts.ts  # Toast notifications from socket events
+├── useNotificationToasts.ts  # Toast notifications from notification:new socket event
+├── useNotifications.ts       # Paginated notifications with filters and mark as read
+├── useUnreadCount.ts         # Real-time unread count (REST init + WebSocket updates)
+├── useIsMobile.ts            # Detect viewport < 768px via matchMedia (mobile rework)
+└── useKeyboardVisible.ts     # Detect virtual keyboard via visualViewport API (mobile rework)
 utils/
 ├── format.Date.ts            # formatDate, formatDateShort
+├── formatDuration.ts         # formatDuration: 45→"45 min", 90→"1h30" (Phase 13)
+├── scaleQuantity.ts          # scaleQuantity: proportionnel arrondi 2 dec (Phase 13)
+├── imageUtils.ts             # processImage: validate, resize, convert WebP (Phase 15)
 └── communityEvents.ts        # Event bus for community refresh
 errors/                       # Classes erreur
 assets/                       # Assets statiques
@@ -257,6 +355,7 @@ styles/                       # CSS
 ```
 
 ### Tests frontend
+
 ```
 __tests__/
 ├── setup/
@@ -277,9 +376,13 @@ __tests__/
     │   ├── useSocketEvent.test.ts
     │   ├── useCommunityRoom.test.ts
     │   ├── useNotificationToasts.test.ts
-    │   └── usePaginatedList.test.ts
+    │   ├── usePaginatedList.test.ts
+    │   ├── useIsMobile.test.ts          # Mobile rework (4 tests)
+    │   └── useKeyboardVisible.test.ts   # Mobile rework (5 tests)
     ├── utils/
     │   ├── formatDate.test.ts
+    │   ├── formatDuration.test.ts       # Phase 13 (4 tests)
+    │   ├── scaleQuantity.test.ts        # Phase 13 (8 tests)
     │   └── communityEvents.test.ts
     ├── pages/
     │   ├── CommunitiesPage.test.tsx
@@ -287,19 +390,28 @@ __tests__/
     │   ├── DashboardPage.test.tsx
     │   ├── HomePage.test.tsx
     │   ├── NotFoundPage.test.tsx
-    │   ├── ProfilePage.test.tsx
+    │   ├── ProfilePage.test.tsx             # incl. Mobile rework Phase 2 (3 tests)
     │   ├── RecipesPage.test.tsx
     │   ├── RecipeFormPage.test.tsx
+    │   ├── RecipeDetailPage.mobile.test.tsx  # Mobile rework Phase 3 (4 tests)
     │   ├── SignUpPage.test.tsx
     │   └── admin/
     │       ├── AdminLoginPage.test.tsx
     │       ├── AdminDashboardPage.test.tsx
     │       ├── AdminTagsPage.test.tsx
     │       ├── AdminIngredientsPage.test.tsx
+    │       ├── AdminUnitsPage.test.tsx
     │       ├── AdminFeaturesPage.test.tsx
     │       ├── AdminCommunitiesPage.test.tsx
     │       └── AdminActivityPage.test.tsx
+    ├── services/
+    │   └── recipeParser.test.ts   # Parsing texte brut recette (65 tests)
     └── components/
+        ├── profile/
+        │   ├── TagPreferencesSection.test.tsx
+        │   └── NotificationPreferencesSection.test.tsx
+        ├── communities/
+        │   └── CommunityTagsList.test.tsx
         ├── Layout/
         │   ├── MainLayout.test.tsx
         │   └── Sidebar.test.tsx
@@ -308,20 +420,39 @@ __tests__/
         │   └── AdminProtectedRoute.test.tsx
         ├── recipes/
         │   ├── RecipeCard.test.tsx
-        │   └── RecipeFilters.test.tsx
+        │   ├── RecipeFilters.test.tsx
+        │   ├── RecipeFilters.mobile.test.tsx    # Mobile rework Phase 3 (8 tests)
+        │   ├── TimeBadges.test.tsx           # Phase 13 (7 tests)
+        │   ├── ServingsSelector.test.tsx     # Phase 13 (6 tests)
+        │   ├── SuggestTagModal.test.tsx
+        │   ├── TagBadge.test.tsx
+        │   └── TagSuggestionsList.test.tsx
+        ├── proposals/
+        │   ├── ProposeModificationModal.test.tsx
+        │   ├── ProposeModificationModal.mobile.test.tsx  # Mobile rework Phase 4 (3 tests)
+        │   └── ProposalsList.test.tsx
         ├── form/
         │   ├── TagSelector.test.tsx
-        │   └── IngredientList.test.tsx
+        │   ├── IngredientList.test.tsx
+        │   ├── IngredientList.mobile.test.tsx  # Mobile rework Phase 4 (3 tests)
+        │   ├── UnitSelector.test.tsx
+        │   ├── StepEditor.test.tsx          # Phase 13 (8 tests)
+        │   └── StepEditor.mobile.test.tsx   # Mobile rework Phase 4 (3 tests)
         ├── ActivityFeed.test.tsx
         ├── ErrorBoundary.test.tsx
         ├── InviteCard.test.tsx
         ├── InviteUserModal.test.tsx
         ├── LoginModal.test.tsx
         ├── MembersList.test.tsx
+        ├── MembersList.mobile.test.tsx    # Mobile rework Phase 3 (4 tests)
         ├── Modal.test.tsx
         ├── NavBar.test.tsx
         ├── ProtectedRoute.test.tsx
-        └── ShareRecipeModal.test.tsx
+        ├── ShareRecipeModal.test.tsx
+        └── mobile/
+            ├── BottomTabBar.test.tsx       # Mobile rework (8 tests)
+            ├── BottomSheet.test.tsx        # Mobile rework (9 tests)
+            └── ActionSheet.test.tsx        # Mobile rework (7 tests)
 ```
 
 ---

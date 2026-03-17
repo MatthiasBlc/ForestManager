@@ -4,6 +4,14 @@ import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { handleOrphanedRecipes } from "../services/orphanHandling";
 import appEvents from "../services/eventEmitter";
+import {
+  MEMBER_003,
+  MEMBER_004,
+  COMMUNITY_002,
+  COMMUNITY_003,
+  COMMUNITY_006,
+} from "../constants/errorCodes";
+import { PromoteMemberInput } from "../schemas/member.schema";
 
 // =====================================
 // GET /api/communities/:communityId/members
@@ -54,31 +62,17 @@ export const getMembers: RequestHandler<{ communityId: string }> = async (req, r
 // Promote a member (MODERATOR only)
 // =====================================
 
-interface PromoteMemberBody {
-  role?: string;
-}
-
 export const promoteMember: RequestHandler<
   { communityId: string; userId: string },
   unknown,
-  PromoteMemberBody
+  PromoteMemberInput
 > = async (req, res, next) => {
   const communityId = req.params.communityId;
   const targetUserId = req.params.userId;
   const userId = req.session.userId;
-  const { role } = req.body;
 
   try {
     assertIsDefine(userId);
-
-    // Validate role field
-    if (!role) {
-      throw createHttpError(400, "MEMBER_001: Role is required");
-    }
-
-    if (role !== "MODERATOR") {
-      throw createHttpError(400, "MEMBER_002: Only promotion to MODERATOR is allowed");
-    }
 
     // Find the target membership
     const targetMembership = await prisma.userCommunity.findFirst({
@@ -90,11 +84,11 @@ export const promoteMember: RequestHandler<
     });
 
     if (!targetMembership) {
-      throw createHttpError(404, "MEMBER_003: Member not found");
+      throw createHttpError(404, MEMBER_003);
     }
 
     if (targetMembership.role === "MODERATOR") {
-      throw createHttpError(400, "MEMBER_004: User is already MODERATOR");
+      throw createHttpError(400, MEMBER_004);
     }
 
     // Promote and log in a transaction
@@ -132,7 +126,11 @@ export const promoteMember: RequestHandler<
 // DELETE /api/communities/:communityId/members/:userId
 // Leave community (self) or kick member (moderator)
 // =====================================
-export const removeMember: RequestHandler<{ communityId: string; userId: string }> = async (req, res, next) => {
+export const removeMember: RequestHandler<{ communityId: string; userId: string }> = async (
+  req,
+  res,
+  next
+) => {
   const communityId = req.params.communityId;
   const targetUserId = req.params.userId;
   const userId = req.session.userId;
@@ -187,10 +185,7 @@ async function handleLeave(
 
   if (isLastModerator) {
     // Cannot leave as last moderator when other members exist
-    throw createHttpError(
-      403,
-      "COMMUNITY_003: Last moderator cannot leave. Promote another member first"
-    );
+    throw createHttpError(403, COMMUNITY_003);
   }
 
   // Regular leave - use interactive transaction for orphan handling
@@ -236,7 +231,7 @@ async function handleKick(
 ) {
   // Only MODERATOR can kick
   if (requesterRole !== "MODERATOR") {
-    throw createHttpError(403, "COMMUNITY_002: Permission insufficient");
+    throw createHttpError(403, COMMUNITY_002);
   }
 
   // Find the target membership
@@ -254,7 +249,7 @@ async function handleKick(
 
   // Cannot kick another MODERATOR
   if (targetMembership.role === "MODERATOR") {
-    throw createHttpError(403, "COMMUNITY_006: Cannot remove a moderator");
+    throw createHttpError(403, COMMUNITY_006);
   }
 
   // Kick the member - use interactive transaction for orphan handling

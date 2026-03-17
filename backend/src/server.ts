@@ -4,12 +4,16 @@ import env from "./util/validateEnv";
 import prisma from "./util/db";
 import { initSocketServer } from "./services/socketServer";
 import logger from "./util/logger";
+import { startNotificationCleanupJob } from "./jobs/notificationCleanup";
+import { startImageCleanupJob } from "./jobs/imageCleanup";
 
 const port = env.PORT;
 
 async function main() {
   const server = http.createServer(app);
   initSocketServer(server, userSession);
+  startNotificationCleanupJob();
+  startImageCleanupJob();
 
   server.listen(port, () => {
     logger.info({ port }, "Server started");

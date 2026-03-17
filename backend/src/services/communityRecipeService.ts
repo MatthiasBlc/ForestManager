@@ -1,12 +1,26 @@
 import prisma from "../util/db";
-import { normalizeNames } from "../util/validation";
-import { RECIPE_TAGS_SELECT, RECIPE_INGREDIENTS_SELECT } from "../util/prismaSelects";
-import { IngredientInput } from "./recipeService";
+import {
+  RECIPE_TAGS_SELECT,
+  RECIPE_INGREDIENTS_SELECT,
+  RECIPE_STEPS_SELECT,
+} from "../util/prismaSelects";
+import {
+  IngredientInput,
+  upsertTags,
+  linkTagsToRecipe,
+  upsertIngredients,
+  upsertSteps,
+} from "./recipeService";
+import { StepInput } from "../util/validation";
 
 interface CreateCommunityRecipeData {
   title: string;
-  content: string;
-  imageUrl?: string | null;
+  servings: number;
+  prepTime?: number | null;
+  cookTime?: number | null;
+  restTime?: number | null;
+  steps: StepInput[];
+  imageKey?: string | null;
   tags: string[];
   ingredients: IngredientInput[];
 }
@@ -14,8 +28,11 @@ interface CreateCommunityRecipeData {
 const COMMUNITY_RECIPE_SELECT = {
   id: true,
   title: true,
-  content: true,
-  imageUrl: true,
+  servings: true,
+  prepTime: true,
+  cookTime: true,
+  restTime: true,
+  imageKey: true,
   createdAt: true,
   updatedAt: true,
   creatorId: true,
@@ -23,6 +40,7 @@ const COMMUNITY_RECIPE_SELECT = {
   originRecipeId: true,
   tags: RECIPE_TAGS_SELECT,
   ingredients: RECIPE_INGREDIENTS_SELECT,
+  steps: RECIPE_STEPS_SELECT,
 };
 
 /**
@@ -34,13 +52,18 @@ export async function createCommunityRecipe(
   communityId: string,
   data: CreateCommunityRecipeData
 ) {
-  return prisma.$transaction(async (tx) => {
+  let pendingTagIds: string[] = [];
+
+  const result = await prisma.$transaction(async (tx) => {
     // 1. Creer la recette personnelle (communityId: null)
     const personalRecipe = await tx.recipe.create({
       data: {
         title: data.title.trim(),
-        content: data.content.trim(),
-        imageUrl: data.imageUrl?.trim() || null,
+        servings: data.servings,
+        prepTime: data.prepTime ?? null,
+        cookTime: data.cookTime ?? null,
+        restTime: data.restTime ?? null,
+        imageKey: data.imageKey?.trim() || null,
         creatorId: userId,
         communityId: null,
       },
@@ -50,63 +73,39 @@ export async function createCommunityRecipe(
     const communityRecipe = await tx.recipe.create({
       data: {
         title: data.title.trim(),
-        content: data.content.trim(),
-        imageUrl: data.imageUrl?.trim() || null,
+        servings: data.servings,
+        prepTime: data.prepTime ?? null,
+        cookTime: data.cookTime ?? null,
+        restTime: data.restTime ?? null,
+        imageKey: data.imageKey?.trim() || null,
         creatorId: userId,
         communityId,
         originRecipeId: personalRecipe.id,
       },
     });
 
-    // 3. Gerer tags/ingredients sur les DEUX recettes
+    // 3. Gerer steps/tags/ingredients sur les DEUX recettes
+    await upsertSteps(tx, personalRecipe.id, data.steps);
+    await upsertSteps(tx, communityRecipe.id, data.steps);
+    // Resoudre les tags pour la recette communautaire, puis lier les memes
+    // tagIds a la copie perso (evite de creer des tags GLOBAL en doublon)
     if (data.tags.length > 0) {
-      const normalizedTags = normalizeNames(data.tags);
-
-      for (const tagName of normalizedTags) {
-        const tag = await tx.tag.upsert({
-          where: { name: tagName },
-          create: { name: tagName },
-          update: {},
-        });
-
-        await tx.recipeTag.createMany({
-          data: [
-            { recipeId: personalRecipe.id, tagId: tag.id },
-            { recipeId: communityRecipe.id, tagId: tag.id },
-          ],
-        });
-      }
+      pendingTagIds = await upsertTags(tx, communityRecipe.id, data.tags, userId, communityId);
+      // Recuperer les tagIds resolus pour les lier a la copie perso
+      const communityRecipeTags = await tx.recipeTag.findMany({
+        where: { recipeId: communityRecipe.id },
+        select: { tagId: true },
+      });
+      await linkTagsToRecipe(
+        tx,
+        personalRecipe.id,
+        communityRecipeTags.map((rt) => rt.tagId)
+      );
     }
 
     if (data.ingredients.length > 0) {
-      for (let i = 0; i < data.ingredients.length; i++) {
-        const ing = data.ingredients[i];
-        const ingredientName = ing.name.trim().toLowerCase();
-        if (!ingredientName) continue;
-
-        const ingredient = await tx.ingredient.upsert({
-          where: { name: ingredientName },
-          create: { name: ingredientName },
-          update: {},
-        });
-
-        await tx.recipeIngredient.createMany({
-          data: [
-            {
-              recipeId: personalRecipe.id,
-              ingredientId: ingredient.id,
-              quantity: ing.quantity?.trim() || null,
-              order: i,
-            },
-            {
-              recipeId: communityRecipe.id,
-              ingredientId: ingredient.id,
-              quantity: ing.quantity?.trim() || null,
-              order: i,
-            },
-          ],
-        });
-      }
+      await upsertIngredients(tx, personalRecipe.id, data.ingredients, userId);
+      await upsertIngredients(tx, communityRecipe.id, data.ingredients, userId);
     }
 
     // 4. Creer ActivityLog
@@ -133,4 +132,6 @@ export async function createCommunityRecipe(
 
     return { personal, community };
   });
+
+  return { ...result, pendingTagIds };
 }

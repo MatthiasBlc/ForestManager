@@ -5,38 +5,69 @@ import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import { requireMembership } from "../services/membershipService";
-import { acceptProposal as acceptProposalService, rejectProposal as rejectProposalService } from "../services/proposalService";
+import {
+  acceptProposal as acceptProposalService,
+  rejectProposal as rejectProposalService,
+} from "../services/proposalService";
 import appEvents from "../services/eventEmitter";
+import { upsertProposalIngredients, upsertProposalSteps } from "../services/recipeService";
+import { PROPOSAL_INGREDIENTS_SELECT, PROPOSAL_STEPS_SELECT } from "../util/prismaSelects";
+import {
+  RECIPE_001,
+  RECIPE_002,
+  PROPOSAL_001,
+  PROPOSAL_002,
+  PROPOSAL_003,
+  PROPOSAL_004,
+} from "../constants/errorCodes";
+import type { CreateProposalInput } from "../schemas/proposal.schema";
 
-interface CreateProposalBody {
-  proposedTitle?: string;
-  proposedContent?: string;
-}
+const PROPOSAL_RESPONSE_SELECT = {
+  id: true,
+  proposedTitle: true,
+  proposedServings: true,
+  proposedPrepTime: true,
+  proposedCookTime: true,
+  proposedRestTime: true,
+  status: true,
+  createdAt: true,
+  decidedAt: true,
+  recipeId: true,
+  proposerId: true,
+  proposer: {
+    select: {
+      id: true,
+      username: true,
+    },
+  },
+  proposedSteps: PROPOSAL_STEPS_SELECT,
+  proposedIngredients: PROPOSAL_INGREDIENTS_SELECT,
+};
 
 /**
  * POST /api/recipes/:recipeId/proposals
- * Creer une proposition de modification sur une recette communautaire
+ * Creer une proposition de modification (body valide par createProposalSchema)
  */
 export const createProposal: RequestHandler<
   { recipeId: string },
   unknown,
-  CreateProposalBody,
+  CreateProposalInput,
   unknown
 > = async (req, res, next) => {
-  const { proposedTitle, proposedContent } = req.body;
+  const {
+    proposedTitle,
+    proposedServings,
+    proposedPrepTime,
+    proposedCookTime,
+    proposedRestTime,
+    proposedSteps,
+    proposedIngredients,
+  } = req.body;
   const authenticatedUserId = req.session.userId;
   const { recipeId } = req.params;
 
   try {
     assertIsDefine(authenticatedUserId);
-
-    // Validation des champs requis
-    if (!proposedTitle?.trim()) {
-      throw createHttpError(400, "RECIPE_003: Title required");
-    }
-    if (!proposedContent?.trim()) {
-      throw createHttpError(400, "RECIPE_004: Content required");
-    }
 
     // Recuperer la recette avec sa communaute
     const recipe = await prisma.recipe.findFirst({
@@ -52,25 +83,19 @@ export const createProposal: RequestHandler<
     });
 
     if (!recipe) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     // Verifier que c'est une recette communautaire
     if (!recipe.communityId) {
-      throw createHttpError(
-        400,
-        "PROPOSAL_001: Cannot propose on personal recipe"
-      );
+      throw createHttpError(400, PROPOSAL_001);
     }
 
     await requireMembership(authenticatedUserId, recipe.communityId!);
 
     // Verifier que l'utilisateur ne propose pas sur sa propre recette
     if (recipe.creatorId === authenticatedUserId) {
-      throw createHttpError(
-        400,
-        "PROPOSAL_001: Cannot propose on your own recipe"
-      );
+      throw createHttpError(400, PROPOSAL_001);
     }
 
     // Creer la proposition
@@ -78,27 +103,28 @@ export const createProposal: RequestHandler<
       const newProposal = await tx.recipeUpdateProposal.create({
         data: {
           proposedTitle: proposedTitle.trim(),
-          proposedContent: proposedContent.trim(),
+          proposedServings: proposedServings ?? null,
+          proposedPrepTime: proposedPrepTime ?? null,
+          proposedCookTime: proposedCookTime ?? null,
+          proposedRestTime: proposedRestTime ?? null,
           recipeId,
           proposerId: authenticatedUserId,
         },
-        select: {
-          id: true,
-          proposedTitle: true,
-          proposedContent: true,
-          status: true,
-          createdAt: true,
-          decidedAt: true,
-          recipeId: true,
-          proposerId: true,
-          proposer: {
-            select: {
-              id: true,
-              username: true,
-            },
-          },
-        },
+        select: { id: true },
       });
+
+      // Stocker les steps proposes
+      await upsertProposalSteps(tx, newProposal.id, proposedSteps);
+
+      // Stocker les ingredients proposes
+      if (proposedIngredients && proposedIngredients.length > 0) {
+        await upsertProposalIngredients(
+          tx,
+          newProposal.id,
+          proposedIngredients,
+          authenticatedUserId
+        );
+      }
 
       // Creer ActivityLog
       await tx.activityLog.create({
@@ -111,7 +137,12 @@ export const createProposal: RequestHandler<
         },
       });
 
-      return newProposal;
+      const created = await tx.recipeUpdateProposal.findUnique({
+        where: { id: newProposal.id },
+        select: PROPOSAL_RESPONSE_SELECT,
+      });
+      // Ne peut pas etre null : on vient de le creer
+      return created!;
     });
 
     appEvents.emitActivity({
@@ -166,15 +197,12 @@ export const getProposals: RequestHandler<
     });
 
     if (!recipe) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     // Verifier que c'est une recette communautaire
     if (!recipe.communityId) {
-      throw createHttpError(
-        400,
-        "PROPOSAL_001: Cannot list proposals on personal recipe"
-      );
+      throw createHttpError(400, PROPOSAL_001);
     }
 
     await requireMembership(authenticatedUserId, recipe.communityId!);
@@ -193,22 +221,7 @@ export const getProposals: RequestHandler<
     const [proposals, total] = await Promise.all([
       prisma.recipeUpdateProposal.findMany({
         where: whereClause,
-        select: {
-          id: true,
-          proposedTitle: true,
-          proposedContent: true,
-          status: true,
-          createdAt: true,
-          decidedAt: true,
-          recipeId: true,
-          proposerId: true,
-          proposer: {
-            select: {
-              id: true,
-              username: true,
-            },
-          },
-        },
+        select: PROPOSAL_RESPONSE_SELECT,
         orderBy: {
           createdAt: "desc",
         },
@@ -250,20 +263,7 @@ export const getProposal: RequestHandler<
         deletedAt: null,
       },
       select: {
-        id: true,
-        proposedTitle: true,
-        proposedContent: true,
-        status: true,
-        createdAt: true,
-        decidedAt: true,
-        recipeId: true,
-        proposerId: true,
-        proposer: {
-          select: {
-            id: true,
-            username: true,
-          },
-        },
+        ...PROPOSAL_RESPONSE_SELECT,
         recipe: {
           select: {
             id: true,
@@ -276,7 +276,7 @@ export const getProposal: RequestHandler<
     });
 
     if (!proposal) {
-      throw createHttpError(404, "PROPOSAL_004: Proposal not found");
+      throw createHttpError(404, PROPOSAL_004);
     }
 
     if (proposal.recipe.communityId) {
@@ -314,17 +314,24 @@ export const acceptProposal: RequestHandler<
       select: {
         id: true,
         proposedTitle: true,
-        proposedContent: true,
+        proposedServings: true,
+        proposedPrepTime: true,
+        proposedCookTime: true,
+        proposedRestTime: true,
         status: true,
         createdAt: true,
         recipeId: true,
         proposerId: true,
+        proposedSteps: PROPOSAL_STEPS_SELECT,
         recipe: {
           select: {
             id: true,
             title: true,
-            content: true,
-            imageUrl: true,
+            servings: true,
+            prepTime: true,
+            cookTime: true,
+            restTime: true,
+            imageKey: true,
             communityId: true,
             creatorId: true,
             originRecipeId: true,
@@ -335,33 +342,27 @@ export const acceptProposal: RequestHandler<
     });
 
     if (!proposal) {
-      throw createHttpError(404, "PROPOSAL_004: Proposal not found");
+      throw createHttpError(404, PROPOSAL_004);
     }
 
     // Verifier que c'est une recette communautaire
     if (!proposal.recipe.communityId) {
-      throw createHttpError(400, "PROPOSAL_001: Cannot accept proposal on personal recipe");
+      throw createHttpError(400, PROPOSAL_001);
     }
 
     // Verifier que l'utilisateur est le createur de la recette
     if (proposal.recipe.creatorId !== authenticatedUserId) {
-      throw createHttpError(
-        403,
-        "RECIPE_002: Only the recipe creator can accept proposals"
-      );
+      throw createHttpError(403, RECIPE_002);
     }
 
     // Verifier que la proposition est en status PENDING
     if (proposal.status !== "PENDING") {
-      throw createHttpError(400, "PROPOSAL_002: Proposal already decided");
+      throw createHttpError(400, PROPOSAL_002);
     }
 
     // Verifier que la recette n'a pas ete modifiee depuis la creation de la proposition
     if (proposal.recipe.updatedAt > proposal.createdAt) {
-      throw createHttpError(
-        409,
-        "PROPOSAL_003: Recipe has been modified since proposal was created"
-      );
+      throw createHttpError(409, PROPOSAL_003);
     }
 
     const result = await acceptProposalService(proposalId, proposal, authenticatedUserId);
@@ -406,16 +407,23 @@ export const rejectProposal: RequestHandler<
       select: {
         id: true,
         proposedTitle: true,
-        proposedContent: true,
+        proposedServings: true,
+        proposedPrepTime: true,
+        proposedCookTime: true,
+        proposedRestTime: true,
         status: true,
         recipeId: true,
         proposerId: true,
+        proposedSteps: PROPOSAL_STEPS_SELECT,
         recipe: {
           select: {
             id: true,
             title: true,
-            content: true,
-            imageUrl: true,
+            servings: true,
+            prepTime: true,
+            cookTime: true,
+            restTime: true,
+            imageKey: true,
             communityId: true,
             creatorId: true,
           },
@@ -424,25 +432,22 @@ export const rejectProposal: RequestHandler<
     });
 
     if (!proposal) {
-      throw createHttpError(404, "PROPOSAL_004: Proposal not found");
+      throw createHttpError(404, PROPOSAL_004);
     }
 
     // Verifier que c'est une recette communautaire
     if (!proposal.recipe.communityId) {
-      throw createHttpError(400, "PROPOSAL_001: Cannot reject proposal on personal recipe");
+      throw createHttpError(400, PROPOSAL_001);
     }
 
     // Verifier que l'utilisateur est le createur de la recette
     if (proposal.recipe.creatorId !== authenticatedUserId) {
-      throw createHttpError(
-        403,
-        "RECIPE_002: Only the recipe creator can reject proposals"
-      );
+      throw createHttpError(403, RECIPE_002);
     }
 
     // Verifier que la proposition est en status PENDING
     if (proposal.status !== "PENDING") {
-      throw createHttpError(400, "PROPOSAL_002: Proposal already decided");
+      throw createHttpError(400, PROPOSAL_002);
     }
 
     const result = await rejectProposalService(proposalId, proposal);

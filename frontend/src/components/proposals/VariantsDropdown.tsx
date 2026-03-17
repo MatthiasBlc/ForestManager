@@ -34,7 +34,10 @@ const VariantsDropdown = ({ recipeId, currentRecipeId }: VariantsDropdownProps) 
     loadVariants();
   }, [loadVariants]);
 
-  useClickOutside(dropdownRef, useCallback(() => setIsOpen(false), []));
+  useClickOutside(
+    dropdownRef,
+    useCallback(() => setIsOpen(false), [])
+  );
 
   const handleSelect = (variantId: string) => {
     setIsOpen(false);
@@ -51,10 +54,7 @@ const VariantsDropdown = ({ recipeId, currentRecipeId }: VariantsDropdownProps) 
 
   return (
     <div className="relative" ref={dropdownRef}>
-      <button
-        className="btn btn-outline btn-sm gap-2"
-        onClick={() => setIsOpen(!isOpen)}
-      >
+      <button className="btn btn-outline btn-sm gap-2" onClick={() => setIsOpen(!isOpen)}>
         <FaCodeBranch className="w-3 h-3" />
         {variants.length} variant{variants.length > 1 ? "s" : ""}
         <FaChevronDown className={`w-3 h-3 transition-transform ${isOpen ? "rotate-180" : ""}`} />

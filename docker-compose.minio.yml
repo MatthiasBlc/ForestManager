@@ -1,0 +1,51 @@
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "7"
+
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    hostname: minio
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio-data:/data
+    networks:
+      - minio-net
+      - proxy
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      # API S3 (upload/lecture des images)
+      - "traefik.enable=true"
+      - "traefik.http.routers.minio-api.rule=Host(`s3.matthias-bouloc.fr`)"
+      - "traefik.http.routers.minio-api.entrypoints=https"
+      - "traefik.http.routers.minio-api.tls.certresolver=cloudflare"
+      - "traefik.http.routers.minio-api.service=minio-api"
+      - "traefik.http.services.minio-api.loadbalancer.server.port=9000"
+      # Console admin
+      - "traefik.http.routers.minio-console.rule=Host(`minio.matthias-bouloc.fr`)"
+      - "traefik.http.routers.minio-console.entrypoints=https"
+      - "traefik.http.routers.minio-console.tls.certresolver=cloudflare"
+      - "traefik.http.routers.minio-console.service=minio-console"
+      - "traefik.http.services.minio-console.loadbalancer.server.port=9001"
+    logging: *default-logging
+
+volumes:
+  minio-data:
+
+networks:
+  minio-net:
+    name: minio-net
+  proxy:
+    external: true
+    name: proxy

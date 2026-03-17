@@ -1,30 +1,118 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaPaperPlane } from "react-icons/fa";
 import Modal from "../Modal";
+import { useIsMobile } from "../../hooks/useIsMobile";
 import APIManager from "../../network/api";
+import IngredientList, { IngredientInput } from "../form/IngredientList";
+import StepEditor from "../form/StepEditor";
+import { RecipeIngredient, RecipeStep } from "../../models/recipe";
 
 interface ProposeModificationModalProps {
   recipeId: string;
   currentTitle: string;
-  currentContent: string;
+  currentSteps: RecipeStep[];
+  currentServings: number;
+  currentPrepTime: number | null;
+  currentCookTime: number | null;
+  currentRestTime: number | null;
+  currentIngredients: RecipeIngredient[];
   onClose: () => void;
   onProposalSubmitted: () => void;
+}
+
+function recipeIngredientsToInputs(ingredients: RecipeIngredient[]): IngredientInput[] {
+  return ingredients.map((ing) => ({
+    name: ing.name,
+    quantity: ing.quantity ?? undefined,
+    unitId: ing.unitId ?? undefined,
+    ingredientId: ing.ingredientId,
+  }));
 }
 
 const ProposeModificationModal = ({
   recipeId,
   currentTitle,
-  currentContent,
+  currentSteps,
+  currentServings,
+  currentPrepTime,
+  currentCookTime,
+  currentRestTime,
+  currentIngredients,
   onClose,
   onProposalSubmitted,
 }: ProposeModificationModalProps) => {
   const [proposedTitle, setProposedTitle] = useState(currentTitle);
-  const [proposedContent, setProposedContent] = useState(currentContent);
+  const [proposedServings, setProposedServings] = useState(currentServings);
+  const [proposedPrepTime, setProposedPrepTime] = useState(
+    currentPrepTime != null ? String(currentPrepTime) : ""
+  );
+  const [proposedCookTime, setProposedCookTime] = useState(
+    currentCookTime != null ? String(currentCookTime) : ""
+  );
+  const [proposedRestTime, setProposedRestTime] = useState(
+    currentRestTime != null ? String(currentRestTime) : ""
+  );
+  const [proposedSteps, setProposedSteps] = useState<{ instruction: string }[]>(() =>
+    currentSteps.map((s) => ({ instruction: s.instruction }))
+  );
+  const [proposedIngredients, setProposedIngredients] = useState<IngredientInput[]>(() =>
+    recipeIngredientsToInputs(currentIngredients)
+  );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isMobile = useIsMobile();
 
-  const hasChanges = proposedTitle !== currentTitle || proposedContent !== currentContent;
-  const isValid = proposedTitle.trim().length > 0 && proposedContent.trim().length > 0;
+  useEffect(() => {
+    if (!isMobile) return;
+    // Push a history entry so the back button closes the modal
+    window.history.pushState({ modal: "propose" }, "");
+    const handlePopState = () => onClose();
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [isMobile, onClose]);
+
+  const parseTime = (val: string): number | null => {
+    if (val.trim() === "") return null;
+    const n = parseInt(val, 10);
+    return isNaN(n) ? null : n;
+  };
+
+  const ingredientsChanged =
+    JSON.stringify(
+      proposedIngredients
+        .filter((i) => i.name.trim())
+        .map(({ name, quantity, unitId }) => ({ name, quantity, unitId }))
+    ) !==
+    JSON.stringify(
+      currentIngredients.map((i) => ({
+        name: i.name,
+        quantity: i.quantity ?? undefined,
+        unitId: i.unitId ?? undefined,
+      }))
+    );
+
+  const stepsChanged =
+    JSON.stringify(proposedSteps.map((s) => s.instruction)) !==
+    JSON.stringify(currentSteps.map((s) => s.instruction));
+
+  const titleChanged = proposedTitle !== currentTitle;
+  const servingsChanged = proposedServings !== currentServings;
+  const prepTimeChanged = parseTime(proposedPrepTime) !== currentPrepTime;
+  const cookTimeChanged = parseTime(proposedCookTime) !== currentCookTime;
+  const restTimeChanged = parseTime(proposedRestTime) !== currentRestTime;
+
+  const hasChanges =
+    titleChanged ||
+    servingsChanged ||
+    prepTimeChanged ||
+    cookTimeChanged ||
+    restTimeChanged ||
+    stepsChanged ||
+    ingredientsChanged;
+  const validSteps = proposedSteps.filter((s) => s.instruction.trim().length > 0);
+  const isValid = proposedTitle.trim().length > 0 && validSteps.length > 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,9 +121,23 @@ const ProposeModificationModal = ({
     try {
       setIsSubmitting(true);
       setError(null);
+
+      const filteredIngredients = proposedIngredients
+        .filter((ing) => ing.name.trim())
+        .map((ing) => ({
+          name: ing.name.trim(),
+          quantity: ing.quantity,
+          unitId: ing.unitId,
+        }));
+
       await APIManager.createProposal(recipeId, {
         proposedTitle: proposedTitle.trim(),
-        proposedContent: proposedContent.trim(),
+        proposedServings: proposedServings,
+        proposedPrepTime: parseTime(proposedPrepTime),
+        proposedCookTime: parseTime(proposedCookTime),
+        proposedRestTime: parseTime(proposedRestTime),
+        proposedSteps: validSteps.map((s) => ({ instruction: s.instruction.trim() })),
+        proposedIngredients: filteredIngredients.length > 0 ? filteredIngredients : undefined,
       });
       onProposalSubmitted();
     } catch (err) {
@@ -46,11 +148,17 @@ const ProposeModificationModal = ({
   };
 
   return (
-    <Modal onClose={onClose} disableClickOutside={isSubmitting}>
+    <Modal
+      onClose={onClose}
+      disableClickOutside={isSubmitting}
+      className={
+        isMobile ? "!w-full !max-w-full !h-full !max-h-full !rounded-none !m-0" : undefined
+      }
+    >
       <h3 className="font-bold text-lg mb-4">Propose a modification</h3>
       <p className="text-sm text-base-content/70 mb-4">
-        Suggest changes to this recipe. The owner can accept your proposal to update the recipe,
-        or reject it to create a variant with your changes.
+        Suggest changes to this recipe. The owner can accept your proposal to update the recipe, or
+        reject it to create a variant with your changes.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -63,6 +171,7 @@ const ProposeModificationModal = ({
             value={proposedTitle}
             onChange={(e) => setProposedTitle(e.target.value)}
             placeholder="Recipe title"
+            maxLength={200}
             className="input input-bordered w-full"
             disabled={isSubmitting}
           />
@@ -70,15 +179,87 @@ const ProposeModificationModal = ({
 
         <div className="form-control">
           <label className="label">
-            <span className="label-text">Content / Instructions</span>
+            <span className="label-text">Servings</span>
           </label>
-          <textarea
-            value={proposedContent}
-            onChange={(e) => setProposedContent(e.target.value)}
-            placeholder="Recipe content and instructions"
-            className="textarea textarea-bordered w-full h-48"
+          <input
+            type="number"
+            value={proposedServings}
+            onChange={(e) => {
+              const v = parseInt(e.target.value, 10);
+              if (!isNaN(v) && v >= 1 && v <= 100) setProposedServings(v);
+            }}
+            min={1}
+            max={100}
+            className="input input-bordered w-24"
             disabled={isSubmitting}
           />
+        </div>
+
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text">Times (optional, in minutes)</span>
+          </label>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="label py-1">
+                <span className="label-text text-sm">Prep</span>
+              </label>
+              <input
+                type="number"
+                value={proposedPrepTime}
+                onChange={(e) => setProposedPrepTime(e.target.value)}
+                placeholder="min"
+                min={0}
+                max={10000}
+                className="input input-bordered w-full input-sm"
+                disabled={isSubmitting}
+              />
+            </div>
+            <div>
+              <label className="label py-1">
+                <span className="label-text text-sm">Cook</span>
+              </label>
+              <input
+                type="number"
+                value={proposedCookTime}
+                onChange={(e) => setProposedCookTime(e.target.value)}
+                placeholder="min"
+                min={0}
+                max={10000}
+                className="input input-bordered w-full input-sm"
+                disabled={isSubmitting}
+              />
+            </div>
+            <div>
+              <label className="label py-1">
+                <span className="label-text text-sm">Rest</span>
+              </label>
+              <input
+                type="number"
+                value={proposedRestTime}
+                onChange={(e) => setProposedRestTime(e.target.value)}
+                placeholder="min"
+                min={0}
+                max={10000}
+                className="input input-bordered w-full input-sm"
+                disabled={isSubmitting}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text">Ingredients</span>
+          </label>
+          <IngredientList value={proposedIngredients} onChange={setProposedIngredients} />
+        </div>
+
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text">Steps</span>
+          </label>
+          <StepEditor value={proposedSteps} onChange={setProposedSteps} />
         </div>
 
         {!hasChanges && (
@@ -94,12 +275,7 @@ const ProposeModificationModal = ({
         )}
 
         <div className="modal-action">
-          <button
-            type="button"
-            className="btn btn-ghost"
-            onClick={onClose}
-            disabled={isSubmitting}
-          >
+          <button type="button" className="btn btn-ghost" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </button>
           <button

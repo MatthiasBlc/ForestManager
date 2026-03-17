@@ -2,6 +2,14 @@ import { RequestHandler } from "express";
 import createHttpError from "http-errors";
 import prisma from "../../util/db";
 import { assertIsDefine } from "../../util/assertIsDefine";
+import {
+  ADMIN_COM_001,
+  ADMIN_FEAT_003,
+  ADMIN_FEAT_004,
+  ADMIN_FEAT_005,
+  ADMIN_FEAT_006,
+} from "../../constants/errorCodes";
+import { AdminCreateFeatureInput, AdminUpdateFeatureInput } from "../schemas/feature.schema";
 
 /**
  * GET /api/admin/features
@@ -40,34 +48,24 @@ export const getAll: RequestHandler = async (req, res, next) => {
  */
 export const create: RequestHandler = async (req, res, next) => {
   try {
-    const { code, name, description, isDefault } = req.body;
+    const { code, name, description, isDefault } = req.body as AdminCreateFeatureInput;
     const adminId = req.session.adminId;
     assertIsDefine(adminId);
 
-    if (!code || typeof code !== "string" || code.trim().length === 0) {
-      throw createHttpError(400, "ADMIN_FEAT_001: Code is required");
-    }
-
-    if (!name || typeof name !== "string" || name.trim().length === 0) {
-      throw createHttpError(400, "ADMIN_FEAT_002: Name is required");
-    }
-
-    const normalizedCode = code.trim().toUpperCase().replace(/\s+/g, "_");
-
     const existing = await prisma.feature.findUnique({
-      where: { code: normalizedCode },
+      where: { code },
     });
 
     if (existing) {
-      throw createHttpError(409, "ADMIN_FEAT_003: Feature code already exists");
+      throw createHttpError(409, ADMIN_FEAT_003);
     }
 
     const feature = await prisma.feature.create({
       data: {
-        code: normalizedCode,
-        name: name.trim(),
-        description: description?.trim() || null,
-        isDefault: Boolean(isDefault),
+        code,
+        name,
+        description: description ?? null,
+        isDefault,
       },
     });
 
@@ -77,7 +75,7 @@ export const create: RequestHandler = async (req, res, next) => {
         type: "FEATURE_CREATED",
         targetType: "Feature",
         targetId: feature.id,
-        metadata: { code: normalizedCode, name: name.trim() },
+        metadata: { code, name },
       },
     });
 
@@ -94,30 +92,27 @@ export const create: RequestHandler = async (req, res, next) => {
 export const update: RequestHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name, description, isDefault } = req.body;
+    const { name, description, isDefault } = req.body as AdminUpdateFeatureInput;
     const adminId = req.session.adminId;
     assertIsDefine(adminId);
 
     const feature = await prisma.feature.findUnique({ where: { id } });
     if (!feature) {
-      throw createHttpError(404, "ADMIN_FEAT_004: Feature not found");
+      throw createHttpError(404, ADMIN_FEAT_004);
     }
 
     const updateData: { name?: string; description?: string | null; isDefault?: boolean } = {};
 
     if (name !== undefined) {
-      if (typeof name !== "string" || name.trim().length === 0) {
-        throw createHttpError(400, "ADMIN_FEAT_002: Name is required");
-      }
-      updateData.name = name.trim();
+      updateData.name = name;
     }
 
     if (description !== undefined) {
-      updateData.description = description?.trim() || null;
+      updateData.description = description;
     }
 
     if (isDefault !== undefined) {
-      updateData.isDefault = Boolean(isDefault);
+      updateData.isDefault = isDefault;
     }
 
     const updated = await prisma.feature.update({
@@ -157,10 +152,10 @@ export const grant: RequestHandler = async (req, res, next) => {
     ]);
 
     if (!community) {
-      throw createHttpError(404, "ADMIN_COM_001: Community not found");
+      throw createHttpError(404, ADMIN_COM_001);
     }
     if (!feature) {
-      throw createHttpError(404, "ADMIN_FEAT_004: Feature not found");
+      throw createHttpError(404, ADMIN_FEAT_004);
     }
 
     // Verifier si deja attribue (et non revoke)
@@ -169,7 +164,7 @@ export const grant: RequestHandler = async (req, res, next) => {
     });
 
     if (existing && !existing.revokedAt) {
-      throw createHttpError(409, "ADMIN_FEAT_005: Feature already granted");
+      throw createHttpError(409, ADMIN_FEAT_005);
     }
 
     if (existing && existing.revokedAt) {
@@ -218,10 +213,10 @@ export const revoke: RequestHandler = async (req, res, next) => {
     ]);
 
     if (!community) {
-      throw createHttpError(404, "ADMIN_COM_001: Community not found");
+      throw createHttpError(404, ADMIN_COM_001);
     }
     if (!feature) {
-      throw createHttpError(404, "ADMIN_FEAT_004: Feature not found");
+      throw createHttpError(404, ADMIN_FEAT_004);
     }
 
     const existing = await prisma.communityFeature.findUnique({
@@ -229,7 +224,7 @@ export const revoke: RequestHandler = async (req, res, next) => {
     });
 
     if (!existing || existing.revokedAt) {
-      throw createHttpError(404, "ADMIN_FEAT_006: Feature not granted to this community");
+      throw createHttpError(404, ADMIN_FEAT_006);
     }
 
     await prisma.communityFeature.update({

@@ -4,10 +4,7 @@ declare global {
   namespace Express {
     interface Request {
       userCommunity?: UserCommunity & {
-        community: Pick<
-          Community,
-          "id" | "name" | "description" | "visibility" | "deletedAt"
-        >;
+        community: Pick<Community, "id" | "name" | "description" | "visibility" | "deletedAt">;
       };
     }
   }

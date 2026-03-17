@@ -2,21 +2,50 @@ import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
+const SEED_MODE = process.env.SEED_MODE || "full"; // "full" (preprod) | "prod" (reference data only)
 
 async function seed() {
-  const userCount = await prisma.user.count();
-
-  if (userCount > 0) {
-    console.log("Database already seeded, skipping...");
-    return;
-  }
-
-  console.log("Seeding database...");
-
-  const hashedPassword = await bcrypt.hash("password123", 10);
+  console.log(`Seed mode: ${SEED_MODE}`);
 
   // ===========================================
-  // Feature MVP
+  // Units (always upsert - idempotent)
+  // ===========================================
+  const unitData = [
+    { name: "gramme", abbreviation: "g", category: "WEIGHT", sortOrder: 1 },
+    { name: "kilogramme", abbreviation: "kg", category: "WEIGHT", sortOrder: 2 },
+    { name: "millilitre", abbreviation: "ml", category: "VOLUME", sortOrder: 1 },
+    { name: "centilitre", abbreviation: "cl", category: "VOLUME", sortOrder: 2 },
+    { name: "decilitre", abbreviation: "dl", category: "VOLUME", sortOrder: 3 },
+    { name: "litre", abbreviation: "l", category: "VOLUME", sortOrder: 4 },
+    { name: "cuillere a cafe", abbreviation: "cac", category: "SPOON", sortOrder: 1 },
+    { name: "cuillere a soupe", abbreviation: "cas", category: "SPOON", sortOrder: 2 },
+    { name: "piece", abbreviation: "piece", category: "COUNT", sortOrder: 1 },
+    { name: "tranche", abbreviation: "tranche", category: "COUNT", sortOrder: 2 },
+    { name: "gousse", abbreviation: "gousse", category: "COUNT", sortOrder: 3 },
+    { name: "botte", abbreviation: "botte", category: "COUNT", sortOrder: 4 },
+    { name: "feuille", abbreviation: "feuille", category: "COUNT", sortOrder: 5 },
+    { name: "brin", abbreviation: "brin", category: "COUNT", sortOrder: 6 },
+    { name: "pincee", abbreviation: "pincee", category: "QUALITATIVE", sortOrder: 1 },
+    { name: "a gout", abbreviation: "a gout", category: "QUALITATIVE", sortOrder: 2 },
+    { name: "selon besoin", abbreviation: "selon besoin", category: "QUALITATIVE", sortOrder: 3 },
+  ];
+
+  const units = {};
+  for (const unit of unitData) {
+    units[unit.abbreviation] = await prisma.unit.upsert({
+      where: { name: unit.name },
+      update: {
+        abbreviation: unit.abbreviation,
+        category: unit.category,
+        sortOrder: unit.sortOrder,
+      },
+      create: unit,
+    });
+  }
+  console.log("Units seeded:", unitData.length);
+
+  // ===========================================
+  // Feature MVP (always upsert - idempotent)
   // ===========================================
   const featureMvp = await prisma.feature.upsert({
     where: { code: "MVP" },
@@ -29,6 +58,113 @@ async function seed() {
     },
   });
   console.log("Feature MVP:", featureMvp.code);
+
+  // ===========================================
+  // Tags (always upsert - idempotent)
+  // ===========================================
+  const tagNames = [
+    "italien",
+    "francais",
+    "asiatique",
+    "mexicain",
+    "vegetarien",
+    "vegan",
+    "sans-gluten",
+    "dessert",
+    "entree",
+    "plat-principal",
+    "aperitif",
+    "rapide",
+    "facile",
+    "gastronomique",
+    "ete",
+    "hiver",
+    "comfort-food",
+  ];
+  const tags = {};
+  for (const name of tagNames) {
+    let tag = await prisma.tag.findFirst({
+      where: { name, communityId: null },
+    });
+    if (!tag) {
+      tag = await prisma.tag.create({ data: { name } });
+    }
+    tags[name] = tag;
+  }
+  console.log("Tags seeded:", tagNames.length);
+
+  // ===========================================
+  // Ingredients (always upsert - idempotent)
+  // ===========================================
+  const ingredientNames = [
+    "farine",
+    "beurre",
+    "oeufs",
+    "sucre",
+    "sel",
+    "poivre",
+    "huile d'olive",
+    "ail",
+    "oignon",
+    "tomate",
+    "mozzarella",
+    "parmesan",
+    "creme fraiche",
+    "lait",
+    "poulet",
+    "boeuf",
+    "saumon",
+    "riz",
+    "pates",
+    "pomme de terre",
+    "carotte",
+    "courgette",
+    "aubergine",
+    "poivron",
+    "basilic",
+    "thym",
+    "romarin",
+    "persil",
+    "coriandre",
+    "citron",
+    "pomme",
+    "chocolat",
+    "vanille",
+    "sauce soja",
+    "gingembre",
+    "piment",
+  ];
+  const ingredients = {};
+  for (const name of ingredientNames) {
+    ingredients[name] = await prisma.ingredient.upsert({
+      where: { name },
+      update: {},
+      create: { name },
+    });
+  }
+  console.log("Ingredients seeded:", ingredientNames.length);
+
+  // ===========================================
+  // Production mode stops here (reference data only)
+  // ===========================================
+  if (SEED_MODE === "prod") {
+    console.log("\nProd seed complete (units, features, tags, ingredients).");
+    return;
+  }
+
+  // ===========================================
+  // Test data (preprod/dev only)
+  // ===========================================
+  const userCount = await prisma.user.count();
+
+  if (userCount > 0) {
+    console.log("Database already seeded (users exist), skipping test data...");
+    return;
+  }
+
+  console.log("Seeding test data...");
+
+  const hashedPassword = await bcrypt.hash("password123", 10);
 
   // ===========================================
   // Users
@@ -51,52 +187,26 @@ async function seed() {
   console.log("Users created: 5");
 
   // ===========================================
-  // Tags
-  // ===========================================
-  const tagNames = [
-    "italien", "francais", "asiatique", "mexicain",
-    "vegetarien", "vegan", "sans-gluten",
-    "dessert", "entree", "plat-principal", "aperitif",
-    "rapide", "facile", "gastronomique",
-    "ete", "hiver", "comfort-food",
-  ];
-  const tags = {};
-  for (const name of tagNames) {
-    tags[name] = await prisma.tag.create({ data: { name } });
-  }
-  console.log("Tags created:", tagNames.length);
-
-  // ===========================================
-  // Ingredients
-  // ===========================================
-  const ingredientNames = [
-    "farine", "beurre", "oeufs", "sucre", "sel", "poivre",
-    "huile d'olive", "ail", "oignon", "tomate",
-    "mozzarella", "parmesan", "creme fraiche", "lait",
-    "poulet", "boeuf", "saumon",
-    "riz", "pates", "pomme de terre",
-    "carotte", "courgette", "aubergine", "poivron",
-    "basilic", "thym", "romarin", "persil", "coriandre",
-    "citron", "pomme", "chocolat", "vanille",
-    "sauce soja", "gingembre", "piment",
-  ];
-  const ingredients = {};
-  for (const name of ingredientNames) {
-    ingredients[name] = await prisma.ingredient.create({ data: { name } });
-  }
-  console.log("Ingredients created:", ingredientNames.length);
-
-  // ===========================================
   // Communities
   // ===========================================
   const cuisineItalienne = await prisma.community.create({
-    data: { name: "Cuisine Italienne", description: "Partagez vos meilleures recettes italiennes : pates, pizzas, risottos et plus encore !" },
+    data: {
+      name: "Cuisine Italienne",
+      description:
+        "Partagez vos meilleures recettes italiennes : pates, pizzas, risottos et plus encore !",
+    },
   });
   const patisserieFine = await prisma.community.create({
-    data: { name: "Patisserie Fine", description: "Pour les amateurs de patisserie, du classique au creatif." },
+    data: {
+      name: "Patisserie Fine",
+      description: "Pour les amateurs de patisserie, du classique au creatif.",
+    },
   });
   const cuisineRapide = await prisma.community.create({
-    data: { name: "Cuisine Rapide & Facile", description: "Des recettes simples pour le quotidien, prets en moins de 30 minutes." },
+    data: {
+      name: "Cuisine Rapide & Facile",
+      description: "Des recettes simples pour le quotidien, prets en moins de 30 minutes.",
+    },
   });
   console.log("Communities created: 3");
 
@@ -185,8 +295,32 @@ async function seed() {
   const pizzaMargherita = await prisma.recipe.create({
     data: {
       title: "Pizza Margherita",
-      content: "# Pizza Margherita\n\nLa classique napolitaine. Etaler la pate finement, napper de sauce tomate, disposer la mozzarella en morceaux. Cuire au four a 250C pendant 8-10 minutes. Ajouter le basilic frais a la sortie du four.",
+      servings: 4,
+      prepTime: 30,
+      cookTime: 10,
+      restTime: 60,
       creatorId: alice.id,
+      steps: {
+        create: [
+          {
+            order: 0,
+            instruction:
+              "Melanger la farine, le sel et la levure. Ajouter l'eau tiede et petrir 10 minutes jusqu'a obtenir une pate lisse et elastique.",
+          },
+          { order: 1, instruction: "Laisser reposer la pate 1h sous un linge humide." },
+          { order: 2, instruction: "Etaler la pate finement sur un plan farine." },
+          {
+            order: 3,
+            instruction:
+              "Napper de sauce tomate, disposer la mozzarella en morceaux et arroser d'un filet d'huile d'olive.",
+          },
+          {
+            order: 4,
+            instruction:
+              "Cuire au four a 250C pendant 8-10 minutes. Ajouter le basilic frais et une pincee de sel a la sortie du four.",
+          },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -198,20 +332,79 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: pizzaMargherita.id, ingredientId: ingredients["farine"].id, quantity: "300g", order: 1 },
-      { recipeId: pizzaMargherita.id, ingredientId: ingredients["tomate"].id, quantity: "200g sauce", order: 2 },
-      { recipeId: pizzaMargherita.id, ingredientId: ingredients["mozzarella"].id, quantity: "200g", order: 3 },
-      { recipeId: pizzaMargherita.id, ingredientId: ingredients["basilic"].id, quantity: "quelques feuilles", order: 4 },
-      { recipeId: pizzaMargherita.id, ingredientId: ingredients["huile d'olive"].id, quantity: "2 c.a.s", order: 5 },
-      { recipeId: pizzaMargherita.id, ingredientId: ingredients["sel"].id, quantity: "1 pincee", order: 6 },
+      {
+        recipeId: pizzaMargherita.id,
+        ingredientId: ingredients["farine"].id,
+        quantity: 300,
+        unitId: units["g"].id,
+        order: 1,
+      },
+      {
+        recipeId: pizzaMargherita.id,
+        ingredientId: ingredients["tomate"].id,
+        quantity: 200,
+        unitId: units["g"].id,
+        order: 2,
+      },
+      {
+        recipeId: pizzaMargherita.id,
+        ingredientId: ingredients["mozzarella"].id,
+        quantity: 200,
+        unitId: units["g"].id,
+        order: 3,
+      },
+      {
+        recipeId: pizzaMargherita.id,
+        ingredientId: ingredients["basilic"].id,
+        quantity: 5,
+        unitId: units["feuille"].id,
+        order: 4,
+      },
+      {
+        recipeId: pizzaMargherita.id,
+        ingredientId: ingredients["huile d'olive"].id,
+        quantity: 2,
+        unitId: units["cas"].id,
+        order: 5,
+      },
+      {
+        recipeId: pizzaMargherita.id,
+        ingredientId: ingredients["sel"].id,
+        quantity: 1,
+        unitId: units["pincee"].id,
+        order: 6,
+      },
     ],
   });
 
   const risottoChampignons = await prisma.recipe.create({
     data: {
       title: "Risotto aux champignons",
-      content: "# Risotto aux champignons\n\nFaire revenir l'oignon emince dans le beurre. Ajouter le riz et nacrer 2 minutes. Deglace au vin blanc. Ajouter le bouillon louche par louche en remuant. A mi-cuisson, ajouter les champignons sautes. Terminer avec le parmesan et une noix de beurre.",
+      servings: 4,
+      prepTime: 15,
+      cookTime: 30,
       creatorId: alice.id,
+      steps: {
+        create: [
+          {
+            order: 0,
+            instruction:
+              "Faire revenir l'oignon emince dans le beurre a feu moyen jusqu'a ce qu'il soit translucide.",
+          },
+          { order: 1, instruction: "Ajouter le riz et nacrer 2 minutes en remuant." },
+          { order: 2, instruction: "Deglacer au vin blanc et laisser absorber." },
+          {
+            order: 3,
+            instruction:
+              "Ajouter le bouillon louche par louche en remuant regulierement. A mi-cuisson, ajouter les champignons sautes.",
+          },
+          {
+            order: 4,
+            instruction:
+              "Terminer avec le parmesan rape et une noix de beurre. Servir immediatement.",
+          },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -224,18 +417,58 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: risottoChampignons.id, ingredientId: ingredients["riz"].id, quantity: "300g arborio", order: 1 },
-      { recipeId: risottoChampignons.id, ingredientId: ingredients["oignon"].id, quantity: "1", order: 2 },
-      { recipeId: risottoChampignons.id, ingredientId: ingredients["beurre"].id, quantity: "50g", order: 3 },
-      { recipeId: risottoChampignons.id, ingredientId: ingredients["parmesan"].id, quantity: "80g", order: 4 },
+      {
+        recipeId: risottoChampignons.id,
+        ingredientId: ingredients["riz"].id,
+        quantity: 300,
+        unitId: units["g"].id,
+        order: 1,
+      },
+      {
+        recipeId: risottoChampignons.id,
+        ingredientId: ingredients["oignon"].id,
+        quantity: 1,
+        unitId: units["piece"].id,
+        order: 2,
+      },
+      {
+        recipeId: risottoChampignons.id,
+        ingredientId: ingredients["beurre"].id,
+        quantity: 50,
+        unitId: units["g"].id,
+        order: 3,
+      },
+      {
+        recipeId: risottoChampignons.id,
+        ingredientId: ingredients["parmesan"].id,
+        quantity: 80,
+        unitId: units["g"].id,
+        order: 4,
+      },
     ],
   });
 
   const saladeCaprese = await prisma.recipe.create({
     data: {
       title: "Salade Caprese",
-      content: "# Salade Caprese\n\nAlterner les tranches de tomates et de mozzarella dans un plat. Parsemer de feuilles de basilic. Arroser d'huile d'olive, saler et poivrer. Servir frais.",
+      servings: 2,
+      prepTime: 10,
       creatorId: alice.id,
+      steps: {
+        create: [
+          { order: 0, instruction: "Couper les tomates et la mozzarella en tranches regulieres." },
+          {
+            order: 1,
+            instruction:
+              "Alterner les tranches de tomates et de mozzarella dans un plat de service.",
+          },
+          {
+            order: 2,
+            instruction:
+              "Parsemer de feuilles de basilic frais, arroser d'huile d'olive, saler et poivrer. Servir frais.",
+          },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -249,10 +482,34 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: saladeCaprese.id, ingredientId: ingredients["tomate"].id, quantity: "4 grosses", order: 1 },
-      { recipeId: saladeCaprese.id, ingredientId: ingredients["mozzarella"].id, quantity: "250g bufala", order: 2 },
-      { recipeId: saladeCaprese.id, ingredientId: ingredients["basilic"].id, quantity: "1 bouquet", order: 3 },
-      { recipeId: saladeCaprese.id, ingredientId: ingredients["huile d'olive"].id, quantity: "3 c.a.s", order: 4 },
+      {
+        recipeId: saladeCaprese.id,
+        ingredientId: ingredients["tomate"].id,
+        quantity: 4,
+        unitId: units["piece"].id,
+        order: 1,
+      },
+      {
+        recipeId: saladeCaprese.id,
+        ingredientId: ingredients["mozzarella"].id,
+        quantity: 250,
+        unitId: units["g"].id,
+        order: 2,
+      },
+      {
+        recipeId: saladeCaprese.id,
+        ingredientId: ingredients["basilic"].id,
+        quantity: 1,
+        unitId: units["botte"].id,
+        order: 3,
+      },
+      {
+        recipeId: saladeCaprese.id,
+        ingredientId: ingredients["huile d'olive"].id,
+        quantity: 3,
+        unitId: units["cas"].id,
+        order: 4,
+      },
     ],
   });
 
@@ -260,8 +517,37 @@ async function seed() {
   const painMaison = await prisma.recipe.create({
     data: {
       title: "Pain maison",
-      content: "# Pain maison\n\nMelanger farine, sel et levure. Ajouter l'eau tiede et petrir 10 minutes. Laisser lever 1h. Faconner, laisser lever 30min. Cuire a 230C pendant 25 minutes avec un bol d'eau dans le four pour la croute.",
+      servings: 6,
+      prepTime: 20,
+      cookTime: 25,
+      restTime: 90,
       creatorId: bob.id,
+      steps: {
+        create: [
+          {
+            order: 0,
+            instruction: "Melanger la farine, le sel et la levure dans un grand saladier.",
+          },
+          {
+            order: 1,
+            instruction:
+              "Ajouter l'eau tiede et petrir 10 minutes jusqu'a obtenir une pate souple.",
+          },
+          {
+            order: 2,
+            instruction: "Couvrir d'un linge et laisser lever 1h a temperature ambiante.",
+          },
+          {
+            order: 3,
+            instruction: "Degazer, faconner le pain et laisser lever encore 30 minutes.",
+          },
+          {
+            order: 4,
+            instruction:
+              "Cuire a 230C pendant 25 minutes avec un bol d'eau dans le four pour une belle croute.",
+          },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -272,16 +558,49 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: painMaison.id, ingredientId: ingredients["farine"].id, quantity: "500g T65", order: 1 },
-      { recipeId: painMaison.id, ingredientId: ingredients["sel"].id, quantity: "10g", order: 2 },
+      {
+        recipeId: painMaison.id,
+        ingredientId: ingredients["farine"].id,
+        quantity: 500,
+        unitId: units["g"].id,
+        order: 1,
+      },
+      {
+        recipeId: painMaison.id,
+        ingredientId: ingredients["sel"].id,
+        quantity: 10,
+        unitId: units["g"].id,
+        order: 2,
+      },
     ],
   });
 
   const quicheLorraine = await prisma.recipe.create({
     data: {
       title: "Quiche Lorraine",
-      content: "# Quiche Lorraine\n\nEtaler la pate dans un moule. Faire revenir les lardons. Battre les oeufs avec la creme et le lait, saler, poivrer, muscade. Disposer les lardons sur la pate, verser l'appareil. Cuire 35 minutes a 180C.",
+      servings: 6,
+      prepTime: 20,
+      cookTime: 35,
       creatorId: bob.id,
+      steps: {
+        create: [
+          { order: 0, instruction: "Etaler la pate brisee dans un moule a tarte beurre." },
+          { order: 1, instruction: "Faire revenir les lardons a la poele sans matiere grasse." },
+          {
+            order: 2,
+            instruction:
+              "Battre les oeufs avec la creme fraiche et le lait. Saler, poivrer, ajouter une pincee de muscade.",
+          },
+          {
+            order: 3,
+            instruction: "Disposer les lardons sur le fond de tarte, verser l'appareil par-dessus.",
+          },
+          {
+            order: 4,
+            instruction: "Cuire 35 minutes a 180C jusqu'a ce que la quiche soit bien doree.",
+          },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -293,11 +612,41 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: quicheLorraine.id, ingredientId: ingredients["oeufs"].id, quantity: "4", order: 1 },
-      { recipeId: quicheLorraine.id, ingredientId: ingredients["creme fraiche"].id, quantity: "20cl", order: 2 },
-      { recipeId: quicheLorraine.id, ingredientId: ingredients["lait"].id, quantity: "10cl", order: 3 },
-      { recipeId: quicheLorraine.id, ingredientId: ingredients["farine"].id, quantity: "250g (pate)", order: 4 },
-      { recipeId: quicheLorraine.id, ingredientId: ingredients["beurre"].id, quantity: "125g (pate)", order: 5 },
+      {
+        recipeId: quicheLorraine.id,
+        ingredientId: ingredients["oeufs"].id,
+        quantity: 4,
+        unitId: units["piece"].id,
+        order: 1,
+      },
+      {
+        recipeId: quicheLorraine.id,
+        ingredientId: ingredients["creme fraiche"].id,
+        quantity: 20,
+        unitId: units["cl"].id,
+        order: 2,
+      },
+      {
+        recipeId: quicheLorraine.id,
+        ingredientId: ingredients["lait"].id,
+        quantity: 10,
+        unitId: units["cl"].id,
+        order: 3,
+      },
+      {
+        recipeId: quicheLorraine.id,
+        ingredientId: ingredients["farine"].id,
+        quantity: 250,
+        unitId: units["g"].id,
+        order: 4,
+      },
+      {
+        recipeId: quicheLorraine.id,
+        ingredientId: ingredients["beurre"].id,
+        quantity: 125,
+        unitId: units["g"].id,
+        order: 5,
+      },
     ],
   });
 
@@ -305,8 +654,30 @@ async function seed() {
   const padThai = await prisma.recipe.create({
     data: {
       title: "Pad Thai express",
-      content: "# Pad Thai express\n\nFaire tremper les nouilles de riz. Sauter le poulet emince avec l'ail et le gingembre. Ajouter les nouilles egouttees, la sauce soja, le jus de citron et le sucre. Servir avec cacahuetes concassees et coriandre.",
+      servings: 2,
+      prepTime: 10,
+      cookTime: 10,
       creatorId: charlie.id,
+      steps: {
+        create: [
+          {
+            order: 0,
+            instruction:
+              "Faire tremper les nouilles de riz dans l'eau chaude selon les instructions du paquet.",
+          },
+          {
+            order: 1,
+            instruction:
+              "Faire sauter le poulet emince avec l'ail et le gingembre dans un wok bien chaud.",
+          },
+          {
+            order: 2,
+            instruction:
+              "Ajouter les nouilles egouttees, la sauce soja, le jus de citron et le sucre. Bien melanger.",
+          },
+          { order: 3, instruction: "Servir avec cacahuetes concassees et coriandre fraiche." },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -318,21 +689,88 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: padThai.id, ingredientId: ingredients["poulet"].id, quantity: "200g", order: 1 },
-      { recipeId: padThai.id, ingredientId: ingredients["riz"].id, quantity: "200g nouilles", order: 2 },
-      { recipeId: padThai.id, ingredientId: ingredients["sauce soja"].id, quantity: "3 c.a.s", order: 3 },
-      { recipeId: padThai.id, ingredientId: ingredients["citron"].id, quantity: "2", order: 4 },
-      { recipeId: padThai.id, ingredientId: ingredients["ail"].id, quantity: "3 gousses", order: 5 },
-      { recipeId: padThai.id, ingredientId: ingredients["gingembre"].id, quantity: "2cm", order: 6 },
-      { recipeId: padThai.id, ingredientId: ingredients["coriandre"].id, quantity: "1 bouquet", order: 7 },
+      {
+        recipeId: padThai.id,
+        ingredientId: ingredients["poulet"].id,
+        quantity: 200,
+        unitId: units["g"].id,
+        order: 1,
+      },
+      {
+        recipeId: padThai.id,
+        ingredientId: ingredients["riz"].id,
+        quantity: 200,
+        unitId: units["g"].id,
+        order: 2,
+      },
+      {
+        recipeId: padThai.id,
+        ingredientId: ingredients["sauce soja"].id,
+        quantity: 3,
+        unitId: units["cas"].id,
+        order: 3,
+      },
+      {
+        recipeId: padThai.id,
+        ingredientId: ingredients["citron"].id,
+        quantity: 2,
+        unitId: units["piece"].id,
+        order: 4,
+      },
+      {
+        recipeId: padThai.id,
+        ingredientId: ingredients["ail"].id,
+        quantity: 3,
+        unitId: units["gousse"].id,
+        order: 5,
+      },
+      {
+        recipeId: padThai.id,
+        ingredientId: ingredients["gingembre"].id,
+        quantity: 2,
+        unitId: units["piece"].id,
+        order: 6,
+      },
+      {
+        recipeId: padThai.id,
+        ingredientId: ingredients["coriandre"].id,
+        quantity: 1,
+        unitId: units["botte"].id,
+        order: 7,
+      },
     ],
   });
 
   const ratatouilleExpress = await prisma.recipe.create({
     data: {
       title: "Ratatouille express",
-      content: "# Ratatouille express\n\nCouper tous les legumes en des. Faire revenir l'oignon et l'ail dans l'huile d'olive. Ajouter aubergine et poivron, cuire 5min. Ajouter courgette et tomate. Assaisonner avec thym et romarin. Laisser mijoter 20 minutes.",
+      servings: 4,
+      prepTime: 15,
+      cookTime: 25,
       creatorId: charlie.id,
+      steps: {
+        create: [
+          { order: 0, instruction: "Couper tous les legumes en des de taille reguliere." },
+          {
+            order: 1,
+            instruction: "Faire revenir l'oignon et l'ail dans l'huile d'olive a feu moyen.",
+          },
+          {
+            order: 2,
+            instruction: "Ajouter l'aubergine et le poivron, cuire 5 minutes en remuant.",
+          },
+          {
+            order: 3,
+            instruction:
+              "Ajouter la courgette et la tomate. Assaisonner avec le thym et le romarin.",
+          },
+          {
+            order: 4,
+            instruction:
+              "Laisser mijoter 20 minutes a feu doux. Rectifier l'assaisonnement avant de servir.",
+          },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -346,14 +784,62 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["aubergine"].id, quantity: "1", order: 1 },
-      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["courgette"].id, quantity: "2", order: 2 },
-      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["poivron"].id, quantity: "1 rouge, 1 jaune", order: 3 },
-      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["tomate"].id, quantity: "4", order: 4 },
-      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["oignon"].id, quantity: "1", order: 5 },
-      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["ail"].id, quantity: "3 gousses", order: 6 },
-      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["thym"].id, quantity: "2 branches", order: 7 },
-      { recipeId: ratatouilleExpress.id, ingredientId: ingredients["huile d'olive"].id, quantity: "3 c.a.s", order: 8 },
+      {
+        recipeId: ratatouilleExpress.id,
+        ingredientId: ingredients["aubergine"].id,
+        quantity: 1,
+        unitId: units["piece"].id,
+        order: 1,
+      },
+      {
+        recipeId: ratatouilleExpress.id,
+        ingredientId: ingredients["courgette"].id,
+        quantity: 2,
+        unitId: units["piece"].id,
+        order: 2,
+      },
+      {
+        recipeId: ratatouilleExpress.id,
+        ingredientId: ingredients["poivron"].id,
+        quantity: 2,
+        unitId: units["piece"].id,
+        order: 3,
+      },
+      {
+        recipeId: ratatouilleExpress.id,
+        ingredientId: ingredients["tomate"].id,
+        quantity: 4,
+        unitId: units["piece"].id,
+        order: 4,
+      },
+      {
+        recipeId: ratatouilleExpress.id,
+        ingredientId: ingredients["oignon"].id,
+        quantity: 1,
+        unitId: units["piece"].id,
+        order: 5,
+      },
+      {
+        recipeId: ratatouilleExpress.id,
+        ingredientId: ingredients["ail"].id,
+        quantity: 3,
+        unitId: units["gousse"].id,
+        order: 6,
+      },
+      {
+        recipeId: ratatouilleExpress.id,
+        ingredientId: ingredients["thym"].id,
+        quantity: 2,
+        unitId: units["brin"].id,
+        order: 7,
+      },
+      {
+        recipeId: ratatouilleExpress.id,
+        ingredientId: ingredients["huile d'olive"].id,
+        quantity: 3,
+        unitId: units["cas"].id,
+        order: 8,
+      },
     ],
   });
 
@@ -361,8 +847,39 @@ async function seed() {
   const tarteAuCitron = await prisma.recipe.create({
     data: {
       title: "Tarte au citron meringuee",
-      content: "# Tarte au citron meringuee\n\nPreparer une pate sucree (farine, beurre, sucre, oeuf). Cuire a blanc 15min. Preparer la creme citron : jus de citron, sucre, oeufs, beurre au bain-marie. Verser sur le fond de tarte. Monter les blancs en neige ferme avec sucre, dresser a la poche. Carameliser au chalumeau.",
+      servings: 8,
+      prepTime: 40,
+      cookTime: 30,
+      restTime: 120,
       creatorId: diana.id,
+      steps: {
+        create: [
+          {
+            order: 0,
+            instruction:
+              "Preparer la pate sucree : melanger farine, beurre pommade, sucre et oeuf. Fraiser et filmer, refrigerer 30 minutes.",
+          },
+          {
+            order: 1,
+            instruction: "Etaler la pate, foncer le moule et cuire a blanc 15 minutes a 180C.",
+          },
+          {
+            order: 2,
+            instruction:
+              "Preparer la creme citron : chauffer au bain-marie le jus de citron, le sucre, les oeufs et le beurre en remuant jusqu'a epaississement.",
+          },
+          {
+            order: 3,
+            instruction:
+              "Verser la creme citron sur le fond de tarte. Laisser refroidir completement.",
+          },
+          {
+            order: 4,
+            instruction:
+              "Monter les blancs en neige ferme avec le sucre, dresser a la poche sur la tarte et carameliser au chalumeau.",
+          },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -374,19 +891,73 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: tarteAuCitron.id, ingredientId: ingredients["citron"].id, quantity: "4 (jus + zestes)", order: 1 },
-      { recipeId: tarteAuCitron.id, ingredientId: ingredients["sucre"].id, quantity: "200g", order: 2 },
-      { recipeId: tarteAuCitron.id, ingredientId: ingredients["oeufs"].id, quantity: "6 (3 entiers + 3 blancs)", order: 3 },
-      { recipeId: tarteAuCitron.id, ingredientId: ingredients["beurre"].id, quantity: "150g", order: 4 },
-      { recipeId: tarteAuCitron.id, ingredientId: ingredients["farine"].id, quantity: "250g", order: 5 },
+      {
+        recipeId: tarteAuCitron.id,
+        ingredientId: ingredients["citron"].id,
+        quantity: 4,
+        unitId: units["piece"].id,
+        order: 1,
+      },
+      {
+        recipeId: tarteAuCitron.id,
+        ingredientId: ingredients["sucre"].id,
+        quantity: 200,
+        unitId: units["g"].id,
+        order: 2,
+      },
+      {
+        recipeId: tarteAuCitron.id,
+        ingredientId: ingredients["oeufs"].id,
+        quantity: 6,
+        unitId: units["piece"].id,
+        order: 3,
+      },
+      {
+        recipeId: tarteAuCitron.id,
+        ingredientId: ingredients["beurre"].id,
+        quantity: 150,
+        unitId: units["g"].id,
+        order: 4,
+      },
+      {
+        recipeId: tarteAuCitron.id,
+        ingredientId: ingredients["farine"].id,
+        quantity: 250,
+        unitId: units["g"].id,
+        order: 5,
+      },
     ],
   });
 
   const fondantChocolat = await prisma.recipe.create({
     data: {
       title: "Fondant au chocolat",
-      content: "# Fondant au chocolat\n\nFondre le chocolat avec le beurre. Battre les oeufs avec le sucre jusqu'a blanchiment. Incorporer le chocolat fondu puis la farine. Verser dans des moules beurres. Cuire 12 minutes a 200C. Le coeur doit rester coulant.",
+      servings: 4,
+      prepTime: 15,
+      cookTime: 12,
       creatorId: diana.id,
+      steps: {
+        create: [
+          {
+            order: 0,
+            instruction: "Fondre le chocolat avec le beurre au bain-marie ou au micro-ondes.",
+          },
+          {
+            order: 1,
+            instruction: "Battre les oeufs avec le sucre jusqu'a blanchiment du melange.",
+          },
+          {
+            order: 2,
+            instruction: "Incorporer le chocolat fondu puis la farine tamisee delicatement.",
+          },
+          { order: 3, instruction: "Verser dans des moules individuels beurres et farine." },
+          {
+            order: 4,
+            instruction:
+              "Cuire 12 minutes a 200C. Le coeur doit rester coulant. Demouler aussitot.",
+          },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -399,19 +970,80 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: fondantChocolat.id, ingredientId: ingredients["chocolat"].id, quantity: "200g noir 70%", order: 1 },
-      { recipeId: fondantChocolat.id, ingredientId: ingredients["beurre"].id, quantity: "100g", order: 2 },
-      { recipeId: fondantChocolat.id, ingredientId: ingredients["oeufs"].id, quantity: "4", order: 3 },
-      { recipeId: fondantChocolat.id, ingredientId: ingredients["sucre"].id, quantity: "100g", order: 4 },
-      { recipeId: fondantChocolat.id, ingredientId: ingredients["farine"].id, quantity: "50g", order: 5 },
+      {
+        recipeId: fondantChocolat.id,
+        ingredientId: ingredients["chocolat"].id,
+        quantity: 200,
+        unitId: units["g"].id,
+        order: 1,
+      },
+      {
+        recipeId: fondantChocolat.id,
+        ingredientId: ingredients["beurre"].id,
+        quantity: 100,
+        unitId: units["g"].id,
+        order: 2,
+      },
+      {
+        recipeId: fondantChocolat.id,
+        ingredientId: ingredients["oeufs"].id,
+        quantity: 4,
+        unitId: units["piece"].id,
+        order: 3,
+      },
+      {
+        recipeId: fondantChocolat.id,
+        ingredientId: ingredients["sucre"].id,
+        quantity: 100,
+        unitId: units["g"].id,
+        order: 4,
+      },
+      {
+        recipeId: fondantChocolat.id,
+        ingredientId: ingredients["farine"].id,
+        quantity: 50,
+        unitId: units["g"].id,
+        order: 5,
+      },
     ],
   });
 
   const cremeBrulee = await prisma.recipe.create({
     data: {
       title: "Creme brulee a la vanille",
-      content: "# Creme brulee a la vanille\n\nChauffer la creme avec la gousse de vanille fendue. Battre les jaunes d'oeufs avec le sucre. Verser la creme chaude sur les jaunes en fouettant. Repartir dans les ramequins. Cuire au bain-marie 45min a 150C. Refroidir puis carameliser le sucre au chalumeau.",
+      servings: 4,
+      prepTime: 15,
+      cookTime: 45,
+      restTime: 180,
       creatorId: diana.id,
+      steps: {
+        create: [
+          {
+            order: 0,
+            instruction:
+              "Chauffer la creme avec la gousse de vanille fendue et grattee. Porter presque a ebullition puis retirer du feu.",
+          },
+          {
+            order: 1,
+            instruction:
+              "Battre les jaunes d'oeufs avec le sucre jusqu'a ce que le melange blanchisse.",
+          },
+          {
+            order: 2,
+            instruction:
+              "Verser la creme chaude sur les jaunes en fouettant energiquement. Filtrer la preparation.",
+          },
+          {
+            order: 3,
+            instruction: "Repartir dans les ramequins. Cuire au bain-marie 45 minutes a 150C.",
+          },
+          {
+            order: 4,
+            instruction:
+              "Laisser refroidir puis refrigerer au moins 3h. Avant de servir, saupoudrer de sucre et carameliser au chalumeau.",
+          },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -423,10 +1055,34 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: cremeBrulee.id, ingredientId: ingredients["creme fraiche"].id, quantity: "50cl", order: 1 },
-      { recipeId: cremeBrulee.id, ingredientId: ingredients["oeufs"].id, quantity: "5 jaunes", order: 2 },
-      { recipeId: cremeBrulee.id, ingredientId: ingredients["sucre"].id, quantity: "100g + pour carameliser", order: 3 },
-      { recipeId: cremeBrulee.id, ingredientId: ingredients["vanille"].id, quantity: "1 gousse", order: 4 },
+      {
+        recipeId: cremeBrulee.id,
+        ingredientId: ingredients["creme fraiche"].id,
+        quantity: 50,
+        unitId: units["cl"].id,
+        order: 1,
+      },
+      {
+        recipeId: cremeBrulee.id,
+        ingredientId: ingredients["oeufs"].id,
+        quantity: 5,
+        unitId: units["piece"].id,
+        order: 2,
+      },
+      {
+        recipeId: cremeBrulee.id,
+        ingredientId: ingredients["sucre"].id,
+        quantity: 100,
+        unitId: units["g"].id,
+        order: 3,
+      },
+      {
+        recipeId: cremeBrulee.id,
+        ingredientId: ingredients["vanille"].id,
+        quantity: 1,
+        unitId: units["piece"].id,
+        order: 4,
+      },
     ],
   });
 
@@ -434,8 +1090,30 @@ async function seed() {
   const bowlSaumon = await prisma.recipe.create({
     data: {
       title: "Poke bowl au saumon",
-      content: "# Poke bowl au saumon\n\nCuire le riz et laisser refroidir. Couper le saumon frais en cubes. Preparer la marinade : sauce soja, huile de sesame, gingembre rape. Assembler : riz, saumon marine, avocat, edamame, carotte rapee, graines de sesame.",
+      servings: 2,
+      prepTime: 20,
+      cookTime: 15,
       creatorId: eve.id,
+      steps: {
+        create: [
+          {
+            order: 0,
+            instruction: "Cuire le riz selon les instructions du paquet et laisser refroidir.",
+          },
+          { order: 1, instruction: "Couper le saumon frais en cubes de 2 cm." },
+          {
+            order: 2,
+            instruction:
+              "Preparer la marinade : melanger sauce soja, huile de sesame et gingembre rape. Mariner le saumon 10 minutes.",
+          },
+          {
+            order: 3,
+            instruction:
+              "Assembler les bowls : repartir le riz, le saumon marine, la carotte rapee dans les bols.",
+          },
+          { order: 4, instruction: "Parsemer de graines de sesame et servir frais." },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -448,19 +1126,66 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: bowlSaumon.id, ingredientId: ingredients["saumon"].id, quantity: "200g frais", order: 1 },
-      { recipeId: bowlSaumon.id, ingredientId: ingredients["riz"].id, quantity: "150g", order: 2 },
-      { recipeId: bowlSaumon.id, ingredientId: ingredients["sauce soja"].id, quantity: "2 c.a.s", order: 3 },
-      { recipeId: bowlSaumon.id, ingredientId: ingredients["gingembre"].id, quantity: "1cm", order: 4 },
-      { recipeId: bowlSaumon.id, ingredientId: ingredients["carotte"].id, quantity: "1", order: 5 },
+      {
+        recipeId: bowlSaumon.id,
+        ingredientId: ingredients["saumon"].id,
+        quantity: 200,
+        unitId: units["g"].id,
+        order: 1,
+      },
+      {
+        recipeId: bowlSaumon.id,
+        ingredientId: ingredients["riz"].id,
+        quantity: 150,
+        unitId: units["g"].id,
+        order: 2,
+      },
+      {
+        recipeId: bowlSaumon.id,
+        ingredientId: ingredients["sauce soja"].id,
+        quantity: 2,
+        unitId: units["cas"].id,
+        order: 3,
+      },
+      {
+        recipeId: bowlSaumon.id,
+        ingredientId: ingredients["gingembre"].id,
+        quantity: 1,
+        unitId: units["piece"].id,
+        order: 4,
+      },
+      {
+        recipeId: bowlSaumon.id,
+        ingredientId: ingredients["carotte"].id,
+        quantity: 1,
+        unitId: units["piece"].id,
+        order: 5,
+      },
     ],
   });
 
   const gaspacho = await prisma.recipe.create({
     data: {
       title: "Gaspacho andalou",
-      content: "# Gaspacho andalou\n\nMixer les tomates bien mures, le concombre, le poivron, l'ail et l'oignon. Ajouter l'huile d'olive, le vinaigre, sel et poivre. Mixer finement. Refrigerer au moins 2h. Servir tres frais avec des croutons.",
+      servings: 4,
+      prepTime: 15,
+      restTime: 120,
       creatorId: eve.id,
+      steps: {
+        create: [
+          {
+            order: 0,
+            instruction:
+              "Laver et couper grossierement les tomates, le concombre, le poivron, l'ail et l'oignon.",
+          },
+          { order: 1, instruction: "Mixer le tout finement au blender." },
+          {
+            order: 2,
+            instruction: "Ajouter l'huile d'olive, le vinaigre, saler et poivrer. Mixer a nouveau.",
+          },
+          { order: 3, instruction: "Refrigerer au moins 2h. Servir tres frais avec des croutons." },
+        ],
+      },
     },
   });
   await prisma.recipeTag.createMany({
@@ -474,11 +1199,41 @@ async function seed() {
   });
   await prisma.recipeIngredient.createMany({
     data: [
-      { recipeId: gaspacho.id, ingredientId: ingredients["tomate"].id, quantity: "1kg bien mures", order: 1 },
-      { recipeId: gaspacho.id, ingredientId: ingredients["poivron"].id, quantity: "1 vert", order: 2 },
-      { recipeId: gaspacho.id, ingredientId: ingredients["ail"].id, quantity: "1 gousse", order: 3 },
-      { recipeId: gaspacho.id, ingredientId: ingredients["oignon"].id, quantity: "1/2", order: 4 },
-      { recipeId: gaspacho.id, ingredientId: ingredients["huile d'olive"].id, quantity: "4 c.a.s", order: 5 },
+      {
+        recipeId: gaspacho.id,
+        ingredientId: ingredients["tomate"].id,
+        quantity: 1,
+        unitId: units["kg"].id,
+        order: 1,
+      },
+      {
+        recipeId: gaspacho.id,
+        ingredientId: ingredients["poivron"].id,
+        quantity: 1,
+        unitId: units["piece"].id,
+        order: 2,
+      },
+      {
+        recipeId: gaspacho.id,
+        ingredientId: ingredients["ail"].id,
+        quantity: 1,
+        unitId: units["gousse"].id,
+        order: 3,
+      },
+      {
+        recipeId: gaspacho.id,
+        ingredientId: ingredients["oignon"].id,
+        quantity: 0.5,
+        unitId: units["piece"].id,
+        order: 4,
+      },
+      {
+        recipeId: gaspacho.id,
+        ingredientId: ingredients["huile d'olive"].id,
+        quantity: 4,
+        unitId: units["cas"].id,
+        order: 5,
+      },
     ],
   });
 

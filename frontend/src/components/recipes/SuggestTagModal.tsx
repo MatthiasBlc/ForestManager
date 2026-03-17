@@ -1,0 +1,109 @@
+import { useState } from "react";
+import { FaPaperPlane } from "react-icons/fa";
+import Modal from "../Modal";
+import TagSelector from "../form/TagSelector";
+import APIManager from "../../network/api";
+import { ConflictError } from "../../errors/http_errors";
+
+interface SuggestTagModalProps {
+  recipeId: string;
+  communityId?: string;
+  onClose: () => void;
+  onSuggestionSubmitted: () => void;
+}
+
+const SuggestTagModal = ({
+  recipeId,
+  communityId,
+  onClose,
+  onSuggestionSubmitted,
+}: SuggestTagModalProps) => {
+  const [tags, setTags] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isValid = tags.length === 1;
+
+  const handleTagChange = (newTags: string[]) => {
+    // Limiter a un seul tag
+    if (newTags.length > 1) {
+      setTags([newTags[newTags.length - 1]]);
+    } else {
+      setTags(newTags);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isValid) return;
+
+    try {
+      setIsSubmitting(true);
+      setError(null);
+      await APIManager.createTagSuggestion(recipeId, tags[0]);
+      onSuggestionSubmitted();
+    } catch (err) {
+      if (err instanceof ConflictError) {
+        setError("Ce tag a deja ete suggere sur cette recette");
+      } else {
+        setError(err instanceof Error ? err.message : "Failed to suggest tag");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Modal
+      onClose={onClose}
+      disableClickOutside={isSubmitting}
+      className="overflow-visible w-11/12 max-w-lg p-8"
+    >
+      <h3 className="font-bold text-lg mb-2">Suggest a tag</h3>
+      <p className="text-sm text-base-content/70 mb-6">
+        Suggest a tag to add to this recipe. The owner will review your suggestion.
+      </p>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="form-control">
+          <label className="label mb-1">
+            <span className="label-text">Tag name</span>
+          </label>
+          <TagSelector
+            value={tags}
+            onChange={handleTagChange}
+            placeholder="Search or create a tag..."
+            allowCreate
+            communityId={communityId}
+          />
+        </div>
+
+        {error && (
+          <div className="alert alert-error">
+            <span>{error}</span>
+          </div>
+        )}
+
+        <div className="modal-action pt-2">
+          <button type="button" className="btn btn-ghost" onClick={onClose} disabled={isSubmitting}>
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="btn btn-primary gap-2"
+            disabled={isSubmitting || !isValid}
+          >
+            {isSubmitting ? (
+              <span className="loading loading-spinner loading-sm" />
+            ) : (
+              <FaPaperPlane className="w-3 h-3" />
+            )}
+            Suggest tag
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+};
+
+export default SuggestTagModal;

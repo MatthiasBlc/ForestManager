@@ -16,23 +16,27 @@ Application de gestion de communautes pour le partage de recettes. Communautes p
 ## Fonctionnalites
 
 - **Authentification** : inscription, connexion, sessions securisees, profil utilisateur
-- **Recettes personnelles** : CRUD complet avec tags et ingredients (autocomplete)
-- **Communautes privees** : creation, invitation par utilisateur, roles (Member / Moderator)
+- **Recettes personnelles** : CRUD complet avec tags, ingredients, etapes numerotees, temps de preparation
+- **Photos de recettes** : upload d'images (drag & drop, conversion WebP automatique, stockage MinIO)
+- **Communautes privees** : creation, invitation par utilisateur, roles (Member / Moderator), avatar personnalise
 - **Recettes communautaires** : publication, edition collaborative, permissions par role
 - **Propositions & variantes** : suggestion de modifications, historique des variantes
 - **Partage inter-communautes** : fork de recettes entre communautes, tracabilite
+- **Systeme de tags** : tags globaux et communautaires, suggestions de tags, moderation
+- **Ingredients normalises** : base d'ingredients avec unites, autocomplete intelligent
 - **Feed d'activite** : activite communautaire et personnelle
-- **Notifications** : invitations en attente, badge temps reel
-- **SuperAdmin** : dashboard admin isole, authentification 2FA (TOTP), gestion tags/ingredients/communautes/features
+- **Notifications temps reel** : 5 categories, preferences par communaute, WebSocket, groupement intelligent
+- **SuperAdmin** : dashboard admin isole, authentification 2FA (TOTP), gestion tags/ingredients/unites/communautes/features
 
 ## Stack technique
 
 | Couche          | Technologies                                                          |
 | --------------- | --------------------------------------------------------------------- |
 | Frontend        | React 18, TypeScript, Vite, TailwindCSS, daisyUI, React Router, Axios |
-| Backend         | Node.js, Express, TypeScript, Prisma ORM                              |
+| Backend         | Node.js, Express, TypeScript, Prisma ORM, Socket.IO                   |
 | Base de donnees | PostgreSQL 15                                                         |
-| Tests           | Vitest, Supertest, Testing Library, MSW                               |
+| Stockage        | MinIO (compatible S3)                                                 |
+| Tests           | Vitest, Supertest, Testing Library, MSW (~1150 tests)                 |
 | Infrastructure  | Docker, GitHub Actions, Portainer, Traefik                            |
 
 ## Demarrage rapide
@@ -62,6 +66,7 @@ npm run docker:up:build
 | ------------- | --------------------------------------------------- |
 | Frontend      | http://localhost:3000                               |
 | Backend API   | http://localhost:3001                               |
+| MinIO Console | http://localhost:9001                               |
 | Prisma Studio | http://localhost:5555 (via `npm run prisma:studio`) |
 
 ### Comptes de test
@@ -284,13 +289,24 @@ Le script demande un username et un mot de passe, puis genere un QR code TOTP a 
 
 ## Documentation
 
-| Document                                       | Description                        |
-| ---------------------------------------------- | ---------------------------------- |
-| [Architecture](docs/ARCHITECTURE.md)           | Architecture technique et patterns |
-| [Specification API](docs/API_SPECIFICATION.md) | Contrat REST complet               |
-| [Regles metier](docs/BUSINESS_RULES.md)        | Regles metier detaillees           |
-| [User Stories](docs/USER_STORIES.md)           | Fonctionnalites utilisateur        |
-| [Roadmap](docs/DEVELOPMENT_ROADMAP.md)         | Plan de developpement              |
+| Document                                           | Description                        |
+| -------------------------------------------------- | ---------------------------------- |
+| [Architecture](docs/mvp/ARCHITECTURE.md)           | Architecture technique et patterns |
+| [Specification API](docs/mvp/API_SPECIFICATION.md) | Contrat REST complet               |
+| [Regles metier](docs/mvp/BUSINESS_RULES.md)        | Regles metier detaillees           |
+| [User Stories](docs/mvp/USER_STORIES.md)           | Fonctionnalites utilisateur        |
+| [Roadmap MVP](docs/mvp/DEVELOPMENT_ROADMAP.md)     | Plan de developpement (archive)    |
+
+### Features post-MVP
+
+| Feature            | Spec                                                                     | Description                                    |
+| ------------------ | ------------------------------------------------------------------------ | ---------------------------------------------- |
+| Tags Rework        | [SPEC](docs/features/tags-rework/SPEC_TAGS_REWORK.md)                    | Systeme de tags scope-aware (global/community) |
+| Ingredients Rework | [SPEC](docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md)      | Base ingredients avec unites et moderation     |
+| Recipe Rework v2   | [SPEC](docs/features/recipe-rework-v2/SPEC_RECIPE_REWORK_V2.md)          | Etapes numerotees, temps, portions             |
+| Notifications      | [SPEC](docs/features/notifications-rework/SPEC_NOTIFICATIONS_REWORK.md)  | Notifications temps reel (WebSocket)           |
+| Input Validation   | [SPEC](docs/features/input-validation-security/SPEC_INPUT_VALIDATION.md) | Validation et securite renforcees              |
+| Photo Upload       | [SPEC](docs/features/photo-upload/SPEC_PHOTO_UPLOAD.md)                  | Upload images via MinIO                        |
 
 ## Auteur
 

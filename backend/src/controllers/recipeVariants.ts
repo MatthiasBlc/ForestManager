@@ -7,6 +7,8 @@ import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import { RECIPE_TAGS_SELECT } from "../util/prismaSelects";
 import { requireRecipeAccess } from "../services/membershipService";
 import { formatTags } from "../util/responseFormatters";
+import { buildImageUrl } from "../config/storage";
+import { RECIPE_001 } from "../constants/errorCodes";
 
 interface GetVariantsQuery {
   limit?: string;
@@ -31,7 +33,7 @@ export const getVariants: RequestHandler<
   try {
     assertIsDefine(authenticatedUserId);
 
-    // Recuperer la recette parent
+    // Recuperer la recette courante
     const recipe = await prisma.recipe.findFirst({
       where: {
         id: recipeId,
@@ -41,67 +43,73 @@ export const getVariants: RequestHandler<
         id: true,
         communityId: true,
         creatorId: true,
+        isVariant: true,
+        originRecipeId: true,
       },
     });
 
     if (!recipe) {
-      throw createHttpError(404, "RECIPE_001: Recipe not found");
+      throw createHttpError(404, RECIPE_001);
     }
 
     await requireRecipeAccess(authenticatedUserId, recipe);
 
-    // Construire la clause where pour les variantes
+    // Remonter a la recette originale si on est sur une variante
+    const rootId = recipe.isVariant && recipe.originRecipeId ? recipe.originRecipeId : recipe.id;
+
+    // Lister toute la famille (original + variantes) sauf la recette courante
     const whereClause: Prisma.RecipeWhereInput = {
-      originRecipeId: recipeId,
-      isVariant: true,
       deletedAt: null,
+      id: { not: recipeId },
+      OR: [{ id: rootId }, { originRecipeId: rootId, isVariant: true }],
     };
 
-    // Si c'est une recette communautaire, ne retourner que les variantes de la meme communaute
+    // Si c'est une recette communautaire, ne retourner que celles de la meme communaute
     if (recipe.communityId !== null) {
       whereClause.communityId = recipe.communityId;
     }
 
-    // Recuperer les variantes
-    const variants = await prisma.recipe.findMany({
-      where: whereClause,
-      select: {
-        id: true,
-        title: true,
-        content: true,
-        imageUrl: true,
-        createdAt: true,
-        updatedAt: true,
-        creatorId: true,
-        communityId: true,
-        originRecipeId: true,
-        isVariant: true,
-        creator: {
-          select: {
-            id: true,
-            username: true,
+    // Compter le total et recuperer les variantes paginées
+    const [variants, total] = await Promise.all([
+      prisma.recipe.findMany({
+        where: whereClause,
+        select: {
+          id: true,
+          title: true,
+          servings: true,
+          prepTime: true,
+          cookTime: true,
+          restTime: true,
+          imageKey: true,
+          createdAt: true,
+          updatedAt: true,
+          creatorId: true,
+          communityId: true,
+          originRecipeId: true,
+          isVariant: true,
+          creator: {
+            select: {
+              id: true,
+              username: true,
+            },
           },
+          tags: RECIPE_TAGS_SELECT,
         },
-        tags: RECIPE_TAGS_SELECT,
-      },
-    });
+        orderBy: { updatedAt: "desc" },
+        skip: offset,
+        take: limit,
+      }),
+      prisma.recipe.count({ where: whereClause }),
+    ]);
 
-    // Trier par MAX(createdAt, updatedAt) DESC
-    const sortedVariants = variants.sort((a, b) => {
-      const maxA = a.updatedAt > a.createdAt ? a.updatedAt : a.createdAt;
-      const maxB = b.updatedAt > b.createdAt ? b.updatedAt : b.createdAt;
-      return maxB.getTime() - maxA.getTime();
-    });
-
-    // Appliquer pagination
-    const total = sortedVariants.length;
-    const paginatedVariants = sortedVariants.slice(offset, offset + limit);
-
-    const data = paginatedVariants.map((variant) => ({
+    const data = variants.map((variant) => ({
       id: variant.id,
       title: variant.title,
-      content: variant.content,
-      imageUrl: variant.imageUrl,
+      servings: variant.servings,
+      prepTime: variant.prepTime,
+      cookTime: variant.cookTime,
+      restTime: variant.restTime,
+      imageUrl: variant.imageKey ? buildImageUrl(variant.imageKey) : null,
       createdAt: variant.createdAt,
       updatedAt: variant.updatedAt,
       creatorId: variant.creatorId,
@@ -114,7 +122,7 @@ export const getVariants: RequestHandler<
 
     res.status(200).json({
       data,
-      pagination: buildPaginationMeta(total, limit, offset, paginatedVariants.length),
+      pagination: buildPaginationMeta(total, limit, offset, variants.length),
     });
   } catch (error) {
     next(error);

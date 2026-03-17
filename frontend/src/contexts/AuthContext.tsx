@@ -63,20 +63,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
-  const signUp = useCallback(async (username: string, email: string, password: string): Promise<void> => {
-    setError(null);
-    try {
-      const newUser = await APIManager.signUp({ username, email, password });
-      setUser(newUser);
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Sign up failed");
+  const signUp = useCallback(
+    async (username: string, email: string, password: string): Promise<void> => {
+      setError(null);
+      try {
+        const newUser = await APIManager.signUp({ username, email, password });
+        setUser(newUser);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("Sign up failed");
+        }
+        throw err;
       }
-      throw err;
-    }
-  }, []);
+    },
+    []
+  );
 
   const logout = useCallback(async (): Promise<void> => {
     try {
@@ -126,11 +129,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     clearError,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

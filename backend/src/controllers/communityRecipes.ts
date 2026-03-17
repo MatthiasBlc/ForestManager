@@ -3,53 +3,43 @@ import prisma from "../util/db";
 import createHttpError from "http-errors";
 import { assertIsDefine } from "../util/assertIsDefine";
 import { Prisma } from "@prisma/client";
-import { isValidHttpUrl } from "../util/validation";
+import { MAX_FILTER_ITEMS, MAX_SEARCH_LENGTH } from "../util/validation";
+import { buildImageUrl } from "../config/storage";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import { RECIPE_TAGS_SELECT } from "../util/prismaSelects";
-import { formatTags, formatIngredients } from "../util/responseFormatters";
+import { formatTags, formatIngredients, formatSteps } from "../util/responseFormatters";
 import { createCommunityRecipe as createCommunityRecipeService } from "../services/communityRecipeService";
+import { VALIDATION_001 } from "../constants/errorCodes";
 import appEvents from "../services/eventEmitter";
+import { getModeratorIdsForTagNotification } from "../services/notificationService";
+import type { CreateRecipeInput } from "../schemas/recipe.schema";
 
-interface IngredientInput {
-  name: string;
-  quantity?: string;
-}
-
-interface CreateCommunityRecipeBody {
-  title?: string;
-  content?: string;
-  imageUrl?: string;
-  tags?: string[];
-  ingredients?: IngredientInput[];
-}
-
+/**
+ * POST /api/communities/:communityId/recipes
+ * Creer une recette communautaire (body valide par createRecipeSchema)
+ */
 export const createCommunityRecipe: RequestHandler<
   { communityId: string },
   unknown,
-  CreateCommunityRecipeBody,
+  CreateRecipeInput,
   unknown
 > = async (req, res, next) => {
-  const { title, content, imageUrl, tags = [], ingredients = [] } = req.body;
+  const { title, servings, prepTime, cookTime, restTime, steps, tags, ingredients } = req.body;
   const authenticatedUserId = req.session.userId;
   const communityId = req.params.communityId;
 
   try {
     assertIsDefine(authenticatedUserId);
 
-    if (!title?.trim()) {
-      throw createHttpError(400, "RECIPE_003: Title required");
-    }
-
-    if (!content?.trim()) {
-      throw createHttpError(400, "RECIPE_004: Content required");
-    }
-
-    if (!isValidHttpUrl(imageUrl)) {
-      throw createHttpError(400, "RECIPE_005: Invalid image URL");
-    }
-
     const result = await createCommunityRecipeService(authenticatedUserId, communityId, {
-      title, content, imageUrl, tags, ingredients,
+      title,
+      servings,
+      prepTime,
+      cookTime,
+      restTime,
+      steps,
+      tags,
+      ingredients,
     });
 
     if (!result.personal || !result.community) {
@@ -59,13 +49,17 @@ export const createCommunityRecipe: RequestHandler<
     const formatRecipe = (recipe: NonNullable<typeof result.personal>) => ({
       id: recipe.id,
       title: recipe.title,
-      content: recipe.content,
-      imageUrl: recipe.imageUrl,
+      servings: recipe.servings,
+      prepTime: recipe.prepTime,
+      cookTime: recipe.cookTime,
+      restTime: recipe.restTime,
+      imageUrl: recipe.imageKey ? buildImageUrl(recipe.imageKey) : null,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
       creatorId: recipe.creatorId,
       communityId: recipe.communityId,
       originRecipeId: recipe.originRecipeId,
+      steps: formatSteps(recipe.steps),
       tags: formatTags(recipe.tags),
       ingredients: formatIngredients(recipe.ingredients),
     });
@@ -76,6 +70,21 @@ export const createCommunityRecipe: RequestHandler<
       communityId,
       recipeId: result.community.id,
     });
+
+    // Notifier les moderateurs si des tags PENDING ont ete crees
+    if (result.pendingTagIds.length > 0) {
+      const moderatorIds = await getModeratorIdsForTagNotification(communityId);
+      if (moderatorIds.length > 0) {
+        appEvents.emitActivity({
+          type: "tag:pending",
+          userId: authenticatedUserId,
+          communityId,
+          recipeId: result.community.id,
+          targetUserIds: moderatorIds,
+          metadata: { pendingTagIds: result.pendingTagIds },
+        });
+      }
+    }
 
     res.status(201).json({
       personal: formatRecipe(result.personal),
@@ -115,9 +124,26 @@ export const getCommunityRecipes: RequestHandler<
   const searchFilter = req.query.search?.trim() || "";
 
   try {
+    if (tagsFilter.length > MAX_FILTER_ITEMS) {
+      throw createHttpError(400, VALIDATION_001(`Too many tag filters (max ${MAX_FILTER_ITEMS})`));
+    }
+    if (ingredientsFilter.length > MAX_FILTER_ITEMS) {
+      throw createHttpError(
+        400,
+        VALIDATION_001(`Too many ingredient filters (max ${MAX_FILTER_ITEMS})`)
+      );
+    }
+    if (searchFilter.length > MAX_SEARCH_LENGTH) {
+      throw createHttpError(
+        400,
+        VALIDATION_001(`Search query too long (max ${MAX_SEARCH_LENGTH} chars)`)
+      );
+    }
+
     const whereClause: Prisma.RecipeWhereInput = {
       communityId,
       deletedAt: null,
+      isVariant: false,
     };
 
     if (searchFilter) {
@@ -167,7 +193,11 @@ export const getCommunityRecipes: RequestHandler<
         select: {
           id: true,
           title: true,
-          imageUrl: true,
+          servings: true,
+          prepTime: true,
+          cookTime: true,
+          restTime: true,
+          imageKey: true,
           createdAt: true,
           updatedAt: true,
           creatorId: true,
@@ -198,7 +228,11 @@ export const getCommunityRecipes: RequestHandler<
     const data = recipes.map((recipe) => ({
       id: recipe.id,
       title: recipe.title,
-      imageUrl: recipe.imageUrl,
+      servings: recipe.servings,
+      prepTime: recipe.prepTime,
+      cookTime: recipe.cookTime,
+      restTime: recipe.restTime,
+      imageUrl: recipe.imageKey ? buildImageUrl(recipe.imageKey) : null,
       createdAt: recipe.createdAt,
       updatedAt: recipe.updatedAt,
       creatorId: recipe.creatorId,

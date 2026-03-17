@@ -46,12 +46,20 @@ services:
       - ADMIN_SESSION_SECRET=${ADMIN_SESSION_SECRET}
       - TRUST_PROXY=1
       - NODE_OPTIONS=--max-old-space-size=1024
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - MINIO_BUCKET=forestmanager-images-preprod
+      - MINIO_PUBLIC_URL=https://s3.matthias-bouloc.fr
+      - MINIO_USE_SSL=false
     volumes:
       - backend-logs-dev:/app/logs
     networks:
       internal-dev:
         aliases:
           - forestmanager-backend
+      minio-net:
     depends_on:
       forestmanager-dev-postgres:
         condition: service_healthy
@@ -92,6 +100,9 @@ networks:
   proxy:
     external: true
     name: proxy
+  minio-net:
+    external: true
+    name: minio-net
 
 volumes:
   postgres_data_dev:

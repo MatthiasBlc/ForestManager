@@ -1,11 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../../app";
-import { extractSessionCookie } from "../setup/testHelpers";
+import { uniqueSuffix, extractSessionCookie } from "../setup/testHelpers";
 import { testPrisma } from "../setup/globalSetup";
-
-const uniqueSuffix = () =>
-  `${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
 
 describe("Activity Feed API", () => {
   // =====================================
@@ -24,11 +21,13 @@ describe("Activity Feed API", () => {
       const suffix = uniqueSuffix();
 
       // Create creator (moderator) via signup
-      const creatorSignup = await request(app).post("/api/auth/signup").send({
-        username: `actcreator_${suffix}`,
-        email: `actcreator_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const creatorSignup = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `actcreator_${suffix}`,
+          email: `actcreator_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       creatorCookie = extractSessionCookie(creatorSignup)!;
       creator = (await testPrisma.user.findFirst({
         where: { email: `actcreator_${suffix}@example.com` },
@@ -42,11 +41,13 @@ describe("Activity Feed API", () => {
       community = createRes.body;
 
       // Create member via signup
-      const memberSignup = await request(app).post("/api/auth/signup").send({
-        username: `actmember_${suffix}`,
-        email: `actmember_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const memberSignup = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `actmember_${suffix}`,
+          email: `actmember_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       memberCookie = extractSessionCookie(memberSignup)!;
       member = (await testPrisma.user.findFirst({
         where: { email: `actmember_${suffix}@example.com` },
@@ -62,11 +63,13 @@ describe("Activity Feed API", () => {
       });
 
       // Create non-member
-      const nonMemberSignup = await request(app).post("/api/auth/signup").send({
-        username: `actnonm_${suffix}`,
-        email: `actnonm_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const nonMemberSignup = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `actnonm_${suffix}`,
+          email: `actnonm_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       nonMemberCookie = extractSessionCookie(nonMemberSignup)!;
       _nonMember = (await testPrisma.user.findFirst({
         where: { email: `actnonm_${suffix}@example.com` },
@@ -80,7 +83,8 @@ describe("Activity Feed API", () => {
         .set("Cookie", creatorCookie)
         .send({
           title: "Test Recipe for Activity",
-          content: "Recipe content",
+          servings: 4,
+          steps: [{ instruction: "Recipe content" }],
         });
 
       const res = await request(app)
@@ -107,7 +111,8 @@ describe("Activity Feed API", () => {
         .set("Cookie", creatorCookie)
         .send({
           title: "Recipe With Full Info",
-          content: "Content here",
+          servings: 4,
+          steps: [{ instruction: "Content here" }],
         });
 
       const res = await request(app)
@@ -134,7 +139,8 @@ describe("Activity Feed API", () => {
         .set("Cookie", creatorCookie)
         .send({
           title: "Recipe for Member View",
-          content: "Content",
+          servings: 4,
+          steps: [{ instruction: "Content" }],
         });
 
       // Member should see the activity
@@ -155,9 +161,7 @@ describe("Activity Feed API", () => {
     });
 
     it("should reject unauthenticated requests", async () => {
-      const res = await request(app).get(
-        `/api/communities/${community.id}/activity`
-      );
+      const res = await request(app).get(`/api/communities/${community.id}/activity`);
 
       expect(res.status).toBe(401);
     });
@@ -170,7 +174,8 @@ describe("Activity Feed API", () => {
           .set("Cookie", creatorCookie)
           .send({
             title: `Recipe ${i} for Pagination`,
-            content: `Content ${i}`,
+            servings: 4,
+            steps: [{ instruction: `Content ${i}` }],
           });
       }
 
@@ -203,7 +208,8 @@ describe("Activity Feed API", () => {
           .set("Cookie", creatorCookie)
           .send({
             title: `Recipe ${i} Sort Test`,
-            content: `Content ${i}`,
+            servings: 4,
+            steps: [{ instruction: `Content ${i}` }],
           });
       }
 
@@ -237,22 +243,26 @@ describe("Activity Feed API", () => {
       const suffix = uniqueSuffix();
 
       // Create user1 (recipe creator)
-      const user1Signup = await request(app).post("/api/auth/signup").send({
-        username: `myactuser1_${suffix}`,
-        email: `myactuser1_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const user1Signup = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `myactuser1_${suffix}`,
+          email: `myactuser1_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       user1Cookie = extractSessionCookie(user1Signup)!;
       user1 = (await testPrisma.user.findFirst({
         where: { email: `myactuser1_${suffix}@example.com` },
       }))!;
 
       // Create user2 (proposer)
-      const user2Signup = await request(app).post("/api/auth/signup").send({
-        username: `myactuser2_${suffix}`,
-        email: `myactuser2_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
+      const user2Signup = await request(app)
+        .post("/api/auth/signup")
+        .send({
+          username: `myactuser2_${suffix}`,
+          email: `myactuser2_${suffix}@example.com`,
+          password: "Test123!Password",
+        });
       user2Cookie = extractSessionCookie(user2Signup)!;
       user2 = (await testPrisma.user.findFirst({
         where: { email: `myactuser2_${suffix}@example.com` },
@@ -280,15 +290,14 @@ describe("Activity Feed API", () => {
         .set("Cookie", user1Cookie)
         .send({
           title: "User1 Recipe",
-          content: "Recipe content for testing",
+          servings: 4,
+          steps: [{ instruction: "Recipe content for testing" }],
         });
       communityRecipeId = recipeRes.body.community.id;
     });
 
     it("should return user's own activity", async () => {
-      const res = await request(app)
-        .get("/api/users/me/activity")
-        .set("Cookie", user1Cookie);
+      const res = await request(app).get("/api/users/me/activity").set("Cookie", user1Cookie);
 
       expect(res.status).toBe(200);
       expect(res.body.data).toBeDefined();
@@ -309,13 +318,11 @@ describe("Activity Feed API", () => {
         .set("Cookie", user2Cookie)
         .send({
           proposedTitle: "Proposed Changes",
-          proposedContent: "Better content",
+          proposedSteps: [{ instruction: "Better content" }],
         });
 
       // User1 should see this in their activity
-      const res = await request(app)
-        .get("/api/users/me/activity")
-        .set("Cookie", user1Cookie);
+      const res = await request(app).get("/api/users/me/activity").set("Cookie", user1Cookie);
 
       expect(res.status).toBe(200);
 
@@ -334,20 +341,18 @@ describe("Activity Feed API", () => {
         .set("Cookie", user2Cookie)
         .send({
           title: "User2 Own Recipe",
-          content: "User2 content",
+          servings: 4,
+          steps: [{ instruction: "User2 content" }],
         });
 
       // User1's activity should NOT include user2's recipe creation
-      const res = await request(app)
-        .get("/api/users/me/activity")
-        .set("Cookie", user1Cookie);
+      const res = await request(app).get("/api/users/me/activity").set("Cookie", user1Cookie);
 
       expect(res.status).toBe(200);
 
       const otherUserRecipe = res.body.data.find(
         (a: { type: string; recipe?: { id: string } }) =>
-          a.type === "RECIPE_CREATED" &&
-          a.recipe?.id === user2RecipeRes.body.community.id
+          a.type === "RECIPE_CREATED" && a.recipe?.id === user2RecipeRes.body.community.id
       );
       expect(otherUserRecipe).toBeUndefined();
     });
@@ -366,7 +371,8 @@ describe("Activity Feed API", () => {
           .set("Cookie", user1Cookie)
           .send({
             title: `My Recipe ${i}`,
-            content: `Content ${i}`,
+            servings: 4,
+            steps: [{ instruction: `Content ${i}` }],
           });
       }
 
@@ -380,9 +386,7 @@ describe("Activity Feed API", () => {
     });
 
     it("should include community info in response", async () => {
-      const res = await request(app)
-        .get("/api/users/me/activity")
-        .set("Cookie", user1Cookie);
+      const res = await request(app).get("/api/users/me/activity").set("Cookie", user1Cookie);
 
       expect(res.status).toBe(200);
 
@@ -402,13 +406,11 @@ describe("Activity Feed API", () => {
         .set("Cookie", user2Cookie)
         .send({
           proposedTitle: "Proposal on User1 Recipe",
-          proposedContent: "This is a proposal",
+          proposedSteps: [{ instruction: "This is a proposal" }],
         });
 
       // User1 should see VARIANT_PROPOSED in their activity
-      const res = await request(app)
-        .get("/api/users/me/activity")
-        .set("Cookie", user1Cookie);
+      const res = await request(app).get("/api/users/me/activity").set("Cookie", user1Cookie);
 
       expect(res.status).toBe(200);
 
@@ -427,7 +429,7 @@ describe("Activity Feed API", () => {
         .set("Cookie", user2Cookie)
         .send({
           proposedTitle: "Proposal to Accept",
-          proposedContent: "This will be accepted",
+          proposedSteps: [{ instruction: "This will be accepted" }],
         });
 
       // User1 accepts the proposal
@@ -436,9 +438,7 @@ describe("Activity Feed API", () => {
         .set("Cookie", user1Cookie);
 
       // User1 should see PROPOSAL_ACCEPTED in their activity
-      const res = await request(app)
-        .get("/api/users/me/activity")
-        .set("Cookie", user1Cookie);
+      const res = await request(app).get("/api/users/me/activity").set("Cookie", user1Cookie);
 
       expect(res.status).toBe(200);
 

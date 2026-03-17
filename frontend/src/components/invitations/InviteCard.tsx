@@ -51,8 +51,8 @@ const InviteCard = ({ invite, onRespond }: InviteCardProps) => {
           </p>
         )}
         <p className="text-sm text-base-content/60">
-          Invited by <span className="font-medium">{invite.inviter.username}</span>
-          {" "}on {new Date(invite.createdAt).toLocaleDateString()}
+          Invited by <span className="font-medium">{invite.inviter.username}</span> on{" "}
+          {new Date(invite.createdAt).toLocaleDateString()}
         </p>
 
         {error && (
@@ -64,7 +64,7 @@ const InviteCard = ({ invite, onRespond }: InviteCardProps) => {
         {isPending ? (
           <div className="card-actions justify-end mt-2">
             <button
-              className="btn btn-error btn-sm gap-1"
+              className="btn btn-error btn-sm min-h-[44px] gap-1"
               onClick={handleReject}
               disabled={loading !== null}
             >
@@ -76,7 +76,7 @@ const InviteCard = ({ invite, onRespond }: InviteCardProps) => {
               Reject
             </button>
             <button
-              className="btn btn-success btn-sm gap-1"
+              className="btn btn-success btn-sm min-h-[44px] gap-1"
               onClick={handleAccept}
               disabled={loading !== null}
             >
@@ -90,7 +90,9 @@ const InviteCard = ({ invite, onRespond }: InviteCardProps) => {
           </div>
         ) : (
           <div className="mt-2">
-            <span className={`badge ${invite.status === "ACCEPTED" ? "badge-success" : "badge-error"}`}>
+            <span
+              className={`badge ${invite.status === "ACCEPTED" ? "badge-success" : "badge-error"}`}
+            >
               {invite.status}
             </span>
           </div>

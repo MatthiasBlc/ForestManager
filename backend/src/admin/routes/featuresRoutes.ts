@@ -1,5 +1,7 @@
 import express from "express";
 import * as featuresController from "../controllers/featuresController";
+import { validateBody } from "../../middleware/validateBody";
+import { adminCreateFeatureSchema, adminUpdateFeatureSchema } from "../schemas/feature.schema";
 
 const router = express.Router();
 
@@ -7,9 +9,9 @@ const router = express.Router();
 router.get("/", featuresController.getAll);
 
 // POST /api/admin/features - Cree une feature
-router.post("/", featuresController.create);
+router.post("/", validateBody(adminCreateFeatureSchema), featuresController.create);
 
 // PATCH /api/admin/features/:id - Modifie une feature
-router.patch("/:id", featuresController.update);
+router.patch("/:id", validateBody(adminUpdateFeatureSchema), featuresController.update);
 
 export default router;
