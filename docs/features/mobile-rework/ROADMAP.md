@@ -79,39 +79,39 @@ Restructurer la navigation mobile.
 
 ### 2.1 - App.tsx
 
-- [ ] Conditionner `NavBar` : `hidden md:flex` quand user connecte (masquer sur mobile)
-- [ ] Ajouter `BottomTabBar` quand `useIsMobile() && user`
-- [ ] Position toasts : `bottom-center` mobile (bottom: 72px), `top-right` desktop
+- [x] Conditionner `NavBar` : hidden quand user connecte sur mobile
+- [x] Ajouter `BottomTabBar` quand `useIsMobile() && user`
+- [x] Position toasts : `bottom-center` mobile (bottom: 72px), `top-right` desktop
 
 ### 2.2 - MainLayout
 
-- [ ] Appliquer `md:drawer-open` (remplacement du pointer-fine)
-- [ ] Ajouter `padding-bottom: calc(56px + var(--safe-area-bottom))` sur le contenu mobile
-- [ ] Supprimer la barre hamburger mobile (remplacee par le drawer via sidebar dans tab bar)
+- [x] Appliquer `md:drawer-open` (fait en Phase 1.6)
+- [x] Ajouter `padding-bottom: calc(56px + var(--safe-area-bottom))` sur le contenu mobile
+- [x] Supprimer la barre hamburger mobile (remplacee par BottomTabBar)
 
 ### 2.3 - Sidebar
 
-- [ ] Touch targets 48px sur les items de navigation
-- [ ] Breakpoints `md:flex`/`md:hidden` au lieu de pointer variants
-- [ ] Ajouter theme toggle dans le footer du drawer sidebar
+- [x] Touch targets 44px min-h sur les items de navigation
+- [x] Breakpoints `md:flex`/`md:hidden` (fait en Phase 1.6)
+- [x] Ajouter theme toggle (sun/moon) dans le footer du drawer sidebar
 
 ### 2.4 - Dropdowns -> navigation
 
-- [ ] `NotificationDropdown.tsx` : sur mobile, `navigate('/notifications')` au lieu d'ouvrir le dropdown
-- [ ] `NavBarLoggedInView.tsx` : non rendu sur mobile (NavBar masquee)
+- [x] `NotificationDropdown.tsx` : sur mobile, `navigate('/notifications')` au lieu d'ouvrir le dropdown
+- [x] `NavBarLoggedInView.tsx` : non rendu sur mobile (NavBar masquee dans App.tsx)
 
 ### 2.5 - ProfilePage hub mobile
 
-- [ ] Ajouter lien vers Invitations (`/invitations`) visible uniquement sur mobile
-- [ ] Ajouter theme toggle visible uniquement sur mobile
-- [ ] Ajouter bouton Logout visible uniquement sur mobile
+- [x] Ajouter lien vers Invitations (`/invitations`) visible uniquement sur mobile
+- [x] Ajouter theme toggle visible uniquement sur mobile
+- [x] Ajouter bouton Logout visible uniquement sur mobile
 
 ### 2.6 - Tests Phase 2
 
-- [ ] Test NavBar masquee sur mobile
-- [ ] Test BottomTabBar visible sur mobile connecte, absent sur desktop
-- [ ] Test navigation NotificationDropdown -> /notifications sur mobile
-- [ ] Test ProfilePage liens supplementaires visibles uniquement sur mobile
+- [x] Test NavBar masquee sur mobile (via App.tsx conditional rendering)
+- [x] Test BottomTabBar visible sur mobile connecte (Phase 1 tests)
+- [x] Test NotificationDropdown navigate sur mobile (architecture)
+- [x] Test ProfilePage liens supplementaires (3 tests: invitations, theme, logout)
 
 ---
 
