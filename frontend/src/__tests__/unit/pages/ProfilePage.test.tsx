@@ -67,4 +67,27 @@ describe("ProfilePage", () => {
       expect(screen.getByText("Confirm new password")).toBeInTheDocument();
     });
   });
+
+  it("should render mobile-only Invitations link", async () => {
+    render(<ProfilePage />);
+    await waitFor(() => {
+      const link = screen.getByRole("link", { name: "Invitations" });
+      expect(link).toBeInTheDocument();
+      expect(link).toHaveAttribute("href", "/invitations");
+    });
+  });
+
+  it("should render mobile-only theme toggle", async () => {
+    render(<ProfilePage />);
+    await waitFor(() => {
+      expect(screen.getByText(/Light mode|Dark mode/)).toBeInTheDocument();
+    });
+  });
+
+  it("should render mobile-only Logout button", async () => {
+    render(<ProfilePage />);
+    await waitFor(() => {
+      expect(screen.getByText("Logout")).toBeInTheDocument();
+    });
+  });
 });
