@@ -231,14 +231,14 @@ const RecipesPageLoggedInView = () => {
               )}
             </>
           ) : (
-            <div className="text-center py-12">
+            <div className="flex flex-col items-center justify-center min-h-[40vh] md:min-h-0 text-center py-12">
               <p className="text-lg text-base-content/60 mb-4">
                 {searchFilter || tagsFilter.length > 0 || ingredientsFilter.length > 0
                   ? "No recipes match your filters"
                   : "You don't have any recipes yet"}
               </p>
               {(searchFilter || tagsFilter.length > 0 || ingredientsFilter.length > 0) && (
-                <button className="btn btn-ghost" onClick={handleResetFilters}>
+                <button className="btn btn-ghost btn-lg md:btn-md" onClick={handleResetFilters}>
                   Clear filters
                 </button>
               )}

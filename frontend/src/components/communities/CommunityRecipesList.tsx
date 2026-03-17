@@ -206,12 +206,12 @@ const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesList
               )}
             </>
           ) : (
-            <div className="text-center py-12">
+            <div className="flex flex-col items-center justify-center min-h-[40vh] md:min-h-0 text-center py-12">
               <p className="text-lg text-base-content/60 mb-4">
                 {hasFilters ? "No recipes match your filters" : "No recipes in this community yet"}
               </p>
               {hasFilters && (
-                <button className="btn btn-ghost" onClick={handleResetFilters}>
+                <button className="btn btn-ghost btn-lg md:btn-md" onClick={handleResetFilters}>
                   Clear filters
                 </button>
               )}
