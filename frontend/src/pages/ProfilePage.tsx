@@ -1,12 +1,16 @@
 import { useState, useEffect, useRef } from "react";
-import { FaSave } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
+import { FaSave, FaEnvelope, FaSun, FaMoon, FaSignOutAlt } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 import APIManager from "../network/api";
 import TagPreferencesSection from "../components/profile/TagPreferencesSection";
 import NotificationPreferencesSection from "../components/profile/NotificationPreferencesSection";
 
 const ProfilePage = () => {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
 
   const [username, setUsername] = useState(user?.username || "");
   const [email, setEmail] = useState(user?.email || "");
@@ -93,6 +97,40 @@ const ProfilePage = () => {
   return (
     <div className="container mx-auto px-4 py-6 max-w-2xl">
       <h1 className="text-2xl font-bold mb-6">My Profile</h1>
+
+      {/* Mobile-only quick links */}
+      <div className="md:hidden bg-base-100 rounded-lg shadow-xl p-4 mb-6 space-y-2">
+        <Link
+          to="/invitations"
+          className="flex items-center gap-3 p-3 rounded-lg hover:bg-base-200 transition-colors min-h-[44px]"
+        >
+          <FaEnvelope className="w-5 h-5 text-primary" />
+          <span className="font-medium">Invitations</span>
+        </Link>
+        <button
+          onClick={toggleTheme}
+          className="flex items-center gap-3 p-3 rounded-lg hover:bg-base-200 transition-colors w-full text-left min-h-[44px]"
+        >
+          {theme === "coffee" ? (
+            <FaSun className="w-5 h-5 text-warning" />
+          ) : (
+            <FaMoon className="w-5 h-5 text-info" />
+          )}
+          <span className="font-medium">{theme === "coffee" ? "Light mode" : "Dark mode"}</span>
+        </button>
+        <div className="border-t border-base-200 pt-2">
+          <button
+            onClick={async () => {
+              await logout();
+              navigate("/");
+            }}
+            className="flex items-center gap-3 p-3 rounded-lg hover:bg-base-200 transition-colors w-full text-left text-error min-h-[44px]"
+          >
+            <FaSignOutAlt className="w-5 h-5" />
+            <span className="font-medium">Logout</span>
+          </button>
+        </div>
+      </div>
 
       {/* Profile Info */}
       <div className="bg-base-100 rounded-lg shadow-xl p-6 mb-6">
