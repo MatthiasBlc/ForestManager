@@ -9,6 +9,7 @@ import RecipeCard from "../recipes/RecipeCard";
 import RecipeListRow from "../recipes/RecipeListRow";
 import RecipeFilters from "../recipes/RecipeFilters";
 import { usePaginatedList } from "../../hooks/usePaginatedList";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 type ViewMode = "card" | "list";
 
@@ -22,6 +23,7 @@ interface CommunityRecipesListProps {
 const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesListProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
 
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem("recipesViewMode");
@@ -94,22 +96,24 @@ const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesList
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-bold">Recipes</h2>
         <div className="flex gap-2">
-          <div className="join">
-            <button
-              className={`btn btn-sm join-item ${viewMode === "card" ? "btn-active" : ""}`}
-              onClick={() => viewMode !== "card" && toggleViewMode()}
-              aria-label="Card view"
-            >
-              <FaTh />
-            </button>
-            <button
-              className={`btn btn-sm join-item ${viewMode === "list" ? "btn-active" : ""}`}
-              onClick={() => viewMode !== "list" && toggleViewMode()}
-              aria-label="List view"
-            >
-              <FaList />
-            </button>
-          </div>
+          {!isMobile && (
+            <div className="join">
+              <button
+                className={`btn btn-sm join-item ${viewMode === "card" ? "btn-active" : ""}`}
+                onClick={() => viewMode !== "card" && toggleViewMode()}
+                aria-label="Card view"
+              >
+                <FaTh />
+              </button>
+              <button
+                className={`btn btn-sm join-item ${viewMode === "list" ? "btn-active" : ""}`}
+                onClick={() => viewMode !== "list" && toggleViewMode()}
+                aria-label="List view"
+              >
+                <FaList />
+              </button>
+            </div>
+          )}
           <button
             className="btn btn-primary btn-sm gap-2"
             onClick={() => navigate(`/communities/${communityId}/recipes/new`)}
@@ -149,7 +153,7 @@ const CommunityRecipesList = ({ communityId, initialTags }: CommunityRecipesList
         <>
           {recipes.length > 0 ? (
             <>
-              {viewMode === "card" ? (
+              {isMobile || viewMode === "card" ? (
                 <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                   {recipes.map((recipe) => (
                     <RecipeCard

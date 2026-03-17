@@ -5,6 +5,7 @@ import { CommunityMember } from "../../models/community";
 import { useAuth } from "../../contexts/AuthContext";
 import APIManager from "../../network/api";
 import { useConfirm } from "../../hooks/useConfirm";
+import { useIsMobile } from "../../hooks/useIsMobile";
 
 interface MembersListProps {
   communityId: string;
@@ -23,6 +24,7 @@ const MembersList = ({
 }: MembersListProps) => {
   const { user } = useAuth();
   const { confirm, ConfirmDialog } = useConfirm();
+  const isMobile = useIsMobile();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -99,92 +101,165 @@ const MembersList = ({
         </div>
       )}
 
-      <div className="overflow-x-auto">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Role</th>
-              <th>Joined</th>
-              {isModerator && <th>Actions</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {members.map((member) => {
-              const isCurrentUser = member.id === user?.id;
-              const isLoading = actionLoading === member.id;
+      {isMobile ? (
+        <div className="space-y-3">
+          {members.map((member) => {
+            const isCurrentUser = member.id === user?.id;
+            const isLoading = actionLoading === member.id;
 
-              return (
-                <tr key={member.id}>
-                  <td>
+            return (
+              <div key={member.id} className="bg-base-200 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-medium">
                     {member.username}
                     {isCurrentUser && <span className="text-base-content/50 ml-1">(you)</span>}
-                  </td>
-                  <td>
-                    <span
-                      className={`badge badge-sm ${member.role === "MODERATOR" ? "badge-primary" : "badge-ghost"}`}
-                    >
-                      {member.role}
-                    </span>
-                  </td>
-                  <td className="text-base-content/60">
-                    {new Date(member.joinedAt).toLocaleDateString()}
-                  </td>
-                  {isModerator && (
-                    <td>
-                      <div className="flex gap-1">
-                        {isCurrentUser ? (
-                          <button
-                            className="btn btn-ghost btn-xs text-warning"
-                            onClick={handleLeave}
-                            disabled={isLoading}
-                          >
-                            {isLoading ? (
-                              <span className="loading loading-spinner loading-xs" />
-                            ) : (
-                              <>
-                                <FaSignOutAlt className="w-3 h-3" />
-                                Leave
-                              </>
-                            )}
-                          </button>
-                        ) : member.role === "MEMBER" ? (
+                  </span>
+                  <span
+                    className={`badge badge-sm ${member.role === "MODERATOR" ? "badge-primary" : "badge-ghost"}`}
+                  >
+                    {member.role}
+                  </span>
+                </div>
+                <p className="text-xs text-base-content/60 mb-2">
+                  Joined {new Date(member.joinedAt).toLocaleDateString()}
+                </p>
+                {isModerator && (
+                  <div className="flex gap-2">
+                    {isCurrentUser ? (
+                      <button
+                        className="btn btn-ghost btn-xs text-warning min-h-[36px]"
+                        onClick={handleLeave}
+                        disabled={isLoading}
+                      >
+                        {isLoading ? (
+                          <span className="loading loading-spinner loading-xs" />
+                        ) : (
                           <>
+                            <FaSignOutAlt className="w-3 h-3" />
+                            Leave
+                          </>
+                        )}
+                      </button>
+                    ) : member.role === "MEMBER" ? (
+                      <>
+                        <button
+                          className="btn btn-ghost btn-xs min-h-[36px]"
+                          onClick={() => handlePromote(member.id)}
+                          disabled={isLoading}
+                        >
+                          {isLoading ? (
+                            <span className="loading loading-spinner loading-xs" />
+                          ) : (
+                            <>
+                              <FaArrowUp className="w-3 h-3" />
+                              Promote
+                            </>
+                          )}
+                        </button>
+                        <button
+                          className="btn btn-ghost btn-xs text-error min-h-[36px]"
+                          onClick={() => handleKick(member.id)}
+                          disabled={isLoading}
+                        >
+                          <FaUserMinus className="w-3 h-3" />
+                          Kick
+                        </button>
+                      </>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Joined</th>
+                {isModerator && <th>Actions</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {members.map((member) => {
+                const isCurrentUser = member.id === user?.id;
+                const isLoading = actionLoading === member.id;
+
+                return (
+                  <tr key={member.id}>
+                    <td>
+                      {member.username}
+                      {isCurrentUser && <span className="text-base-content/50 ml-1">(you)</span>}
+                    </td>
+                    <td>
+                      <span
+                        className={`badge badge-sm ${member.role === "MODERATOR" ? "badge-primary" : "badge-ghost"}`}
+                      >
+                        {member.role}
+                      </span>
+                    </td>
+                    <td className="text-base-content/60">
+                      {new Date(member.joinedAt).toLocaleDateString()}
+                    </td>
+                    {isModerator && (
+                      <td>
+                        <div className="flex gap-1">
+                          {isCurrentUser ? (
                             <button
-                              className="btn btn-ghost btn-xs"
-                              onClick={() => handlePromote(member.id)}
+                              className="btn btn-ghost btn-xs text-warning"
+                              onClick={handleLeave}
                               disabled={isLoading}
-                              title="Promote to moderator"
                             >
                               {isLoading ? (
                                 <span className="loading loading-spinner loading-xs" />
                               ) : (
                                 <>
-                                  <FaArrowUp className="w-3 h-3" />
-                                  Promote
+                                  <FaSignOutAlt className="w-3 h-3" />
+                                  Leave
                                 </>
                               )}
                             </button>
-                            <button
-                              className="btn btn-ghost btn-xs text-error"
-                              onClick={() => handleKick(member.id)}
-                              disabled={isLoading}
-                              title="Remove from community"
-                            >
-                              <FaUserMinus className="w-3 h-3" />
-                              Kick
-                            </button>
-                          </>
-                        ) : null}
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+                          ) : member.role === "MEMBER" ? (
+                            <>
+                              <button
+                                className="btn btn-ghost btn-xs"
+                                onClick={() => handlePromote(member.id)}
+                                disabled={isLoading}
+                                title="Promote to moderator"
+                              >
+                                {isLoading ? (
+                                  <span className="loading loading-spinner loading-xs" />
+                                ) : (
+                                  <>
+                                    <FaArrowUp className="w-3 h-3" />
+                                    Promote
+                                  </>
+                                )}
+                              </button>
+                              <button
+                                className="btn btn-ghost btn-xs text-error"
+                                onClick={() => handleKick(member.id)}
+                                disabled={isLoading}
+                                title="Remove from community"
+                              >
+                                <FaUserMinus className="w-3 h-3" />
+                                Kick
+                              </button>
+                            </>
+                          ) : null}
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {!isModerator && (
         <div className="mt-4">
