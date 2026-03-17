@@ -1,5 +1,4 @@
 import { ReactNode, useState, useEffect, useCallback } from "react";
-import { FaBars } from "react-icons/fa";
 import Sidebar from "./Sidebar";
 import { useNotificationToasts } from "../../hooks/useNotificationToasts";
 
@@ -56,16 +55,10 @@ const MainLayout = ({ children }: MainLayoutProps) => {
 
       {/* Main content */}
       <div className="drawer-content flex flex-col h-full overflow-hidden z-0">
-        {/* Mobile menu button - only shows on touch devices */}
-        <div className="p-2 border-b border-base-300 md:hidden">
-          <label htmlFor="main-drawer" className="btn btn-ghost btn-sm drawer-button">
-            <FaBars className="w-4 h-4" />
-            <span className="ml-2">Menu</span>
-          </label>
-        </div>
-
-        {/* Page content */}
-        <main className="flex-1 p-4 md:p-6 overflow-y-auto">{children}</main>
+        {/* Page content - padding-bottom on mobile for BottomTabBar */}
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto pb-[calc(56px+var(--safe-area-bottom,0px))] md:pb-6">
+          {children}
+        </main>
       </div>
 
       {/* Sidebar drawer */}
