@@ -97,7 +97,7 @@ Les specs fonctionnelles (SPEC\_\*.md) sont conservees dans docs/features/ comme
 La version mobile a des boutons hors champs, n'est pas utilisable et a un design contre intuitif. A revoir totalement.
 S'inspirer de la version mobile / app de discord ?
 
-# codes erreur doublons : string literal
+# ~~codes erreur doublons : string literal~~ DONE
 
 Des codes erreurs utilisent des string literal au lieu de constantes car le code erreur est le même. Peut être qu'il faudrait créer de nouveaux code erreur pour ces cas spécifiques et les centraliser pour éviter les string literal et les doublons.
 
