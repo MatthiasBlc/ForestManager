@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { FaCloudUploadAlt, FaTrash, FaTimes } from "react-icons/fa";
 import { processImage, ALLOWED_TYPES } from "../utils/imageUtils";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 interface ImageUploadProps {
   currentImageUrl: string | null;
@@ -49,6 +50,7 @@ const ImageUpload = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const isMobile = useIsMobile();
   const busy = status !== "idle" || isDeleting;
 
   const handleFile = useCallback(
@@ -136,7 +138,7 @@ const ImageUpload = ({
           {currentImageUrl && !preview && status === "idle" && (
             <button
               type="button"
-              className="btn btn-circle btn-sm btn-error absolute top-2 right-2"
+              className="btn btn-circle btn-error min-h-[44px] min-w-[44px] absolute top-2 right-2"
               onClick={handleDelete}
               disabled={isDeleting}
               aria-label="Delete image"
@@ -152,7 +154,7 @@ const ImageUpload = ({
           {preview && status === "idle" && (
             <button
               type="button"
-              className="btn btn-circle btn-sm absolute top-2 right-2"
+              className="btn btn-circle min-h-[44px] min-w-[44px] absolute top-2 right-2"
               onClick={cancelPreview}
               aria-label="Cancel"
             >
@@ -186,7 +188,9 @@ const ImageUpload = ({
           onDragOver={(e) => e.preventDefault()}
         >
           <FaCloudUploadAlt className="w-8 h-8 mx-auto text-base-content/40 mb-2" />
-          <p className="text-sm text-base-content/60">Cliquez ou glissez une image ici</p>
+          <p className="text-sm text-base-content/60">
+            {isMobile ? "Appuyez pour ajouter une image" : "Cliquez ou glissez une image ici"}
+          </p>
           <p className="text-xs text-base-content/40 mt-1">JPEG, PNG ou WebP — max 2 Mo</p>
           <input
             ref={inputRef}

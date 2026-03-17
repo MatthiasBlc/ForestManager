@@ -9,12 +9,16 @@ import {
   FaShare,
   FaCodeBranch,
   FaTag,
+  FaEllipsisH,
 } from "react-icons/fa";
 import APIManager from "../network/api";
 import { RecipeDetail } from "../models/recipe";
 import { useAuth } from "../contexts/AuthContext";
 import { useConfirm } from "../hooks/useConfirm";
 import { useAsyncData } from "../hooks/useAsyncData";
+import { useIsMobile } from "../hooks/useIsMobile";
+import ActionSheet from "../components/mobile/ActionSheet";
+import type { ActionItem } from "../components/mobile/ActionSheet";
 import TagBadge from "../components/recipes/TagBadge";
 import TimeBadges from "../components/recipes/TimeBadges";
 import ServingsSelector from "../components/recipes/ServingsSelector";
@@ -37,6 +41,8 @@ const RecipeDetailPage = () => {
   >(null);
   const [proposalsRefresh, setProposalsRefresh] = useState(0);
   const [suggestionsRefresh, setSuggestionsRefresh] = useState(0);
+  const [actionSheetOpen, setActionSheetOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const {
     data: recipe,
@@ -165,7 +171,7 @@ const RecipeDetailPage = () => {
 
       <article className="bg-base-100 rounded-lg shadow-xl overflow-hidden">
         {recipe.imageUrl && (
-          <figure className="h-64 md:h-96 overflow-hidden">
+          <figure className="h-48 md:h-96 overflow-hidden">
             <img src={recipe.imageUrl} alt={recipe.title} className="w-full h-full object-cover" />
           </figure>
         )}
@@ -193,71 +199,81 @@ const RecipeDetailPage = () => {
                 )}
               </div>
             </div>
-            <div className="flex gap-2 items-center">
-              {isCommunityRecipe && (
-                <VariantsDropdown recipeId={recipe.id} currentRecipeId={recipe.id} />
-              )}
-              {canPublish && (
-                <button
-                  className="btn btn-outline btn-sm gap-2"
-                  onClick={() => setOpenModal("publish")}
-                  aria-label="Share to community"
-                >
-                  <FaShare className="w-3 h-3" />
-                  Share
-                </button>
-              )}
-              {canShare && (
-                <button
-                  className="btn btn-outline btn-sm gap-2"
-                  onClick={() => setOpenModal("share")}
-                  aria-label="Share recipe"
-                >
-                  <FaShare className="w-3 h-3" />
-                  Share
-                </button>
-              )}
-              {canPropose && (
-                <>
+            {isMobile ? (
+              <button
+                className="btn btn-ghost btn-circle"
+                onClick={() => setActionSheetOpen(true)}
+                aria-label="Recipe actions"
+              >
+                <FaEllipsisH className="w-5 h-5" />
+              </button>
+            ) : (
+              <div className="flex gap-2 items-center">
+                {isCommunityRecipe && (
+                  <VariantsDropdown recipeId={recipe.id} currentRecipeId={recipe.id} />
+                )}
+                {canPublish && (
                   <button
                     className="btn btn-outline btn-sm gap-2"
-                    onClick={() => setOpenModal("suggest-tag")}
-                    aria-label="Suggest tag"
+                    onClick={() => setOpenModal("publish")}
+                    aria-label="Share to community"
                   >
-                    <FaTag className="w-3 h-3" />
-                    Suggest tag
+                    <FaShare className="w-3 h-3" />
+                    Share
                   </button>
+                )}
+                {canShare && (
                   <button
                     className="btn btn-outline btn-sm gap-2"
-                    onClick={() => setOpenModal("propose")}
-                    aria-label="Propose changes"
+                    onClick={() => setOpenModal("share")}
+                    aria-label="Share recipe"
                   >
-                    <FaLightbulb className="w-3 h-3" />
-                    Propose changes
+                    <FaShare className="w-3 h-3" />
+                    Share
                   </button>
-                </>
-              )}
-              {isOwner && (
-                <>
-                  <button
-                    className="btn btn-ghost btn-sm"
-                    onClick={() => navigate(`/recipes/${recipe.id}/edit`)}
-                    aria-label="Edit recipe"
-                  >
-                    <FaEdit />
-                    Edit
-                  </button>
-                  <button
-                    className="btn btn-ghost btn-sm text-error"
-                    onClick={handleDelete}
-                    aria-label="Delete recipe"
-                  >
-                    <FaTrash />
-                    Delete
-                  </button>
-                </>
-              )}
-            </div>
+                )}
+                {canPropose && (
+                  <>
+                    <button
+                      className="btn btn-outline btn-sm gap-2"
+                      onClick={() => setOpenModal("suggest-tag")}
+                      aria-label="Suggest tag"
+                    >
+                      <FaTag className="w-3 h-3" />
+                      Suggest tag
+                    </button>
+                    <button
+                      className="btn btn-outline btn-sm gap-2"
+                      onClick={() => setOpenModal("propose")}
+                      aria-label="Propose changes"
+                    >
+                      <FaLightbulb className="w-3 h-3" />
+                      Propose changes
+                    </button>
+                  </>
+                )}
+                {isOwner && (
+                  <>
+                    <button
+                      className="btn btn-ghost btn-sm"
+                      onClick={() => navigate(`/recipes/${recipe.id}/edit`)}
+                      aria-label="Edit recipe"
+                    >
+                      <FaEdit />
+                      Edit
+                    </button>
+                    <button
+                      className="btn btn-ghost btn-sm text-error"
+                      onClick={handleDelete}
+                      aria-label="Delete recipe"
+                    >
+                      <FaTrash />
+                      Delete
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
           <p className="text-sm text-base-content/60 mb-6">
@@ -398,6 +414,67 @@ const RecipeDetailPage = () => {
       )}
 
       {ConfirmDialog}
+
+      {isMobile && (
+        <ActionSheet
+          isOpen={actionSheetOpen}
+          onClose={() => setActionSheetOpen(false)}
+          items={(() => {
+            const items: ActionItem[] = [];
+            if (isCommunityRecipe) {
+              items.push({
+                label: "Variantes",
+                icon: <FaCodeBranch className="w-5 h-5" />,
+                onClick: () => navigate(`/recipes/${recipe.id}?variants=1`),
+              });
+            }
+            if (canPublish) {
+              items.push({
+                label: "Partager",
+                icon: <FaShare className="w-5 h-5" />,
+                onClick: () => setOpenModal("publish"),
+              });
+            }
+            if (canShare) {
+              items.push({
+                label: "Partager",
+                icon: <FaShare className="w-5 h-5" />,
+                onClick: () => setOpenModal("share"),
+              });
+            }
+            if (canPropose) {
+              items.push(
+                {
+                  label: "Suggerer un tag",
+                  icon: <FaTag className="w-5 h-5" />,
+                  onClick: () => setOpenModal("suggest-tag"),
+                },
+                {
+                  label: "Proposer des modifications",
+                  icon: <FaLightbulb className="w-5 h-5" />,
+                  onClick: () => setOpenModal("propose"),
+                }
+              );
+            }
+            if (isOwner) {
+              items.push(
+                {
+                  label: "Modifier",
+                  icon: <FaEdit className="w-5 h-5" />,
+                  onClick: () => navigate(`/recipes/${recipe.id}/edit`),
+                },
+                {
+                  label: "Supprimer",
+                  icon: <FaTrash className="w-5 h-5" />,
+                  onClick: handleDelete,
+                  destructive: true,
+                }
+              );
+            }
+            return items;
+          })()}
+        />
+      )}
     </div>
   );
 };

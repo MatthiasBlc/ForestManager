@@ -98,19 +98,28 @@ const RecipeCard = ({
         <p className="text-sm text-base-content/60 mt-2">{dateText}</p>
 
         {(canEdit || canDelete || handleShare) && (
-          <div className="card-actions justify-end mt-2">
+          <div className="card-actions justify-end mt-2 gap-3">
             {handleShare && (
-              <button className="btn btn-ghost btn-sm" onClick={handleShare}>
+              <button
+                className="btn btn-ghost btn-sm min-h-[44px] min-w-[44px]"
+                onClick={handleShare}
+              >
                 <FaShare />
               </button>
             )}
             {canEdit && (
-              <button className="btn btn-ghost btn-sm" onClick={handleEdit}>
+              <button
+                className="btn btn-ghost btn-sm min-h-[44px] min-w-[44px]"
+                onClick={handleEdit}
+              >
                 <FaEdit />
               </button>
             )}
             {canDelete && (
-              <button className="btn btn-ghost btn-sm text-error" onClick={handleDelete}>
+              <button
+                className="btn btn-ghost btn-sm min-h-[44px] min-w-[44px] text-error"
+                onClick={handleDelete}
+              >
                 <FaTrash />
               </button>
             )}

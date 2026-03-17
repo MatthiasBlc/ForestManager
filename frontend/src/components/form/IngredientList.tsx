@@ -4,6 +4,7 @@ import APIManager from "../../network/api";
 import { IngredientSearchResult, UnitsByCategory } from "../../models/recipe";
 import { useClickOutside } from "../../hooks/useClickOutside";
 import { useDebouncedEffect } from "../../hooks/useDebouncedEffect";
+import { useIsMobile } from "../../hooks/useIsMobile";
 import UnitSelector from "./UnitSelector";
 
 export interface IngredientInput {
@@ -31,6 +32,7 @@ const IngredientRow = ({ ingredient, index, units, onUpdate, onRemove }: Ingredi
   const [showDropdown, setShowDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   useDebouncedEffect(
     () => {
@@ -71,48 +73,51 @@ const IngredientRow = ({ ingredient, index, units, onUpdate, onRemove }: Ingredi
     onUpdate(index, { ...ingredient, name: suggestion.name, ingredientId: suggestion.id, unitId });
   };
 
-  return (
-    <div className="flex gap-2 items-start">
-      <div ref={containerRef} className="relative flex-1">
-        <input
-          type="text"
-          value={ingredient.name}
-          onChange={(e) => {
-            onUpdate(index, { ...ingredient, name: e.target.value, ingredientId: undefined });
-            setShowDropdown(true);
-          }}
-          onFocus={() => setShowDropdown(true)}
-          placeholder="Ingredient name"
-          className="input input-bordered w-full"
-        />
-        {showDropdown && ingredient.name.trim() && (
-          <div className="absolute z-10 w-full mt-1 bg-base-100 border rounded-lg shadow-lg max-h-48 overflow-auto">
-            {isLoading ? (
-              <div className="p-3 text-center">
-                <span className="loading loading-spinner loading-sm" />
-              </div>
-            ) : suggestions.length > 0 ? (
-              suggestions.map((suggestion) => (
-                <button
-                  key={suggestion.id}
-                  type="button"
-                  onClick={() => selectSuggestion(suggestion)}
-                  className="w-full px-3 py-2 text-left hover:bg-base-200 flex items-center gap-2"
-                >
-                  {suggestion.name}
-                  {suggestion.status === "PENDING" && (
-                    <span className="badge badge-warning badge-xs">nouveau</span>
-                  )}
-                </button>
-              ))
-            ) : (
-              <div className="px-3 py-2 text-base-content/60 text-sm">
-                New ingredient: "{ingredient.name.trim().toLowerCase()}"
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+  const nameField = (
+    <div ref={containerRef} className="relative flex-1">
+      <input
+        type="text"
+        value={ingredient.name}
+        onChange={(e) => {
+          onUpdate(index, { ...ingredient, name: e.target.value, ingredientId: undefined });
+          setShowDropdown(true);
+        }}
+        onFocus={() => setShowDropdown(true)}
+        placeholder="Ingredient name"
+        className="input input-bordered w-full"
+      />
+      {showDropdown && ingredient.name.trim() && (
+        <div className="absolute z-10 w-full mt-1 bg-base-100 border rounded-lg shadow-lg max-h-48 overflow-auto">
+          {isLoading ? (
+            <div className="p-3 text-center">
+              <span className="loading loading-spinner loading-sm" />
+            </div>
+          ) : suggestions.length > 0 ? (
+            suggestions.map((suggestion) => (
+              <button
+                key={suggestion.id}
+                type="button"
+                onClick={() => selectSuggestion(suggestion)}
+                className="w-full px-3 py-2 text-left hover:bg-base-200 flex items-center gap-2"
+              >
+                {suggestion.name}
+                {suggestion.status === "PENDING" && (
+                  <span className="badge badge-warning badge-xs">nouveau</span>
+                )}
+              </button>
+            ))
+          ) : (
+            <div className="px-3 py-2 text-base-content/60 text-sm">
+              New ingredient: "{ingredient.name.trim().toLowerCase()}"
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  const quantityFields = (
+    <>
       <input
         type="number"
         value={ingredient.quantity ?? ""}
@@ -133,11 +138,27 @@ const IngredientRow = ({ ingredient, index, units, onUpdate, onRemove }: Ingredi
       <button
         type="button"
         onClick={() => onRemove(index)}
-        className="btn btn-ghost btn-square text-error"
+        className="btn btn-ghost btn-square min-h-[44px] min-w-[44px] text-error"
         aria-label="Remove ingredient"
       >
         <FaTimes />
       </button>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <div className="space-y-2">
+        {nameField}
+        <div className="flex gap-2 items-start">{quantityFields}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex gap-2 items-start">
+      {nameField}
+      {quantityFields}
     </div>
   );
 };
@@ -191,7 +212,11 @@ const IngredientList = ({ value, onChange }: IngredientListProps) => {
           onRemove={removeIngredient}
         />
       ))}
-      <button type="button" onClick={addIngredient} className="btn btn-outline btn-sm gap-2">
+      <button
+        type="button"
+        onClick={addIngredient}
+        className="btn btn-outline btn-sm md:btn-sm min-h-[44px] md:min-h-0 gap-2"
+      >
         <FaPlus size={12} />
         Add ingredient
       </button>

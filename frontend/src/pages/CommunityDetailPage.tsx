@@ -11,8 +11,10 @@ import SentInvitesList from "../components/invitations/SentInvitesList";
 import CommunityTagsList from "../components/communities/CommunityTagsList";
 import { ActivityFeed } from "../components/activity";
 import SidePanel from "../components/communities/SidePanel";
+import BottomSheet from "../components/mobile/BottomSheet";
 import { communityEvents } from "../utils/communityEvents";
 import { useAsyncData } from "../hooks/useAsyncData";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 type PanelContent = "members" | "activity" | "invitations" | "edit" | "tags";
 
@@ -23,6 +25,7 @@ const CommunityDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const isMobile = useIsMobile();
 
   const VALID_PANELS: PanelContent[] = ["members", "activity", "invitations", "edit", "tags"];
   const panelParam = searchParams.get("panel");
@@ -158,69 +161,120 @@ const CommunityDetailPage = () => {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-1">
+          <div className={`flex items-center ${isMobile ? "flex-wrap gap-2" : "gap-1"}`}>
             {/* Members button */}
-            <div className="tooltip tooltip-bottom" data-tip="Members">
+            {isMobile ? (
               <button
-                className={`btn btn-ghost btn-sm btn-circle ${panelContent === "members" ? "btn-active" : ""}`}
+                className={`btn btn-ghost btn-sm gap-1 min-h-[44px] ${panelContent === "members" ? "btn-active" : ""}`}
                 onClick={() => togglePanel("members")}
                 aria-label="Members"
               >
                 <FaUsers className="w-4 h-4" />
+                Members
               </button>
-            </div>
+            ) : (
+              <div className="tooltip tooltip-bottom" data-tip="Members">
+                <button
+                  className={`btn btn-ghost btn-sm btn-circle ${panelContent === "members" ? "btn-active" : ""}`}
+                  onClick={() => togglePanel("members")}
+                  aria-label="Members"
+                >
+                  <FaUsers className="w-4 h-4" />
+                </button>
+              </div>
+            )}
 
             {/* Activity button (moderators only) */}
-            {isModerator && (
-              <div className="tooltip tooltip-bottom" data-tip="Activity">
+            {isModerator &&
+              (isMobile ? (
                 <button
-                  className={`btn btn-ghost btn-sm btn-circle ${panelContent === "activity" ? "btn-active" : ""}`}
+                  className={`btn btn-ghost btn-sm gap-1 min-h-[44px] ${panelContent === "activity" ? "btn-active" : ""}`}
                   onClick={() => togglePanel("activity")}
                   aria-label="Activity"
                 >
                   <FaHistory className="w-4 h-4" />
+                  Activity
                 </button>
-              </div>
-            )}
+              ) : (
+                <div className="tooltip tooltip-bottom" data-tip="Activity">
+                  <button
+                    className={`btn btn-ghost btn-sm btn-circle ${panelContent === "activity" ? "btn-active" : ""}`}
+                    onClick={() => togglePanel("activity")}
+                    aria-label="Activity"
+                  >
+                    <FaHistory className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
 
             {/* Invitations button (moderators only) */}
-            {isModerator && (
-              <div className="tooltip tooltip-bottom" data-tip="Invitations">
+            {isModerator &&
+              (isMobile ? (
                 <button
-                  className={`btn btn-ghost btn-sm btn-circle ${panelContent === "invitations" ? "btn-active" : ""}`}
+                  className={`btn btn-ghost btn-sm gap-1 min-h-[44px] ${panelContent === "invitations" ? "btn-active" : ""}`}
                   onClick={() => togglePanel("invitations")}
                   aria-label="Invitations"
                 >
                   <FaEnvelope className="w-4 h-4" />
+                  Invites
                 </button>
-              </div>
-            )}
+              ) : (
+                <div className="tooltip tooltip-bottom" data-tip="Invitations">
+                  <button
+                    className={`btn btn-ghost btn-sm btn-circle ${panelContent === "invitations" ? "btn-active" : ""}`}
+                    onClick={() => togglePanel("invitations")}
+                    aria-label="Invitations"
+                  >
+                    <FaEnvelope className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
 
             {/* Tags button (moderators only) */}
-            {isModerator && (
-              <div className="tooltip tooltip-bottom" data-tip="Tags">
+            {isModerator &&
+              (isMobile ? (
                 <button
-                  className={`btn btn-ghost btn-sm btn-circle ${panelContent === "tags" ? "btn-active" : ""}`}
+                  className={`btn btn-ghost btn-sm gap-1 min-h-[44px] ${panelContent === "tags" ? "btn-active" : ""}`}
                   onClick={() => togglePanel("tags")}
                   aria-label="Tags"
                 >
                   <FaTags className="w-4 h-4" />
+                  Tags
                 </button>
-              </div>
-            )}
+              ) : (
+                <div className="tooltip tooltip-bottom" data-tip="Tags">
+                  <button
+                    className={`btn btn-ghost btn-sm btn-circle ${panelContent === "tags" ? "btn-active" : ""}`}
+                    onClick={() => togglePanel("tags")}
+                    aria-label="Tags"
+                  >
+                    <FaTags className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
 
             {/* Edit button (moderators only) */}
-            {isModerator && (
-              <div className="tooltip tooltip-bottom" data-tip="Edit community">
+            {isModerator &&
+              (isMobile ? (
                 <button
-                  className={`btn btn-ghost btn-sm btn-circle ${panelContent === "edit" ? "btn-active" : ""}`}
+                  className={`btn btn-ghost btn-sm gap-1 min-h-[44px] ${panelContent === "edit" ? "btn-active" : ""}`}
                   onClick={() => togglePanel("edit")}
                   aria-label="Edit"
                 >
                   <FaEdit className="w-4 h-4" />
+                  Edit
                 </button>
-              </div>
-            )}
+              ) : (
+                <div className="tooltip tooltip-bottom" data-tip="Edit community">
+                  <button
+                    className={`btn btn-ghost btn-sm btn-circle ${panelContent === "edit" ? "btn-active" : ""}`}
+                    onClick={() => togglePanel("edit")}
+                    aria-label="Edit"
+                  >
+                    <FaEdit className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
           </div>
         </div>
       </div>
@@ -232,13 +286,53 @@ const CommunityDetailPage = () => {
           <CommunityRecipesList communityId={community.id} initialTags={initialTags} />
         </div>
 
-        {/* Side Panel */}
-        <SidePanel
+        {/* Side Panel - desktop only */}
+        {!isMobile && (
+          <SidePanel
+            isOpen={panelContent !== null}
+            title={panelTitle}
+            width={panelWidth}
+            onWidthChange={handlePanelWidthChange}
+            onClose={() => setPanelContent(null)}
+          >
+            {panelContent === "members" && (
+              <MembersList
+                communityId={community.id}
+                members={members}
+                currentUserRole={community.currentUserRole}
+                onMembersChange={handleMembersChange}
+                onLeave={handleLeave}
+              />
+            )}
+            {panelContent === "activity" && isModerator && (
+              <ActivityFeed communityId={community.id} />
+            )}
+            {panelContent === "invitations" && isModerator && (
+              <SentInvitesList communityId={community.id} />
+            )}
+            {panelContent === "tags" && isModerator && (
+              <CommunityTagsList communityId={community.id} />
+            )}
+            {panelContent === "edit" && isModerator && (
+              <CommunityEditForm
+                communityId={community.id}
+                initialName={community.name}
+                initialDescription={community.description || ""}
+                initialImageUrl={community.imageUrl}
+                onSaved={handleEditSaved}
+                onCancel={() => setPanelContent(null)}
+              />
+            )}
+          </SidePanel>
+        )}
+      </div>
+
+      {/* Bottom Sheet - mobile only */}
+      {isMobile && (
+        <BottomSheet
           isOpen={panelContent !== null}
-          title={panelTitle}
-          width={panelWidth}
-          onWidthChange={handlePanelWidthChange}
           onClose={() => setPanelContent(null)}
+          title={panelTitle}
         >
           {panelContent === "members" && (
             <MembersList
@@ -268,8 +362,8 @@ const CommunityDetailPage = () => {
               onCancel={() => setPanelContent(null)}
             />
           )}
-        </SidePanel>
-      </div>
+        </BottomSheet>
+      )}
     </div>
   );
 };

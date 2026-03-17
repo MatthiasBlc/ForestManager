@@ -293,7 +293,7 @@ const RecipeFormPage = () => {
       </div>
 
       <div className="bg-base-100 rounded-lg shadow-xl p-6 md:p-8">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-6">
           <h1 className="text-2xl font-bold">{isEditing ? "Edit Recipe" : "New Recipe"}</h1>
           {!isEditing && (
             <button

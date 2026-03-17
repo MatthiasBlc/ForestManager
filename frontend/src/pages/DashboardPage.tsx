@@ -77,7 +77,7 @@ const DashboardPage = () => {
           emptyMessage="You are not a member of any community yet."
           emptyAction={
             <button
-              className="btn btn-primary gap-2"
+              className="btn btn-primary btn-lg md:btn-md gap-2"
               onClick={() => navigate("/communities/create")}
             >
               <FaPlus />
@@ -119,7 +119,10 @@ const DashboardPage = () => {
           isEmpty={recipes.length === 0}
           emptyMessage="You don't have any recipes yet."
           emptyAction={
-            <button className="btn btn-primary gap-2" onClick={() => navigate("/recipes/new")}>
+            <button
+              className="btn btn-primary btn-lg md:btn-md gap-2"
+              onClick={() => navigate("/recipes/new")}
+            >
               <FaPlus />
               Create your first recipe
             </button>

@@ -5,7 +5,22 @@ const plugin = require("tailwindcss/plugin");
 export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
-    extend: {},
+    extend: {
+      keyframes: {
+        "slide-up": {
+          from: { transform: "translateY(100%)" },
+          to: { transform: "translateY(0)" },
+        },
+        "fade-in": {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+      },
+      animation: {
+        "slide-up": "slide-up 250ms ease-out",
+        "fade-in": "fade-in 200ms ease-out",
+      },
+    },
   },
   plugins: [
     require("daisyui"),

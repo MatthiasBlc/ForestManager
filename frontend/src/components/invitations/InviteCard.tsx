@@ -64,7 +64,7 @@ const InviteCard = ({ invite, onRespond }: InviteCardProps) => {
         {isPending ? (
           <div className="card-actions justify-end mt-2">
             <button
-              className="btn btn-error btn-sm gap-1"
+              className="btn btn-error btn-sm min-h-[44px] gap-1"
               onClick={handleReject}
               disabled={loading !== null}
             >
@@ -76,7 +76,7 @@ const InviteCard = ({ invite, onRespond }: InviteCardProps) => {
               Reject
             </button>
             <button
-              className="btn btn-success btn-sm gap-1"
+              className="btn btn-success btn-sm min-h-[44px] gap-1"
               onClick={handleAccept}
               disabled={loading !== null}
             >

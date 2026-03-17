@@ -120,7 +120,7 @@ export const ShareModal = (props: ShareModalProps) => {
     <div className="modal modal-open">
       <div className="modal-box">
         <button
-          className="btn btn-sm btn-circle absolute right-2 top-2"
+          className="btn btn-circle min-h-[44px] min-w-[44px] absolute right-2 top-2"
           onClick={onClose}
           disabled={isSubmitting}
         >

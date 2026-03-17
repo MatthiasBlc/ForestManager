@@ -142,7 +142,7 @@ const CommunityTagsList = ({ communityId }: CommunityTagsListProps) => {
         {filterButtons.map((btn) => (
           <button
             key={btn.value}
-            className={`btn btn-xs ${statusFilter === btn.value ? "btn-primary" : "btn-ghost"}`}
+            className={`btn btn-xs min-h-[44px] md:min-h-0 ${statusFilter === btn.value ? "btn-primary" : "btn-ghost"}`}
             onClick={() => setStatusFilter(btn.value)}
           >
             {btn.label}
@@ -188,7 +188,7 @@ const CommunityTagsList = ({ communityId }: CommunityTagsListProps) => {
                     {tag.recipeCount} recipe{tag.recipeCount !== 1 ? "s" : ""}
                   </span>
                 </div>
-                <div className="flex items-center gap-1 flex-shrink-0">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   {tag.status === "PENDING" ? (
                     <>
                       {tag.createdBy && (
@@ -197,7 +197,7 @@ const CommunityTagsList = ({ communityId }: CommunityTagsListProps) => {
                         </span>
                       )}
                       <button
-                        className="btn btn-ghost btn-xs text-success"
+                        className="btn btn-ghost btn-xs min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 text-success"
                         onClick={() => handleApprove(tag)}
                         disabled={isLoading}
                         title="Approve"
@@ -210,7 +210,7 @@ const CommunityTagsList = ({ communityId }: CommunityTagsListProps) => {
                         )}
                       </button>
                       <button
-                        className="btn btn-ghost btn-xs text-error"
+                        className="btn btn-ghost btn-xs min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 text-error"
                         onClick={() => handleReject(tag)}
                         disabled={isLoading}
                         title="Reject"
@@ -222,7 +222,7 @@ const CommunityTagsList = ({ communityId }: CommunityTagsListProps) => {
                   ) : (
                     <>
                       <button
-                        className="btn btn-ghost btn-xs"
+                        className="btn btn-ghost btn-xs min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0"
                         onClick={() => openEdit(tag)}
                         disabled={isLoading}
                         title="Edit"
@@ -231,7 +231,7 @@ const CommunityTagsList = ({ communityId }: CommunityTagsListProps) => {
                         <FaEdit className="w-3 h-3" />
                       </button>
                       <button
-                        className="btn btn-ghost btn-xs text-error"
+                        className="btn btn-ghost btn-xs min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0 text-error"
                         onClick={() => handleDelete(tag)}
                         disabled={isLoading}
                         title="Delete"

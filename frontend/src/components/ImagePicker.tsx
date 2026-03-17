@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { FaCloudUploadAlt, FaTimes } from "react-icons/fa";
 import { processImage, ALLOWED_TYPES } from "../utils/imageUtils";
+import { useIsMobile } from "../hooks/useIsMobile";
 
 interface ImagePickerProps {
   onImageSelected: (blob: Blob | null) => void;
@@ -13,6 +14,7 @@ const ImagePicker = ({ onImageSelected }: ImagePickerProps) => {
   const [status, setStatus] = useState<ProcessStatus>("idle");
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isMobile = useIsMobile();
 
   const handleFile = useCallback(
     async (file: File) => {
@@ -64,7 +66,7 @@ const ImagePicker = ({ onImageSelected }: ImagePickerProps) => {
           {status === "idle" && (
             <button
               type="button"
-              className="btn btn-circle btn-sm absolute top-2 right-2"
+              className="btn btn-circle min-h-[44px] min-w-[44px] absolute top-2 right-2"
               onClick={handleClear}
               aria-label="Remove image"
             >
@@ -95,7 +97,9 @@ const ImagePicker = ({ onImageSelected }: ImagePickerProps) => {
           onDragOver={(e) => e.preventDefault()}
         >
           <FaCloudUploadAlt className="w-8 h-8 mx-auto text-base-content/40 mb-2" />
-          <p className="text-sm text-base-content/60">Cliquez ou glissez une image ici</p>
+          <p className="text-sm text-base-content/60">
+            {isMobile ? "Appuyez pour ajouter une image" : "Cliquez ou glissez une image ici"}
+          </p>
           <p className="text-xs text-base-content/40 mt-1">JPEG, PNG ou WebP — max 2 Mo</p>
           <input
             ref={inputRef}
