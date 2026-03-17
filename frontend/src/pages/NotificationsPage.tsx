@@ -213,7 +213,7 @@ const NotificationsPage = () => {
                     <div className="flex items-center gap-2">
                       {!notif.readAt && !isGroup && (
                         <button
-                          className="btn btn-ghost btn-xs"
+                          className="btn btn-ghost btn-xs min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0"
                           title="Marquer comme lu"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -257,7 +257,7 @@ const NotificationsPage = () => {
                     {/* Mark group as read */}
                     {notif.group!.items.some((i) => !i.readAt) && (
                       <button
-                        className="btn btn-ghost btn-xs self-end mt-1 gap-1"
+                        className="btn btn-ghost btn-xs min-h-[44px] md:min-h-0 self-end mt-1 gap-1"
                         onClick={() => {
                           markAsRead(notif.id);
                           refreshCount();

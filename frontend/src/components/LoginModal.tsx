@@ -57,7 +57,11 @@ const LoginModal = () => {
       <Modal onClose={handleClose}>
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-bold text-lg">Log In</h3>
-          <button type="button" className="btn btn-sm btn-circle btn-ghost" onClick={handleClose}>
+          <button
+            type="button"
+            className="btn btn-circle btn-ghost min-h-[44px] min-w-[44px]"
+            onClick={handleClose}
+          >
             X
           </button>
         </div>

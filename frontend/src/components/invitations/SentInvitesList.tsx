@@ -136,7 +136,7 @@ const SentInvitesList = ({ communityId }: SentInvitesListProps) => {
                   <td>
                     {invite.status === "PENDING" && (
                       <button
-                        className="btn btn-ghost btn-xs text-error"
+                        className="btn btn-ghost btn-xs min-h-[44px] md:min-h-0 text-error"
                         onClick={() => handleCancel(invite.id)}
                         disabled={cancellingId === invite.id}
                       >

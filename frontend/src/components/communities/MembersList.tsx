@@ -127,7 +127,7 @@ const MembersList = ({
                   <div className="flex gap-2">
                     {isCurrentUser ? (
                       <button
-                        className="btn btn-ghost btn-xs text-warning min-h-[36px]"
+                        className="btn btn-ghost btn-xs text-warning min-h-[44px]"
                         onClick={handleLeave}
                         disabled={isLoading}
                       >
@@ -143,7 +143,7 @@ const MembersList = ({
                     ) : member.role === "MEMBER" ? (
                       <>
                         <button
-                          className="btn btn-ghost btn-xs min-h-[36px]"
+                          className="btn btn-ghost btn-xs min-h-[44px]"
                           onClick={() => handlePromote(member.id)}
                           disabled={isLoading}
                         >
@@ -157,7 +157,7 @@ const MembersList = ({
                           )}
                         </button>
                         <button
-                          className="btn btn-ghost btn-xs text-error min-h-[36px]"
+                          className="btn btn-ghost btn-xs text-error min-h-[44px]"
                           onClick={() => handleKick(member.id)}
                           disabled={isLoading}
                         >

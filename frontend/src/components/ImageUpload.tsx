@@ -138,7 +138,7 @@ const ImageUpload = ({
           {currentImageUrl && !preview && status === "idle" && (
             <button
               type="button"
-              className="btn btn-circle btn-sm btn-error absolute top-2 right-2"
+              className="btn btn-circle btn-error min-h-[44px] min-w-[44px] absolute top-2 right-2"
               onClick={handleDelete}
               disabled={isDeleting}
               aria-label="Delete image"
@@ -154,7 +154,7 @@ const ImageUpload = ({
           {preview && status === "idle" && (
             <button
               type="button"
-              className="btn btn-circle btn-sm absolute top-2 right-2"
+              className="btn btn-circle min-h-[44px] min-w-[44px] absolute top-2 right-2"
               onClick={cancelPreview}
               aria-label="Cancel"
             >

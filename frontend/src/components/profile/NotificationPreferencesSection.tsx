@@ -156,7 +156,7 @@ const NotificationPreferencesSection = () => {
                 <div className="flex items-center gap-3">
                   {hasCommunities && (
                     <button
-                      className="btn btn-ghost btn-xs"
+                      className="btn btn-ghost btn-xs min-h-[44px] min-w-[44px] md:min-h-0 md:min-w-0"
                       onClick={() => toggleExpanded(key)}
                       aria-label={`${isExpanded ? "Masquer" : "Afficher"} les preferences par communaute pour ${label}`}
                     >

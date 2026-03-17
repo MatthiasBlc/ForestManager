@@ -75,7 +75,7 @@ const BottomSheet = ({
             <h3 className="text-lg font-semibold">{title}</h3>
             <button
               onClick={onClose}
-              className="btn btn-ghost btn-sm btn-circle"
+              className="btn btn-ghost btn-circle min-h-[44px] min-w-[44px]"
               aria-label="Fermer"
             >
               &times;
