@@ -13,9 +13,8 @@ import {
   AUTH_004_LENGTH,
   AUTH_004_FORMAT,
   AUTH_005,
+  VALIDATION_001_TYPE,
 } from "../constants/errorCodes";
-
-const VALIDATION_001_TYPE = "VALIDATION_001: must be a string";
 
 export const signupSchema = z.object({
   username: z

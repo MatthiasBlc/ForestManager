@@ -16,6 +16,7 @@ export const AUTH_008 = "AUTH_008: Invalid credentials";
 export const AUTH_009 = "AUTH_009: Account deactivated";
 export const AUTH_010 = "AUTH_010: Current password is required to change password";
 export const AUTH_011 = "AUTH_011: Current password is incorrect";
+export const AUTH_012 = "AUTH_012: Too many attempts, please try again later";
 
 // =====================================
 // User
@@ -126,6 +127,7 @@ export const IMPORT_003 = "IMPORT_003: No recipe data found";
 // Validation
 // =====================================
 export const VALIDATION_001 = (msg: string) => `VALIDATION_001: ${msg}`;
+export const VALIDATION_001_TYPE = "VALIDATION_001: must be a string";
 
 // =====================================
 // CSRF
@@ -150,6 +152,8 @@ export const ADMIN_011 = "ADMIN_011: Too many requests, please slow down";
 // =====================================
 // Admin Tags
 // =====================================
+export const ADMIN_TAG_001 = "ADMIN_TAG_001: Tag name is required";
+export const ADMIN_TAG_001_LENGTH = "ADMIN_TAG_001: Tag name must be between 2 and 50 characters";
 export const ADMIN_TAG_002 = "ADMIN_TAG_002: Tag already exists";
 export const ADMIN_TAG_003 = "ADMIN_TAG_003: Tag not found";
 export const ADMIN_TAG_004 = "ADMIN_TAG_004: Target tag ID required";

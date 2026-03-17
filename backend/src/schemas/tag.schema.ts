@@ -1,7 +1,5 @@
 import { z } from "zod";
-import { TAG_001 } from "../constants/errorCodes";
-
-const VALIDATION_001_TYPE = "VALIDATION_001: must be a string";
+import { TAG_001, VALIDATION_001_TYPE } from "../constants/errorCodes";
 
 /** Validation du nom de tag: 2-50 caracteres, normalise lowercase */
 const tagNameSchema = z

@@ -1,7 +1,7 @@
 import helmet from "helmet";
 import { RequestHandler } from "express";
 import env from "../util/validateEnv";
-import { ADMIN_011 } from "../constants/errorCodes";
+import { ADMIN_011, AUTH_012 } from "../constants/errorCodes";
 import { createRateLimiter } from "../config/rateLimiter";
 
 /**
@@ -41,7 +41,7 @@ export const helmetMiddleware = helmet({
 export const authRateLimiter: RequestHandler = createRateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 10,
-  message: "AUTH_002: Too many attempts, please try again later",
+  message: AUTH_012,
 });
 
 /** Rate limiter global admin (hors auth) : 30 req / min */

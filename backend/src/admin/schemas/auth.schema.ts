@@ -1,7 +1,5 @@
 import { z } from "zod";
-import { ADMIN_003, ADMIN_005 } from "../../constants/errorCodes";
-
-const VALIDATION_001_TYPE = "VALIDATION_001: must be a string";
+import { ADMIN_003, ADMIN_005, VALIDATION_001_TYPE } from "../../constants/errorCodes";
 
 /** Schema for admin login (email + password) */
 export const adminLoginSchema = z.object({

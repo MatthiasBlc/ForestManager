@@ -1,9 +1,6 @@
 import { z } from "zod";
-import { ADMIN_TAG_004 } from "../../constants/errorCodes";
+import { ADMIN_TAG_001, ADMIN_TAG_001_LENGTH, ADMIN_TAG_004 } from "../../constants/errorCodes";
 import { uuidSchema } from "../../schemas/common.schema";
-
-const ADMIN_TAG_001 = "ADMIN_TAG_001: Tag name is required";
-const ADMIN_TAG_001_LENGTH = "ADMIN_TAG_001: Tag name must be between 2 and 50 characters";
 
 /** Validation du nom de tag: 2-50 caracteres, normalise lowercase */
 const adminTagNameSchema = z

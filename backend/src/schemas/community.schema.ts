@@ -1,7 +1,6 @@
 import { z } from "zod";
 import { COMMUNITY_VALIDATION } from "../util/validation";
-
-const VALIDATION_001_TYPE = "VALIDATION_001: must be a string";
+import { VALIDATION_001_TYPE } from "../constants/errorCodes";
 
 const nameSchema = z
   .string({ error: () => VALIDATION_001_TYPE })

@@ -1,9 +1,7 @@
 import { z } from "zod";
 import { EMAIL_REGEX } from "../util/validation";
-import { AUTH_003, INVITE_004, INVITE_005 } from "../constants/errorCodes";
+import { AUTH_003, INVITE_004, INVITE_005, VALIDATION_001_TYPE } from "../constants/errorCodes";
 import { uuidSchema } from "./common.schema";
-
-const VALIDATION_001_TYPE = "VALIDATION_001: must be a string";
 
 /** Schema for creating an invite (exactly one of email, username, userId required) */
 export const createInviteSchema = z
