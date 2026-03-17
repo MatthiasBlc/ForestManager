@@ -96,13 +96,13 @@ function SearchSelector<T extends { id: string; name: string }>({
         {value.map((item) => (
           <span
             key={item}
-            className={`inline-flex items-center gap-1 px-2 py-1 text-sm rounded-lg ${chipClassName}`}
+            className={`inline-flex items-center gap-1 px-3 py-2 text-sm rounded-lg ${chipClassName}`}
           >
             {item}
             <button
               type="button"
               onClick={() => removeItem(item)}
-              className="hover:opacity-70"
+              className="hover:opacity-70 p-1"
               aria-label={`Remove ${item}`}
             >
               <FaTimes size={12} />
@@ -136,7 +136,7 @@ function SearchSelector<T extends { id: string; name: string }>({
                   key={suggestion.id}
                   type="button"
                   onClick={() => addItem(suggestion.name)}
-                  className="w-full px-3 py-2 text-left hover:bg-base-200 flex justify-between items-center"
+                  className="w-full px-3 py-2 min-h-[44px] text-left hover:bg-base-200 flex justify-between items-center"
                 >
                   {(renderSuggestion ?? defaultRenderSuggestion)(suggestion)}
                 </button>
@@ -145,7 +145,7 @@ function SearchSelector<T extends { id: string; name: string }>({
                 <button
                   type="button"
                   onClick={() => addItem(inputValue.trim())}
-                  className="w-full px-3 py-2 text-left hover:bg-base-200 flex items-center gap-2 border-t"
+                  className="w-full px-3 py-2 min-h-[44px] text-left hover:bg-base-200 flex items-center gap-2 border-t"
                 >
                   <FaPlus size={12} />
                   {renderCreateLabel ? (
