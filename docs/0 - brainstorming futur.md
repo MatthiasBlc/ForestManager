@@ -106,18 +106,33 @@ Des codes erreurs utilisent des string literal au lieu de constantes car le code
 Spec complete : `docs/features/changelog/SPEC_CHANGELOG.md`
 Generation auto via CI, versioning semver, page user blog-like, CRUD admin, API key CI, conventional commits.
 
+---------------------------------------- Special feature 1----------------------------
+
 ## Gestionnaire de planning de repas dans une communauté
 
 Nous sommes ici à notre première nouvelle feature majeure. (penser à utiliser le système de feature)
+Ici deux features différentes : la première va être la gestion d'un planning de repas, (manuellement)
+La deuxième va être la gestion de plusieurs jeux de paramètres de génération automatisé du planning.
+Il va falloir se concentrer sur la première mais mettre de côté les informations concernant la seconde, la conserver en tête et la faire dans un second temps
 
-automatique + drag and drop (à a Trello ? )
+automatique + drag and drop pour réorganiser le planning (à a Trello ? )
 Sur chaques cartes, il doit y avoir un bouton (qui demande confirmation au clic) pour remplacer le repas proposé un autre tout en conservant les critères de génération.
-possibilité de créer des règles d'automatisation selon des tags (possibilité avancée de mettre des poids sur les tags), cooldown avant qu'une recette ne revienne, repas du midi, repas du soir, pouvoir mettre des poids sur les recettes afin de favoriser ou non leur récurence etc pouvoir faire plusieurs template de génération (par saison par exemple)etc.
+Dans chaque communauté, il ne peut y avoir qu'un seul planning, mais il peut y avoir plusieurs jeu de paramètres de génération pour pouvoir faire plusieurs template de génération (par saison par exemple)etc.
+Pour générer un planning, un jeu de paramètres de génération offre la possibilité de créer des règles d'automatisation selon des tags (possibilité avancée de mettre des poids sur les tags, voire même sur des recettes spécifiques de la communauté), cooldown avant qu'une recette ne revienne, dédier des recettes aux repas du midi, repas du soir, pouvoir mettre des poids sur les recettes afin de favoriser ou non leur récurence etc.
+Il faut aussi pouvoir préciser des repas à ne pas entrer dans la plannification dans le jeu de donnée (exemple, si la communauté ne mange jamais ensemble le mardi soir, ça ne sert à rien de générer un menu pour ce repas là).
 
-Il faut pouvoir modifier le planning à tout moment, soit en drag and drop des menus d'un repas sur l'autre afin de réorganiser le planning à tout moment dans la semaine, soit en modifiant directement le menu d'un repas.
+Il faut pouvoir modifier le planning à tout moment, soit en drag and drop des menus d'un repas sur l'autre afin de réorganiser le planning à tout moment dans la semaine, soit en modifiant directement le menu d'un repas (champ libre de recherche parmis les recettes de la communauté, puis du user (en proposant d'ajouter sa recette à la commu si ce n'est pas le cas) puis champ libre si besoin (en cas de champ libre, il faut un second champ pour pouvoir ajouter des commentaires visible lorsque l'on clique sur la carte du menu).
 
-Pouvoir ajouter une liste de recettes (le nom pourrait être suffisant) / d'idée et de pouvoir faire en sorte que le générateur de planning puisse les utiliser.
+il faut aussi un nombre de personne standard qui sera utilisé pour calculer les quantités d'ingrédients (future feature liste de courses). Ce chiffre doit pouvoir être modifié (comme sur les recette) facilement sur chaque repas.
+
+Pouvoir ajouter une liste de recettes (le nom + un commentaire facultatif pourrait être suffisant) / d'idée et de pouvoir faire en sorte que le générateur de planning puisse les utiliser.
 De fait cela permet d'ajouter de nouvelles idées qui peuvent devenir des recettes au fur et à mesure du temps afin de générer de nouvelles recettes.
+
+## Feature génération automatique du planning de repas
+
+Mettre ici tout ce qu'il faut conserver pour la feature génération automatique du planning de repas.
+
+---------------------------------------- Fin --------------------------------------------------
 
 ## Brique liste de courses
 

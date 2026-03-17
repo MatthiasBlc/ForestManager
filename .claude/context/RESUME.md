@@ -242,3 +242,5 @@ Je mets a jour la spec et la roadmap.
 ● Read 1 file (ctrl+o to expand)  
  ⎿ You're out of extra usage · resets 6pm  
  (Europe/Paris)
+
+Termine les modifications de la spec et de la roadmap en étudiant bien la question pour être certain de la viabilité de ce changements.
