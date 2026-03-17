@@ -101,16 +101,20 @@ Bottom tab bar, bottom sheets, breakpoints md:, touch targets 44px, safe areas, 
 
 Des codes erreurs utilisent des string literal au lieu de constantes car le code erreur est le même. Peut être qu'il faudrait créer de nouveaux code erreur pour ces cas spécifiques et les centraliser pour éviter les string literal et les doublons.
 
-## système + page de changelog automatique
+## ~~systeme + page de changelog automatique~~ SPEC DONE
 
-(Bouton pour y accéder à ajouter dans le footer du menu sidebar lorsqu'un user est connecté)
-Le changelog représente des blocs de texte type "blog" du plus récent au plus ancien. Lorsqu'une merge à Master est faite et validée, lors de la phase de "deploy_prod", un résumé de tout les commits de manière organisé (Nouvelle feature, updates, bug) doit être généré et stocké en base.
-L'idée est d'avoir un véritable changelog automatisé. Pas besoin de retranscrire tout ce qui touche au tests, déploiement, update de docs etc. Il faut retranscrire uniquement ce qui impacte une correction ou une évolution de l'expérience utilisateur.
-Dans l'interface admin, il faut pouvoir modifier et supprimer ces message (toujours avec une confirmation de validation)
+Spec complete : `docs/features/changelog/SPEC_CHANGELOG.md`
+Generation auto via CI, versioning semver, page user blog-like, CRUD admin, API key CI, conventional commits.
 
-- Mise en place d'un système de version propre pour suivre les patch du changelog ?
+### Idees futures liees au changelog
+
+- **Notification de nouveau changelog** : badge/notification in-app quand une nouvelle version est publiee. Potentiellement une categorie `CHANGELOG` dans NotificationCategory.
+- **Changelog public** : rendre le changelog accessible sans connexion (flag `isPublic` sur le modele)
+- **Markdown dans le contenu** : enrichir les items avec du markdown (liens, gras, etc.)
 
 ## Gestionnaire de planning de repas dans une communauté
+
+Nous sommes ici à notre première nouvelle feature majeure. (penser à utiliser le système de feature)
 
 automatique + drag and drop (à a Trello ? )
 Sur chaques cartes, il doit y avoir un bouton (qui demande confirmation au clic) pour remplacer le repas proposé un autre tout en conservant les critères de génération.
@@ -122,6 +126,8 @@ Pouvoir ajouter une liste de recettes (le nom pourrait être suffisant) / d'idé
 De fait cela permet d'ajouter de nouvelles idées qui peuvent devenir des recettes au fur et à mesure du temps afin de générer de nouvelles recettes.
 
 ## Brique liste de courses
+
+Nous sommes ici une nouvelle feature majeure. (penser à utiliser le système de feature)
 
 Création d'une liste de courses associée au planning.
 Possibilité d'ajouter un lien web à un ingrédient,
@@ -165,9 +171,13 @@ L'idee serait d'introduire un concept de `RecipeSection` (ou groupe) :
 
 ## Brique on joue à quoi ?
 
+Nous sommes ici une nouvelle feature majeure. (penser à utiliser le système de feature)
+
 (utiliser api publique pour trouver des jeux et faire une liste)
 
 ## Brique On regarde quoi et ou ?
+
+Nous sommes ici une nouvelle feature majeure. (penser à utiliser le système de feature)
 
 (utiliser api publique pour trouver des films/séries et faire une liste, s'inspirer de Netflix pour l'interface)
 

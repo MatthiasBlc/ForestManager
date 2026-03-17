@@ -87,7 +87,9 @@ docs/
     mobile-rework/                    # EN COURS
       SPEC_MOBILE_REWORK.md
       ROADMAP.md
-    e2e-testing/                      # PLANIFIE
+    changelog/                          # SPEC DONE
+      SPEC_CHANGELOG.md
+    e2e-testing/                        # PLANIFIE
       SPEC_E2E_TESTING.md
       ROADMAP.md
 ```
@@ -110,6 +112,9 @@ Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une 
 | **Feature : Mobile Rework**         |                                                                     |
 | Spec Mobile Rework                  | `docs/features/mobile-rework/SPEC_MOBILE_REWORK.md`                 |
 | Roadmap Mobile Rework               | `docs/features/mobile-rework/ROADMAP.md`                            |
+| **Feature : Changelog**             |                                                                     |
+| Spec Changelog                      | `docs/features/changelog/SPEC_CHANGELOG.md`                         |
+| Roadmap Changelog                   | `docs/features/changelog/ROADMAP.md`                                |
 | **Feature : E2E Testing**           |                                                                     |
 | Spec E2E Testing                    | `docs/features/e2e-testing/SPEC_E2E_TESTING.md`                     |
 | Roadmap E2E Testing                 | `docs/features/e2e-testing/ROADMAP.md`                              |
