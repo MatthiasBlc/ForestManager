@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef, useCallback, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
-import { FaBook, FaPlus, FaBars, FaHome } from "react-icons/fa";
+import { FaBook, FaPlus, FaBars, FaHome, FaSun, FaMoon } from "react-icons/fa";
 import { CommunityListItem } from "../../models/community";
 import APIManager from "../../network/api";
 import { communityEvents } from "../../utils/communityEvents";
+import { useTheme } from "../../contexts/ThemeContext";
 
 interface SidebarProps {
   onNavigate?: () => void;
@@ -62,7 +63,7 @@ const CommunityAvatar = ({
     <Link
       to={`/communities/${community.id}`}
       onClick={onClick}
-      className={`group flex items-center gap-3 p-2 rounded-lg transition-colors ${
+      className={`group flex items-center gap-3 p-2 rounded-lg transition-colors min-h-[44px] ${
         isActive ? "bg-base-300" : "hover:bg-base-300/50"
       } ${isCompact ? "justify-center" : ""}`}
     >
@@ -97,6 +98,7 @@ const CommunityAvatar = ({
 
 const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProps) => {
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
   const [communities, setCommunities] = useState<CommunityListItem[]>([]);
 
   const loadCommunities = useCallback(async () => {
@@ -150,7 +152,7 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
         <Link
           to="/dashboard"
           onClick={onNavigate}
-          className={`flex items-center gap-3 p-2 rounded-lg transition-colors ${
+          className={`flex items-center gap-3 p-2 rounded-lg transition-colors min-h-[44px] ${
             isActive("/dashboard") ? "bg-base-300" : "hover:bg-base-300/50"
           } ${isCompact ? "justify-center tooltip tooltip-right" : ""}`}
           data-tip={isCompact ? "Dashboard" : undefined}
@@ -171,7 +173,7 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
         <Link
           to="/recipes"
           onClick={onNavigate}
-          className={`flex items-center gap-3 p-2 rounded-lg transition-colors mt-1 ${
+          className={`flex items-center gap-3 p-2 rounded-lg transition-colors mt-1 min-h-[44px] ${
             isActive("/recipes") ? "bg-base-300" : "hover:bg-base-300/50"
           } ${isCompact ? "justify-center tooltip tooltip-right" : ""}`}
           data-tip={isCompact ? "My Recipes" : undefined}
@@ -248,9 +250,20 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
 
       {/* Footer */}
       <div className={`shrink-0 border-t border-base-300 ${isCompact ? "p-2" : "p-3"}`}>
-        <p className={`text-xs text-base-content/50 text-center`}>
-          {isCompact ? "v0.1" : "Forest Manager v0.1"}
-        </p>
+        <div
+          className={`flex items-center ${isCompact ? "justify-center" : "justify-between"} mb-1`}
+        >
+          {!isCompact && <p className="text-xs text-base-content/50">Forest Manager v0.1</p>}
+          <button
+            onClick={toggleTheme}
+            className={`btn btn-ghost btn-sm btn-circle ${isCompact ? "tooltip tooltip-right" : ""}`}
+            data-tip={isCompact ? (theme === "coffee" ? "Light mode" : "Dark mode") : undefined}
+            aria-label={theme === "coffee" ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            {theme === "coffee" ? <FaSun className="w-4 h-4" /> : <FaMoon className="w-4 h-4" />}
+          </button>
+        </div>
+        {isCompact && <p className="text-xs text-base-content/50 text-center">v0.1</p>}
       </div>
     </div>
   );
