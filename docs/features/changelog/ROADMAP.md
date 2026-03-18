@@ -60,18 +60,19 @@ Spec : `docs/features/changelog/SPEC_CHANGELOG.md`
 
 ---
 
-## Phase 5 — Job CI (generate-changelog via Portainer exec)
+## Phase 5 — Job CI (generate-changelog via Portainer exec) ✅
 
-- [ ] Ajouter le job `generate-changelog` dans `deploy.yml`
-  - [ ] `needs: [deploy-prod]`, uniquement si deploy reussi
-  - [ ] Checkout avec `fetch-depth: 0`
-  - [ ] Determiner le dernier tag `v*`
-  - [ ] Executer `scripts/generate-changelog.ts` pour parser les commits
-  - [ ] Skip si aucun commit user-facing
-  - [ ] Trouver le container backend via API Portainer (filtre par nom)
-  - [ ] Executer `scripts/insert-changelog.ts` dans le container via Portainer exec
-  - [ ] Creer et pousser le tag git `vX.Y.Z`
-- [ ] Aucun nouveau secret GitHub necessaire (reutilise PORTAINER_URL, PORTAINER_API, ENDPOINT_ID)
+- [x] Ajouter le job `generate-changelog` dans `deploy.yml`
+  - [x] `needs: [deploy-prod]`, uniquement si deploy reussi
+  - [x] Checkout avec `fetch-depth: 0`
+  - [x] Determiner le dernier tag `v*`
+  - [x] Executer `scripts/generate-changelog.js` pour parser les commits
+  - [x] Skip si aucun commit user-facing (exit code 2)
+  - [x] Trouver le container backend via API Portainer (filtre par nom)
+  - [x] Executer `dist/scripts/insertChangelog.js` dans le container via Portainer exec
+  - [x] Verifier exit code de l'exec
+  - [x] Creer et pousser le tag git `vX.Y.Z`
+- [x] Aucun nouveau secret GitHub necessaire (reutilise PORTAINER_URL, PORTAINER_API, ENDPOINT_ID)
 
 ---
 

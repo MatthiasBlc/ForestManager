@@ -313,6 +313,138 @@ jobs:
           ADMIN_SESSION_SECRET: ${{ secrets.ADMIN_SESSION_SECRET }}
 
   # ========================================
+  # Generate Changelog (after prod deploy)
+  # ========================================
+  generate-changelog:
+    runs-on: ubuntu-latest
+    needs: [deploy-prod]
+    if: needs.deploy-prod.result == 'success'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Determine last version tag
+        id: last-tag
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 --match "v*" 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            echo "No previous tag found, using initial commit"
+            echo "tag=" >> $GITHUB_OUTPUT
+            echo "version=0.0.0" >> $GITHUB_OUTPUT
+          else
+            echo "Last tag: $LAST_TAG"
+            echo "tag=$LAST_TAG" >> $GITHUB_OUTPUT
+            echo "version=${LAST_TAG#v}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Parse commits and generate changelog
+        id: changelog
+        run: |
+          LAST_TAG="${{ steps.last-tag.outputs.tag }}"
+          LAST_VERSION="${{ steps.last-tag.outputs.version }}"
+
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --oneline)
+          else
+            COMMITS=$(git log --oneline "${LAST_TAG}..HEAD")
+          fi
+
+          if [ -z "$COMMITS" ]; then
+            echo "No new commits"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Generate changelog JSON
+          RESULT=$(echo "$COMMITS" | node scripts/generate-changelog.js "$LAST_VERSION" 2>/dev/null) || {
+            echo "No user-facing changes, skipping changelog"
+            echo "skip=true" >> $GITHUB_OUTPUT
+            exit 0
+          }
+
+          echo "Generated changelog: $RESULT"
+          echo "json=$RESULT" >> $GITHUB_OUTPUT
+          NEW_VERSION=$(echo "$RESULT" | jq -r '.version')
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "skip=false" >> $GITHUB_OUTPUT
+
+      - name: Insert changelog via Portainer exec
+        if: steps.changelog.outputs.skip != 'true'
+        run: |
+          CHANGELOG_JSON='${{ steps.changelog.outputs.json }}'
+
+          # 1. Find the backend container
+          CONTAINERS=$(curl -sf -H "X-API-Key: ${PORTAINER_API}" \
+            "${PORTAINER_URL}/api/endpoints/${ENDPOINT_ID}/docker/containers/json" \
+            | jq '[.[] | select(.Names[] | contains("forestmanager-backend"))]')
+
+          CONTAINER_ID=$(echo "$CONTAINERS" | jq -r '.[0].Id')
+          if [ -z "$CONTAINER_ID" ] || [ "$CONTAINER_ID" = "null" ]; then
+            echo "ERROR: Backend container not found"
+            exit 1
+          fi
+          echo "Found backend container: ${CONTAINER_ID:0:12}"
+
+          # 2. Create exec (escape JSON for nested embedding)
+          ESCAPED_JSON=$(echo "$CHANGELOG_JSON" | jq -c '.' | jq -Rs '.')
+          EXEC_PAYLOAD=$(jq -n \
+            --argjson cmd "[\"node\",\"dist/scripts/insertChangelog.js\",${ESCAPED_JSON}]" \
+            '{"Cmd":$cmd,"AttachStdout":true,"AttachStderr":true}')
+
+          EXEC_RESPONSE=$(curl -sf -H "X-API-Key: ${PORTAINER_API}" \
+            -H "Content-Type: application/json" \
+            -d "$EXEC_PAYLOAD" \
+            "${PORTAINER_URL}/api/endpoints/${ENDPOINT_ID}/docker/containers/${CONTAINER_ID}/exec")
+
+          EXEC_ID=$(echo "$EXEC_RESPONSE" | jq -r '.Id')
+          if [ -z "$EXEC_ID" ] || [ "$EXEC_ID" = "null" ]; then
+            echo "ERROR: Failed to create exec"
+            echo "Response: $EXEC_RESPONSE"
+            exit 1
+          fi
+          echo "Created exec: ${EXEC_ID:0:12}"
+
+          # 3. Start exec
+          EXEC_OUTPUT=$(curl -sf -H "X-API-Key: ${PORTAINER_API}" \
+            -H "Content-Type: application/json" \
+            -d '{"Detach":false}' \
+            "${PORTAINER_URL}/api/endpoints/${ENDPOINT_ID}/docker/exec/${EXEC_ID}/start")
+
+          echo "Exec output: $EXEC_OUTPUT"
+
+          # 4. Check exec exit code
+          EXEC_INSPECT=$(curl -sf -H "X-API-Key: ${PORTAINER_API}" \
+            "${PORTAINER_URL}/api/endpoints/${ENDPOINT_ID}/docker/exec/${EXEC_ID}/json")
+          EXIT_CODE=$(echo "$EXEC_INSPECT" | jq -r '.ExitCode')
+
+          if [ "$EXIT_CODE" != "0" ]; then
+            echo "ERROR: Insert script failed with exit code $EXIT_CODE"
+            exit 1
+          fi
+
+          echo "Changelog inserted successfully"
+        env:
+          PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
+          PORTAINER_API: ${{ secrets.PORTAINER_API }}
+          ENDPOINT_ID: ${{ secrets.ENDPOINT_ID }}
+
+      - name: Create and push git tag
+        if: steps.changelog.outputs.skip != 'true'
+        run: |
+          NEW_VERSION="${{ steps.changelog.outputs.version }}"
+          git tag "v${NEW_VERSION}"
+          git push origin "v${NEW_VERSION}"
+          echo "Tagged and pushed v${NEW_VERSION}"
+
+  # ========================================
   # Cleanup old images
   # ========================================
   cleanup:
