@@ -113,11 +113,12 @@ Spec : `docs/features/changelog/SPEC_CHANGELOG.md`
 
 ---
 
-## Phase 8 — Mise a jour docs & contexte
+## Phase 8 — Mise a jour docs & contexte ✅
 
-- [ ] Mettre a jour `API_MAP.md` (nouveaux endpoints)
-- [ ] Mettre a jour `DB_MODELS.md` (nouveau modele + enum)
-- [ ] Mettre a jour `FILE_MAP.md` (nouveaux fichiers)
-- [ ] Mettre a jour `PROGRESS.md` (feature terminee)
-- [ ] Mettre a jour `CLAUDE.md` si necessaire (codes erreur)
-- [ ] Cocher toutes les taches de cette roadmap
+- [x] Mettre a jour `API_MAP.md` (nouveaux endpoints: 6 user + 4 admin)
+- [x] Mettre a jour `DB_MODELS.md` (ChangelogEntry model + CHANGELOG\_\* enum values)
+- [x] Mettre a jour `FILE_MAP.md` (nouveaux fichiers backend + frontend)
+- [x] Mettre a jour `PROGRESS.md` (feature terminee)
+- [x] Mettre a jour `TESTS.md` (24 backend + 16 frontend tests)
+- [x] Mettre a jour `CLAUDE.md` (codes erreur CHANGELOG_001-004)
+- [x] Cocher toutes les taches de cette roadmap

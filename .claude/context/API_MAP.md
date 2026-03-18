@@ -155,6 +155,15 @@ PUT   /api/notifications/preferences        # update preference (category, enabl
 
 Controller: `controllers/notifications.ts` | Route: `routes/notifications.ts`
 
+## Changelog (/api/changelog) - requireAuth
+
+```
+GET /api/changelog/            # list paginated (publishedAt desc, deletedAt: null)
+GET /api/changelog/:id         # detail (deletedAt: null)
+```
+
+Controller: `controllers/changelog.ts` | Route: `routes/changelog.ts`
+
 ## User Invitations
 
 ```
@@ -286,6 +295,18 @@ PATCH /api/admin/features/:id       # update
 
 Controller: `admin/controllers/featuresController.ts` | Route: `admin/routes/featuresRoutes.ts`
 
+## Admin Changelog (/api/admin/changelog) - requireSuperAdmin
+
+```
+GET    /api/admin/changelog/          # list paginated (?includeDeleted=true)
+POST   /api/admin/changelog/          # create (version, title, content, publishedAt?)
+PATCH  /api/admin/changelog/:id       # update (version?, title?, content?, publishedAt?)
+DELETE /api/admin/changelog/:id       # soft delete
+```
+
+Controller: `admin/controllers/changelogController.ts` | Route: `admin/routes/changelogRoutes.ts`
+Error codes: CHANGELOG_001-004
+
 ## Admin Dashboard & Activity - requireSuperAdmin
 
 ```
@@ -310,4 +331,4 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 | adminRateLimiter     | middleware/security.ts                | 30 req/min global admin                |
 | authRateLimiter      | routes config                         | 5/15min sur auth endpoints             |
 
-## Total: 99 endpoints (65 user + 33 admin + 1 health)
+## Total: 107 endpoints (69 user + 37 admin + 1 health)

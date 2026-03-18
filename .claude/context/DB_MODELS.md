@@ -3,7 +3,7 @@
 Source: `backend/prisma/schema.prisma`
 DB: PostgreSQL | ORM: Prisma
 
-## Models (30 total)
+## Models (31 total)
 
 ### Sessions (isolees)
 
@@ -66,6 +66,12 @@ DB: PostgreSQL | ORM: Prisma
 | RecipeAnalytics | recipeId(unique), views, shares, forks | Cascade delete |
 | RecipeView      | recipeId, userId?, viewedAt            | Cascade delete |
 
+### Changelog (1 model)
+
+| Model          | Champs cles                                                        | Notes                                    |
+| -------------- | ------------------------------------------------------------------ | ---------------------------------------- |
+| ChangelogEntry | id, version(unique), title, content(Json), publishedAt, deletedAt? | Soft delete, index publishedAt+deletedAt |
+
 ### Activity (1 model)
 
 | Model       | Champs cles                                                          | Notes                                   |
@@ -96,6 +102,7 @@ AdminActionType: TAG_CREATED | TAG_UPDATED | TAG_DELETED | TAG_MERGED |
   COMMUNITY_RENAMED | COMMUNITY_DELETED |
   RECIPE_UPDATED | RECIPE_DELETED |
   FEATURE_CREATED | FEATURE_UPDATED | FEATURE_GRANTED | FEATURE_REVOKED |
+  CHANGELOG_CREATED | CHANGELOG_UPDATED | CHANGELOG_DELETED |
   ADMIN_LOGIN | ADMIN_LOGOUT | ADMIN_TOTP_SETUP
 
 ActivityType: RECIPE_CREATED | RECIPE_UPDATED | RECIPE_DELETED | RECIPE_SHARED |
@@ -142,6 +149,6 @@ AdminUser <-1:N-> AdminActivityLog
 
 | Type                    | Modeles                                                                                                                                                                                                                   | Methode                            |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| Soft delete (deletedAt) | User, Community, UserCommunity, Recipe, RecipeUpdateProposal, CommunityInvite                                                                                                                                             | Applicatif (where deletedAt: null) |
+| Soft delete (deletedAt) | User, Community, UserCommunity, Recipe, RecipeUpdateProposal, CommunityInvite, ChangelogEntry                                                                                                                             | Applicatif (where deletedAt: null) |
 | Hard delete (Cascade)   | RecipeTag, RecipeIngredient, RecipeStep, ProposalIngredient, ProposalStep, RecipeAnalytics, RecipeView, TagSuggestion (via Recipe), UserCommunityTagPreference, Notification (via User/Community), NotificationPreference | DB cascade                         |
 | Soft revoke             | CommunityFeature                                                                                                                                                                                                          | revokedAt timestamp                |
