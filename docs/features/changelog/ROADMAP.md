@@ -40,23 +40,23 @@ Spec : `docs/features/changelog/SPEC_CHANGELOG.md`
 
 ---
 
-## Phase 4 — Script de generation & script d'insertion
+## Phase 4 — Script de generation & script d'insertion ✅
 
-- [ ] Creer `scripts/generate-changelog.ts` (executable Node.js, tourne dans le CI)
-  - [ ] Parser conventional commits (regex)
-  - [ ] Filtrer : exclure test/docs/ci/build/chore (sauf chore(deps))
-  - [ ] Exclure merge commits
-  - [ ] Categoriser : feat → features, fix → fixes, refactor/perf/style → improvements
-  - [ ] Calculer la prochaine version semver depuis le dernier tag
-  - [ ] Generer le titre auto (ex: "2 nouveautes et 3 corrections")
-  - [ ] Sortie JSON sur stdout
-- [ ] Test du script en local (avec des commits de test)
-- [ ] Creer `scripts/insert-changelog.ts` (tourne dans le container backend via Portainer exec)
-  - [ ] Recoit JSON changelog en argument
-  - [ ] Validation : version semver, content structure
-  - [ ] Insert en DB via Prisma (`changelogEntry.create`)
-  - [ ] Gestion conflit version (erreur si doublon)
-  - [ ] S'assurer que le script est inclus dans le build Docker (Dockerfile backend)
+- [x] Creer `scripts/generate-changelog.js` (JS pur, tourne dans le CI)
+  - [x] Parser conventional commits (regex)
+  - [x] Filtrer : exclure test/docs/ci/build/chore (sauf chore(deps))
+  - [x] Exclure merge commits
+  - [x] Categoriser : feat → features, fix → fixes, refactor/perf/style → improvements
+  - [x] Calculer la prochaine version semver depuis le dernier tag
+  - [x] Generer le titre auto (ex: "2 nouveautes et 3 corrections")
+  - [x] Sortie JSON sur stdout, exit code 2 si rien a publier
+- [x] Test du script en local (avec des commits de test)
+- [x] Creer `backend/src/scripts/insertChangelog.ts` (compile dans dist/, tourne dans le container)
+  - [x] Recoit JSON changelog en argument
+  - [x] Validation : version semver, content structure
+  - [x] Insert en DB via Prisma (`changelogEntry.create`)
+  - [x] Gestion conflit version (erreur si doublon)
+  - [x] Compile dans dist/scripts/insertChangelog.js (rootDir + include ajoutes au tsconfig)
 
 ---
 

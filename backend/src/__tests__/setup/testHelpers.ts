@@ -492,11 +492,12 @@ export async function createTestChangelogEntry(
     data: {
       version: data?.version ?? `0.0.${Date.now() % 10000}`,
       title: data?.title ?? `Test changelog ${suffix}`,
-      content: data?.content ?? {
+      content: (data?.content ?? {
         features: [{ text: "Test feature" }],
         improvements: [],
         fixes: [],
-      },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      }) as any,
       publishedAt: data?.publishedAt,
       deletedAt: data?.deletedAt,
     },
