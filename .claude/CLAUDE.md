@@ -92,6 +92,11 @@ docs/
     e2e-testing/                        # PLANIFIE
       SPEC_E2E_TESTING.md
       ROADMAP.md
+    meal-plan/                          # SPEC DONE
+      SPEC_MEAL_PLAN.md
+      ROADMAP.md
+      SPEC_MEAL_GENERATION.md
+      ROADMAP_GENERATION.md
 ```
 
 Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une spec et une roadmap.
@@ -118,6 +123,11 @@ Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une 
 | **Feature : E2E Testing**           |                                                                     |
 | Spec E2E Testing                    | `docs/features/e2e-testing/SPEC_E2E_TESTING.md`                     |
 | Roadmap E2E Testing                 | `docs/features/e2e-testing/ROADMAP.md`                              |
+| **Feature : Meal Plan**             |                                                                     |
+| Spec Meal Plan                      | `docs/features/meal-plan/SPEC_MEAL_PLAN.md`                         |
+| Roadmap Meal Plan                   | `docs/features/meal-plan/ROADMAP.md`                                |
+| Spec Meal Generation                | `docs/features/meal-plan/SPEC_MEAL_GENERATION.md`                   |
+| Roadmap Meal Generation             | `docs/features/meal-plan/ROADMAP_GENERATION.md`                     |
 | **Specs features (reference)**      |                                                                     |
 | Tags Rework                         | `docs/features/tags-rework/SPEC_TAGS_REWORK.md`                     |
 | Ingredients Rework                  | `docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md`       |
