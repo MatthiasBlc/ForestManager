@@ -594,4 +594,162 @@ describe("Meal Plan API", () => {
       expect(res.body.error).toContain("MEAL_011");
     });
   });
+
+  // ===================================
+  // GET /meal-plan/archives
+  // ===================================
+  describe("GET /meal-plan/archives", () => {
+    it("should return empty list when no archives", async () => {
+      const res = await request(app)
+        .get(`/api/communities/${communityId}/meal-plan/archives`)
+        .set("Cookie", moderatorCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toHaveLength(0);
+      expect(res.body.pagination.total).toBe(0);
+    });
+
+    it("should return paginated archives with slot counts", async () => {
+      // Create plan 1 (will become archive)
+      await request(app)
+        .post(`/api/communities/${communityId}/meal-plan`)
+        .set("Cookie", moderatorCookie)
+        .send({ startDate: "2026-03-01", endDate: "2026-03-03" });
+
+      // Create plan 2 (archives plan 1)
+      await request(app)
+        .post(`/api/communities/${communityId}/meal-plan`)
+        .set("Cookie", moderatorCookie)
+        .send({ startDate: "2026-04-06", endDate: "2026-04-08" });
+
+      const res = await request(app)
+        .get(`/api/communities/${communityId}/meal-plan/archives`)
+        .set("Cookie", memberCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toHaveLength(1);
+      expect(res.body.data[0].totalSlots).toBe(6); // 3 days x 2
+      expect(res.body.pagination.total).toBe(1);
+    });
+
+    it("should return 403 for non-member", async () => {
+      const res = await request(app)
+        .get(`/api/communities/${communityId}/meal-plan/archives`)
+        .set("Cookie", nonMemberCookie);
+
+      expect(res.status).toBe(403);
+    });
+  });
+
+  // ===================================
+  // GET /meal-plan/archives/:planId
+  // ===================================
+  describe("GET /meal-plan/archives/:planId", () => {
+    it("should return archive detail with slots", async () => {
+      // Create plan 1
+      const plan1Res = await request(app)
+        .post(`/api/communities/${communityId}/meal-plan`)
+        .set("Cookie", moderatorCookie)
+        .send({ startDate: "2026-03-01", endDate: "2026-03-03" });
+      const plan1Id = plan1Res.body.plan.id;
+
+      // Archive it by creating plan 2
+      await request(app)
+        .post(`/api/communities/${communityId}/meal-plan`)
+        .set("Cookie", moderatorCookie)
+        .send({ startDate: "2026-04-06", endDate: "2026-04-08" });
+
+      const res = await request(app)
+        .get(`/api/communities/${communityId}/meal-plan/archives/${plan1Id}`)
+        .set("Cookie", memberCookie);
+
+      expect(res.status).toBe(200);
+      expect(res.body.plan.id).toBe(plan1Id);
+      expect(res.body.plan.status).toBe("ARCHIVED");
+      expect(res.body.plan.slots).toHaveLength(6);
+    });
+
+    it("should return 404 for active plan id", async () => {
+      const planRes = await request(app)
+        .post(`/api/communities/${communityId}/meal-plan`)
+        .set("Cookie", moderatorCookie)
+        .send({ startDate: "2026-04-06", endDate: "2026-04-08" });
+
+      const res = await request(app)
+        .get(`/api/communities/${communityId}/meal-plan/archives/${planRes.body.plan.id}`)
+        .set("Cookie", moderatorCookie);
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toContain("MEAL_012");
+    });
+
+    it("should return 404 for non-existent plan", async () => {
+      const res = await request(app)
+        .get(
+          `/api/communities/${communityId}/meal-plan/archives/00000000-0000-4000-8000-000000000000`
+        )
+        .set("Cookie", moderatorCookie);
+
+      expect(res.status).toBe(404);
+    });
+  });
+
+  // ===================================
+  // DELETE /meal-plan/archives/:planId
+  // ===================================
+  describe("DELETE /meal-plan/archives/:planId", () => {
+    it("should delete an archive (MODERATOR)", async () => {
+      // Create plan 1 then archive it
+      const plan1Res = await request(app)
+        .post(`/api/communities/${communityId}/meal-plan`)
+        .set("Cookie", moderatorCookie)
+        .send({ startDate: "2026-03-01", endDate: "2026-03-03" });
+      const plan1Id = plan1Res.body.plan.id;
+
+      await request(app)
+        .post(`/api/communities/${communityId}/meal-plan`)
+        .set("Cookie", moderatorCookie)
+        .send({ startDate: "2026-04-06", endDate: "2026-04-08" });
+
+      const res = await request(app)
+        .delete(`/api/communities/${communityId}/meal-plan/archives/${plan1Id}`)
+        .set("Cookie", moderatorCookie);
+
+      expect(res.status).toBe(204);
+
+      // Verify archive is gone
+      const plan = await testPrisma.mealPlan.findUnique({ where: { id: plan1Id } });
+      expect(plan).toBeNull();
+    });
+
+    it("should return 403 for member", async () => {
+      const plan1Res = await request(app)
+        .post(`/api/communities/${communityId}/meal-plan`)
+        .set("Cookie", moderatorCookie)
+        .send({ startDate: "2026-03-01", endDate: "2026-03-03" });
+      const plan1Id = plan1Res.body.plan.id;
+
+      await request(app)
+        .post(`/api/communities/${communityId}/meal-plan`)
+        .set("Cookie", moderatorCookie)
+        .send({ startDate: "2026-04-06", endDate: "2026-04-08" });
+
+      const res = await request(app)
+        .delete(`/api/communities/${communityId}/meal-plan/archives/${plan1Id}`)
+        .set("Cookie", memberCookie);
+
+      expect(res.status).toBe(403);
+    });
+
+    it("should return 404 for non-existent archive", async () => {
+      const res = await request(app)
+        .delete(
+          `/api/communities/${communityId}/meal-plan/archives/00000000-0000-4000-8000-000000000000`
+        )
+        .set("Cookie", moderatorCookie);
+
+      expect(res.status).toBe(404);
+      expect(res.body.error).toContain("MEAL_012");
+    });
+  });
 });

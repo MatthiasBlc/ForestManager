@@ -10,8 +10,10 @@ import {
   MEAL_009,
   MEAL_010,
   MEAL_011,
+  MEAL_012,
   MEAL_013,
 } from "../constants/errorCodes";
+import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import {
   CreateMealPlanInput,
   UpdateMealPlanInput,
@@ -492,6 +494,101 @@ export const swapSlots = async (req: Request, res: Response, next: NextFunction)
     ]);
 
     res.json({ slotA: formatSlot(updatedA), slotB: formatSlot(updatedB) });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /api/communities/:communityId/meal-plan/archives
+ * Liste paginee des plans ARCHIVED (memberOf)
+ */
+export const getArchives = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { communityId } = req.params;
+    const { limit, offset } = parsePagination(req.query as any);
+
+    const [archives, total] = await Promise.all([
+      prisma.mealPlan.findMany({
+        where: { communityId, status: "ARCHIVED" },
+        orderBy: { startDate: "desc" },
+        skip: offset,
+        take: limit,
+        include: {
+          _count: { select: { slots: true } },
+          slots: {
+            where: { type: { not: "EMPTY" } },
+            select: { id: true },
+          },
+        },
+      }),
+      prisma.mealPlan.count({ where: { communityId, status: "ARCHIVED" } }),
+    ]);
+
+    const data = archives.map((a) => ({
+      id: a.id,
+      startDate: a.startDate,
+      endDate: a.endDate,
+      defaultServings: a.defaultServings,
+      createdAt: a.createdAt,
+      totalSlots: a._count.slots,
+      filledSlots: a.slots.length,
+    }));
+
+    res.json({
+      data,
+      pagination: buildPaginationMeta(total, limit, offset, data.length),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /api/communities/:communityId/meal-plan/archives/:planId
+ * Detail d'un plan archive + slots (memberOf)
+ */
+export const getArchiveDetail = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { communityId, planId } = req.params;
+
+    const plan = await prisma.mealPlan.findUnique({
+      where: { id: planId },
+      include: {
+        slots: {
+          orderBy: [{ date: "asc" }, { mealTime: "asc" }],
+          include: slotInclude,
+        },
+      },
+    });
+
+    if (!plan || plan.communityId !== communityId || plan.status !== "ARCHIVED") {
+      throw createHttpError(404, MEAL_012);
+    }
+
+    res.json({ plan: { ...plan, slots: plan.slots.map(formatSlot) } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * DELETE /api/communities/:communityId/meal-plan/archives/:planId
+ * Supprimer une archive (MODERATOR, hard delete)
+ */
+export const deleteArchive = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { communityId, planId } = req.params;
+
+    const plan = await prisma.mealPlan.findUnique({ where: { id: planId } });
+
+    if (!plan || plan.communityId !== communityId || plan.status !== "ARCHIVED") {
+      throw createHttpError(404, MEAL_012);
+    }
+
+    await prisma.mealPlan.delete({ where: { id: planId } });
+
+    res.status(204).send();
   } catch (error) {
     next(error);
   }

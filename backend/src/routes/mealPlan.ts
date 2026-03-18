@@ -44,4 +44,17 @@ router.patch("/slots/:slotId", validateBody(updateSlotSchema), MealPlanControlle
 // POST /api/communities/:communityId/meal-plan/slots/swap — Swap 2 slots (permission dynamique)
 router.post("/slots/swap", validateBody(swapSlotsSchema), MealPlanController.swapSlots);
 
+// GET /api/communities/:communityId/meal-plan/archives — Liste paginee (memberOf)
+router.get("/archives", MealPlanController.getArchives);
+
+// GET /api/communities/:communityId/meal-plan/archives/:planId — Detail archive (memberOf)
+router.get("/archives/:planId", MealPlanController.getArchiveDetail);
+
+// DELETE /api/communities/:communityId/meal-plan/archives/:planId — Supprimer archive (MODERATOR)
+router.delete(
+  "/archives/:planId",
+  requireCommunityRole("MODERATOR"),
+  MealPlanController.deleteArchive
+);
+
 export default router;
