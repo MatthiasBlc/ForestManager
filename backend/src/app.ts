@@ -22,6 +22,7 @@ import usersRoutes from "./routes/users";
 import proposalsRoutes from "./routes/proposals";
 import tagSuggestionsRoutes from "./routes/tagSuggestions";
 import notificationsRoutes from "./routes/notifications";
+import changelogRoutes from "./routes/changelog";
 
 // Admin routes
 import adminAuthRoutes from "./admin/routes/authRoutes";
@@ -61,6 +62,7 @@ app.use("/api/users", userSession, requireAuth, usersRoutes);
 app.use("/api/proposals", userSession, requireAuth, proposalsRoutes);
 app.use("/api/tag-suggestions", userSession, requireAuth, tagSuggestionsRoutes);
 app.use("/api/notifications", userSession, requireAuth, notificationsRoutes);
+app.use("/api/changelog", userSession, requireAuth, changelogRoutes);
 
 // Admin routes
 app.use("/api/admin", adminRateLimiter);

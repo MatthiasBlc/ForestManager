@@ -29,14 +29,14 @@ Spec : `docs/features/changelog/SPEC_CHANGELOG.md`
 
 ---
 
-## Phase 3 — Backend API (User)
+## Phase 3 — Backend API (User) ✅
 
-- [ ] Creer `controllers/changelog.ts`
-- [ ] Creer `routes/changelog.ts`
-- [ ] `GET /api/changelog` — liste paginee (requireAuth, deletedAt: null)
-- [ ] `GET /api/changelog/:id` — detail (requireAuth, deletedAt: null)
-- [ ] Brancher les routes dans `app.ts`
-- [ ] Tests unitaires user endpoints
+- [x] Creer `controllers/changelog.ts`
+- [x] Creer `routes/changelog.ts`
+- [x] `GET /api/changelog` — liste paginee (requireAuth, deletedAt: null)
+- [x] `GET /api/changelog/:id` — detail (requireAuth, deletedAt: null)
+- [x] Brancher les routes dans `app.ts`
+- [x] Tests integration user endpoints (7 tests)
 
 ---
 
