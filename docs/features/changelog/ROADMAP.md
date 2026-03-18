@@ -76,21 +76,21 @@ Spec : `docs/features/changelog/SPEC_CHANGELOG.md`
 
 ---
 
-## Phase 6 — Frontend User (page changelog)
+## Phase 6 — Frontend User (page changelog) ✅
 
-- [ ] Creer `pages/ChangelogPage.tsx`
-  - [ ] Liste de cartes empilees, du plus recent au plus ancien
-  - [ ] Badge version colore
-  - [ ] Date relative + absolue
-  - [ ] 3 categories avec icone/couleur : Nouveautes (vert), Ameliorations (bleu), Corrections (rouge)
-  - [ ] Pagination classique
-- [ ] Ajouter la route `/changelog` (requireAuth)
-- [ ] Service API : `getChangelog(page, limit)`, `getChangelogEntry(id)`
-- [ ] Modifier `Sidebar.tsx` :
-  - [ ] Version dynamique (derniere version du changelog)
-  - [ ] Texte version cliquable → lien `/changelog`
-  - [ ] Mode compact : icone avec tooltip "Changelog"
-- [ ] Tests composant ChangelogPage
+- [x] Creer `pages/ChangelogPage.tsx`
+  - [x] Liste de cartes empilees, du plus recent au plus ancien
+  - [x] Badge version colore
+  - [x] Date relative + absolue
+  - [x] 3 categories avec icone/couleur : Nouveautes (vert), Ameliorations (bleu), Corrections (rouge)
+  - [x] Pagination classique (load more)
+- [x] Ajouter la route `/changelog` (requireAuth)
+- [x] Service API : `getChangelog(limit, offset)`, `getChangelogEntry(id)`
+- [x] Modifier `Sidebar.tsx` :
+  - [x] Version dynamique (derniere version du changelog)
+  - [x] Texte version cliquable → lien `/changelog`
+  - [x] Mode compact : version avec tooltip "Changelog"
+- [x] Tests composant ChangelogPage (6 tests)
 
 ---
 

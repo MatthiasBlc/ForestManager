@@ -1828,4 +1828,109 @@ export const handlers = [
       },
     });
   }),
+
+  // =====================================
+  // Changelog (User)
+  // =====================================
+
+  // GET /api/changelog
+  http.get(`${API_URL}/api/changelog`, ({ request }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+
+    const url = new URL(request.url);
+    const limit = parseInt(url.searchParams.get("limit") || "10");
+    const offset = parseInt(url.searchParams.get("offset") || "0");
+
+    const entries = [
+      {
+        id: "changelog-1",
+        version: "1.2.0",
+        title: "2 nouveautes et 1 correction",
+        content: {
+          features: [
+            { text: "Import de recettes depuis URL" },
+            { text: "Systeme de notifications" },
+          ],
+          improvements: [],
+          fixes: [{ text: "Correction de l'affichage mobile" }],
+        },
+        publishedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: "changelog-2",
+        version: "1.1.0",
+        title: "1 nouveaute et 2 ameliorations",
+        content: {
+          features: [{ text: "Tags communautaires" }],
+          improvements: [
+            { text: "Performance amelioree" },
+            { text: "Meilleure gestion des erreurs" },
+          ],
+          fixes: [],
+        },
+        publishedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+      {
+        id: "changelog-3",
+        version: "1.0.0",
+        title: "Lancement de Forest Manager",
+        content: {
+          features: [{ text: "Gestion de recettes" }, { text: "Communautes privees" }],
+          improvements: [],
+          fixes: [],
+        },
+        publishedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+        createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+      },
+    ];
+
+    const paged = entries.slice(offset, offset + limit);
+    return HttpResponse.json({
+      data: paged,
+      pagination: {
+        total: entries.length,
+        limit,
+        offset,
+        hasMore: offset + limit < entries.length,
+      },
+    });
+  }),
+
+  // GET /api/changelog/:id
+  http.get(`${API_URL}/api/changelog/:id`, ({ params }) => {
+    if (!isUserAuthenticated) {
+      return HttpResponse.json({ error: "AUTH_001: Not authenticated" }, { status: 401 });
+    }
+
+    if (params.id === "changelog-1") {
+      return HttpResponse.json({
+        id: "changelog-1",
+        version: "1.2.0",
+        title: "2 nouveautes et 1 correction",
+        content: {
+          features: [
+            { text: "Import de recettes depuis URL" },
+            { text: "Systeme de notifications" },
+          ],
+          improvements: [],
+          fixes: [{ text: "Correction de l'affichage mobile" }],
+        },
+        publishedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
+    return HttpResponse.json(
+      { error: "CHANGELOG_001: Changelog entry not found" },
+      { status: 404 }
+    );
+  }),
 ];

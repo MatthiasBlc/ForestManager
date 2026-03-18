@@ -14,6 +14,7 @@ import {
   SuggestedUnit,
 } from "../models/recipe";
 import { ActivityResponse } from "../models/activity";
+import { ChangelogResponse, ChangelogEntry } from "../models/changelog";
 import { User } from "../models/user";
 import {
   AdminLoginResponse,
@@ -655,6 +656,21 @@ export default class APIManager {
 
   static async rejectInvite(inviteId: string): Promise<{ message: string }> {
     const response = await API.post(`/api/invites/${inviteId}/reject`).catch(handleApiError);
+    return response.data;
+  }
+
+  // --------------- Changelog ---------------
+
+  static async getChangelog(
+    params: { limit?: number; offset?: number } = {}
+  ): Promise<ChangelogResponse> {
+    const qs = buildQueryString({ limit: params.limit, offset: params.offset });
+    const response = await API.get(`/api/changelog${qs}`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async getChangelogEntry(id: string): Promise<ChangelogEntry> {
+    const response = await API.get(`/api/changelog/${id}`).catch(handleApiError);
     return response.data;
   }
 
