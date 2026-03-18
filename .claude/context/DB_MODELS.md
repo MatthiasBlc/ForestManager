@@ -3,7 +3,7 @@
 Source: `backend/prisma/schema.prisma`
 DB: PostgreSQL | ORM: Prisma
 
-## Models (31 total)
+## Models (34 total)
 
 ### Sessions (isolees)
 
@@ -59,6 +59,14 @@ DB: PostgreSQL | ORM: Prisma
 | Notification           | id, userId, type, category(NotificationCategory), title, message, actionUrl?, metadata?(Json), actorId?, communityId?, recipeId?, groupKey?, readAt?, createdAt | Index userId+readAt+createdAt, userId+createdAt, userId+groupKey+createdAt, createdAt. Cascade on user/community, SetNull on actor/recipe |
 | NotificationPreference | id, userId, communityId?(null=global), category(NotificationCategory), enabled(default true), updatedAt                                                         | @@unique(userId,communityId,category). Remplace ModeratorNotificationPreference                                                           |
 
+### Meal Plan (3 models)
+
+| Model    | Champs cles                                                                                                                                  | Notes                                                             |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| MealPlan | id, communityId, startDate(@db.Date), endDate(@db.Date), status(MealPlanStatus), defaultServings, editableByMembers                          | 1 ACTIVE par communaute (applicatif). @@index(communityId,status) |
+| MealSlot | id, planId, date(@db.Date), mealTime(MealTime), servings, type(MealSlotType), disabled, locked, recipeId?, freeText?, comment?, updatedById? | Cascade on plan delete. @@unique(planId,date,mealTime)            |
+| MealIdea | id, communityId, name, comment?, recipeId?, createdById?, deletedAt?                                                                         | Soft delete. @@index(communityId,deletedAt)                       |
+
 ### Analytics (2 models - futur)
 
 | Model           | Champs cles                            | Notes          |
@@ -94,6 +102,11 @@ UnitCategory: WEIGHT | VOLUME | SPOON | COUNT | QUALITATIVE
 IngredientStatus: APPROVED | PENDING
 
 NotificationCategory: INVITATION | RECIPE_PROPOSAL | TAG | INGREDIENT | MODERATION
+
+DayOfWeek: MON | TUE | WED | THU | FRI | SAT | SUN
+MealTime: LUNCH | DINNER
+MealSlotType: EMPTY | RECIPE | FREE_TEXT
+MealPlanStatus: ACTIVE | ARCHIVED
 
 AdminActionType: TAG_CREATED | TAG_UPDATED | TAG_DELETED | TAG_MERGED |
   INGREDIENT_CREATED | INGREDIENT_UPDATED | INGREDIENT_DELETED | INGREDIENT_MERGED |
@@ -142,13 +155,20 @@ Community <-1:N-> NotificationPreference (cascade)
 Recipe <-1:N-> Notification (SetNull on delete)
 User <-1:N-> CommunityInvite (inviter + invitee)
 Community <-N:N-> Feature (via CommunityFeature, soft revoke)
+Community <-1:N-> MealPlan
+Community <-1:N-> MealIdea
+MealPlan <-1:N-> MealSlot (cascade on delete)
+MealSlot -> Recipe? (recipeId)
+MealSlot -> User? (updatedById, SetNull)
+MealIdea -> Recipe? (recipeId)
+MealIdea -> User? (createdById, SetNull)
 AdminUser <-1:N-> AdminActivityLog
 ```
 
 ## Regles delete
 
-| Type                    | Modeles                                                                                                                                                                                                                   | Methode                            |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| Soft delete (deletedAt) | User, Community, UserCommunity, Recipe, RecipeUpdateProposal, CommunityInvite, ChangelogEntry                                                                                                                             | Applicatif (where deletedAt: null) |
-| Hard delete (Cascade)   | RecipeTag, RecipeIngredient, RecipeStep, ProposalIngredient, ProposalStep, RecipeAnalytics, RecipeView, TagSuggestion (via Recipe), UserCommunityTagPreference, Notification (via User/Community), NotificationPreference | DB cascade                         |
-| Soft revoke             | CommunityFeature                                                                                                                                                                                                          | revokedAt timestamp                |
+| Type                    | Modeles                                                                                                                                                                                                                                            | Methode                            |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Soft delete (deletedAt) | User, Community, UserCommunity, Recipe, RecipeUpdateProposal, CommunityInvite, ChangelogEntry, MealIdea                                                                                                                                            | Applicatif (where deletedAt: null) |
+| Hard delete (Cascade)   | RecipeTag, RecipeIngredient, RecipeStep, ProposalIngredient, ProposalStep, RecipeAnalytics, RecipeView, TagSuggestion (via Recipe), UserCommunityTagPreference, Notification (via User/Community), NotificationPreference, MealSlot (via MealPlan) | DB cascade                         |
+| Soft revoke             | CommunityFeature                                                                                                                                                                                                                                   | revokedAt timestamp                |

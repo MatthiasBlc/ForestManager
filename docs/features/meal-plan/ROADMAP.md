@@ -20,10 +20,10 @@ Spec : `docs/features/meal-plan/SPEC_MEAL_PLAN.md`
 
 ## Phase 2 — Middleware & Feature guard
 
-- [ ] Creer middleware `requireFeature(featureCode)` generique (ou verifier s'il existe deja)
-- [ ] Le middleware verifie que la feature est activee pour la communaute (CommunityFeature, revokedAt null)
-- [ ] Retourne 403 avec code `MEAL_005` si feature non activee
-- [ ] Tests middleware requireFeature
+- [x] Creer middleware `requireFeature(featureCode)` generique (ou verifier s'il existe deja)
+- [x] Le middleware verifie que la feature est activee pour la communaute (CommunityFeature, revokedAt null)
+- [x] Retourne 403 avec code `MEAL_005` si feature non activee
+- [x] Tests middleware requireFeature
 
 ---
 

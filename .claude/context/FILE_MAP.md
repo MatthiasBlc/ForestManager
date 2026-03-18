@@ -25,6 +25,7 @@ controllers/
 ├── tags.ts            # autocomplete tags (scope-aware)
 ├── ingredients.ts     # autocomplete ingredients + suggested-unit
 ├── changelog.ts       # getAll, getById (user-facing)
+├── mealPlan.ts        # getActivePlan (+ CRUD a venir Phase 3)
 ├── units.ts           # list units grouped by category
 └── users.ts           # search users, update profile
 ```
@@ -40,6 +41,7 @@ routes/
 ├── recipes.ts         # /api/recipes/* (incl. /api/recipes/:id/proposals)
 ├── tagSuggestions.ts  # /api/tag-suggestions/*
 ├── changelog.ts       # /api/changelog
+├── mealPlan.ts        # /api/communities/:id/meal-plan (feature-gated)
 ├── tags.ts            # /api/tags
 ├── ingredients.ts     # /api/ingredients
 ├── units.ts           # /api/units
@@ -52,6 +54,7 @@ routes/
 middleware/
 ├── auth.ts            # requireAuth (verifie session.userId)
 ├── community.ts       # memberOf, requireCommunityRole
+├── requireFeature.ts  # requireFeature(code) — verifie feature activee pour communaute
 ├── httpLogger.ts      # pino-http middleware (remplace morgan)
 ├── security.ts        # helmet, CORS, rate limiting
 ├── csrf.ts            # CSRF protection middleware
@@ -188,6 +191,7 @@ __tests__/
     ├── imageCleanup.test.ts       # Image cleanup cron job
     ├── adminChangelog.test.ts     # Admin changelog CRUD (17 tests)
     ├── changelog.test.ts          # User changelog endpoints (7 tests)
+    ├── requireFeature.test.ts     # requireFeature middleware (3 tests)
     └── users.test.ts              # User profile update
 ```
 

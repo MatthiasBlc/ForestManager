@@ -32,7 +32,7 @@ Phases 0 a 17 terminees (tags rework, ingredients rework, notifications, recipe 
 - **Feature 2 — Generation Automatique**
   - Spec : `docs/features/meal-plan/SPEC_MEAL_GENERATION.md`
   - Roadmap : `docs/features/meal-plan/ROADMAP_GENERATION.md`
-- Statut : **Phase 1 terminee** (modeles + migration + seed). Phase 2 a suivre
+- Statut : **Phases 1-2 terminees** (modeles, migration, seed, middleware requireFeature). Phase 3 a suivre
 
 ## Idees futures
 

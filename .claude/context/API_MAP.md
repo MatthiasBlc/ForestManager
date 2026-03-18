@@ -210,6 +210,18 @@ POST /api/recipes/:recipeId/tag-suggestions   # suggerer un tag (membre, pas own
 
 Controller: `controllers/tagSuggestions.ts` | Route: `routes/recipes.ts`
 
+## Meal Plan (/api/communities/:communityId/meal-plan) - memberOf + requireFeature('MEAL_PLAN')
+
+```
+GET /api/communities/:communityId/meal-plan   # plan ACTIVE + slots (memberOf)
+```
+
+Controller: `controllers/mealPlan.ts` | Route: `routes/mealPlan.ts`
+Middleware: `middleware/requireFeature.ts`
+Error codes: MEAL_001-013
+
+> Endpoints supplementaires a venir en Phase 3 (CRUD plan, slots, swap, archives, ideas)
+
 ---
 
 ## Admin Auth (/api/admin/auth) - adminSession, rate limited 5/15min
@@ -320,15 +332,16 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 
 ## Middleware Chain
 
-| Middleware           | Fichier                               | Role                                   |
-| -------------------- | ------------------------------------- | -------------------------------------- |
-| userSession          | app.ts (express-session)              | Session user (connect.sid)             |
-| adminSession         | app.ts (express-session)              | Session admin (admin.sid)              |
-| requireAuth          | middleware/auth.ts                    | Verifie session.userId                 |
-| requireSuperAdmin    | admin/middleware/requireSuperAdmin.ts | Verifie session.adminId + totpVerified |
-| memberOf             | middleware/community.ts               | Verifie appartenance communaute        |
-| requireCommunityRole | middleware/community.ts               | Verifie role dans communaute           |
-| adminRateLimiter     | middleware/security.ts                | 30 req/min global admin                |
-| authRateLimiter      | routes config                         | 5/15min sur auth endpoints             |
+| Middleware           | Fichier                               | Role                                    |
+| -------------------- | ------------------------------------- | --------------------------------------- |
+| userSession          | app.ts (express-session)              | Session user (connect.sid)              |
+| adminSession         | app.ts (express-session)              | Session admin (admin.sid)               |
+| requireAuth          | middleware/auth.ts                    | Verifie session.userId                  |
+| requireSuperAdmin    | admin/middleware/requireSuperAdmin.ts | Verifie session.adminId + totpVerified  |
+| memberOf             | middleware/community.ts               | Verifie appartenance communaute         |
+| requireCommunityRole | middleware/community.ts               | Verifie role dans communaute            |
+| requireFeature       | middleware/requireFeature.ts          | Verifie feature activee pour communaute |
+| adminRateLimiter     | middleware/security.ts                | 30 req/min global admin                 |
+| authRateLimiter      | routes config                         | 5/15min sur auth endpoints              |
 
-## Total: 107 endpoints (69 user + 37 admin + 1 health)
+## Total: 108 endpoints (70 user + 37 admin + 1 health)

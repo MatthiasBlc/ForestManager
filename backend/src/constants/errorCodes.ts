@@ -135,6 +135,23 @@ export const VALIDATION_001_TYPE = "VALIDATION_001: must be a string";
 export const CSRF_001 = "CSRF_001: Invalid or missing CSRF token";
 
 // =====================================
+// Meal Plan
+// =====================================
+export const MEAL_001 = "MEAL_001: Plan not found";
+export const MEAL_002 = "MEAL_002: An active plan already exists";
+export const MEAL_003 = "MEAL_003: Slot not found";
+export const MEAL_004 = "MEAL_004: Recipe not found in this community";
+export const MEAL_005 = "MEAL_005: Feature not enabled for this community";
+export const MEAL_006 = "MEAL_006: Idea not found";
+export const MEAL_007 = "MEAL_007: Cannot swap a slot with itself";
+export const MEAL_008 = "MEAL_008: Plan duration exceeds 31 days";
+export const MEAL_009 = "MEAL_009: startDate must be before or equal to endDate";
+export const MEAL_010 = "MEAL_010: Slot already exists in another plan for this community";
+export const MEAL_011 = "MEAL_011: Cannot edit an archived plan";
+export const MEAL_012 = "MEAL_012: Archive not found";
+export const MEAL_013 = "MEAL_013: Cannot swap with a disabled slot";
+
+// =====================================
 // Admin Auth
 // =====================================
 export const ADMIN_001 = "ADMIN_001: Not authenticated";
