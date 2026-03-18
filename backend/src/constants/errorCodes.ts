@@ -209,3 +209,11 @@ export const ADMIN_FEAT_003 = "ADMIN_FEAT_003: Feature code already exists";
 export const ADMIN_FEAT_004 = "ADMIN_FEAT_004: Feature not found";
 export const ADMIN_FEAT_005 = "ADMIN_FEAT_005: Feature already granted";
 export const ADMIN_FEAT_006 = "ADMIN_FEAT_006: Feature not granted to this community";
+
+// =====================================
+// Admin Changelog
+// =====================================
+export const CHANGELOG_001 = "CHANGELOG_001: Changelog entry not found";
+export const CHANGELOG_002 = "CHANGELOG_002: Version already exists";
+export const CHANGELOG_003 = "CHANGELOG_003: Invalid content format";
+export const CHANGELOG_004 = "CHANGELOG_004: Invalid version format (expected semver x.y.z)";

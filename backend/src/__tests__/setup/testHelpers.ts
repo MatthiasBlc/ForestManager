@@ -467,6 +467,51 @@ export async function createTestTagSuggestion(
 }
 
 // =====================================
+// Changelog Factory
+// =====================================
+
+interface TestChangelogEntry {
+  id: string;
+  version: string;
+  title: string;
+  content: Record<string, unknown>;
+  publishedAt: Date;
+}
+
+export async function createTestChangelogEntry(
+  data?: Partial<{
+    version: string;
+    title: string;
+    content: Record<string, unknown>;
+    publishedAt: Date;
+    deletedAt: Date;
+  }>
+): Promise<TestChangelogEntry> {
+  const suffix = uniqueSuffix();
+  const entry = await testPrisma.changelogEntry.create({
+    data: {
+      version: data?.version ?? `0.0.${Date.now() % 10000}`,
+      title: data?.title ?? `Test changelog ${suffix}`,
+      content: data?.content ?? {
+        features: [{ text: "Test feature" }],
+        improvements: [],
+        fixes: [],
+      },
+      publishedAt: data?.publishedAt,
+      deletedAt: data?.deletedAt,
+    },
+  });
+
+  return {
+    id: entry.id,
+    version: entry.version,
+    title: entry.title,
+    content: entry.content as Record<string, unknown>,
+    publishedAt: entry.publishedAt,
+  };
+}
+
+// =====================================
 // Admin Login Helper
 // =====================================
 

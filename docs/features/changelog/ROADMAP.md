@@ -14,18 +14,18 @@ Spec : `docs/features/changelog/SPEC_CHANGELOG.md`
 
 ---
 
-## Phase 2 — Backend API (Admin)
+## Phase 2 — Backend API (Admin) ✅
 
-- [ ] Creer `admin/controllers/changelogController.ts`
-- [ ] Creer `admin/routes/changelogRoutes.ts`
-- [ ] `GET /api/admin/changelog` — liste paginee (includeDeleted optionnel)
-- [ ] `POST /api/admin/changelog` — creation manuelle (requireSuperAdmin)
-- [ ] `PATCH /api/admin/changelog/:id` — modification (title, content, version, publishedAt)
-- [ ] `DELETE /api/admin/changelog/:id` — soft delete
-- [ ] Validation : version semver, content JSON structure, title 1-200 chars
-- [ ] Audit log (`CHANGELOG_CREATED`, `CHANGELOG_UPDATED`, `CHANGELOG_DELETED`)
-- [ ] Codes erreur : CHANGELOG_001 a CHANGELOG_005
-- [ ] Tests unitaires admin CRUD
+- [x] Creer `admin/controllers/changelogController.ts`
+- [x] Creer `admin/routes/changelogRoutes.ts`
+- [x] `GET /api/admin/changelog` — liste paginee (includeDeleted optionnel)
+- [x] `POST /api/admin/changelog` — creation manuelle (requireSuperAdmin)
+- [x] `PATCH /api/admin/changelog/:id` — modification (title, content, version, publishedAt)
+- [x] `DELETE /api/admin/changelog/:id` — soft delete
+- [x] Validation : version semver, content JSON structure, title 1-200 chars
+- [x] Audit log (`CHANGELOG_CREATED`, `CHANGELOG_UPDATED`, `CHANGELOG_DELETED`)
+- [x] Codes erreur : CHANGELOG_001 a CHANGELOG_004
+- [x] Tests integration admin CRUD (17 tests)
 
 ---
 
