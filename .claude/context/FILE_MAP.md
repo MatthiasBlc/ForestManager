@@ -222,6 +222,7 @@ pages/
 ├── SignUpPage.tsx            # Inscription
 ├── PrivacyPage.tsx           # Politique confidentialite
 ├── ChangelogPage.tsx         # Page changelog user (cartes, pagination)
+├── MealPlanPage.tsx          # Page planning repas (creation, grille, archives, idees)
 ├── NotFoundPage.tsx          # 404
 └── admin/
     ├── AdminLoginPage.tsx         # Login admin 2FA
@@ -300,6 +301,13 @@ components/
 ├── ImagePicker.tsx           # Selection image pour creation (preview, processImage)
 ├── ImportRecipeModal.tsx     # Modal import recette (texte brut ou URL)
 ├── AddEditRecipeDialog.tsx   # Dialog creation/edition
+├── mealPlan/
+│   ├── CreatePlanModal.tsx   # Modal creation plan (dates, servings, preview)
+│   ├── MealPlanGrid.tsx      # Grille planning (desktop + mobile)
+│   ├── MealPlanSettings.tsx  # Modal parametres plan
+│   ├── SlotEditModal.tsx     # Modal edition slot
+│   ├── MealPlanArchives.tsx  # Onglet archives
+│   └── MealIdeasPanel.tsx    # Onglet idees de repas
 ├── ErrorBoundary.tsx         # Error boundary React (crash → fallback UI)
 ├── LoginModal.tsx            # Modal login
 ├── Modal.tsx                 # Composant modal generique
@@ -335,6 +343,7 @@ models/
 ├── preferences.ts            # TagPreference types
 ├── notification.ts           # Notification, NotificationCategory, preferences types
 ├── changelog.ts              # ChangelogEntry, ChangelogContent, ChangelogResponse types
+├── mealPlan.ts               # MealPlan, MealSlot, MealIdea, API input/response types
 └── admin.ts                  # AdminUser types (incl. AdminChangelogEntry)
 ```
 

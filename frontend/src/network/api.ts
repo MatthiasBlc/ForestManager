@@ -50,6 +50,20 @@ import {
   CommunityInvite,
   ReceivedInvite,
 } from "../models/community";
+import {
+  MealPlan,
+  MealPlanResponse,
+  MealSlot,
+  MealPlanArchivesResponse,
+  MealPlanArchiveDetailResponse,
+  CreateMealPlanInput,
+  UpdateMealPlanInput,
+  UpdateSlotInput,
+  SwapSlotsResponse,
+  MealIdea,
+  MealIdeasResponse,
+  MealIdeaInput,
+} from "../models/mealPlan";
 import { ConflictError, UnauthorizedError } from "../errors/http_errors";
 
 const apiUrl = import.meta.env.VITE_BACKEND_URL;
@@ -1033,5 +1047,126 @@ export default class APIManager {
 
   static async deleteAdminChangelog(id: string): Promise<void> {
     await API.delete(`/api/admin/changelog/${id}`).catch(handleApiError);
+  }
+
+  // --------------- Meal Plan ---------------
+
+  static async getMealPlan(communityId: string): Promise<MealPlanResponse> {
+    const response = await API.get(`/api/communities/${communityId}/meal-plan`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async createMealPlan(
+    communityId: string,
+    data: CreateMealPlanInput
+  ): Promise<{ plan: MealPlan }> {
+    const response = await API.post(
+      `/api/communities/${communityId}/meal-plan`,
+      JSON.stringify(data)
+    ).catch(handleApiError);
+    return response.data;
+  }
+
+  static async updateMealPlan(
+    communityId: string,
+    data: UpdateMealPlanInput
+  ): Promise<{ plan: MealPlan }> {
+    const response = await API.patch(
+      `/api/communities/${communityId}/meal-plan`,
+      JSON.stringify(data)
+    ).catch(handleApiError);
+    return response.data;
+  }
+
+  static async deleteMealPlan(communityId: string): Promise<void> {
+    await API.delete(`/api/communities/${communityId}/meal-plan`).catch(handleApiError);
+  }
+
+  static async updateMealSlot(
+    communityId: string,
+    slotId: string,
+    data: UpdateSlotInput
+  ): Promise<MealSlot> {
+    const response = await API.patch(
+      `/api/communities/${communityId}/meal-plan/slots/${slotId}`,
+      JSON.stringify(data)
+    ).catch(handleApiError);
+    return response.data;
+  }
+
+  static async swapMealSlots(
+    communityId: string,
+    slotIdA: string,
+    slotIdB: string
+  ): Promise<SwapSlotsResponse> {
+    const response = await API.post(
+      `/api/communities/${communityId}/meal-plan/slots/swap`,
+      JSON.stringify({ slotIdA, slotIdB })
+    ).catch(handleApiError);
+    return response.data;
+  }
+
+  static async getMealPlanArchives(
+    communityId: string,
+    params: { limit?: number; offset?: number } = {}
+  ): Promise<MealPlanArchivesResponse> {
+    const qs = buildQueryString({ limit: params.limit, offset: params.offset });
+    const response = await API.get(
+      `/api/communities/${communityId}/meal-plan/archives${qs}`
+    ).catch(handleApiError);
+    return response.data;
+  }
+
+  static async getMealPlanArchive(
+    communityId: string,
+    planId: string
+  ): Promise<MealPlanArchiveDetailResponse> {
+    const response = await API.get(
+      `/api/communities/${communityId}/meal-plan/archives/${planId}`
+    ).catch(handleApiError);
+    return response.data;
+  }
+
+  static async deleteMealPlanArchive(communityId: string, planId: string): Promise<void> {
+    await API.delete(`/api/communities/${communityId}/meal-plan/archives/${planId}`).catch(
+      handleApiError
+    );
+  }
+
+  // --------------- Meal Ideas ---------------
+
+  static async getMealIdeas(
+    communityId: string,
+    params: { search?: string; limit?: number; offset?: number } = {}
+  ): Promise<MealIdeasResponse> {
+    const qs = buildQueryString({ search: params.search, limit: params.limit, offset: params.offset });
+    const response = await API.get(`/api/communities/${communityId}/meal-ideas${qs}`).catch(
+      handleApiError
+    );
+    return response.data;
+  }
+
+  static async createMealIdea(communityId: string, data: MealIdeaInput): Promise<MealIdea> {
+    const response = await API.post(
+      `/api/communities/${communityId}/meal-ideas`,
+      JSON.stringify(data)
+    ).catch(handleApiError);
+    return response.data;
+  }
+
+  static async updateMealIdea(
+    communityId: string,
+    ideaId: string,
+    data: Partial<MealIdeaInput>
+  ): Promise<MealIdea> {
+    const response = await API.patch(
+      `/api/communities/${communityId}/meal-ideas/${ideaId}`,
+      JSON.stringify(data)
+    ).catch(handleApiError);
+    return response.data;
+  }
+
+  static async deleteMealIdea(communityId: string, ideaId: string): Promise<void> {
+    await API.delete(`/api/communities/${communityId}/meal-ideas/${ideaId}`).catch(handleApiError);
   }
 }

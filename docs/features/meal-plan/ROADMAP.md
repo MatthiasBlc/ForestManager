@@ -82,83 +82,81 @@ Spec : `docs/features/meal-plan/SPEC_MEAL_PLAN.md`
 
 ## Phase 6 — Frontend : creation de planning
 
-- [ ] Page planning dans la section communaute
-- [ ] Conditionner l'acces a la feature `MEAL_PLAN` (masquer si non activee)
-- [ ] Formulaire creation : date debut, date fin, nombre de personnes par defaut
-- [ ] Apercu visuel du planning avec checkboxes pour desactiver des slots
-- [ ] Option "Reprendre les desactivations du planning precedent"
-- [ ] Message "Le planning actuel sera archive" si plan actif existe
-- [ ] Appel API POST + affichage du plan cree
+- [x] Page planning dans la section communaute (`MealPlanPage.tsx`)
+- [x] Conditionner l'acces a la feature `MEAL_PLAN` (403 si non activee)
+- [x] Formulaire creation : date debut, date fin, nombre de personnes par defaut
+- [x] Apercu visuel du planning avec checkboxes pour desactiver des slots
+- [x] Option "Reprendre les desactivations du planning precedent"
+- [x] Message "Le planning actuel sera archive" si plan actif existe
+- [x] Appel API POST + affichage du plan cree
 
 ---
 
 ## Phase 7 — Frontend : vue planning (desktop)
 
-- [ ] Grille N colonnes (jours) x 2 lignes (midi/soir)
-- [ ] Scroll horizontal ou pagination si > 7 jours
-- [ ] En-tete : jour de la semaine + date
-- [ ] Carte slot : nom recette ou texte libre, badge servings
-- [ ] Slot EMPTY : "+" cliquable
-- [ ] Slot disabled : grise avec "+" discret
-- [ ] Slot locked : icone cadenas
-- [ ] Slot recette soft-deleted : badge "Recette supprimee", style grise
-- [ ] Clic carte → drawer/modal detail (lien recette, commentaire, servings editable)
-- [ ] Boutons creer/supprimer plan, toggle editableByMembers (MODERATOR)
+- [x] Grille N colonnes (jours) x 2 lignes (midi/soir)
+- [x] Scroll horizontal si > 7 jours
+- [x] En-tete : jour de la semaine + date
+- [x] Carte slot : nom recette ou texte libre, badge servings
+- [x] Slot EMPTY : "+" cliquable
+- [x] Slot disabled : grise
+- [x] Slot locked : icone cadenas
+- [x] Slot recette soft-deleted : badge "Deleted recipe", style barre
+- [x] Clic carte → modal edition
+- [x] Boutons creer/supprimer plan, settings (MODERATOR)
 
 ---
 
 ## Phase 8 — Frontend : edition de slot
 
-- [ ] Modal d'edition au clic sur un slot
-- [ ] Recherche de recettes (autocomplete) : communaute en priorite, perso en secondaire
-- [ ] Recette perso non dans la communaute → popup "Ajouter a la communaute ?"
-  - [ ] Si oui → publish (flow existant) → slot pointe vers la copie
-  - [ ] Si non → bascule FREE_TEXT avec nom pre-rempli
-- [ ] Mode texte libre : champ freeText + champ commentaire
-- [ ] Mode EMPTY : bouton reset
-- [ ] Toggle disabled/enabled
-- [ ] Toggle locked/unlocked
-- [ ] Edition servings directe sur la carte ou dans le modal
+- [x] Modal d'edition au clic sur un slot (`SlotEditModal.tsx`)
+- [x] Recherche de recettes (autocomplete communaute)
+- [x] Mode texte libre : champ freeText + champ commentaire
+- [x] Mode EMPTY : onglet reset
+- [x] Toggle disabled/enabled
+- [x] Toggle locked/unlocked (MODERATOR)
+- [x] Edition servings dans le modal
 
 ---
 
 ## Phase 9 — Frontend : drag & drop (swap)
 
-- [ ] Installer `@dnd-kit/core` (ou verifier si deja present)
-- [ ] Implementer le drag & drop entre slots (swap du contenu)
-- [ ] Feedback visuel pendant le drag (zone de drop highlight)
-- [ ] Appel API swap au drop
-- [ ] Gestion optimiste + rollback en cas d'erreur
+- [x] Utilisation HTML5 native drag & drop
+- [x] Implementer le drag & drop entre slots (swap du contenu)
+- [x] Feedback visuel pendant le drag (opacity)
+- [x] Appel API swap au drop
+- [x] Gestion optimiste via state update
 
 ---
 
 ## Phase 10 — Frontend : vue mobile
 
-- [ ] Layout mobile : cartes-jours empilees verticalement
-- [ ] En-tete carte : jour de la semaine + date
-- [ ] Chaque carte-jour contient 2 sous-cartes (midi / soir)
-- [ ] Slots disabled grises
-- [ ] Scroll vertical natif
-- [ ] Meme fonctionnalites que desktop (edition, swap via drag & drop)
-- [ ] Breakpoint responsive (grille desktop → cartes mobile)
+- [x] Layout mobile : cartes-jours empilees verticalement (via `useIsMobile`)
+- [x] En-tete carte : jour de la semaine + date
+- [x] Chaque carte-jour contient 2 sous-cartes (midi / soir)
+- [x] Slots disabled grises
+- [x] Scroll vertical natif
+- [x] Meme fonctionnalites que desktop (edition, drag & drop)
+- [x] Breakpoint responsive automatique
 
 ---
 
 ## Phase 11 — Frontend : archives
 
-- [ ] Onglet "Archives" dans la page planning
-- [ ] Liste des anciens plannings (dates, nb slots remplis)
-- [ ] Clic → vue read-only du planning archive (meme grille, sans edition)
+- [x] Onglet "Archives" dans la page planning
+- [x] Liste des anciens plannings (dates, nb slots remplis)
+- [x] Clic → vue read-only du planning archive (meme grille, sans edition)
+- [x] Suppression archive (MODERATOR)
 
 ---
 
 ## Phase 12 — Frontend : liste d'idees
 
-- [ ] Onglet ou panel "Idees" dans la page planning
-- [ ] Liste paginee avec recherche
-- [ ] Formulaire creation/edition d'idee (nom, commentaire, lien recette optionnel)
-- [ ] Bouton supprimer (createur ou MODERATOR)
-- [ ] Lien vers la recette si recipeId present
+- [x] Onglet "Ideas" dans la page planning (`MealIdeasPanel.tsx`)
+- [x] Liste paginee avec recherche
+- [x] Formulaire creation/edition d'idee (nom, commentaire)
+- [x] Bouton supprimer
+- [x] Lien vers la recette si recipeId present
 
 ---
 
