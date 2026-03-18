@@ -40,20 +40,9 @@ Spec : `docs/features/changelog/SPEC_CHANGELOG.md`
 
 ---
 
-## Phase 4 — Endpoint CI & middleware API key
+## Phase 4 — Script de generation & script d'insertion
 
-- [ ] Ajouter variable d'env `CHANGELOG_API_KEY` dans la config backend
-- [ ] Creer middleware `verifyChangelogApiKey` (header `X-Changelog-Api-Key`)
-- [ ] `POST /api/admin/changelog/generate` — endpoint dedie (API key auth, pas session)
-- [ ] Validation identique au POST admin + champ optionnel `commitRange`
-- [ ] Test unitaire : rejet sans API key, rejet mauvaise key, succes avec bonne key
-- [ ] Ajouter `CHANGELOG_API_KEY` dans docker-compose.dev.yml / .env.example
-
----
-
-## Phase 5 — Script de generation & job CI
-
-- [ ] Creer `scripts/generate-changelog.ts` (executable Node.js)
+- [ ] Creer `scripts/generate-changelog.ts` (executable Node.js, tourne dans le CI)
   - [ ] Parser conventional commits (regex)
   - [ ] Filtrer : exclure test/docs/ci/build/chore (sauf chore(deps))
   - [ ] Exclure merge commits
@@ -62,14 +51,27 @@ Spec : `docs/features/changelog/SPEC_CHANGELOG.md`
   - [ ] Generer le titre auto (ex: "2 nouveautes et 3 corrections")
   - [ ] Sortie JSON sur stdout
 - [ ] Test du script en local (avec des commits de test)
+- [ ] Creer `scripts/insert-changelog.ts` (tourne dans le container backend via Portainer exec)
+  - [ ] Recoit JSON changelog en argument
+  - [ ] Validation : version semver, content structure
+  - [ ] Insert en DB via Prisma (`changelogEntry.create`)
+  - [ ] Gestion conflit version (erreur si doublon)
+  - [ ] S'assurer que le script est inclus dans le build Docker (Dockerfile backend)
+
+---
+
+## Phase 5 — Job CI (generate-changelog via Portainer exec)
+
 - [ ] Ajouter le job `generate-changelog` dans `deploy.yml`
+  - [ ] `needs: [deploy-prod]`, uniquement si deploy reussi
   - [ ] Checkout avec `fetch-depth: 0`
   - [ ] Determiner le dernier tag `v*`
-  - [ ] Executer le script
-  - [ ] POST vers l'API backend prod
-  - [ ] Creer et pousser le tag git `vX.Y.Z`
+  - [ ] Executer `scripts/generate-changelog.ts` pour parser les commits
   - [ ] Skip si aucun commit user-facing
-- [ ] Ajouter les secrets GitHub : `CHANGELOG_API_KEY`, `APP_URL` (URL publique frontend, proxy vers backend)
+  - [ ] Trouver le container backend via API Portainer (filtre par nom)
+  - [ ] Executer `scripts/insert-changelog.ts` dans le container via Portainer exec
+  - [ ] Creer et pousser le tag git `vX.Y.Z`
+- [ ] Aucun nouveau secret GitHub necessaire (reutilise PORTAINER_URL, PORTAINER_API, ENDPOINT_ID)
 
 ---
 

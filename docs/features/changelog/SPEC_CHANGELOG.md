@@ -113,7 +113,7 @@ generate-changelog:
    - Calcule la prochaine version semver
    - Si aucun commit user-facing : **skip** (pas de changelog vide)
 5. **Generer le titre** : auto-genere a partir du contenu (ex: `"3 nouveautes, 5 ameliorations et 2 corrections"`) — modifiable par l'admin ensuite
-6. **POST vers l'API** : appel `POST /api/admin/changelog/generate` avec API key
+6. **Inserer en DB via Portainer exec** : executer un script dans le container backend prod (voir 3.4)
 7. **Creer et pousser le tag git** : `git tag v<version> && git push origin v<version>`
 
 ### 3.3 Script `scripts/generate-changelog.ts`
@@ -133,18 +133,60 @@ generate-changelog:
 // Merge commits (^Merge) : toujours ignores
 ```
 
-### 3.4 Authentification CI → API
+### 3.4 Insertion via Portainer exec (CI → Backend container)
 
-**API Key dediee** stockee en secret GitHub (`CHANGELOG_API_KEY`).
+**Principe** : plutot qu'exposer un endpoint HTTP dedie avec API key, le CI execute directement une commande dans le container backend prod via l'API Portainer. Le backend n'est pas expose publiquement (reseau Docker `internal` uniquement) et cette approche garde tout en interne.
 
-Cote backend :
+**Le CI a deja acces a** : `PORTAINER_URL`, `PORTAINER_API`, `ENDPOINT_ID` (utilises pour le deploy).
 
-- Variable d'environnement `CHANGELOG_API_KEY`
-- Middleware dedie qui verifie le header `X-Changelog-Api-Key`
-- Ce middleware est utilise **uniquement** sur l'endpoint `POST /api/admin/changelog/generate`
-- L'API key n'a acces a rien d'autre — surface d'attaque minimale
+**Script d'insertion** : `scripts/insert-changelog.ts` — petit script executable dans le container backend qui :
 
-**Pourquoi pas une session admin ?** Le CI n'a pas de navigateur, pas de 2FA TOTP. Une API key dediee a un seul endpoint est plus securisee et plus simple qu'un mecanisme de service account admin.
+1. Recoit le JSON changelog en argument (version, title, content)
+2. Insere en DB via Prisma (`changelogEntry.create`)
+3. Gere le conflit de version (upsert ou erreur si doublon)
+
+```typescript
+// scripts/insert-changelog.ts
+// Usage : npx ts-node scripts/insert-changelog.ts '<json>'
+// ou : node dist/scripts/insert-changelog.js '<json>'
+//
+// Le script est inclus dans l'image Docker backend (build stage)
+// Il a acces a Prisma et a DATABASE_URL via l'env du container
+```
+
+**Flux Portainer exec dans le CI** :
+
+```bash
+# 1. Trouver le container backend
+CONTAINERS=$(curl -s -H "X-API-Key: ${PORTAINER_API}" \
+  "${PORTAINER_URL}/api/endpoints/${ENDPOINT_ID}/docker/containers/json?filters=%7B%22name%22%3A%5B%22forestmanager-backend%22%5D%7D")
+CONTAINER_ID=$(echo "$CONTAINERS" | jq -r '.[0].Id')
+
+# 2. Creer l'exec
+EXEC_ID=$(curl -s -H "X-API-Key: ${PORTAINER_API}" \
+  -H "Content-Type: application/json" \
+  -d "{\"Cmd\":[\"node\",\"dist/scripts/insert-changelog.js\",\"${CHANGELOG_JSON}\"],\"AttachStdout\":true,\"AttachStderr\":true}" \
+  "${PORTAINER_URL}/api/endpoints/${ENDPOINT_ID}/docker/containers/${CONTAINER_ID}/exec" \
+  | jq -r '.Id')
+
+# 3. Demarrer l'exec
+curl -s -H "X-API-Key: ${PORTAINER_API}" \
+  -H "Content-Type: application/json" \
+  -d '{"Detach":false}' \
+  "${PORTAINER_URL}/api/endpoints/${ENDPOINT_ID}/docker/exec/${EXEC_ID}/start"
+```
+
+**Avantages par rapport a un endpoint HTTP** :
+
+- Zero surface d'attaque supplementaire (pas d'endpoint public, pas d'API key dediee)
+- Le backend reste uniquement sur le reseau interne Docker
+- Reutilise les credentials Portainer existants (deja dans les secrets GitHub)
+- Acces direct a Prisma/DB depuis le container (pas de latence reseau supplementaire)
+
+**Inconvenients acceptes** :
+
+- Legere complexite supplementaire dans le script CI (3 appels API Portainer)
+- Necessite que le container backend soit running (garanti car le job `generate-changelog` depend de `deploy-prod`)
 
 ---
 
@@ -181,7 +223,6 @@ GET /api/changelog/:id                # Detail d'une entree
 ```
 GET    /api/admin/changelog                    # Liste (inclut soft-deleted si ?includeDeleted=true)
 POST   /api/admin/changelog                    # Creer manuellement une entree
-POST   /api/admin/changelog/generate           # Endpoint CI (API key auth, pas session)
 PATCH  /api/admin/changelog/:id                # Modifier (title, content, version, publishedAt)
 DELETE /api/admin/changelog/:id                # Soft delete
 ```
@@ -203,18 +244,7 @@ DELETE /api/admin/changelog/:id                # Soft delete
 }
 ```
 
-**POST /api/admin/changelog/generate** (appel CI) :
-
-```json
-{
-  "version": "1.2.0",
-  "title": "3 nouveautes, 5 ameliorations et 2 corrections",
-  "content": { ... },
-  "commitRange": "v1.1.0..abc1234"
-}
-```
-
-Header requis : `X-Changelog-Api-Key: <secret>`
+**Note** : l'insertion automatique par le CI se fait via Portainer exec (voir section 3.4), pas via un endpoint HTTP. Pas d'endpoint `/generate` — le CI insere directement en DB depuis le container backend.
 
 ### 4.3 Codes erreur
 
@@ -223,8 +253,7 @@ Header requis : `X-Changelog-Api-Key: <secret>`
 | CHANGELOG_001 | 404  | Entree non trouvee                       |
 | CHANGELOG_002 | 409  | Version deja existante                   |
 | CHANGELOG_003 | 400  | Contenu invalide (format JSON incorrect) |
-| CHANGELOG_004 | 401  | API key invalide ou manquante            |
-| CHANGELOG_005 | 400  | Version invalide (format semver)         |
+| CHANGELOG_004 | 400  | Version invalide (format semver)         |
 
 ### 4.4 Validation
 
@@ -381,15 +410,14 @@ Developer                    GitHub                     CI (Actions)            
     |                           |-- PR merge to master ---->|                           |
     |                           |                           |-- test ------------------>|
     |                           |                           |-- build & push images --->|
-    |                           |                           |-- deploy-prod ----------->| (Portainer)
+    |                           |                           |-- deploy-prod ----------->| (Portainer stack update)
     |                           |                           |                           |
     |                           |                           |-- generate-changelog:     |
     |                           |                           |   1. git describe (last tag)
     |                           |                           |   2. git log tag..HEAD    |
     |                           |                           |   3. parse & categorize   |
     |                           |                           |   4. compute version      |
-    |                           |                           |   5. POST /api/admin/     |
-    |                           |                           |      changelog/generate ->| (stocke en DB)
+    |                           |                           |   5. Portainer exec ------>| (insert en DB via Prisma)
     |                           |                           |   6. git tag & push       |
     |                           |                           |                           |
 User                                                                                    |
@@ -402,23 +430,21 @@ User                                                                            
 
 ## 9. Variables d'environnement
 
-| Variable            | Ou             | Description                                                               |
-| ------------------- | -------------- | ------------------------------------------------------------------------- |
-| `CHANGELOG_API_KEY` | Backend (.env) | Cle pour l'endpoint CI                                                    |
-| `CHANGELOG_API_KEY` | GitHub Secrets | Meme cle, injectee dans le job CI                                         |
-| `APP_URL`           | GitHub Secrets | URL publique du frontend (ex: `https://forestmanager.matthias-bouloc.fr`) |
+Aucune nouvelle variable d'environnement necessaire.
 
-**Note architecture reseau** : le backend n'est pas expose publiquement. Il est uniquement sur le reseau Docker `internal`. Le frontend nginx fait reverse proxy de `/api/*` vers le backend. Le job CI POST donc vers `${APP_URL}/api/admin/changelog/generate`, ce qui transite par Traefik → nginx frontend → backend. Aucune exposition supplementaire du backend n'est necessaire.
+Le job CI reutilise les secrets Portainer existants (`PORTAINER_URL`, `PORTAINER_API`, `ENDPOINT_ID`) deja configures pour le deploy. L'insertion en DB se fait via Portainer exec dans le container backend (voir section 3.4).
+
+**Note architecture reseau** : le backend n'est pas expose publiquement. Il est uniquement sur le reseau Docker `internal`. Le CI n'a pas besoin d'acceder au backend via HTTP — il execute directement une commande dans le container via l'API Portainer.
 
 ---
 
 ## 10. Securite
 
-- **API key** : generee aleatoirement (64 chars hex min), stockee en secret GitHub et en variable d'env backend
-- **Endpoint generate** : API key only, pas de session, pas de TOTP — le scope est un seul endpoint d'ecriture
-- **Rate limiting** : l'endpoint generate est inclus dans le rate limiter admin global (30 req/min), suffisant vu que le CI n'appelle qu'une fois par deploy
-- **Validation stricte** : version semver, content JSON structure, taille des champs
-- **Audit** : chaque action admin (CRUD) est loguee dans AdminActivityLog
+- **Pas d'endpoint HTTP expose pour le CI** : l'insertion se fait via Portainer exec, donc aucune surface d'attaque supplementaire cote backend
+- **Acces Portainer** : protege par l'API key Portainer existante, deja en secret GitHub
+- **Isolation reseau** : le backend reste exclusivement sur le reseau Docker `internal`
+- **Validation stricte** : version semver, content JSON structure, taille des champs (dans le script d'insertion ET dans les endpoints admin)
+- **Audit** : chaque action admin (CRUD manuel) est loguee dans AdminActivityLog. Les insertions CI sont tracables via les logs du container et les git tags
 
 ---
 
@@ -461,15 +487,15 @@ await prisma.changelogEntry.upsert({
 
 ## 13. Impact sur l'existant
 
-| Element                  | Modification                                                    |
-| ------------------------ | --------------------------------------------------------------- |
-| `schema.prisma`          | + modele `ChangelogEntry`                                       |
-| `AdminActionType` (enum) | + `CHANGELOG_CREATED`, `CHANGELOG_UPDATED`, `CHANGELOG_DELETED` |
-| `deploy.yml`             | + job `generate-changelog`                                      |
-| `Sidebar.tsx`            | Version cliquable → lien `/changelog`                           |
-| `AdminLayout.tsx`        | + nav item "Changelog"                                          |
-| `adminRoutes.tsx`        | + route `/admin/changelog`                                      |
-| Routes user              | + route `/changelog`                                            |
-| Backend routes           | + `/api/changelog`, `/api/admin/changelog`                      |
-| `.env` / docker-compose  | + `CHANGELOG_API_KEY`                                           |
-| `seed.ts`                | + upsert changelog v1.0.0                                       |
+| Element                  | Modification                                                       |
+| ------------------------ | ------------------------------------------------------------------ |
+| `schema.prisma`          | + modele `ChangelogEntry`                                          |
+| `AdminActionType` (enum) | + `CHANGELOG_CREATED`, `CHANGELOG_UPDATED`, `CHANGELOG_DELETED`    |
+| `deploy.yml`             | + job `generate-changelog` (Portainer exec)                        |
+| `scripts/`               | + `generate-changelog.ts` (CI) + `insert-changelog.ts` (container) |
+| `Sidebar.tsx`            | Version cliquable → lien `/changelog`                              |
+| `AdminLayout.tsx`        | + nav item "Changelog"                                             |
+| `adminRoutes.tsx`        | + route `/admin/changelog`                                         |
+| Routes user              | + route `/changelog`                                               |
+| Backend routes           | + `/api/changelog`, `/api/admin/changelog`                         |
+| `seed.ts`                | + upsert changelog v1.0.0                                          |
