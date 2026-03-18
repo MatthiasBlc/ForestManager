@@ -1799,6 +1799,150 @@ export const handlers = [
   }),
 
   // =====================================
+  // Admin Changelog
+  // =====================================
+
+  // GET /api/admin/changelog
+  http.get(`${API_URL}/api/admin/changelog`, ({ request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
+    }
+
+    const url = new URL(request.url);
+    const includeDeleted = url.searchParams.get("includeDeleted") === "true";
+
+    const entries = [
+      {
+        id: "admin-cl-1",
+        version: "1.2.0",
+        title: "2 nouveautes et 1 correction",
+        content: {
+          features: [{ text: "Import de recettes depuis URL" }, { text: "Notifications" }],
+          improvements: [],
+          fixes: [{ text: "Correction affichage mobile" }],
+        },
+        publishedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        deletedAt: null,
+      },
+      {
+        id: "admin-cl-2",
+        version: "1.1.0",
+        title: "1 nouveaute et 2 ameliorations",
+        content: {
+          features: [{ text: "Tags communautaires" }],
+          improvements: [{ text: "Performance" }, { text: "Gestion erreurs" }],
+          fixes: [],
+        },
+        publishedAt: new Date(Date.now() - 7 * 86400000).toISOString(),
+        createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
+        updatedAt: new Date(Date.now() - 7 * 86400000).toISOString(),
+        deletedAt: null,
+      },
+      {
+        id: "admin-cl-deleted",
+        version: "0.9.0",
+        title: "Deleted entry",
+        content: {
+          features: [{ text: "Old feature" }],
+          improvements: [],
+          fixes: [],
+        },
+        publishedAt: new Date(Date.now() - 60 * 86400000).toISOString(),
+        createdAt: new Date(Date.now() - 60 * 86400000).toISOString(),
+        updatedAt: new Date(Date.now() - 60 * 86400000).toISOString(),
+        deletedAt: new Date(Date.now() - 30 * 86400000).toISOString(),
+      },
+    ];
+
+    const filtered = includeDeleted ? entries : entries.filter((e) => !e.deletedAt);
+
+    return HttpResponse.json({
+      data: filtered,
+      pagination: {
+        total: filtered.length,
+        limit: 50,
+        offset: 0,
+        hasMore: false,
+      },
+    });
+  }),
+
+  // POST /api/admin/changelog
+  http.post(`${API_URL}/api/admin/changelog`, async ({ request }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
+    }
+
+    const body = (await request.json()) as Record<string, unknown>;
+
+    if (body.version === "1.2.0") {
+      return HttpResponse.json({ error: "CHANGELOG_002: Version already exists" }, { status: 409 });
+    }
+
+    return HttpResponse.json(
+      {
+        data: {
+          id: "new-cl-id",
+          version: body.version,
+          title: body.title,
+          content: body.content,
+          publishedAt: (body.publishedAt as string) || new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          deletedAt: null,
+        },
+      },
+      { status: 201 }
+    );
+  }),
+
+  // PATCH /api/admin/changelog/:id
+  http.patch(`${API_URL}/api/admin/changelog/:id`, async ({ request, params }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
+    }
+
+    if (params.id === "not-found-id") {
+      return HttpResponse.json(
+        { error: "CHANGELOG_001: Changelog entry not found" },
+        { status: 404 }
+      );
+    }
+
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({
+      data: {
+        id: params.id,
+        version: body.version || "1.2.0",
+        title: body.title || "Updated",
+        content: body.content || { features: [], improvements: [], fixes: [] },
+        publishedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        deletedAt: null,
+      },
+    });
+  }),
+
+  // DELETE /api/admin/changelog/:id
+  http.delete(`${API_URL}/api/admin/changelog/:id`, ({ params }) => {
+    if (!isAdminAuthenticated) {
+      return HttpResponse.json({ error: "ADMIN_001: Not authenticated" }, { status: 401 });
+    }
+
+    if (params.id === "not-found-id") {
+      return HttpResponse.json(
+        { error: "CHANGELOG_001: Changelog entry not found" },
+        { status: 404 }
+      );
+    }
+
+    return HttpResponse.json({ message: "Changelog entry deleted" });
+  }),
+
+  // =====================================
   // Admin Activity
   // =====================================
 

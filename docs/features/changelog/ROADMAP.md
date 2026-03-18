@@ -94,22 +94,22 @@ Spec : `docs/features/changelog/SPEC_CHANGELOG.md`
 
 ---
 
-## Phase 7 — Frontend Admin (page CRUD)
+## Phase 7 — Frontend Admin (page CRUD) ✅
 
-- [ ] Creer `pages/admin/AdminChangelogPage.tsx`
-  - [ ] Table : Version, Titre, Date, Status, Actions
-  - [ ] Bouton "Nouvelle entree"
-  - [ ] Filtre afficher/masquer supprimees
-- [ ] Modal creation/edition :
-  - [ ] Champs : version (semver), titre, date publication
-  - [ ] Editeur structure : 3 sections (Nouveautes, Ameliorations, Corrections)
-  - [ ] Ajout/suppression d'items par section
-  - [ ] Bouton sauvegarder avec confirmation
-- [ ] Modal suppression avec confirmation
-- [ ] Ajouter dans `AdminLayout.tsx` : nav item "Changelog" (icone `FaNewspaper`)
-- [ ] Ajouter la route `/admin/changelog` dans `adminRoutes.tsx`
-- [ ] Service API admin : CRUD changelog
-- [ ] Tests composant AdminChangelogPage
+- [x] Creer `pages/admin/AdminChangelogPage.tsx`
+  - [x] Table : Version, Titre, Date, Status, Actions
+  - [x] Bouton "Nouvelle entree"
+  - [x] Filtre afficher/masquer supprimees
+- [x] Modal creation/edition :
+  - [x] Champs : version (semver), titre, date publication
+  - [x] Editeur structure : 3 sections (Nouveautes, Ameliorations, Corrections)
+  - [x] Ajout/suppression d'items par section
+  - [x] Bouton sauvegarder avec confirmation
+- [x] Modal suppression avec confirmation
+- [x] Ajouter dans `AdminLayout.tsx` : nav item "Changelog" (icone `FaNewspaper`)
+- [x] Ajouter la route `/admin/changelog` dans `adminRoutes.tsx`
+- [x] Service API admin : CRUD changelog
+- [x] Tests composant AdminChangelogPage (10 tests)
 
 ---
 

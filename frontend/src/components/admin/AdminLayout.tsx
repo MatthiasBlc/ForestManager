@@ -8,6 +8,7 @@ import {
   FaStar,
   FaUsers,
   FaClipboardList,
+  FaNewspaper,
   FaSignOutAlt,
 } from "react-icons/fa";
 
@@ -18,6 +19,7 @@ const adminNavItems = [
   { to: "/admin/units", label: "Units", icon: FaBalanceScale },
   { to: "/admin/features", label: "Features", icon: FaStar },
   { to: "/admin/communities", label: "Communities", icon: FaUsers },
+  { to: "/admin/changelog", label: "Changelog", icon: FaNewspaper },
   { to: "/admin/activity", label: "Activity", icon: FaClipboardList },
 ];
 
