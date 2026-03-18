@@ -6,15 +6,15 @@ Spec : `docs/features/meal-plan/SPEC_MEAL_PLAN.md`
 
 ## Phase 1 — Modele de donnees & migration
 
-- [ ] Ajouter les enums `DayOfWeek`, `MealTime`, `MealSlotType`, `MealPlanStatus` dans `schema.prisma`
-- [ ] Creer le modele `MealPlan` (communityId, startDate, endDate, status, defaultServings, editableByMembers)
-- [ ] Creer le modele `MealSlot` (planId, date, mealTime, type, disabled, locked, recipeId?, freeText?, comment?, servings)
-- [ ] Creer le modele `MealIdea` (communityId, name, comment?, recipeId?, createdById?, deletedAt)
-- [ ] Ajouter les relations dans `Community`, `Recipe`, `User`
-- [ ] Generer et appliquer la migration Prisma
-- [ ] Upsert Feature `MEAL_PLAN` (code unique, isDefault: false) dans le seed
-- [ ] Seed de test : creer un plan ACTIVE avec slots remplis + disabled pour la communaute de test
-- [ ] Verifier que le seed passe sans erreur (idempotent)
+- [x] Ajouter les enums `DayOfWeek`, `MealTime`, `MealSlotType`, `MealPlanStatus` dans `schema.prisma`
+- [x] Creer le modele `MealPlan` (communityId, startDate, endDate, status, defaultServings, editableByMembers)
+- [x] Creer le modele `MealSlot` (planId, date, mealTime, type, disabled, locked, recipeId?, freeText?, comment?, servings)
+- [x] Creer le modele `MealIdea` (communityId, name, comment?, recipeId?, createdById?, deletedAt)
+- [x] Ajouter les relations dans `Community`, `Recipe`, `User`
+- [x] Generer et appliquer la migration Prisma
+- [x] Upsert Feature `MEAL_PLAN` (code unique, isDefault: false) dans le seed
+- [x] Seed de test : creer un plan ACTIVE avec slots remplis + disabled pour la communaute de test
+- [x] Verifier que le seed passe sans erreur (idempotent)
 
 ---
 
