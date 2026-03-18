@@ -32,7 +32,7 @@ Phases 0 a 17 terminees (tags rework, ingredients rework, notifications, recipe 
 - **Feature 2 — Generation Automatique**
   - Spec : `docs/features/meal-plan/SPEC_MEAL_GENERATION.md`
   - Roadmap : `docs/features/meal-plan/ROADMAP_GENERATION.md`
-- Statut : **Phases 1-5 terminees** (modeles, migration, seed, middleware requireFeature, API CRUD plan/slots/swap, API archives, API meal ideas). Phases 6-12 (frontend) hors scope backend
+- Statut : **Backend complet (Phases 1-5, 13)**. Phases 6-12 (frontend) a implementer
 
 ## Idees futures
 

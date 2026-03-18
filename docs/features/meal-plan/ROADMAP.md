@@ -164,8 +164,9 @@ Spec : `docs/features/meal-plan/SPEC_MEAL_PLAN.md`
 
 ## Phase 13 — Mise a jour docs & contexte
 
-- [ ] Mettre a jour `.claude/context/DB_MODELS.md` (nouveaux modeles + enums)
-- [ ] Mettre a jour `.claude/context/API_MAP.md` (nouveaux endpoints)
-- [ ] Mettre a jour `.claude/context/PROGRESS.md`
-- [ ] Mettre a jour `.claude/CLAUDE.md` (table features)
-- [ ] Mettre a jour `.claude/context/FILE_MAP.md` si necessaire
+- [x] Mettre a jour `.claude/context/DB_MODELS.md` (nouveaux modeles + enums)
+- [x] Mettre a jour `.claude/context/API_MAP.md` (nouveaux endpoints)
+- [x] Mettre a jour `.claude/context/PROGRESS.md`
+- [x] Mettre a jour `.claude/CLAUDE.md` (table features)
+- [x] Mettre a jour `.claude/context/FILE_MAP.md` si necessaire
+- [x] Mettre a jour `.claude/context/TESTS.md`
