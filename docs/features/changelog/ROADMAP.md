@@ -4,119 +4,121 @@ Spec : `docs/features/changelog/SPEC_CHANGELOG.md`
 
 ---
 
-## Phase 1 — Modele de donnees & migration
+## Phase 1 — Modele de donnees & migration ✅
 
-- [ ] Ajouter l'enum `CHANGELOG_CREATED | CHANGELOG_UPDATED | CHANGELOG_DELETED` a `AdminActionType`
-- [ ] Creer le modele `ChangelogEntry` dans `schema.prisma`
-- [ ] Generer et appliquer la migration Prisma
-- [ ] Ajouter l'upsert `v1.0.0` dans le seed (idempotent, par version)
-- [ ] Verifier que le seed passe sans erreur
-
----
-
-## Phase 2 — Backend API (Admin)
-
-- [ ] Creer `admin/controllers/changelogController.ts`
-- [ ] Creer `admin/routes/changelogRoutes.ts`
-- [ ] `GET /api/admin/changelog` — liste paginee (includeDeleted optionnel)
-- [ ] `POST /api/admin/changelog` — creation manuelle (requireSuperAdmin)
-- [ ] `PATCH /api/admin/changelog/:id` — modification (title, content, version, publishedAt)
-- [ ] `DELETE /api/admin/changelog/:id` — soft delete
-- [ ] Validation : version semver, content JSON structure, title 1-200 chars
-- [ ] Audit log (`CHANGELOG_CREATED`, `CHANGELOG_UPDATED`, `CHANGELOG_DELETED`)
-- [ ] Codes erreur : CHANGELOG_001 a CHANGELOG_005
-- [ ] Tests unitaires admin CRUD
+- [x] Ajouter l'enum `CHANGELOG_CREATED | CHANGELOG_UPDATED | CHANGELOG_DELETED` a `AdminActionType`
+- [x] Creer le modele `ChangelogEntry` dans `schema.prisma`
+- [x] Generer et appliquer la migration Prisma
+- [x] Ajouter l'upsert `v1.0.0` dans le seed (idempotent, par version)
+- [x] Verifier que le seed passe sans erreur
 
 ---
 
-## Phase 3 — Backend API (User)
+## Phase 2 — Backend API (Admin) ✅
 
-- [ ] Creer `controllers/changelog.ts`
-- [ ] Creer `routes/changelog.ts`
-- [ ] `GET /api/changelog` — liste paginee (requireAuth, deletedAt: null)
-- [ ] `GET /api/changelog/:id` — detail (requireAuth, deletedAt: null)
-- [ ] Brancher les routes dans `app.ts`
-- [ ] Tests unitaires user endpoints
-
----
-
-## Phase 4 — Script de generation & script d'insertion
-
-- [ ] Creer `scripts/generate-changelog.ts` (executable Node.js, tourne dans le CI)
-  - [ ] Parser conventional commits (regex)
-  - [ ] Filtrer : exclure test/docs/ci/build/chore (sauf chore(deps))
-  - [ ] Exclure merge commits
-  - [ ] Categoriser : feat → features, fix → fixes, refactor/perf/style → improvements
-  - [ ] Calculer la prochaine version semver depuis le dernier tag
-  - [ ] Generer le titre auto (ex: "2 nouveautes et 3 corrections")
-  - [ ] Sortie JSON sur stdout
-- [ ] Test du script en local (avec des commits de test)
-- [ ] Creer `scripts/insert-changelog.ts` (tourne dans le container backend via Portainer exec)
-  - [ ] Recoit JSON changelog en argument
-  - [ ] Validation : version semver, content structure
-  - [ ] Insert en DB via Prisma (`changelogEntry.create`)
-  - [ ] Gestion conflit version (erreur si doublon)
-  - [ ] S'assurer que le script est inclus dans le build Docker (Dockerfile backend)
+- [x] Creer `admin/controllers/changelogController.ts`
+- [x] Creer `admin/routes/changelogRoutes.ts`
+- [x] `GET /api/admin/changelog` — liste paginee (includeDeleted optionnel)
+- [x] `POST /api/admin/changelog` — creation manuelle (requireSuperAdmin)
+- [x] `PATCH /api/admin/changelog/:id` — modification (title, content, version, publishedAt)
+- [x] `DELETE /api/admin/changelog/:id` — soft delete
+- [x] Validation : version semver, content JSON structure, title 1-200 chars
+- [x] Audit log (`CHANGELOG_CREATED`, `CHANGELOG_UPDATED`, `CHANGELOG_DELETED`)
+- [x] Codes erreur : CHANGELOG_001 a CHANGELOG_004
+- [x] Tests integration admin CRUD (17 tests)
 
 ---
 
-## Phase 5 — Job CI (generate-changelog via Portainer exec)
+## Phase 3 — Backend API (User) ✅
 
-- [ ] Ajouter le job `generate-changelog` dans `deploy.yml`
-  - [ ] `needs: [deploy-prod]`, uniquement si deploy reussi
-  - [ ] Checkout avec `fetch-depth: 0`
-  - [ ] Determiner le dernier tag `v*`
-  - [ ] Executer `scripts/generate-changelog.ts` pour parser les commits
-  - [ ] Skip si aucun commit user-facing
-  - [ ] Trouver le container backend via API Portainer (filtre par nom)
-  - [ ] Executer `scripts/insert-changelog.ts` dans le container via Portainer exec
-  - [ ] Creer et pousser le tag git `vX.Y.Z`
-- [ ] Aucun nouveau secret GitHub necessaire (reutilise PORTAINER_URL, PORTAINER_API, ENDPOINT_ID)
+- [x] Creer `controllers/changelog.ts`
+- [x] Creer `routes/changelog.ts`
+- [x] `GET /api/changelog` — liste paginee (requireAuth, deletedAt: null)
+- [x] `GET /api/changelog/:id` — detail (requireAuth, deletedAt: null)
+- [x] Brancher les routes dans `app.ts`
+- [x] Tests integration user endpoints (7 tests)
 
 ---
 
-## Phase 6 — Frontend User (page changelog)
+## Phase 4 — Script de generation & script d'insertion ✅
 
-- [ ] Creer `pages/ChangelogPage.tsx`
-  - [ ] Liste de cartes empilees, du plus recent au plus ancien
-  - [ ] Badge version colore
-  - [ ] Date relative + absolue
-  - [ ] 3 categories avec icone/couleur : Nouveautes (vert), Ameliorations (bleu), Corrections (rouge)
-  - [ ] Pagination classique
-- [ ] Ajouter la route `/changelog` (requireAuth)
-- [ ] Service API : `getChangelog(page, limit)`, `getChangelogEntry(id)`
-- [ ] Modifier `Sidebar.tsx` :
-  - [ ] Version dynamique (derniere version du changelog)
-  - [ ] Texte version cliquable → lien `/changelog`
-  - [ ] Mode compact : icone avec tooltip "Changelog"
-- [ ] Tests composant ChangelogPage
-
----
-
-## Phase 7 — Frontend Admin (page CRUD)
-
-- [ ] Creer `pages/admin/AdminChangelogPage.tsx`
-  - [ ] Table : Version, Titre, Date, Status, Actions
-  - [ ] Bouton "Nouvelle entree"
-  - [ ] Filtre afficher/masquer supprimees
-- [ ] Modal creation/edition :
-  - [ ] Champs : version (semver), titre, date publication
-  - [ ] Editeur structure : 3 sections (Nouveautes, Ameliorations, Corrections)
-  - [ ] Ajout/suppression d'items par section
-  - [ ] Bouton sauvegarder avec confirmation
-- [ ] Modal suppression avec confirmation
-- [ ] Ajouter dans `AdminLayout.tsx` : nav item "Changelog" (icone `FaNewspaper`)
-- [ ] Ajouter la route `/admin/changelog` dans `adminRoutes.tsx`
-- [ ] Service API admin : CRUD changelog
-- [ ] Tests composant AdminChangelogPage
+- [x] Creer `scripts/generate-changelog.js` (JS pur, tourne dans le CI)
+  - [x] Parser conventional commits (regex)
+  - [x] Filtrer : exclure test/docs/ci/build/chore (sauf chore(deps))
+  - [x] Exclure merge commits
+  - [x] Categoriser : feat → features, fix → fixes, refactor/perf/style → improvements
+  - [x] Calculer la prochaine version semver depuis le dernier tag
+  - [x] Generer le titre auto (ex: "2 nouveautes et 3 corrections")
+  - [x] Sortie JSON sur stdout, exit code 2 si rien a publier
+- [x] Test du script en local (avec des commits de test)
+- [x] Creer `backend/src/scripts/insertChangelog.ts` (compile dans dist/, tourne dans le container)
+  - [x] Recoit JSON changelog en argument
+  - [x] Validation : version semver, content structure
+  - [x] Insert en DB via Prisma (`changelogEntry.create`)
+  - [x] Gestion conflit version (erreur si doublon)
+  - [x] Compile dans dist/scripts/insertChangelog.js (rootDir + include ajoutes au tsconfig)
 
 ---
 
-## Phase 8 — Mise a jour docs & contexte
+## Phase 5 — Job CI (generate-changelog via Portainer exec) ✅
 
-- [ ] Mettre a jour `API_MAP.md` (nouveaux endpoints)
-- [ ] Mettre a jour `DB_MODELS.md` (nouveau modele + enum)
-- [ ] Mettre a jour `FILE_MAP.md` (nouveaux fichiers)
-- [ ] Mettre a jour `PROGRESS.md` (feature terminee)
-- [ ] Mettre a jour `CLAUDE.md` si necessaire (codes erreur)
-- [ ] Cocher toutes les taches de cette roadmap
+- [x] Ajouter le job `generate-changelog` dans `deploy.yml`
+  - [x] `needs: [deploy-prod]`, uniquement si deploy reussi
+  - [x] Checkout avec `fetch-depth: 0`
+  - [x] Determiner le dernier tag `v*`
+  - [x] Executer `scripts/generate-changelog.js` pour parser les commits
+  - [x] Skip si aucun commit user-facing (exit code 2)
+  - [x] Trouver le container backend via API Portainer (filtre par nom)
+  - [x] Executer `dist/scripts/insertChangelog.js` dans le container via Portainer exec
+  - [x] Verifier exit code de l'exec
+  - [x] Creer et pousser le tag git `vX.Y.Z`
+- [x] Aucun nouveau secret GitHub necessaire (reutilise PORTAINER_URL, PORTAINER_API, ENDPOINT_ID)
+
+---
+
+## Phase 6 — Frontend User (page changelog) ✅
+
+- [x] Creer `pages/ChangelogPage.tsx`
+  - [x] Liste de cartes empilees, du plus recent au plus ancien
+  - [x] Badge version colore
+  - [x] Date relative + absolue
+  - [x] 3 categories avec icone/couleur : Nouveautes (vert), Ameliorations (bleu), Corrections (rouge)
+  - [x] Pagination classique (load more)
+- [x] Ajouter la route `/changelog` (requireAuth)
+- [x] Service API : `getChangelog(limit, offset)`, `getChangelogEntry(id)`
+- [x] Modifier `Sidebar.tsx` :
+  - [x] Version dynamique (derniere version du changelog)
+  - [x] Texte version cliquable → lien `/changelog`
+  - [x] Mode compact : version avec tooltip "Changelog"
+- [x] Tests composant ChangelogPage (6 tests)
+
+---
+
+## Phase 7 — Frontend Admin (page CRUD) ✅
+
+- [x] Creer `pages/admin/AdminChangelogPage.tsx`
+  - [x] Table : Version, Titre, Date, Status, Actions
+  - [x] Bouton "Nouvelle entree"
+  - [x] Filtre afficher/masquer supprimees
+- [x] Modal creation/edition :
+  - [x] Champs : version (semver), titre, date publication
+  - [x] Editeur structure : 3 sections (Nouveautes, Ameliorations, Corrections)
+  - [x] Ajout/suppression d'items par section
+  - [x] Bouton sauvegarder avec confirmation
+- [x] Modal suppression avec confirmation
+- [x] Ajouter dans `AdminLayout.tsx` : nav item "Changelog" (icone `FaNewspaper`)
+- [x] Ajouter la route `/admin/changelog` dans `adminRoutes.tsx`
+- [x] Service API admin : CRUD changelog
+- [x] Tests composant AdminChangelogPage (10 tests)
+
+---
+
+## Phase 8 — Mise a jour docs & contexte ✅
+
+- [x] Mettre a jour `API_MAP.md` (nouveaux endpoints: 6 user + 4 admin)
+- [x] Mettre a jour `DB_MODELS.md` (ChangelogEntry model + CHANGELOG\_\* enum values)
+- [x] Mettre a jour `FILE_MAP.md` (nouveaux fichiers backend + frontend)
+- [x] Mettre a jour `PROGRESS.md` (feature terminee)
+- [x] Mettre a jour `TESTS.md` (24 backend + 16 frontend tests)
+- [x] Mettre a jour `CLAUDE.md` (codes erreur CHANGELOG_001-004)
+- [x] Cocher toutes les taches de cette roadmap

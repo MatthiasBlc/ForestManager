@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
-import { FaBook, FaPlus, FaBars, FaHome, FaSun, FaMoon } from "react-icons/fa";
+import { FaBook, FaPlus, FaBars, FaHome, FaSun, FaMoon, FaNewspaper } from "react-icons/fa";
 import { CommunityListItem } from "../../models/community";
 import APIManager from "../../network/api";
 import { communityEvents } from "../../utils/communityEvents";
@@ -100,6 +100,7 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const [communities, setCommunities] = useState<CommunityListItem[]>([]);
+  const [latestVersion, setLatestVersion] = useState<string | null>(null);
 
   const loadCommunities = useCallback(async () => {
     try {
@@ -113,6 +114,16 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
   useEffect(() => {
     loadCommunities();
   }, [location.pathname, loadCommunities]);
+
+  useEffect(() => {
+    APIManager.getChangelog({ limit: 1, offset: 0 })
+      .then((res) => {
+        if (res.data.length > 0) {
+          setLatestVersion(res.data[0].version);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     return communityEvents.subscribe(loadCommunities);
@@ -253,7 +264,15 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
         <div
           className={`flex items-center ${isCompact ? "justify-center" : "justify-between"} mb-1`}
         >
-          {!isCompact && <p className="text-xs text-base-content/50">Forest Manager v0.1</p>}
+          {!isCompact && (
+            <Link
+              to="/changelog"
+              onClick={onNavigate}
+              className="text-xs text-base-content/50 hover:text-primary transition-colors"
+            >
+              Forest Manager v{latestVersion || "0.1"}
+            </Link>
+          )}
           <button
             onClick={toggleTheme}
             className={`btn btn-ghost btn-sm btn-circle ${isCompact ? "tooltip tooltip-right" : ""}`}
@@ -263,7 +282,15 @@ const Sidebar = ({ onNavigate, isCompact = false, onToggleCompact }: SidebarProp
             {theme === "coffee" ? <FaSun className="w-4 h-4" /> : <FaMoon className="w-4 h-4" />}
           </button>
         </div>
-        {isCompact && <p className="text-xs text-base-content/50 text-center">v0.1</p>}
+        {isCompact && (
+          <PortalTooltip text="Changelog">
+            <Link to="/changelog" onClick={onNavigate} className="flex justify-center">
+              <span className="text-xs text-base-content/50 hover:text-primary transition-colors">
+                v{latestVersion || "0.1"}
+              </span>
+            </Link>
+          </PortalTooltip>
+        )}
       </div>
     </div>
   );

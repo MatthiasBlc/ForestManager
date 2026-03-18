@@ -14,10 +14,10 @@ Phases 0 a 17 terminees (tags rework, ingredients rework, notifications, recipe 
 - **Spec** : `docs/features/recipe-import/SPEC_RECIPE_IMPORT.md`
 - **Roadmap** : `docs/features/recipe-import/ROADMAP.md`
 
-## Feature specifiee : Changelog Automatique
+## Feature terminee : Changelog Automatique (Phases 1-8)
 
 - **Spec** : `docs/features/changelog/SPEC_CHANGELOG.md`
-- Statut : spec validee, pret pour implementation
+- **Roadmap** : `docs/features/changelog/ROADMAP.md`
 
 ## Feature planifiee : E2E Testing
 

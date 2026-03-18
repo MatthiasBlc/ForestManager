@@ -24,6 +24,7 @@ controllers/
 ├── tagSuggestions.ts  # create, accept, reject tag suggestions
 ├── tags.ts            # autocomplete tags (scope-aware)
 ├── ingredients.ts     # autocomplete ingredients + suggested-unit
+├── changelog.ts       # getAll, getById (user-facing)
 ├── units.ts           # list units grouped by category
 └── users.ts           # search users, update profile
 ```
@@ -38,6 +39,7 @@ routes/
 ├── proposals.ts       # /api/proposals/:id, /api/proposals/:id/accept|reject
 ├── recipes.ts         # /api/recipes/* (incl. /api/recipes/:id/proposals)
 ├── tagSuggestions.ts  # /api/tag-suggestions/*
+├── changelog.ts       # /api/changelog
 ├── tags.ts            # /api/tags
 ├── ingredients.ts     # /api/ingredients
 ├── units.ts           # /api/units
@@ -69,6 +71,7 @@ admin/
 │   ├── ingredientsController.ts  # CRUD + merge + approve/reject ingredients
 │   ├── unitsController.ts        # CRUD units (+ usage protection)
 │   ├── featuresController.ts     # CRUD features
+│   ├── changelogController.ts    # CRUD changelog entries
 │   ├── dashboardController.ts    # stats globales
 │   └── activityController.ts     # logs activite admin
 ├── routes/
@@ -79,6 +82,7 @@ admin/
 │   ├── ingredientsRoutes.ts
 │   ├── unitsRoutes.ts
 │   ├── featuresRoutes.ts
+│   ├── changelogRoutes.ts
 │   ├── dashboardRoutes.ts
 │   └── activityRoutes.ts
 └── middleware/
@@ -126,7 +130,8 @@ jobs/
 ├── notificationCleanup.ts # Cron daily cleanup read notifications > 30 days
 └── imageCleanup.ts    # Cron daily 3h30 cleanup orphan images (soft-deleted > 7 days)
 scripts/
-└── createAdmin.ts     # CLI creation SuperAdmin
+├── createAdmin.ts     # CLI creation SuperAdmin
+└── insertChangelog.ts # CLI insert changelog entry (Portainer exec from CI)
 ```
 
 ### Tests backend
@@ -181,6 +186,8 @@ __tests__/
     ├── recipeImage.test.ts        # Recipe image upload endpoints
     ├── communityImage.test.ts     # Community image upload endpoints
     ├── imageCleanup.test.ts       # Image cleanup cron job
+    ├── adminChangelog.test.ts     # Admin changelog CRUD (17 tests)
+    ├── changelog.test.ts          # User changelog endpoints (7 tests)
     └── users.test.ts              # User profile update
 ```
 
@@ -206,6 +213,7 @@ pages/
 ├── ProfilePage.tsx           # Profil utilisateur (edit username/email/password)
 ├── SignUpPage.tsx            # Inscription
 ├── PrivacyPage.tsx           # Politique confidentialite
+├── ChangelogPage.tsx         # Page changelog user (cartes, pagination)
 ├── NotFoundPage.tsx          # 404
 └── admin/
     ├── AdminLoginPage.tsx         # Login admin 2FA
@@ -215,6 +223,7 @@ pages/
     ├── AdminUnitsPage.tsx         # CRUD units (category filter, sortOrder)
     ├── AdminFeaturesPage.tsx      # CRUD features (code, name, isDefault)
     ├── AdminCommunitiesPage.tsx   # Liste, detail, delete, grant/revoke features
+    ├── AdminChangelogPage.tsx     # CRUD changelog admin (table, modals)
     └── AdminActivityPage.tsx      # Logs activite admin paginee
 ```
 
@@ -317,7 +326,8 @@ models/
 ├── community.ts              # Community, Member, Invite types
 ├── preferences.ts            # TagPreference types
 ├── notification.ts           # Notification, NotificationCategory, preferences types
-└── admin.ts                  # AdminUser types
+├── changelog.ts              # ChangelogEntry, ChangelogContent, ChangelogResponse types
+└── admin.ts                  # AdminUser types (incl. AdminChangelogEntry)
 ```
 
 ### Autres frontend
@@ -394,6 +404,7 @@ __tests__/
     │   ├── RecipesPage.test.tsx
     │   ├── RecipeFormPage.test.tsx
     │   ├── RecipeDetailPage.mobile.test.tsx  # Mobile rework Phase 3 (4 tests)
+    │   ├── ChangelogPage.test.tsx
     │   ├── SignUpPage.test.tsx
     │   └── admin/
     │       ├── AdminLoginPage.test.tsx
@@ -403,6 +414,7 @@ __tests__/
     │       ├── AdminUnitsPage.test.tsx
     │       ├── AdminFeaturesPage.test.tsx
     │       ├── AdminCommunitiesPage.test.tsx
+    │       ├── AdminChangelogPage.test.tsx
     │       └── AdminActivityPage.test.tsx
     ├── services/
     │   └── recipeParser.test.ts   # Parsing texte brut recette (65 tests)
@@ -464,7 +476,8 @@ docker-compose.yml            # Dev (postgres, backend:3001, frontend:3000)
 docker-compose.test.yml       # DB test (postgres:5433, tmpfs)
 docker-compose.prod.yml       # Production
 docker-compose.preprod.yml    # Pre-production
-.github/workflows/deploy.yml  # CI/CD (test → build → deploy)
+scripts/generate-changelog.js # Parse conventional commits → JSON changelog (CI)
+.github/workflows/deploy.yml  # CI/CD (test → build → deploy → changelog)
 .env.example                  # Variables d'environnement
 package.json                  # Scripts racine (docker, test)
 ```

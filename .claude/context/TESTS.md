@@ -42,14 +42,14 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~802 backend + ~469 frontend = ~1271 tests)
+## Inventaire des tests (~826 backend + ~546 frontend = ~1372 tests)
 
 ### Couverture (seuils CI)
 
 - Backend : 91.81% statements, 83.31% branches (seuil: 80%/70%)
 - Frontend : 66.44% statements, 76.31% branches (seuil: 50%/50%)
 
-### Backend Integration (33 fichiers, ~665 tests)
+### Backend Integration (35 fichiers, ~689 tests)
 
 | Fichier                     | Module                                                                        | Tests |
 | --------------------------- | ----------------------------------------------------------------------------- | ----- |
@@ -85,6 +85,8 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | communityImage.test.ts      | Community image upload endpoints (presigned URL, confirm, delete, role-based) | 13    |
 | imageCleanup.test.ts        | Image cleanup cron (recipes, communities, retention, error resilience)        | 8     |
 | recipeImport.test.ts        | Recipe import endpoint (auth, validation, SSRF)                               | 6     |
+| adminChangelog.test.ts      | Admin changelog CRUD (list, create, update, delete, audit)                    | 17    |
+| changelog.test.ts           | User changelog endpoints (list, detail, auth, soft-delete filter)             | 7     |
 | users.test.ts               | User profile update (username, email, password)                               | 4     |
 
 ### Backend Unit (10 fichiers, ~137 tests)
@@ -102,7 +104,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | storageService.test.ts               | S3/MinIO service (presigned URL, head, delete, validate)                                 | 10    |
 | recipeImportService.test.ts          | Recipe import (URL validation, SSRF, JSON-LD parsing, ingredient parsing)                | 48    |
 
-### Frontend Unit (63 fichiers, ~469 tests)
+### Frontend Unit (76 fichiers, ~546 tests)
 
 | Fichier                                         | Composant                                                             | Tests |
 | ----------------------------------------------- | --------------------------------------------------------------------- | ----- |
@@ -125,7 +127,9 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | pages/admin/AdminUnitsPage.test.tsx             | Page units admin (CRUD, category filter)                              | 10    |
 | pages/admin/AdminFeaturesPage.test.tsx          | Page features admin                                                   | 6     |
 | pages/admin/AdminCommunitiesPage.test.tsx       | Page communities admin                                                | 8     |
+| pages/admin/AdminChangelogPage.test.tsx         | Page changelog admin (CRUD, modals, filters)                          | 10    |
 | pages/admin/AdminActivityPage.test.tsx          | Page activity admin                                                   | 5     |
+| pages/ChangelogPage.test.tsx                    | Page changelog user (list, categories, badges)                        | 6     |
 | RecipeCard.test.tsx                             | Carte recette (+ image)                                               | 12    |
 | RecipeFilters.test.tsx                          | Filtres recettes                                                      | 9     |
 | TagSelector.test.tsx                            | Selecteur tags                                                        | 9     |

@@ -11,6 +11,7 @@ const AdminIngredientsPage = lazy(() => import("../pages/admin/AdminIngredientsP
 const AdminUnitsPage = lazy(() => import("../pages/admin/AdminUnitsPage"));
 const AdminFeaturesPage = lazy(() => import("../pages/admin/AdminFeaturesPage"));
 const AdminCommunitiesPage = lazy(() => import("../pages/admin/AdminCommunitiesPage"));
+const AdminChangelogPage = lazy(() => import("../pages/admin/AdminChangelogPage"));
 const AdminActivityPage = lazy(() => import("../pages/admin/AdminActivityPage"));
 
 function AdminPage({ children }: { children: React.ReactNode }) {
@@ -89,6 +90,16 @@ const adminRoutes = (
         <AdminPage>
           <Suspense fallback={fallback}>
             <AdminCommunitiesPage />
+          </Suspense>
+        </AdminPage>
+      }
+    />
+    <Route
+      path="changelog"
+      element={
+        <AdminPage>
+          <Suspense fallback={fallback}>
+            <AdminChangelogPage />
           </Suspense>
         </AdminPage>
       }

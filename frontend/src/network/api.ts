@@ -14,6 +14,7 @@ import {
   SuggestedUnit,
 } from "../models/recipe";
 import { ActivityResponse } from "../models/activity";
+import { ChangelogResponse, ChangelogEntry } from "../models/changelog";
 import { User } from "../models/user";
 import {
   AdminLoginResponse,
@@ -30,6 +31,9 @@ import {
   AdminRecipeListItem,
   AdminRecipeDetail,
   AdminRecipeUpdateInput,
+  AdminChangelogEntry,
+  AdminChangelogResponse,
+  AdminChangelogInput,
 } from "../models/admin";
 import { CommunityTag } from "../models/tag";
 import { TagSuggestion, TagSuggestionsResponse } from "../models/tagSuggestion";
@@ -658,6 +662,21 @@ export default class APIManager {
     return response.data;
   }
 
+  // --------------- Changelog ---------------
+
+  static async getChangelog(
+    params: { limit?: number; offset?: number } = {}
+  ): Promise<ChangelogResponse> {
+    const qs = buildQueryString({ limit: params.limit, offset: params.offset });
+    const response = await API.get(`/api/changelog${qs}`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async getChangelogEntry(id: string): Promise<ChangelogEntry> {
+    const response = await API.get(`/api/changelog/${id}`).catch(handleApiError);
+    return response.data;
+  }
+
   // --------------- Admin Auth ---------------
 
   static async adminLogin(email: string, password: string): Promise<AdminLoginResponse> {
@@ -979,5 +998,40 @@ export default class APIManager {
     const qs = buildQueryString({ type: params.type, limit: params.limit, offset: params.offset });
     const response = await API.get(`/api/admin/activity${qs}`).catch(handleApiError);
     return response.data;
+  }
+
+  // --------------- Admin Changelog ---------------
+
+  static async getAdminChangelog(
+    params: { includeDeleted?: boolean; limit?: number; offset?: number } = {}
+  ): Promise<AdminChangelogResponse> {
+    const qs = buildQueryString({
+      includeDeleted: params.includeDeleted ? "true" : undefined,
+      limit: params.limit,
+      offset: params.offset,
+    });
+    const response = await API.get(`/api/admin/changelog${qs}`).catch(handleApiError);
+    return response.data;
+  }
+
+  static async createAdminChangelog(data: AdminChangelogInput): Promise<AdminChangelogEntry> {
+    const response = await API.post("/api/admin/changelog", JSON.stringify(data)).catch(
+      handleApiErrorWith({ 409: ConflictError })
+    );
+    return response.data.data;
+  }
+
+  static async updateAdminChangelog(
+    id: string,
+    data: Partial<AdminChangelogInput>
+  ): Promise<AdminChangelogEntry> {
+    const response = await API.patch(`/api/admin/changelog/${id}`, JSON.stringify(data)).catch(
+      handleApiErrorWith({ 409: ConflictError })
+    );
+    return response.data.data;
+  }
+
+  static async deleteAdminChangelog(id: string): Promise<void> {
+    await API.delete(`/api/admin/changelog/${id}`).catch(handleApiError);
   }
 }

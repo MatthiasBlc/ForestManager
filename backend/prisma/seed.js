@@ -145,6 +145,29 @@ async function seed() {
   console.log("Ingredients seeded:", ingredientNames.length);
 
   // ===========================================
+  // Changelog (always upsert - idempotent)
+  // ===========================================
+  await prisma.changelogEntry.upsert({
+    where: { version: "1.0.0" },
+    update: {},
+    create: {
+      version: "1.0.0",
+      title: "Lancement de Forest Manager",
+      content: {
+        features: [
+          { text: "Gestion de recettes personnelles et communautaires" },
+          { text: "Systeme de communautes privees avec invitations" },
+          { text: "Propositions de modifications collaboratives" },
+          { text: "Import de recettes depuis des URLs externes" },
+        ],
+        improvements: [],
+        fixes: [],
+      },
+    },
+  });
+  console.log("Changelog v1.0.0 seeded");
+
+  // ===========================================
   // Production mode stops here (reference data only)
   // ===========================================
   if (SEED_MODE === "prod") {
