@@ -59,20 +59,19 @@ model MealPlan {
   community         Community      @relation(fields: [communityId], references: [id])
   slots             MealSlot[]
 
-  @@unique([communityId, status]) // contrainte partielle : un seul ACTIVE par communaute (voir note)
   @@index([communityId, status])
 }
 ```
 
 **Regles** :
 
-- **1 plan ACTIVE par communaute**. Contrainte applicative (la contrainte unique `[communityId, status]` ne fonctionne pas directement pour les ARCHIVED multiples — verifier en applicatif)
+- **1 plan ACTIVE par communaute**. Contrainte purement applicative — le `@@unique([communityId, status])` est supprime du schema Prisma car il interdirait le 2eme archivage. Unicite du ACTIVE garantie par transaction (archivage + creation atomiques)
 - `startDate` / `endDate` : dates reelles, `startDate <= endDate`, duree max 31 jours
 - `status` : `ACTIVE` = planning courant, `ARCHIVED` = consultation seule
-- A la creation d'un nouveau plan, l'ancien ACTIVE passe automatiquement en ARCHIVED
+- A la creation d'un nouveau plan, l'ancien ACTIVE passe automatiquement en ARCHIVED dans la meme transaction. Si la creation echoue, l'archivage est annule (rollback)
 - Pas de contrainte de continuite : il peut y avoir des gaps entre plannings (ex: vacances)
-- Pas de chevauchement autorise entre plannings de la meme communaute (validation applicative sur les dates)
-- `defaultServings` : valeur par defaut utilisee a la creation des slots. La modification ulterieure n'affecte PAS les slots existants
+- **Pas de chevauchement de slots `(date, mealTime)`** : deux plannings d'une meme communaute ne peuvent pas partager le meme slot. Une date peut apparaitre dans deux plannings consecutifs si les mealTimes sont differents (ex: planning 1 se termine le lundi LUNCH, planning 2 commence le lundi DINNER — valide car les slots sont distincts). Validation applicative : verifier l'absence de `(date, mealTime)` en conflit sur TOUS les plans de la communaute (ACTIVE + ARCHIVED)
+- `defaultServings` : valeur par defaut utilisee a la creation des slots (min 1, max 100). La modification ulterieure n'affecte PAS les slots existants
 - `editableByMembers` : si `false` (defaut), seuls les MODERATOR peuvent modifier les slots. Si `true`, tous les membres peuvent modifier. Bascule via `PATCH /meal-plan`
 
 ### 1.3 MealSlot — N par plan (2 par jour dans la plage)
@@ -87,13 +86,15 @@ model MealSlot {
   type      MealSlotType @default(EMPTY)
   disabled  Boolean      @default(false)
   locked    Boolean      @default(false)
-  recipeId  String?
-  freeText  String?      // max 255 chars
-  comment   String?      // max 500 chars
-  updatedAt DateTime     @updatedAt
+  recipeId     String?
+  freeText     String?      // max 255 chars
+  comment      String?      // max 500 chars
+  updatedAt    DateTime     @updatedAt
+  updatedById  String?      // dernier membre ayant modifie ce slot
 
-  plan      MealPlan     @relation(fields: [planId], references: [id], onDelete: Cascade)
-  recipe    Recipe?      @relation(fields: [recipeId], references: [id])
+  plan         MealPlan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  recipe       Recipe?      @relation(fields: [recipeId], references: [id])
+  updatedBy    User?        @relation(fields: [updatedById], references: [id], onDelete: SetNull)
 
   @@unique([planId, date, mealTime])
   @@index([planId, date])
@@ -109,6 +110,7 @@ model MealSlot {
 - `locked` : verrouille pour la generation (Feature 2). Utilise des Feature 1 pour l'UX (cadenas visuel). Voir SPEC_MEAL_GENERATION pour le detail
 - `recipeId` : FK vers Recipe. Les recettes sont soft-deleted, donc le recipeId reste intact. L'API renvoie un flag `isDeleted` si la recette est soft-deleted. Le frontend affiche "Recette supprimee" en grise
 - `type: EMPTY` reset complet : recipeId, freeText et comment sont mis a null
+- `updatedById` : mis a jour a chaque modification de contenu (type, recette, texte, servings, disabled, locked). SetNull si l'utilisateur est supprime. Affiche dans le modal de detail du slot ("Modifie par X")
 
 ### 1.4 MealIdea — Pool d'idees communautaire
 
@@ -159,9 +161,10 @@ Un middleware `requireFeature('MEAL_PLAN')` verifie que la feature est activee p
 ### 3.2 Meal Plan (nested sous /api/communities/:communityId)
 
 ```
-GET    /meal-plan                   # Plan ACTIVE complet + tous ses slots (memberOf)
+GET    /meal-plan                   # Plan ACTIVE complet + slots + hasDefaultGenerationParams (memberOf). Retourne 200 { plan: null, hasDefaultGenerationParams: false } si aucun plan n'existe
 GET    /meal-plan/archives          # Liste des plans ARCHIVED, pagine (memberOf)
 GET    /meal-plan/archives/:planId  # Detail d'un plan archive + slots (memberOf)
+DELETE /meal-plan/archives/:planId  # Supprimer une archive (MODERATOR, hard delete)
 POST   /meal-plan                   # Creer un plan + slots (MODERATOR)
 DELETE /meal-plan                   # Supprimer le plan ACTIVE + cascade slots (MODERATOR)
 PATCH  /meal-plan                   # Update defaultServings et/ou editableByMembers (MODERATOR)
@@ -202,13 +205,15 @@ DELETE /meal-ideas/:ideaId          # Soft delete (createur ou MODERATOR)
 
 Quand un MODERATOR cree le plan :
 
-1. Valider les dates : `startDate <= endDate`, duree max 31 jours, pas de chevauchement avec un autre plan
+1. Valider les dates : `startDate <= endDate`, duree max 31 jours, pas de chevauchement de slots avec un autre plan. Les dates dans le passe sont autorisees (utile pour corriger une erreur ou creer une archive manuelle)
 2. Si un plan ACTIVE existe → le passer en ARCHIVED
 3. Creer le `MealPlan` avec `status: ACTIVE`
 4. Creer les slots pour chaque date dans `[startDate, endDate]` × LUNCH/DINNER, tous `type: EMPTY`, `servings` herite du `defaultServings`
 5. Si `disabledSlots` fourni → marquer ces slots comme `disabled: true`
 6. Si `copyDisabledFromPrevious: true` → recuperer le pattern de disabled du plan archive le plus recent, mapper les jours de la semaine (ex: si l'ancien avait mercredi midi disabled, le nouveau aussi sur tous ses mercredis midi)
-7. Retourner le plan complet avec tous ses slots
+7. Si les deux sont fournis (`disabledSlots` + `copyDisabledFromPrevious: true`) → additivite : l'union des deux ensembles est appliquee
+8. Si `copyDisabledFromPrevious: true` et aucune archive n'existe → flag silencieusement ignore, aucune erreur
+9. Retourner le plan complet avec tous ses slots
 
 **Nombre de slots** : `(nombre de jours dans la plage) × 2`. Exemple : du 23 au 30 mars = 8 jours = 16 slots.
 
@@ -245,7 +250,7 @@ Quand un MODERATOR cree le plan :
 - `type: RECIPE` → `recipeId` requis, doit etre une recette de la communaute (non soft-deleted)
 - `type: FREE_TEXT` → `freeText` requis, non vide, max 255 chars
 - `type: EMPTY` → reset complet : recipeId, freeText, comment mis a null
-- `servings` : modifiable independamment du type (min 1)
+- `servings` : modifiable independamment du type (min 1, max 100)
 - `comment` : max 500 chars, optionnel sur tous les types (sauf EMPTY qui le reset)
 - `disabled: true` → grise le slot. Si le slot avait un contenu, il est conserve mais le slot est visuellement grise
 - `disabled: false` → reactive le slot
@@ -260,7 +265,7 @@ Quand un MODERATOR cree le plan :
 
 Echange le contenu complet des deux slots : `type`, `recipeId`, `freeText`, `comment`, `servings`. Les proprietes `date`, `mealTime`, `disabled` et `locked` ne changent pas (fixes au slot).
 
-**Validation** : les deux slots doivent appartenir au meme plan ACTIVE. Un slot ne peut pas etre swappe avec lui-meme (`MEAL_007`).
+**Validation** : les deux slots doivent appartenir au meme plan ACTIVE. Un slot ne peut pas etre swappe avec lui-meme (`MEAL_007`). Si l'un ou l'autre des slots est `disabled`, le swap est refuse (`MEAL_013`).
 
 ### 4.4 Recherche de recette pour un slot
 
@@ -280,6 +285,7 @@ Quand un membre edite un slot et cherche une recette (cote frontend) :
 - `GET /meal-plan/archives/:planId` : detail complet d'un plan archive + ses slots
 - Les slots des archives conservent leur etat au moment de l'archivage
 - Pas d'edition, pas de swap, pas de drag & drop sur les archives
+- `DELETE /meal-plan/archives/:planId` : hard delete d'une archive (MODERATOR). Si l'archive supprimee est la plus recente (celle utilisee pour le cooldown cross-planning), la prochaine generation le signale dans son rapport (`warning: no previous plan available for cross-planning cooldown`). Si l'archive est au milieu de la timeline, l'impact est minimal (le cooldown cross-planning utilise toujours la plus recente)
 
 ### 4.6 Suppression
 
@@ -293,7 +299,8 @@ Quand un membre edite un slot et cherche une recette (cote frontend) :
 | Action                                                         | Droit requis                                             |
 | -------------------------------------------------------------- | -------------------------------------------------------- |
 | Voir le plan actif et les archives                             | Membre de la communaute                                  |
-| Creer / supprimer le plan                                      | MODERATOR                                                |
+| Creer / supprimer le plan actif                                | MODERATOR                                                |
+| Supprimer une archive                                          | MODERATOR                                                |
 | Modifier `defaultServings` et `editableByMembers`              | MODERATOR                                                |
 | Modifier un slot (type, recette, texte, commentaire, servings) | MODERATOR toujours. Membre si `editableByMembers = true` |
 | Disable/enable un slot                                         | MODERATOR toujours. Membre si `editableByMembers = true` |
@@ -307,19 +314,21 @@ Quand un membre edite un slot et cherche une recette (cote frontend) :
 
 ## 6. Codes erreur
 
-| Code     | Message                                                               |
-| -------- | --------------------------------------------------------------------- |
-| MEAL_001 | Plan not found                                                        |
-| MEAL_002 | An active plan already exists (use creation flow which auto-archives) |
-| MEAL_003 | Slot not found                                                        |
-| MEAL_004 | Recipe not found in this community                                    |
-| MEAL_005 | Feature not enabled for this community                                |
-| MEAL_006 | Idea not found                                                        |
-| MEAL_007 | Cannot swap a slot with itself                                        |
-| MEAL_008 | Plan duration exceeds 31 days                                         |
-| MEAL_009 | startDate must be before or equal to endDate                          |
-| MEAL_010 | Plan dates overlap with an existing plan                              |
-| MEAL_011 | Cannot edit an archived plan                                          |
+| Code     | Message                                                                  |
+| -------- | ------------------------------------------------------------------------ |
+| MEAL_001 | Plan not found                                                           |
+| MEAL_002 | An active plan already exists (use creation flow which auto-archives)    |
+| MEAL_003 | Slot not found                                                           |
+| MEAL_004 | Recipe not found in this community                                       |
+| MEAL_005 | Feature not enabled for this community                                   |
+| MEAL_006 | Idea not found                                                           |
+| MEAL_007 | Cannot swap a slot with itself                                           |
+| MEAL_008 | Plan duration exceeds 31 days                                            |
+| MEAL_009 | startDate must be before or equal to endDate                             |
+| MEAL_010 | Slot (date + mealTime) already exists in another plan for this community |
+| MEAL_011 | Cannot edit an archived plan                                             |
+| MEAL_012 | Archive not found                                                        |
+| MEAL_013 | Cannot swap with a disabled slot                                         |
 
 ---
 

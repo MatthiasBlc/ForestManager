@@ -5,7 +5,7 @@
 Systeme de generation automatique du planning de repas, extremement modulable et personnalisable. Chaque communaute peut avoir plusieurs jeux de parametres (par saison, regime, etc.). Un jeu definit :
 
 - Des regles de poids sur tags et recettes (favoriser/defavoriser/exclure)
-- Des contraintes de frequence par tag (min/max/exact par planning)
+- Des contraintes de frequence par tag (min/max/exact, par planning ou par semaine)
 - Un cooldown global par recette (pas la meme recette trop souvent)
 - Un cooldown par tag (pas le meme type de cuisine trop souvent)
 - Des exclusions de slots (jours ou on ne mange pas ensemble)
@@ -18,6 +18,15 @@ L'objectif : generer une liste de menus variee pour la periode du planning (dure
 > **Note** : les plannings utilisent des dates reelles (Feature 1). Les exclusions et pins utilisent `DayOfWeek` car ce sont des **patterns recurrents** ("chaque mercredi midi", "chaque vendredi soir"). Au moment de la generation, ces patterns sont mappes aux dates reelles du planning actif. Les contraintes de frequence s'appliquent sur l'ensemble du planning, quelle que soit sa duree.
 
 **Prerequis** : Feature 1 (Meal Plan Manuel) doit etre implementee. Meme feature flag `MEAL_PLAN`.
+
+### Nouvel enum
+
+```prisma
+enum FrequencyPer {
+  PER_WEEK      // contrainte par tranche de 7 jours (defaut)
+  PER_PLANNING  // contrainte sur l'ensemble du planning
+}
+```
 
 ---
 
@@ -50,7 +59,7 @@ model MealGenerationParams {
 **Regles** :
 
 - Soft delete (`deletedAt`)
-- `isDefault` : un seul jeu par communaute peut etre `isDefault: true`. Contrainte applicative — quand on set un jeu en default, l'ancien est automatiquement desactive
+- `isDefault` : un seul jeu par communaute peut etre `isDefault: true`. Contrainte applicative — quand on set un jeu en default, l'ancien est automatiquement desactive. Un jeu soft-deleted avec `isDefault: true` ne compte pas : `hasDefaultGenerationParams` retourne `false` si le seul jeu isDefault est soft-deleted
 - `cooldownDays` : nombre minimum de jours entre deux apparitions d'une meme recette dans le planning. Min 0 (pas de cooldown), defaut 3
 - `useIdeas` : si true, les MealIdea (Feature 1) sont incluses dans le pool de generation
 
@@ -91,15 +100,16 @@ model MealGenerationRule {
   mealTimeConstraint MealTime? // null = les deux, LUNCH/DINNER = un seul
 
   // Contraintes de frequence (tag rules uniquement)
-  frequencyMin       Int?      // min occurrences par planning (null = pas de min)
-  frequencyMax       Int?      // max occurrences par planning (null = pas de max)
+  frequencyMin       Int?           // min occurrences (null = pas de min)
+  frequencyMax       Int?           // max occurrences (null = pas de max)
+  frequencyPer       FrequencyPer?  // PER_WEEK | PER_PLANNING — defaut PER_WEEK si frequencyMin ou Max set
 
   // Cooldown par tag (tag rules uniquement)
   tagCooldownDays    Int?      // jours min entre 2 recettes du meme tag (null = pas de cooldown tag)
 
   params             MealGenerationParams @relation(fields: [paramsId], references: [id], onDelete: Cascade)
-  tag                Tag?                 @relation(fields: [tagId], references: [id])
-  recipe             Recipe?              @relation(fields: [recipeId], references: [id])
+  tag                Tag?                 @relation(fields: [tagId], references: [id], onDelete: SetNull)
+  recipe             Recipe?              @relation(fields: [recipeId], references: [id], onDelete: SetNull)
 
   @@index([paramsId])
 }
@@ -107,7 +117,9 @@ model MealGenerationRule {
 
 **Regles** :
 
-- Hard delete en cascade quand le jeu de params est supprime
+- Hard delete en cascade quand le jeu de params est supprime (paramsId)
+- Si le tag est supprime → `tagId` passe a null (SetNull). La regle devient orpheline et est ignoree silencieusement a la generation
+- Si la recette est soft-deleted → la regle reste (recipeId intact). Si la recette est hard-deleted → `recipeId` passe a null (SetNull). Meme comportement : regle ignoree
 - **Un `tagId` OU un `recipeId`, jamais les deux** sur la meme regle. Contrainte applicative
 - `weight` : Float entre 0.0 et 2.0
   - `0.0` = completement exclu du tirage
@@ -116,12 +128,15 @@ model MealGenerationRule {
   - `1.01–2.0` = favorise (plus de chances)
   - **Frontend** : jauge 0–200% (0.0 → 0%, 1.0 → 100%, 2.0 → 200%)
 - `mealTimeConstraint` : restreint l'application de la regle a un type de repas. `null` = les deux
-- **`frequencyMin` / `frequencyMax`** (tag rules uniquement, ignore si recipeId) :
-  - `frequencyMin = 2, frequencyMax = 2` → mode exact (exactement 2 par planning)
-  - `frequencyMin = null, frequencyMax = 3` → max 3 par planning
-  - `frequencyMin = 2, frequencyMax = null` → min 2 par planning
-  - `frequencyMin = 2, frequencyMax = 5` → entre 2 et 5 par planning
+- **`frequencyMin` / `frequencyMax` / `frequencyPer`** (tag rules uniquement, ignore si recipeId) :
+  - `frequencyPer: PER_WEEK` (defaut) : la contrainte s'applique par tranche de 7 jours a partir du `startDate`. Planning de 14 jours = 2 tranches. Planning de 10 jours = tranche 1 (j1→j7) + tranche 2 incomplete (j8→j10). Les memes limites s'appliquent a la tranche incomplete (pas de calcul proportionnel — plus simple et intuitif)
+  - `frequencyPer: PER_PLANNING` : la contrainte s'applique sur l'ensemble du planning, quelle que soit la duree
+  - `frequencyMin = 2, frequencyMax = 2` → mode exact (exactement 2 par tranche/planning)
+  - `frequencyMin = null, frequencyMax = 3` → max 3 par tranche/planning
+  - `frequencyMin = 2, frequencyMax = null` → min 2 par tranche/planning
+  - `frequencyMin = 2, frequencyMax = 5` → entre 2 et 5 par tranche/planning
   - Validation : si les deux sont set, `frequencyMin <= frequencyMax`
+  - `frequencyPer` est ignore si ni `frequencyMin` ni `frequencyMax` ne sont set
 - **`tagCooldownDays`** (tag rules uniquement, ignore si recipeId) :
   - Jours minimum entre deux recettes portant le meme tag
   - Exemple : tag "pates", `tagCooldownDays = 2` → pas de pates deux jours de suite
@@ -138,7 +153,7 @@ model MealSlotPin {
   tagId    String
 
   params   MealGenerationParams @relation(fields: [paramsId], references: [id], onDelete: Cascade)
-  tag      Tag                  @relation(fields: [tagId], references: [id])
+  tag      Tag                  @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@unique([paramsId, day, mealTime])
 }
@@ -146,7 +161,8 @@ model MealSlotPin {
 
 **Regles** :
 
-- Hard delete en cascade
+- Hard delete en cascade (paramsId)
+- Si le tag epingle est supprime → Cascade sur le pin (le pin disparait, le slot n'est plus epingle)
 - Contrainte unique : un seul pin par slot par jeu (un slot ne peut etre epingle qu'a un tag)
 - Exemple : `FRI/DINNER` + tag "poisson" → le vendredi soir, le generateur ne pioche que dans les recettes taguees "poisson"
 - Un slot ne peut pas etre a la fois exclu et epingle (validation applicative)
@@ -177,11 +193,12 @@ model MealSlot {
 ### 2.1 Generation Params (nested sous /api/communities/:communityId)
 
 ```
-GET    /meal-generation-params                    # liste des jeux (memberOf)
-POST   /meal-generation-params                    # creer un jeu (MODERATOR)
-GET    /meal-generation-params/:paramsId          # detail avec exclusions + regles + pins (memberOf)
-PATCH  /meal-generation-params/:paramsId          # modifier (MODERATOR)
-DELETE /meal-generation-params/:paramsId          # soft delete (MODERATOR)
+GET    /meal-generation-params                           # liste des jeux (memberOf)
+POST   /meal-generation-params                           # creer un jeu (MODERATOR)
+GET    /meal-generation-params/:paramsId                 # detail avec exclusions + regles + pins (memberOf)
+PATCH  /meal-generation-params/:paramsId                 # modifier (MODERATOR)
+DELETE /meal-generation-params/:paramsId                 # soft delete (MODERATOR)
+POST   /meal-generation-params/:paramsId/duplicate       # dupliquer un jeu (MODERATOR)
 ```
 
 ### 2.2 Exclusions (nested sous params)
@@ -209,7 +226,23 @@ PUT    /meal-generation-params/:paramsId/pins   # set complet des pins (MODERATO
 
 Body : tableau de `{ day, mealTime, tagId }`. Remplace tous les pins existants (meme logique que les exclusions).
 
-### 2.5 Generation & Replace
+**POST /meal-generation-params/:paramsId/duplicate** :
+
+- Cree un nouveau jeu de params avec le meme nom suffixe " (copie)", memes valeurs (cooldownDays, useIdeas), memes exclusions, regles et pins
+- `isDefault` est toujours `false` sur la copie
+- Retourne le nouveau jeu complet
+
+### 2.5 Flag dans GET /meal-plan
+
+La reponse de `GET /meal-plan` inclut un champ calcule :
+
+```json
+{ "hasDefaultGenerationParams": true }
+```
+
+Ce flag indique si un jeu de params `isDefault: true` et non soft-deleted existe pour cette communaute. Le frontend l'utilise pour afficher ou masquer le bouton "Remplacer" sur les cartes.
+
+### 2.6 Generation & Replace
 
 ```
 POST   /meal-plan/generate                    # generer le planning (MODERATOR)
@@ -238,7 +271,9 @@ POST   /meal-plan/slots/:slotId/replace       # re-generer 1 slot (MODERATOR)
 
 - Re-genere un seul slot en utilisant le meme algorithme, en excluant la recette actuelle
 - Refuse si le slot est verrouille (`MEAL_GEN_008`)
+- Si le slot est `disabled` → le replace l'active automatiquement (meme comportement que l'edition manuelle — mettre un contenu reactive le slot)
 - Le `paramsId` est requis pour savoir quelles regles appliquer
+- Ignore `fillEmptyOnly` (action ciblee sur un slot specifique)
 
 ---
 
@@ -299,11 +334,16 @@ Pour une recette donnee dans un slot donne :
 
 ### 3.4 Passe de rattrapage — frequencyMin
 
-Apres la passe principale, verifier les contraintes `frequencyMin` et `frequencyExact` (min == max) :
+Apres la passe principale, verifier les contraintes `frequencyMin` :
+
+- Si `frequencyPer: PER_PLANNING` : verifier le compteur global sur l'ensemble du planning
+- Si `frequencyPer: PER_WEEK` : verifier chaque tranche de 7 jours separement. Un deficit dans la tranche 2 ne peut pas etre comble par un exces dans la tranche 1
+
+Pour chaque tranche (ou pour le planning entier si PER_PLANNING) :
 
 1. Pour chaque regle tag avec `frequencyMin` set :
-   - Compter les slots remplis avec une recette portant ce tag
-   - Si le compteur < frequencyMin → **deficit a combler**
+   - Compter les slots remplis avec une recette portant ce tag dans la tranche/planning
+   - Si le compteur < frequencyMin → **deficit a combler dans cette tranche**
 2. Pour chaque deficit :
    a. Identifier les slots remplacables : slots non-verrouilles, non-exclus, non-epingles, qui n'ont PAS de recette avec ce tag
    b. Trier ces slots par "poids de la recette actuelle" (ascendant) → remplacer en priorite les choix les moins "importants"
@@ -321,13 +361,22 @@ Apres la passe principale, verifier les contraintes `frequencyMin` et `frequency
 7. frequencyMin (best effort — rattrapage, mais peut echouer)
 8. Poids (soft — influence probabiliste)
 
-### 3.5 Cooldown recette (global)
+### 3.5 Cooldown recette (global, cross-planning)
 
-Le cooldown s'applique sur les slots deja remplis pendant cette meme generation. Si le slot du lundi midi a recu "Ratatouille" et `cooldownDays = 3`, alors "Ratatouille" est exclue des tirages pour mardi, mercredi et jeudi (midi et soir).
+Le cooldown s'applique en deux phases :
 
-### 3.6 Cooldown tag
+1. **Intra-generation** : les recettes deja tirees pendant cette generation sont exclues pour les slots suivants dans la fenetre du cooldown
+2. **Cross-planning** : au demarrage de la generation, les slots remplis du **plan archive precedent** (le plus recent) sont egalement pris en compte. Si "Ratatouille" etait dimanche soir dans l'ancien planning et `cooldownDays = 3`, elle est exclue de lundi, mardi et mercredi du nouveau planning
 
-Distinct du cooldown recette. Fonctionne par tag et non par recette individuelle.
+**Calcul de la distance** : on compare les dates reelles. Si l'ancien planning se terminait le 23/03 et le nouveau commence le 24/03, la distance est de 1 jour (gap respecte, le cooldown s'applique bien).
+
+Si aucun plan archive n'existe (premier planning de la communaute) → uniquement l'intra-generation.
+
+Exemple intra-generation : si lundi midi a recu "Ratatouille" et `cooldownDays = 3`, alors "Ratatouille" est exclue des tirages pour mardi, mercredi et jeudi (midi et soir).
+
+### 3.6 Cooldown tag (cross-planning)
+
+Distinct du cooldown recette. Fonctionne par tag et non par recette individuelle. Applique egalement le principe cross-planning : les slots du plan archive precedent sont pris en compte pour calculer si le cooldown tag est respecte sur les premiers jours du nouveau planning.
 
 Exemple : tag "pates", `tagCooldownDays = 2`. Si lundi midi a recu "Carbonara" (taguee "pates"), alors AUCUNE recette taguee "pates" ne sera tiree pour lundi soir et mardi midi (2 slots = ~1 jour de distance).
 
@@ -391,6 +440,7 @@ Le systeme ne refuse JAMAIS de generer. Il fait au mieux et rapporte les ecarts.
 | MEAL_GEN_010 | frequencyMin must be <= frequencyMax                      |
 | MEAL_GEN_011 | tagCooldownDays only applies to tag rules                 |
 | MEAL_GEN_012 | Slot cannot be both excluded and pinned                   |
+| MEAL_GEN_013 | Cannot generate on an archived plan                       |
 
 ---
 
@@ -416,6 +466,7 @@ Le systeme ne refuse JAMAIS de generer. Il fait au mieux et rapporte les ecarts.
 - Frequence : toggle "Pas de contrainte / Exact / Plage"
   - Exact → 1 champ nombre
   - Plage → 2 champs min/max (chacun optionnel)
+  - Select `frequencyPer` : "Par semaine" (defaut) / "Par planning entier"
 - Cooldown tag : champ nombre optionnel (jours)
 
 **Regles par recette** :
@@ -537,18 +588,19 @@ Le champ `locked` sur MealSlot est ajoute des Feature 1 (migration) mais son usa
 
 ## 10. Tableau recapitulatif des leviers de personnalisation
 
-| Levier                     | Granularite              | Portee       | Exemple                                              |
-| -------------------------- | ------------------------ | ------------ | ---------------------------------------------------- |
-| **Poids (weight)**         | Par tag ou par recette   | Probabiliste | "Plus de recettes d'ete" (tag ete = 180%)            |
-| **Exclusion (weight = 0)** | Par tag ou par recette   | Hard         | "Jamais de fondue en ete" (tag fondue = 0%)          |
-| **mealTimeConstraint**     | Par regle                | Hard         | "Salades uniquement le midi" (tag salade, LUNCH)     |
-| **Cooldown recette**       | Global (toutes recettes) | Hard         | "Pas la meme recette avant 3 jours"                  |
-| **Cooldown tag**           | Par tag                  | Hard         | "Pas de pates 2 jours de suite" (tagCooldown = 2)    |
-| **Frequence max**          | Par tag                  | Hard         | "Max 3 repas carnes par planning" (frequencyMax = 3) |
-| **Frequence min**          | Par tag                  | Best effort  | "Min 2 repas vegetariens" (frequencyMin = 2)         |
-| **Frequence exacte**       | Par tag                  | Best effort  | "Exactement 2 repas poisson" (min = max = 2)         |
-| **Exclusion de slot**      | Par jour+repas           | Hard         | "Pas de repas mardi soir"                            |
-| **Pin de tag sur slot**    | Par jour+repas+tag       | Hard         | "Vendredi soir = poisson"                            |
-| **Verrouillage**           | Par slot                 | Hard         | "Garder mon choix de dimanche midi"                  |
-| **fillEmptyOnly**          | Generation entiere       | Mode         | "Ne remplir que les trous"                           |
-| **useIdeas**               | Generation entiere       | Pool         | "Inclure les idees dans le tirage"                   |
+| Levier                     | Granularite              | Portee       | Exemple                                                                 |
+| -------------------------- | ------------------------ | ------------ | ----------------------------------------------------------------------- |
+| **Poids (weight)**         | Par tag ou par recette   | Probabiliste | "Plus de recettes d'ete" (tag ete = 180%)                               |
+| **Exclusion (weight = 0)** | Par tag ou par recette   | Hard         | "Jamais de fondue en ete" (tag fondue = 0%)                             |
+| **mealTimeConstraint**     | Par regle                | Hard         | "Salades uniquement le midi" (tag salade, LUNCH)                        |
+| **Cooldown recette**       | Global (toutes recettes) | Hard         | "Pas la meme recette avant 3 jours"                                     |
+| **Cooldown tag**           | Par tag                  | Hard         | "Pas de pates 2 jours de suite" (tagCooldown = 2)                       |
+| **Frequence max**          | Par tag                  | Hard         | "Max 3 repas carnes par semaine" (frequencyMax = 3, PER_WEEK)           |
+| **Frequence min**          | Par tag                  | Best effort  | "Min 2 repas vegetariens par semaine" (frequencyMin = 2, PER_WEEK)      |
+| **Frequence exacte**       | Par tag                  | Best effort  | "Exactement 1 repas poisson par planning" (min = max = 1, PER_PLANNING) |
+| **Portee frequence**       | Par regle                | Mode         | PER_WEEK (defaut, scale selon duree) / PER_PLANNING (fixe)              |
+| **Exclusion de slot**      | Par jour+repas           | Hard         | "Pas de repas mardi soir"                                               |
+| **Pin de tag sur slot**    | Par jour+repas+tag       | Hard         | "Vendredi soir = poisson"                                               |
+| **Verrouillage**           | Par slot                 | Hard         | "Garder mon choix de dimanche midi"                                     |
+| **fillEmptyOnly**          | Generation entiere       | Mode         | "Ne remplir que les trous"                                              |
+| **useIdeas**               | Generation entiere       | Pool         | "Inclure les idees dans le tirage"                                      |
