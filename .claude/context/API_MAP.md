@@ -213,14 +213,17 @@ Controller: `controllers/tagSuggestions.ts` | Route: `routes/recipes.ts`
 ## Meal Plan (/api/communities/:communityId/meal-plan) - memberOf + requireFeature('MEAL_PLAN')
 
 ```
-GET /api/communities/:communityId/meal-plan   # plan ACTIVE + slots (memberOf)
+GET    /api/communities/:communityId/meal-plan                # plan ACTIVE + slots (memberOf)
+POST   /api/communities/:communityId/meal-plan                # creer plan + slots (MODERATOR)
+DELETE /api/communities/:communityId/meal-plan                # supprimer plan ACTIVE (MODERATOR)
+PATCH  /api/communities/:communityId/meal-plan                # update settings (MODERATOR)
+PATCH  /api/communities/:communityId/meal-plan/slots/:slotId  # update slot (permission dynamique)
+POST   /api/communities/:communityId/meal-plan/slots/swap     # swap 2 slots (permission dynamique)
 ```
 
 Controller: `controllers/mealPlan.ts` | Route: `routes/mealPlan.ts`
 Middleware: `middleware/requireFeature.ts`
 Error codes: MEAL_001-013
-
-> Endpoints supplementaires a venir en Phase 3 (CRUD plan, slots, swap, archives, ideas)
 
 ---
 
@@ -344,4 +347,4 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 | adminRateLimiter     | middleware/security.ts                | 30 req/min global admin                 |
 | authRateLimiter      | routes config                         | 5/15min sur auth endpoints              |
 
-## Total: 108 endpoints (70 user + 37 admin + 1 health)
+## Total: 113 endpoints (75 user + 37 admin + 1 health)

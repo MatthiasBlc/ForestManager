@@ -29,29 +29,29 @@ Spec : `docs/features/meal-plan/SPEC_MEAL_PLAN.md`
 
 ## Phase 3 — Backend API Meal Plan
 
-- [ ] Creer `controllers/mealPlan.ts`
-- [ ] Creer `routes/mealPlan.ts`
-- [ ] `GET /api/communities/:communityId/meal-plan` — plan ACTIVE + tous les slots + recipe data (memberOf)
-- [ ] `POST /api/communities/:communityId/meal-plan` — creer plan + slots (MODERATOR)
-  - [ ] Validation dates (startDate <= endDate, max 31 jours, pas de chevauchement)
-  - [ ] Auto-archivage du plan actif existant
-  - [ ] Creation dynamique des slots (N jours x 2 repas)
-  - [ ] Support `disabledSlots` et `copyDisabledFromPrevious`
-- [ ] `DELETE /api/communities/:communityId/meal-plan` — supprimer plan ACTIVE + cascade (MODERATOR)
-- [ ] `PATCH /api/communities/:communityId/meal-plan` — update defaultServings / editableByMembers (MODERATOR)
-- [ ] `PATCH /api/communities/:communityId/meal-plan/slots/:slotId` — update slot (permission dynamique)
-  - [ ] Validation type (RECIPE/FREE_TEXT/EMPTY)
-  - [ ] Auto-enable du slot disabled quand on set un contenu
-  - [ ] Refus si plan ARCHIVED
-- [ ] `POST /api/communities/:communityId/meal-plan/slots/swap` — swap 2 slots (permission dynamique)
-- [ ] Gestion recette soft-deleted : renvoyer flag `isDeleted` dans la reponse
-- [ ] Codes erreur MEAL_001 a MEAL_011
-- [ ] Brancher les routes dans `app.ts` (sous communaute routes, avec requireFeature)
-- [ ] Tests unitaires plan CRUD (creation, archivage auto, validation dates)
-- [ ] Tests unitaires slots (update, swap, disabled auto-enable, locked)
-- [ ] Tests permissions (MODERATOR vs membre, editableByMembers toggle)
-- [ ] Tests feature guard (403 si feature desactivee)
-- [ ] Tests plan archive non-editable
+- [x] Creer `controllers/mealPlan.ts`
+- [x] Creer `routes/mealPlan.ts`
+- [x] `GET /api/communities/:communityId/meal-plan` — plan ACTIVE + tous les slots + recipe data (memberOf)
+- [x] `POST /api/communities/:communityId/meal-plan` — creer plan + slots (MODERATOR)
+  - [x] Validation dates (startDate <= endDate, max 31 jours, pas de chevauchement)
+  - [x] Auto-archivage du plan actif existant
+  - [x] Creation dynamique des slots (N jours x 2 repas)
+  - [x] Support `disabledSlots` et `copyDisabledFromPrevious`
+- [x] `DELETE /api/communities/:communityId/meal-plan` — supprimer plan ACTIVE + cascade (MODERATOR)
+- [x] `PATCH /api/communities/:communityId/meal-plan` — update defaultServings / editableByMembers (MODERATOR)
+- [x] `PATCH /api/communities/:communityId/meal-plan/slots/:slotId` — update slot (permission dynamique)
+  - [x] Validation type (RECIPE/FREE_TEXT/EMPTY)
+  - [x] Auto-enable du slot disabled quand on set un contenu
+  - [x] Refus si plan ARCHIVED
+- [x] `POST /api/communities/:communityId/meal-plan/slots/swap` — swap 2 slots (permission dynamique)
+- [x] Gestion recette soft-deleted : renvoyer flag `isDeleted` dans la reponse
+- [x] Codes erreur MEAL_001 a MEAL_011
+- [x] Brancher les routes dans `app.ts` (sous communaute routes, avec requireFeature)
+- [x] Tests unitaires plan CRUD (creation, archivage auto, validation dates)
+- [x] Tests unitaires slots (update, swap, disabled auto-enable, locked)
+- [x] Tests permissions (MODERATOR vs membre, editableByMembers toggle)
+- [x] Tests feature guard (403 si feature desactivee)
+- [x] Tests plan archive non-editable
 
 ---
 

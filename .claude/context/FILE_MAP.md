@@ -25,7 +25,7 @@ controllers/
 ├── tags.ts            # autocomplete tags (scope-aware)
 ├── ingredients.ts     # autocomplete ingredients + suggested-unit
 ├── changelog.ts       # getAll, getById (user-facing)
-├── mealPlan.ts        # getActivePlan (+ CRUD a venir Phase 3)
+├── mealPlan.ts        # getActivePlan, createPlan, deletePlan, updatePlan, updateSlot, swapSlots
 ├── units.ts           # list units grouped by category
 └── users.ts           # search users, update profile
 ```
@@ -192,6 +192,7 @@ __tests__/
     ├── adminChangelog.test.ts     # Admin changelog CRUD (17 tests)
     ├── changelog.test.ts          # User changelog endpoints (7 tests)
     ├── requireFeature.test.ts     # requireFeature middleware (3 tests)
+    ├── mealPlan.test.ts           # Meal plan CRUD, slots, swap, permissions (30 tests)
     └── users.test.ts              # User profile update
 ```
 
