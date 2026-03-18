@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback, ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
-import { FaBook, FaPlus, FaBars, FaHome, FaSun, FaMoon, FaNewspaper } from "react-icons/fa";
+import { FaBook, FaPlus, FaBars, FaHome, FaSun, FaMoon } from "react-icons/fa";
 import { CommunityListItem } from "../../models/community";
 import APIManager from "../../network/api";
 import { communityEvents } from "../../utils/communityEvents";
