@@ -211,6 +211,8 @@ model User {
   notifications     Notification[]   @relation("NotificationRecipient")
   notificationsActed Notification[]  @relation("NotificationActor")
   notificationPrefs NotificationPreference[]
+  mealSlotsUpdated  MealSlot[]
+  mealIdeasCreated  MealIdea[]
 
   @@index([email])
   @@index([username])
@@ -242,6 +244,8 @@ model Community {
   tagPreferences  UserCommunityTagPreference[]
   notifications   Notification[]
   notificationPrefs NotificationPreference[]
+  mealPlans       MealPlan[]
+  mealIdeas       MealIdea[]
 
   @@index([deletedAt])
 }
@@ -359,6 +363,8 @@ model Recipe {
   activities            ActivityLog[]
   tagSuggestions        TagSuggestion[]
   notifications         Notification[]
+  mealSlots             MealSlot[]
+  mealIdeas             MealIdea[]
 
   @@index([creatorId])
   @@index([communityId])
@@ -745,6 +751,94 @@ enum ActivityType {
   // Tag suggestions
   TAG_SUGGESTION_ACCEPTED
   TAG_SUGGESTION_REJECTED
+}
+
+// =============================================================================
+// MEAL PLAN (Planning de repas communautaire)
+// =============================================================================
+
+enum DayOfWeek {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+  SAT
+  SUN
+}
+
+enum MealTime {
+  LUNCH
+  DINNER
+}
+
+enum MealSlotType {
+  EMPTY
+  RECIPE
+  FREE_TEXT
+}
+
+enum MealPlanStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+model MealPlan {
+  id                String         @id @default(uuid())
+  communityId       String
+  startDate         DateTime       @db.Date
+  endDate           DateTime       @db.Date
+  status            MealPlanStatus @default(ACTIVE)
+  defaultServings   Int            @default(4)
+  editableByMembers Boolean        @default(false)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  community         Community      @relation(fields: [communityId], references: [id])
+  slots             MealSlot[]
+
+  @@index([communityId, status])
+}
+
+model MealSlot {
+  id           String       @id @default(uuid())
+  planId       String
+  date         DateTime     @db.Date
+  mealTime     MealTime
+  servings     Int
+  type         MealSlotType @default(EMPTY)
+  disabled     Boolean      @default(false)
+  locked       Boolean      @default(false)
+  recipeId     String?
+  freeText     String?
+  comment      String?
+  updatedAt    DateTime     @updatedAt
+  updatedById  String?
+
+  plan         MealPlan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  recipe       Recipe?      @relation(fields: [recipeId], references: [id])
+  updatedBy    User?        @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@unique([planId, date, mealTime])
+  @@index([planId, date])
+}
+
+model MealIdea {
+  id          String    @id @default(uuid())
+  communityId String
+  name        String
+  comment     String?
+  recipeId    String?
+  createdById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  community   Community @relation(fields: [communityId], references: [id])
+  recipe      Recipe?   @relation(fields: [recipeId], references: [id])
+  createdBy   User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([communityId, deletedAt])
 }
 
 // =============================================================================

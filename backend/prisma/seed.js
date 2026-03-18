@@ -59,6 +59,18 @@ async function seed() {
   });
   console.log("Feature MVP:", featureMvp.code);
 
+  const featureMealPlan = await prisma.feature.upsert({
+    where: { code: "MEAL_PLAN" },
+    update: {},
+    create: {
+      code: "MEAL_PLAN",
+      name: "Planning de repas",
+      description: "Planning de repas communautaire avec idees et generation automatique",
+      isDefault: false,
+    },
+  });
+  console.log("Feature MEAL_PLAN:", featureMealPlan.code);
+
   // ===========================================
   // Tags (always upsert - idempotent)
   // ===========================================
@@ -1271,6 +1283,107 @@ async function seed() {
     });
   }
   console.log("Activity logs created");
+
+  // ===========================================
+  // Meal Plan (test data for Cuisine Italienne)
+  // ===========================================
+  // Grant MEAL_PLAN feature to Cuisine Italienne
+  await prisma.communityFeature.create({
+    data: { communityId: cuisineItalienne.id, featureId: featureMealPlan.id },
+  });
+
+  // Create an ACTIVE meal plan (7 days starting next Monday)
+  const nextMonday = new Date();
+  nextMonday.setDate(nextMonday.getDate() + ((1 + 7 - nextMonday.getDay()) % 7 || 7));
+  nextMonday.setHours(0, 0, 0, 0);
+  const nextSunday = new Date(nextMonday);
+  nextSunday.setDate(nextSunday.getDate() + 6);
+
+  const mealPlan = await prisma.mealPlan.create({
+    data: {
+      communityId: cuisineItalienne.id,
+      startDate: nextMonday,
+      endDate: nextSunday,
+      defaultServings: 4,
+      editableByMembers: true,
+    },
+  });
+
+  // Create 14 slots (7 days x 2 meals)
+  const mealTimes = ["LUNCH", "DINNER"];
+  const slotsData = [];
+  for (let d = 0; d < 7; d++) {
+    const slotDate = new Date(nextMonday);
+    slotDate.setDate(slotDate.getDate() + d);
+    for (const mt of mealTimes) {
+      slotsData.push({
+        planId: mealPlan.id,
+        date: slotDate,
+        mealTime: mt,
+        servings: 4,
+        type: "EMPTY",
+      });
+    }
+  }
+  await prisma.mealSlot.createMany({ data: slotsData });
+
+  // Fill a few slots with recipes and free text
+  const slots = await prisma.mealSlot.findMany({
+    where: { planId: mealPlan.id },
+    orderBy: [{ date: "asc" }, { mealTime: "asc" }],
+  });
+
+  // Monday LUNCH -> Pizza Margherita
+  await prisma.mealSlot.update({
+    where: { id: slots[0].id },
+    data: { type: "RECIPE", recipeId: pizzaMargherita.id, updatedById: alice.id },
+  });
+  // Monday DINNER -> Free text
+  await prisma.mealSlot.update({
+    where: { id: slots[1].id },
+    data: {
+      type: "FREE_TEXT",
+      freeText: "Resto japonais",
+      comment: "Reserver a l'avance",
+      updatedById: bob.id,
+    },
+  });
+  // Tuesday LUNCH -> Risotto
+  await prisma.mealSlot.update({
+    where: { id: slots[2].id },
+    data: { type: "RECIPE", recipeId: risottoChampignons.id, updatedById: alice.id },
+  });
+  // Wednesday LUNCH -> disabled
+  await prisma.mealSlot.update({
+    where: { id: slots[4].id },
+    data: { disabled: true },
+  });
+  // Wednesday DINNER -> disabled
+  await prisma.mealSlot.update({
+    where: { id: slots[5].id },
+    data: { disabled: true },
+  });
+
+  // Create a couple of meal ideas
+  await prisma.mealIdea.createMany({
+    data: [
+      {
+        communityId: cuisineItalienne.id,
+        name: "Lasagnes bolognaise",
+        comment: "Recette de grand-mere",
+        createdById: alice.id,
+      },
+      { communityId: cuisineItalienne.id, name: "Tiramisu", createdById: bob.id },
+      {
+        communityId: cuisineItalienne.id,
+        name: "Poke bowl saumon",
+        recipeId: bowlSaumon.id,
+        createdById: eve.id,
+      },
+    ],
+  });
+
+  console.log("Meal plan seeded (1 plan, 14 slots, 3 ideas)");
 
   console.log("\nSeeding complete!");
   console.log("Login credentials for all users: password123");
