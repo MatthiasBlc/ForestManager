@@ -60,3 +60,38 @@ export const swapSlotsSchema = z.object({
 });
 
 export type SwapSlotsInput = z.infer<typeof swapSlotsSchema>;
+
+// ===================================
+// Meal Ideas
+// ===================================
+
+export const createMealIdeaSchema = z.object({
+  name: z
+    .string()
+    .min(1, "VALIDATION_001: Name is required")
+    .max(255, "VALIDATION_001: Name must be at most 255 characters"),
+  comment: z.string().max(500, "VALIDATION_001: Comment must be at most 500 characters").optional(),
+  recipeId: z.string().uuid("VALIDATION_001: Invalid recipeId").optional(),
+});
+
+export type CreateMealIdeaInput = z.infer<typeof createMealIdeaSchema>;
+
+export const updateMealIdeaSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1, "VALIDATION_001: Name cannot be empty")
+      .max(255, "VALIDATION_001: Name must be at most 255 characters")
+      .optional(),
+    comment: z
+      .string()
+      .max(500, "VALIDATION_001: Comment must be at most 500 characters")
+      .optional()
+      .nullable(),
+    recipeId: z.string().uuid("VALIDATION_001: Invalid recipeId").optional().nullable(),
+  })
+  .refine((data) => Object.values(data).some((v) => v !== undefined), {
+    message: "VALIDATION_001: At least one field required",
+  });
+
+export type UpdateMealIdeaInput = z.infer<typeof updateMealIdeaSchema>;

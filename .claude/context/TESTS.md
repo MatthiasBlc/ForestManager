@@ -42,14 +42,14 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~826 backend + ~546 frontend = ~1372 tests)
+## Inventaire des tests (~901 backend + ~546 frontend = ~1447 tests)
 
 ### Couverture (seuils CI)
 
 - Backend : 91.81% statements, 83.31% branches (seuil: 80%/70%)
 - Frontend : 66.44% statements, 76.31% branches (seuil: 50%/50%)
 
-### Backend Integration (35 fichiers, ~689 tests)
+### Backend Integration (38 fichiers, ~764 tests)
 
 | Fichier                     | Module                                                                        | Tests |
 | --------------------------- | ----------------------------------------------------------------------------- | ----- |
@@ -87,6 +87,9 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | recipeImport.test.ts        | Recipe import endpoint (auth, validation, SSRF)                               | 6     |
 | adminChangelog.test.ts      | Admin changelog CRUD (list, create, update, delete, audit)                    | 17    |
 | changelog.test.ts           | User changelog endpoints (list, detail, auth, soft-delete filter)             | 7     |
+| requireFeature.test.ts      | requireFeature middleware (generic feature guard)                             | 3     |
+| mealPlan.test.ts            | Meal plan CRUD, slots, swap, archives, permissions, feature guard             | 39    |
+| mealIdeas.test.ts           | Meal ideas CRUD, permissions, feature guard                                   | 25    |
 | users.test.ts               | User profile update (username, email, password)                               | 4     |
 
 ### Backend Unit (10 fichiers, ~137 tests)

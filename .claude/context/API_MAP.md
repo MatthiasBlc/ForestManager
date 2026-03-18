@@ -213,17 +213,31 @@ Controller: `controllers/tagSuggestions.ts` | Route: `routes/recipes.ts`
 ## Meal Plan (/api/communities/:communityId/meal-plan) - memberOf + requireFeature('MEAL_PLAN')
 
 ```
-GET    /api/communities/:communityId/meal-plan                # plan ACTIVE + slots (memberOf)
-POST   /api/communities/:communityId/meal-plan                # creer plan + slots (MODERATOR)
-DELETE /api/communities/:communityId/meal-plan                # supprimer plan ACTIVE (MODERATOR)
-PATCH  /api/communities/:communityId/meal-plan                # update settings (MODERATOR)
-PATCH  /api/communities/:communityId/meal-plan/slots/:slotId  # update slot (permission dynamique)
-POST   /api/communities/:communityId/meal-plan/slots/swap     # swap 2 slots (permission dynamique)
+GET    /api/communities/:communityId/meal-plan                     # plan ACTIVE + slots (memberOf)
+POST   /api/communities/:communityId/meal-plan                     # creer plan + slots (MODERATOR)
+DELETE /api/communities/:communityId/meal-plan                     # supprimer plan ACTIVE (MODERATOR)
+PATCH  /api/communities/:communityId/meal-plan                     # update settings (MODERATOR)
+PATCH  /api/communities/:communityId/meal-plan/slots/:slotId       # update slot (permission dynamique)
+POST   /api/communities/:communityId/meal-plan/slots/swap          # swap 2 slots (permission dynamique)
+GET    /api/communities/:communityId/meal-plan/archives            # liste archives paginee (memberOf)
+GET    /api/communities/:communityId/meal-plan/archives/:planId    # detail archive + slots (memberOf)
+DELETE /api/communities/:communityId/meal-plan/archives/:planId    # supprimer archive (MODERATOR)
 ```
 
 Controller: `controllers/mealPlan.ts` | Route: `routes/mealPlan.ts`
 Middleware: `middleware/requireFeature.ts`
 Error codes: MEAL_001-013
+
+## Meal Ideas (/api/communities/:communityId/meal-ideas) - memberOf + requireFeature('MEAL_PLAN')
+
+```
+GET    /api/communities/:communityId/meal-ideas              # liste paginee, ?search= (memberOf)
+POST   /api/communities/:communityId/meal-ideas              # creer idee (memberOf)
+PATCH  /api/communities/:communityId/meal-ideas/:ideaId      # modifier (createur ou MODERATOR)
+DELETE /api/communities/:communityId/meal-ideas/:ideaId      # soft delete (createur ou MODERATOR)
+```
+
+Controller: `controllers/mealIdeas.ts` | Route: `routes/mealIdeas.ts`
 
 ---
 
@@ -347,4 +361,4 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 | adminRateLimiter     | middleware/security.ts                | 30 req/min global admin                 |
 | authRateLimiter      | routes config                         | 5/15min sur auth endpoints              |
 
-## Total: 113 endpoints (75 user + 37 admin + 1 health)
+## Total: 120 endpoints (82 user + 37 admin + 1 health)

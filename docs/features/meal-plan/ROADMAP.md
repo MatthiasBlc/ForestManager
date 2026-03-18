@@ -57,25 +57,26 @@ Spec : `docs/features/meal-plan/SPEC_MEAL_PLAN.md`
 
 ## Phase 4 — Backend API Archives
 
-- [ ] `GET /api/communities/:communityId/meal-plan/archives` — liste paginee (memberOf)
-- [ ] `GET /api/communities/:communityId/meal-plan/archives/:planId` — detail archive + slots (memberOf)
-- [ ] Validation : le plan demande doit appartenir a la communaute et etre ARCHIVED
-- [ ] Tests unitaires archives
+- [x] `GET /api/communities/:communityId/meal-plan/archives` — liste paginee (memberOf)
+- [x] `GET /api/communities/:communityId/meal-plan/archives/:planId` — detail archive + slots (memberOf)
+- [x] `DELETE /api/communities/:communityId/meal-plan/archives/:planId` — supprimer archive (MODERATOR)
+- [x] Validation : le plan demande doit appartenir a la communaute et etre ARCHIVED
+- [x] Tests unitaires archives
 
 ---
 
 ## Phase 5 — Backend API Meal Ideas
 
-- [ ] Creer `controllers/mealIdeas.ts`
-- [ ] Creer `routes/mealIdeas.ts`
-- [ ] `GET /api/communities/:communityId/meal-ideas` — liste paginee, search par nom (memberOf)
-- [ ] `POST /api/communities/:communityId/meal-ideas` — creer idee (memberOf)
-- [ ] `PATCH /api/communities/:communityId/meal-ideas/:ideaId` — modifier (createur ou MODERATOR)
-- [ ] `DELETE /api/communities/:communityId/meal-ideas/:ideaId` — soft delete (createur ou MODERATOR)
-- [ ] Validation : name max 255, comment max 500, recipeId optionnel et valide
-- [ ] Brancher les routes dans `app.ts`
-- [ ] Tests unitaires CRUD idees
-- [ ] Tests permissions (createur vs MODERATOR)
+- [x] Creer `controllers/mealIdeas.ts`
+- [x] Creer `routes/mealIdeas.ts`
+- [x] `GET /api/communities/:communityId/meal-ideas` — liste paginee, search par nom (memberOf)
+- [x] `POST /api/communities/:communityId/meal-ideas` — creer idee (memberOf)
+- [x] `PATCH /api/communities/:communityId/meal-ideas/:ideaId` — modifier (createur ou MODERATOR)
+- [x] `DELETE /api/communities/:communityId/meal-ideas/:ideaId` — soft delete (createur ou MODERATOR)
+- [x] Validation : name max 255, comment max 500, recipeId optionnel et valide
+- [x] Brancher les routes dans `communities.ts`
+- [x] Tests unitaires CRUD idees
+- [x] Tests permissions (createur vs MODERATOR)
 
 ---
 

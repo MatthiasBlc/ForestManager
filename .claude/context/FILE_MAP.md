@@ -25,7 +25,8 @@ controllers/
 ├── tags.ts            # autocomplete tags (scope-aware)
 ├── ingredients.ts     # autocomplete ingredients + suggested-unit
 ├── changelog.ts       # getAll, getById (user-facing)
-├── mealPlan.ts        # getActivePlan, createPlan, deletePlan, updatePlan, updateSlot, swapSlots
+├── mealPlan.ts        # getActivePlan, createPlan, deletePlan, updatePlan, updateSlot, swapSlots, getArchives, getArchiveDetail, deleteArchive
+├── mealIdeas.ts       # listIdeas, createIdea, updateIdea, deleteIdea
 ├── units.ts           # list units grouped by category
 └── users.ts           # search users, update profile
 ```
@@ -42,6 +43,7 @@ routes/
 ├── tagSuggestions.ts  # /api/tag-suggestions/*
 ├── changelog.ts       # /api/changelog
 ├── mealPlan.ts        # /api/communities/:id/meal-plan (feature-gated)
+├── mealIdeas.ts       # /api/communities/:id/meal-ideas (feature-gated)
 ├── tags.ts            # /api/tags
 ├── ingredients.ts     # /api/ingredients
 ├── units.ts           # /api/units
@@ -192,7 +194,8 @@ __tests__/
     ├── adminChangelog.test.ts     # Admin changelog CRUD (17 tests)
     ├── changelog.test.ts          # User changelog endpoints (7 tests)
     ├── requireFeature.test.ts     # requireFeature middleware (3 tests)
-    ├── mealPlan.test.ts           # Meal plan CRUD, slots, swap, permissions (30 tests)
+    ├── mealPlan.test.ts           # Meal plan CRUD, slots, swap, archives, permissions (39 tests)
+    ├── mealIdeas.test.ts          # Meal ideas CRUD, permissions (25 tests)
     └── users.test.ts              # User profile update
 ```
 

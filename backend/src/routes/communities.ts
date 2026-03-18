@@ -10,6 +10,7 @@ import { memberOf, requireCommunityRole } from "../middleware/community";
 import { validateUUID } from "../middleware/validateUUID";
 import { validateBody } from "../middleware/validateBody";
 import mealPlanRoutes from "./mealPlan";
+import mealIdeasRoutes from "./mealIdeas";
 import { createRecipeSchema } from "../schemas/recipe.schema";
 import { createCommunitySchema, updateCommunitySchema } from "../schemas/community.schema";
 import { createInviteSchema } from "../schemas/invite.schema";
@@ -208,6 +209,12 @@ router.post(
 // =====================================
 
 router.use("/:communityId/meal-plan", mealPlanRoutes);
+
+// =====================================
+// Meal Ideas routes (feature-gated)
+// =====================================
+
+router.use("/:communityId/meal-ideas", mealIdeasRoutes);
 
 // =====================================
 // Activity feed
