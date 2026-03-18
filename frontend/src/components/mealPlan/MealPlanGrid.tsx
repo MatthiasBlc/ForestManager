@@ -222,7 +222,7 @@ const MealPlanGrid = ({
       <table className="table w-full">
         <thead>
           <tr>
-            <th className="w-20"></th>
+            <th className="w-20" />
             {days.map((day) => (
               <th key={day.dateStr} className="text-center min-w-[120px]">
                 <div className="font-medium">{DAYS_OF_WEEK[day.date.getDay()]}</div>

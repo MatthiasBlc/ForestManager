@@ -230,7 +230,7 @@ const CreatePlanModal = ({ communityId, existingPlan, onCreated, onClose }: Prop
               <table className="table table-sm">
                 <thead>
                   <tr>
-                    <th></th>
+                    <th />
                     {previewDays.map((day) => (
                       <th key={day.toISOString()} className="text-center">
                         <div className="text-xs">{DAYS_OF_WEEK[day.getDay() === 0 ? 6 : day.getDay() - 1]}</div>

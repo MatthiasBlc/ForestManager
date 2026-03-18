@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { FaTimes, FaSearch, FaLock, FaUnlock, FaBan, FaCheck } from "react-icons/fa";
 import APIManager from "../../network/api";
-import { MealSlot, MealSlotType, UpdateSlotInput } from "../../models/mealPlan";
+import { MealSlot, UpdateSlotInput } from "../../models/mealPlan";
 import { RecipeListItem } from "../../models/recipe";
 
 interface Props {

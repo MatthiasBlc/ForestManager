@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useState } from "react";
+import { useParams, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
   FaArrowLeft,
@@ -12,7 +12,7 @@ import {
 import APIManager from "../network/api";
 import { useAsyncData } from "../hooks/useAsyncData";
 import { useIsMobile } from "../hooks/useIsMobile";
-import { MealPlan, MealTime, MealPlanResponse } from "../models/mealPlan";
+import { MealPlan, MealPlanResponse, MealSlot } from "../models/mealPlan";
 import { CommunityDetail } from "../models/community";
 import CreatePlanModal from "../components/mealPlan/CreatePlanModal";
 import MealPlanGrid from "../components/mealPlan/MealPlanGrid";
@@ -24,7 +24,6 @@ type TabContent = "planning" | "archives" | "ideas";
 
 const MealPlanPage = () => {
   const { id: communityId } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const isMobile = useIsMobile();
 
   const [activeTab, setActiveTab] = useState<TabContent>("planning");
@@ -48,7 +47,6 @@ const MealPlanPage = () => {
     setData: setMealPlanData,
     isLoading: loadingPlan,
     error: planError,
-    refetch: refetchPlan,
   } = useAsyncData<MealPlanResponse | null>(
     () => (communityId ? APIManager.getMealPlan(communityId) : Promise.resolve(null)),
     [communityId]
@@ -83,7 +81,7 @@ const MealPlanPage = () => {
     setMealPlanData({ plan: updatedPlan, hasDefaultGenerationParams: false });
   };
 
-  const handleSlotUpdated = (slotId: string, updates: Partial<typeof plan.slots[0]>) => {
+  const handleSlotUpdated = (slotId: string, updates: Partial<MealSlot>) => {
     if (!plan) return;
     setMealPlanData({
       ...mealPlanData!,
@@ -97,8 +95,8 @@ const MealPlanPage = () => {
   const handleSlotsSwapped = (
     slotAId: string,
     slotBId: string,
-    slotAData: typeof plan.slots[0],
-    slotBData: typeof plan.slots[0]
+    slotAData: MealSlot,
+    slotBData: MealSlot
   ) => {
     if (!plan) return;
     setMealPlanData({
@@ -297,7 +295,7 @@ const MealPlanPage = () => {
         )}
 
         {activeTab === "ideas" && (
-          <MealIdeasPanel communityId={communityId!} isModerator={isModerator} />
+          <MealIdeasPanel communityId={communityId!} />
         )}
       </div>
 

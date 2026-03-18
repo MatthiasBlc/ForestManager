@@ -8,10 +8,9 @@ import { Link } from "react-router-dom";
 
 interface Props {
   communityId: string;
-  isModerator: boolean;
 }
 
-const MealIdeasPanel = ({ communityId, isModerator }: Props) => {
+const MealIdeasPanel = ({ communityId }: Props) => {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
@@ -29,7 +28,6 @@ const MealIdeasPanel = ({ communityId, isModerator }: Props) => {
     setData: setIdeas,
     isLoading,
     error,
-    refetch,
   } = useAsyncData(
     () =>
       APIManager.getMealIdeas(communityId, {
@@ -119,7 +117,6 @@ const MealIdeasPanel = ({ communityId, isModerator }: Props) => {
             <IdeaCard
               key={idea.id}
               idea={idea}
-              isModerator={isModerator}
               isDeleting={deletingId === idea.id}
               onEdit={() => setEditingIdea(idea)}
               onDelete={() => handleDeleteIdea(idea.id)}
@@ -155,17 +152,12 @@ const MealIdeasPanel = ({ communityId, isModerator }: Props) => {
 // Idea card component
 interface IdeaCardProps {
   idea: MealIdea;
-  isModerator: boolean;
   isDeleting: boolean;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-const IdeaCard = ({ idea, isModerator, isDeleting, onEdit, onDelete }: IdeaCardProps) => {
-  // Check if current user can edit/delete (creator check would need auth context)
-  // For now, we show buttons and let the API handle permissions
-  const canModify = isModerator; // Simplified - in reality, creator can also modify
-
+const IdeaCard = ({ idea, isDeleting, onEdit, onDelete }: IdeaCardProps) => {
   return (
     <div className="p-4 bg-base-200 rounded-lg">
       <div className="flex items-start justify-between gap-4">
