@@ -4,13 +4,13 @@ Spec : `docs/features/changelog/SPEC_CHANGELOG.md`
 
 ---
 
-## Phase 1 — Modele de donnees & migration
+## Phase 1 — Modele de donnees & migration ✅
 
-- [ ] Ajouter l'enum `CHANGELOG_CREATED | CHANGELOG_UPDATED | CHANGELOG_DELETED` a `AdminActionType`
-- [ ] Creer le modele `ChangelogEntry` dans `schema.prisma`
-- [ ] Generer et appliquer la migration Prisma
-- [ ] Ajouter l'upsert `v1.0.0` dans le seed (idempotent, par version)
-- [ ] Verifier que le seed passe sans erreur
+- [x] Ajouter l'enum `CHANGELOG_CREATED | CHANGELOG_UPDATED | CHANGELOG_DELETED` a `AdminActionType`
+- [x] Creer le modele `ChangelogEntry` dans `schema.prisma`
+- [x] Generer et appliquer la migration Prisma
+- [x] Ajouter l'upsert `v1.0.0` dans le seed (idempotent, par version)
+- [x] Verifier que le seed passe sans erreur
 
 ---
 

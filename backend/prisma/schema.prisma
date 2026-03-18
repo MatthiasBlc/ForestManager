@@ -154,10 +154,33 @@ enum AdminActionType {
   RECIPE_UPDATED
   RECIPE_DELETED
 
+  // Changelog
+  CHANGELOG_CREATED
+  CHANGELOG_UPDATED
+  CHANGELOG_DELETED
+
   // Admin auth
   ADMIN_LOGIN
   ADMIN_LOGOUT
   ADMIN_TOTP_SETUP
+}
+
+// =============================================================================
+// CHANGELOG ENTRY (Entrees du changelog automatique)
+// =============================================================================
+
+model ChangelogEntry {
+  id          String    @id @default(uuid())
+  version     String    @unique          // semver "1.2.0"
+  title       String                     // titre libre
+  content     Json                       // { features: [{text}], improvements: [{text}], fixes: [{text}] }
+  publishedAt DateTime  @default(now())  // date de publication (= date deploy)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?                  // soft delete admin
+
+  @@index([publishedAt])
+  @@index([deletedAt])
 }
 
 // =============================================================================
