@@ -101,11 +101,11 @@ Prerequis : Feature 1 (Planning Manuel) completement implementee.
 
 ## Phase 7 — Frontend : verrouillage de slots
 
-- [ ] Ajouter icone cadenas sur chaque carte de slot
-- [ ] Toggle verrouille/deverrouille au clic
-- [ ] Style visuel distinct pour les slots verrouilles
-- [ ] Masquer le bouton "Remplacer" sur les slots verrouilles
-- [ ] API call PATCH slot avec `{ locked: true/false }`
+- [x] Ajouter icone cadenas sur chaque carte de slot
+- [x] Toggle verrouille/deverrouille au clic (moderateur : bouton direct sur la carte)
+- [x] Style visuel distinct pour les slots verrouilles (ring warning + fond teinte)
+- [ ] Masquer le bouton "Remplacer" sur les slots verrouilles (Phase 10 — bouton n'existe pas encore)
+- [x] API call PATCH slot avec `{ locked: true/false }`
 
 ---
 
