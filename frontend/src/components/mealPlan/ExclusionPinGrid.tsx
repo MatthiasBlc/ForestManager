@@ -3,6 +3,7 @@ import { FaBan, FaThumbtack, FaSearch } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { toastError } from "../../utils/toastError";
 import APIManager from "../../network/api";
+import { useIsMobile } from "../../hooks/useIsMobile";
 import { DayOfWeek, MealTime, MealSlotExclusion, MealSlotPin } from "../../models/mealPlan";
 import { TagSearchResult } from "../../models/recipe";
 
@@ -40,6 +41,7 @@ const ExclusionPinGrid = ({
   onExclusionsUpdated,
   onPinsUpdated,
 }: Props) => {
+  const isMobile = useIsMobile();
   const [savingExclusions, setSavingExclusions] = useState(false);
   const [savingPins, setSavingPins] = useState(false);
   // Pin editing state
@@ -143,6 +145,145 @@ const ExclusionPinGrid = ({
     }
   };
 
+  // Render pin cell content (shared between mobile and desktop)
+  const renderPinCell = (day: DayOfWeek, mealKey: MealTime) => {
+    const key = `${day}:${mealKey}`;
+    const isExcluded = exclusionSet.has(key);
+    const pin = pinMap.get(key);
+    const isEditingThis = editingPin?.day === day && editingPin?.mealTime === mealKey;
+
+    if (isExcluded) return <span className="text-xs text-base-content/30">--</span>;
+
+    if (isEditingThis) {
+      return (
+        <div className="relative">
+          <div className="flex items-center">
+            <input
+              type="text"
+              className="input input-bordered input-xs w-full"
+              placeholder="Tag..."
+              value={pinSearch}
+              onChange={(e) => setPinSearch(e.target.value)}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Escape") {
+                  setEditingPin(null);
+                  setPinSearch("");
+                  setPinResults([]);
+                }
+              }}
+            />
+            {isSearching && (
+              <span className="loading loading-spinner loading-xs absolute right-1" />
+            )}
+          </div>
+          {pinResults.length > 0 && (
+            <div className="absolute z-10 mt-1 bg-base-100 shadow-lg rounded-lg max-h-32 overflow-y-auto w-40 left-0">
+              {pinResults.map((tag) => (
+                <button
+                  key={tag.id}
+                  className="w-full text-left p-1.5 text-xs hover:bg-base-200"
+                  onClick={() => handlePinSelect(day, mealKey, tag)}
+                >
+                  {tag.name}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (pin) {
+      return (
+        <div className="flex items-center justify-center gap-1">
+          <span className="badge badge-sm badge-primary">{pin.tag.name}</span>
+          {isModerator && (
+            <button
+              className="btn btn-ghost btn-xs p-0 min-h-0 h-auto text-error"
+              onClick={() => removePin(day, mealKey)}
+              title="Remove pin"
+            >
+              &times;
+            </button>
+          )}
+        </div>
+      );
+    }
+
+    if (isModerator) {
+      return (
+        <button
+          className="btn btn-ghost btn-xs text-base-content/30"
+          onClick={() => {
+            setEditingPin({ day, mealTime: mealKey });
+            setPinSearch("");
+            setPinResults([]);
+          }}
+          title="Pin a tag"
+        >
+          <FaSearch className="w-2.5 h-2.5" />
+        </button>
+      );
+    }
+
+    return <span className="text-xs text-base-content/20">-</span>;
+  };
+
+  // Mobile layout: vertical cards per day
+  if (isMobile) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h4 className="font-semibold mb-3 flex items-center gap-2">
+            <FaBan className="w-4 h-4 text-base-content/60" />
+            Exclusions & Pins
+            {(savingExclusions || savingPins) && (
+              <span className="loading loading-spinner loading-xs" />
+            )}
+          </h4>
+          <p className="text-xs text-base-content/50 mb-3">
+            Configure exclusions and tag pins for each slot.
+          </p>
+          <div className="space-y-2">
+            {DAYS.map((day) => (
+              <div key={day.key} className="card bg-base-200 p-3">
+                <div className="font-medium text-sm mb-2">{day.label}</div>
+                {MEALS.map((meal) => {
+                  const key = `${day.key}:${meal.key}`;
+                  const isExcluded = exclusionSet.has(key);
+                  const isPinned = pinMap.has(key);
+                  return (
+                    <div
+                      key={meal.key}
+                      className="flex items-center justify-between py-1.5 border-b border-base-300 last:border-0"
+                    >
+                      <span className="text-xs font-medium w-14">{meal.label}</span>
+                      <div className="flex items-center gap-3">
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            className="checkbox checkbox-xs checkbox-error"
+                            checked={isExcluded}
+                            onChange={() => toggleExclusion(day.key, meal.key)}
+                            disabled={!isModerator || savingExclusions || isPinned}
+                          />
+                          <span className="text-[10px] text-base-content/50">Excl.</span>
+                        </label>
+                        <div className="min-w-[80px]">{renderPinCell(day.key, meal.key)}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop layout: tables
   return (
     <div className="space-y-6">
       {/* Exclusions Grid */}
@@ -229,84 +370,11 @@ const ExclusionPinGrid = ({
               {MEALS.map((meal) => (
                 <tr key={meal.key}>
                   <td className="text-xs font-medium">{meal.label}</td>
-                  {DAYS.map((day) => {
-                    const key = `${day.key}:${meal.key}`;
-                    const isExcluded = exclusionSet.has(key);
-                    const pin = pinMap.get(key);
-                    const isEditingThis =
-                      editingPin?.day === day.key && editingPin?.mealTime === meal.key;
-
-                    return (
-                      <td key={key} className="text-center min-w-[100px]">
-                        {isExcluded ? (
-                          <span className="text-xs text-base-content/30">--</span>
-                        ) : isEditingThis ? (
-                          <div className="relative">
-                            <div className="flex items-center">
-                              <input
-                                type="text"
-                                className="input input-bordered input-xs w-full"
-                                placeholder="Tag..."
-                                value={pinSearch}
-                                onChange={(e) => setPinSearch(e.target.value)}
-                                autoFocus
-                                onKeyDown={(e) => {
-                                  if (e.key === "Escape") {
-                                    setEditingPin(null);
-                                    setPinSearch("");
-                                    setPinResults([]);
-                                  }
-                                }}
-                              />
-                              {isSearching && (
-                                <span className="loading loading-spinner loading-xs absolute right-1" />
-                              )}
-                            </div>
-                            {pinResults.length > 0 && (
-                              <div className="absolute z-10 mt-1 bg-base-100 shadow-lg rounded-lg max-h-32 overflow-y-auto w-40 left-0">
-                                {pinResults.map((tag) => (
-                                  <button
-                                    key={tag.id}
-                                    className="w-full text-left p-1.5 text-xs hover:bg-base-200"
-                                    onClick={() => handlePinSelect(day.key, meal.key, tag)}
-                                  >
-                                    {tag.name}
-                                  </button>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ) : pin ? (
-                          <div className="flex items-center justify-center gap-1">
-                            <span className="badge badge-sm badge-primary">{pin.tag.name}</span>
-                            {isModerator && (
-                              <button
-                                className="btn btn-ghost btn-xs p-0 min-h-0 h-auto text-error"
-                                onClick={() => removePin(day.key, meal.key)}
-                                title="Remove pin"
-                              >
-                                &times;
-                              </button>
-                            )}
-                          </div>
-                        ) : isModerator ? (
-                          <button
-                            className="btn btn-ghost btn-xs text-base-content/30"
-                            onClick={() => {
-                              setEditingPin({ day: day.key, mealTime: meal.key });
-                              setPinSearch("");
-                              setPinResults([]);
-                            }}
-                            title="Pin a tag"
-                          >
-                            <FaSearch className="w-2.5 h-2.5" />
-                          </button>
-                        ) : (
-                          <span className="text-xs text-base-content/20">-</span>
-                        )}
-                      </td>
-                    );
-                  })}
+                  {DAYS.map((day) => (
+                    <td key={`${day.key}:${meal.key}`} className="text-center min-w-[100px]">
+                      {renderPinCell(day.key, meal.key)}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>
