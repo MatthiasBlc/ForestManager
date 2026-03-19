@@ -8,6 +8,7 @@ import {
   FaCog,
   FaArchive,
   FaLightbulb,
+  FaSlidersH,
 } from "react-icons/fa";
 import APIManager from "../network/api";
 import { useAsyncData } from "../hooks/useAsyncData";
@@ -19,8 +20,9 @@ import MealPlanGrid from "../components/mealPlan/MealPlanGrid";
 import MealPlanSettings from "../components/mealPlan/MealPlanSettings";
 import MealPlanArchives from "../components/mealPlan/MealPlanArchives";
 import MealIdeasPanel from "../components/mealPlan/MealIdeasPanel";
+import GenerationParamsPanel from "../components/mealPlan/GenerationParamsPanel";
 
-type TabContent = "planning" | "archives" | "ideas";
+type TabContent = "planning" | "archives" | "ideas" | "generation";
 
 const MealPlanPage = () => {
   const { id: communityId } = useParams<{ id: string }>();
@@ -239,7 +241,7 @@ const MealPlanPage = () => {
             Planning
           </button>
           <button
-            className={`tab ${activeTab === "archives" ? "tab-active"  : ""}`}
+            className={`tab ${activeTab === "archives" ? "tab-active" : ""}`}
             onClick={() => setActiveTab("archives")}
           >
             <FaArchive className="w-3 h-3 mr-1" />
@@ -251,6 +253,13 @@ const MealPlanPage = () => {
           >
             <FaLightbulb className="w-3 h-3 mr-1" />
             Ideas
+          </button>
+          <button
+            className={`tab ${activeTab === "generation" ? "tab-active" : ""}`}
+            onClick={() => setActiveTab("generation")}
+          >
+            <FaSlidersH className="w-3 h-3 mr-1" />
+            Generation
           </button>
         </div>
       </div>
@@ -294,8 +303,10 @@ const MealPlanPage = () => {
           <MealPlanArchives communityId={communityId!} isModerator={isModerator} />
         )}
 
-        {activeTab === "ideas" && (
-          <MealIdeasPanel communityId={communityId!} />
+        {activeTab === "ideas" && <MealIdeasPanel communityId={communityId!} />}
+
+        {activeTab === "generation" && (
+          <GenerationParamsPanel communityId={communityId!} isModerator={isModerator} />
         )}
       </div>
 

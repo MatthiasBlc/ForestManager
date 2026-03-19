@@ -63,6 +63,12 @@ import {
   MealIdea,
   MealIdeasResponse,
   MealIdeaInput,
+  MealGenerationParams,
+  MealGenerationParamsListResponse,
+  CreateMealGenerationParamsInput,
+  UpdateMealGenerationParamsInput,
+  MealSlotExclusion,
+  MealSlotPin,
 } from "../models/mealPlan";
 import { ConflictError, UnauthorizedError } from "../errors/http_errors";
 
@@ -1052,7 +1058,9 @@ export default class APIManager {
   // --------------- Meal Plan ---------------
 
   static async getMealPlan(communityId: string): Promise<MealPlanResponse> {
-    const response = await API.get(`/api/communities/${communityId}/meal-plan`).catch(handleApiError);
+    const response = await API.get(`/api/communities/${communityId}/meal-plan`).catch(
+      handleApiError
+    );
     return response.data;
   }
 
@@ -1111,9 +1119,9 @@ export default class APIManager {
     params: { limit?: number; offset?: number } = {}
   ): Promise<MealPlanArchivesResponse> {
     const qs = buildQueryString({ limit: params.limit, offset: params.offset });
-    const response = await API.get(
-      `/api/communities/${communityId}/meal-plan/archives${qs}`
-    ).catch(handleApiError);
+    const response = await API.get(`/api/communities/${communityId}/meal-plan/archives${qs}`).catch(
+      handleApiError
+    );
     return response.data;
   }
 
@@ -1139,7 +1147,11 @@ export default class APIManager {
     communityId: string,
     params: { search?: string; limit?: number; offset?: number } = {}
   ): Promise<MealIdeasResponse> {
-    const qs = buildQueryString({ search: params.search, limit: params.limit, offset: params.offset });
+    const qs = buildQueryString({
+      search: params.search,
+      limit: params.limit,
+      offset: params.offset,
+    });
     const response = await API.get(`/api/communities/${communityId}/meal-ideas${qs}`).catch(
       handleApiError
     );
@@ -1168,5 +1180,81 @@ export default class APIManager {
 
   static async deleteMealIdea(communityId: string, ideaId: string): Promise<void> {
     await API.delete(`/api/communities/${communityId}/meal-ideas/${ideaId}`).catch(handleApiError);
+  }
+
+  // ==============================
+  // Meal Generation Params
+  // ==============================
+
+  static async listMealGenerationParams(
+    communityId: string
+  ): Promise<MealGenerationParamsListResponse> {
+    const response = await API.get(`/api/communities/${communityId}/meal-generation-params`).catch(
+      handleApiError
+    );
+    return response.data;
+  }
+
+  static async getMealGenerationParams(
+    communityId: string,
+    paramsId: string
+  ): Promise<MealGenerationParams> {
+    const response = await API.get(
+      `/api/communities/${communityId}/meal-generation-params/${paramsId}`
+    ).catch(handleApiError);
+    return response.data;
+  }
+
+  static async createMealGenerationParams(
+    communityId: string,
+    data: CreateMealGenerationParamsInput
+  ): Promise<MealGenerationParams> {
+    const response = await API.post(
+      `/api/communities/${communityId}/meal-generation-params`,
+      JSON.stringify(data)
+    ).catch(handleApiError);
+    return response.data;
+  }
+
+  static async updateMealGenerationParams(
+    communityId: string,
+    paramsId: string,
+    data: UpdateMealGenerationParamsInput
+  ): Promise<MealGenerationParams> {
+    const response = await API.patch(
+      `/api/communities/${communityId}/meal-generation-params/${paramsId}`,
+      JSON.stringify(data)
+    ).catch(handleApiError);
+    return response.data;
+  }
+
+  static async deleteMealGenerationParams(communityId: string, paramsId: string): Promise<void> {
+    await API.delete(`/api/communities/${communityId}/meal-generation-params/${paramsId}`).catch(
+      handleApiError
+    );
+  }
+
+  static async setMealExclusions(
+    communityId: string,
+    paramsId: string,
+    exclusions: { day: string; mealTime: string }[]
+  ): Promise<{ data: MealSlotExclusion[] }> {
+    const response = await API.put(
+      `/api/communities/${communityId}/meal-generation-params/${paramsId}/exclusions`,
+      JSON.stringify({ exclusions })
+    ).catch(handleApiError);
+    return response.data;
+  }
+
+  static async setMealPins(
+    communityId: string,
+    paramsId: string,
+    pins: { day: string; mealTime: string; tagId: string }[]
+  ): Promise<{ data: MealSlotPin[] }> {
+    const response = await API.put(
+      `/api/communities/${communityId}/meal-generation-params/${paramsId}/pins`,
+      JSON.stringify({ pins })
+    ).catch(handleApiError);
+    return response.data;
   }
 }

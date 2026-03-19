@@ -150,3 +150,84 @@ export interface MealIdeaInput {
   comment?: string | null;
   recipeId?: string | null;
 }
+
+// ==============================
+// Meal Generation Params
+// ==============================
+
+export type DayOfWeek = "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT" | "SUN";
+export type FrequencyPer = "PER_WEEK" | "PER_PLANNING";
+
+export interface MealSlotExclusion {
+  id: string;
+  day: DayOfWeek;
+  mealTime: MealTime;
+}
+
+export interface MealSlotPin {
+  id: string;
+  day: DayOfWeek;
+  mealTime: MealTime;
+  tagId: string;
+  tag: { id: string; name: string };
+}
+
+export interface MealGenerationRule {
+  id: string;
+  tagId: string | null;
+  recipeId: string | null;
+  weight: number;
+  mealTimeConstraint: MealTime | null;
+  frequencyMin: number | null;
+  frequencyMax: number | null;
+  frequencyPer: FrequencyPer | null;
+  tagCooldownDays: number | null;
+  tag: { id: string; name: string } | null;
+  recipe: { id: string; title: string; isDeleted: boolean } | null;
+}
+
+export interface MealGenerationParams {
+  id: string;
+  name: string;
+  description: string | null;
+  cooldownDays: number;
+  useIdeas: boolean;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+  exclusions: MealSlotExclusion[];
+  rules: MealGenerationRule[];
+  slotPins: MealSlotPin[];
+}
+
+// List item (no nested relations)
+export interface MealGenerationParamsListItem {
+  id: string;
+  name: string;
+  description: string | null;
+  cooldownDays: number;
+  useIdeas: boolean;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MealGenerationParamsListResponse {
+  data: MealGenerationParamsListItem[];
+}
+
+export interface CreateMealGenerationParamsInput {
+  name: string;
+  description?: string | null;
+  cooldownDays?: number;
+  useIdeas?: boolean;
+  isDefault?: boolean;
+}
+
+export interface UpdateMealGenerationParamsInput {
+  name?: string;
+  description?: string | null;
+  cooldownDays?: number;
+  useIdeas?: boolean;
+  isDefault?: boolean;
+}

@@ -111,12 +111,12 @@ Prerequis : Feature 1 (Planning Manuel) completement implementee.
 
 ## Phase 8 — Frontend : page parametres de generation
 
-- [ ] Section/onglet "Parametres de generation" dans la page planning
-- [ ] Liste des jeux de params avec badge "par defaut"
-- [ ] Formulaire creation/edition : nom, description, cooldownDays, useIdeas, isDefault
-- [ ] Grille d'exclusion : 7x2 checkboxes
-- [ ] Grille d'epinglage : 7x2 selects tag (autocomplete), incompatible avec exclusion visuelle
-- [ ] Bouton supprimer/dupliquer avec confirmation
+- [x] Section/onglet "Parametres de generation" dans la page planning (onglet "Generation")
+- [x] Liste des jeux de params avec badge "par defaut"
+- [x] Formulaire creation/edition : nom, description, cooldownDays, useIdeas, isDefault
+- [x] Grille d'exclusion : 7x2 checkboxes
+- [x] Grille d'epinglage : 7x2 selects tag (autocomplete), incompatible avec exclusion visuelle
+- [x] Bouton supprimer avec confirmation (dupliquer reporte — pas d'endpoint backend)
 
 ---
 

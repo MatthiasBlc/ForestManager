@@ -310,12 +310,15 @@ components/
 ├── ImportRecipeModal.tsx     # Modal import recette (texte brut ou URL)
 ├── AddEditRecipeDialog.tsx   # Dialog creation/edition
 ├── mealPlan/
-│   ├── CreatePlanModal.tsx   # Modal creation plan (dates, servings, preview)
-│   ├── MealPlanGrid.tsx      # Grille planning (desktop + mobile)
-│   ├── MealPlanSettings.tsx  # Modal parametres plan
-│   ├── SlotEditModal.tsx     # Modal edition slot
-│   ├── MealPlanArchives.tsx  # Onglet archives
-│   └── MealIdeasPanel.tsx    # Onglet idees de repas
+│   ├── CreatePlanModal.tsx       # Modal creation plan (dates, servings, preview)
+│   ├── MealPlanGrid.tsx          # Grille planning (desktop + mobile, lock toggle)
+│   ├── MealPlanSettings.tsx      # Modal parametres plan
+│   ├── SlotEditModal.tsx         # Modal edition slot
+│   ├── MealPlanArchives.tsx      # Onglet archives
+│   ├── MealIdeasPanel.tsx        # Onglet idees de repas
+│   ├── GenerationParamsPanel.tsx # Onglet parametres generation (list + detail)
+│   ├── ParamsFormModal.tsx       # Modal creation/edition jeu de params
+│   └── ExclusionPinGrid.tsx      # Grilles 7x2 exclusions + pins tag
 ├── ErrorBoundary.tsx         # Error boundary React (crash → fallback UI)
 ├── LoginModal.tsx            # Modal login
 ├── Modal.tsx                 # Composant modal generique
