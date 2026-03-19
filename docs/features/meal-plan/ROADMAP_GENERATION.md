@@ -122,18 +122,18 @@ Prerequis : Feature 1 (Planning Manuel) completement implementee.
 
 ## Phase 9 — Frontend : edition des regles
 
-- [ ] Section regles dans le detail d'un jeu de params
-- [ ] Regles par tag :
-  - [ ] Autocomplete tag communaute
-  - [ ] Jauge poids 0–200% (slider)
-  - [ ] Select contrainte LUNCH/DINNER
-  - [ ] Toggle frequence : Aucune / Exact / Plage (min/max)
-  - [ ] Champ cooldown tag (jours, optionnel)
-- [ ] Regles par recette :
-  - [ ] Autocomplete recette communaute
-  - [ ] Jauge poids 0–200%
-  - [ ] Select contrainte LUNCH/DINNER
-- [ ] CRUD regles inline
+- [x] Section regles dans le detail d'un jeu de params
+- [x] Regles par tag :
+  - [x] Autocomplete tag communaute
+  - [x] Jauge poids 0–200% (slider)
+  - [x] Select contrainte LUNCH/DINNER
+  - [x] Toggle frequence : Aucune / Exact / Plage (min/max)
+  - [x] Champ cooldown tag (jours, optionnel)
+- [x] Regles par recette :
+  - [x] Autocomplete recette communaute
+  - [x] Jauge poids 0–200%
+  - [x] Select contrainte LUNCH/DINNER
+- [x] CRUD regles inline
 
 ---
 

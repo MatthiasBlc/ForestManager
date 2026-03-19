@@ -18,6 +18,9 @@ import {
   UpdateMealGenerationParamsInput,
   MealSlotExclusion,
   MealSlotPin,
+  MealGenerationRule,
+  CreateMealGenerationRuleInput,
+  UpdateMealGenerationRuleInput,
 } from "../models/mealPlan";
 
 // --------------- Meal Plan ---------------
@@ -220,4 +223,41 @@ export async function setMealPins(
     JSON.stringify({ pins })
   ).catch(handleApiError);
   return response.data;
+}
+
+// --------------- Meal Generation Rules ---------------
+
+export async function createMealGenerationRule(
+  communityId: string,
+  paramsId: string,
+  data: CreateMealGenerationRuleInput
+): Promise<MealGenerationRule> {
+  const response = await API.post(
+    `/api/communities/${communityId}/meal-generation-params/${paramsId}/rules`,
+    JSON.stringify(data)
+  ).catch(handleApiError);
+  return response.data;
+}
+
+export async function updateMealGenerationRule(
+  communityId: string,
+  paramsId: string,
+  ruleId: string,
+  data: UpdateMealGenerationRuleInput
+): Promise<MealGenerationRule> {
+  const response = await API.patch(
+    `/api/communities/${communityId}/meal-generation-params/${paramsId}/rules/${ruleId}`,
+    JSON.stringify(data)
+  ).catch(handleApiError);
+  return response.data;
+}
+
+export async function deleteMealGenerationRule(
+  communityId: string,
+  paramsId: string,
+  ruleId: string
+): Promise<void> {
+  await API.delete(
+    `/api/communities/${communityId}/meal-generation-params/${paramsId}/rules/${ruleId}`
+  ).catch(handleApiError);
 }

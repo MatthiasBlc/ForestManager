@@ -231,3 +231,24 @@ export interface UpdateMealGenerationParamsInput {
   useIdeas?: boolean;
   isDefault?: boolean;
 }
+
+// Rule CRUD inputs
+export interface CreateMealGenerationRuleInput {
+  tagId?: string | null;
+  recipeId?: string | null;
+  weight?: number;
+  mealTimeConstraint?: MealTime | null;
+  frequencyMin?: number | null;
+  frequencyMax?: number | null;
+  frequencyPer?: FrequencyPer | null;
+  tagCooldownDays?: number | null;
+}
+
+export interface UpdateMealGenerationRuleInput {
+  weight?: number;
+  mealTimeConstraint?: MealTime | null;
+  frequencyMin?: number | null;
+  frequencyMax?: number | null;
+  frequencyPer?: FrequencyPer | null;
+  tagCooldownDays?: number | null;
+}

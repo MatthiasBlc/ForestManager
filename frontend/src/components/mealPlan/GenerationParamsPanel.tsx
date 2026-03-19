@@ -7,6 +7,7 @@ import { useAsyncData } from "../../hooks/useAsyncData";
 import { MealGenerationParamsListItem, MealGenerationParams } from "../../models/mealPlan";
 import ParamsFormModal from "./ParamsFormModal";
 import ExclusionPinGrid from "./ExclusionPinGrid";
+import RulesEditor from "./RulesEditor";
 
 function toListItem(p: MealGenerationParams): MealGenerationParamsListItem {
   return {
@@ -145,6 +146,12 @@ const GenerationParamsPanel = ({ communityId, isModerator }: Props) => {
     }
   };
 
+  const handleRulesUpdated = (rules: MealGenerationParams["rules"]) => {
+    if (selectedDetail) {
+      setSelectedDetail({ ...selectedDetail, rules });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-8">
@@ -232,6 +239,16 @@ const GenerationParamsPanel = ({ communityId, isModerator }: Props) => {
           isModerator={isModerator}
           onExclusionsUpdated={handleExclusionsUpdated}
           onPinsUpdated={handlePinsUpdated}
+        />
+
+        {/* Rules editor */}
+        <div className="divider" />
+        <RulesEditor
+          communityId={communityId}
+          paramsId={selectedDetail.id}
+          rules={selectedDetail.rules}
+          isModerator={isModerator}
+          onRulesUpdated={handleRulesUpdated}
         />
       </div>
     );
