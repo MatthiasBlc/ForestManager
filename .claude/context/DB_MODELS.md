@@ -3,7 +3,7 @@
 Source: `backend/prisma/schema.prisma`
 DB: PostgreSQL | ORM: Prisma
 
-## Models (34 total)
+## Models (38 total)
 
 ### Sessions (isolees)
 
@@ -67,6 +67,15 @@ DB: PostgreSQL | ORM: Prisma
 | MealSlot | id, planId, date(@db.Date), mealTime(MealTime), servings, type(MealSlotType), disabled, locked, recipeId?, freeText?, comment?, updatedById? | Cascade on plan delete. @@unique(planId,date,mealTime)            |
 | MealIdea | id, communityId, name, comment?, recipeId?, createdById?, deletedAt?                                                                         | Soft delete. @@index(communityId,deletedAt)                       |
 
+### Meal Generation (4 models)
+
+| Model                | Champs cles                                                                                                                              | Notes                                                                                |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| MealGenerationParams | id, communityId, name, description?, cooldownDays(default 3), useIdeas(default true), isDefault, deletedAt?                              | Soft delete. 1 isDefault par communaute (applicatif). @@index(communityId,deletedAt) |
+| MealSlotExclusion    | id, paramsId, day(DayOfWeek), mealTime(MealTime)                                                                                         | Pivot, Cascade on params delete. @@unique(paramsId,day,mealTime)                     |
+| MealGenerationRule   | id, paramsId, tagId?, recipeId?, weight(default 1.0), mealTimeConstraint?, frequencyMin?, frequencyMax?, frequencyPer?, tagCooldownDays? | Cascade on params delete. SetNull on tag/recipe delete. @@index(paramsId)            |
+| MealSlotPin          | id, paramsId, day(DayOfWeek), mealTime(MealTime), tagId                                                                                  | Cascade on params+tag delete. @@unique(paramsId,day,mealTime)                        |
+
 ### Analytics (2 models - futur)
 
 | Model           | Champs cles                            | Notes          |
@@ -107,6 +116,7 @@ DayOfWeek: MON | TUE | WED | THU | FRI | SAT | SUN
 MealTime: LUNCH | DINNER
 MealSlotType: EMPTY | RECIPE | FREE_TEXT
 MealPlanStatus: ACTIVE | ARCHIVED
+FrequencyPer: PER_WEEK | PER_PLANNING
 
 AdminActionType: TAG_CREATED | TAG_UPDATED | TAG_DELETED | TAG_MERGED |
   INGREDIENT_CREATED | INGREDIENT_UPDATED | INGREDIENT_DELETED | INGREDIENT_MERGED |
@@ -162,13 +172,23 @@ MealSlot -> Recipe? (recipeId)
 MealSlot -> User? (updatedById, SetNull)
 MealIdea -> Recipe? (recipeId)
 MealIdea -> User? (createdById, SetNull)
+Community <-1:N-> MealGenerationParams
+MealGenerationParams <-1:N-> MealSlotExclusion (cascade on delete)
+MealGenerationParams <-1:N-> MealGenerationRule (cascade on delete)
+MealGenerationParams <-1:N-> MealSlotPin (cascade on delete)
+MealGenerationRule -> Tag? (SetNull on delete)
+MealGenerationRule -> Recipe? (SetNull on delete)
+MealSlotPin -> Tag (cascade on delete)
+Tag <-1:N-> MealGenerationRule
+Tag <-1:N-> MealSlotPin
+Recipe <-1:N-> MealGenerationRule
 AdminUser <-1:N-> AdminActivityLog
 ```
 
 ## Regles delete
 
-| Type                    | Modeles                                                                                                                                                                                                                                            | Methode                            |
-| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
-| Soft delete (deletedAt) | User, Community, UserCommunity, Recipe, RecipeUpdateProposal, CommunityInvite, ChangelogEntry, MealIdea                                                                                                                                            | Applicatif (where deletedAt: null) |
-| Hard delete (Cascade)   | RecipeTag, RecipeIngredient, RecipeStep, ProposalIngredient, ProposalStep, RecipeAnalytics, RecipeView, TagSuggestion (via Recipe), UserCommunityTagPreference, Notification (via User/Community), NotificationPreference, MealSlot (via MealPlan) | DB cascade                         |
-| Soft revoke             | CommunityFeature                                                                                                                                                                                                                                   | revokedAt timestamp                |
+| Type                    | Modeles                                                                                                                                                                                                                                                                                                                           | Methode                            |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Soft delete (deletedAt) | User, Community, UserCommunity, Recipe, RecipeUpdateProposal, CommunityInvite, ChangelogEntry, MealIdea, MealGenerationParams                                                                                                                                                                                                     | Applicatif (where deletedAt: null) |
+| Hard delete (Cascade)   | RecipeTag, RecipeIngredient, RecipeStep, ProposalIngredient, ProposalStep, RecipeAnalytics, RecipeView, TagSuggestion (via Recipe), UserCommunityTagPreference, Notification (via User/Community), NotificationPreference, MealSlot (via MealPlan), MealSlotExclusion, MealGenerationRule, MealSlotPin (via MealGenerationParams) | DB cascade                         |
+| Soft revoke             | CommunityFeature                                                                                                                                                                                                                                                                                                                  | revokedAt timestamp                |

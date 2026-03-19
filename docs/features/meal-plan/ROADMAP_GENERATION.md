@@ -7,15 +7,15 @@ Prerequis : Feature 1 (Planning Manuel) completement implementee.
 
 ## Phase 1 — Modele de donnees & migration
 
-- [ ] Creer le modele `MealGenerationParams` dans `schema.prisma`
-- [ ] Creer le modele `MealSlotExclusion` (pivot, cascade)
-- [ ] Creer le modele `MealGenerationRule` (tagId XOR recipeId, frequencyMin/Max, tagCooldownDays)
-- [ ] Creer le modele `MealSlotPin` (pivot, cascade, unique par slot par jeu)
-- [ ] Ajouter `locked Boolean @default(false)` sur `MealSlot` (Feature 1 migration)
-- [ ] Ajouter les relations dans `Community`, `Tag`, `Recipe`
-- [ ] Generer et appliquer la migration Prisma
-- [ ] Seed de test : creer un jeu "Standard" avec regles, exclusions et pins pour la communaute de test
-- [ ] Verifier que le seed passe sans erreur (idempotent)
+- [x] Creer le modele `MealGenerationParams` dans `schema.prisma`
+- [x] Creer le modele `MealSlotExclusion` (pivot, cascade)
+- [x] Creer le modele `MealGenerationRule` (tagId XOR recipeId, frequencyMin/Max, tagCooldownDays)
+- [x] Creer le modele `MealSlotPin` (pivot, cascade, unique par slot par jeu)
+- [x] Ajouter `locked Boolean @default(false)` sur `MealSlot` (Feature 1 migration) — deja present
+- [x] Ajouter les relations dans `Community`, `Tag`, `Recipe`
+- [x] Generer et appliquer la migration Prisma
+- [x] Seed de test : creer un jeu "Standard" avec regles, exclusions et pins pour la communaute de test
+- [x] Verifier que le seed passe sans erreur (idempotent)
 
 ---
 

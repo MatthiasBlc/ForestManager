@@ -1385,6 +1385,73 @@ async function seed() {
 
   console.log("Meal plan seeded (1 plan, 14 slots, 3 ideas)");
 
+  // ===========================================
+  // Meal Generation Params (test data for Cuisine Italienne)
+  // ===========================================
+  const genParams = await prisma.mealGenerationParams.create({
+    data: {
+      communityId: cuisineItalienne.id,
+      name: "Standard",
+      description: "Parametres par defaut pour la generation",
+      cooldownDays: 3,
+      useIdeas: true,
+      isDefault: true,
+    },
+  });
+
+  // Exclusions : mercredi midi et soir (communaute ne mange pas ensemble le mercredi)
+  await prisma.mealSlotExclusion.createMany({
+    data: [
+      { paramsId: genParams.id, day: "WED", mealTime: "LUNCH" },
+      { paramsId: genParams.id, day: "WED", mealTime: "DINNER" },
+    ],
+  });
+
+  // Rules : quelques regles de poids et frequence
+  await prisma.mealGenerationRule.createMany({
+    data: [
+      // Tag "italien" favorise (150%)
+      {
+        paramsId: genParams.id,
+        tagId: tags["italien"].id,
+        weight: 1.5,
+      },
+      // Tag "vegetarien" avec frequence min 2 par semaine
+      {
+        paramsId: genParams.id,
+        tagId: tags["vegetarien"].id,
+        weight: 1.2,
+        frequencyMin: 2,
+        frequencyPer: "PER_WEEK",
+      },
+      // Tag "dessert" uniquement le soir, defavorise
+      {
+        paramsId: genParams.id,
+        tagId: tags["dessert"].id,
+        weight: 0.5,
+        mealTimeConstraint: "DINNER",
+      },
+      // Recette Pizza Margherita favorisee
+      {
+        paramsId: genParams.id,
+        recipeId: pizzaMargherita.id,
+        weight: 1.8,
+      },
+    ],
+  });
+
+  // Pins : vendredi soir = italien
+  await prisma.mealSlotPin.create({
+    data: {
+      paramsId: genParams.id,
+      day: "FRI",
+      mealTime: "DINNER",
+      tagId: tags["italien"].id,
+    },
+  });
+
+  console.log("Meal generation params seeded (1 params set, 2 exclusions, 4 rules, 1 pin)");
+
   console.log("\nSeeding complete!");
   console.log("Login credentials for all users: password123");
   console.log("Users: alice_chef, bob_boulanger, charlie_cook, diana_patissiere, eve_gourmet");
