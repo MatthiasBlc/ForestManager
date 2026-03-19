@@ -104,7 +104,7 @@ Prerequis : Feature 1 (Planning Manuel) completement implementee.
 - [x] Ajouter icone cadenas sur chaque carte de slot
 - [x] Toggle verrouille/deverrouille au clic (moderateur : bouton direct sur la carte)
 - [x] Style visuel distinct pour les slots verrouilles (ring warning + fond teinte)
-- [ ] Masquer le bouton "Remplacer" sur les slots verrouilles (Phase 10 — bouton n'existe pas encore)
+- [x] Masquer le bouton "Remplacer" sur les slots verrouilles (done in Phase 10)
 - [x] API call PATCH slot avec `{ locked: true/false }`
 
 ---
@@ -139,14 +139,14 @@ Prerequis : Feature 1 (Planning Manuel) completement implementee.
 
 ## Phase 10 — Frontend : generation + rapport
 
-- [ ] Bouton "Generer le planning" (MODERATOR)
-- [ ] Selecteur jeu de params (pre-selectionne sur isDefault)
-- [ ] Toggle fillEmptyOnly
-- [ ] Modal confirmation si ecrasement de slots non verrouilles
-- [ ] Affichage rapport post-generation : slots generes, skips, warnings
-- [ ] Warning visuel clair pour frequencyMin non atteint, pool epuise, etc.
-- [ ] Bouton "Remplacer" sur chaque carte (masque si locked ou pas de jeu par defaut)
-- [ ] Modal confirmation au clic sur "Remplacer"
+- [x] Bouton "Generer le planning" (MODERATOR)
+- [x] Selecteur jeu de params (pre-selectionne sur isDefault)
+- [x] Toggle fillEmptyOnly
+- [x] Modal confirmation si ecrasement de slots non verrouilles
+- [x] Affichage rapport post-generation : slots generes, skips, warnings
+- [x] Warning visuel clair pour frequencyMin non atteint, pool epuise, etc.
+- [x] Bouton "Remplacer" sur chaque carte (masque si locked ou pas de jeu par defaut)
+- [x] Modal confirmation au clic sur "Remplacer"
 
 ---
 
