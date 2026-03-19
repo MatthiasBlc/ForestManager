@@ -152,6 +152,12 @@ export const MEAL_012 = "MEAL_012: Archive not found";
 export const MEAL_013 = "MEAL_013: Cannot swap with a disabled slot";
 
 // =====================================
+// Meal Generation
+// =====================================
+export const MEAL_GEN_001 = "MEAL_GEN_001: Generation params not found";
+export const MEAL_GEN_005 = "MEAL_GEN_005: Cannot have multiple default params for same community";
+
+// =====================================
 // Admin Auth
 // =====================================
 export const ADMIN_001 = "ADMIN_001: Not authenticated";

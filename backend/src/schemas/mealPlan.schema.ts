@@ -95,3 +95,51 @@ export const updateMealIdeaSchema = z
   });
 
 export type UpdateMealIdeaInput = z.infer<typeof updateMealIdeaSchema>;
+
+// ===================================
+// Meal Generation Params
+// ===================================
+
+export const createMealGenerationParamsSchema = z.object({
+  name: z
+    .string()
+    .min(1, "VALIDATION_001: Name is required")
+    .max(100, "VALIDATION_001: Name must be at most 100 characters"),
+  description: z
+    .string()
+    .max(500, "VALIDATION_001: Description must be at most 500 characters")
+    .optional()
+    .nullable(),
+  cooldownDays: z
+    .number()
+    .int()
+    .min(0, "VALIDATION_001: cooldownDays must be >= 0")
+    .optional()
+    .default(3),
+  useIdeas: z.boolean().optional().default(true),
+  isDefault: z.boolean().optional().default(false),
+});
+
+export type CreateMealGenerationParamsInput = z.infer<typeof createMealGenerationParamsSchema>;
+
+export const updateMealGenerationParamsSchema = z
+  .object({
+    name: z
+      .string()
+      .min(1, "VALIDATION_001: Name cannot be empty")
+      .max(100, "VALIDATION_001: Name must be at most 100 characters")
+      .optional(),
+    description: z
+      .string()
+      .max(500, "VALIDATION_001: Description must be at most 500 characters")
+      .optional()
+      .nullable(),
+    cooldownDays: z.number().int().min(0, "VALIDATION_001: cooldownDays must be >= 0").optional(),
+    useIdeas: z.boolean().optional(),
+    isDefault: z.boolean().optional(),
+  })
+  .refine((data) => Object.values(data).some((v) => v !== undefined), {
+    message: "VALIDATION_001: At least one field required",
+  });
+
+export type UpdateMealGenerationParamsInput = z.infer<typeof updateMealGenerationParamsSchema>;

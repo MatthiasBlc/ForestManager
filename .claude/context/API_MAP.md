@@ -241,6 +241,21 @@ Controller: `controllers/mealIdeas.ts` | Route: `routes/mealIdeas.ts`
 
 ---
 
+## Meal Generation Params (/api/communities/:communityId/meal-generation-params) - memberOf + requireFeature('MEAL_PLAN')
+
+```
+GET    /api/communities/:communityId/meal-generation-params              # liste (memberOf)
+POST   /api/communities/:communityId/meal-generation-params              # creer (MODERATOR)
+GET    /api/communities/:communityId/meal-generation-params/:paramsId    # detail + exclusions + regles + pins (memberOf)
+PATCH  /api/communities/:communityId/meal-generation-params/:paramsId    # modifier (MODERATOR)
+DELETE /api/communities/:communityId/meal-generation-params/:paramsId    # soft delete (MODERATOR)
+```
+
+Controller: `controllers/mealGenerationParams.ts` | Route: `routes/mealGenerationParams.ts`
+Error codes: MEAL_GEN_001, MEAL_GEN_005
+
+---
+
 ## Admin Auth (/api/admin/auth) - adminSession, rate limited 5/15min
 
 ```
@@ -361,4 +376,4 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 | adminRateLimiter     | middleware/security.ts                | 30 req/min global admin                 |
 | authRateLimiter      | routes config                         | 5/15min sur auth endpoints              |
 
-## Total: 120 endpoints (82 user + 37 admin + 1 health)
+## Total: 125 endpoints (87 user + 37 admin + 1 health)

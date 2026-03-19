@@ -21,18 +21,18 @@ Prerequis : Feature 1 (Planning Manuel) completement implementee.
 
 ## Phase 2 — Backend API Params CRUD
 
-- [ ] Creer `controllers/mealGenerationParams.ts`
-- [ ] Creer `routes/mealGenerationParams.ts`
-- [ ] `GET /api/communities/:communityId/meal-generation-params` — liste (memberOf)
-- [ ] `POST /api/communities/:communityId/meal-generation-params` — creer (MODERATOR)
-- [ ] `GET /api/communities/:communityId/meal-generation-params/:paramsId` — detail + exclusions + regles + pins (memberOf)
-- [ ] `PATCH /api/communities/:communityId/meal-generation-params/:paramsId` — modifier (MODERATOR)
-- [ ] `DELETE /api/communities/:communityId/meal-generation-params/:paramsId` — soft delete (MODERATOR)
-- [ ] Gestion `isDefault` : un seul par communaute, desactiver l'ancien quand un nouveau est set
-- [ ] Validation : name max 100, description max 500, cooldownDays >= 0
-- [ ] Codes erreur MEAL_GEN_001, MEAL_GEN_005
-- [ ] Brancher les routes (avec requireFeature MEAL_PLAN)
-- [ ] Tests unitaires CRUD params
+- [x] Creer `controllers/mealGenerationParams.ts`
+- [x] Creer `routes/mealGenerationParams.ts`
+- [x] `GET /api/communities/:communityId/meal-generation-params` — liste (memberOf)
+- [x] `POST /api/communities/:communityId/meal-generation-params` — creer (MODERATOR)
+- [x] `GET /api/communities/:communityId/meal-generation-params/:paramsId` — detail + exclusions + regles + pins (memberOf)
+- [x] `PATCH /api/communities/:communityId/meal-generation-params/:paramsId` — modifier (MODERATOR)
+- [x] `DELETE /api/communities/:communityId/meal-generation-params/:paramsId` — soft delete (MODERATOR)
+- [x] Gestion `isDefault` : un seul par communaute, desactiver l'ancien quand un nouveau est set
+- [x] Validation : name max 100, description max 500, cooldownDays >= 0
+- [x] Codes erreur MEAL_GEN_001, MEAL_GEN_005
+- [x] Brancher les routes (avec requireFeature MEAL_PLAN)
+- [x] Tests unitaires CRUD params (26 tests)
 
 ---
 
