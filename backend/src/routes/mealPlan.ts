@@ -8,6 +8,8 @@ import {
   updateMealPlanSchema,
   updateSlotSchema,
   swapSlotsSchema,
+  generateSchema,
+  replaceSlotSchema,
 } from "../schemas/mealPlan.schema";
 import * as MealPlanController from "../controllers/mealPlan";
 
@@ -38,8 +40,24 @@ router.patch(
   MealPlanController.updatePlan
 );
 
+// POST /api/communities/:communityId/meal-plan/generate — Generer le planning (MODERATOR)
+router.post(
+  "/generate",
+  requireCommunityRole("MODERATOR"),
+  validateBody(generateSchema),
+  MealPlanController.generatePlan
+);
+
 // PATCH /api/communities/:communityId/meal-plan/slots/:slotId — Update slot (permission dynamique)
 router.patch("/slots/:slotId", validateBody(updateSlotSchema), MealPlanController.updateSlot);
+
+// POST /api/communities/:communityId/meal-plan/slots/:slotId/replace — Re-generer 1 slot (MODERATOR)
+router.post(
+  "/slots/:slotId/replace",
+  requireCommunityRole("MODERATOR"),
+  validateBody(replaceSlotSchema),
+  MealPlanController.replaceSlot
+);
 
 // POST /api/communities/:communityId/meal-plan/slots/swap — Swap 2 slots (permission dynamique)
 router.post("/slots/swap", validateBody(swapSlotsSchema), MealPlanController.swapSlots);

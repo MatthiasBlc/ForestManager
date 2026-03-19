@@ -25,7 +25,7 @@ controllers/
 ├── tags.ts            # autocomplete tags (scope-aware)
 ├── ingredients.ts     # autocomplete ingredients + suggested-unit
 ├── changelog.ts       # getAll, getById (user-facing)
-├── mealPlan.ts        # getActivePlan, createPlan, deletePlan, updatePlan, updateSlot, swapSlots, getArchives, getArchiveDetail, deleteArchive
+├── mealPlan.ts        # getActivePlan, createPlan, deletePlan, updatePlan, updateSlot, swapSlots, getArchives, getArchiveDetail, deleteArchive, generatePlan, replaceSlot
 ├── mealIdeas.ts       # listIdeas, createIdea, updateIdea, deleteIdea
 ├── mealGenerationParams.ts # listParams, createParams, getParamsDetail, updateParams, deleteParams
 ├── units.ts           # list units grouped by category
@@ -201,6 +201,7 @@ __tests__/
     ├── mealIdeas.test.ts          # Meal ideas CRUD, permissions (25 tests)
     ├── mealGenerationParams.test.ts # Generation params CRUD, isDefault, permissions (26 tests)
     ├── mealGenerationRules.test.ts  # Exclusions, rules, pins CRUD + validations (35 tests)
+    ├── mealGenerate.test.ts       # Generate plan, replace slot, hasDefaultGenerationParams (17 tests)
     └── users.test.ts              # User profile update
 ```
 

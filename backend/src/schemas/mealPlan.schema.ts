@@ -209,3 +209,20 @@ export const setPinsSchema = z.object({
 });
 
 export type SetPinsInput = z.infer<typeof setPinsSchema>;
+
+// ===================================
+// Meal Generation API
+// ===================================
+
+export const generateSchema = z.object({
+  paramsId: z.string().uuid("VALIDATION_001: Invalid paramsId"),
+  fillEmptyOnly: z.boolean().optional().default(false),
+});
+
+export type GenerateInput = z.infer<typeof generateSchema>;
+
+export const replaceSlotSchema = z.object({
+  paramsId: z.string().uuid("VALIDATION_001: Invalid paramsId"),
+});
+
+export type ReplaceSlotInput = z.infer<typeof replaceSlotSchema>;

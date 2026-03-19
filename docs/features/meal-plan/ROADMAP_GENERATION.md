@@ -84,17 +84,18 @@ Prerequis : Feature 1 (Planning Manuel) completement implementee.
 
 ## Phase 6 — Backend API Generate & Replace
 
-- [ ] `POST /api/communities/:communityId/meal-plan/generate` (MODERATOR)
-  - [ ] Validation : paramsId requis et valide, plan doit exister
-  - [ ] Mode `fillEmptyOnly` + respect des slots verrouilles
-  - [ ] Reponse : plan complet + rapport de generation
-- [ ] `POST /api/communities/:communityId/meal-plan/slots/:slotId/replace` (MODERATOR)
-  - [ ] Validation : slot non verrouille, paramsId requis
-  - [ ] Re-roll en excluant la recette actuelle
-  - [ ] Codes erreur MEAL_GEN_002, MEAL_GEN_007, MEAL_GEN_008
-- [ ] Tests integration generate (full + fillEmptyOnly + locked)
-- [ ] Tests integration replace (re-roll, slot verrouille)
-- [ ] Tests integration rapport de generation
+- [x] `POST /api/communities/:communityId/meal-plan/generate` (MODERATOR)
+  - [x] Validation : paramsId requis et valide, plan doit exister
+  - [x] Mode `fillEmptyOnly` + respect des slots verrouilles
+  - [x] Reponse : plan complet + rapport de generation
+- [x] `POST /api/communities/:communityId/meal-plan/slots/:slotId/replace` (MODERATOR)
+  - [x] Validation : slot non verrouille, paramsId requis
+  - [x] Re-roll en excluant la recette actuelle
+  - [x] Codes erreur MEAL_GEN_002, MEAL_GEN_007, MEAL_GEN_008
+- [x] Fix `hasDefaultGenerationParams` dans GET /meal-plan (spec 2.5)
+- [x] Tests integration generate (full + fillEmptyOnly + locked + exclusions + pin + pool vide) — 9 tests
+- [x] Tests integration replace (re-roll, slot verrouille, slot exclu, permissions, params invalides) — 5 tests
+- [x] Tests integration hasDefaultGenerationParams flag — 3 tests
 
 ---
 
@@ -164,3 +165,4 @@ Prerequis : Feature 1 (Planning Manuel) completement implementee.
 - [ ] Mettre a jour `.claude/context/API_MAP.md` (nouveaux endpoints)
 - [ ] Mettre a jour `.claude/context/PROGRESS.md`
 - [ ] Mettre a jour `.claude/context/FILE_MAP.md` si necessaire
+- [ ] Mettre a jour Readme si necessaire

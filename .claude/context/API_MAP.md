@@ -217,7 +217,9 @@ GET    /api/communities/:communityId/meal-plan                     # plan ACTIVE
 POST   /api/communities/:communityId/meal-plan                     # creer plan + slots (MODERATOR)
 DELETE /api/communities/:communityId/meal-plan                     # supprimer plan ACTIVE (MODERATOR)
 PATCH  /api/communities/:communityId/meal-plan                     # update settings (MODERATOR)
+POST   /api/communities/:communityId/meal-plan/generate             # generer le planning (MODERATOR)
 PATCH  /api/communities/:communityId/meal-plan/slots/:slotId       # update slot (permission dynamique)
+POST   /api/communities/:communityId/meal-plan/slots/:slotId/replace # re-generer 1 slot (MODERATOR)
 POST   /api/communities/:communityId/meal-plan/slots/swap          # swap 2 slots (permission dynamique)
 GET    /api/communities/:communityId/meal-plan/archives            # liste archives paginee (memberOf)
 GET    /api/communities/:communityId/meal-plan/archives/:planId    # detail archive + slots (memberOf)
@@ -226,7 +228,7 @@ DELETE /api/communities/:communityId/meal-plan/archives/:planId    # supprimer a
 
 Controller: `controllers/mealPlan.ts` | Route: `routes/mealPlan.ts`
 Middleware: `middleware/requireFeature.ts`
-Error codes: MEAL_001-013
+Error codes: MEAL_001-013, MEAL_GEN_001-013
 
 ## Meal Ideas (/api/communities/:communityId/meal-ideas) - memberOf + requireFeature('MEAL_PLAN')
 

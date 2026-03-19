@@ -12,6 +12,11 @@ import {
   MEAL_011,
   MEAL_012,
   MEAL_013,
+  MEAL_GEN_001,
+  MEAL_GEN_002,
+  MEAL_GEN_007,
+  MEAL_GEN_008,
+  MEAL_GEN_013,
 } from "../constants/errorCodes";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import {
@@ -19,7 +24,16 @@ import {
   UpdateMealPlanInput,
   UpdateSlotInput,
   SwapSlotsInput,
+  GenerateInput,
+  ReplaceSlotInput,
 } from "../schemas/mealPlan.schema";
+import {
+  generate,
+  PoolEntry,
+  SlotInfo,
+  PreviousSlotInfo,
+  GenerationInput,
+} from "../services/mealGeneration";
 
 // Helper: format slot recipe with isDeleted flag
 function formatSlot(slot: any) {
@@ -54,23 +68,30 @@ export const getActivePlan = async (req: Request, res: Response, next: NextFunct
   try {
     const { communityId } = req.params;
 
-    const plan = await prisma.mealPlan.findFirst({
-      where: { communityId, status: "ACTIVE" },
-      include: {
-        slots: {
-          orderBy: [{ date: "asc" }, { mealTime: "asc" }],
-          include: slotInclude,
+    const [plan, defaultParamsCount] = await Promise.all([
+      prisma.mealPlan.findFirst({
+        where: { communityId, status: "ACTIVE" },
+        include: {
+          slots: {
+            orderBy: [{ date: "asc" }, { mealTime: "asc" }],
+            include: slotInclude,
+          },
         },
-      },
-    });
+      }),
+      prisma.mealGenerationParams.count({
+        where: { communityId, isDefault: true, deletedAt: null },
+      }),
+    ]);
+
+    const hasDefaultGenerationParams = defaultParamsCount > 0;
 
     if (!plan) {
-      return res.json({ plan: null, hasDefaultGenerationParams: false });
+      return res.json({ plan: null, hasDefaultGenerationParams });
     }
 
     res.json({
       plan: { ...plan, slots: plan.slots.map(formatSlot) },
-      hasDefaultGenerationParams: false,
+      hasDefaultGenerationParams,
     });
   } catch (error) {
     next(error);
@@ -589,6 +610,310 @@ export const deleteArchive = async (req: Request, res: Response, next: NextFunct
     await prisma.mealPlan.delete({ where: { id: planId } });
 
     res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};
+
+// =============================================
+// Helpers: build generation inputs from DB
+// =============================================
+
+async function loadGenerationParams(paramsId: string, communityId: string) {
+  const params = await prisma.mealGenerationParams.findUnique({
+    where: { id: paramsId },
+    include: {
+      exclusions: true,
+      rules: { include: { tag: { select: { id: true, name: true } } } },
+      slotPins: true,
+    },
+  });
+
+  if (!params || params.communityId !== communityId || params.deletedAt) {
+    throw createHttpError(404, MEAL_GEN_001);
+  }
+
+  return params;
+}
+
+async function buildPool(communityId: string, useIdeas: boolean): Promise<PoolEntry[]> {
+  // Toutes les recettes de la communaute (non deleted)
+  const recipes = await prisma.recipe.findMany({
+    where: { communityId, deletedAt: null },
+    include: { tags: { select: { tagId: true } } },
+  });
+
+  const pool: PoolEntry[] = recipes.map((r) => ({
+    id: r.id,
+    type: "RECIPE" as const,
+    recipeId: r.id,
+    tagIds: r.tags.map((t) => t.tagId),
+  }));
+
+  if (useIdeas) {
+    const ideas = await prisma.mealIdea.findMany({
+      where: { communityId, deletedAt: null },
+      include: {
+        recipe: {
+          select: { id: true, tags: { select: { tagId: true } } },
+        },
+      },
+    });
+
+    for (const idea of ideas) {
+      pool.push({
+        id: idea.id,
+        type: "IDEA" as const,
+        recipeId: idea.recipe?.id ?? null,
+        tagIds: idea.recipe?.tags.map((t) => t.tagId) ?? [],
+        freeText: idea.name,
+        comment: idea.comment,
+      });
+    }
+  }
+
+  return pool;
+}
+
+async function buildPreviousSlots(
+  communityId: string,
+  planId: string
+): Promise<PreviousSlotInfo[]> {
+  // Dernier plan archive pour cross-planning cooldown
+  const lastArchive = await prisma.mealPlan.findFirst({
+    where: { communityId, status: "ARCHIVED", id: { not: planId } },
+    orderBy: { startDate: "desc" },
+    include: {
+      slots: {
+        where: { type: { not: "EMPTY" }, recipeId: { not: null } },
+        include: { recipe: { select: { tags: { select: { tagId: true } } } } },
+      },
+    },
+  });
+
+  if (!lastArchive) return [];
+
+  return lastArchive.slots.map((s) => ({
+    date: s.date,
+    recipeId: s.recipeId,
+    tagIds: s.recipe?.tags.map((t) => t.tagId) ?? [],
+  }));
+}
+
+function slotsToSlotInfo(slots: any[]): SlotInfo[] {
+  return slots.map((s) => ({
+    id: s.id,
+    date: s.date,
+    mealTime: s.mealTime,
+    type: s.type,
+    disabled: s.disabled,
+    locked: s.locked,
+    recipeId: s.recipeId,
+  }));
+}
+
+/**
+ * POST /api/communities/:communityId/meal-plan/generate
+ * Generer le planning (MODERATOR)
+ */
+export const generatePlan = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { communityId } = req.params;
+    const body = req.body as GenerateInput;
+
+    // 1. Verifier que le plan ACTIVE existe
+    const plan = await prisma.mealPlan.findFirst({
+      where: { communityId, status: "ACTIVE" },
+      include: {
+        slots: {
+          orderBy: [{ date: "asc" }, { mealTime: "asc" }],
+          include: slotInclude,
+        },
+      },
+    });
+
+    if (!plan) {
+      throw createHttpError(404, MEAL_GEN_002);
+    }
+
+    // 2. Charger les params + exclusions + rules + pins
+    const params = await loadGenerationParams(body.paramsId, communityId);
+
+    // 3. Construire les inputs
+    const [pool, previousSlots] = await Promise.all([
+      buildPool(communityId, params.useIdeas),
+      buildPreviousSlots(communityId, plan.id),
+    ]);
+
+    const input: GenerationInput = {
+      params,
+      exclusions: params.exclusions,
+      rules: params.rules,
+      pins: params.slotPins,
+      slots: slotsToSlotInfo(plan.slots),
+      pool,
+      previousSlots,
+      fillEmptyOnly: body.fillEmptyOnly,
+    };
+
+    // 4. Generer
+    const result = generate(input);
+
+    // 5. Appliquer les assignments en DB
+    if (result.assignments.length > 0) {
+      await prisma.$transaction(
+        result.assignments.map((a) =>
+          prisma.mealSlot.update({
+            where: { id: a.slotId },
+            data: {
+              type: a.type,
+              recipeId: a.recipeId,
+              freeText: a.freeText ?? null,
+              comment: a.comment ?? null,
+              // Re-enable disabled slots if they get content
+              ...(a.type !== "EMPTY" ? { disabled: false } : {}),
+            },
+          })
+        )
+      );
+    }
+
+    // 6. Recharger le plan complet
+    const updatedPlan = await prisma.mealPlan.findUnique({
+      where: { id: plan.id },
+      include: {
+        slots: {
+          orderBy: [{ date: "asc" }, { mealTime: "asc" }],
+          include: slotInclude,
+        },
+      },
+    });
+
+    res.json({
+      plan: { ...updatedPlan!, slots: updatedPlan!.slots.map(formatSlot) },
+      report: result.report,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/communities/:communityId/meal-plan/slots/:slotId/replace
+ * Re-generer un seul slot (MODERATOR)
+ */
+export const replaceSlot = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { communityId, slotId } = req.params;
+    const body = req.body as ReplaceSlotInput;
+
+    // 1. Trouver le slot
+    const slot = await prisma.mealSlot.findUnique({
+      where: { id: slotId },
+      include: { plan: true },
+    });
+
+    if (!slot || slot.plan.communityId !== communityId) {
+      throw createHttpError(404, MEAL_003);
+    }
+
+    if (slot.plan.status !== "ACTIVE") {
+      throw createHttpError(400, MEAL_GEN_013);
+    }
+
+    if (slot.locked) {
+      throw createHttpError(400, MEAL_GEN_008);
+    }
+
+    // 2. Charger les params
+    const params = await loadGenerationParams(body.paramsId, communityId);
+
+    // 3. Verifier que le slot n'est pas exclu dans ce jeu de params
+    const slotDayOfWeek = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"][
+      new Date(slot.date).getUTCDay()
+    ];
+    const isExcluded = params.exclusions.some(
+      (e) => e.day === slotDayOfWeek && e.mealTime === slot.mealTime
+    );
+    if (isExcluded) {
+      throw createHttpError(400, MEAL_GEN_007);
+    }
+
+    // 4. Charger le plan complet pour contexte (cooldowns, frequences)
+    const plan = await prisma.mealPlan.findUnique({
+      where: { id: slot.planId },
+      include: {
+        slots: {
+          orderBy: [{ date: "asc" }, { mealTime: "asc" }],
+          include: {
+            recipe: { select: { tags: { select: { tagId: true } } } },
+          },
+        },
+      },
+    });
+
+    // 5. Construire pool en excluant la recette actuelle
+    const [poolFull, previousSlots] = await Promise.all([
+      buildPool(communityId, params.useIdeas),
+      buildPreviousSlots(communityId, plan!.id),
+    ]);
+
+    // Exclure la recette actuelle du pool
+    const pool = slot.recipeId ? poolFull.filter((e) => e.recipeId !== slot.recipeId) : poolFull;
+
+    // 6. Construire les SlotInfo avec les recettes actuelles pour cooldown/frequency context
+    // Marquer tous les slots sauf le cible comme locked pour que generate() ne les touche pas
+    const slotInfos: SlotInfo[] = plan!.slots.map((s) => ({
+      id: s.id,
+      date: s.date,
+      mealTime: s.mealTime,
+      type: s.type,
+      disabled: s.disabled,
+      locked: s.id !== slotId, // Tous locked sauf le cible
+      recipeId: s.recipeId,
+    }));
+
+    const input: GenerationInput = {
+      params,
+      exclusions: params.exclusions,
+      rules: params.rules,
+      pins: params.slotPins,
+      slots: slotInfos,
+      pool,
+      previousSlots,
+      fillEmptyOnly: false,
+    };
+
+    // 7. Generer
+    const result = generate(input);
+
+    // 8. Trouver l'assignment pour notre slot
+    const assignment = result.assignments.find((a) => a.slotId === slotId);
+
+    if (assignment) {
+      await prisma.mealSlot.update({
+        where: { id: slotId },
+        data: {
+          type: assignment.type,
+          recipeId: assignment.recipeId,
+          freeText: assignment.freeText ?? null,
+          comment: assignment.comment ?? null,
+          // Auto-enable si disabled
+          ...(assignment.type !== "EMPTY" ? { disabled: false } : {}),
+        },
+      });
+    }
+
+    // 9. Retourner le slot mis a jour
+    const updatedSlot = await prisma.mealSlot.findUnique({
+      where: { id: slotId },
+      include: slotInclude,
+    });
+
+    res.json({
+      slot: formatSlot(updatedSlot),
+      report: result.report,
+    });
   } catch (error) {
     next(error);
   }
