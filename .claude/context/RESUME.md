@@ -52,6 +52,24 @@ Phase 10 du ROADMAP_GENERATION : Frontend generation + rapport
 }
 ```
 
+## Rapport qualite (post Phase 9, 2026-03-19)
+
+| Check          | Status                                                                                            |
+| -------------- | ------------------------------------------------------------------------------------------------- |
+| Frontend TS    | 0 errors                                                                                          |
+| Frontend lint  | 0 errors, 0 warnings                                                                              |
+| Frontend tests | 546/546 pass                                                                                      |
+| Backend TS     | 5 errors pre-existants (imageKey dans proposalService, recipeService, shareService)               |
+| Backend lint   | 14 errors (3 unused vars dans mealGeneration.ts, 11 pre-existants), 21 warnings (no-explicit-any) |
+| Backend tests  | 1010/1010 pass                                                                                    |
+| npm audit      | 1 high severity (socket.io-parser 4.0.0-4.2.5) frontend + backend                                 |
+
+### A corriger avant merge
+
+- **Backend lint** : 3 unused vars dans `backend/src/services/mealGeneration.ts` (MealSlot import, pool arg, slotIndexMap var)
+- **npm audit** : `npm audit fix` dans frontend/ et backend/ pour socket.io-parser
+- **Backend TS** : 5 erreurs imageKey pre-existantes (hors scope meal-generation)
+
 ## Notes
 
 - `hasDefaultGenerationParams` est deja dans la response GET /meal-plan (utiliser pour masquer bouton Remplacer)
