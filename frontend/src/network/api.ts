@@ -735,4 +735,6 @@ export default class APIManager {
   static createMealGenerationRule = mealApi.createMealGenerationRule;
   static updateMealGenerationRule = mealApi.updateMealGenerationRule;
   static deleteMealGenerationRule = mealApi.deleteMealGenerationRule;
+  static generateMealPlan = mealApi.generateMealPlan;
+  static replaceMealSlot = mealApi.replaceMealSlot;
 }

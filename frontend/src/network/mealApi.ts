@@ -21,6 +21,8 @@ import {
   MealGenerationRule,
   CreateMealGenerationRuleInput,
   UpdateMealGenerationRuleInput,
+  GenerateResponse,
+  ReplaceSlotResponse,
 } from "../models/mealPlan";
 
 // --------------- Meal Plan ---------------
@@ -260,4 +262,30 @@ export async function deleteMealGenerationRule(
   await API.delete(
     `/api/communities/${communityId}/meal-generation-params/${paramsId}/rules/${ruleId}`
   ).catch(handleApiError);
+}
+
+// --------------- Generation & Replace ---------------
+
+export async function generateMealPlan(
+  communityId: string,
+  paramsId: string,
+  fillEmptyOnly: boolean
+): Promise<GenerateResponse> {
+  const response = await API.post(
+    `/api/communities/${communityId}/meal-plan/generate`,
+    JSON.stringify({ paramsId, fillEmptyOnly })
+  ).catch(handleApiError);
+  return response.data;
+}
+
+export async function replaceMealSlot(
+  communityId: string,
+  slotId: string,
+  paramsId: string
+): Promise<ReplaceSlotResponse> {
+  const response = await API.post(
+    `/api/communities/${communityId}/meal-plan/slots/${slotId}/replace`,
+    JSON.stringify({ paramsId })
+  ).catch(handleApiError);
+  return response.data;
 }

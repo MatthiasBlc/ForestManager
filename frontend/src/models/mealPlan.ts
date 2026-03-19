@@ -252,3 +252,43 @@ export interface UpdateMealGenerationRuleInput {
   frequencyPer?: FrequencyPer | null;
   tagCooldownDays?: number | null;
 }
+
+// ==============================
+// Generation & Replace
+// ==============================
+
+export interface GenerationWarning {
+  type:
+    | "POOL_EXHAUSTED"
+    | "FREQUENCY_MIN_NOT_MET"
+    | "FREQUENCY_MAX_EXCEEDED"
+    | "CONFLICTING_CONSTRAINTS";
+  slotDay?: string;
+  slotMealTime?: MealTime;
+  tagId?: string;
+  tagName?: string;
+  required?: number;
+  actual?: number;
+  reason: string;
+}
+
+export interface GenerationReport {
+  slotsGenerated: number;
+  slotsSkipped: {
+    excluded: number;
+    locked: number;
+    alreadyFilled: number;
+  };
+  slotsEmpty: number;
+  warnings: GenerationWarning[];
+}
+
+export interface GenerateResponse {
+  plan: MealPlan;
+  report: GenerationReport;
+}
+
+export interface ReplaceSlotResponse {
+  plan: MealPlan;
+  report: GenerationReport;
+}
