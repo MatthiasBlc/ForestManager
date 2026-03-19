@@ -8,7 +8,6 @@ import {
   MealSlotExclusion,
   MealGenerationRule,
   MealSlotPin,
-  MealSlot,
   MealTime,
   FrequencyPer,
 } from "@prisma/client";
@@ -406,7 +405,7 @@ function applyCooldownTag(
   assignedTagsBySlotIndex: Map<number, string[]>,
   previousSlots: PreviousSlotInfo[],
   rules: MealGenerationRule[],
-  pool: PoolEntry[]
+  _pool: PoolEntry[]
 ): PoolEntry[] {
   // Find tag rules with tagCooldownDays set
   const tagCooldownRules = rules.filter(
@@ -579,9 +578,6 @@ function runFrequencyMinCatchUp(
 
   // Build assignment lookup: slotId -> assignment
   const assignmentMap = new Map(assignments.map((a) => [a.slotId, a]));
-  // Build slotIndex lookup: slotId -> index in sortedSlots
-  const slotIndexMap = new Map(sortedSlots.map((s, i) => [s.id, i]));
-
   const startDate = new Date(sortedSlots[0].date);
 
   for (const rule of freqMinRules) {
