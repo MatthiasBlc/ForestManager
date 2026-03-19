@@ -56,19 +56,19 @@ Prerequis : Feature 1 (Planning Manuel) completement implementee.
 
 ## Phase 4 — Algorithme de generation (passe principale)
 
-- [ ] Creer `services/mealGeneration.ts` (logique metier isolee)
-- [ ] Construire le pool de recettes (communaute + idees si useIdeas)
-- [ ] Skip : slots exclus, verrouilles, deja remplis (si fillEmptyOnly)
-- [ ] Appliquer le pin (filtrer par tag epingle)
-- [ ] Filtrage par mealTimeConstraint
-- [ ] Exclusion par cooldown recette (global)
-- [ ] Exclusion par cooldown tag (tagCooldownDays par regle)
-- [ ] Exclusion par frequencyMax (compteur par tag)
-- [ ] Calcul des poids (base x regles tag x regles recette)
-- [ ] Tirage aleatoire pondere
-- [ ] Gestion MealIdea sans recipeId → slot FREE_TEXT
-- [ ] Gestion pool insuffisant → slot EMPTY + warning
-- [ ] Tests unitaires : poids, cooldown recette, cooldown tag, frequencyMax, pin, locked, fillEmptyOnly, pool vide
+- [x] Creer `services/mealGeneration.ts` (logique metier isolee)
+- [x] Construire le pool de recettes (communaute + idees si useIdeas)
+- [x] Skip : slots exclus, verrouilles, deja remplis (si fillEmptyOnly)
+- [x] Appliquer le pin (filtrer par tag epingle)
+- [x] Filtrage par mealTimeConstraint
+- [x] Exclusion par cooldown recette (global + cross-planning)
+- [x] Exclusion par cooldown tag (tagCooldownDays par regle + cross-planning)
+- [x] Exclusion par frequencyMax (compteur par tag, PER_WEEK/PER_PLANNING)
+- [x] Calcul des poids (base x regles tag x regles recette)
+- [x] Tirage aleatoire pondere
+- [x] Gestion MealIdea sans recipeId → slot FREE_TEXT
+- [x] Gestion pool insuffisant → slot EMPTY + warning
+- [x] Tests unitaires : poids, cooldown recette, cooldown tag, frequencyMax, pin, locked, fillEmptyOnly, pool vide (25 tests)
 
 ---
 

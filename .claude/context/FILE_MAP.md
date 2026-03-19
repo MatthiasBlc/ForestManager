@@ -111,6 +111,7 @@ services/
 ├── recipeImportService.ts # importFromUrl, parseIngredientLine, parseIsoDuration (JSON-LD extraction)
 ├── tagSuggestionService.ts # create, accept, reject tag suggestions
 ├── storageService.ts  # MinIO/S3 : presigned URL, headObject, deleteObject, validateUploadedFile
+├── mealGeneration.ts  # Algorithme generation planning (passe principale, rattrapage, rapport)
 ├── eventEmitter.ts    # AppEventEmitter singleton (emit activity events)
 └── socketServer.ts    # Socket.IO server init, auth, rooms, notification persistence
 ```
