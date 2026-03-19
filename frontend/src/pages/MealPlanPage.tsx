@@ -10,11 +10,12 @@ import {
   FaArchive,
   FaLightbulb,
   FaSlidersH,
+  FaMagic,
 } from "react-icons/fa";
 import APIManager from "../network/api";
 import { useAsyncData } from "../hooks/useAsyncData";
 import { useIsMobile } from "../hooks/useIsMobile";
-import { MealPlan, MealPlanResponse, MealSlot } from "../models/mealPlan";
+import { MealPlan, MealPlanResponse, MealSlot, GenerationReport } from "../models/mealPlan";
 import { CommunityDetail } from "../models/community";
 import CreatePlanModal from "../components/mealPlan/CreatePlanModal";
 import MealPlanGrid from "../components/mealPlan/MealPlanGrid";
@@ -22,6 +23,8 @@ import MealPlanSettings from "../components/mealPlan/MealPlanSettings";
 import MealPlanArchives from "../components/mealPlan/MealPlanArchives";
 import MealIdeasPanel from "../components/mealPlan/MealIdeasPanel";
 import GenerationParamsPanel from "../components/mealPlan/GenerationParamsPanel";
+import GenerateModal from "../components/mealPlan/GenerateModal";
+import GenerationReportPanel from "../components/mealPlan/GenerationReportPanel";
 
 type TabContent = "planning" | "archives" | "ideas" | "generation";
 
@@ -33,6 +36,8 @@ const MealPlanPage = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [generationReport, setGenerationReport] = useState<GenerationReport | null>(null);
 
   // Fetch community details (to check feature + role)
   const {
@@ -81,7 +86,13 @@ const MealPlanPage = () => {
   };
 
   const handlePlanUpdated = (updatedPlan: MealPlan) => {
-    setMealPlanData({ plan: updatedPlan, hasDefaultGenerationParams: false });
+    setMealPlanData({ ...mealPlanData!, plan: updatedPlan });
+  };
+
+  const handleGenerated = (updatedPlan: MealPlan, report: GenerationReport) => {
+    setMealPlanData({ ...mealPlanData!, plan: updatedPlan });
+    setGenerationReport(report);
+    setShowGenerateModal(false);
   };
 
   const handleSlotUpdated = (slotId: string, updates: Partial<MealSlot>) => {
@@ -199,6 +210,14 @@ const MealPlanPage = () => {
                     {!isMobile && "Settings"}
                   </button>
                   <button
+                    className="btn btn-primary btn-sm gap-1"
+                    onClick={() => setShowGenerateModal(true)}
+                    aria-label="Generate"
+                  >
+                    <FaMagic className="w-4 h-4" />
+                    {!isMobile && "Generate"}
+                  </button>
+                  <button
                     className="btn btn-ghost btn-sm gap-1"
                     onClick={() => setShowCreateModal(true)}
                     aria-label="New plan"
@@ -265,6 +284,14 @@ const MealPlanPage = () => {
         </div>
       </div>
 
+      {/* Generation Report */}
+      {generationReport && (
+        <GenerationReportPanel
+          report={generationReport}
+          onDismiss={() => setGenerationReport(null)}
+        />
+      )}
+
       {/* Content */}
       <div className="bg-base-100 rounded-lg shadow-xl p-6">
         {activeTab === "planning" && (
@@ -318,6 +345,16 @@ const MealPlanPage = () => {
           existingPlan={plan}
           onCreated={handlePlanCreated}
           onClose={() => setShowCreateModal(false)}
+        />
+      )}
+
+      {/* Generate Modal */}
+      {showGenerateModal && plan && (
+        <GenerateModal
+          communityId={communityId!}
+          plan={plan}
+          onGenerated={handleGenerated}
+          onClose={() => setShowGenerateModal(false)}
         />
       )}
 
