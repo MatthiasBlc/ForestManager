@@ -74,11 +74,11 @@ Prerequis : Feature 1 (Planning Manuel) completement implementee.
 
 ## Phase 5 — Algorithme de generation (passe de rattrapage + rapport)
 
-- [ ] Passe de rattrapage frequencyMin : identifier deficits, remplacer slots les moins prioritaires
-- [ ] Gestion conflits de contraintes (voir spec section 3.9)
-- [ ] Construction du rapport de generation (slotsGenerated, slotsSkipped, warnings)
-- [ ] Types de warning : POOL_EXHAUSTED, FREQUENCY_MIN_NOT_MET, FREQUENCY_MAX_EXCEEDED, CONFLICTING_CONSTRAINTS
-- [ ] Tests unitaires : frequencyMin, exact (min == max), rattrapage, conflits, rapport complet
+- [x] Passe de rattrapage frequencyMin : identifier deficits, remplacer slots les moins prioritaires
+- [x] Gestion conflits de contraintes (voir spec section 3.9)
+- [x] Construction du rapport de generation (slotsGenerated, slotsSkipped, warnings)
+- [x] Types de warning : POOL_EXHAUSTED, FREQUENCY_MIN_NOT_MET, FREQUENCY_MAX_EXCEEDED, CONFLICTING_CONSTRAINTS
+- [x] Tests unitaires : frequencyMin, exact (min == max), rattrapage, conflits, rapport complet (6 tests)
 
 ---
 

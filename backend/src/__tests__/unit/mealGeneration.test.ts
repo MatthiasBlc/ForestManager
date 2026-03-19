@@ -550,3 +550,261 @@ describe("generate - pool exhausted", () => {
     expect(result.report.warnings[0].type).toBe("POOL_EXHAUSTED");
   });
 });
+
+// =============================================
+// Phase 5 Tests: frequencyMin catch-up + report
+// =============================================
+
+describe("generate - frequencyMin catch-up", () => {
+  it("should replace low-weight slots to meet frequencyMin (PER_PLANNING)", () => {
+    const rules = [
+      makeRule({
+        tagId: "tag-veg",
+        weight: 1.0,
+        frequencyMin: 2,
+        frequencyPer: "PER_PLANNING",
+        tag: { id: "tag-veg", name: "vegetarien" },
+      }),
+    ];
+
+    // Pool: 3 veg recipes + 3 non-veg (lower weight due to tag rule boosting veg)
+    const pool = [
+      makeRecipe("veg1", ["tag-veg"]),
+      makeRecipe("veg2", ["tag-veg"]),
+      makeRecipe("veg3", ["tag-veg"]),
+      makeRecipe("meat1", []),
+      makeRecipe("meat2", []),
+      makeRecipe("meat3", []),
+    ];
+
+    // Run many times to handle randomness
+    let minMetCount = 0;
+    const iterations = 50;
+    for (let i = 0; i < iterations; i++) {
+      const result = generate(
+        makeInput({
+          rules,
+          pool,
+          params: makeParams({ cooldownDays: 0 }),
+          slots: [
+            makeSlot(0, "LUNCH"),
+            makeSlot(0, "DINNER"),
+            makeSlot(1, "LUNCH"),
+            makeSlot(1, "DINNER"),
+          ],
+        })
+      );
+
+      const vegCount = result.assignments.filter((a) => {
+        const entry = pool.find((p) => p.recipeId === a.recipeId);
+        return entry?.tagIds.includes("tag-veg");
+      }).length;
+
+      if (vegCount >= 2) minMetCount++;
+    }
+
+    // Should meet the min most of the time (catch-up should help)
+    expect(minMetCount).toBeGreaterThan(iterations * 0.7);
+  });
+
+  it("should warn FREQUENCY_MIN_NOT_MET when impossible to satisfy", () => {
+    const rules = [
+      makeRule({
+        tagId: "tag-rare",
+        weight: 1.0,
+        frequencyMin: 5,
+        frequencyPer: "PER_PLANNING",
+        tag: { id: "tag-rare", name: "rare" },
+      }),
+    ];
+
+    // Only 1 recipe with the tag but need 5 occurrences in 2 slots
+    const pool = [makeRecipe("rare1", ["tag-rare"]), makeRecipe("normal1", [])];
+
+    const result = generate(
+      makeInput({
+        rules,
+        pool,
+        params: makeParams({ cooldownDays: 0 }),
+        slots: [makeSlot(0, "LUNCH"), makeSlot(0, "DINNER")],
+      })
+    );
+
+    const warning = result.report.warnings.find((w) => w.type === "FREQUENCY_MIN_NOT_MET");
+    expect(warning).toBeDefined();
+    expect(warning!.tagId).toBe("tag-rare");
+    expect(warning!.required).toBe(5);
+    expect(warning!.actual).toBeLessThan(5);
+  });
+
+  it("should handle exact mode (frequencyMin == frequencyMax)", () => {
+    const rules = [
+      makeRule({
+        tagId: "tag-poisson",
+        weight: 1.0,
+        frequencyMin: 2,
+        frequencyMax: 2,
+        frequencyPer: "PER_PLANNING",
+        tag: { id: "tag-poisson", name: "poisson" },
+      }),
+    ];
+
+    const pool = [
+      makeRecipe("fish1", ["tag-poisson"]),
+      makeRecipe("fish2", ["tag-poisson"]),
+      makeRecipe("fish3", ["tag-poisson"]),
+      makeRecipe("meat1", []),
+      makeRecipe("meat2", []),
+      makeRecipe("meat3", []),
+    ];
+
+    let exactCount = 0;
+    const iterations = 50;
+    for (let i = 0; i < iterations; i++) {
+      const result = generate(
+        makeInput({
+          rules,
+          pool,
+          params: makeParams({ cooldownDays: 0 }),
+          slots: [
+            makeSlot(0, "LUNCH"),
+            makeSlot(0, "DINNER"),
+            makeSlot(1, "LUNCH"),
+            makeSlot(1, "DINNER"),
+          ],
+        })
+      );
+
+      const fishCount = result.assignments.filter((a) => {
+        const entry = pool.find((p) => p.recipeId === a.recipeId);
+        return entry?.tagIds.includes("tag-poisson");
+      }).length;
+
+      // frequencyMax=2 is enforced by main pass, frequencyMin=2 by catch-up
+      if (fishCount === 2) exactCount++;
+    }
+
+    // Should hit exactly 2 most of the time
+    expect(exactCount).toBeGreaterThan(iterations * 0.6);
+  });
+
+  it("should handle PER_WEEK frequency windows", () => {
+    const rules = [
+      makeRule({
+        tagId: "tag-veg",
+        weight: 1.0,
+        frequencyMin: 1,
+        frequencyMax: 2,
+        frequencyPer: "PER_WEEK",
+        tag: { id: "tag-veg", name: "vegetarien" },
+      }),
+    ];
+
+    const pool = [
+      makeRecipe("veg1", ["tag-veg"]),
+      makeRecipe("veg2", ["tag-veg"]),
+      makeRecipe("meat1", []),
+      makeRecipe("meat2", []),
+      makeRecipe("meat3", []),
+      makeRecipe("meat4", []),
+    ];
+
+    // 14 days = 2 weeks -> each week should have 1-2 veg meals
+    let allWindowsMet = 0;
+    const iterations = 30;
+    for (let i = 0; i < iterations; i++) {
+      const slots = [];
+      for (let d = 0; d < 14; d++) {
+        slots.push(makeSlot(d, "LUNCH"));
+        slots.push(makeSlot(d, "DINNER"));
+      }
+
+      const result = generate(
+        makeInput({
+          rules,
+          pool,
+          params: makeParams({ cooldownDays: 0 }),
+          slots,
+        })
+      );
+
+      // Count veg per week
+      const week1Veg = result.assignments
+        .filter((a) => a.slotId.match(/slot-[0-6]/))
+        .filter((a) => {
+          const entry = pool.find((p) => p.recipeId === a.recipeId);
+          return entry?.tagIds.includes("tag-veg");
+        }).length;
+
+      const week2Veg = result.assignments
+        .filter((a) => a.slotId.match(/slot-(7|8|9|1[0-3])/))
+        .filter((a) => {
+          const entry = pool.find((p) => p.recipeId === a.recipeId);
+          return entry?.tagIds.includes("tag-veg");
+        }).length;
+
+      if (week1Veg >= 1 && week1Veg <= 2 && week2Veg >= 1 && week2Veg <= 2) {
+        allWindowsMet++;
+      }
+    }
+
+    expect(allWindowsMet).toBeGreaterThan(iterations * 0.5);
+  });
+});
+
+describe("generate - FREQUENCY_MAX_EXCEEDED warning (pin conflict)", () => {
+  it("should warn when pin forces tag beyond frequencyMax", () => {
+    const rules = [
+      makeRule({
+        tagId: "tag-a",
+        weight: 1.0,
+        frequencyMax: 1,
+        frequencyPer: "PER_PLANNING",
+        tag: { id: "tag-a", name: "a" },
+      }),
+    ];
+
+    // All recipes have tag-a, and 2 slots pinned to tag-a
+    // frequencyMax=1 but 2 pinned slots -> exceed
+    const pool = [makeRecipe("r1", ["tag-a"]), makeRecipe("r2", ["tag-a"])];
+
+    const result = generate(
+      makeInput({
+        rules,
+        pool,
+        params: makeParams({ cooldownDays: 0 }),
+        pins: [makePin("MON", "LUNCH", "tag-a"), makePin("MON", "DINNER", "tag-a")],
+        slots: [makeSlot(0, "LUNCH"), makeSlot(0, "DINNER")],
+      })
+    );
+
+    // Both slots should be filled (pins are absolute)
+    expect(result.assignments.filter((a) => a.type === "RECIPE")).toHaveLength(2);
+    // Should have a FREQUENCY_MAX_EXCEEDED warning
+    const warning = result.report.warnings.find((w) => w.type === "FREQUENCY_MAX_EXCEEDED");
+    expect(warning).toBeDefined();
+  });
+});
+
+describe("generate - full report", () => {
+  it("should produce a complete report", () => {
+    const result = generate(
+      makeInput({
+        exclusions: [makeExclusion("MON", "DINNER")],
+        pool: [makeRecipe("r1"), makeRecipe("r2"), makeRecipe("r3")],
+        slots: [
+          makeSlot(0, "LUNCH"),
+          makeSlot(0, "DINNER"), // excluded
+          makeSlot(1, "LUNCH", { disabled: true }),
+          makeSlot(1, "DINNER", { locked: true, type: "RECIPE", recipeId: "r1" }),
+        ],
+      })
+    );
+
+    expect(result.report.slotsGenerated).toBe(1); // Only MON LUNCH
+    expect(result.report.slotsSkipped.excluded).toBe(1);
+    expect(result.report.slotsSkipped.disabled).toBe(1);
+    expect(result.report.slotsSkipped.locked).toBe(1);
+    expect(result.assignments).toHaveLength(1);
+  });
+});
