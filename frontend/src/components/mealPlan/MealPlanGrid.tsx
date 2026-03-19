@@ -1,5 +1,14 @@
-import { useMemo, useState } from "react";
-import { FaPlus, FaLock, FaLockOpen, FaBan, FaExclamationTriangle } from "react-icons/fa";
+import { useEffect, useMemo, useState } from "react";
+import {
+  FaPlus,
+  FaLock,
+  FaLockOpen,
+  FaBan,
+  FaExclamationTriangle,
+  FaSyncAlt,
+} from "react-icons/fa";
+import toast from "react-hot-toast";
+import { toastError } from "../../utils/toastError";
 import { MealPlan, MealSlot, MealTime } from "../../models/mealPlan";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import SlotEditModal from "./SlotEditModal";
@@ -9,8 +18,10 @@ interface Props {
   communityId: string;
   plan: MealPlan;
   isModerator: boolean;
+  hasDefaultGenerationParams: boolean;
   onSlotUpdated: (slotId: string, updates: Partial<MealSlot>) => void;
   onSlotsSwapped: (slotAId: string, slotBId: string, slotA: MealSlot, slotB: MealSlot) => void;
+  onPlanUpdated: (plan: MealPlan) => void;
 }
 
 interface DayData {
@@ -26,10 +37,32 @@ function formatDateInput(date: Date): string {
   return date.toISOString().split("T")[0];
 }
 
-const MealPlanGrid = ({ communityId, plan, isModerator, onSlotUpdated, onSlotsSwapped }: Props) => {
+const MealPlanGrid = ({
+  communityId,
+  plan,
+  isModerator,
+  hasDefaultGenerationParams,
+  onSlotUpdated,
+  onSlotsSwapped,
+  onPlanUpdated,
+}: Props) => {
   const isMobile = useIsMobile();
   const [editingSlot, setEditingSlot] = useState<MealSlot | null>(null);
   const [draggedSlot, setDraggedSlot] = useState<MealSlot | null>(null);
+  const [replacingSlotId, setReplacingSlotId] = useState<string | null>(null);
+  const [confirmReplaceSlot, setConfirmReplaceSlot] = useState<MealSlot | null>(null);
+  const [defaultParamsId, setDefaultParamsId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!hasDefaultGenerationParams) {
+      setDefaultParamsId(null);
+      return;
+    }
+    APIManager.listMealGenerationParams(communityId).then((res) => {
+      const def = res.data.find((p) => p.isDefault);
+      setDefaultParamsId(def?.id ?? null);
+    });
+  }, [communityId, hasDefaultGenerationParams]);
 
   // Group slots by date
   const days: DayData[] = useMemo(() => {
@@ -96,6 +129,21 @@ const MealPlanGrid = ({ communityId, plan, isModerator, onSlotUpdated, onSlotsSw
   const handleSlotSaved = async (slot: MealSlot) => {
     onSlotUpdated(slot.id, slot);
     setEditingSlot(null);
+  };
+
+  const handleReplaceSlot = async (slot: MealSlot) => {
+    if (!defaultParamsId) return;
+    setConfirmReplaceSlot(null);
+    setReplacingSlotId(slot.id);
+    try {
+      const result = await APIManager.replaceMealSlot(communityId, slot.id, defaultParamsId);
+      onPlanUpdated(result.plan);
+      toast.success("Slot replaced");
+    } catch (err) {
+      toastError(err, "Replace failed");
+    } finally {
+      setReplacingSlotId(null);
+    }
   };
 
   // Drag and drop handlers
@@ -167,6 +215,24 @@ const MealPlanGrid = ({ communityId, plan, isModerator, onSlotUpdated, onSlotsSw
             {mealTime === "LUNCH" ? "Lunch" : "Dinner"}
           </span>
           <div className="flex items-center gap-1">
+            {isModerator && !isDisabled && !isLocked && defaultParamsId && !isEmpty && (
+              <button
+                className="btn btn-ghost btn-xs p-0 min-h-0 h-auto"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setConfirmReplaceSlot(slot);
+                }}
+                disabled={replacingSlotId === slot.id}
+                title="Replace with new suggestion"
+                aria-label="Replace slot"
+              >
+                {replacingSlotId === slot.id ? (
+                  <span className="loading loading-spinner w-3 h-3" />
+                ) : (
+                  <FaSyncAlt className="w-3 h-3 text-base-content/30 hover:text-primary" />
+                )}
+              </button>
+            )}
             {isModerator && !isDisabled && (
               <button
                 className={`btn btn-ghost btn-xs p-0 min-h-0 h-auto ${togglingLock === slot.id ? "loading" : ""}`}
@@ -235,6 +301,34 @@ const MealPlanGrid = ({ communityId, plan, isModerator, onSlotUpdated, onSlotsSw
             onSaved={handleSlotSaved}
             onClose={() => setEditingSlot(null)}
           />
+        )}
+
+        {confirmReplaceSlot && (
+          <div className="modal modal-open">
+            <div className="modal-box max-w-sm">
+              <h3 className="font-bold text-lg mb-2">Replace this slot?</h3>
+              <p className="text-sm text-base-content/70">
+                Replace this meal with a new suggestion using the default generation params?
+              </p>
+              <div className="modal-action">
+                <button className="btn btn-ghost" onClick={() => setConfirmReplaceSlot(null)}>
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => handleReplaceSlot(confirmReplaceSlot)}
+                  disabled={replacingSlotId !== null}
+                >
+                  {replacingSlotId ? (
+                    <span className="loading loading-spinner loading-sm" />
+                  ) : (
+                    "Replace"
+                  )}
+                </button>
+              </div>
+            </div>
+            <div className="modal-backdrop" onClick={() => setConfirmReplaceSlot(null)} />
+          </div>
         )}
       </div>
     );

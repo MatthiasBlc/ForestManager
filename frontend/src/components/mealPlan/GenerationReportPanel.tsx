@@ -1,11 +1,4 @@
-import {
-  FaCheckCircle,
-  FaExclamationTriangle,
-  FaBan,
-  FaLock,
-  FaInfoCircle,
-  FaTimes,
-} from "react-icons/fa";
+import { FaCheckCircle, FaExclamationTriangle, FaBan, FaInfoCircle, FaTimes } from "react-icons/fa";
 import { GenerationReport } from "../../models/mealPlan";
 
 interface Props {

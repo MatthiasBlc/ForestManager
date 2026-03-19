@@ -152,8 +152,10 @@ const MealPlanArchives = ({ communityId, isModerator }: Props) => {
                 communityId={communityId}
                 plan={viewingArchive}
                 isModerator={false}
+                hasDefaultGenerationParams={false}
                 onSlotUpdated={() => {}}
                 onSlotsSwapped={() => {}}
+                onPlanUpdated={() => {}}
               />
             </div>
           </div>

@@ -301,8 +301,12 @@ const MealPlanPage = () => {
                 communityId={communityId!}
                 plan={plan}
                 isModerator={isModerator}
+                hasDefaultGenerationParams={mealPlanData?.hasDefaultGenerationParams ?? false}
                 onSlotUpdated={handleSlotUpdated}
                 onSlotsSwapped={handleSlotsSwapped}
+                onPlanUpdated={(updatedPlan) =>
+                  setMealPlanData({ ...mealPlanData!, plan: updatedPlan })
+                }
               />
             ) : (
               <div className="text-center py-12">
