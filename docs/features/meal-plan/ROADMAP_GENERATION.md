@@ -38,19 +38,19 @@ Prerequis : Feature 1 (Planning Manuel) completement implementee.
 
 ## Phase 3 — Backend API Exclusions, Rules & Pins
 
-- [ ] `PUT .../exclusions` — set complet (MODERATOR)
-- [ ] `GET .../rules` — liste (memberOf)
-- [ ] `POST .../rules` — ajouter (MODERATOR)
-- [ ] `PATCH .../rules/:ruleId` — modifier (MODERATOR)
-- [ ] `DELETE .../rules/:ruleId` — supprimer (MODERATOR, hard delete)
-- [ ] `PUT .../pins` — set complet des pins (MODERATOR)
-- [ ] Validation rules : tagId XOR recipeId, weight 0.0–2.0, frequencyMin <= frequencyMax
-- [ ] Validation rules : frequencyMin/Max et tagCooldownDays uniquement si tagId (pas recipeId)
-- [ ] Validation pins : slot ne peut pas etre exclu ET epingle
-- [ ] Codes erreur MEAL_GEN_003, MEAL_GEN_004, MEAL_GEN_006, MEAL_GEN_009-012
-- [ ] Tests unitaires exclusions
-- [ ] Tests unitaires rules CRUD + toutes validations
-- [ ] Tests unitaires pins CRUD + validations
+- [x] `PUT .../exclusions` — set complet (MODERATOR)
+- [x] `GET .../rules` — liste (memberOf)
+- [x] `POST .../rules` — ajouter (MODERATOR)
+- [x] `PATCH .../rules/:ruleId` — modifier (MODERATOR)
+- [x] `DELETE .../rules/:ruleId` — supprimer (MODERATOR, hard delete)
+- [x] `PUT .../pins` — set complet des pins (MODERATOR)
+- [x] Validation rules : tagId XOR recipeId, weight 0.0–2.0, frequencyMin <= frequencyMax
+- [x] Validation rules : frequencyMin/Max et tagCooldownDays uniquement si tagId (pas recipeId)
+- [x] Validation pins : slot ne peut pas etre exclu ET epingle
+- [x] Codes erreur MEAL_GEN_003, MEAL_GEN_004, MEAL_GEN_006, MEAL_GEN_009-012
+- [x] Tests unitaires exclusions (5 tests)
+- [x] Tests unitaires rules CRUD + toutes validations (22 tests)
+- [x] Tests unitaires pins CRUD + validations (7 tests) + integration (1 test)
 
 ---
 

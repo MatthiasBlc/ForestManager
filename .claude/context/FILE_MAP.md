@@ -199,6 +199,7 @@ __tests__/
     ├── mealPlan.test.ts           # Meal plan CRUD, slots, swap, archives, permissions (39 tests)
     ├── mealIdeas.test.ts          # Meal ideas CRUD, permissions (25 tests)
     ├── mealGenerationParams.test.ts # Generation params CRUD, isDefault, permissions (26 tests)
+    ├── mealGenerationRules.test.ts  # Exclusions, rules, pins CRUD + validations (35 tests)
     └── users.test.ts              # User profile update
 ```
 

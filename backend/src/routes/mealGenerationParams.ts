@@ -6,6 +6,10 @@ import { validateBody } from "../middleware/validateBody";
 import {
   createMealGenerationParamsSchema,
   updateMealGenerationParamsSchema,
+  setExclusionsSchema,
+  createRuleSchema,
+  updateRuleSchema,
+  setPinsSchema,
 } from "../schemas/mealPlan.schema";
 import * as MealGenerationParamsController from "../controllers/mealGenerationParams";
 
@@ -41,6 +45,60 @@ router.delete(
   "/:paramsId",
   requireCommunityRole("MODERATOR"),
   MealGenerationParamsController.deleteParams
+);
+
+// =============================================
+// Exclusions
+// =============================================
+
+// PUT .../meal-generation-params/:paramsId/exclusions — Set complet (MODERATOR)
+router.put(
+  "/:paramsId/exclusions",
+  requireCommunityRole("MODERATOR"),
+  validateBody(setExclusionsSchema),
+  MealGenerationParamsController.setExclusions
+);
+
+// =============================================
+// Rules
+// =============================================
+
+// GET .../meal-generation-params/:paramsId/rules — Liste (memberOf)
+router.get("/:paramsId/rules", MealGenerationParamsController.listRules);
+
+// POST .../meal-generation-params/:paramsId/rules — Ajouter (MODERATOR)
+router.post(
+  "/:paramsId/rules",
+  requireCommunityRole("MODERATOR"),
+  validateBody(createRuleSchema),
+  MealGenerationParamsController.createRule
+);
+
+// PATCH .../meal-generation-params/:paramsId/rules/:ruleId — Modifier (MODERATOR)
+router.patch(
+  "/:paramsId/rules/:ruleId",
+  requireCommunityRole("MODERATOR"),
+  validateBody(updateRuleSchema),
+  MealGenerationParamsController.updateRule
+);
+
+// DELETE .../meal-generation-params/:paramsId/rules/:ruleId — Supprimer (MODERATOR, hard delete)
+router.delete(
+  "/:paramsId/rules/:ruleId",
+  requireCommunityRole("MODERATOR"),
+  MealGenerationParamsController.deleteRule
+);
+
+// =============================================
+// Pins
+// =============================================
+
+// PUT .../meal-generation-params/:paramsId/pins — Set complet (MODERATOR)
+router.put(
+  "/:paramsId/pins",
+  requireCommunityRole("MODERATOR"),
+  validateBody(setPinsSchema),
+  MealGenerationParamsController.setPins
 );
 
 export default router;

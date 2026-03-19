@@ -249,10 +249,16 @@ POST   /api/communities/:communityId/meal-generation-params              # creer
 GET    /api/communities/:communityId/meal-generation-params/:paramsId    # detail + exclusions + regles + pins (memberOf)
 PATCH  /api/communities/:communityId/meal-generation-params/:paramsId    # modifier (MODERATOR)
 DELETE /api/communities/:communityId/meal-generation-params/:paramsId    # soft delete (MODERATOR)
+PUT    .../:paramsId/exclusions                                          # set complet exclusions (MODERATOR)
+GET    .../:paramsId/rules                                               # liste regles (memberOf)
+POST   .../:paramsId/rules                                               # ajouter regle (MODERATOR)
+PATCH  .../:paramsId/rules/:ruleId                                       # modifier regle (MODERATOR)
+DELETE .../:paramsId/rules/:ruleId                                       # supprimer regle (MODERATOR, hard delete)
+PUT    .../:paramsId/pins                                                # set complet pins (MODERATOR)
 ```
 
 Controller: `controllers/mealGenerationParams.ts` | Route: `routes/mealGenerationParams.ts`
-Error codes: MEAL_GEN_001, MEAL_GEN_005
+Error codes: MEAL_GEN_001, MEAL_GEN_003-006, MEAL_GEN_009-012
 
 ---
 
@@ -376,4 +382,4 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 | adminRateLimiter     | middleware/security.ts                | 30 req/min global admin                 |
 | authRateLimiter      | routes config                         | 5/15min sur auth endpoints              |
 
-## Total: 125 endpoints (87 user + 37 admin + 1 health)
+## Total: 131 endpoints (93 user + 37 admin + 1 health)

@@ -143,3 +143,69 @@ export const updateMealGenerationParamsSchema = z
   });
 
 export type UpdateMealGenerationParamsInput = z.infer<typeof updateMealGenerationParamsSchema>;
+
+// ===================================
+// Meal Generation Exclusions
+// ===================================
+
+const dayOfWeekEnum = z.enum(["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"]);
+const mealTimeEnum = z.enum(["LUNCH", "DINNER"]);
+
+export const setExclusionsSchema = z.object({
+  exclusions: z.array(
+    z.object({
+      day: dayOfWeekEnum,
+      mealTime: mealTimeEnum,
+    })
+  ),
+});
+
+export type SetExclusionsInput = z.infer<typeof setExclusionsSchema>;
+
+// ===================================
+// Meal Generation Rules
+// ===================================
+
+export const createRuleSchema = z.object({
+  tagId: z.string().uuid("VALIDATION_001: Invalid tagId").optional().nullable(),
+  recipeId: z.string().uuid("VALIDATION_001: Invalid recipeId").optional().nullable(),
+  weight: z.number().min(0).max(2).optional().default(1.0),
+  mealTimeConstraint: mealTimeEnum.optional().nullable(),
+  frequencyMin: z.number().int().min(0).optional().nullable(),
+  frequencyMax: z.number().int().min(0).optional().nullable(),
+  frequencyPer: z.enum(["PER_WEEK", "PER_PLANNING"]).optional().nullable(),
+  tagCooldownDays: z.number().int().min(0).optional().nullable(),
+});
+
+export type CreateRuleInput = z.infer<typeof createRuleSchema>;
+
+export const updateRuleSchema = z
+  .object({
+    weight: z.number().min(0).max(2).optional(),
+    mealTimeConstraint: mealTimeEnum.optional().nullable(),
+    frequencyMin: z.number().int().min(0).optional().nullable(),
+    frequencyMax: z.number().int().min(0).optional().nullable(),
+    frequencyPer: z.enum(["PER_WEEK", "PER_PLANNING"]).optional().nullable(),
+    tagCooldownDays: z.number().int().min(0).optional().nullable(),
+  })
+  .refine((data) => Object.values(data).some((v) => v !== undefined), {
+    message: "VALIDATION_001: At least one field required",
+  });
+
+export type UpdateRuleInput = z.infer<typeof updateRuleSchema>;
+
+// ===================================
+// Meal Generation Pins
+// ===================================
+
+export const setPinsSchema = z.object({
+  pins: z.array(
+    z.object({
+      day: dayOfWeekEnum,
+      mealTime: mealTimeEnum,
+      tagId: z.string().uuid("VALIDATION_001: Invalid tagId"),
+    })
+  ),
+});
+
+export type SetPinsInput = z.infer<typeof setPinsSchema>;
