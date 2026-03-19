@@ -3,6 +3,7 @@ import { AdminRecipeDetail, AdminRecipeUpdateInput } from "../../models/admin";
 import APIManager from "../../network/api";
 import { useConfirm } from "../../hooks/useConfirm";
 import toast from "react-hot-toast";
+import { toastError } from "../../utils/toastError";
 
 interface AdminRecipeDetailModalProps {
   recipeId: string;
@@ -68,7 +69,7 @@ const AdminRecipeDetailModal = ({
       setEditing(false);
       onRecipeChanged();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update recipe");
+      toastError(err, "Failed to update recipe");
     } finally {
       setSaving(false);
     }
@@ -89,7 +90,7 @@ const AdminRecipeDetailModal = ({
       onClose();
       onRecipeChanged();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete recipe");
+      toastError(err, "Failed to delete recipe");
     }
   };
 

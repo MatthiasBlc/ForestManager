@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { FaBan, FaThumbtack, FaSearch } from "react-icons/fa";
 import toast from "react-hot-toast";
+import { toastError } from "../../utils/toastError";
 import APIManager from "../../network/api";
 import { DayOfWeek, MealTime, MealSlotExclusion, MealSlotPin } from "../../models/mealPlan";
 import { TagSearchResult } from "../../models/recipe";
@@ -100,7 +101,7 @@ const ExclusionPinGrid = ({
       const result = await APIManager.setMealExclusions(communityId, paramsId, newExclusions);
       onExclusionsUpdated(result.data);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update exclusions");
+      toastError(err, "Failed to update exclusions");
     } finally {
       setSavingExclusions(false);
     }
@@ -121,7 +122,7 @@ const ExclusionPinGrid = ({
       setPinSearch("");
       setPinResults([]);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update pins");
+      toastError(err, "Failed to update pins");
     } finally {
       setSavingPins(false);
     }
@@ -136,7 +137,7 @@ const ExclusionPinGrid = ({
       const result = await APIManager.setMealPins(communityId, paramsId, newPins);
       onPinsUpdated(result.data);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to remove pin");
+      toastError(err, "Failed to remove pin");
     } finally {
       setSavingPins(false);
     }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import { toastError } from "../utils/toastError";
 import {
   FaArrowLeft,
   FaCalendarPlus,
@@ -73,7 +74,7 @@ const MealPlanPage = () => {
       setMealPlanData({ plan: null, hasDefaultGenerationParams: false });
       toast.success("Planning deleted");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete");
+      toastError(err, "Failed to delete");
     } finally {
       setIsDeleting(false);
     }

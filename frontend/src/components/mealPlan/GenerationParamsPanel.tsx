@@ -1,11 +1,25 @@
 import { useState } from "react";
 import { FaPlus, FaEdit, FaTrash, FaStar, FaCog, FaArrowLeft } from "react-icons/fa";
 import toast from "react-hot-toast";
+import { toastError } from "../../utils/toastError";
 import APIManager from "../../network/api";
 import { useAsyncData } from "../../hooks/useAsyncData";
 import { MealGenerationParamsListItem, MealGenerationParams } from "../../models/mealPlan";
 import ParamsFormModal from "./ParamsFormModal";
 import ExclusionPinGrid from "./ExclusionPinGrid";
+
+function toListItem(p: MealGenerationParams): MealGenerationParamsListItem {
+  return {
+    id: p.id,
+    name: p.name,
+    description: p.description,
+    cooldownDays: p.cooldownDays,
+    useIdeas: p.useIdeas,
+    isDefault: p.isDefault,
+    createdAt: p.createdAt,
+    updatedAt: p.updatedAt,
+  };
+}
 
 interface Props {
   communityId: string;
@@ -37,7 +51,7 @@ const GenerationParamsPanel = ({ communityId, isModerator }: Props) => {
       setSelectedDetail(detail);
       setSelectedParamsId(paramsId);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to load details");
+      toastError(err, "Failed to load details");
     } finally {
       setLoadingDetail(false);
     }
@@ -53,40 +67,18 @@ const GenerationParamsPanel = ({ communityId, isModerator }: Props) => {
     try {
       const created = await APIManager.createMealGenerationParams(communityId, data);
       // Si isDefault, mettre a jour la liste
+      const item = toListItem(created);
       if (created.isDefault && paramsList) {
         setParamsList(
-          paramsList
-            .map((p) => (p.isDefault ? { ...p, isDefault: false } : p))
-            .concat({
-              id: created.id,
-              name: created.name,
-              description: created.description,
-              cooldownDays: created.cooldownDays,
-              useIdeas: created.useIdeas,
-              isDefault: created.isDefault,
-              createdAt: created.createdAt,
-              updatedAt: created.updatedAt,
-            })
+          paramsList.map((p) => (p.isDefault ? { ...p, isDefault: false } : p)).concat(item)
         );
       } else {
-        setParamsList([
-          ...(paramsList || []),
-          {
-            id: created.id,
-            name: created.name,
-            description: created.description,
-            cooldownDays: created.cooldownDays,
-            useIdeas: created.useIdeas,
-            isDefault: created.isDefault,
-            createdAt: created.createdAt,
-            updatedAt: created.updatedAt,
-          },
-        ]);
+        setParamsList([...(paramsList || []), item]);
       }
       setShowForm(false);
       toast.success("Parameters created");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to create");
+      toastError(err, "Failed to create");
     }
   };
 
@@ -106,21 +98,9 @@ const GenerationParamsPanel = ({ communityId, isModerator }: Props) => {
       );
       setParamsList(
         (paramsList || []).map((p) => {
-          if (p.id === updated.id) {
-            return {
-              ...p,
-              name: updated.name,
-              description: updated.description,
-              cooldownDays: updated.cooldownDays,
-              useIdeas: updated.useIdeas,
-              isDefault: updated.isDefault,
-              updatedAt: updated.updatedAt,
-            };
-          }
+          if (p.id === updated.id) return toListItem(updated);
           // Si le updated est devenu default, enlever isDefault aux autres
-          if (updated.isDefault && p.isDefault) {
-            return { ...p, isDefault: false };
-          }
+          if (updated.isDefault && p.isDefault) return { ...p, isDefault: false };
           return p;
         })
       );
@@ -131,7 +111,7 @@ const GenerationParamsPanel = ({ communityId, isModerator }: Props) => {
       setEditingParams(null);
       toast.success("Parameters updated");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update");
+      toastError(err, "Failed to update");
     }
   };
 
@@ -147,7 +127,7 @@ const GenerationParamsPanel = ({ communityId, isModerator }: Props) => {
       }
       toast.success("Parameters deleted");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete");
+      toastError(err, "Failed to delete");
     } finally {
       setDeletingId(null);
     }

@@ -5,6 +5,7 @@ import { useConfirm } from "../../hooks/useConfirm";
 import DataContainer from "../../components/DataContainer";
 import { useAsyncData } from "../../hooks/useAsyncData";
 import toast from "react-hot-toast";
+import { toastError } from "../../utils/toastError";
 
 interface ChangelogFormData {
   version: string;
@@ -265,7 +266,7 @@ function AdminChangelogPage() {
       setEditModal(null);
       refetch();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save");
+      toastError(err, "Failed to save");
     }
   }
 
@@ -282,7 +283,7 @@ function AdminChangelogPage() {
       toast.success("Entry deleted");
       refetch();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete");
+      toastError(err, "Failed to delete");
     }
   }
 

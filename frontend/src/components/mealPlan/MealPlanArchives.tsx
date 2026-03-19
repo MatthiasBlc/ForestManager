@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FaTrash, FaEye, FaTimes } from "react-icons/fa";
 import toast from "react-hot-toast";
+import { toastError } from "../../utils/toastError";
 import APIManager from "../../network/api";
 import { useAsyncData } from "../../hooks/useAsyncData";
 import { MealPlanArchiveItem, MealPlan } from "../../models/mealPlan";
@@ -32,7 +33,7 @@ const MealPlanArchives = ({ communityId, isModerator }: Props) => {
       const response = await APIManager.getMealPlanArchive(communityId, archive.id);
       setViewingArchive(response.plan);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to load archive");
+      toastError(err, "Failed to load archive");
     } finally {
       setLoadingArchiveId(null);
     }
@@ -47,7 +48,7 @@ const MealPlanArchives = ({ communityId, isModerator }: Props) => {
       setArchives(archives?.filter((a) => a.id !== archiveId) ?? null);
       toast.success("Archive deleted");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete");
+      toastError(err, "Failed to delete");
     } finally {
       setDeletingArchiveId(null);
     }
