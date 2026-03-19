@@ -26,7 +26,9 @@ controllers/
 ├── ingredients.ts     # autocomplete ingredients + suggested-unit
 ├── changelog.ts       # getAll, getById (user-facing)
 ├── mealPlan.ts        # getActivePlan, createPlan, deletePlan, updatePlan, updateSlot, swapSlots, getArchives, getArchiveDetail, deleteArchive
+├── mealGeneration.ts  # generatePlan, replaceSlot
 ├── mealIdeas.ts       # listIdeas, createIdea, updateIdea, deleteIdea
+├── mealGenerationParams.ts # listParams, createParams, getParamsDetail, updateParams, deleteParams
 ├── units.ts           # list units grouped by category
 └── users.ts           # search users, update profile
 ```
@@ -44,6 +46,7 @@ routes/
 ├── changelog.ts       # /api/changelog
 ├── mealPlan.ts        # /api/communities/:id/meal-plan (feature-gated)
 ├── mealIdeas.ts       # /api/communities/:id/meal-ideas (feature-gated)
+├── mealGenerationParams.ts # /api/communities/:id/meal-generation-params (feature-gated)
 ├── tags.ts            # /api/tags
 ├── ingredients.ts     # /api/ingredients
 ├── units.ts           # /api/units
@@ -109,6 +112,8 @@ services/
 ├── recipeImportService.ts # importFromUrl, parseIngredientLine, parseIsoDuration (JSON-LD extraction)
 ├── tagSuggestionService.ts # create, accept, reject tag suggestions
 ├── storageService.ts  # MinIO/S3 : presigned URL, headObject, deleteObject, validateUploadedFile
+├── mealGeneration.ts  # Algorithme generation planning (passe principale, rattrapage, rapport)
+├── mealGenerationService.ts # DB helpers (loadGenerationParams, buildPool, buildPreviousSlots, slotsToSlotInfo)
 ├── eventEmitter.ts    # AppEventEmitter singleton (emit activity events)
 └── socketServer.ts    # Socket.IO server init, auth, rooms, notification persistence
 ```
@@ -127,7 +132,7 @@ util/
 ├── logger.ts          # Logger Pino central (silent test, pretty dev, JSON prod)
 ├── pagination.ts      # parsePagination, buildPaginationMeta
 ├── validation.ts      # normalizeNames, isValidHttpUrl, regex constants, validateServings, validateTime, validateSteps
-├── responseFormatters.ts # formatTags, formatIngredients, formatSteps
+├── responseFormatters.ts # formatTags, formatIngredients, formatSteps, formatDeletedRelation
 ├── prismaSelects.ts   # RECIPE_TAGS_SELECT, RECIPE_STEPS_SELECT, PROPOSAL_STEPS_SELECT, PROPOSAL_INGREDIENTS_SELECT
 ├── db.ts              # Prisma client singleton
 └── validateEnv.ts     # envalid env vars
@@ -145,7 +150,7 @@ scripts/
 __tests__/
 ├── setup/
 │   ├── globalSetup.ts    # Setup DB test
-│   └── testHelpers.ts    # createTestUser, cleanupTestData, etc.
+│   └── testHelpers.ts    # createTestUser, cleanupTestData, createMealTestContext, etc.
 ├── unit/
 │   ├── eventEmitter.test.ts       # Event emitter unit tests
 │   ├── pagination.test.ts         # Pagination utils
@@ -196,6 +201,9 @@ __tests__/
     ├── requireFeature.test.ts     # requireFeature middleware (3 tests)
     ├── mealPlan.test.ts           # Meal plan CRUD, slots, swap, archives, permissions (39 tests)
     ├── mealIdeas.test.ts          # Meal ideas CRUD, permissions (25 tests)
+    ├── mealGenerationParams.test.ts # Generation params CRUD, isDefault, permissions (26 tests)
+    ├── mealGenerationRules.test.ts  # Exclusions, rules, pins CRUD + validations (35 tests)
+    ├── mealGenerate.test.ts       # Generate plan, replace slot, hasDefaultGenerationParams (17 tests)
     └── users.test.ts              # User profile update
 ```
 
@@ -302,12 +310,18 @@ components/
 ├── ImportRecipeModal.tsx     # Modal import recette (texte brut ou URL)
 ├── AddEditRecipeDialog.tsx   # Dialog creation/edition
 ├── mealPlan/
-│   ├── CreatePlanModal.tsx   # Modal creation plan (dates, servings, preview)
-│   ├── MealPlanGrid.tsx      # Grille planning (desktop + mobile)
-│   ├── MealPlanSettings.tsx  # Modal parametres plan
-│   ├── SlotEditModal.tsx     # Modal edition slot
-│   ├── MealPlanArchives.tsx  # Onglet archives
-│   └── MealIdeasPanel.tsx    # Onglet idees de repas
+│   ├── CreatePlanModal.tsx       # Modal creation plan (dates, servings, preview)
+│   ├── MealPlanGrid.tsx          # Grille planning (desktop + mobile, lock toggle)
+│   ├── MealPlanSettings.tsx      # Modal parametres plan
+│   ├── SlotEditModal.tsx         # Modal edition slot
+│   ├── MealPlanArchives.tsx      # Onglet archives
+│   ├── MealIdeasPanel.tsx        # Onglet idees de repas
+│   ├── GenerationParamsPanel.tsx # Onglet parametres generation (list + detail)
+│   ├── ParamsFormModal.tsx       # Modal creation/edition jeu de params
+│   ├── ExclusionPinGrid.tsx      # Grilles 7x2 exclusions + pins tag (mobile: cards verticales)
+│   ├── RulesEditor.tsx           # Edition inline regles tag + recette (CRUD, slider poids, frequence)
+│   ├── GenerateModal.tsx         # Modal generation (selecteur params, fillEmptyOnly, confirmation)
+│   └── GenerationReportPanel.tsx # Affichage rapport post-generation (stats, warnings)
 ├── ErrorBoundary.tsx         # Error boundary React (crash → fallback UI)
 ├── LoginModal.tsx            # Modal login
 ├── Modal.tsx                 # Composant modal generique

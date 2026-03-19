@@ -217,7 +217,9 @@ GET    /api/communities/:communityId/meal-plan                     # plan ACTIVE
 POST   /api/communities/:communityId/meal-plan                     # creer plan + slots (MODERATOR)
 DELETE /api/communities/:communityId/meal-plan                     # supprimer plan ACTIVE (MODERATOR)
 PATCH  /api/communities/:communityId/meal-plan                     # update settings (MODERATOR)
+POST   /api/communities/:communityId/meal-plan/generate             # generer le planning (MODERATOR)
 PATCH  /api/communities/:communityId/meal-plan/slots/:slotId       # update slot (permission dynamique)
+POST   /api/communities/:communityId/meal-plan/slots/:slotId/replace # re-generer 1 slot (MODERATOR)
 POST   /api/communities/:communityId/meal-plan/slots/swap          # swap 2 slots (permission dynamique)
 GET    /api/communities/:communityId/meal-plan/archives            # liste archives paginee (memberOf)
 GET    /api/communities/:communityId/meal-plan/archives/:planId    # detail archive + slots (memberOf)
@@ -226,7 +228,7 @@ DELETE /api/communities/:communityId/meal-plan/archives/:planId    # supprimer a
 
 Controller: `controllers/mealPlan.ts` | Route: `routes/mealPlan.ts`
 Middleware: `middleware/requireFeature.ts`
-Error codes: MEAL_001-013
+Error codes: MEAL_001-013, MEAL_GEN_001-013
 
 ## Meal Ideas (/api/communities/:communityId/meal-ideas) - memberOf + requireFeature('MEAL_PLAN')
 
@@ -238,6 +240,27 @@ DELETE /api/communities/:communityId/meal-ideas/:ideaId      # soft delete (crea
 ```
 
 Controller: `controllers/mealIdeas.ts` | Route: `routes/mealIdeas.ts`
+
+---
+
+## Meal Generation Params (/api/communities/:communityId/meal-generation-params) - memberOf + requireFeature('MEAL_PLAN')
+
+```
+GET    /api/communities/:communityId/meal-generation-params              # liste (memberOf)
+POST   /api/communities/:communityId/meal-generation-params              # creer (MODERATOR)
+GET    /api/communities/:communityId/meal-generation-params/:paramsId    # detail + exclusions + regles + pins (memberOf)
+PATCH  /api/communities/:communityId/meal-generation-params/:paramsId    # modifier (MODERATOR)
+DELETE /api/communities/:communityId/meal-generation-params/:paramsId    # soft delete (MODERATOR)
+PUT    .../:paramsId/exclusions                                          # set complet exclusions (MODERATOR)
+GET    .../:paramsId/rules                                               # liste regles (memberOf)
+POST   .../:paramsId/rules                                               # ajouter regle (MODERATOR)
+PATCH  .../:paramsId/rules/:ruleId                                       # modifier regle (MODERATOR)
+DELETE .../:paramsId/rules/:ruleId                                       # supprimer regle (MODERATOR, hard delete)
+PUT    .../:paramsId/pins                                                # set complet pins (MODERATOR)
+```
+
+Controller: `controllers/mealGenerationParams.ts` | Route: `routes/mealGenerationParams.ts`
+Error codes: MEAL_GEN_001, MEAL_GEN_003-006, MEAL_GEN_009-012
 
 ---
 
@@ -361,4 +384,4 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 | adminRateLimiter     | middleware/security.ts                | 30 req/min global admin                 |
 | authRateLimiter      | routes config                         | 5/15min sur auth endpoints              |
 
-## Total: 120 endpoints (82 user + 37 admin + 1 health)
+## Total: 131 endpoints (93 user + 37 admin + 1 health)

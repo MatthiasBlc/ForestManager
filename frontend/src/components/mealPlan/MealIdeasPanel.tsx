@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { FaPlus, FaEdit, FaTrash, FaSearch, FaLink } from "react-icons/fa";
 import toast from "react-hot-toast";
+import { toastError } from "../../utils/toastError";
 import APIManager from "../../network/api";
 import { useAsyncData } from "../../hooks/useAsyncData";
 import { MealIdea, MealIdeaInput } from "../../models/mealPlan";
@@ -44,7 +45,7 @@ const MealIdeasPanel = ({ communityId }: Props) => {
       setShowForm(false);
       toast.success("Idea added");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to create idea");
+      toastError(err, "Failed to create idea");
     }
   };
 
@@ -55,7 +56,7 @@ const MealIdeasPanel = ({ communityId }: Props) => {
       setEditingIdea(null);
       toast.success("Idea updated");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to update idea");
+      toastError(err, "Failed to update idea");
     }
   };
 
@@ -68,7 +69,7 @@ const MealIdeasPanel = ({ communityId }: Props) => {
       setIdeas(ideas?.filter((i) => i.id !== ideaId) || null);
       toast.success("Idea deleted");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete idea");
+      toastError(err, "Failed to delete idea");
     } finally {
       setDeletingId(null);
     }
@@ -135,9 +136,7 @@ const MealIdeasPanel = ({ communityId }: Props) => {
         <IdeaFormModal
           idea={editingIdea}
           onSubmit={(input) =>
-            editingIdea
-              ? handleUpdateIdea(editingIdea.id, input)
-              : handleCreateIdea(input)
+            editingIdea ? handleUpdateIdea(editingIdea.id, input) : handleCreateIdea(input)
           }
           onClose={() => {
             setShowForm(false);
@@ -163,9 +162,7 @@ const IdeaCard = ({ idea, isDeleting, onEdit, onDelete }: IdeaCardProps) => {
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <h4 className="font-medium">{idea.name}</h4>
-          {idea.comment && (
-            <p className="text-sm text-base-content/60 mt-1">{idea.comment}</p>
-          )}
+          {idea.comment && <p className="text-sm text-base-content/60 mt-1">{idea.comment}</p>}
           {idea.recipe && (
             <Link
               to={`/recipes/${idea.recipe.id}`}
@@ -176,9 +173,7 @@ const IdeaCard = ({ idea, isDeleting, onEdit, onDelete }: IdeaCardProps) => {
             </Link>
           )}
           {idea.createdBy && (
-            <p className="text-xs text-base-content/40 mt-2">
-              Added by {idea.createdBy.username}
-            </p>
+            <p className="text-xs text-base-content/40 mt-2">Added by {idea.createdBy.username}</p>
           )}
         </div>
         <div className="flex items-center gap-1">

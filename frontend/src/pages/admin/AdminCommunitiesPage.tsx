@@ -5,6 +5,7 @@ import { useConfirm } from "../../hooks/useConfirm";
 import DataContainer from "../../components/DataContainer";
 import { useAsyncData } from "../../hooks/useAsyncData";
 import toast from "react-hot-toast";
+import { toastError } from "../../utils/toastError";
 import { format } from "date-fns";
 
 function AdminCommunitiesPage() {
@@ -61,7 +62,7 @@ function AdminCommunitiesPage() {
       toast.success("Community deleted");
       loadCommunities();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete community");
+      toastError(err, "Failed to delete community");
     }
   }
 
@@ -73,7 +74,7 @@ function AdminCommunitiesPage() {
       const updated = await APIManager.getAdminCommunity(detail.id);
       setDetail(updated);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to grant feature");
+      toastError(err, "Failed to grant feature");
     }
   }
 
@@ -85,7 +86,7 @@ function AdminCommunitiesPage() {
       const updated = await APIManager.getAdminCommunity(detail.id);
       setDetail(updated);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to revoke feature");
+      toastError(err, "Failed to revoke feature");
     }
   }
 

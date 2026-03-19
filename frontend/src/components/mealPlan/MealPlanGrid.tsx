@@ -1,5 +1,14 @@
-import { useMemo, useState } from "react";
-import { FaPlus, FaLock, FaBan, FaExclamationTriangle } from "react-icons/fa";
+import { useEffect, useMemo, useState } from "react";
+import {
+  FaPlus,
+  FaLock,
+  FaLockOpen,
+  FaBan,
+  FaExclamationTriangle,
+  FaSyncAlt,
+} from "react-icons/fa";
+import toast from "react-hot-toast";
+import { toastError } from "../../utils/toastError";
 import { MealPlan, MealSlot, MealTime } from "../../models/mealPlan";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import SlotEditModal from "./SlotEditModal";
@@ -9,8 +18,10 @@ interface Props {
   communityId: string;
   plan: MealPlan;
   isModerator: boolean;
+  hasDefaultGenerationParams: boolean;
   onSlotUpdated: (slotId: string, updates: Partial<MealSlot>) => void;
   onSlotsSwapped: (slotAId: string, slotBId: string, slotA: MealSlot, slotB: MealSlot) => void;
+  onPlanUpdated: (plan: MealPlan) => void;
 }
 
 interface DayData {
@@ -30,12 +41,28 @@ const MealPlanGrid = ({
   communityId,
   plan,
   isModerator,
+  hasDefaultGenerationParams,
   onSlotUpdated,
   onSlotsSwapped,
+  onPlanUpdated,
 }: Props) => {
   const isMobile = useIsMobile();
   const [editingSlot, setEditingSlot] = useState<MealSlot | null>(null);
   const [draggedSlot, setDraggedSlot] = useState<MealSlot | null>(null);
+  const [replacingSlotId, setReplacingSlotId] = useState<string | null>(null);
+  const [confirmReplaceSlot, setConfirmReplaceSlot] = useState<MealSlot | null>(null);
+  const [defaultParamsId, setDefaultParamsId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!hasDefaultGenerationParams) {
+      setDefaultParamsId(null);
+      return;
+    }
+    APIManager.listMealGenerationParams(communityId).then((res) => {
+      const def = res.data.find((p) => p.isDefault);
+      setDefaultParamsId(def?.id ?? null);
+    });
+  }, [communityId, hasDefaultGenerationParams]);
 
   // Group slots by date
   const days: DayData[] = useMemo(() => {
@@ -76,14 +103,47 @@ const MealPlanGrid = ({
 
   const canEdit = isModerator || plan.editableByMembers;
 
+  const [togglingLock, setTogglingLock] = useState<string | null>(null);
+
   const handleSlotClick = (slot: MealSlot | null) => {
     if (!slot || !canEdit) return;
     setEditingSlot(slot);
   };
 
+  const handleToggleLock = async (e: React.MouseEvent, slot: MealSlot) => {
+    e.stopPropagation();
+    if (togglingLock) return;
+    setTogglingLock(slot.id);
+    try {
+      const updated = await APIManager.updateMealSlot(communityId, slot.id, {
+        locked: !slot.locked,
+      });
+      onSlotUpdated(slot.id, updated);
+    } catch (err) {
+      console.error("Toggle lock failed:", err);
+    } finally {
+      setTogglingLock(null);
+    }
+  };
+
   const handleSlotSaved = async (slot: MealSlot) => {
     onSlotUpdated(slot.id, slot);
     setEditingSlot(null);
+  };
+
+  const handleReplaceSlot = async (slot: MealSlot) => {
+    if (!defaultParamsId) return;
+    setConfirmReplaceSlot(null);
+    setReplacingSlotId(slot.id);
+    try {
+      const result = await APIManager.replaceMealSlot(communityId, slot.id, defaultParamsId);
+      onPlanUpdated(result.plan);
+      toast.success("Slot replaced");
+    } catch (err) {
+      toastError(err, "Replace failed");
+    } finally {
+      setReplacingSlotId(null);
+    }
   };
 
   // Drag and drop handlers
@@ -135,7 +195,7 @@ const MealPlanGrid = ({
 
     const cardClasses = `
       h-24 rounded-lg p-2 flex flex-col cursor-pointer transition-all
-      ${isDisabled ? "bg-base-200/50 opacity-60" : "bg-base-200 hover:bg-base-300"}
+      ${isDisabled ? "bg-base-200/50 opacity-60" : isLocked ? "bg-warning/10 ring-1 ring-warning/30 hover:bg-warning/15" : "bg-base-200 hover:bg-base-300"}
       ${draggedSlot?.id === slot.id ? "opacity-50" : ""}
       ${!canEdit ? "cursor-default" : ""}
     `;
@@ -155,7 +215,39 @@ const MealPlanGrid = ({
             {mealTime === "LUNCH" ? "Lunch" : "Dinner"}
           </span>
           <div className="flex items-center gap-1">
-            {isLocked && <FaLock className="w-3 h-3 text-warning" />}
+            {isModerator && !isDisabled && !isLocked && defaultParamsId && !isEmpty && (
+              <button
+                className="btn btn-ghost btn-xs p-0 min-h-0 h-auto"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setConfirmReplaceSlot(slot);
+                }}
+                disabled={replacingSlotId === slot.id}
+                title="Replace with new suggestion"
+                aria-label="Replace slot"
+              >
+                {replacingSlotId === slot.id ? (
+                  <span className="loading loading-spinner w-3 h-3" />
+                ) : (
+                  <FaSyncAlt className="w-3 h-3 text-base-content/30 hover:text-primary" />
+                )}
+              </button>
+            )}
+            {isModerator && !isDisabled && (
+              <button
+                className={`btn btn-ghost btn-xs p-0 min-h-0 h-auto ${togglingLock === slot.id ? "loading" : ""}`}
+                onClick={(e) => handleToggleLock(e, slot)}
+                title={isLocked ? "Unlock slot" : "Lock slot"}
+                aria-label={isLocked ? "Unlock slot" : "Lock slot"}
+              >
+                {isLocked ? (
+                  <FaLock className="w-3 h-3 text-warning" />
+                ) : (
+                  <FaLockOpen className="w-3 h-3 text-base-content/30 hover:text-warning" />
+                )}
+              </button>
+            )}
+            {!isModerator && isLocked && <FaLock className="w-3 h-3 text-warning" />}
             {isDisabled && <FaBan className="w-3 h-3 text-base-content/40" />}
             {isDeleted && <FaExclamationTriangle className="w-3 h-3 text-error" />}
           </div>
@@ -168,20 +260,18 @@ const MealPlanGrid = ({
             <FaPlus className="w-5 h-5 text-base-content/30" />
           ) : (
             <div className="text-center">
-              <p className={`text-sm font-medium truncate ${isDeleted ? "line-through text-base-content/50" : ""}`}>
+              <p
+                className={`text-sm font-medium truncate ${isDeleted ? "line-through text-base-content/50" : ""}`}
+              >
                 {slot.type === "RECIPE" ? slot.recipe?.title : slot.freeText}
               </p>
-              {isDeleted && (
-                <span className="text-xs text-error">Deleted recipe</span>
-              )}
+              {isDeleted && <span className="text-xs text-error">Deleted recipe</span>}
             </div>
           )}
         </div>
 
         {!isDisabled && !isEmpty && (
-          <div className="text-xs text-base-content/60 text-right">
-            {slot.servings} servings
-          </div>
+          <div className="text-xs text-base-content/60 text-right">{slot.servings} servings</div>
         )}
       </div>
     );
@@ -211,6 +301,34 @@ const MealPlanGrid = ({
             onSaved={handleSlotSaved}
             onClose={() => setEditingSlot(null)}
           />
+        )}
+
+        {confirmReplaceSlot && (
+          <div className="modal modal-open">
+            <div className="modal-box max-w-sm">
+              <h3 className="font-bold text-lg mb-2">Replace this slot?</h3>
+              <p className="text-sm text-base-content/70">
+                Replace this meal with a new suggestion using the default generation params?
+              </p>
+              <div className="modal-action">
+                <button className="btn btn-ghost" onClick={() => setConfirmReplaceSlot(null)}>
+                  Cancel
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={() => handleReplaceSlot(confirmReplaceSlot)}
+                  disabled={replacingSlotId !== null}
+                >
+                  {replacingSlotId ? (
+                    <span className="loading loading-spinner loading-sm" />
+                  ) : (
+                    "Replace"
+                  )}
+                </button>
+              </div>
+            </div>
+            <div className="modal-backdrop" onClick={() => setConfirmReplaceSlot(null)} />
+          </div>
         )}
       </div>
     );

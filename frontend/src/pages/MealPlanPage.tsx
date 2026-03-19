@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import { toastError } from "../utils/toastError";
 import {
   FaArrowLeft,
   FaCalendarPlus,
@@ -8,19 +9,24 @@ import {
   FaCog,
   FaArchive,
   FaLightbulb,
+  FaSlidersH,
+  FaMagic,
 } from "react-icons/fa";
 import APIManager from "../network/api";
 import { useAsyncData } from "../hooks/useAsyncData";
 import { useIsMobile } from "../hooks/useIsMobile";
-import { MealPlan, MealPlanResponse, MealSlot } from "../models/mealPlan";
+import { MealPlan, MealPlanResponse, MealSlot, GenerationReport } from "../models/mealPlan";
 import { CommunityDetail } from "../models/community";
 import CreatePlanModal from "../components/mealPlan/CreatePlanModal";
 import MealPlanGrid from "../components/mealPlan/MealPlanGrid";
 import MealPlanSettings from "../components/mealPlan/MealPlanSettings";
 import MealPlanArchives from "../components/mealPlan/MealPlanArchives";
 import MealIdeasPanel from "../components/mealPlan/MealIdeasPanel";
+import GenerationParamsPanel from "../components/mealPlan/GenerationParamsPanel";
+import GenerateModal from "../components/mealPlan/GenerateModal";
+import GenerationReportPanel from "../components/mealPlan/GenerationReportPanel";
 
-type TabContent = "planning" | "archives" | "ideas";
+type TabContent = "planning" | "archives" | "ideas" | "generation";
 
 const MealPlanPage = () => {
   const { id: communityId } = useParams<{ id: string }>();
@@ -30,6 +36,8 @@ const MealPlanPage = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [generationReport, setGenerationReport] = useState<GenerationReport | null>(null);
 
   // Fetch community details (to check feature + role)
   const {
@@ -71,14 +79,20 @@ const MealPlanPage = () => {
       setMealPlanData({ plan: null, hasDefaultGenerationParams: false });
       toast.success("Planning deleted");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete");
+      toastError(err, "Failed to delete");
     } finally {
       setIsDeleting(false);
     }
   };
 
   const handlePlanUpdated = (updatedPlan: MealPlan) => {
-    setMealPlanData({ plan: updatedPlan, hasDefaultGenerationParams: false });
+    setMealPlanData({ ...mealPlanData!, plan: updatedPlan });
+  };
+
+  const handleGenerated = (updatedPlan: MealPlan, report: GenerationReport) => {
+    setMealPlanData({ ...mealPlanData!, plan: updatedPlan });
+    setGenerationReport(report);
+    setShowGenerateModal(false);
   };
 
   const handleSlotUpdated = (slotId: string, updates: Partial<MealSlot>) => {
@@ -196,6 +210,14 @@ const MealPlanPage = () => {
                     {!isMobile && "Settings"}
                   </button>
                   <button
+                    className="btn btn-primary btn-sm gap-1"
+                    onClick={() => setShowGenerateModal(true)}
+                    aria-label="Generate"
+                  >
+                    <FaMagic className="w-4 h-4" />
+                    {!isMobile && "Generate"}
+                  </button>
+                  <button
                     className="btn btn-ghost btn-sm gap-1"
                     onClick={() => setShowCreateModal(true)}
                     aria-label="New plan"
@@ -239,7 +261,7 @@ const MealPlanPage = () => {
             Planning
           </button>
           <button
-            className={`tab ${activeTab === "archives" ? "tab-active"  : ""}`}
+            className={`tab ${activeTab === "archives" ? "tab-active" : ""}`}
             onClick={() => setActiveTab("archives")}
           >
             <FaArchive className="w-3 h-3 mr-1" />
@@ -252,8 +274,23 @@ const MealPlanPage = () => {
             <FaLightbulb className="w-3 h-3 mr-1" />
             Ideas
           </button>
+          <button
+            className={`tab ${activeTab === "generation" ? "tab-active" : ""}`}
+            onClick={() => setActiveTab("generation")}
+          >
+            <FaSlidersH className="w-3 h-3 mr-1" />
+            Generation
+          </button>
         </div>
       </div>
+
+      {/* Generation Report */}
+      {generationReport && (
+        <GenerationReportPanel
+          report={generationReport}
+          onDismiss={() => setGenerationReport(null)}
+        />
+      )}
 
       {/* Content */}
       <div className="bg-base-100 rounded-lg shadow-xl p-6">
@@ -264,8 +301,12 @@ const MealPlanPage = () => {
                 communityId={communityId!}
                 plan={plan}
                 isModerator={isModerator}
+                hasDefaultGenerationParams={mealPlanData?.hasDefaultGenerationParams ?? false}
                 onSlotUpdated={handleSlotUpdated}
                 onSlotsSwapped={handleSlotsSwapped}
+                onPlanUpdated={(updatedPlan) =>
+                  setMealPlanData({ ...mealPlanData!, plan: updatedPlan })
+                }
               />
             ) : (
               <div className="text-center py-12">
@@ -294,8 +335,10 @@ const MealPlanPage = () => {
           <MealPlanArchives communityId={communityId!} isModerator={isModerator} />
         )}
 
-        {activeTab === "ideas" && (
-          <MealIdeasPanel communityId={communityId!} />
+        {activeTab === "ideas" && <MealIdeasPanel communityId={communityId!} />}
+
+        {activeTab === "generation" && (
+          <GenerationParamsPanel communityId={communityId!} isModerator={isModerator} />
         )}
       </div>
 
@@ -306,6 +349,16 @@ const MealPlanPage = () => {
           existingPlan={plan}
           onCreated={handlePlanCreated}
           onClose={() => setShowCreateModal(false)}
+        />
+      )}
+
+      {/* Generate Modal */}
+      {showGenerateModal && plan && (
+        <GenerateModal
+          communityId={communityId!}
+          plan={plan}
+          onGenerated={handleGenerated}
+          onClose={() => setShowGenerateModal(false)}
         />
       )}
 

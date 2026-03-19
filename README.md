@@ -26,6 +26,8 @@ Application de gestion de communautes pour le partage de recettes. Communautes p
 - **Ingredients normalises** : base d'ingredients avec unites, autocomplete intelligent
 - **Feed d'activite** : activite communautaire et personnelle
 - **Notifications temps reel** : 5 categories, preferences par communaute, WebSocket, groupement intelligent
+- **Planning de repas** : planning communautaire avec grille, verrouillage de slots, archives, idees de repas
+- **Generation automatique** : algorithme de generation avec parametres personnalisables, regles par tag/recette, exclusions, epinglages, frequences, cooldowns
 - **SuperAdmin** : dashboard admin isole, authentification 2FA (TOTP), gestion tags/ingredients/unites/communautes/features
 
 ## Stack technique

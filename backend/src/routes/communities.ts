@@ -11,6 +11,7 @@ import { validateUUID } from "../middleware/validateUUID";
 import { validateBody } from "../middleware/validateBody";
 import mealPlanRoutes from "./mealPlan";
 import mealIdeasRoutes from "./mealIdeas";
+import mealGenerationParamsRoutes from "./mealGenerationParams";
 import { createRecipeSchema } from "../schemas/recipe.schema";
 import { createCommunitySchema, updateCommunitySchema } from "../schemas/community.schema";
 import { createInviteSchema } from "../schemas/invite.schema";
@@ -215,6 +216,12 @@ router.use("/:communityId/meal-plan", mealPlanRoutes);
 // =====================================
 
 router.use("/:communityId/meal-ideas", mealIdeasRoutes);
+
+// =====================================
+// Meal Generation Params routes (feature-gated)
+// =====================================
+
+router.use("/:communityId/meal-generation-params", mealGenerationParamsRoutes);
 
 // =====================================
 // Activity feed

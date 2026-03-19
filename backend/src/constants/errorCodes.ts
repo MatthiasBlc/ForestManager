@@ -152,6 +152,23 @@ export const MEAL_012 = "MEAL_012: Archive not found";
 export const MEAL_013 = "MEAL_013: Cannot swap with a disabled slot";
 
 // =====================================
+// Meal Generation
+// =====================================
+export const MEAL_GEN_001 = "MEAL_GEN_001: Generation params not found";
+export const MEAL_GEN_002 = "MEAL_GEN_002: No meal plan exists";
+export const MEAL_GEN_007 = "MEAL_GEN_007: Slot is excluded in this params set";
+export const MEAL_GEN_008 = "MEAL_GEN_008: Slot is locked";
+export const MEAL_GEN_013 = "MEAL_GEN_013: Cannot generate on an archived plan";
+export const MEAL_GEN_003 = "MEAL_GEN_003: Invalid rule: must have tagId OR recipeId, not both";
+export const MEAL_GEN_004 = "MEAL_GEN_004: Weight must be between 0.0 and 2.0";
+export const MEAL_GEN_005 = "MEAL_GEN_005: Cannot have multiple default params for same community";
+export const MEAL_GEN_006 = "MEAL_GEN_006: Rule not found";
+export const MEAL_GEN_009 = "MEAL_GEN_009: Frequency constraints only apply to tag rules";
+export const MEAL_GEN_010 = "MEAL_GEN_010: frequencyMin must be <= frequencyMax";
+export const MEAL_GEN_011 = "MEAL_GEN_011: tagCooldownDays only applies to tag rules";
+export const MEAL_GEN_012 = "MEAL_GEN_012: Slot cannot be both excluded and pinned";
+
+// =====================================
 // Admin Auth
 // =====================================
 export const ADMIN_001 = "ADMIN_001: Not authenticated";

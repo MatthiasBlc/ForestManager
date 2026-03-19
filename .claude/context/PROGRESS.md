@@ -30,10 +30,12 @@ Phases 0 a 17 terminees (tags rework, ingredients rework, notifications, recipe 
 - **Roadmap** : `docs/features/meal-plan/ROADMAP.md`
 - Phases 1-13 terminees (modeles, API backend, frontend complet)
 
-## Feature planifiee : Meal Generation (Automatique)
+## Feature en cours : Meal Generation (Automatique)
 
 - **Spec** : `docs/features/meal-plan/SPEC_MEAL_GENERATION.md`
 - **Roadmap** : `docs/features/meal-plan/ROADMAP_GENERATION.md`
+- Phases 1-11 terminees (modeles, API, algorithme, frontend complet incl. mobile)
+- Phase 12 en cours (docs & contexte)
 
 ## Idees futures
 

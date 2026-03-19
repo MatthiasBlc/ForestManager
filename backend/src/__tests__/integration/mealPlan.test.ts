@@ -2,14 +2,12 @@ import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../../app";
 import { testPrisma } from "../setup/globalSetup";
-import { createTestUser, createTestFeature, extractSessionCookie } from "../setup/testHelpers";
+import { createMealTestContext, extractSessionCookie, MealTestContext } from "../setup/testHelpers";
 
 describe("Meal Plan API", () => {
-  let moderator: { id: string };
+  let ctx: MealTestContext;
   let moderatorCookie: string;
-  let member: { id: string };
   let memberCookie: string;
-  let nonMember: { id: string };
   let nonMemberCookie: string;
   let communityId: string;
   let recipe1Id: string;
@@ -17,56 +15,12 @@ describe("Meal Plan API", () => {
 
   beforeEach(async () => {
     const suffix = Date.now();
+    ctx = await createMealTestContext("mp");
+    moderatorCookie = ctx.moderatorCookie;
+    memberCookie = ctx.memberCookie;
+    communityId = ctx.communityId;
 
-    // Moderateur
-    const modSignup = await request(app)
-      .post("/api/auth/signup")
-      .send({
-        username: `mp_mod_${suffix}`,
-        email: `mp_mod_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
-    moderatorCookie = extractSessionCookie(modSignup)!;
-    moderator = (await testPrisma.user.findFirst({
-      where: { email: `mp_mod_${suffix}@example.com` },
-    }))!;
-
-    // Communaute
-    const comRes = await request(app)
-      .post("/api/communities")
-      .set("Cookie", moderatorCookie)
-      .send({ name: `MealPlan Community ${suffix}` });
-    communityId = comRes.body.id;
-
-    // Feature MEAL_PLAN
-    let mealPlanFeature = await testPrisma.feature.findFirst({ where: { code: "MEAL_PLAN" } });
-    if (!mealPlanFeature) {
-      mealPlanFeature = await testPrisma.feature.create({
-        data: { code: "MEAL_PLAN", name: "Planning de repas", isDefault: false },
-      });
-    }
-    await testPrisma.communityFeature.create({
-      data: { communityId, featureId: mealPlanFeature.id },
-    });
-
-    // Membre
-    const memSuffix = suffix + 1;
-    const memSignup = await request(app)
-      .post("/api/auth/signup")
-      .send({
-        username: `mp_mem_${memSuffix}`,
-        email: `mp_mem_${memSuffix}@example.com`,
-        password: "Test123!Password",
-      });
-    memberCookie = extractSessionCookie(memSignup)!;
-    member = (await testPrisma.user.findFirst({
-      where: { email: `mp_mem_${memSuffix}@example.com` },
-    }))!;
-    await testPrisma.userCommunity.create({
-      data: { userId: member.id, communityId, role: "MEMBER" },
-    });
-
-    // Non-membre
+    // Non-membre (specifique a ce test)
     const nmSuffix = suffix + 2;
     const nmSignup = await request(app)
       .post("/api/auth/signup")
@@ -76,15 +30,12 @@ describe("Meal Plan API", () => {
         password: "Test123!Password",
       });
     nonMemberCookie = extractSessionCookie(nmSignup)!;
-    nonMember = (await testPrisma.user.findFirst({
-      where: { email: `mp_nm_${nmSuffix}@example.com` },
-    }))!;
 
     // Recettes communautaires
     const r1 = await testPrisma.recipe.create({
       data: {
         title: `Recipe 1 ${suffix}`,
-        creatorId: moderator.id,
+        creatorId: ctx.moderator.id,
         communityId,
         steps: { create: [{ order: 0, instruction: "Step 1" }] },
       },
@@ -94,7 +45,7 @@ describe("Meal Plan API", () => {
     const r2 = await testPrisma.recipe.create({
       data: {
         title: `Recipe 2 ${suffix}`,
-        creatorId: moderator.id,
+        creatorId: ctx.moderator.id,
         communityId,
         steps: { create: [{ order: 0, instruction: "Step 1" }] },
       },
@@ -448,7 +399,7 @@ describe("Meal Plan API", () => {
       const personalRecipe = await testPrisma.recipe.create({
         data: {
           title: "Personal Recipe",
-          creatorId: moderator.id,
+          creatorId: ctx.moderator.id,
           steps: { create: [{ order: 0, instruction: "Step" }] },
         },
       });

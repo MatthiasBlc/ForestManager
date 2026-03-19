@@ -246,6 +246,7 @@ model Community {
   notificationPrefs NotificationPreference[]
   mealPlans       MealPlan[]
   mealIdeas       MealIdea[]
+  mealGenerationParams MealGenerationParams[]
 
   @@index([deletedAt])
 }
@@ -365,6 +366,7 @@ model Recipe {
   notifications         Notification[]
   mealSlots             MealSlot[]
   mealIdeas             MealIdea[]
+  generationRules       MealGenerationRule[]
 
   @@index([creatorId])
   @@index([communityId])
@@ -479,6 +481,8 @@ model Tag {
   createdBy   User? @relation("TagCreator", fields: [createdById], references: [id])
 
   recipes RecipeTag[]
+  generationRules MealGenerationRule[]
+  slotPins        MealSlotPin[]
 
   @@unique([name, communityId])
   @@index([name])
@@ -783,6 +787,11 @@ enum MealPlanStatus {
   ARCHIVED
 }
 
+enum FrequencyPer {
+  PER_WEEK
+  PER_PLANNING
+}
+
 model MealPlan {
   id                String         @id @default(uuid())
   communityId       String
@@ -839,6 +848,93 @@ model MealIdea {
   createdBy   User?     @relation(fields: [createdById], references: [id], onDelete: SetNull)
 
   @@index([communityId, deletedAt])
+}
+
+// =============================================================================
+// MEAL GENERATION PARAMS (Jeux de parametres de generation)
+// =============================================================================
+
+model MealGenerationParams {
+  id           String    @id @default(uuid())
+  communityId  String
+  name         String    // max 100 chars
+  description  String?   // max 500 chars
+  cooldownDays Int       @default(3)
+  useIdeas     Boolean   @default(true)
+  isDefault    Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  community    Community              @relation(fields: [communityId], references: [id])
+  exclusions   MealSlotExclusion[]
+  rules        MealGenerationRule[]
+  slotPins     MealSlotPin[]
+
+  @@index([communityId, deletedAt])
+}
+
+// =============================================================================
+// MEAL SLOT EXCLUSION (Slots a ne pas generer - pivot, cascade)
+// =============================================================================
+
+model MealSlotExclusion {
+  id       String    @id @default(uuid())
+  paramsId String
+  day      DayOfWeek
+  mealTime MealTime
+
+  params   MealGenerationParams @relation(fields: [paramsId], references: [id], onDelete: Cascade)
+
+  @@unique([paramsId, day, mealTime])
+}
+
+// =============================================================================
+// MEAL GENERATION RULE (Regles de poids et contraintes - N par jeu)
+// =============================================================================
+
+model MealGenerationRule {
+  id                 String       @id @default(uuid())
+  paramsId           String
+
+  // Cible : tag OU recette (jamais les deux)
+  tagId              String?
+  recipeId           String?
+
+  // Poids (tous types de regles)
+  weight             Float        @default(1.0) // 0.0-2.0
+  mealTimeConstraint MealTime?    // null = les deux
+
+  // Contraintes de frequence (tag rules uniquement)
+  frequencyMin       Int?
+  frequencyMax       Int?
+  frequencyPer       FrequencyPer?
+
+  // Cooldown par tag (tag rules uniquement)
+  tagCooldownDays    Int?
+
+  params             MealGenerationParams @relation(fields: [paramsId], references: [id], onDelete: Cascade)
+  tag                Tag?                 @relation(fields: [tagId], references: [id], onDelete: SetNull)
+  recipe             Recipe?              @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+
+  @@index([paramsId])
+}
+
+// =============================================================================
+// MEAL SLOT PIN (Epinglage de tag sur un slot - N par jeu)
+// =============================================================================
+
+model MealSlotPin {
+  id       String    @id @default(uuid())
+  paramsId String
+  day      DayOfWeek
+  mealTime MealTime
+  tagId    String
+
+  params   MealGenerationParams @relation(fields: [paramsId], references: [id], onDelete: Cascade)
+  tag      Tag                  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([paramsId, day, mealTime])
 }
 
 // =============================================================================
