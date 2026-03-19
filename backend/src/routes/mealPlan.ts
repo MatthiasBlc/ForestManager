@@ -8,10 +8,10 @@ import {
   updateMealPlanSchema,
   updateSlotSchema,
   swapSlotsSchema,
-  generateSchema,
-  replaceSlotSchema,
 } from "../schemas/mealPlan.schema";
+import { generateSchema, replaceSlotSchema } from "../schemas/mealGeneration.schema";
 import * as MealPlanController from "../controllers/mealPlan";
+import * as MealGenerationController from "../controllers/mealGeneration";
 
 const router = express.Router({ mergeParams: true });
 
@@ -45,7 +45,7 @@ router.post(
   "/generate",
   requireCommunityRole("MODERATOR"),
   validateBody(generateSchema),
-  MealPlanController.generatePlan
+  MealGenerationController.generatePlan
 );
 
 // PATCH /api/communities/:communityId/meal-plan/slots/:slotId — Update slot (permission dynamique)
@@ -56,7 +56,7 @@ router.post(
   "/slots/:slotId/replace",
   requireCommunityRole("MODERATOR"),
   validateBody(replaceSlotSchema),
-  MealPlanController.replaceSlot
+  MealGenerationController.replaceSlot
 );
 
 // POST /api/communities/:communityId/meal-plan/slots/swap — Swap 2 slots (permission dynamique)

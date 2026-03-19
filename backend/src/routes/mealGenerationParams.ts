@@ -10,7 +10,7 @@ import {
   createRuleSchema,
   updateRuleSchema,
   setPinsSchema,
-} from "../schemas/mealPlan.schema";
+} from "../schemas/mealGeneration.schema";
 import * as MealGenerationParamsController from "../controllers/mealGenerationParams";
 
 const router = express.Router({ mergeParams: true });

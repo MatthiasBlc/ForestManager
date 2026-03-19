@@ -1,70 +1,23 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../../app";
-import { testPrisma } from "../setup/globalSetup";
-import { extractSessionCookie } from "../setup/testHelpers";
+import { createMealTestContext, extractSessionCookie, MealTestContext } from "../setup/testHelpers";
 
 describe("Meal Generation Params API", () => {
-  let moderator: { id: string };
-  let moderatorCookie: string;
-  let member: { id: string };
-  let memberCookie: string;
+  let ctx: MealTestContext;
   let nonMemberCookie: string;
+  let moderatorCookie: string;
+  let memberCookie: string;
   let communityId: string;
 
   beforeEach(async () => {
-    const suffix = Date.now();
+    ctx = await createMealTestContext("mgp");
+    moderatorCookie = ctx.moderatorCookie;
+    memberCookie = ctx.memberCookie;
+    communityId = ctx.communityId;
 
-    // Moderateur
-    const modSignup = await request(app)
-      .post("/api/auth/signup")
-      .send({
-        username: `mgp_mod_${suffix}`,
-        email: `mgp_mod_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
-    moderatorCookie = extractSessionCookie(modSignup)!;
-    moderator = (await testPrisma.user.findFirst({
-      where: { email: `mgp_mod_${suffix}@example.com` },
-    }))!;
-
-    // Communaute
-    const comRes = await request(app)
-      .post("/api/communities")
-      .set("Cookie", moderatorCookie)
-      .send({ name: `MealGenParams Community ${suffix}` });
-    communityId = comRes.body.id;
-
-    // Feature MEAL_PLAN
-    let mealPlanFeature = await testPrisma.feature.findFirst({ where: { code: "MEAL_PLAN" } });
-    if (!mealPlanFeature) {
-      mealPlanFeature = await testPrisma.feature.create({
-        data: { code: "MEAL_PLAN", name: "Planning de repas", isDefault: false },
-      });
-    }
-    await testPrisma.communityFeature.create({
-      data: { communityId, featureId: mealPlanFeature.id },
-    });
-
-    // Membre
-    const memSuffix = suffix + 1;
-    const memSignup = await request(app)
-      .post("/api/auth/signup")
-      .send({
-        username: `mgp_mem_${memSuffix}`,
-        email: `mgp_mem_${memSuffix}@example.com`,
-        password: "Test123!Password",
-      });
-    memberCookie = extractSessionCookie(memSignup)!;
-    member = (await testPrisma.user.findFirst({
-      where: { email: `mgp_mem_${memSuffix}@example.com` },
-    }))!;
-    await testPrisma.userCommunity.create({
-      data: { userId: member.id, communityId, role: "MEMBER" },
-    });
-
-    // Non-membre
-    const nmSuffix = suffix + 2;
+    // Non-membre (specifique a ce test)
+    const nmSuffix = Date.now() + 2;
     const nmSignup = await request(app)
       .post("/api/auth/signup")
       .send({

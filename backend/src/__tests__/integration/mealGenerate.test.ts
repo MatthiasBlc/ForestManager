@@ -2,9 +2,10 @@ import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../../app";
 import { testPrisma } from "../setup/globalSetup";
-import { extractSessionCookie } from "../setup/testHelpers";
+import { createMealTestContext, MealTestContext } from "../setup/testHelpers";
 
 describe("Meal Generation API", () => {
+  let ctx: MealTestContext;
   let moderatorCookie: string;
   let memberCookie: string;
   let communityId: string;
@@ -18,56 +19,12 @@ describe("Meal Generation API", () => {
 
   beforeEach(async () => {
     const suffix = Date.now();
+    ctx = await createMealTestContext("mg");
+    moderatorCookie = ctx.moderatorCookie;
+    memberCookie = ctx.memberCookie;
+    communityId = ctx.communityId;
 
-    // Moderateur
-    const modSignup = await request(app)
-      .post("/api/auth/signup")
-      .send({
-        username: `mg_mod_${suffix}`,
-        email: `mg_mod_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
-    moderatorCookie = extractSessionCookie(modSignup)!;
-    const moderator = (await testPrisma.user.findFirst({
-      where: { email: `mg_mod_${suffix}@example.com` },
-    }))!;
-
-    // Communaute
-    const comRes = await request(app)
-      .post("/api/communities")
-      .set("Cookie", moderatorCookie)
-      .send({ name: `MealGen Community ${suffix}` });
-    communityId = comRes.body.id;
-
-    // Feature MEAL_PLAN
-    let mealPlanFeature = await testPrisma.feature.findFirst({ where: { code: "MEAL_PLAN" } });
-    if (!mealPlanFeature) {
-      mealPlanFeature = await testPrisma.feature.create({
-        data: { code: "MEAL_PLAN", name: "Planning de repas", isDefault: false },
-      });
-    }
-    await testPrisma.communityFeature.create({
-      data: { communityId, featureId: mealPlanFeature.id },
-    });
-
-    // Membre
-    const memSuffix = suffix + 1;
-    const memSignup = await request(app)
-      .post("/api/auth/signup")
-      .send({
-        username: `mg_mem_${memSuffix}`,
-        email: `mg_mem_${memSuffix}@example.com`,
-        password: "Test123!Password",
-      });
-    memberCookie = extractSessionCookie(memSignup)!;
-    const member = (await testPrisma.user.findFirst({
-      where: { email: `mg_mem_${memSuffix}@example.com` },
-    }))!;
-    await testPrisma.userCommunity.create({
-      data: { userId: member.id, communityId, role: "MEMBER" },
-    });
-
-    // Tags
+    // Donnees specifiques a ce test
     const t1 = await testPrisma.tag.create({
       data: { name: `italien_${suffix}`, status: "APPROVED" },
     });
@@ -77,11 +34,10 @@ describe("Meal Generation API", () => {
     });
     tag2Id = t2.id;
 
-    // Recettes communautaires avec tags
     const r1 = await testPrisma.recipe.create({
       data: {
         title: `Pasta ${suffix}`,
-        creatorId: moderator.id,
+        creatorId: ctx.moderator.id,
         communityId,
         steps: { create: [{ order: 0, instruction: "Cook pasta" }] },
         tags: { create: [{ tagId: tag1Id }] },
@@ -92,7 +48,7 @@ describe("Meal Generation API", () => {
     const r2 = await testPrisma.recipe.create({
       data: {
         title: `Pizza ${suffix}`,
-        creatorId: moderator.id,
+        creatorId: ctx.moderator.id,
         communityId,
         steps: { create: [{ order: 0, instruction: "Make pizza" }] },
         tags: { create: [{ tagId: tag1Id }] },
@@ -103,7 +59,7 @@ describe("Meal Generation API", () => {
     const r3 = await testPrisma.recipe.create({
       data: {
         title: `Cake ${suffix}`,
-        creatorId: moderator.id,
+        creatorId: ctx.moderator.id,
         communityId,
         steps: { create: [{ order: 0, instruction: "Bake cake" }] },
         tags: { create: [{ tagId: tag2Id }] },
@@ -111,19 +67,17 @@ describe("Meal Generation API", () => {
     });
     recipe3Id = r3.id;
 
-    // Jeu de params par defaut
     const params = await testPrisma.mealGenerationParams.create({
       data: {
         communityId,
         name: "Standard",
-        cooldownDays: 0, // Pas de cooldown pour simplifier les tests
+        cooldownDays: 0,
         useIdeas: false,
         isDefault: true,
       },
     });
     paramsId = params.id;
 
-    // Creer un plan de 3 jours (6 slots)
     const planRes = await request(app)
       .post(`/api/communities/${communityId}/meal-plan`)
       .set("Cookie", moderatorCookie)

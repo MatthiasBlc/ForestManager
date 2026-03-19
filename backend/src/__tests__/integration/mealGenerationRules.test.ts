@@ -2,9 +2,10 @@ import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../../app";
 import { testPrisma } from "../setup/globalSetup";
-import { extractSessionCookie } from "../setup/testHelpers";
+import { createMealTestContext, MealTestContext } from "../setup/testHelpers";
 
 describe("Meal Generation Exclusions, Rules & Pins API", () => {
+  let ctx: MealTestContext;
   let moderatorCookie: string;
   let memberCookie: string;
   let communityId: string;
@@ -15,56 +16,12 @@ describe("Meal Generation Exclusions, Rules & Pins API", () => {
 
   beforeEach(async () => {
     const suffix = Date.now();
+    ctx = await createMealTestContext("mgr");
+    moderatorCookie = ctx.moderatorCookie;
+    memberCookie = ctx.memberCookie;
+    communityId = ctx.communityId;
 
-    // Moderateur
-    const modSignup = await request(app)
-      .post("/api/auth/signup")
-      .send({
-        username: `mgr_mod_${suffix}`,
-        email: `mgr_mod_${suffix}@example.com`,
-        password: "Test123!Password",
-      });
-    moderatorCookie = extractSessionCookie(modSignup)!;
-    const moderator = (await testPrisma.user.findFirst({
-      where: { email: `mgr_mod_${suffix}@example.com` },
-    }))!;
-
-    // Communaute
-    const comRes = await request(app)
-      .post("/api/communities")
-      .set("Cookie", moderatorCookie)
-      .send({ name: `MealGenRules Community ${suffix}` });
-    communityId = comRes.body.id;
-
-    // Feature MEAL_PLAN
-    let mealPlanFeature = await testPrisma.feature.findFirst({ where: { code: "MEAL_PLAN" } });
-    if (!mealPlanFeature) {
-      mealPlanFeature = await testPrisma.feature.create({
-        data: { code: "MEAL_PLAN", name: "Planning de repas", isDefault: false },
-      });
-    }
-    await testPrisma.communityFeature.create({
-      data: { communityId, featureId: mealPlanFeature.id },
-    });
-
-    // Membre
-    const memSuffix = suffix + 1;
-    const memSignup = await request(app)
-      .post("/api/auth/signup")
-      .send({
-        username: `mgr_mem_${memSuffix}`,
-        email: `mgr_mem_${memSuffix}@example.com`,
-        password: "Test123!Password",
-      });
-    memberCookie = extractSessionCookie(memSignup)!;
-    const member = (await testPrisma.user.findFirst({
-      where: { email: `mgr_mem_${memSuffix}@example.com` },
-    }))!;
-    await testPrisma.userCommunity.create({
-      data: { userId: member.id, communityId, role: "MEMBER" },
-    });
-
-    // Tags (global)
+    // Donnees specifiques a ce test
     const tag1 = await testPrisma.tag.create({
       data: { name: `tag_a_${suffix}`, scope: "GLOBAL" },
     });
@@ -74,18 +31,16 @@ describe("Meal Generation Exclusions, Rules & Pins API", () => {
     tagId1 = tag1.id;
     tagId2 = tag2.id;
 
-    // Recipe in community
     const recipe = await testPrisma.recipe.create({
       data: {
         title: `Test Recipe ${suffix}`,
         communityId,
-        creatorId: moderator.id,
+        creatorId: ctx.moderator.id,
         servings: 4,
       },
     });
     recipeId = recipe.id;
 
-    // Create generation params
     const paramsRes = await request(app)
       .post(`/api/communities/${communityId}/meal-generation-params`)
       .set("Cookie", moderatorCookie)

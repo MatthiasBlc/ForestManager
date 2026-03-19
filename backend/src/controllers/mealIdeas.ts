@@ -4,25 +4,13 @@ import prisma from "../util/db";
 import { MEAL_006 } from "../constants/errorCodes";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import { CreateMealIdeaInput, UpdateMealIdeaInput } from "../schemas/mealPlan.schema";
+import { formatDeletedRelation } from "../util/responseFormatters";
 
-// Helper: format idea with recipe info
 function formatIdea(idea: any) {
   return {
     ...idea,
-    recipe: idea.recipe
-      ? {
-          id: idea.recipe.id,
-          title: idea.recipe.title,
-          imageKey: idea.recipe.imageKey,
-          isDeleted: idea.recipe.deletedAt !== null,
-        }
-      : null,
-    createdBy: idea.createdBy
-      ? {
-          id: idea.createdBy.id,
-          username: idea.createdBy.username,
-        }
-      : null,
+    recipe: formatDeletedRelation(idea.recipe, ["id", "title", "imageKey"]),
+    createdBy: idea.createdBy ? { id: idea.createdBy.id, username: idea.createdBy.username } : null,
   };
 }
 

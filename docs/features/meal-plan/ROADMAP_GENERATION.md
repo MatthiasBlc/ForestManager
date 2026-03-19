@@ -166,3 +166,4 @@ Prerequis : Feature 1 (Planning Manuel) completement implementee.
 - [ ] Mettre a jour `.claude/context/PROGRESS.md`
 - [ ] Mettre a jour `.claude/context/FILE_MAP.md` si necessaire
 - [ ] Mettre a jour Readme si necessaire
+- [ ] Rédiger un protocole MANUAL test complet pour mealplan + generation

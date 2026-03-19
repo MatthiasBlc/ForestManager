@@ -25,7 +25,8 @@ controllers/
 ├── tags.ts            # autocomplete tags (scope-aware)
 ├── ingredients.ts     # autocomplete ingredients + suggested-unit
 ├── changelog.ts       # getAll, getById (user-facing)
-├── mealPlan.ts        # getActivePlan, createPlan, deletePlan, updatePlan, updateSlot, swapSlots, getArchives, getArchiveDetail, deleteArchive, generatePlan, replaceSlot
+├── mealPlan.ts        # getActivePlan, createPlan, deletePlan, updatePlan, updateSlot, swapSlots, getArchives, getArchiveDetail, deleteArchive
+├── mealGeneration.ts  # generatePlan, replaceSlot
 ├── mealIdeas.ts       # listIdeas, createIdea, updateIdea, deleteIdea
 ├── mealGenerationParams.ts # listParams, createParams, getParamsDetail, updateParams, deleteParams
 ├── units.ts           # list units grouped by category
@@ -112,6 +113,7 @@ services/
 ├── tagSuggestionService.ts # create, accept, reject tag suggestions
 ├── storageService.ts  # MinIO/S3 : presigned URL, headObject, deleteObject, validateUploadedFile
 ├── mealGeneration.ts  # Algorithme generation planning (passe principale, rattrapage, rapport)
+├── mealGenerationService.ts # DB helpers (loadGenerationParams, buildPool, buildPreviousSlots, slotsToSlotInfo)
 ├── eventEmitter.ts    # AppEventEmitter singleton (emit activity events)
 └── socketServer.ts    # Socket.IO server init, auth, rooms, notification persistence
 ```
@@ -130,7 +132,7 @@ util/
 ├── logger.ts          # Logger Pino central (silent test, pretty dev, JSON prod)
 ├── pagination.ts      # parsePagination, buildPaginationMeta
 ├── validation.ts      # normalizeNames, isValidHttpUrl, regex constants, validateServings, validateTime, validateSteps
-├── responseFormatters.ts # formatTags, formatIngredients, formatSteps
+├── responseFormatters.ts # formatTags, formatIngredients, formatSteps, formatDeletedRelation
 ├── prismaSelects.ts   # RECIPE_TAGS_SELECT, RECIPE_STEPS_SELECT, PROPOSAL_STEPS_SELECT, PROPOSAL_INGREDIENTS_SELECT
 ├── db.ts              # Prisma client singleton
 └── validateEnv.ts     # envalid env vars
@@ -148,7 +150,7 @@ scripts/
 __tests__/
 ├── setup/
 │   ├── globalSetup.ts    # Setup DB test
-│   └── testHelpers.ts    # createTestUser, cleanupTestData, etc.
+│   └── testHelpers.ts    # createTestUser, cleanupTestData, createMealTestContext, etc.
 ├── unit/
 │   ├── eventEmitter.test.ts       # Event emitter unit tests
 │   ├── pagination.test.ts         # Pagination utils

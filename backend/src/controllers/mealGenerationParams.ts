@@ -19,7 +19,8 @@ import {
   CreateRuleInput,
   UpdateRuleInput,
   SetPinsInput,
-} from "../schemas/mealPlan.schema";
+} from "../schemas/mealGeneration.schema";
+import { formatDeletedRelation } from "../util/responseFormatters";
 
 // Include pour les requetes detail
 const paramsDetailInclude = {
@@ -54,17 +55,10 @@ const paramsDetailInclude = {
   },
 };
 
-// Helper: format rules (ajouter isDeleted sur recipe)
 function formatRule(rule: any) {
   return {
     ...rule,
-    recipe: rule.recipe
-      ? {
-          id: rule.recipe.id,
-          title: rule.recipe.title,
-          isDeleted: rule.recipe.deletedAt !== null,
-        }
-      : null,
+    recipe: formatDeletedRelation(rule.recipe, ["id", "title"]),
   };
 }
 
