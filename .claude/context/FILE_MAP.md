@@ -318,8 +318,10 @@ components/
 │   ├── MealIdeasPanel.tsx        # Onglet idees de repas
 │   ├── GenerationParamsPanel.tsx # Onglet parametres generation (list + detail)
 │   ├── ParamsFormModal.tsx       # Modal creation/edition jeu de params
-│   ├── ExclusionPinGrid.tsx      # Grilles 7x2 exclusions + pins tag
-│   └── RulesEditor.tsx           # Edition inline regles tag + recette (CRUD, slider poids, frequence)
+│   ├── ExclusionPinGrid.tsx      # Grilles 7x2 exclusions + pins tag (mobile: cards verticales)
+│   ├── RulesEditor.tsx           # Edition inline regles tag + recette (CRUD, slider poids, frequence)
+│   ├── GenerateModal.tsx         # Modal generation (selecteur params, fillEmptyOnly, confirmation)
+│   └── GenerationReportPanel.tsx # Affichage rapport post-generation (stats, warnings)
 ├── ErrorBoundary.tsx         # Error boundary React (crash → fallback UI)
 ├── LoginModal.tsx            # Modal login
 ├── Modal.tsx                 # Composant modal generique

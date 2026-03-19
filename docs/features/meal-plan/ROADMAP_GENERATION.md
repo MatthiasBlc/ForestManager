@@ -152,18 +152,18 @@ Prerequis : Feature 1 (Planning Manuel) completement implementee.
 
 ## Phase 11 — Frontend mobile
 
-- [ ] Adaptation responsive des pages params/regles/pins
-- [ ] Bouton generer et remplacer fonctionnels sur mobile
-- [ ] Grilles exclusion/pins adaptees mobile
-- [ ] Icone cadenas fonctionnel sur mobile
+- [x] Adaptation responsive des pages params/regles/pins
+- [x] Bouton generer et remplacer fonctionnels sur mobile
+- [x] Grilles exclusion/pins adaptees mobile (layout vertical par jour)
+- [x] Icone cadenas fonctionnel sur mobile
 
 ---
 
 ## Phase 12 — Mise a jour docs & contexte
 
-- [ ] Mettre a jour `.claude/context/DB_MODELS.md` (nouveaux modeles)
-- [ ] Mettre a jour `.claude/context/API_MAP.md` (nouveaux endpoints)
-- [ ] Mettre a jour `.claude/context/PROGRESS.md`
-- [ ] Mettre a jour `.claude/context/FILE_MAP.md` si necessaire
-- [ ] Mettre a jour Readme si necessaire
-- [ ] Rédiger un protocole MANUAL test complet pour mealplan + generation
+- [x] Mettre a jour `.claude/context/DB_MODELS.md` (nouveaux modeles) — deja a jour
+- [x] Mettre a jour `.claude/context/API_MAP.md` (nouveaux endpoints) — deja a jour
+- [x] Mettre a jour `.claude/context/PROGRESS.md`
+- [x] Mettre a jour `.claude/context/FILE_MAP.md` (nouveaux composants frontend)
+- [x] Mettre a jour Readme (ajout features meal plan + generation)
+- [x] Rediger un protocole MANUAL test complet (`docs/features/meal-plan/MANUAL_TEST.md`)
