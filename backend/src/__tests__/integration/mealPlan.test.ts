@@ -11,7 +11,7 @@ describe("Meal Plan API", () => {
   let nonMemberCookie: string;
   let communityId: string;
   let recipe1Id: string;
-  let recipe2Id: string;
+  let _recipe2Id: string;
 
   beforeEach(async () => {
     const suffix = Date.now();
@@ -50,7 +50,7 @@ describe("Meal Plan API", () => {
         steps: { create: [{ order: 0, instruction: "Step 1" }] },
       },
     });
-    recipe2Id = r2.id;
+    _recipe2Id = r2.id;
   });
 
   // ===================================

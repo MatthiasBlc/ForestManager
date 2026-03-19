@@ -69,9 +69,7 @@ const MealPlanSettings = ({ communityId, plan, onUpdated, onClose }: Props) => {
             max={100}
           />
           <label className="label">
-            <span className="label-text-alt text-base-content/60">
-              Applied to new slots
-            </span>
+            <span className="label-text-alt text-base-content/60">Applied to new slots</span>
           </label>
         </div>
 
@@ -101,11 +99,7 @@ const MealPlanSettings = ({ communityId, plan, onUpdated, onClose }: Props) => {
             onClick={handleSubmit}
             disabled={isSubmitting || !hasChanges}
           >
-            {isSubmitting ? (
-              <span className="loading loading-spinner loading-sm" />
-            ) : (
-              "Save"
-            )}
+            {isSubmitting ? <span className="loading loading-spinner loading-sm" /> : "Save"}
           </button>
         </div>
       </div>

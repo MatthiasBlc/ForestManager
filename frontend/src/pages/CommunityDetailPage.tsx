@@ -1,7 +1,15 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { FaArrowLeft, FaEdit, FaUsers, FaHistory, FaEnvelope, FaTags, FaCalendarAlt } from "react-icons/fa";
+import {
+  FaArrowLeft,
+  FaEdit,
+  FaUsers,
+  FaHistory,
+  FaEnvelope,
+  FaTags,
+  FaCalendarAlt,
+} from "react-icons/fa";
 import { CommunityDetail, CommunityMember } from "../models/community";
 import APIManager from "../network/api";
 import MembersList from "../components/communities/MembersList";

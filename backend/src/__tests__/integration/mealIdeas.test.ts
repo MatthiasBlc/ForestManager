@@ -11,7 +11,7 @@ describe("Meal Ideas API", () => {
   let memberCookie: string;
   let otherMember: { id: string };
   let otherMemberCookie: string;
-  let nonMember: { id: string };
+  let _nonMember: { id: string };
   let nonMemberCookie: string;
   let communityId: string;
   let recipeId: string;
@@ -94,7 +94,7 @@ describe("Meal Ideas API", () => {
         password: "Test123!Password",
       });
     nonMemberCookie = extractSessionCookie(nmSignup)!;
-    nonMember = (await testPrisma.user.findFirst({
+    _nonMember = (await testPrisma.user.findFirst({
       where: { email: `mi_nm_${nmSuffix}@example.com` },
     }))!;
 
@@ -343,9 +343,7 @@ describe("Meal Ideas API", () => {
 
     it("should return 404 for non-existent idea", async () => {
       const res = await request(app)
-        .patch(
-          `/api/communities/${communityId}/meal-ideas/00000000-0000-4000-8000-000000000000`
-        )
+        .patch(`/api/communities/${communityId}/meal-ideas/00000000-0000-4000-8000-000000000000`)
         .set("Cookie", memberCookie)
         .send({ name: "Test" });
 
@@ -410,9 +408,7 @@ describe("Meal Ideas API", () => {
 
     it("should return 404 for non-existent idea", async () => {
       const res = await request(app)
-        .delete(
-          `/api/communities/${communityId}/meal-ideas/00000000-0000-4000-8000-000000000000`
-        )
+        .delete(`/api/communities/${communityId}/meal-ideas/00000000-0000-4000-8000-000000000000`)
         .set("Cookie", memberCookie);
 
       expect(res.status).toBe(404);

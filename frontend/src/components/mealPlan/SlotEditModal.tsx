@@ -291,13 +291,13 @@ const SlotEditModal = ({ communityId, slot, isModerator, onSaved, onClose }: Pro
           <button
             className="btn btn-primary"
             onClick={handleSubmit}
-            disabled={isSubmitting || (!disabled && mode === "recipe" && !selectedRecipe) || (!disabled && mode === "freeText" && !freeText)}
+            disabled={
+              isSubmitting ||
+              (!disabled && mode === "recipe" && !selectedRecipe) ||
+              (!disabled && mode === "freeText" && !freeText)
+            }
           >
-            {isSubmitting ? (
-              <span className="loading loading-spinner loading-sm" />
-            ) : (
-              "Save"
-            )}
+            {isSubmitting ? <span className="loading loading-spinner loading-sm" /> : "Save"}
           </button>
         </div>
       </div>

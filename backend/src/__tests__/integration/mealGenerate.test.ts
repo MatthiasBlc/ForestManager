@@ -9,13 +9,13 @@ describe("Meal Generation API", () => {
   let moderatorCookie: string;
   let memberCookie: string;
   let communityId: string;
-  let recipe1Id: string;
-  let recipe2Id: string;
+  let _recipe1Id: string;
+  let _recipe2Id: string;
   let recipe3Id: string;
   let tag1Id: string;
   let tag2Id: string;
   let paramsId: string;
-  let planId: string;
+  let _planId: string;
 
   beforeEach(async () => {
     const suffix = Date.now();
@@ -43,7 +43,7 @@ describe("Meal Generation API", () => {
         tags: { create: [{ tagId: tag1Id }] },
       },
     });
-    recipe1Id = r1.id;
+    _recipe1Id = r1.id;
 
     const r2 = await testPrisma.recipe.create({
       data: {
@@ -54,7 +54,7 @@ describe("Meal Generation API", () => {
         tags: { create: [{ tagId: tag1Id }] },
       },
     });
-    recipe2Id = r2.id;
+    _recipe2Id = r2.id;
 
     const r3 = await testPrisma.recipe.create({
       data: {
@@ -82,7 +82,7 @@ describe("Meal Generation API", () => {
       .post(`/api/communities/${communityId}/meal-plan`)
       .set("Cookie", moderatorCookie)
       .send({ startDate: "2026-04-06", endDate: "2026-04-08", defaultServings: 4 });
-    planId = planRes.body.plan.id;
+    _planId = planRes.body.plan.id;
   });
 
   // ===================================

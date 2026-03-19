@@ -2,20 +2,15 @@ import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../../app";
 import { testPrisma } from "../setup/globalSetup";
-import {
-  createTestUser,
-  createTestCommunity,
-  createTestFeature,
-  extractSessionCookie,
-} from "../setup/testHelpers";
+import { createTestFeature, extractSessionCookie } from "../setup/testHelpers";
 
 describe("requireFeature middleware", () => {
-  let moderator: { id: string };
+  let _moderator: { id: string };
   let moderatorCookie: string;
   let member: { id: string };
-  let memberCookie: string;
+  let _memberCookie: string;
   let communityId: string;
-  let feature: { id: string; code: string };
+  let _feature: { id: string; code: string };
 
   beforeEach(async () => {
     // Creer moderateur via signup pour avoir une session
@@ -28,7 +23,7 @@ describe("requireFeature middleware", () => {
         password: "Test123!Password",
       });
     moderatorCookie = extractSessionCookie(modSignup)!;
-    moderator = (await testPrisma.user.findFirst({
+    _moderator = (await testPrisma.user.findFirst({
       where: { email: `feat_mod_${modSuffix}@example.com` },
     }))!;
 
@@ -48,7 +43,7 @@ describe("requireFeature middleware", () => {
         email: `feat_mem_${memSuffix}@example.com`,
         password: "Test123!Password",
       });
-    memberCookie = extractSessionCookie(memSignup)!;
+    _memberCookie = extractSessionCookie(memSignup)!;
     member = (await testPrisma.user.findFirst({
       where: { email: `feat_mem_${memSuffix}@example.com` },
     }))!;
@@ -59,7 +54,7 @@ describe("requireFeature middleware", () => {
     });
 
     // Creer feature MEAL_PLAN
-    feature = await createTestFeature({ code: `MEAL_PLAN_${modSuffix}` });
+    _feature = await createTestFeature({ code: `MEAL_PLAN_${modSuffix}` });
   });
 
   it("should return 403 when feature is not granted to the community", async () => {

@@ -223,9 +223,7 @@ const CreatePlanModal = ({ communityId, existingPlan, onCreated, onClose }: Prop
         {/* Preview grid */}
         {previewDays.length > 0 && (
           <div className="mb-6">
-            <h4 className="font-medium mb-2">
-              Preview (click to disable/enable slots)
-            </h4>
+            <h4 className="font-medium mb-2">Preview (click to disable/enable slots)</h4>
             <div className="overflow-x-auto">
               <table className="table table-sm">
                 <thead>
@@ -233,7 +231,9 @@ const CreatePlanModal = ({ communityId, existingPlan, onCreated, onClose }: Prop
                     <th />
                     {previewDays.map((day) => (
                       <th key={day.toISOString()} className="text-center">
-                        <div className="text-xs">{DAYS_OF_WEEK[day.getDay() === 0 ? 6 : day.getDay() - 1]}</div>
+                        <div className="text-xs">
+                          {DAYS_OF_WEEK[day.getDay() === 0 ? 6 : day.getDay() - 1]}
+                        </div>
                         <div className="text-xs text-base-content/60">
                           {day.getDate()}/{day.getMonth() + 1}
                         </div>
@@ -297,11 +297,7 @@ const CreatePlanModal = ({ communityId, existingPlan, onCreated, onClose }: Prop
             onClick={handleSubmit}
             disabled={isSubmitting || previewDays.length === 0}
           >
-            {isSubmitting ? (
-              <span className="loading loading-spinner loading-sm" />
-            ) : (
-              "Create Plan"
-            )}
+            {isSubmitting ? <span className="loading loading-spinner loading-sm" /> : "Create Plan"}
           </button>
         </div>
       </div>
