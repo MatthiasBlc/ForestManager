@@ -513,11 +513,81 @@ export async function createTestChangelogEntry(
 }
 
 // =====================================
-// Admin Login Helper
+// Meal Plan Test Factory
 // =====================================
 
 import supertest from "supertest";
 import app from "../../app";
+
+export interface MealTestContext {
+  moderator: { id: string };
+  moderatorCookie: string;
+  member: { id: string };
+  memberCookie: string;
+  communityId: string;
+}
+
+/**
+ * Creer un contexte de test complet pour les endpoints meal-plan / meal-generation.
+ * Cree: moderateur, communaute, feature MEAL_PLAN, membre.
+ */
+export async function createMealTestContext(prefix: string): Promise<MealTestContext> {
+  const suffix = Date.now();
+
+  // Moderateur
+  const modSignup = await supertest(app)
+    .post("/api/auth/signup")
+    .send({
+      username: `${prefix}_mod_${suffix}`,
+      email: `${prefix}_mod_${suffix}@example.com`,
+      password: "Test123!Password",
+    });
+  const moderatorCookie = extractSessionCookie(modSignup)!;
+  const moderator = (await testPrisma.user.findFirst({
+    where: { email: `${prefix}_mod_${suffix}@example.com` },
+  }))!;
+
+  // Communaute
+  const comRes = await supertest(app)
+    .post("/api/communities")
+    .set("Cookie", moderatorCookie)
+    .send({ name: `${prefix} Community ${suffix}` });
+  const communityId = comRes.body.id;
+
+  // Feature MEAL_PLAN (idempotent)
+  let mealPlanFeature = await testPrisma.feature.findFirst({ where: { code: "MEAL_PLAN" } });
+  if (!mealPlanFeature) {
+    mealPlanFeature = await testPrisma.feature.create({
+      data: { code: "MEAL_PLAN", name: "Planning de repas", isDefault: false },
+    });
+  }
+  await testPrisma.communityFeature.create({
+    data: { communityId, featureId: mealPlanFeature.id },
+  });
+
+  // Membre
+  const memSuffix = suffix + 1;
+  const memSignup = await supertest(app)
+    .post("/api/auth/signup")
+    .send({
+      username: `${prefix}_mem_${memSuffix}`,
+      email: `${prefix}_mem_${memSuffix}@example.com`,
+      password: "Test123!Password",
+    });
+  const memberCookie = extractSessionCookie(memSignup)!;
+  const member = (await testPrisma.user.findFirst({
+    where: { email: `${prefix}_mem_${memSuffix}@example.com` },
+  }))!;
+  await testPrisma.userCommunity.create({
+    data: { userId: member.id, communityId, role: "MEMBER" },
+  });
+
+  return { moderator, moderatorCookie, member, memberCookie, communityId };
+}
+
+// =====================================
+// Admin Login Helper
+// =====================================
 
 /**
  * Effectuer un login complet admin (password + TOTP) et retourner le cookie de session

@@ -23,6 +23,7 @@ const InvitationsPage = lazy(() => import("../pages/InvitationsPage"));
 const NotificationsPage = lazy(() => import("../pages/NotificationsPage"));
 const ProfilePage = lazy(() => import("../pages/ProfilePage"));
 const ChangelogPage = lazy(() => import("../pages/ChangelogPage"));
+const MealPlanPage = lazy(() => import("../pages/MealPlanPage"));
 
 function ProtectedPage({ children }: { children: React.ReactNode }) {
   return (
@@ -154,6 +155,16 @@ const userRoutes = (
         <ProtectedPage>
           <LazyPage>
             <RecipeFormPage />
+          </LazyPage>
+        </ProtectedPage>
+      }
+    />
+    <Route
+      path="/communities/:id/meal-plan"
+      element={
+        <ProtectedPage>
+          <LazyPage>
+            <MealPlanPage />
           </LazyPage>
         </ProtectedPage>
       }

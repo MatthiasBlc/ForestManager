@@ -42,54 +42,60 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 - Mocks: `__tests__/setup/mswHandlers.ts`
 - Utils: `__tests__/setup/testUtils.tsx`
 
-## Inventaire des tests (~826 backend + ~546 frontend = ~1372 tests)
+## Inventaire des tests (~1010 backend + ~546 frontend = ~1556 tests)
 
 ### Couverture (seuils CI)
 
 - Backend : 91.81% statements, 83.31% branches (seuil: 80%/70%)
 - Frontend : 66.44% statements, 76.31% branches (seuil: 50%/50%)
 
-### Backend Integration (35 fichiers, ~689 tests)
+### Backend Integration (39 fichiers, ~790 tests)
 
-| Fichier                     | Module                                                                        | Tests |
-| --------------------------- | ----------------------------------------------------------------------------- | ----- |
-| activity.test.ts            | Activity feed (community + personal)                                          | 15    |
-| auth.test.ts                | User signup/login/logout/me                                                   | 23    |
-| recipes.test.ts             | CRUD recettes (perso, steps/servings/times + validation)                      | 52    |
-| communityRecipes.test.ts    | CRUD recettes communautaires (+ tags scope-aware)                             | 35    |
-| proposals.test.ts           | Propositions modifications (steps/servings/times + proposedIngredients)       | 45    |
-| variants.test.ts            | Liste variantes recettes (+ servings/times)                                   | 11    |
-| tags.test.ts                | Autocomplete tags (scope-aware)                                               | 9     |
-| ingredients.test.ts         | Autocomplete ingredients + suggested-unit                                     | 5     |
-| communities.test.ts         | CRUD communautes                                                              | 27    |
-| invitations.test.ts         | Workflow invitations                                                          | 36    |
-| members.test.ts             | Membres: list, promote, kick, orphan handling                                 | 26    |
-| adminAuth.test.ts           | Auth 2FA admin                                                                | 15    |
-| adminTags.test.ts           | CRUD tags admin (+ scope filter)                                              | 17    |
-| adminIngredients.test.ts    | CRUD + approve/reject/merge ingredients admin + notifications                 | 35    |
-| adminUnits.test.ts          | CRUD units admin + user endpoint                                              | 28    |
-| adminFeatures.test.ts       | Features grant/revoke                                                         | 13    |
-| adminRecipes.test.ts        | Recipes admin (tag recipes, detail, update, delete)                           | 21    |
-| adminCommunities.test.ts    | Communities admin                                                             | 12    |
-| adminDashboard.test.ts      | Stats dashboard                                                               | 4     |
-| adminActivity.test.ts       | Logs activite                                                                 | 4     |
-| share.test.ts               | Partage inter-communautes + publish + sync steps/servings + fork tags         | 31    |
-| communityTags.test.ts       | CRUD + approve/reject tags communaute + permissions (T13)                     | 34    |
-| tagSuggestions.test.ts      | Suggestions de tags                                                           | 29    |
-| tagPreferences.test.ts      | Tag visibility + notification preferences + getModeratorIds                   | 23    |
-| notificationService.test.ts | Notification service (create, broadcast, preferences, templates)              | 30    |
-| notifications.test.ts       | Notifications API (CRUD, grouping, batch, preferences)                        | 28    |
-| websocket.test.ts           | WebSocket (auth, rooms, notification:new, notification:count, persistence)    | 8     |
-| notificationCleanup.test.ts | Notification cleanup job (retention, batch, edge cases)                       | 6     |
-| recipeImage.test.ts         | Recipe image upload endpoints (presigned URL, confirm, delete, permissions)   | 12    |
-| communityImage.test.ts      | Community image upload endpoints (presigned URL, confirm, delete, role-based) | 13    |
-| imageCleanup.test.ts        | Image cleanup cron (recipes, communities, retention, error resilience)        | 8     |
-| recipeImport.test.ts        | Recipe import endpoint (auth, validation, SSRF)                               | 6     |
-| adminChangelog.test.ts      | Admin changelog CRUD (list, create, update, delete, audit)                    | 17    |
-| changelog.test.ts           | User changelog endpoints (list, detail, auth, soft-delete filter)             | 7     |
-| users.test.ts               | User profile update (username, email, password)                               | 4     |
+| Fichier                      | Module                                                                        | Tests |
+| ---------------------------- | ----------------------------------------------------------------------------- | ----- |
+| activity.test.ts             | Activity feed (community + personal)                                          | 15    |
+| auth.test.ts                 | User signup/login/logout/me                                                   | 23    |
+| recipes.test.ts              | CRUD recettes (perso, steps/servings/times + validation)                      | 52    |
+| communityRecipes.test.ts     | CRUD recettes communautaires (+ tags scope-aware)                             | 35    |
+| proposals.test.ts            | Propositions modifications (steps/servings/times + proposedIngredients)       | 45    |
+| variants.test.ts             | Liste variantes recettes (+ servings/times)                                   | 11    |
+| tags.test.ts                 | Autocomplete tags (scope-aware)                                               | 9     |
+| ingredients.test.ts          | Autocomplete ingredients + suggested-unit                                     | 5     |
+| communities.test.ts          | CRUD communautes                                                              | 27    |
+| invitations.test.ts          | Workflow invitations                                                          | 36    |
+| members.test.ts              | Membres: list, promote, kick, orphan handling                                 | 26    |
+| adminAuth.test.ts            | Auth 2FA admin                                                                | 15    |
+| adminTags.test.ts            | CRUD tags admin (+ scope filter)                                              | 17    |
+| adminIngredients.test.ts     | CRUD + approve/reject/merge ingredients admin + notifications                 | 35    |
+| adminUnits.test.ts           | CRUD units admin + user endpoint                                              | 28    |
+| adminFeatures.test.ts        | Features grant/revoke                                                         | 13    |
+| adminRecipes.test.ts         | Recipes admin (tag recipes, detail, update, delete)                           | 21    |
+| adminCommunities.test.ts     | Communities admin                                                             | 12    |
+| adminDashboard.test.ts       | Stats dashboard                                                               | 4     |
+| adminActivity.test.ts        | Logs activite                                                                 | 4     |
+| share.test.ts                | Partage inter-communautes + publish + sync steps/servings + fork tags         | 31    |
+| communityTags.test.ts        | CRUD + approve/reject tags communaute + permissions (T13)                     | 34    |
+| tagSuggestions.test.ts       | Suggestions de tags                                                           | 29    |
+| tagPreferences.test.ts       | Tag visibility + notification preferences + getModeratorIds                   | 23    |
+| notificationService.test.ts  | Notification service (create, broadcast, preferences, templates)              | 30    |
+| notifications.test.ts        | Notifications API (CRUD, grouping, batch, preferences)                        | 28    |
+| websocket.test.ts            | WebSocket (auth, rooms, notification:new, notification:count, persistence)    | 8     |
+| notificationCleanup.test.ts  | Notification cleanup job (retention, batch, edge cases)                       | 6     |
+| recipeImage.test.ts          | Recipe image upload endpoints (presigned URL, confirm, delete, permissions)   | 12    |
+| communityImage.test.ts       | Community image upload endpoints (presigned URL, confirm, delete, role-based) | 13    |
+| imageCleanup.test.ts         | Image cleanup cron (recipes, communities, retention, error resilience)        | 8     |
+| recipeImport.test.ts         | Recipe import endpoint (auth, validation, SSRF)                               | 6     |
+| adminChangelog.test.ts       | Admin changelog CRUD (list, create, update, delete, audit)                    | 17    |
+| changelog.test.ts            | User changelog endpoints (list, detail, auth, soft-delete filter)             | 7     |
+| requireFeature.test.ts       | requireFeature middleware (generic feature guard)                             | 3     |
+| mealPlan.test.ts             | Meal plan CRUD, slots, swap, archives, permissions, feature guard             | 39    |
+| mealIdeas.test.ts            | Meal ideas CRUD, permissions, feature guard                                   | 25    |
+| mealGenerationParams.test.ts | Generation params CRUD, isDefault, permissions                                | 26    |
+| mealGenerationRules.test.ts  | Exclusions, rules, pins CRUD + validations                                    | 35    |
+| mealGenerate.test.ts         | Generate plan, replace slot, hasDefaultGenerationParams, permissions          | 17    |
+| users.test.ts                | User profile update (username, email, password)                               | 4     |
 
-### Backend Unit (10 fichiers, ~137 tests)
+### Backend Unit (11 fichiers, ~168 tests)
 
 | Fichier                              | Module                                                                                   | Tests |
 | ------------------------------------ | ---------------------------------------------------------------------------------------- | ----- |
@@ -103,6 +109,7 @@ npx vitest run src/__tests__/unit/NomFichier.test.tsx  # Un seul fichier
 | middleware/csrf.test.ts              | CSRF protection middleware                                                               | 2     |
 | storageService.test.ts               | S3/MinIO service (presigned URL, head, delete, validate)                                 | 10    |
 | recipeImportService.test.ts          | Recipe import (URL validation, SSRF, JSON-LD parsing, ingredient parsing)                | 48    |
+| mealGeneration.test.ts               | Meal generation algorithm (weighted random, cooldowns, frequency, pins)                  | 31    |
 
 ### Frontend Unit (76 fichiers, ~546 tests)
 

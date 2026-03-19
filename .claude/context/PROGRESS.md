@@ -24,15 +24,18 @@ Phases 0 a 17 terminees (tags rework, ingredients rework, notifications, recipe 
 - **Spec** : `docs/features/e2e-testing/SPEC_E2E_TESTING.md`
 - **Roadmap** : `docs/features/e2e-testing/ROADMAP.md`
 
-## Feature specifiee : Meal Plan
+## Feature terminee : Meal Plan (Planning Manuel)
 
-- **Feature 1 — Planning Manuel**
-  - Spec : `docs/features/meal-plan/SPEC_MEAL_PLAN.md`
-  - Roadmap : `docs/features/meal-plan/ROADMAP.md`
-- **Feature 2 — Generation Automatique**
-  - Spec : `docs/features/meal-plan/SPEC_MEAL_GENERATION.md`
-  - Roadmap : `docs/features/meal-plan/ROADMAP_GENERATION.md`
-- Statut : specs validees, pret pour implementation (Feature 1 d'abord)
+- **Spec** : `docs/features/meal-plan/SPEC_MEAL_PLAN.md`
+- **Roadmap** : `docs/features/meal-plan/ROADMAP.md`
+- Phases 1-13 terminees (modeles, API backend, frontend complet)
+
+## Feature en cours : Meal Generation (Automatique)
+
+- **Spec** : `docs/features/meal-plan/SPEC_MEAL_GENERATION.md`
+- **Roadmap** : `docs/features/meal-plan/ROADMAP_GENERATION.md`
+- Phases 1-11 terminees (modeles, API, algorithme, frontend complet incl. mobile)
+- Phase 12 en cours (docs & contexte)
 
 ## Idees futures
 

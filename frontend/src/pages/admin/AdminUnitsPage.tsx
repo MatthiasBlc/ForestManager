@@ -6,6 +6,7 @@ import { useConfirm } from "../../hooks/useConfirm";
 import DataContainer from "../../components/DataContainer";
 import { useAsyncData } from "../../hooks/useAsyncData";
 import toast from "react-hot-toast";
+import { toastError } from "../../utils/toastError";
 
 type UnitSortColumn = "name" | "abbreviation" | "category" | "sortOrder" | "usageCount";
 type SortDirection = "asc" | "desc";
@@ -143,7 +144,7 @@ function AdminUnitsPage() {
       setModalOpen(false);
       loadUnits();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save unit");
+      toastError(err, "Failed to save unit");
     } finally {
       setSaving(false);
     }
@@ -162,7 +163,7 @@ function AdminUnitsPage() {
       toast.success("Unit deleted");
       loadUnits();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete unit");
+      toastError(err, "Failed to delete unit");
     }
   }
 
