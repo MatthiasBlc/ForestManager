@@ -81,7 +81,7 @@ const MealPlanGrid = ({
 
     // Fill in slots
     for (const slot of plan.slots) {
-      const dateStr = slot.date;
+      const dateStr = slot.date.split("T")[0];
       const existing = slotsByDate.get(dateStr);
       if (existing) {
         if (slot.mealTime === "LUNCH") {
