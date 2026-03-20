@@ -112,7 +112,9 @@ const CreatePlanModal = ({ communityId, existingPlan, onCreated, onClose }: Prop
         endDate,
         defaultServings,
         disabledSlots: Array.from(disabledSlots).map((key) => {
-          const [date, mealTime] = key.split("-") as [string, MealTime];
+          const lastDash = key.lastIndexOf("-");
+          const date = key.substring(0, lastDash);
+          const mealTime = key.substring(lastDash + 1) as MealTime;
           return { date, mealTime };
         }),
         copyDisabledFromPrevious: false, // We handle this client-side
