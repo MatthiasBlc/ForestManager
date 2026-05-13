@@ -77,31 +77,31 @@ a passer apres le remplacement par fetch — c'est le filet de securite.
 
 Fichier : `src/__tests__/unit/network/apiClient.test.ts`
 
-- [ ] `apiFetch` envoie bien `credentials: "include"` sur chaque requete
-- [ ] `apiFetch` prefixe l'URL avec `VITE_BACKEND_URL`
-- [ ] `apiFetch` envoie le header `Content-Type: application/json`
-- [ ] `apiFetch` lit le cookie `XSRF-TOKEN` et l'injecte dans `X-XSRF-TOKEN`
-- [ ] `apiFetch` ne plante pas si le cookie `XSRF-TOKEN` est absent
-- [ ] `apiFetch` leve une `ApiError` sur status >= 400 (avec `status` et `message` corrects)
-- [ ] `apiFetch` retourne `{ data }` parse en JSON sur status 2xx
-- [ ] `apiFetch` retourne `{ data: undefined }` sur status 204 sans appeler `.json()`
+- [x] `apiFetch` envoie bien `credentials: "include"` sur chaque requete
+- [x] `apiFetch` prefixe l'URL avec `VITE_BACKEND_URL`
+- [x] `apiFetch` envoie le header `Content-Type: application/json`
+- [x] `apiFetch` lit le cookie `XSRF-TOKEN` et l'injecte dans `X-XSRF-TOKEN`
+- [x] `apiFetch` ne plante pas si le cookie `XSRF-TOKEN` est absent
+- [x] `apiFetch` leve une `ApiError` sur status >= 400 (avec `status` et `message` corrects)
+- [x] `apiFetch` retourne `{ data }` parse en JSON sur status 2xx
+- [x] `apiFetch` retourne `{ data: undefined }` sur status 204 sans appeler `.json()`
 
 ### 5b — Tests unitaires `handleApiError` / `handleApiErrorWith`
 
 Fichier : `src/__tests__/unit/network/apiClient.test.ts` (meme fichier)
 
-- [ ] `handleApiError` leve `UnauthorizedError` sur 401
-- [ ] `handleApiError` leve `ConflictError` sur 409
-- [ ] `handleApiError` leve une `Error` generique sur autre status (avec le message du body)
-- [ ] `handleApiError` leve `Error("Network error...")` si pas de response
-- [ ] `handleApiErrorWith` applique l'override sur le status specifie
-- [ ] `handleApiErrorWith` tombe en fallback sur `handleApiError` si status non override
+- [x] `handleApiError` leve `UnauthorizedError` sur 401
+- [x] `handleApiError` leve `ConflictError` sur 409
+- [x] `handleApiError` leve une `Error` generique sur autre status (avec le message du body)
+- [x] `handleApiError` leve `Error("Network error...")` si pas de response
+- [x] `handleApiErrorWith` applique l'override sur le status specifie
+- [x] `handleApiErrorWith` tombe en fallback sur `handleApiError` si status non override
 
 ### 5c — Test du cas special 410 dans `removeMember`
 
 Fichier : `src/__tests__/unit/network/apiClient.test.ts` ou test dedie
 
-- [ ] Le handler inline de `removeMember` retourne correctement sur status 410 (sans lever d'erreur)
+- [x] Le handler inline de `removeMember` retourne correctement sur status 410 (sans lever d'erreur)
 
 ---
 
