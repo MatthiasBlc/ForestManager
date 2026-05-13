@@ -24,6 +24,11 @@ controllers/
 ├── tagSuggestions.ts  # create, accept, reject tag suggestions
 ├── tags.ts            # autocomplete tags (scope-aware)
 ├── ingredients.ts     # autocomplete ingredients + suggested-unit
+├── changelog.ts       # getAll, getById (user-facing)
+├── mealPlan.ts        # getActivePlan, createPlan, deletePlan, updatePlan, updateSlot, swapSlots, getArchives, getArchiveDetail, deleteArchive
+├── mealGeneration.ts  # generatePlan, replaceSlot
+├── mealIdeas.ts       # listIdeas, createIdea, updateIdea, deleteIdea
+├── mealGenerationParams.ts # listParams, createParams, getParamsDetail, updateParams, deleteParams
 ├── units.ts           # list units grouped by category
 └── users.ts           # search users, update profile
 ```
@@ -38,6 +43,10 @@ routes/
 ├── proposals.ts       # /api/proposals/:id, /api/proposals/:id/accept|reject
 ├── recipes.ts         # /api/recipes/* (incl. /api/recipes/:id/proposals)
 ├── tagSuggestions.ts  # /api/tag-suggestions/*
+├── changelog.ts       # /api/changelog
+├── mealPlan.ts        # /api/communities/:id/meal-plan (feature-gated)
+├── mealIdeas.ts       # /api/communities/:id/meal-ideas (feature-gated)
+├── mealGenerationParams.ts # /api/communities/:id/meal-generation-params (feature-gated)
 ├── tags.ts            # /api/tags
 ├── ingredients.ts     # /api/ingredients
 ├── units.ts           # /api/units
@@ -50,6 +59,7 @@ routes/
 middleware/
 ├── auth.ts            # requireAuth (verifie session.userId)
 ├── community.ts       # memberOf, requireCommunityRole
+├── requireFeature.ts  # requireFeature(code) — verifie feature activee pour communaute
 ├── httpLogger.ts      # pino-http middleware (remplace morgan)
 ├── security.ts        # helmet, CORS, rate limiting
 ├── csrf.ts            # CSRF protection middleware
@@ -69,6 +79,7 @@ admin/
 │   ├── ingredientsController.ts  # CRUD + merge + approve/reject ingredients
 │   ├── unitsController.ts        # CRUD units (+ usage protection)
 │   ├── featuresController.ts     # CRUD features
+│   ├── changelogController.ts    # CRUD changelog entries
 │   ├── dashboardController.ts    # stats globales
 │   └── activityController.ts     # logs activite admin
 ├── routes/
@@ -79,6 +90,7 @@ admin/
 │   ├── ingredientsRoutes.ts
 │   ├── unitsRoutes.ts
 │   ├── featuresRoutes.ts
+│   ├── changelogRoutes.ts
 │   ├── dashboardRoutes.ts
 │   └── activityRoutes.ts
 └── middleware/
@@ -100,6 +112,8 @@ services/
 ├── recipeImportService.ts # importFromUrl, parseIngredientLine, parseIsoDuration (JSON-LD extraction)
 ├── tagSuggestionService.ts # create, accept, reject tag suggestions
 ├── storageService.ts  # MinIO/S3 : presigned URL, headObject, deleteObject, validateUploadedFile
+├── mealGeneration.ts  # Algorithme generation planning (passe principale, rattrapage, rapport)
+├── mealGenerationService.ts # DB helpers (loadGenerationParams, buildPool, buildPreviousSlots, slotsToSlotInfo)
 ├── eventEmitter.ts    # AppEventEmitter singleton (emit activity events)
 └── socketServer.ts    # Socket.IO server init, auth, rooms, notification persistence
 ```
@@ -118,7 +132,7 @@ util/
 ├── logger.ts          # Logger Pino central (silent test, pretty dev, JSON prod)
 ├── pagination.ts      # parsePagination, buildPaginationMeta
 ├── validation.ts      # normalizeNames, isValidHttpUrl, regex constants, validateServings, validateTime, validateSteps
-├── responseFormatters.ts # formatTags, formatIngredients, formatSteps
+├── responseFormatters.ts # formatTags, formatIngredients, formatSteps, formatDeletedRelation
 ├── prismaSelects.ts   # RECIPE_TAGS_SELECT, RECIPE_STEPS_SELECT, PROPOSAL_STEPS_SELECT, PROPOSAL_INGREDIENTS_SELECT
 ├── db.ts              # Prisma client singleton
 └── validateEnv.ts     # envalid env vars
@@ -126,7 +140,8 @@ jobs/
 ├── notificationCleanup.ts # Cron daily cleanup read notifications > 30 days
 └── imageCleanup.ts    # Cron daily 3h30 cleanup orphan images (soft-deleted > 7 days)
 scripts/
-└── createAdmin.ts     # CLI creation SuperAdmin
+├── createAdmin.ts     # CLI creation SuperAdmin
+└── insertChangelog.ts # CLI insert changelog entry (Portainer exec from CI)
 ```
 
 ### Tests backend
@@ -135,7 +150,7 @@ scripts/
 __tests__/
 ├── setup/
 │   ├── globalSetup.ts    # Setup DB test
-│   └── testHelpers.ts    # createTestUser, cleanupTestData, etc.
+│   └── testHelpers.ts    # createTestUser, cleanupTestData, createMealTestContext, etc.
 ├── unit/
 │   ├── eventEmitter.test.ts       # Event emitter unit tests
 │   ├── pagination.test.ts         # Pagination utils
@@ -181,6 +196,14 @@ __tests__/
     ├── recipeImage.test.ts        # Recipe image upload endpoints
     ├── communityImage.test.ts     # Community image upload endpoints
     ├── imageCleanup.test.ts       # Image cleanup cron job
+    ├── adminChangelog.test.ts     # Admin changelog CRUD (17 tests)
+    ├── changelog.test.ts          # User changelog endpoints (7 tests)
+    ├── requireFeature.test.ts     # requireFeature middleware (3 tests)
+    ├── mealPlan.test.ts           # Meal plan CRUD, slots, swap, archives, permissions (39 tests)
+    ├── mealIdeas.test.ts          # Meal ideas CRUD, permissions (25 tests)
+    ├── mealGenerationParams.test.ts # Generation params CRUD, isDefault, permissions (26 tests)
+    ├── mealGenerationRules.test.ts  # Exclusions, rules, pins CRUD + validations (35 tests)
+    ├── mealGenerate.test.ts       # Generate plan, replace slot, hasDefaultGenerationParams (17 tests)
     └── users.test.ts              # User profile update
 ```
 
@@ -206,6 +229,8 @@ pages/
 ├── ProfilePage.tsx           # Profil utilisateur (edit username/email/password)
 ├── SignUpPage.tsx            # Inscription
 ├── PrivacyPage.tsx           # Politique confidentialite
+├── ChangelogPage.tsx         # Page changelog user (cartes, pagination)
+├── MealPlanPage.tsx          # Page planning repas (creation, grille, archives, idees)
 ├── NotFoundPage.tsx          # 404
 └── admin/
     ├── AdminLoginPage.tsx         # Login admin 2FA
@@ -215,6 +240,7 @@ pages/
     ├── AdminUnitsPage.tsx         # CRUD units (category filter, sortOrder)
     ├── AdminFeaturesPage.tsx      # CRUD features (code, name, isDefault)
     ├── AdminCommunitiesPage.tsx   # Liste, detail, delete, grant/revoke features
+    ├── AdminChangelogPage.tsx     # CRUD changelog admin (table, modals)
     └── AdminActivityPage.tsx      # Logs activite admin paginee
 ```
 
@@ -283,6 +309,19 @@ components/
 ├── ImagePicker.tsx           # Selection image pour creation (preview, processImage)
 ├── ImportRecipeModal.tsx     # Modal import recette (texte brut ou URL)
 ├── AddEditRecipeDialog.tsx   # Dialog creation/edition
+├── mealPlan/
+│   ├── CreatePlanModal.tsx       # Modal creation plan (dates, servings, preview)
+│   ├── MealPlanGrid.tsx          # Grille planning (desktop + mobile, lock toggle)
+│   ├── MealPlanSettings.tsx      # Modal parametres plan
+│   ├── SlotEditModal.tsx         # Modal edition slot
+│   ├── MealPlanArchives.tsx      # Onglet archives
+│   ├── MealIdeasPanel.tsx        # Onglet idees de repas
+│   ├── GenerationParamsPanel.tsx # Onglet parametres generation (list + detail)
+│   ├── ParamsFormModal.tsx       # Modal creation/edition jeu de params
+│   ├── ExclusionPinGrid.tsx      # Grilles 7x2 exclusions + pins tag (mobile: cards verticales)
+│   ├── RulesEditor.tsx           # Edition inline regles tag + recette (CRUD, slider poids, frequence)
+│   ├── GenerateModal.tsx         # Modal generation (selecteur params, fillEmptyOnly, confirmation)
+│   └── GenerationReportPanel.tsx # Affichage rapport post-generation (stats, warnings)
 ├── ErrorBoundary.tsx         # Error boundary React (crash → fallback UI)
 ├── LoginModal.tsx            # Modal login
 ├── Modal.tsx                 # Composant modal generique
@@ -317,7 +356,9 @@ models/
 ├── community.ts              # Community, Member, Invite types
 ├── preferences.ts            # TagPreference types
 ├── notification.ts           # Notification, NotificationCategory, preferences types
-└── admin.ts                  # AdminUser types
+├── changelog.ts              # ChangelogEntry, ChangelogContent, ChangelogResponse types
+├── mealPlan.ts               # MealPlan, MealSlot, MealIdea, API input/response types
+└── admin.ts                  # AdminUser types (incl. AdminChangelogEntry)
 ```
 
 ### Autres frontend
@@ -394,6 +435,7 @@ __tests__/
     │   ├── RecipesPage.test.tsx
     │   ├── RecipeFormPage.test.tsx
     │   ├── RecipeDetailPage.mobile.test.tsx  # Mobile rework Phase 3 (4 tests)
+    │   ├── ChangelogPage.test.tsx
     │   ├── SignUpPage.test.tsx
     │   └── admin/
     │       ├── AdminLoginPage.test.tsx
@@ -403,6 +445,7 @@ __tests__/
     │       ├── AdminUnitsPage.test.tsx
     │       ├── AdminFeaturesPage.test.tsx
     │       ├── AdminCommunitiesPage.test.tsx
+    │       ├── AdminChangelogPage.test.tsx
     │       └── AdminActivityPage.test.tsx
     ├── services/
     │   └── recipeParser.test.ts   # Parsing texte brut recette (65 tests)
@@ -464,7 +507,8 @@ docker-compose.yml            # Dev (postgres, backend:3001, frontend:3000)
 docker-compose.test.yml       # DB test (postgres:5433, tmpfs)
 docker-compose.prod.yml       # Production
 docker-compose.preprod.yml    # Pre-production
-.github/workflows/deploy.yml  # CI/CD (test → build → deploy)
+scripts/generate-changelog.js # Parse conventional commits → JSON changelog (CI)
+.github/workflows/deploy.yml  # CI/CD (test → build → deploy → changelog)
 .env.example                  # Variables d'environnement
 package.json                  # Scripts racine (docker, test)
 ```

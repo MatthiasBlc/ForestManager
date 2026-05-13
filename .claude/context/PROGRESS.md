@@ -14,10 +14,34 @@ Phases 0 a 17 terminees (tags rework, ingredients rework, notifications, recipe 
 - **Spec** : `docs/features/recipe-import/SPEC_RECIPE_IMPORT.md`
 - **Roadmap** : `docs/features/recipe-import/ROADMAP.md`
 
+## Feature terminee : Changelog Automatique (Phases 1-8)
+
+- **Spec** : `docs/features/changelog/SPEC_CHANGELOG.md`
+- **Roadmap** : `docs/features/changelog/ROADMAP.md`
+
 ## Feature planifiee : E2E Testing
 
 - **Spec** : `docs/features/e2e-testing/SPEC_E2E_TESTING.md`
 - **Roadmap** : `docs/features/e2e-testing/ROADMAP.md`
+
+## Feature terminee : Meal Plan (Planning Manuel)
+
+- **Spec** : `docs/features/meal-plan/SPEC_MEAL_PLAN.md`
+- **Roadmap** : `docs/features/meal-plan/ROADMAP.md`
+- Phases 1-13 terminees (modeles, API backend, frontend complet)
+
+## Feature terminee : Meal Generation (Automatique)
+
+- **Spec** : `docs/features/meal-plan/SPEC_MEAL_GENERATION.md`
+- **Roadmap** : `docs/features/meal-plan/ROADMAP_GENERATION.md`
+- Phases 1-12 terminees
+
+## Feature terminee : Nettoyage dependances (Phases 1-7)
+
+- **Spec** : `docs/features/deps-cleanup/SPEC_DEPS_CLEANUP.md`
+- **Roadmap** : `docs/features/deps-cleanup/ROADMAP.md`
+- Phases 1-6 terminees : classnames, usehooks-ts, @types/helmet, read, envalid supprimes ; axios remplace par fetch natif
+- Reste : tests manuels (login/logout, recettes, upload, CSRF, erreurs 401/409)
 
 ## Idees futures
 

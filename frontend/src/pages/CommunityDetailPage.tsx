@@ -1,7 +1,15 @@
 import { useEffect, useState, useCallback } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams, Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { FaArrowLeft, FaEdit, FaUsers, FaHistory, FaEnvelope, FaTags } from "react-icons/fa";
+import {
+  FaArrowLeft,
+  FaEdit,
+  FaUsers,
+  FaHistory,
+  FaEnvelope,
+  FaTags,
+  FaCalendarAlt,
+} from "react-icons/fa";
 import { CommunityDetail, CommunityMember } from "../models/community";
 import APIManager from "../network/api";
 import MembersList from "../components/communities/MembersList";
@@ -162,6 +170,28 @@ const CommunityDetailPage = () => {
             </div>
           </div>
           <div className={`flex items-center ${isMobile ? "flex-wrap gap-2" : "gap-1"}`}>
+            {/* Meal Plan button */}
+            {isMobile ? (
+              <Link
+                to={`/communities/${community.id}/meal-plan`}
+                className="btn btn-ghost btn-sm gap-1 min-h-[44px]"
+                aria-label="Meal Plan"
+              >
+                <FaCalendarAlt className="w-4 h-4" />
+                Meals
+              </Link>
+            ) : (
+              <div className="tooltip tooltip-bottom" data-tip="Meal Plan">
+                <Link
+                  to={`/communities/${community.id}/meal-plan`}
+                  className="btn btn-ghost btn-sm btn-circle"
+                  aria-label="Meal Plan"
+                >
+                  <FaCalendarAlt className="w-4 h-4" />
+                </Link>
+              </div>
+            )}
+
             {/* Members button */}
             {isMobile ? (
               <button

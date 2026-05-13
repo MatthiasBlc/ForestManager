@@ -42,9 +42,9 @@ MVP complet (phases 0-17). Voir `.claude/context/PROGRESS.md` pour les features 
 
 ## Codes erreur
 
-**User API** : AUTH_001-012 | USER_001 | COMMUNITY_001-006 | RECIPE_001-009 | INVITE_001-006 | MEMBER_001-004 | PROPOSAL_001-004 | SHARE_001-006 | PUBLISH_001-003 | TAG_001-007 | INGREDIENT_003 | NOTIF_001-005 | IMPORT_001-003 | VALIDATION_001
+**User API** : AUTH_001-012 | USER_001 | COMMUNITY_001-006 | RECIPE_001-009 | INVITE_001-006 | MEMBER_001-004 | PROPOSAL_001-004 | SHARE_001-006 | PUBLISH_001-003 | TAG_001-007 | INGREDIENT_003 | NOTIF_001-005 | IMPORT_001-003 | VALIDATION_001 | MEAL_001-013
 
-**Admin API** : ADMIN_001-011 | ADMIN_TAG_001-006 | ADMIN_ING_001-009 | ADMIN_UNIT_001-007 | ADMIN_REC_001-003 | ADMIN_COM_001-003 | ADMIN_FEAT_001-006
+**Admin API** : ADMIN_001-011 | ADMIN_TAG_001-006 | ADMIN_ING_001-009 | ADMIN_UNIT_001-007 | ADMIN_REC_001-003 | ADMIN_COM_001-003 | ADMIN_FEAT_001-006 | CHANGELOG_001-004
 
 ## Regle: maintenir `.claude/` a jour
 
@@ -87,8 +87,18 @@ docs/
     mobile-rework/                    # EN COURS
       SPEC_MOBILE_REWORK.md
       ROADMAP.md
-    e2e-testing/                      # PLANIFIE
+    changelog/                          # SPEC DONE
+      SPEC_CHANGELOG.md
+    e2e-testing/                        # PLANIFIE
       SPEC_E2E_TESTING.md
+      ROADMAP.md
+    meal-plan/                          # SPEC DONE
+      SPEC_MEAL_PLAN.md
+      ROADMAP.md
+      SPEC_MEAL_GENERATION.md
+      ROADMAP_GENERATION.md
+    deps-cleanup/                       # PLANIFIE
+      SPEC_DEPS_CLEANUP.md
       ROADMAP.md
 ```
 
@@ -110,9 +120,20 @@ Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une 
 | **Feature : Mobile Rework**         |                                                                     |
 | Spec Mobile Rework                  | `docs/features/mobile-rework/SPEC_MOBILE_REWORK.md`                 |
 | Roadmap Mobile Rework               | `docs/features/mobile-rework/ROADMAP.md`                            |
+| **Feature : Changelog**             |                                                                     |
+| Spec Changelog                      | `docs/features/changelog/SPEC_CHANGELOG.md`                         |
+| Roadmap Changelog                   | `docs/features/changelog/ROADMAP.md`                                |
 | **Feature : E2E Testing**           |                                                                     |
 | Spec E2E Testing                    | `docs/features/e2e-testing/SPEC_E2E_TESTING.md`                     |
 | Roadmap E2E Testing                 | `docs/features/e2e-testing/ROADMAP.md`                              |
+| **Feature : Meal Plan**             |                                                                     |
+| Spec Meal Plan                      | `docs/features/meal-plan/SPEC_MEAL_PLAN.md`                         |
+| Roadmap Meal Plan                   | `docs/features/meal-plan/ROADMAP.md`                                |
+| Spec Meal Generation                | `docs/features/meal-plan/SPEC_MEAL_GENERATION.md`                   |
+| Roadmap Meal Generation             | `docs/features/meal-plan/ROADMAP_GENERATION.md`                     |
+| **Feature : Deps Cleanup**          |                                                                     |
+| Spec Deps Cleanup                   | `docs/features/deps-cleanup/SPEC_DEPS_CLEANUP.md`                   |
+| Roadmap Deps Cleanup                | `docs/features/deps-cleanup/ROADMAP.md`                             |
 | **Specs features (reference)**      |                                                                     |
 | Tags Rework                         | `docs/features/tags-rework/SPEC_TAGS_REWORK.md`                     |
 | Ingredients Rework                  | `docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md`       |

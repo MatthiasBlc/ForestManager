@@ -155,6 +155,15 @@ PUT   /api/notifications/preferences        # update preference (category, enabl
 
 Controller: `controllers/notifications.ts` | Route: `routes/notifications.ts`
 
+## Changelog (/api/changelog) - requireAuth
+
+```
+GET /api/changelog/            # list paginated (publishedAt desc, deletedAt: null)
+GET /api/changelog/:id         # detail (deletedAt: null)
+```
+
+Controller: `controllers/changelog.ts` | Route: `routes/changelog.ts`
+
 ## User Invitations
 
 ```
@@ -200,6 +209,58 @@ POST /api/recipes/:recipeId/tag-suggestions   # suggerer un tag (membre, pas own
 ```
 
 Controller: `controllers/tagSuggestions.ts` | Route: `routes/recipes.ts`
+
+## Meal Plan (/api/communities/:communityId/meal-plan) - memberOf + requireFeature('MEAL_PLAN')
+
+```
+GET    /api/communities/:communityId/meal-plan                     # plan ACTIVE + slots (memberOf)
+POST   /api/communities/:communityId/meal-plan                     # creer plan + slots (MODERATOR)
+DELETE /api/communities/:communityId/meal-plan                     # supprimer plan ACTIVE (MODERATOR)
+PATCH  /api/communities/:communityId/meal-plan                     # update settings (MODERATOR)
+POST   /api/communities/:communityId/meal-plan/generate             # generer le planning (MODERATOR)
+PATCH  /api/communities/:communityId/meal-plan/slots/:slotId       # update slot (permission dynamique)
+POST   /api/communities/:communityId/meal-plan/slots/:slotId/replace # re-generer 1 slot (MODERATOR)
+POST   /api/communities/:communityId/meal-plan/slots/swap          # swap 2 slots (permission dynamique)
+GET    /api/communities/:communityId/meal-plan/archives            # liste archives paginee (memberOf)
+GET    /api/communities/:communityId/meal-plan/archives/:planId    # detail archive + slots (memberOf)
+DELETE /api/communities/:communityId/meal-plan/archives/:planId    # supprimer archive (MODERATOR)
+```
+
+Controller: `controllers/mealPlan.ts` | Route: `routes/mealPlan.ts`
+Middleware: `middleware/requireFeature.ts`
+Error codes: MEAL_001-013, MEAL_GEN_001-013
+
+## Meal Ideas (/api/communities/:communityId/meal-ideas) - memberOf + requireFeature('MEAL_PLAN')
+
+```
+GET    /api/communities/:communityId/meal-ideas              # liste paginee, ?search= (memberOf)
+POST   /api/communities/:communityId/meal-ideas              # creer idee (memberOf)
+PATCH  /api/communities/:communityId/meal-ideas/:ideaId      # modifier (createur ou MODERATOR)
+DELETE /api/communities/:communityId/meal-ideas/:ideaId      # soft delete (createur ou MODERATOR)
+```
+
+Controller: `controllers/mealIdeas.ts` | Route: `routes/mealIdeas.ts`
+
+---
+
+## Meal Generation Params (/api/communities/:communityId/meal-generation-params) - memberOf + requireFeature('MEAL_PLAN')
+
+```
+GET    /api/communities/:communityId/meal-generation-params              # liste (memberOf)
+POST   /api/communities/:communityId/meal-generation-params              # creer (MODERATOR)
+GET    /api/communities/:communityId/meal-generation-params/:paramsId    # detail + exclusions + regles + pins (memberOf)
+PATCH  /api/communities/:communityId/meal-generation-params/:paramsId    # modifier (MODERATOR)
+DELETE /api/communities/:communityId/meal-generation-params/:paramsId    # soft delete (MODERATOR)
+PUT    .../:paramsId/exclusions                                          # set complet exclusions (MODERATOR)
+GET    .../:paramsId/rules                                               # liste regles (memberOf)
+POST   .../:paramsId/rules                                               # ajouter regle (MODERATOR)
+PATCH  .../:paramsId/rules/:ruleId                                       # modifier regle (MODERATOR)
+DELETE .../:paramsId/rules/:ruleId                                       # supprimer regle (MODERATOR, hard delete)
+PUT    .../:paramsId/pins                                                # set complet pins (MODERATOR)
+```
+
+Controller: `controllers/mealGenerationParams.ts` | Route: `routes/mealGenerationParams.ts`
+Error codes: MEAL_GEN_001, MEAL_GEN_003-006, MEAL_GEN_009-012
 
 ---
 
@@ -286,6 +347,18 @@ PATCH /api/admin/features/:id       # update
 
 Controller: `admin/controllers/featuresController.ts` | Route: `admin/routes/featuresRoutes.ts`
 
+## Admin Changelog (/api/admin/changelog) - requireSuperAdmin
+
+```
+GET    /api/admin/changelog/          # list paginated (?includeDeleted=true)
+POST   /api/admin/changelog/          # create (version, title, content, publishedAt?)
+PATCH  /api/admin/changelog/:id       # update (version?, title?, content?, publishedAt?)
+DELETE /api/admin/changelog/:id       # soft delete
+```
+
+Controller: `admin/controllers/changelogController.ts` | Route: `admin/routes/changelogRoutes.ts`
+Error codes: CHANGELOG_001-004
+
 ## Admin Dashboard & Activity - requireSuperAdmin
 
 ```
@@ -299,15 +372,16 @@ Controllers: `admin/controllers/dashboardController.ts`, `admin/controllers/acti
 
 ## Middleware Chain
 
-| Middleware           | Fichier                               | Role                                   |
-| -------------------- | ------------------------------------- | -------------------------------------- |
-| userSession          | app.ts (express-session)              | Session user (connect.sid)             |
-| adminSession         | app.ts (express-session)              | Session admin (admin.sid)              |
-| requireAuth          | middleware/auth.ts                    | Verifie session.userId                 |
-| requireSuperAdmin    | admin/middleware/requireSuperAdmin.ts | Verifie session.adminId + totpVerified |
-| memberOf             | middleware/community.ts               | Verifie appartenance communaute        |
-| requireCommunityRole | middleware/community.ts               | Verifie role dans communaute           |
-| adminRateLimiter     | middleware/security.ts                | 30 req/min global admin                |
-| authRateLimiter      | routes config                         | 5/15min sur auth endpoints             |
+| Middleware           | Fichier                               | Role                                    |
+| -------------------- | ------------------------------------- | --------------------------------------- |
+| userSession          | app.ts (express-session)              | Session user (connect.sid)              |
+| adminSession         | app.ts (express-session)              | Session admin (admin.sid)               |
+| requireAuth          | middleware/auth.ts                    | Verifie session.userId                  |
+| requireSuperAdmin    | admin/middleware/requireSuperAdmin.ts | Verifie session.adminId + totpVerified  |
+| memberOf             | middleware/community.ts               | Verifie appartenance communaute         |
+| requireCommunityRole | middleware/community.ts               | Verifie role dans communaute            |
+| requireFeature       | middleware/requireFeature.ts          | Verifie feature activee pour communaute |
+| adminRateLimiter     | middleware/security.ts                | 30 req/min global admin                 |
+| authRateLimiter      | routes config                         | 5/15min sur auth endpoints              |
 
-## Total: 99 endpoints (65 user + 33 admin + 1 health)
+## Total: 131 endpoints (93 user + 37 admin + 1 health)

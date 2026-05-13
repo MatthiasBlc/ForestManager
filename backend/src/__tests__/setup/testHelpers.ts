@@ -467,11 +467,127 @@ export async function createTestTagSuggestion(
 }
 
 // =====================================
-// Admin Login Helper
+// Changelog Factory
+// =====================================
+
+interface TestChangelogEntry {
+  id: string;
+  version: string;
+  title: string;
+  content: Record<string, unknown>;
+  publishedAt: Date;
+}
+
+export async function createTestChangelogEntry(
+  data?: Partial<{
+    version: string;
+    title: string;
+    content: Record<string, unknown>;
+    publishedAt: Date;
+    deletedAt: Date;
+  }>
+): Promise<TestChangelogEntry> {
+  const suffix = uniqueSuffix();
+  const entry = await testPrisma.changelogEntry.create({
+    data: {
+      version: data?.version ?? `0.0.${Date.now() % 10000}`,
+      title: data?.title ?? `Test changelog ${suffix}`,
+      content: (data?.content ?? {
+        features: [{ text: "Test feature" }],
+        improvements: [],
+        fixes: [],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      }) as any,
+      publishedAt: data?.publishedAt,
+      deletedAt: data?.deletedAt,
+    },
+  });
+
+  return {
+    id: entry.id,
+    version: entry.version,
+    title: entry.title,
+    content: entry.content as Record<string, unknown>,
+    publishedAt: entry.publishedAt,
+  };
+}
+
+// =====================================
+// Meal Plan Test Factory
 // =====================================
 
 import supertest from "supertest";
 import app from "../../app";
+
+export interface MealTestContext {
+  moderator: { id: string };
+  moderatorCookie: string;
+  member: { id: string };
+  memberCookie: string;
+  communityId: string;
+}
+
+/**
+ * Creer un contexte de test complet pour les endpoints meal-plan / meal-generation.
+ * Cree: moderateur, communaute, feature MEAL_PLAN, membre.
+ */
+export async function createMealTestContext(prefix: string): Promise<MealTestContext> {
+  const suffix = Date.now();
+
+  // Moderateur
+  const modSignup = await supertest(app)
+    .post("/api/auth/signup")
+    .send({
+      username: `${prefix}_mod_${suffix}`,
+      email: `${prefix}_mod_${suffix}@example.com`,
+      password: "Test123!Password",
+    });
+  const moderatorCookie = extractSessionCookie(modSignup)!;
+  const moderator = (await testPrisma.user.findFirst({
+    where: { email: `${prefix}_mod_${suffix}@example.com` },
+  }))!;
+
+  // Communaute
+  const comRes = await supertest(app)
+    .post("/api/communities")
+    .set("Cookie", moderatorCookie)
+    .send({ name: `${prefix} Community ${suffix}` });
+  const communityId = comRes.body.id;
+
+  // Feature MEAL_PLAN (idempotent)
+  let mealPlanFeature = await testPrisma.feature.findFirst({ where: { code: "MEAL_PLAN" } });
+  if (!mealPlanFeature) {
+    mealPlanFeature = await testPrisma.feature.create({
+      data: { code: "MEAL_PLAN", name: "Planning de repas", isDefault: false },
+    });
+  }
+  await testPrisma.communityFeature.create({
+    data: { communityId, featureId: mealPlanFeature.id },
+  });
+
+  // Membre
+  const memSuffix = suffix + 1;
+  const memSignup = await supertest(app)
+    .post("/api/auth/signup")
+    .send({
+      username: `${prefix}_mem_${memSuffix}`,
+      email: `${prefix}_mem_${memSuffix}@example.com`,
+      password: "Test123!Password",
+    });
+  const memberCookie = extractSessionCookie(memSignup)!;
+  const member = (await testPrisma.user.findFirst({
+    where: { email: `${prefix}_mem_${memSuffix}@example.com` },
+  }))!;
+  await testPrisma.userCommunity.create({
+    data: { userId: member.id, communityId, role: "MEMBER" },
+  });
+
+  return { moderator, moderatorCookie, member, memberCookie, communityId };
+}
+
+// =====================================
+// Admin Login Helper
+// =====================================
 
 /**
  * Effectuer un login complet admin (password + TOTP) et retourner le cookie de session
