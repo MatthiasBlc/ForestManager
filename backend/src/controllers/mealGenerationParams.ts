@@ -203,7 +203,7 @@ export const getParamsDetail = async (req: Request, res: Response, next: NextFun
       include: paramsDetailInclude,
     });
 
-    res.json(formatParamsDetail(params));
+    res.json(formatParamsDetail(params!));
   } catch (error) {
     next(error);
   }

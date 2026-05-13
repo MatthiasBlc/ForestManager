@@ -336,7 +336,7 @@ export const updateSlot = async (req: Request, res: Response, next: NextFunction
       throw createHttpError(403, "COMMUNITY_002: Permission insufficient");
     }
 
-    const updateData: Prisma.MealSlotUpdateInput = { updatedById: userId };
+    const updateData: Prisma.MealSlotUncheckedUpdateInput = { updatedById: userId };
 
     if (body.type !== undefined) {
       updateData.type = body.type;
@@ -475,7 +475,7 @@ export const swapSlots = async (req: Request, res: Response, next: NextFunction)
       prisma.mealSlot.findUnique({ where: { id: slotIdB }, include: slotInclude }),
     ]);
 
-    res.json({ slotA: formatSlot(updatedA), slotB: formatSlot(updatedB) });
+    res.json({ slotA: formatSlot(updatedA!), slotB: formatSlot(updatedB!) });
   } catch (error) {
     next(error);
   }

@@ -231,7 +231,7 @@ export const replaceSlot = async (req: Request, res: Response, next: NextFunctio
     });
 
     res.json({
-      slot: formatSlot(updatedSlot),
+      slot: formatSlot(updatedSlot!),
       report: result.report,
     });
   } catch (error) {
