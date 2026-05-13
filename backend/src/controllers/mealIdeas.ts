@@ -6,6 +6,7 @@ import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import { CreateMealIdeaInput, UpdateMealIdeaInput } from "../schemas/mealPlan.schema";
 import { formatDeletedRelation } from "../util/responseFormatters";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function formatIdea(idea: any) {
   return {
     ...idea,
@@ -31,9 +32,11 @@ const ideaInclude = {
 export const listIdeas = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { communityId } = req.params;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { limit, offset } = parsePagination(req.query as any);
     const search = req.query.search as string | undefined;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {
       communityId,
       deletedAt: null,

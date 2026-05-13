@@ -54,6 +54,7 @@ const paramsDetailInclude = {
   },
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function formatRule(rule: any) {
   return {
     ...rule,
@@ -62,6 +63,7 @@ function formatRule(rule: any) {
 }
 
 // Helper: format params detail
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function formatParamsDetail(params: any) {
   return {
     ...params,

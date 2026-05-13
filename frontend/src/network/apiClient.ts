@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConflictError, UnauthorizedError } from "../errors/http_errors";
 
 const API_URL = import.meta.env.VITE_BACKEND_URL;

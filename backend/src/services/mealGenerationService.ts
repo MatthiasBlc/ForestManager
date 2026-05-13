@@ -100,6 +100,7 @@ export async function buildPreviousSlots(
 /**
  * Transformer les slots Prisma en SlotInfo pour l'algorithme.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function slotsToSlotInfo(slots: any[]): SlotInfo[] {
   return slots.map((s) => ({
     id: s.id,

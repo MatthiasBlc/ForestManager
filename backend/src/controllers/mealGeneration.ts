@@ -28,6 +28,7 @@ const slotInclude = {
   },
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function formatSlot(slot: any) {
   return {
     ...slot,

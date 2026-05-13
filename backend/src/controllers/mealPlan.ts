@@ -32,6 +32,7 @@ const slotInclude = {
   },
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function formatSlot(slot: any) {
   return {
     ...slot,
@@ -335,6 +336,7 @@ export const updateSlot = async (req: Request, res: Response, next: NextFunction
       throw createHttpError(403, "COMMUNITY_002: Permission insufficient");
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = { updatedById: userId };
 
     if (body.type !== undefined) {
@@ -487,6 +489,7 @@ export const swapSlots = async (req: Request, res: Response, next: NextFunction)
 export const getArchives = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { communityId } = req.params;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { limit, offset } = parsePagination(req.query as any);
 
     const [archives, total] = await Promise.all([
