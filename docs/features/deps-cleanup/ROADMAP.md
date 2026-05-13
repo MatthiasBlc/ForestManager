@@ -44,14 +44,14 @@ Enrichir le hook existant et ajouter un test `touchstart` avant de modifier Moda
 
 Risque : faible. Changements isoles.
 
-- [ ] Verifier si `helmet` embarque ses propres types (`npm info helmet` ou `ls node_modules/helmet/dist/*.d.ts`)
+- [x] Verifier si `helmet` embarque ses propres types (`npm info helmet` ou `ls node_modules/helmet/dist/*.d.ts`)
   - Si oui : supprimer `@types/helmet` completement
   - Si non : deplacer dans `devDependencies`
-- [ ] Reediter `src/scripts/createAdmin.ts` — remplacer `read` par `readline` stdlib
+- [x] Reediter `src/scripts/createAdmin.ts` — remplacer `read` par `readline` stdlib
   - Reimplementer `ask(prompt)` et `ask(prompt, silent: true)` avec `readline`
   - Tester manuellement le script (`npx ts-node src/scripts/createAdmin.ts`)
-- [ ] Desinstaller `read` dans le container backend
-- [ ] Verifier que les tests backend passent
+- [x] Desinstaller `read` dans le container backend
+- [x] Verifier que les tests backend passent
 
 ---
 
