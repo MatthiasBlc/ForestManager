@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import createHttpError from "http-errors";
+import { Prisma } from "@prisma/client";
 import prisma from "../util/db";
 import {
   MEAL_003,
@@ -28,8 +29,7 @@ const slotInclude = {
   },
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function formatSlot(slot: any) {
+function formatSlot(slot: Prisma.MealSlotGetPayload<{ include: typeof slotInclude }>) {
   return {
     ...slot,
     recipe: formatDeletedRelation(slot.recipe, ["id", "title", "imageKey"]),

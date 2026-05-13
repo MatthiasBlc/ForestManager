@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import createHttpError from "http-errors";
+import { Prisma } from "@prisma/client";
 import prisma from "../util/db";
 import {
   MEAL_GEN_001,
@@ -21,27 +22,29 @@ import {
 } from "../schemas/mealGeneration.schema";
 import { formatDeletedRelation } from "../util/responseFormatters";
 
+const ruleSelect = {
+  id: true,
+  tagId: true,
+  recipeId: true,
+  weight: true,
+  mealTimeConstraint: true,
+  frequencyMin: true,
+  frequencyMax: true,
+  frequencyPer: true,
+  tagCooldownDays: true,
+  tag: { select: { id: true, name: true } },
+  recipe: { select: { id: true, title: true, deletedAt: true } },
+} as const;
+
+type RuleResult = Prisma.MealGenerationRuleGetPayload<{ select: typeof ruleSelect }>;
+
 // Include pour les requetes detail
 const paramsDetailInclude = {
   exclusions: {
     select: { id: true, day: true, mealTime: true },
     orderBy: [{ day: "asc" as const }, { mealTime: "asc" as const }],
   },
-  rules: {
-    select: {
-      id: true,
-      tagId: true,
-      recipeId: true,
-      weight: true,
-      mealTimeConstraint: true,
-      frequencyMin: true,
-      frequencyMax: true,
-      frequencyPer: true,
-      tagCooldownDays: true,
-      tag: { select: { id: true, name: true } },
-      recipe: { select: { id: true, title: true, deletedAt: true } },
-    },
-  },
+  rules: { select: ruleSelect },
   slotPins: {
     select: {
       id: true,
@@ -54,17 +57,16 @@ const paramsDetailInclude = {
   },
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function formatRule(rule: any) {
+type ParamsDetail = Prisma.MealGenerationParamsGetPayload<{ include: typeof paramsDetailInclude }>;
+
+function formatRule(rule: RuleResult) {
   return {
     ...rule,
     recipe: formatDeletedRelation(rule.recipe, ["id", "title"]),
   };
 }
 
-// Helper: format params detail
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function formatParamsDetail(params: any) {
+function formatParamsDetail(params: ParamsDetail) {
   return {
     ...params,
     rules: params.rules.map(formatRule),
@@ -318,19 +320,7 @@ export const listRules = async (req: Request, res: Response, next: NextFunction)
 
     const rules = await prisma.mealGenerationRule.findMany({
       where: { paramsId },
-      select: {
-        id: true,
-        tagId: true,
-        recipeId: true,
-        weight: true,
-        mealTimeConstraint: true,
-        frequencyMin: true,
-        frequencyMax: true,
-        frequencyPer: true,
-        tagCooldownDays: true,
-        tag: { select: { id: true, name: true } },
-        recipe: { select: { id: true, title: true, deletedAt: true } },
-      },
+      select: ruleSelect,
     });
 
     res.json({ data: rules.map(formatRule) });
@@ -379,19 +369,7 @@ export const createRule = async (req: Request, res: Response, next: NextFunction
         frequencyPer: body.frequencyPer || null,
         tagCooldownDays: body.tagCooldownDays ?? null,
       },
-      select: {
-        id: true,
-        tagId: true,
-        recipeId: true,
-        weight: true,
-        mealTimeConstraint: true,
-        frequencyMin: true,
-        frequencyMax: true,
-        frequencyPer: true,
-        tagCooldownDays: true,
-        tag: { select: { id: true, name: true } },
-        recipe: { select: { id: true, title: true, deletedAt: true } },
-      },
+      select: ruleSelect,
     });
 
     res.status(201).json(formatRule(rule));
@@ -457,19 +435,7 @@ export const updateRule = async (req: Request, res: Response, next: NextFunction
         ...(body.frequencyPer !== undefined && { frequencyPer: body.frequencyPer }),
         ...(body.tagCooldownDays !== undefined && { tagCooldownDays: body.tagCooldownDays }),
       },
-      select: {
-        id: true,
-        tagId: true,
-        recipeId: true,
-        weight: true,
-        mealTimeConstraint: true,
-        frequencyMin: true,
-        frequencyMax: true,
-        frequencyPer: true,
-        tagCooldownDays: true,
-        tag: { select: { id: true, name: true } },
-        recipe: { select: { id: true, title: true, deletedAt: true } },
-      },
+      select: ruleSelect,
     });
 
     res.json(formatRule(updated));

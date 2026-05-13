@@ -1,19 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 import createHttpError from "http-errors";
+import { Prisma } from "@prisma/client";
 import prisma from "../util/db";
 import { MEAL_006 } from "../constants/errorCodes";
 import { parsePagination, buildPaginationMeta } from "../util/pagination";
 import { CreateMealIdeaInput, UpdateMealIdeaInput } from "../schemas/mealPlan.schema";
 import { formatDeletedRelation } from "../util/responseFormatters";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function formatIdea(idea: any) {
-  return {
-    ...idea,
-    recipe: formatDeletedRelation(idea.recipe, ["id", "title", "imageKey"]),
-    createdBy: idea.createdBy ? { id: idea.createdBy.id, username: idea.createdBy.username } : null,
-  };
-}
 
 // Include for queries
 const ideaInclude = {
@@ -25,6 +17,14 @@ const ideaInclude = {
   },
 };
 
+function formatIdea(idea: Prisma.MealIdeaGetPayload<{ include: typeof ideaInclude }>) {
+  return {
+    ...idea,
+    recipe: formatDeletedRelation(idea.recipe, ["id", "title", "imageKey"]),
+    createdBy: idea.createdBy ? { id: idea.createdBy.id, username: idea.createdBy.username } : null,
+  };
+}
+
 /**
  * GET /api/communities/:communityId/meal-ideas
  * Liste paginee, searchable (memberOf)
@@ -32,12 +32,10 @@ const ideaInclude = {
 export const listIdeas = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { communityId } = req.params;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { limit, offset } = parsePagination(req.query as any);
+    const { limit, offset } = parsePagination(req.query as { limit?: string; offset?: string });
     const search = req.query.search as string | undefined;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const where: any = {
+    const where: Prisma.MealIdeaWhereInput = {
       communityId,
       deletedAt: null,
     };

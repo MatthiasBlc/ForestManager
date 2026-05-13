@@ -4,6 +4,7 @@
  */
 
 import createHttpError from "http-errors";
+import { MealSlot } from "@prisma/client";
 import prisma from "../util/db";
 import { MEAL_GEN_001 } from "../constants/errorCodes";
 import { PoolEntry, SlotInfo, PreviousSlotInfo } from "./mealGeneration";
@@ -100,8 +101,7 @@ export async function buildPreviousSlots(
 /**
  * Transformer les slots Prisma en SlotInfo pour l'algorithme.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function slotsToSlotInfo(slots: any[]): SlotInfo[] {
+export function slotsToSlotInfo(slots: MealSlot[]): SlotInfo[] {
   return slots.map((s) => ({
     id: s.id,
     date: s.date,

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach } from "vitest";
 import request from "supertest";
 import app from "../../app";
@@ -123,7 +122,7 @@ describe("Meal Plan API", () => {
         });
 
       expect(res.status).toBe(201);
-      const disabledSlots = res.body.plan.slots.filter((s: any) => s.disabled);
+      const disabledSlots = res.body.plan.slots.filter((s: { disabled: boolean }) => s.disabled);
       expect(disabledSlots).toHaveLength(2);
     });
 
@@ -177,10 +176,12 @@ describe("Meal Plan API", () => {
         });
 
       expect(res.status).toBe(201);
-      const disabledSlots = res.body.plan.slots.filter((s: any) => s.disabled);
+      const disabledSlots = res.body.plan.slots.filter((s: { disabled: boolean }) => s.disabled);
       // Wednesday 2026-04-08 LUNCH + DINNER should be disabled
       expect(disabledSlots).toHaveLength(2);
-      expect(disabledSlots.every((s: any) => s.date.includes("2026-04-08"))).toBe(true);
+      expect(disabledSlots.every((s: { date: string }) => s.date.includes("2026-04-08"))).toBe(
+        true
+      );
     });
 
     it("should return 400 when startDate > endDate", async () => {
