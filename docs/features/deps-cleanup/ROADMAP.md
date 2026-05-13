@@ -21,10 +21,13 @@ Risque : faible. 1 fichier impacte.
 
 Risque : faible. 1 fichier impacte.
 
-- [ ] Creer `src/hooks/useOnClickOutside.ts` (implementation native `mousedown`/`touchstart`)
-- [ ] Mettre a jour `src/components/Modal.tsx` — remplacer l'import
+Note : `src/hooks/useClickOutside.ts` existe deja dans le projet avec ses propres tests.
+Brancher `Modal.tsx` dessus est suffisant. La seule difference : `touchstart` n'est pas couvert
+par ce hook ni par les tests existants — comportement identique a l'actuel en production
+(usehooks-ts gerait touchstart, le hook interne non). A documenter.
+
+- [ ] Mettre a jour `src/components/Modal.tsx` — remplacer l'import `usehooks-ts` par `useClickOutside`
 - [ ] Desinstaller `usehooks-ts` dans le container frontend
-- [ ] Tester manuellement le comportement du modal (fermeture au clic exterieur)
 - [ ] Verifier que les tests frontend passent
 
 ---
@@ -57,9 +60,40 @@ Risque : faible. 1 fichier impacte, Zod deja present.
 
 ---
 
-## Phase 5 — Frontend : remplacement `axios` → `fetch` natif
+## Phase 5 — Tests manquants avant remplacement axios
+
+Prerequis obligatoire avant Phase 6. Ces tests doivent passer avec axios, puis continuer
+a passer apres le remplacement par fetch — c'est le filet de securite.
+
+### 5a — Tests unitaires `apiClient`
+
+Fichier : `src/__tests__/unit/network/apiClient.test.ts`
+
+- [ ] `apiFetch` envoie bien `credentials: "include"` sur chaque requete
+- [ ] `apiFetch` prefixe l'URL avec `VITE_BACKEND_URL`
+- [ ] `apiFetch` envoie le header `Content-Type: application/json`
+- [ ] `apiFetch` lit le cookie `XSRF-TOKEN` et l'injecte dans `X-XSRF-TOKEN`
+- [ ] `apiFetch` ne plante pas si le cookie `XSRF-TOKEN` est absent
+- [ ] `apiFetch` leve une erreur sur status >= 400 (avec `status` et `message` corrects)
+- [ ] `apiFetch` retourne le body parse en JSON sur status 2xx
+
+### 5b — Tests unitaires `handleApiError` / `handleApiErrorWith`
+
+Fichier : `src/__tests__/unit/network/apiClient.test.ts` (meme fichier)
+
+- [ ] `handleApiError` leve `UnauthorizedError` sur 401
+- [ ] `handleApiError` leve `ConflictError` sur 409
+- [ ] `handleApiError` leve une `Error` generique sur autre status (avec le message du body)
+- [ ] `handleApiError` leve `Error("Network error...")` si pas de response
+- [ ] `handleApiErrorWith` applique l'override sur le status specifie
+- [ ] `handleApiErrorWith` tombe en fallback sur `handleApiError` si status non override
+
+---
+
+## Phase 6 — Frontend : remplacement `axios` → `fetch` natif
 
 Risque : moyen. Changement du client HTTP central, impacte tous les appels API.
+Prerequis : Phase 5 completement verte.
 
 - [ ] Creer le nouveau `src/network/apiClient.ts` base sur `fetch`
   - Fonction `apiFetch(path, options?)` avec `credentials: "include"`, baseURL, Content-Type, CSRF
@@ -69,18 +103,18 @@ Risque : moyen. Changement du client HTTP central, impacte tous les appels API.
   - Remplacer tous les appels `API.get/post/patch/delete` par `apiFetch`
   - Remplacer les types `AxiosError` par `ApiError`
 - [ ] Desinstaller `axios` dans le container frontend
-- [ ] Verifier que les tests frontend passent (MSW supporte fetch natif)
+- [ ] Verifier que les tests frontend passent (MSW supporte fetch natif, aucune modification des tests requise)
 - [ ] **Tester manuellement les flux critiques** :
   - [ ] Login / logout
   - [ ] Chargement des recettes
   - [ ] Creation / edition de recette
   - [ ] Upload d'image (presigned URL)
-  - [ ] Flux CSRF (verifier que le header `X-XSRF-TOKEN` est bien envoye)
+  - [ ] Flux CSRF (verifier dans les DevTools que le header `X-XSRF-TOKEN` est bien envoye)
   - [ ] Gestion des erreurs 401 (redirect logout) et 409 (conflict)
 
 ---
 
-## Phase 6 — Mise a jour docs & contexte
+## Phase 7 — Mise a jour docs & contexte
 
 - [ ] Mettre a jour `CLAUDE.md` si necessaire
 - [ ] Mettre a jour `docs/features/deps-cleanup/ROADMAP.md` (cocher les taches)
