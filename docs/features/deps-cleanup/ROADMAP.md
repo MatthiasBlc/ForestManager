@@ -110,15 +110,15 @@ Fichier : `src/__tests__/unit/network/apiClient.test.ts` ou test dedie
 Risque : moyen. Changement du client HTTP central, impacte tous les appels API.
 Prerequis : Phase 5 completement verte.
 
-- [ ] Creer le nouveau `src/network/apiClient.ts` base sur `fetch`
+- [x] Creer le nouveau `src/network/apiClient.ts` base sur `fetch`
   - Fonction `apiFetch(path, options?)` avec `credentials: "include"`, baseURL, Content-Type, CSRF
   - Classe `ApiError` avec `status` et `message`
   - Reimplementer `handleApiError` et `handleApiErrorWith` avec la meme signature externe
-- [ ] Mettre a jour `src/network/api.ts`
+- [x] Mettre a jour `src/network/api.ts`
   - Remplacer tous les appels `API.get/post/patch/delete` par `apiFetch`
   - Remplacer les types `AxiosError` par `ApiError`
-- [ ] Desinstaller `axios` dans le container frontend
-- [ ] Verifier que les tests frontend passent (MSW supporte fetch natif, aucune modification des tests requise)
+- [x] Desinstaller `axios` dans le container frontend
+- [x] Verifier que les tests frontend passent (MSW supporte fetch natif, aucune modification des tests requise)
 - [ ] **Tester manuellement les flux critiques** :
   - [ ] Login / logout
   - [ ] Chargement des recettes
