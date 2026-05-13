@@ -13,12 +13,12 @@ Risque : faible. 1 fichier impacte.
 Attention : l'usage est avec l'API objet (`cn({ "classe": true })`), pas avec des strings.
 Pas besoin d'utilitaire — remplacer par des strings/template literals directement.
 
-- [ ] Mettre a jour `src/components/Modal.tsx` :
+- [x] Mettre a jour `src/components/Modal.tsx` :
   - Remplacer `cn({ "modal modal-bottom sm:modal-middle": true, "modal-open": true })` par la string constante `"modal modal-bottom sm:modal-middle modal-open"`
   - Remplacer `cn("modal-box", className)` par `` `modal-box${className ? ` ${className}` : ""}` ``
   - Supprimer l'import `classnames`
-- [ ] Desinstaller `classnames` dans le container frontend
-- [ ] Verifier que les tests frontend passent (le test "should have modal-open class" valide le rendu)
+- [x] Desinstaller `classnames` dans le container frontend
+- [x] Verifier que les tests frontend passent (le test "should have modal-open class" valide le rendu)
 
 ---
 

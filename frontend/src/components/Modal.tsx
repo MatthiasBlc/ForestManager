@@ -1,5 +1,4 @@
 import { useRef } from "react";
-import cn from "classnames";
 import { useOnClickOutside } from "usehooks-ts";
 type Props = {
   children: React.ReactNode;
@@ -16,13 +15,9 @@ const Modal = ({ children, disableClickOutside, className, onClose }: Props) => 
     }
   });
 
-  const modalClass = cn({
-    "modal modal-bottom sm:modal-middle": true,
-    "modal-open": true,
-  });
   return (
-    <div className={modalClass}>
-      <div className={cn("modal-box", className)} ref={ref}>
+    <div className="modal modal-bottom sm:modal-middle modal-open">
+      <div className={`modal-box${className ? ` ${className}` : ""}`} ref={ref}>
         {children}
       </div>
     </div>
