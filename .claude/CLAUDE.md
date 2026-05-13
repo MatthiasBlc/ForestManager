@@ -97,6 +97,9 @@ docs/
       ROADMAP.md
       SPEC_MEAL_GENERATION.md
       ROADMAP_GENERATION.md
+    deps-cleanup/                       # PLANIFIE
+      SPEC_DEPS_CLEANUP.md
+      ROADMAP.md
 ```
 
 Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une spec et une roadmap.
@@ -128,6 +131,9 @@ Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une 
 | Roadmap Meal Plan                   | `docs/features/meal-plan/ROADMAP.md`                                |
 | Spec Meal Generation                | `docs/features/meal-plan/SPEC_MEAL_GENERATION.md`                   |
 | Roadmap Meal Generation             | `docs/features/meal-plan/ROADMAP_GENERATION.md`                     |
+| **Feature : Deps Cleanup**          |                                                                     |
+| Spec Deps Cleanup                   | `docs/features/deps-cleanup/SPEC_DEPS_CLEANUP.md`                   |
+| Roadmap Deps Cleanup                | `docs/features/deps-cleanup/ROADMAP.md`                             |
 | **Specs features (reference)**      |                                                                     |
 | Tags Rework                         | `docs/features/tags-rework/SPEC_TAGS_REWORK.md`                     |
 | Ingredients Rework                  | `docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md`       |

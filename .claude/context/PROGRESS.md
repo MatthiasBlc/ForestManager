@@ -30,12 +30,17 @@ Phases 0 a 17 terminees (tags rework, ingredients rework, notifications, recipe 
 - **Roadmap** : `docs/features/meal-plan/ROADMAP.md`
 - Phases 1-13 terminees (modeles, API backend, frontend complet)
 
-## Feature en cours : Meal Generation (Automatique)
+## Feature terminee : Meal Generation (Automatique)
 
 - **Spec** : `docs/features/meal-plan/SPEC_MEAL_GENERATION.md`
 - **Roadmap** : `docs/features/meal-plan/ROADMAP_GENERATION.md`
-- Phases 1-11 terminees (modeles, API, algorithme, frontend complet incl. mobile)
-- Phase 12 en cours (docs & contexte)
+- Phases 1-12 terminees
+
+## Feature planifiee : Nettoyage dependances
+
+- **Spec** : `docs/features/deps-cleanup/SPEC_DEPS_CLEANUP.md`
+- **Roadmap** : `docs/features/deps-cleanup/ROADMAP.md`
+- 7 phases : suppression @dnd-kit, classnames, usehooks-ts, @types/helmet, read, envalid, remplacement axios → fetch
 
 ## Idees futures
 
