@@ -30,13 +30,13 @@ Risque : faible. 1 fichier impacte.
 `usehooks-ts` ecoutait aussi `touchstart` — regression mobile si on branche sans enrichir.
 Enrichir le hook existant et ajouter un test `touchstart` avant de modifier Modal.
 
-- [ ] Ajouter `touchstart` dans `src/hooks/useClickOutside.ts` (en plus de `mousedown` existant)
-- [ ] Ajouter un test `touchstart` dans `useClickOutside.test.ts` :
+- [x] Ajouter `touchstart` dans `src/hooks/useClickOutside.ts` (en plus de `mousedown` existant)
+- [x] Ajouter un test `touchstart` dans `useClickOutside.test.ts` :
   - "should call callback when touching outside the ref element" (`TouchEvent` / `fireEvent.touchStart`)
   - "should not call callback when touching inside the ref element"
-- [ ] Mettre a jour `src/components/Modal.tsx` — remplacer l'import `usehooks-ts` par `useClickOutside`
-- [ ] Desinstaller `usehooks-ts` dans le container frontend
-- [ ] Verifier que les tests frontend passent
+- [x] Mettre a jour `src/components/Modal.tsx` — remplacer l'import `usehooks-ts` par `useClickOutside`
+- [x] Desinstaller `usehooks-ts` dans le container frontend
+- [x] Verifier que les tests frontend passent
 
 ---
 

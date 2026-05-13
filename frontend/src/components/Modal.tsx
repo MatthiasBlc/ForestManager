@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { useOnClickOutside } from "usehooks-ts";
+import { useClickOutside } from "../hooks/useClickOutside";
 type Props = {
   children: React.ReactNode;
   disableClickOutside?: boolean;
@@ -9,7 +9,7 @@ type Props = {
 
 const Modal = ({ children, disableClickOutside, className, onClose }: Props) => {
   const ref = useRef(null);
-  useOnClickOutside(ref, () => {
+  useClickOutside(ref, () => {
     if (!disableClickOutside) {
       onClose();
     }
