@@ -36,11 +36,12 @@ Phases 0 a 17 terminees (tags rework, ingredients rework, notifications, recipe 
 - **Roadmap** : `docs/features/meal-plan/ROADMAP_GENERATION.md`
 - Phases 1-12 terminees
 
-## Feature planifiee : Nettoyage dependances
+## Feature terminee : Nettoyage dependances (Phases 1-7)
 
 - **Spec** : `docs/features/deps-cleanup/SPEC_DEPS_CLEANUP.md`
 - **Roadmap** : `docs/features/deps-cleanup/ROADMAP.md`
-- 7 phases : suppression @dnd-kit, classnames, usehooks-ts, @types/helmet, read, envalid, remplacement axios → fetch
+- Phases 1-6 terminees : classnames, usehooks-ts, @types/helmet, read, envalid supprimes ; axios remplace par fetch natif
+- Reste : tests manuels (login/logout, recettes, upload, CSRF, erreurs 401/409)
 
 ## Idees futures
 

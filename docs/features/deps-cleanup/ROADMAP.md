@@ -131,6 +131,6 @@ Prerequis : Phase 5 completement verte.
 
 ## Phase 7 — Mise a jour docs & contexte
 
-- [ ] Mettre a jour `CLAUDE.md` si necessaire
-- [ ] Mettre a jour `docs/features/deps-cleanup/ROADMAP.md` (cocher les taches)
-- [ ] Mettre a jour `.claude/context/PROGRESS.md`
+- [x] Mettre a jour `CLAUDE.md` si necessaire
+- [x] Mettre a jour `docs/features/deps-cleanup/ROADMAP.md` (cocher les taches)
+- [x] Mettre a jour `.claude/context/PROGRESS.md`
