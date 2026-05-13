@@ -220,8 +220,8 @@ const envSchema = z.object({
   MINIO_PUBLIC_URL: z.string().default("http://localhost:9000"),
   MINIO_USE_SSL: z
     .string()
-    .transform((v) => v === "true")
-    .default("false"),
+    .default("false")
+    .transform((v) => v === "true"),
 });
 
 export default envSchema.parse(process.env);

@@ -59,12 +59,12 @@ Risque : faible. Changements isoles.
 
 Risque : faible. 1 fichier impacte, Zod deja present.
 
-- [ ] Reediter `src/util/validateEnv.ts` — remplacer `cleanEnv` par `z.object().parse()`
+- [x] Reediter `src/util/validateEnv.ts` — remplacer `cleanEnv` par `z.object().parse()`
   - Reproduire exactement les memes variables et types
   - Verifier que les messages d'erreur en cas de variable manquante sont clairs
-- [ ] Desinstaller `envalid` dans le container backend
+- [x] Desinstaller `envalid` dans le container backend
 - [ ] Redemarrer le backend, verifier le demarrage (`npm run docker:logs`)
-- [ ] Verifier que les tests backend passent
+- [x] Verifier que les tests backend passent
 
 ---
 
