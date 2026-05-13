@@ -10,10 +10,15 @@ Ordre choisi : du plus simple/sans risque au plus consequent.
 
 Risque : faible. 1 fichier impacte.
 
-- [ ] Creer `src/utils/cn.ts` avec la fonction utilitaire (ou remplacer inline si trivial)
-- [ ] Mettre a jour `src/components/Modal.tsx` — remplacer l'import et l'appel
+Attention : l'usage est avec l'API objet (`cn({ "classe": true })`), pas avec des strings.
+Pas besoin d'utilitaire — remplacer par des strings/template literals directement.
+
+- [ ] Mettre a jour `src/components/Modal.tsx` :
+  - Remplacer `cn({ "modal modal-bottom sm:modal-middle": true, "modal-open": true })` par la string constante `"modal modal-bottom sm:modal-middle modal-open"`
+  - Remplacer `cn("modal-box", className)` par `` `modal-box${className ? ` ${className}` : ""}` ``
+  - Supprimer l'import `classnames`
 - [ ] Desinstaller `classnames` dans le container frontend
-- [ ] Verifier que les tests frontend passent
+- [ ] Verifier que les tests frontend passent (le test "should have modal-open class" valide le rendu)
 
 ---
 
@@ -21,11 +26,14 @@ Risque : faible. 1 fichier impacte.
 
 Risque : faible. 1 fichier impacte.
 
-Note : `src/hooks/useClickOutside.ts` existe deja dans le projet avec ses propres tests.
-Brancher `Modal.tsx` dessus est suffisant. La seule difference : `touchstart` n'est pas couvert
-par ce hook ni par les tests existants — comportement identique a l'actuel en production
-(usehooks-ts gerait touchstart, le hook interne non). A documenter.
+`src/hooks/useClickOutside.ts` existe deja mais n'ecoute que `mousedown`.
+`usehooks-ts` ecoutait aussi `touchstart` — regression mobile si on branche sans enrichir.
+Enrichir le hook existant et ajouter un test `touchstart` avant de modifier Modal.
 
+- [ ] Ajouter `touchstart` dans `src/hooks/useClickOutside.ts` (en plus de `mousedown` existant)
+- [ ] Ajouter un test `touchstart` dans `useClickOutside.test.ts` :
+  - "should call callback when touching outside the ref element" (`TouchEvent` / `fireEvent.touchStart`)
+  - "should not call callback when touching inside the ref element"
 - [ ] Mettre a jour `src/components/Modal.tsx` — remplacer l'import `usehooks-ts` par `useClickOutside`
 - [ ] Desinstaller `usehooks-ts` dans le container frontend
 - [ ] Verifier que les tests frontend passent
@@ -74,8 +82,9 @@ Fichier : `src/__tests__/unit/network/apiClient.test.ts`
 - [ ] `apiFetch` envoie le header `Content-Type: application/json`
 - [ ] `apiFetch` lit le cookie `XSRF-TOKEN` et l'injecte dans `X-XSRF-TOKEN`
 - [ ] `apiFetch` ne plante pas si le cookie `XSRF-TOKEN` est absent
-- [ ] `apiFetch` leve une erreur sur status >= 400 (avec `status` et `message` corrects)
-- [ ] `apiFetch` retourne le body parse en JSON sur status 2xx
+- [ ] `apiFetch` leve une `ApiError` sur status >= 400 (avec `status` et `message` corrects)
+- [ ] `apiFetch` retourne `{ data }` parse en JSON sur status 2xx
+- [ ] `apiFetch` retourne `{ data: undefined }` sur status 204 sans appeler `.json()`
 
 ### 5b — Tests unitaires `handleApiError` / `handleApiErrorWith`
 
@@ -87,6 +96,12 @@ Fichier : `src/__tests__/unit/network/apiClient.test.ts` (meme fichier)
 - [ ] `handleApiError` leve `Error("Network error...")` si pas de response
 - [ ] `handleApiErrorWith` applique l'override sur le status specifie
 - [ ] `handleApiErrorWith` tombe en fallback sur `handleApiError` si status non override
+
+### 5c — Test du cas special 410 dans `removeMember`
+
+Fichier : `src/__tests__/unit/network/apiClient.test.ts` ou test dedie
+
+- [ ] Le handler inline de `removeMember` retourne correctement sur status 410 (sans lever d'erreur)
 
 ---
 

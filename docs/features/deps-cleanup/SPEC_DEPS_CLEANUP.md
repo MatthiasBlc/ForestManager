@@ -36,19 +36,31 @@ Suite a un audit de securite (CVEs axios, mai 2026) et a une revue des dependanc
 **Usage actuel** (`Modal.tsx`) :
 
 ```tsx
-import cn from "classnames";
-cn("modal-box w-11/12 max-w-2xl", className);
+// Appel avec OBJET (API classnames, pas juste des strings)
+cn({ "modal modal-bottom sm:modal-middle": true, "modal-open": true });
+// Appel avec strings
+cn("modal-box", className);
 ```
 
-**Remplacement** : fonction utilitaire locale dans `src/utils/cn.ts` :
+**Point d'attention** : le premier appel utilise l'API objet de `classnames` (`{ "classe": condition }`). Une fonction `cn(...strings[])` ne couvre pas ce cas. Ici toutes les conditions sont `true` donc la replacement est une string constante directe — pas besoin d'utilitaire :
 
-```ts
-export function cn(...classes: (string | false | null | undefined)[]): string {
-  return classes.filter(Boolean).join(" ");
-}
+```tsx
+// Avant
+const modalClass = cn({ "modal modal-bottom sm:modal-middle": true, "modal-open": true });
+// Apres
+const modalClass = "modal modal-bottom sm:modal-middle modal-open";
 ```
 
-Ou plus simplement, remplacer l'appel par un template literal si le cas est trivial (concatenation de 2 strings fixes).
+Pour le second appel (`cn("modal-box", className)`), remplacer par un template literal :
+
+```tsx
+// Avant
+<div className={cn("modal-box", className)}>
+// Apres
+<div className={`modal-box${className ? ` ${className}` : ""}`}>
+```
+
+Aucune creation de fichier utilitaire necessaire.
 
 ---
 
@@ -63,26 +75,21 @@ useOnClickOutside(ref, () => {
 });
 ```
 
-**Remplacement** : hook local `src/hooks/useOnClickOutside.ts` :
+**Point d'attention** : `src/hooks/useClickOutside.ts` existe deja dans le projet et couvre le cas `mousedown`. Mais `usehooks-ts` ecoute egalement `touchstart` — fermeture du modal au tap sur mobile. Brancher sur le hook existant sans l'enrichir est une regression mobile silencieuse (les tests n'utilisent que `fireEvent.mouseDown`).
+
+**Remplacement** : enrichir `src/hooks/useClickOutside.ts` avec `touchstart`, puis brancher `Modal.tsx` dessus :
 
 ```ts
-import { useEffect, RefObject } from "react";
-
-export function useOnClickOutside<T extends HTMLElement>(ref: RefObject<T>, handler: () => void) {
-  useEffect(() => {
-    const listener = (e: MouseEvent | TouchEvent) => {
-      if (!ref.current || ref.current.contains(e.target as Node)) return;
-      handler();
-    };
-    document.addEventListener("mousedown", listener);
-    document.addEventListener("touchstart", listener);
-    return () => {
-      document.removeEventListener("mousedown", listener);
-      document.removeEventListener("touchstart", listener);
-    };
-  }, [ref, handler]);
-}
+// src/hooks/useClickOutside.ts — ajouter touchstart
+document.addEventListener("mousedown", handleClickOutside);
+document.addEventListener("touchstart", handleClickOutside);
+return () => {
+  document.removeEventListener("mousedown", handleClickOutside);
+  document.removeEventListener("touchstart", handleClickOutside);
+};
 ```
+
+Les tests existants de `useClickOutside.test.ts` couvrent `mousedown`. Ajouter un test pour `touchstart` avant de modifier.
 
 ---
 
@@ -92,6 +99,7 @@ C'est le changement le plus consequent. Toute la logique est concentree dans deu
 
 - `src/network/apiClient.ts` — configuration centrale (baseURL, credentials, intercepteurs)
 - `src/network/api.ts` — fonctions API metier (`AxiosError` type)
+- `src/network/adminApi.ts` et `src/network/mealApi.ts` utilisent `API` et `handleApiError` depuis `apiClient.ts`
 
 **Comportement a reproduire exactement :**
 
@@ -101,13 +109,54 @@ C'est le changement le plus consequent. Toute la logique est concentree dans deu
 | `baseURL`                           | Prefixer l'URL avec `VITE_BACKEND_URL`                     |
 | Intercepteur Content-Type           | Header `"Content-Type": "application/json"` systematique   |
 | Intercepteur CSRF (cookie → header) | Lire `XSRF-TOKEN` dans le cookie, injecter dans la requete |
-| `AxiosError.response.status`        | `Response.status`                                          |
+| `AxiosError.response.status`        | `ApiError.status`                                          |
 | `AxiosError.response.data.error`    | `await response.json()` puis `.error`                      |
 | Rejet auto sur status >= 400        | A implementer manuellement (`if (!res.ok) throw ...`)      |
 
-**Nouveau `apiClient.ts`** : expose une fonction `apiFetch(path, options?)` qui encapsule `fetch` avec tous ces comportements. Les appels dans `api.ts` sont mis a jour pour utiliser `apiFetch` au lieu de `API.get/post/patch/delete`.
+**Choix architectural : wrapper `{ data }` (Option A)**
 
-**Gestion des erreurs** : `AxiosError` est remplace par un type `ApiError` custom :
+`response.data` est utilise 110+ fois dans `api.ts`, `adminApi.ts`, `mealApi.ts`. Pour eviter de les modifier tous, `apiFetch` retourne un objet `{ data: T }` qui reproduit le shape axios :
+
+```ts
+async function apiFetch<T>(path: string, options?: RequestInit): Promise<{ data: T }> {
+  const res = await fetch(`${API_URL}${path}`, { credentials: "include", ...options });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new ApiError(res.status, body.error || `Request failed (${res.status})`);
+  }
+  // 204 No Content ou body vide : ne pas appeler .json()
+  if (res.status === 204 || res.headers.get("content-length") === "0") {
+    return { data: undefined as T };
+  }
+  const data = await res.json();
+  return { data };
+}
+```
+
+**Gestion du status 204 No Content**
+
+8 endpoints backend retournent 204 avec un body vide (suppressions). Appeler `.json()` sur un body vide leve `SyntaxError`. Le `apiFetch` detecte ce cas via le status ou le header `content-length` avant d'appeler `.json()`.
+
+**Cas special : `error.response?.status === 410` dans `removeMember`**
+
+Dans `api.ts`, le handler inline de `removeMember` accede a `error.response?.status` (pattern axios). Apres migration, c'est `error.status` (pattern `ApiError`). Ce handler doit etre adapte :
+
+```ts
+// Avant
+(error: AxiosError) => {
+  if (error.response?.status === 410) return error.response;
+  return handleApiError(error);
+};
+// Apres
+(error: ApiError | Error) => {
+  if (error instanceof ApiError && error.status === 410) {
+    return { data: error.message };
+  }
+  return handleApiError(error as ApiError);
+};
+```
+
+**Gestion des erreurs** : `AxiosError` est remplace par `ApiError` :
 
 ```ts
 export class ApiError extends Error {
@@ -120,34 +169,65 @@ export class ApiError extends Error {
 }
 ```
 
-Les helpers `handleApiError` et `handleApiErrorWith` sont preserves avec la meme signature externe (seul le type interne change).
+Les helpers `handleApiError` et `handleApiErrorWith` sont preserves avec la meme signature externe.
 
 **Contrainte CSRF** : le mecanisme de lecture du cookie `XSRF-TOKEN` et d'injection dans le header `X-XSRF-TOKEN` doit etre rigoureusement preserve — c'est un element de securite critique.
+
+**Note** : `useImageUpload.ts` utilise deja `fetch` natif pour l'upload vers MinIO (PUT presigned URL) — non impacte.
 
 ---
 
 ### 4. Remplacement `envalid` → `zod` (backend)
 
-**Usage actuel** (`src/util/validateEnv.ts`) :
+**Usage actuel** (`src/util/validateEnv.ts`) — import depuis les internals du package :
 
 ```ts
-import { cleanEnv, str, port } from "envalid";
-export const env = cleanEnv(process.env, { ... });
+import { cleanEnv } from "envalid";
+import { bool, port, str } from "envalid/dist/validators"; // chemin interne
 ```
 
-**Remplacement** :
+**Equivalences exactes des validators envalid → Zod :**
+
+| envalid                                 | Zod                                                        |
+| --------------------------------------- | ---------------------------------------------------------- |
+| `str()`                                 | `z.string()`                                               |
+| `str({ default: "val" })`               | `z.string().default("val")`                                |
+| `str({ choices: ["a","b","c"] })`       | `z.enum(["a","b","c"])`                                    |
+| `str({ choices: [...], default: "a" })` | `z.enum(["a","b","c"]).default("a")`                       |
+| `port()`                                | `z.coerce.number().int().min(0).max(65535)`                |
+| `port({ default: 9000 })`               | `z.coerce.number().int().min(0).max(65535).default(9000)`  |
+| `bool({ default: false })`              | `z.string().transform(v => v === "true").default("false")` |
+
+**Remplacement complet de `validateEnv.ts` :**
 
 ```ts
 import { z } from "zod";
+
+const portValidator = z.coerce.number().int().min(0).max(65535);
+
 const envSchema = z.object({
   DATABASE_URL: z.string(),
-  PORT: z.coerce.number(),
-  ...
+  PORT: portValidator,
+  SESSION_SECRET: z.string(),
+  ADMIN_SESSION_SECRET: z.string(),
+  CORS_ORIGIN: z.string().default(""),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+  MINIO_ENDPOINT: z.string().default("minio"),
+  MINIO_PORT: portValidator.default(9000),
+  MINIO_ACCESS_KEY: z.string().default("minioadmin"),
+  MINIO_SECRET_KEY: z.string().default("minioadmin"),
+  MINIO_BUCKET: z.string().default("forestmanager-images-dev"),
+  MINIO_PUBLIC_URL: z.string().default("http://localhost:9000"),
+  MINIO_USE_SSL: z
+    .string()
+    .transform((v) => v === "true")
+    .default("false"),
 });
-export const env = envSchema.parse(process.env);
+
+export default envSchema.parse(process.env);
 ```
 
-Zod leve une erreur explicite si une variable manque ou est mal typee — comportement identique a `cleanEnv`.
+Zod leve une `ZodError` explicite si une variable manque ou est mal typee — comportement identique a `cleanEnv`.
 
 ---
 
