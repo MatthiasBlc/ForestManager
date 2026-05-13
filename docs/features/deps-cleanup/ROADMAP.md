@@ -6,19 +6,7 @@ Ordre choisi : du plus simple/sans risque au plus consequent.
 
 ---
 
-## Phase 1 — Suppression des packages completement inutilises
-
-Risque : zero. Aucun code a modifier.
-
-- [ ] Desinstaller `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`
-  - `npm uninstall @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities` dans le container frontend
-  - Verifier qu'aucun import residuel n'existe (`grep -r dnd-kit src/`)
-- [ ] Verifier que les tests frontend passent
-- [ ] Verifier que le build frontend passe (`npm run build`)
-
----
-
-## Phase 2 — Suppression `classnames`
+## Phase 1 — Suppression `classnames`
 
 Risque : faible. 1 fichier impacte.
 
@@ -29,7 +17,7 @@ Risque : faible. 1 fichier impacte.
 
 ---
 
-## Phase 3 — Suppression `usehooks-ts`
+## Phase 2 — Suppression `usehooks-ts`
 
 Risque : faible. 1 fichier impacte.
 
@@ -41,7 +29,7 @@ Risque : faible. 1 fichier impacte.
 
 ---
 
-## Phase 4 — Backend : deplacement `@types/helmet` + suppression `read`
+## Phase 3 — Backend : deplacement `@types/helmet` + suppression `read`
 
 Risque : faible. Changements isoles.
 
@@ -56,7 +44,7 @@ Risque : faible. Changements isoles.
 
 ---
 
-## Phase 5 — Backend : remplacement `envalid` → `zod`
+## Phase 4 — Backend : remplacement `envalid` → `zod`
 
 Risque : faible. 1 fichier impacte, Zod deja present.
 
@@ -69,7 +57,7 @@ Risque : faible. 1 fichier impacte, Zod deja present.
 
 ---
 
-## Phase 6 — Frontend : remplacement `axios` → `fetch` natif
+## Phase 5 — Frontend : remplacement `axios` → `fetch` natif
 
 Risque : moyen. Changement du client HTTP central, impacte tous les appels API.
 
@@ -92,7 +80,7 @@ Risque : moyen. Changement du client HTTP central, impacte tous les appels API.
 
 ---
 
-## Phase 7 — Mise a jour docs & contexte
+## Phase 6 — Mise a jour docs & contexte
 
 - [ ] Mettre a jour `CLAUDE.md` si necessaire
 - [ ] Mettre a jour `docs/features/deps-cleanup/ROADMAP.md` (cocher les taches)

@@ -10,14 +10,14 @@ Suite a un audit de securite (CVEs axios, mai 2026) et a une revue des dependanc
 
 ### Frontend — 5 packages concernes
 
-| Package              | Statut    | Raison                                                                      |
-| -------------------- | --------- | --------------------------------------------------------------------------- |
-| `@dnd-kit/core`      | Supprimer | 0 import dans le code. Le drag & drop utilise HTML5 natif.                  |
-| `@dnd-kit/sortable`  | Supprimer | Idem.                                                                       |
-| `@dnd-kit/utilities` | Supprimer | Idem.                                                                       |
-| `classnames`         | Supprimer | 1 seul usage dans `Modal.tsx`. Remplacable par une fonction inline.         |
-| `usehooks-ts`        | Supprimer | 1 seul usage dans `Modal.tsx` (`useOnClickOutside`). Hook de ~10 lignes.    |
-| `axios`              | Remplacer | Remplacable par `fetch` natif + wrapper. Elimine le risque CVE a la racine. |
+| Package              | Statut    | Raison                                                                       |
+| -------------------- | --------- | ---------------------------------------------------------------------------- |
+| `@dnd-kit/core`      | Garder    | Utilise dans `StepEditor.tsx` — liste triable avec support clavier et touch. |
+| `@dnd-kit/sortable`  | Garder    | Idem.                                                                        |
+| `@dnd-kit/utilities` | Garder    | Idem.                                                                        |
+| `classnames`         | Supprimer | 1 seul usage dans `Modal.tsx`. Remplacable par une fonction inline.          |
+| `usehooks-ts`        | Supprimer | 1 seul usage dans `Modal.tsx` (`useOnClickOutside`). Hook de ~10 lignes.     |
+| `axios`              | Remplacer | Remplacable par `fetch` natif + wrapper. Elimine le risque CVE a la racine.  |
 
 ### Backend — 3 packages concernes
 
@@ -31,13 +31,7 @@ Suite a un audit de securite (CVEs axios, mai 2026) et a une revue des dependanc
 
 ## Specifications techniques
 
-### 1. Suppression `@dnd-kit` (×3)
-
-Aucun remplacement necessaire. Le drag & drop du meal plan (`MealPlanGrid.tsx`) utilise les evenements HTML5 natifs (`onDragStart`, `onDragOver`, `onDrop`). Les trois packages peuvent etre desinstalles directement.
-
----
-
-### 2. Suppression `classnames`
+### 1. Suppression `classnames`
 
 **Usage actuel** (`Modal.tsx`) :
 
@@ -58,7 +52,7 @@ Ou plus simplement, remplacer l'appel par un template literal si le cas est triv
 
 ---
 
-### 3. Suppression `usehooks-ts`
+### 2. Suppression `usehooks-ts`
 
 **Usage actuel** (`Modal.tsx`) :
 
@@ -92,7 +86,7 @@ export function useOnClickOutside<T extends HTMLElement>(ref: RefObject<T>, hand
 
 ---
 
-### 4. Remplacement `axios` → `fetch` natif
+### 3. Remplacement `axios` → `fetch` natif
 
 C'est le changement le plus consequent. Toute la logique est concentree dans deux fichiers :
 
@@ -132,7 +126,7 @@ Les helpers `handleApiError` et `handleApiErrorWith` sont preserves avec la meme
 
 ---
 
-### 5. Remplacement `envalid` → `zod` (backend)
+### 4. Remplacement `envalid` → `zod` (backend)
 
 **Usage actuel** (`src/util/validateEnv.ts`) :
 
@@ -157,7 +151,7 @@ Zod leve une erreur explicite si une variable manque ou est mal typee — compor
 
 ---
 
-### 6. Remplacement `read` → `readline` (backend script)
+### 5. Remplacement `read` → `readline` (backend script)
 
 **Usage actuel** (`src/scripts/createAdmin.ts`) :
 
@@ -178,7 +172,7 @@ Le flag `silent: true` (masquer la saisie du mot de passe) necessite de jouer su
 
 ---
 
-### 7. Deplacement `@types/helmet` → `devDependencies`
+### 6. Deplacement `@types/helmet` → `devDependencies`
 
 Simple deplacement dans `backend/package.json`. Verifier si helmet embarque deja ses propres types (auquel cas `@types/helmet` est completement suppressible).
 
@@ -195,7 +189,8 @@ Simple deplacement dans `backend/package.json`. Verifier si helmet embarque deja
 
 ## Ce qui est hors perimetre
 
-- Remplacement de `date-fns` (tree-shakee, cout negligeable, `formatDistanceToNow` complexe a reimplementer).
-- Remplacement de `react-hook-form` (usage etendu, 7 fichiers, gain faible).
-- Remplacement de `cheerio` (usage justifie pour le parsing HTML de l'import de recettes).
-- Remplacement de `react-hot-toast` (43 fichiers, entierement embarquee).
+- `@dnd-kit` (×3) : utilise dans `StepEditor.tsx` pour liste triable avec support clavier et touch. Supprimer impliquerait de reimplementer l'accessibilite from scratch.
+- `date-fns` : tree-shakee par Vite, cout negligeable, `formatDistanceToNow` complexe a reimplementer.
+- `react-hook-form` : usage etendu (7 fichiers), gain faible.
+- `cheerio` : usage justifie pour le parsing HTML de l'import de recettes.
+- `react-hot-toast` : 43 fichiers, entierement embarquee.
