@@ -102,7 +102,7 @@ describe("Meal Generation API", () => {
       expect(res.body.report.slotsSkipped.excluded).toBe(0);
 
       // Tous les slots doivent etre remplis
-      const filledSlots = res.body.plan.slots.filter((s: any) => s.type === "RECIPE");
+      const filledSlots = res.body.plan.slots.filter((s: { type: string }) => s.type === "RECIPE");
       expect(filledSlots.length).toBe(6);
     });
 
@@ -239,7 +239,7 @@ describe("Meal Generation API", () => {
       expect(res.status).toBe(200);
       // Le premier slot (lundi midi) doit avoir le Cake (tag2 = dessert)
       const mondayLunch = res.body.plan.slots.find(
-        (s: any) =>
+        (s: { mealTime: string; date: string }) =>
           s.mealTime === "LUNCH" && new Date(s.date).toISOString().startsWith("2026-04-06")
       );
       expect(mondayLunch.recipeId).toBe(recipe3Id);
@@ -312,7 +312,7 @@ describe("Meal Generation API", () => {
         .set("Cookie", moderatorCookie);
       // Premier slot = lundi midi
       const mondayLunch = planRes.body.plan.slots.find(
-        (s: any) =>
+        (s: { mealTime: string; date: string }) =>
           s.mealTime === "LUNCH" && new Date(s.date).toISOString().startsWith("2026-04-06")
       );
 

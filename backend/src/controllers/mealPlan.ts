@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import createHttpError from "http-errors";
+import { Prisma } from "@prisma/client";
 import prisma from "../util/db";
 import {
   MEAL_001,
@@ -32,7 +33,7 @@ const slotInclude = {
   },
 };
 
-function formatSlot(slot: any) {
+function formatSlot(slot: Prisma.MealSlotGetPayload<{ include: typeof slotInclude }>) {
   return {
     ...slot,
     recipe: formatDeletedRelation(slot.recipe, ["id", "title", "imageKey"]),
@@ -335,7 +336,7 @@ export const updateSlot = async (req: Request, res: Response, next: NextFunction
       throw createHttpError(403, "COMMUNITY_002: Permission insufficient");
     }
 
-    const updateData: any = { updatedById: userId };
+    const updateData: Prisma.MealSlotUpdateInput = { updatedById: userId };
 
     if (body.type !== undefined) {
       updateData.type = body.type;
@@ -487,7 +488,7 @@ export const swapSlots = async (req: Request, res: Response, next: NextFunction)
 export const getArchives = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { communityId } = req.params;
-    const { limit, offset } = parsePagination(req.query as any);
+    const { limit, offset } = parsePagination(req.query as { limit?: string; offset?: string });
 
     const [archives, total] = await Promise.all([
       prisma.mealPlan.findMany({

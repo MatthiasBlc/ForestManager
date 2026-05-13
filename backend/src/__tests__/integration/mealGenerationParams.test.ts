@@ -150,7 +150,7 @@ describe("Meal Generation Params API", () => {
         .get(`/api/communities/${communityId}/meal-generation-params`)
         .set("Cookie", moderatorCookie);
 
-      const defaults = listRes.body.data.filter((p: any) => p.isDefault);
+      const defaults = listRes.body.data.filter((p: { isDefault: boolean }) => p.isDefault);
       expect(defaults).toHaveLength(1);
       expect(defaults[0].name).toBe("Second");
     });

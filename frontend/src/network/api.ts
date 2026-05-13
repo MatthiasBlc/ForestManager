@@ -1,4 +1,3 @@
-import { AxiosError } from "axios";
 import {
   RecipeDetail,
   RecipesResponse,
@@ -33,7 +32,7 @@ import {
 } from "../models/community";
 import { ConflictError } from "../errors/http_errors";
 
-import { API, buildQueryString, handleApiError, handleApiErrorWith } from "./apiClient";
+import { API, ApiError, buildQueryString, handleApiError, handleApiErrorWith } from "./apiClient";
 import * as adminApi from "./adminApi";
 import * as mealApi from "./mealApi";
 
@@ -422,9 +421,9 @@ export default class APIManager {
 
   static async removeMember(communityId: string, userId: string): Promise<{ message: string }> {
     const response = await API.delete(`/api/communities/${communityId}/members/${userId}`).catch(
-      (error: AxiosError<{ message?: string; error?: string }>) => {
-        if (error.response?.status === 410) {
-          return error.response;
+      (error: ApiError | Error) => {
+        if (error instanceof ApiError && error.status === 410) {
+          return { data: error.message };
         }
         return handleApiError(error);
       }

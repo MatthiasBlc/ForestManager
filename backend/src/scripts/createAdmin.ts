@@ -11,18 +11,37 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { generateSecret } from "otplib";
-import { read } from "read";
+import * as readline from "readline";
 
 const prisma = new PrismaClient();
 
+function ask(question: string, silent = false): Promise<string> {
+  return new Promise((resolve) => {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+      terminal: true,
+    });
+    if (silent) {
+      // Supprime l'echo des caracteres saisis (mode mot de passe)
+      (rl as unknown as { _writeToOutput: (s: string) => void })._writeToOutput = (s: string) => {
+        if (s === question) process.stdout.write(s);
+      };
+    }
+    rl.question(question, (answer) => {
+      if (silent) process.stdout.write("\n");
+      rl.close();
+      resolve(answer.trim());
+    });
+  });
+}
+
 async function prompt(question: string): Promise<string> {
-  const result = await read({ prompt: question });
-  return result.trim();
+  return ask(question);
 }
 
 async function promptHidden(question: string): Promise<string> {
-  const result = await read({ prompt: question, silent: true });
-  return result.trim();
+  return ask(question, true);
 }
 
 async function validateEmail(email: string): Promise<boolean> {
