@@ -28,4 +28,4 @@ Artefact en ligne : voir le lien dans la section "Reprise" ci-dessous. La copie 
 - Artefacts publies :
   - Analyse V1 : https://claude.ai/artifact/2j7eohGZT8qonftWqb1wUw (`2-Analyse-V1.html`)
   - Recettes composees : https://claude.ai/artifact/LCuB3UZkuVhQqqDMvnP8ae (`7-Proposition-Recettes-Composees.html`)
-- En attente : choix du type de lien des recettes composees (D24), puis questions restantes (Q08, Q09, Q11, Q12), direction du design system.
+- En attente : choix du type de lien des recettes composees (D24), puis direction du design system et plan de l'artefact design system + maquettes.

@@ -125,12 +125,12 @@ Ce que l'on supprime de la V1 : la recette perso jumelle creee automatiquement, 
 - F-REF-2 Tags d'espace : propres a chaque espace, y compris sur une recette partagee [D19]. Tout membre peut en creer en taguant une recette ; ils sont immediatement utilisables. Les moderateurs les renomment, fusionnent, suppriment.
 - F-REF-3 Ingredients : catalogue global. Un ingredient inconnu est cree a la volee et utilisable tout de suite ; l'admin fusionne les doublons a posteriori (le statut sert au tri de la file admin, pas a bloquer).
 - F-REF-4 Unites : catalogue global gere par l'admin, avec categories (poids, volume, cuillere, piece, qualitatif) et conversions pour la liste de courses.
-- Supprime : workflow PENDING des tags d'espace, suggestions de tags, preference "masquer les tags" par espace [Q08].
+- Supprime : workflow PENDING des tags d'espace, suggestions de tags, preference "masquer les tags" par espace [D27].
 
 ### 4.5 Import
 
 - F-IMP-1 Import depuis une URL (JSON-LD schema.org, comme en V1) vers un formulaire pre-rempli que l'utilisateur valide.
-- F-IMP-2 Import depuis un texte colle (parsing heuristique, sans LLM payant) [Q09].
+- F-IMP-2 Import depuis un texte colle, en V2.0 : decoupage heuristique sans LLM payant, formulaire pre-rempli a valider [D28].
 - Securite : resolution DNS et verification d'IP privee **a chaque redirection**, taille et duree bornees.
 
 ### 4.6 Planning de repas (module)
@@ -189,7 +189,7 @@ Reprise de la V1 (genere par la CI, page utilisateur, CRUD admin).
 - **Personnalisable** : theme clair / sombre / systeme, densite (confortable / compacte), taille du texte, et **couleur d'accent par espace** (chaque espace a sa teinte, appliquee par variable CSS quand on y entre).
 - Icones : un seul jeu (Lucide, livre avec shadcn). daisyUI et react-icons sont retires.
 - Accessibilite : focus visible, navigation clavier complete (Radix), contraste AA, cibles tactiles de 44px.
-- Un **catalogue de composants** vivant (page interne `/design` ou Storybook [Q11]) sert de reference.
+- Un **catalogue de composants** vivant (page interne `/design` [D29]) sert de reference.
 
 ### 5.4 Ecrans a maquetter avant de coder
 
@@ -237,7 +237,7 @@ Modules : MealPlan/MealSlot/MealIdea/GenerationParams..., ShoppingList/ShoppingI
 Transverse : Notification(type enum), ActivityLog, ChangelogEntry, Admin*
 ```
 
-Points a trancher : revision en snapshot JSON ou tables normalisees [Q12] ; tags d'espace vs tags globaux sur une recette partagee dans plusieurs espaces [Q04].
+Revisions en instantane JSON [D30] ; tags d'espace portes par le couple recette + espace, tags globaux par la recette [D19].
 
 ## 8. Migration des donnees V1 -> V2
 
@@ -258,11 +258,11 @@ Sans objet [D23] : la V1 n'a pas d'utilisateurs reels, la base et la stack seron
 | Q05 | REPONDU (D21) - Envoi d'emails : quel service gratuit (SMTP perso, Brevo, Resend free tier...) ? Sans email, pas de reset de mot de passe.                                            | S4.1       |
 | Q06 | REPONDU (D22) - Suppression d'espace : delai de grace (ex : 30 jours restaurable) ou immediat ?                                                                                       | S4.2       |
 | Q07 | REMPLACEE par D24 (recettes composees) - Sections de recette (sous-recettes) en V2.0 ou plus tard ?                                                                                   | S4.3       |
-| Q08 | On supprime vraiment les suggestions de tags et l'option "masquer les tags" ? Les utilisais-tu ?                                                                                      | S4.4       |
-| Q09 | Import par texte colle : en V2.0 ou plus tard ?                                                                                                                                       | S4.5       |
+| Q08 | REPONDU (D27) - On supprime vraiment les suggestions de tags et l'option "masquer les tags" ? Les utilisais-tu ?                                                                      | S4.4       |
+| Q09 | REPONDU (D28) - Import par texte colle : en V2.0 ou plus tard ?                                                                                                                       | S4.5       |
 | Q10 | REPONDU (D11) - Planning : faut-il d'autres repas que midi / soir (petit-dejeuner, gouter) ?                                                                                          | S4.6       |
-| Q11 | Catalogue de composants : page interne simple ou Storybook ?                                                                                                                          | S5.3       |
-| Q12 | Revisions : snapshot JSON (simple) ou tables normalisees (requetable) ?                                                                                                               | S7         |
+| Q11 | REPONDU (D29) - Catalogue de composants : page interne simple ou Storybook ?                                                                                                          | S5.3       |
+| Q12 | REPONDU (D30) - Revisions : snapshot JSON (simple) ou tables normalisees (requetable) ?                                                                                               | S7         |
 | Q13 | REPONDU (D23, sans objet) - Que garder de l'historique V1 des propositions et variantes ?                                                                                             | S8         |
 | Q14 | REPONDU (D23) - Choix de l'OWNER des communautes existantes lors de la migration ?                                                                                                    | S8         |
 | Q15 | REPONDU (D23, aucun user en V1) - Combien d'utilisateurs / communautes reels en prod aujourd'hui ? (dimensionne l'effort de migration)                                                | S8, S9     |

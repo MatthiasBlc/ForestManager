@@ -29,7 +29,7 @@ Une decision validee ne se modifie pas : on en ajoute une nouvelle qui l'amende.
 - **Constat V1** : refuser une proposition cree automatiquement une variante au nom du proposeur (`proposalService.ts:277`). Le depart du createur fait auto-refuser ses propositions, donc cree des variantes en cascade (`orphanHandling.ts`). Seul le createur peut trancher (`proposals.ts:354`) : une recette dont l'auteur est parti accepte encore des propositions que personne ne pourra jamais traiter.
 - **Choix** : accepter -> nouvelle revision ; refuser -> rien ; le suggereur peut convertir en copie s'il le veut. Si l'auteur n'est plus membre, les moderateurs tranchent.
 
-### D05 - Historique par revisions - PROPOSEE
+### D05 - Historique par revisions - VALIDEE (2026-11-03)
 
 - **Constat V1** : aucun historique ; une proposition acceptee ecrase la recette.
 - **Choix** : chaque modification cree une `RecipeRevision`. Permet diff, restauration, suggestions basees sur une revision precise. Format : Q12.
@@ -44,7 +44,7 @@ Une decision validee ne se modifie pas : on en ajoute une nouvelle qui l'amende.
 - **Constat V1** : il faut connaitre le username exact ; `GET /api/users/search` permet a tout user connecte de lister les usernames par prefixe.
 - **Choix** : lien d'invitation (expiration, nombre d'usages, revocable) + invitation par username exact sans autocompletion globale.
 
-### D08 - Tags d'espace libres, moderes a posteriori - PROPOSEE
+### D08 - Tags d'espace libres, moderes a posteriori - VALIDEE (2026-11-03)
 
 - **Constat V1** : un tag d'espace cree par un membre est PENDING jusqu'a validation d'un moderateur ; suggestions de tags a deux niveaux (PENDING_OWNER puis PENDING_MODERATOR) ; resolution de tags a chaque fork. Beaucoup de code (tagService, tagSuggestions, communityTags) pour un geste simple.
 - **Choix** : creation libre, gestion a posteriori par les moderateurs (renommer, fusionner, supprimer). Question liee : Q04, Q08.
@@ -128,3 +128,19 @@ _D11, D12 et D14 sont reserves (planning, notifications, analytics) : a ecrire q
 ### D26 - Partager une recette composee partage ses sous-recettes - VALIDEE (2026-11-03)
 
 - L'ecran de partage liste les sous-recettes qui seront partagees avec la recette composee. Le reste de D24 (blocs, lien vivant ou fige) attend la maquette de proposition.
+
+### D27 - Suppression des suggestions de tags et du masquage des tags - VALIDEE (2026-11-03)
+
+- Avec des tags d'espace libres (D08, D19), tout membre tague directement dans son espace ; les moderateurs nettoient a posteriori. Les suggestions de tags et l'option "masquer les tags" disparaissent.
+
+### D28 - Import depuis un texte colle en V2.0 - VALIDEE (2026-11-03)
+
+- Decoupage heuristique sans LLM payant (blocs ingredients / etapes, lecture de "200 g de farine"), puis formulaire pre-rempli corrige et valide par l'utilisateur.
+
+### D29 - Catalogue de composants en page interne `/design` - VALIDEE (2026-11-03)
+
+- Route de l'app visible en dev et pour l'admin, montrant chaque composant dans tous ses etats et themes. Pas de Storybook.
+
+### D30 - Revisions stockees en instantane JSON - VALIDEE (2026-11-03)
+
+- Chaque revision enregistre une photo complete de la recette (blocs, ingredients, etapes). La version courante reste en tables normales pour la recherche et les filtres.
