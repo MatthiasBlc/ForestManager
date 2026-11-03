@@ -12,13 +12,17 @@ Refonte de Forest Manager : clarifier les concepts de la V1, refaire l'interface
 
 ## Fichiers
 
-| Fichier                      | Role                                                       |
-| ---------------------------- | ---------------------------------------------------------- |
-| `1-CDC-V2.md`                | Cahier des charges cible. La version est dans son en-tete. |
-| `2-Analyse-V1.html`          | Copie locale de l'artefact d'analyse (lisible hors ligne). |
-| `3-Journal-des-Decisions.md` | Decisions `D##` avec constat, options, choix, statut.      |
-| `4-Roadmap.md`               | Phases et cases a cocher.                                  |
-| `5-Etude-Adaptations.md`     | Etude : adapter une recette a un espace (D17).             |
+| Fichier                                 | Role                                                                            |
+| --------------------------------------- | ------------------------------------------------------------------------------- |
+| `1-CDC-V2.md`                           | Cahier des charges cible. La version est dans son en-tete.                      |
+| `2-Analyse-V1.html`                     | Copie locale de l'artefact d'analyse (lisible hors ligne).                      |
+| `3-Journal-des-Decisions.md`            | Decisions `D##` avec constat, options, choix, statut.                           |
+| `4-Roadmap.md`                          | Phases et cases a cocher.                                                       |
+| `5-Etude-Adaptations.md`                | Etude : adapter une recette a un espace (D17).                                  |
+| `6-Etude-Recettes-Composees.md`         | Etude : recettes a base de recettes (D24).                                      |
+| `7-Proposition-Recettes-Composees.html` | Maquette interactive des recettes composees (D24).                              |
+| `8-Directions-Visuelles.html`           | Comparaison interactive des trois ambiances (D32).                              |
+| `9-Revue-Brainstorming.md`              | Idees futures triees : a decider maintenant, couvertes, a attendre (D34 a D40). |
 
 Artefact en ligne : voir le lien dans la section "Reprise" ci-dessous. La copie locale est toujours ecrite avant chaque publication.
 
