@@ -24,9 +24,10 @@ Artefact en ligne : voir le lien dans la section "Reprise" ci-dessous. La copie 
 
 ## Reprise
 
-- Derniere session : 2026-11-03. Etude initiale faite, en attente de relecture du proprietaire (roadmap A6).
+- Derniere session : 2026-11-03.
 - Artefacts publies :
   - Analyse V1 : https://claude.ai/artifact/2j7eohGZT8qonftWqb1wUw (`2-Analyse-V1.html`)
   - Recettes composees : https://claude.ai/artifact/LCuB3UZkuVhQqqDMvnP8ae (`7-Proposition-Recettes-Composees.html`)
   - Directions visuelles : https://claude.ai/artifact/DEwK7Soo52ZvKi7qsbzpPr (`8-Directions-Visuelles.html`)
-- En attente du proprietaire : type de lien des recettes composees (D24) et direction visuelle (D32). Ensuite : artefact Design System (roadmap B4).
+- Phase A terminee : decisions D01 a D33 tranchees, CDC en 0.3.
+- Prochaine etape : artefact Design System (roadmap B4), Braise en signature.

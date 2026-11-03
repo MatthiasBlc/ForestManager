@@ -9,16 +9,16 @@ La premiere case non cochee est le point de reprise. **Aucune ligne de code appl
 - [x] A3 Analyse V1 publiee en artefact (`2-Analyse-V1.html`)
 - [x] A4 CDC V2 brouillon 0.1 (`1-CDC-V2.md`)
 - [x] A5 Journal des decisions ouvert (`3-Journal-des-Decisions.md`)
-- [ ] A6 **Relecture par le proprietaire** : analyse, CDC, decisions D01 a D16
+- [x] A6 **Relecture par le proprietaire** : analyse, CDC, decisions D01 a D16
 - [x] A7 Reponses aux questions Q01 a Q16 (CDC S10)
-- [ ] A8 CDC 0.2 integrant les reponses ; decisions passees en VALIDEE / REJETEE (reste : D24 type de lien, D32 direction visuelle, relecture des decisions encore PROPOSEE)
+- [x] A8 CDC 0.3 integrant les reponses ; toutes les decisions tranchees (D01 a D33)
 
 ## Phase B - Conception (artefacts a valider un par un)
 
 - [ ] B1 Modele de donnees V2 detaille (schema Prisma cible commente)
 - [ ] B2 Matrice des permissions complete, par module
 - [ ] B3 Parcours utilisateurs (inscription, recette, partage, suggestion, planning, courses)
-- [ ] B4a Choix de la direction visuelle (maquette comparative publiee)
+- [x] B4a Direction visuelle : Braise en signature, Sous-bois et Potager en alternatives
 - [ ] B4 Design system : tokens, theme, accent d'espace, composants de base, app shell avec rail (artefact Design System)
 - [ ] B5 Maquettes des ecrans du CDC S5.4 (artefact Design)
 - [ ] B6 Architecture technique : monorepo, registre de modules, contrats API

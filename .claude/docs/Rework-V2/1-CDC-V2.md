@@ -1,6 +1,6 @@
 # Forest Manager V2 - Cahier des charges
 
-**Version : 0.2 (BROUILLON, validation en cours)** - 2026-11-03
+**Version : 0.3 (decisions de la phase d'etude toutes tranchees ; reste la conception, roadmap phase B)** - 2026-11-03
 Statut de chaque decision : voir `3-Journal-des-Decisions.md`. Une ligne marquee `[Dxx]` renvoie a sa decision.
 Les questions encore ouvertes sont au S10. Tant qu'une question touche une section, cette section n'est pas validable.
 
@@ -24,40 +24,40 @@ Principes directeurs :
 2. **L'utilisateur comprend toujours ou est son contenu et qui peut y toucher.**
 3. **Rien ne bloque l'utilisateur en attendant un admin** (tags et ingredients PENDING en V1).
 4. **Le personnel et le collectif fonctionnent pareil** : l'espace perso est un espace comme les autres [D02].
-5. **Modulaire de bout en bout** : un module se declare (back + front + nav + permissions) au lieu d'etre cable en dur [D10].
+5. **Modulaire de bout en bout** : un module se declare (back + front + nav + permissions) au lieu d'etre cable en dur [D10]. Recettes est fourni a tous ; les autres modules sont accordes par la plateforme a la demande de l'OWNER [D33].
 
 ## 2. Glossaire
 
-| Terme          | Definition V2                                                                                                        |
-| -------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Espace (Space) | Conteneur de contenu et de membres. Type `PERSONAL` (1 par user, 1 seul membre) ou `GROUP` ("communaute" a l'ecran). |
-| Membre         | Lien user <-> espace avec un role (S3).                                                                              |
-| Module         | Brique fonctionnelle activable par espace (Recettes, Planning, Courses...).                                          |
-| Recette        | Contenu cree par un auteur, rattache a un espace d'origine.                                                          |
-| Partage        | Rendre une recette visible dans un autre espace **par reference** (pas de copie) [D03].                              |
-| Adaptation     | Copie d'une recette dans un espace, liee a l'original ; modifiable sans toucher l'original [D17].                    |
-| Copie (fork)   | Duplication explicite d'une recette dans un espace, qui devient independante, avec trace de l'origine.               |
-| Revision       | Etat date d'une recette. Chaque modification acceptee cree une revision [D05].                                       |
-| Suggestion     | Modification proposee par un membre sur une recette dont il n'est pas l'auteur [D04].                                |
-| Referentiels   | Tags, ingredients, unites. Partages par toute la plateforme ou propres a un espace.                                  |
+| Terme          | Definition V2                                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Espace (Space) | Conteneur de contenu et de membres. Type `PERSONAL` (1 par user, 1 seul membre) ou `GROUP` ("communaute" a l'ecran).           |
+| Membre         | Lien user <-> espace avec un role (S3).                                                                                        |
+| Module         | Brique fonctionnelle (Recettes, Planning, Courses...). Accordee a un espace par la plateforme, puis activee par l'OWNER [D33]. |
+| Recette        | Contenu cree par un auteur, rattache a un espace d'origine.                                                                    |
+| Partage        | Rendre une recette visible dans un autre espace **par reference** (pas de copie) [D03].                                        |
+| Adaptation     | Copie d'une recette dans un espace, liee a l'original ; modifiable sans toucher l'original [D17].                              |
+| Copie (fork)   | Duplication explicite d'une recette dans un espace, qui devient independante, avec trace de l'origine.                         |
+| Revision       | Etat date d'une recette. Chaque modification acceptee cree une revision [D05].                                                 |
+| Suggestion     | Modification proposee par un membre sur une recette dont il n'est pas l'auteur [D04].                                          |
+| Referentiels   | Tags, ingredients, unites. Partages par toute la plateforme ou propres a un espace.                                            |
 
 ## 3. Acteurs et roles
 
 ### 3.1 Roles dans un espace GROUP [D06]
 
-| Action                                        | MEMBER | MODERATOR | OWNER |
-| --------------------------------------------- | :----: | :-------: | :---: |
-| Voir le contenu, ajouter des recettes         |   x    |     x     |   x   |
-| Suggerer une modification                     |   x    |     x     |   x   |
-| Modifier / retirer **sa** recette             |   x    |     x     |   x   |
-| Modifier / retirer la recette d'un autre      |        |     x     |   x   |
-| Trancher une suggestion si l'auteur est parti |        |     x     |   x   |
-| Gerer les tags de l'espace                    |        |     x     |   x   |
-| Inviter, exclure un membre                    |        |     x     |   x   |
-| Promouvoir / retrograder un moderateur        |        |           |   x   |
-| Activer / desactiver un module                |        |           |   x   |
-| Renommer, changer l'avatar                    |        |     x     |   x   |
-| Supprimer l'espace, transferer la propriete   |        |           |   x   |
+| Action                                                  | MEMBER | MODERATOR | OWNER |
+| ------------------------------------------------------- | :----: | :-------: | :---: |
+| Voir le contenu, ajouter des recettes                   |   x    |     x     |   x   |
+| Suggerer une modification                               |   x    |     x     |   x   |
+| Modifier / retirer **sa** recette                       |   x    |     x     |   x   |
+| Modifier / retirer la recette d'un autre                |        |     x     |   x   |
+| Trancher une suggestion si l'auteur est parti           |        |     x     |   x   |
+| Gerer les tags de l'espace                              |        |     x     |   x   |
+| Inviter, exclure un membre                              |        |     x     |   x   |
+| Promouvoir / retrograder un moderateur                  |        |           |   x   |
+| Demander l'acces a un module, l'activer / le desactiver |        |           |   x   |
+| Renommer, changer l'avatar                              |        |     x     |   x   |
+| Supprimer l'espace, transferer la propriete             |        |           |   x   |
 
 Regles :
 
@@ -71,7 +71,7 @@ Un seul membre, OWNER. Pas d'invitation, pas de suggestions. Tous les modules qu
 
 ### 3.3 Administration plateforme
 
-`AdminUser` reste isole (session dediee, 2FA TOTP, audit log). Il gere : referentiels globaux, catalogue des modules, moderation de dernier recours (recettes, espaces), changelog. Il **n'est plus** un passage oblige pour qu'un user utilise un tag ou un ingredient [D08][D09].
+`AdminUser` reste isole (session dediee, 2FA TOTP, audit log). Il gere : referentiels globaux, catalogue des modules, moderation de dernier recours (recettes, espaces), changelog. Il **n'est plus** un passage oblige pour qu'un user utilise un tag ou un ingredient [D08][D09]. Il **accorde les modules** aux espaces, sur demande de leur OWNER ou de sa propre initiative [D33].
 
 ## 4. Perimetre fonctionnel
 
@@ -94,7 +94,7 @@ Identifiants `F-<module>-<n>` pour que roadmap et tests s'y referent.
 - F-SPC-3 Accepter / refuser une invitation. Les invitations en attente sont visibles dans le centre de notifications.
 - F-SPC-4 Quitter, exclure, promouvoir, retrograder, transferer la propriete (S3.1).
 - F-SPC-5 Supprimer l'espace (OWNER) : masque pour tous, restaurable 30 jours, puis purge [D22].
-- F-SPC-6 Activer / desactiver les modules autorises par la plateforme.
+- F-SPC-6 Modules [D33] : a la creation, seul Recettes est accorde et actif. L'OWNER consulte le catalogue des modules (statuts : disponible, beta, bientot), demande l'acces pour son espace, puis active ou desactive chaque module accorde. L'acces est attache a l'espace, pas a la personne. Memes regles pour l'espace perso.
 - F-SPC-7 Fil d'activite de l'espace.
 
 ### 4.3 Recettes (module coeur)
@@ -102,7 +102,7 @@ Identifiants `F-<module>-<n>` pour que roadmap et tests s'y referent.
 Contenu :
 
 - F-REC-1 Titre, photo, portions (avec mise a l'echelle des quantites), temps (preparation, cuisson, repos, total calcule), ingredients (quantite, unite, ingredient), etapes ordonnees, notes, source (URL).
-- F-REC-2 **Blocs** : une recette est une suite de blocs, soit locaux (titre optionnel, ingredients, etapes : "Sauce", "Assemblage"), soit **liens vers une autre recette** avec la quantite utilisee ("Sauce teriyaki : 150 ml"). Chaque recette a un **rendement** (portions par defaut, ou ml, pieces...). Une recette simple = 1 bloc local implicite [D24, en etude].
+- F-REC-2 **Blocs** : une recette est une suite de blocs, soit locaux (titre optionnel, ingredients, etapes : "Sauce", "Assemblage"), soit **liens vers une autre recette** avec la quantite utilisee ("Sauce teriyaki : 150 ml"). Chaque recette a un **rendement** (portions par defaut, ou ml, pieces...). Une recette simple = 1 bloc local implicite ; lien **vivant** : un plat montre toujours la version actuelle de sa sous-recette ; pas de boucle, 3 niveaux maximum [D24].
 - F-REC-3 Tags.
 
 Cycle de vie [D03][D04][D05] :
@@ -159,7 +159,7 @@ Reprend la V1 (grille jours x repas, slots recette / texte libre / vide, verroui
 
 ### 4.9 Administration plateforme
 
-Dashboard, referentiels, catalogue de modules (lesquels sont disponibles, pour quels espaces), espaces, recettes (moderation), changelog, journal d'audit. Reprise de la V1 avec le design system V2.
+Dashboard, referentiels, catalogue de modules (statut de chaque module), **file des demandes d'acces aux modules** (accepter / refuser, accorder ou retirer d'office), espaces, recettes (moderation), changelog, journal d'audit. Reprise de la V1 avec le design system V2.
 
 ### 4.10 Changelog
 
@@ -186,7 +186,9 @@ Reprise de la V1 (genere par la CI, page utilisateur, CRUD admin).
 
 - **shadcn/ui** (Radix + Tailwind) : composants copies dans le depot, donc modifiables, organises en 3 couches : `ui/` (primitives shadcn), `patterns/` (composites : RecipeCard, IngredientInput, SlotCell...), `modules/` (ecrans).
 - **Tailwind v4** avec des **tokens CSS** (`--background`, `--foreground`, `--primary`, `--muted`, `--radius`, etc.) definis une fois.
-- **Personnalisable** : theme clair / sombre / systeme, densite (confortable / compacte), taille du texte, et **couleur d'accent par espace** (chaque espace a sa teinte, appliquee par variable CSS quand on y entre).
+- **Ambiances** [D32] : **Braise** en signature (charbon, ardoise, accent ambre) ; **Sous-bois** et **Potager** en alternatives dans Profil > Apparence. Polices communes, seules les couleurs changent. Chaque ambiance existe en clair et en sombre ; par defaut l'app suit le reglage du systeme.
+- **Personnalisable** : ambiance, mode clair / sombre / systeme, densite (confortable / compacte), taille du texte, et **couleur d'accent par espace** (chaque espace a sa teinte, adaptee a l'ambiance, appliquee quand on y entre).
+- **Navigation** : rail des espaces a gauche facon Discord.
 - Icones : un seul jeu (Lucide, livre avec shadcn). daisyUI et react-icons sont retires.
 - Accessibilite : focus visible, navigation clavier complete (Radix), contraste AA, cibles tactiles de 44px.
 - Un **catalogue de composants** vivant (page interne `/design` [D29]) sert de reference.
