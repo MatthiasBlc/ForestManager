@@ -1,0 +1,29 @@
+# Brief des maquettes V2 (roadmap B5)
+
+Quatre canevas Design, un par domaine, faits en parallele avec les memes conventions.
+
+## Canevas
+
+| Dossier local        | Canevas                           | Ecrans (ids de `13-Parcours.md`)                                                                                                                                                                                                                                                                        | Versions bureau                                                           |
+| -------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `1-Acces-Espaces/`   | Maquettes V2 - Acces et espaces   | E-ACCUEIL-PUBLIC, E-INSCRIPTION, E-CONNEXION, E-VERIF-EMAIL, E-MDP-OUBLIE, E-MDP-NOUVEAU, E-BIENVENUE, E-ACCUEIL, E-REJOINDRE, F-INVITATION, F-CREER-ESPACE, F-INVITER, E-MEMBRES, E-REGLAGES-ESPACE, F-QUITTER, F-TRANSFERER, E-MODULES, F-DEMANDE-MODULE, F-SUPPRIMER-ESPACE, E-ESPACE-EN-SUPPRESSION | E-ACCUEIL, E-MEMBRES, E-MODULES                                           |
+| `2-Recettes/`        | Maquettes V2 - Recettes           | E-RECETTES, E-RECETTE, E-RECETTE-EDITION, F-AJOUT-RECETTE, F-IMPORT-URL, F-IMPORT-TEXTE, F-AJOUT-BLOC, F-LIER-RECETTE, F-PARTAGER, F-ADAPTER, E-COMPARER-ORIGINAL, E-SUGGESTION-EDITION, E-SUGGESTION, E-HISTORIQUE, F-ACTIONS, F-CONFIRMER, E-MODE-CUISINE, F-INGREDIENTS                              | E-RECETTES, E-RECETTE, E-RECETTE-EDITION, E-COMPARER-ORIGINAL             |
+| `3-Planning-Profil/` | Maquettes V2 - Planning et profil | E-PLANNING, F-CREER-PLANNING, F-REPAS, F-GENERER, E-PROFILS-GENERATION, E-IDEES, E-PROFIL, E-APPARENCE, F-EXPORT, F-SUPPRIMER-COMPTE, F-RECHERCHE, E-NOTIFICATIONS, E-NOTIF-PREFERENCES                                                                                                                 | E-PLANNING (grille semaine), E-PROFILS-GENERATION, F-RECHERCHE            |
+| `4-Administration/`  | Maquettes V2 - Administration     | Tableau de bord, demandes d'acces aux modules (E-ADMIN-DEMANDES), ingredients (file des nouveaux, fusion, traductions, rayon, poids par unite), unites et conversions, rayons, tags globaux, espaces et moderation (avec motif, D52), changelog, journal d'audit                                        | Bureau d'abord (outil de l'admin) ; une version mobile du tableau de bord |
+
+## Conventions communes
+
+- **Design system installe et monte** : Forest Manager Design System (https://claude.ai/artifact/7Q9Uy9qGhUyPYt3bWVa5yc), dossier `project/ds/forestui/`, composants reels via `<x-import component-from-global-scope="ForestUI.Button" ...>`. Ne pas redessiner un composant qui existe (Button, IconButton, Field, Switch, Stepper, SegmentedControl, Badge, Chip, Avatar, Icon, EmptyState, Sheet, ActionMenu, Toast, CommandPalette, SpaceRail, ModuleNav, TabBar, TopBar, AppShell, RecipeCard, IngredientRow, RecipeBlock, MealSlot, PullToRefresh). Le reste en balisage avec les variables du design system (`var(--surface)`, `var(--accent)`...), jamais de couleur en dur.
+- **Mobile first** : chaque ecran en mobile 390 x 844 ; les versions bureau listees ci-dessus en page fluide (`expand: "fill"`, 1440 de large). Les feuilles (F-) se montrent ouvertes par-dessus l'ecran qui les appelle (Sheet `open`).
+- **Theme** : le premier theme du design system (`braise-dark`, ambiance signature) ; le menu Theme du canevas permet de basculer. Racine de chaque artboard avec `data-space` de l'espace courant (Famille = 1).
+- **Ergonomie** (principe 6 du CDC) : la plus propre, optimisee et simple possible. Une action principale par ecran, le moins d'etapes possible, aucune option sans usage reel.
+- **Textes d'interface** : francais correct AVEC accents (c'est le texte que verront les utilisateurs ; la regle ASCII vaut pour le code et la documentation). Ton du design system : tutoiement, boutons a l'infinitif ("Nouvelle recette"), confirmations au participe passe, erreurs qui disent quoi corriger, pas d'emoji.
+- **Donnees d'exemple communes** (personnes fictives, toutes du meme cercle) :
+  - Utilisateur courant : Matthias. Membres : Lea (sa compagne), Sam, Noe, Jeanne, Paul, Claire.
+  - Espaces : perso de Matthias ; Foyer (Matthias, Lea ; teinte 5) ; Famille (6 membres, teinte 1, OWNER Matthias) ; Colloc (3 membres, teinte 2) ; TOM (11 membres, teinte 3, MODERATOR Matthias) ; Amis (5 membres, teinte 4).
+  - Recettes : Saumon teriyaki et brocolis (composee, 2 pers.), Sauce teriyaki (base, 300 ml), Poulet teriyaki et riz (4 pers.), Gratin de pates (Foyer, par Lea ; adaptee au beurre dans Colloc), Dahl de lentilles corail, Escalope milanaise et compotee de tomates cerises (composee), Compotee de tomates cerises (base), Tarte aux pommes.
+  - Modules : Recettes (actif partout), Planning (accorde a Famille et Foyer), Courses (bientot), Listes de films (bientot).
+- **Etats a montrer au moins une fois par canevas** : vide, erreur, hors ligne (bandeau, D68) quand c'est pertinent.
+- **Decisions a respecter** : journal `3-Journal-des-Decisions.md` (D01 a D86), matrice `12-Permissions.md`, parcours `13-Parcours.md`.
+- **Disposition du canevas** : une rangee par parcours, un titre (`title1`) par rangee, chaque artboard titre "<ID> - <Titre>".
+- **Copie locale** : la racine de publication est le dossier local du canevas dans `.claude/docs/Rework-V2/16-Maquettes/` ; les fichiers y sont ecrits avant chaque publication.
