@@ -144,3 +144,14 @@ _D11, D12 et D14 sont reserves (planning, notifications, analytics) : a ecrire q
 ### D30 - Revisions stockees en instantane JSON - VALIDEE (2026-11-03)
 
 - Chaque revision enregistre une photo complete de la recette (blocs, ingredients, etapes). La version courante reste en tables normales pour la recherche et les filtres.
+
+### D31 - Ordre du travail de design : design system d'abord, maquettes ensuite - VALIDEE (2026-11-03)
+
+- Design system (couleurs, themes clair / sombre, accents d'espace, typographie, composants de base, app shell avec rail d'espaces facon Discord) avant le modele de donnees.
+- Maquettes de toutes les vues apres validation du modele de donnees, des permissions et des parcours, dont elles dependent.
+- Repart d'une page blanche visuelle ; seule la navigation par rail d'espaces a gauche est imposee.
+
+### D32 - Direction visuelle - EN ATTENTE
+
+- Trois ambiances comparees sur une maquette interactive (`8-Directions-Visuelles.html`) : Sous-bois, Potager, Braise.
+- Piste soulevee par le proprietaire : proposer les trois au choix de l'utilisateur. Proposition : une ambiance signature par defaut (identite, icone, accueil) et les deux autres en alternatives dans Profil > Apparence, polices communes, seules les couleurs changent.
