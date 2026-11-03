@@ -7,6 +7,18 @@ Tout doit être cohérent avec l'application et son fonctionnement actuel. Ce so
 Tout doit être clair et maitrisé, pensé pour être maintenable et évoluer dans le temps.
 Toute la logique business doit être validé et sans zone d'ombre restante avant d'écrire du code.
 
+# Rework V2 - EN ETUDE (2026-11-03)
+
+> Refonte complete decidee : reecriture propre dans ce depot, sans migration (pas d'utilisateurs en V1). Dossier `Rework-V2/` : analyse de la V1, cahier des charges, journal des decisions (D01 a D40), roadmap. Chaque idee encore ouverte ci-dessous porte une ligne **Statut V2**.
+
+Idees nees pendant l'etude, deja integrees a la V2 :
+
+- **Adapter une recette a un espace** (D17) : "chez nous on la fait au beurre" sans toucher la recette d'origine ; l'adaptation signale quand l'original change.
+- **Recettes a base de recettes** (D24) : escalope milanaise + compotee de tomates cerises, sauce teriyaki partagee entre plusieurs plats.
+- **Modules accordes sur demande** (D33) : seul Recettes est fourni ; l'OWNER demande l'acces aux autres modules, un super admin accepte. Premiere brique gratuite, d'autres peut-etre payantes un jour.
+- **Trois ambiances visuelles** (D32) : Braise en signature, Sous-bois et Potager au choix dans Profil > Apparence. Rail des espaces a gauche facon Discord.
+- **Espace perso = un espace comme les autres** (D02) : planning et courses aussi en solo.
+
 # ~~Rework du système d'ingrédients~~ DONE (Phase 11)
 
 Implemente : unites structurees, gouvernance PENDING/APPROVED, moderation admin, propositions avec ingredients, notifications WebSocket.
@@ -110,6 +122,8 @@ Generation auto via CI, versioning semver, page user blog-like, CRUD admin, API 
 
 ## Gestionnaire de planning de repas dans une communauté
 
+> **Statut V2** : livre en V1 (planning manuel). Repris en V2 : disponible aussi dans l'espace perso (D02), repas de la journee configurables (D11), droits d'edition par role, idees de repas convertibles en recettes, acces au module accorde par un super admin sur demande (D33).
+
 Nous sommes ici à notre première nouvelle feature majeure. (penser à utiliser le système de feature)
 Ici deux features différentes : la première va être la gestion d'un planning de repas, (manuellement)
 La deuxième va être la gestion de plusieurs jeux de paramètres de génération automatisé du planning.
@@ -130,11 +144,15 @@ De fait cela permet d'ajouter de nouvelles idées qui peuvent devenir des recett
 
 ## Feature génération automatique du planning de repas
 
+> **Statut V2** : livre en V1. Algorithme repris tel quel en V2, interface refaite. Une recette de base (sauce) n'est pas proposee seule par le generateur (D24).
+
 Mettre ici tout ce qu'il faut conserver pour la feature génération automatique du planning de repas.
 
 ---------------------------------------- Fin --------------------------------------------------
 
 ## Brique liste de courses
+
+> **Statut V2** : module en V2.1. Le modele (conversions d'unites, rayon par defaut de chaque ingredient) est prevu des la V2.0 (D36).
 
 Nous sommes ici une nouvelle feature majeure. (penser à utiliser le système de feature)
 
@@ -148,9 +166,13 @@ poivoir associer les ingrédients et articles à un shop favori.
 
 ## upload de photo suite
 
+> **Statut V2** : couvert. L'avatar d'un espace est son icone dans le rail des espaces, a gauche.
+
 faire ne sorte que les photos de communauté, s'il y en a une, soient utilisée pour la miniature de la communauté dans la sidebar
 
 ## Mobile v2 (post rework mobile v1)
+
+> **Statut V2** : mobile first (D38). Retenus : glisser pour fermer les feuilles du bas, appui long pour le menu d'actions, tirer pour rafraichir. Ecartes : glisser depuis le bord (conflits avec le defilement), vibration (absente sur iPhone).
 
 - **Swipe gestures** : swipe depuis le bord gauche pour ouvrir le drawer sidebar, swipe down pour fermer les bottom sheets, swipe-back pour naviguer en arriere. Necessite une gestion fine des conflits avec le scroll horizontal/vertical.
 - **Long-press sur RecipeCard** : ouvrir l'ActionSheet (Edit, Delete, Share) via long-press au lieu du bouton "...". Pattern standard iOS/Android. Conflit potentiel avec le scroll de la liste a gerer.
@@ -159,12 +181,18 @@ faire ne sorte que les photos de communauté, s'il y en a une, soient utilisée 
 
 ## Bouton pour exporter ses recettes ou celles d'une de nos communautés (backup local)
 
+> **Statut V2** : export natif de ses recettes, et de tout l'espace pour son OWNER, trace dans le fil d'activite, un par jour (D37). Formats JSON, Markdown, photos en zip.
+
 ## Version application ?
+
+> **Statut V2** : PWA installable sur l'ecran d'accueil, lecture hors ligne des recettes ouvertes et du planning de la semaine (D35). Pas d'appli native sur les stores.
 
 comment faire une application mobile ?
 Est-ce nécessaire ?
 
 ## Recipe Rework v3 - Sous-sections de recettes
+
+> **Statut V2** : remplace par les recettes composees (D24) : une recette est une suite de blocs, locaux (ingredients + etapes) ou liens vivants vers d'autres recettes (sauce reutilisee dans plusieurs plats). Maquette : `Rework-V2/7-Proposition-Recettes-Composees.html`.
 
 Certaines recettes sont composees de plusieurs sous-recettes (ex: enchiladas = viande + sauce + assemblage), chacune avec ses propres ingredients et etapes. Aujourd'hui tout est aplati en une seule liste d'ingredients et une seule liste d'etapes. Penser également à séparer les ingrédients en sous catégories
 
@@ -180,11 +208,15 @@ L'idee serait d'introduire un concept de `RecipeSection` (ou groupe) :
 
 ## Brique on joue à quoi ?
 
+> **Statut V2** : apres la V2.0. Prepare par le socle generique (D40) et l'acces aux modules sur demande (D33).
+
 Nous sommes ici une nouvelle feature majeure. (penser à utiliser le système de feature)
 
 (utiliser api publique pour trouver des jeux et faire une liste)
 
 ## Brique On regarde quoi et ou ?
+
+> **Statut V2** : apres la V2.0. Prepare par le socle generique (D40) et l'acces aux modules sur demande (D33).
 
 Nous sommes ici une nouvelle feature majeure. (penser à utiliser le système de feature)
 
@@ -192,31 +224,45 @@ Nous sommes ici une nouvelle feature majeure. (penser à utiliser le système de
 
 ## Multi langue ?
 
+> **Statut V2** : i18n prevue des le depart, francais seul livre ; referentiels globaux nommes par langue (D34).
+
 passer le site en multilangue fr et EN ?
 
 ## Tests E2E
+
+> **Statut V2** : Playwright sur les parcours critiques, inclus dans la V2.
 
 Tests end-to-end avec Playwright ou Cypress qui simulent un vrai navigateur : un utilisateur se connecte, cree une recette, invite un membre, etc. Teste toute la chaine (front -> API -> DB). Lourd a mettre en place (infra, CI, maintenance) mais detecte des bugs que les tests unitaires/integration ne voient pas.
 
 ## Monitoring
 
+> **Statut V2** : un outil gratuit de suivi d'erreurs (front + back) sera choisi en conception technique.
+
 Metriques en production (temps de reponse, erreurs), alertes, dashboard type Grafana ou service comme Sentry pour tracker les erreurs en prod. Utile quand l'app est deployee et utilisee a plus grande echelle.
 
 ## PWA / Offline support
+
+> **Statut V2** : voir "Version application" (D35).
 
 Service worker, manifest, cache des pages, installable sur mobile. Consultation des recettes sans connexion.
 
 ## Recherche globale
 
+> **Statut V2** : palette de commandes Ctrl K, recherche dans recettes, ingredients, membres, espaces.
+
 Barre de recherche unique (navbar) qui cherche simultanement dans les recettes, communautes, tags, ingredients, membres. Resultats groupes par type.
 
 ## Analytics recettes
+
+> **Statut V2** : pas de suivi des vues. Compteurs utiles : nombre de fois planifiee, derniere fois cuisinee, adaptations, espaces de partage (D39).
 
 Comptage vues (RecipeView, RecipeAnalytics)
 Affichage statistiques sur recettes
 Dashboard analytics utilisateur
 
 ### Idees futures liees au changelog
+
+> **Statut V2** : la notification de nouvelle version est dans la V2. Changelog public et markdown : plus tard.
 
 - **Notification de nouveau changelog** : badge/notification in-app quand une nouvelle version est publiee. Potentiellement une categorie `CHANGELOG` dans NotificationCategory.
 - **Changelog public** : rendre le changelog accessible sans connexion (flag `isPublic` sur le modele)
