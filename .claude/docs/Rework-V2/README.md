@@ -36,4 +36,5 @@ Artefact en ligne : voir le lien dans la section "Reprise" ci-dessous. La copie 
   - Directions visuelles : https://claude.ai/artifact/DEwK7Soo52ZvKi7qsbzpPr (`8-Directions-Visuelles.html`)
   - Design System : https://claude.ai/artifact/7Q9Uy9qGhUyPYt3bWVa5yc (`10-Design-System/project/`)
 - Phase A terminee : decisions D01 a D40 tranchees, CDC en 0.3.
-- Prochaine etape : validation du Design System (roadmap B4), puis modele de donnees (B1).
+- Design System valide (B4), ajustable pendant les maquettes.
+- Prochaine etape : modele de donnees detaille (roadmap B1).

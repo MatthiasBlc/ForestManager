@@ -20,7 +20,7 @@ La premiere case non cochee est le point de reprise. **Aucune ligne de code appl
 - [ ] B2 Matrice des permissions complete, par module
 - [ ] B3 Parcours utilisateurs (inscription, recette, partage, suggestion, planning, courses)
 - [x] B4a Direction visuelle : Braise en signature, Sous-bois et Potager en alternatives
-- [ ] B4 Design system : tokens, theme, accent d'espace, composants de base, app shell avec rail (artefact Design System) - PUBLIE le 2026-11-03, en attente de validation
+- [x] B4 Design system : tokens, theme, accent d'espace, composants de base, app shell avec rail (artefact Design System) - valide le 2026-11-03 (ajustements possibles pendant les maquettes)
 - [ ] B5 Maquettes des ecrans du CDC S5.4 (artefact Design)
 - [ ] B6 Architecture technique : monorepo, registre de modules, contrats API, i18n, PWA et cache hors ligne, outil de suivi d'erreurs
 - [x] B7 Plan de migration des donnees : sans objet (pas d'utilisateurs en V1, remise a zero)
