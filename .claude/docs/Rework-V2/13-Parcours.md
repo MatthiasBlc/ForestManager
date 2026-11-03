@@ -218,18 +218,18 @@ Conventions :
 
 ## Decisions proposees
 
-| #   | Decision                                                                                                                                                                                                             | Statut   |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| D60 | A l'ouverture, l'app reprend le dernier espace et module visites. L'accueil a widgets (E-ACCUEIL) est l'ecran d'entree de l'espace perso.                                                                            | PROPOSEE |
-| D61 | Apres l'inscription, un ecran de bienvenue a 3 choix passables (creer un espace, rejoindre par lien, ajouter une recette). Pas de visite guidee en plusieurs ecrans.                                                 | PROPOSEE |
-| D62 | Un lien d'invitation montre l'espace (nom, avatar, membres) avant de rejoindre ; il survit a l'inscription ou la connexion ; rejoindre demande un clic de confirmation. Un lien invalide ne montre rien de l'espace. | PROPOSEE |
-| D63 | Une seule porte d'entree pour creer une recette (Saisir, Importer un lien, Coller un texte) ; tout import aboutit au meme editeur pre-rempli, champs douteux marques "A verifier".                                   | PROPOSEE |
-| D64 | Une suggestion se redige dans l'editeur de recette en "mode suggestion" ; l'auteur l'accepte ou la refuse en entier en V2.0 (pas d'acceptation partielle).                                                           | PROPOSEE |
-| D65 | Le partage se regle dans une seule feuille a cases (espaces ou la recette est visible) : cocher partage, decocher retire.                                                                                            | PROPOSEE |
-| D66 | Un espace en suppression reste visible, grise, dans le rail de son OWNER seulement, avec le compte a rebours et "Restaurer".                                                                                         | PROPOSEE |
-| D67 | Mode cuisine : une etape a la fois en grand, boutons Precedente / Suivante, ingredients dans une feuille, ecran maintenu allume.                                                                                     | PROPOSEE |
-| D68 | Hors ligne : bandeau permanent "Hors ligne", actions d'ecriture desactivees avec la raison, pas de file d'attente de modifications ; brouillon de recette conserve localement.                                       | PROPOSEE |
-| D69 | Echanger deux repas : glisser-deposer en desktop ; sur mobile, ActionMenu "Echanger avec..." puis toucher le repas cible (pas de glisser-deposer tactile, conflit avec le defilement).                               | PROPOSEE |
+| #   | Decision                                                                                                                                                                                                             | Statut  |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| D60 | A l'ouverture, l'app reprend le dernier espace et module visites. L'accueil a widgets (E-ACCUEIL) est l'ecran d'entree de l'espace perso.                                                                            | VALIDEE |
+| D61 | Apres l'inscription, un ecran de bienvenue a 3 choix passables (creer un espace, rejoindre par lien, ajouter une recette). Pas de visite guidee en plusieurs ecrans.                                                 | VALIDEE |
+| D62 | Un lien d'invitation montre l'espace (nom, avatar, membres) avant de rejoindre ; il survit a l'inscription ou la connexion ; rejoindre demande un clic de confirmation. Un lien invalide ne montre rien de l'espace. | VALIDEE |
+| D63 | Une seule porte d'entree pour creer une recette (Saisir, Importer un lien, Coller un texte) ; tout import aboutit au meme editeur pre-rempli, champs douteux marques "A verifier".                                   | VALIDEE |
+| D64 | Une suggestion se redige dans l'editeur de recette en "mode suggestion" ; l'auteur l'accepte ou la refuse en entier en V2.0 (pas d'acceptation partielle).                                                           | VALIDEE |
+| D65 | Le partage se regle dans une seule feuille a cases (espaces ou la recette est visible) : cocher partage, decocher retire.                                                                                            | VALIDEE |
+| D66 | Un espace en suppression reste visible, grise, dans le rail de son OWNER seulement, avec le compte a rebours et "Restaurer".                                                                                         | VALIDEE |
+| D67 | Mode cuisine : une etape a la fois en grand, boutons Precedente / Suivante, ingredients dans une feuille, ecran maintenu allume.                                                                                     | VALIDEE |
+| D68 | Hors ligne : bandeau permanent "Hors ligne", actions d'ecriture desactivees avec la raison, pas de file d'attente de modifications ; brouillon de recette conserve localement.                                       | VALIDEE |
+| D69 | Echanger deux repas : glisser-deposer en desktop ; sur mobile, ActionMenu "Echanger avec..." puis toucher le repas cible (pas de glisser-deposer tactile, conflit avec le defilement).                               | VALIDEE |
 
 ## Questions pour le proprietaire
 

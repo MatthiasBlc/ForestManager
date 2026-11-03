@@ -1,6 +1,6 @@
 # Architecture technique V2
 
-Statut : **PROPOSEE** (roadmap B6), en attente de validation. Decisions d'origine citees `Dxx` (journal), decisions nouvelles D70 a D76 en fin de document.
+Statut : **VALIDE** le 2026-11-03 (roadmap B6). Decisions d'origine citees `Dxx` (journal), decisions nouvelles D70 a D76 en fin de document.
 Ce document decrit la cible ; il ne decrit pas la V1. Il ne recopie pas le modele de donnees (voir B1).
 
 ## 1. Principes
@@ -258,15 +258,15 @@ Relevees sur le registre npm le 2026-11-03. A reverifier au demarrage du code ; 
 
 ## 15. Decisions proposees
 
-| #   | Decision                                                                                                                                                                                                                                                                               | Statut   |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| D70 | Monorepo npm workspaces `apps/api`, `apps/web`, `packages/shared`, `packages/test-utils`, `e2e/` ; la logique metier pure vit dans `shared` ou `domain/` sans Express ni Prisma.                                                                                                       | PROPOSEE |
-| D71 | Registre de modules statique : un manifeste API + un manifeste web par module (routes, permissions, notifications, activite, reglages, recherche, export, widgets, navigation) ; `requireModule` et `requirePermission` sur chaque route ; un module n'importe jamais un autre module. | PROPOSEE |
-| D72 | API REST `/api/v1`, schemas Zod partages en entree et en sortie, format d'erreur unique `{ error: { code, message, details } }`, codes centralises, pagination par curseur.                                                                                                            | PROPOSEE |
-| D73 | i18next + react-i18next, namespaces par module, cles anglaises stables, controle CI des cles manquantes ; referentiels traduits servis dans la langue du profil.                                                                                                                       | PROPOSEE |
-| D74 | PWA par vite-plugin-pwa ; le service worker ne met en cache que la coquille et les images ; les donnees hors ligne passent par TanStack Query persiste en IndexedDB ; mutations desactivees hors ligne.                                                                                | PROPOSEE |
-| D75 | Suivi d'erreurs : SDK Sentry dans le code, Bugsink auto-heberge comme recepteur.                                                                                                                                                                                                       | PROPOSEE |
-| D76 | CI/CD : preprod au push sur `Developement`, prod au merge sur `master`, images taguees version + SHA, sauvegarde `pg_dump` avant chaque deploy prod, seed limite aux referentiels.                                                                                                     | PROPOSEE |
+| #   | Decision                                                                                                                                                                                                                                                                               | Statut  |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| D70 | Monorepo npm workspaces `apps/api`, `apps/web`, `packages/shared`, `packages/test-utils`, `e2e/` ; la logique metier pure vit dans `shared` ou `domain/` sans Express ni Prisma.                                                                                                       | VALIDEE |
+| D71 | Registre de modules statique : un manifeste API + un manifeste web par module (routes, permissions, notifications, activite, reglages, recherche, export, widgets, navigation) ; `requireModule` et `requirePermission` sur chaque route ; un module n'importe jamais un autre module. | VALIDEE |
+| D72 | API REST `/api/v1`, schemas Zod partages en entree et en sortie, format d'erreur unique `{ error: { code, message, details } }`, codes centralises, pagination par curseur.                                                                                                            | VALIDEE |
+| D73 | i18next + react-i18next, namespaces par module, cles anglaises stables, controle CI des cles manquantes ; referentiels traduits servis dans la langue du profil.                                                                                                                       | VALIDEE |
+| D74 | PWA par vite-plugin-pwa ; le service worker ne met en cache que la coquille et les images ; les donnees hors ligne passent par TanStack Query persiste en IndexedDB ; mutations desactivees hors ligne.                                                                                | VALIDEE |
+| D75 | Suivi d'erreurs : SDK Sentry dans le code, Bugsink auto-heberge comme recepteur.                                                                                                                                                                                                       | VALIDEE |
+| D76 | CI/CD : preprod au push sur `Developement`, prod au merge sur `master`, images taguees version + SHA, sauvegarde `pg_dump` avant chaque deploy prod, seed limite aux referentiels.                                                                                                     | VALIDEE |
 
 ## 16. Questions pour le proprietaire
 

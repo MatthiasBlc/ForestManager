@@ -88,21 +88,22 @@ Un meme utilisateur est MEM, MOD ou OWN selon l'espace. "Auteur" se cumule avec 
 
 ## Recettes
 
-| Action                                                                                      | VIS | CON |  MEM   | MOD | OWN |  ANC  |  ADM  | Source        | Note                                                                                                                                                         |
-| ------------------------------------------------------------------------------------------- | :-: | :-: | :----: | :-: | :-: | :---: | :---: | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Voir une recette visible dans l'espace (origine ou partagee), son historique, ses compteurs |  -  |  -  |  Oui   | Oui | Oui |   -   | Cond. | D03, D05, D39 | Super admin : moderation motivee (D52).                                                                                                                      |
-| Creer une recette dans l'espace, l'importer par URL ou par texte                            |  -  |  -  |  Oui   | Oui | Oui |   -   |   -   | F-REC-4, D28  | Dans l'espace perso : son OWNER.                                                                                                                             |
-| Modifier une recette (cree une revision)                                                    |  -  |  -  | Auteur | Oui | Oui |   -   |  Oui  | D05, D06, D57 | Recettes de l'espace d'origine : auteur, MOD et OWNER de l'espace d'origine. Les moderateurs d'un espace ou elle est seulement partagee ne la modifient pas. |
-| Restaurer une revision anterieure                                                           |  -  |  -  | Auteur | Oui | Oui |   -   |   -   | D05, D55      | Memes droits que modifier.                                                                                                                                   |
-| Partager dans un autre espace (par reference)                                               |  -  |  -  | Auteur |  -  |  -  |   -   |   -   | D03, D56      | Auteur seulement, et membre de l'espace cible. Les autres adaptent la recette.                                                                               |
-| Retirer une recette d'un espace ou elle est partagee                                        |  -  |  -  | Auteur | Oui | Oui |   -   |  Oui  | F-REC-9       | Auteur, ou MOD / OWNER de cet espace de partage.                                                                                                             |
-| Adapter pour un espace (copie liee a l'original)                                            |  -  |  -  |  Oui   | Oui | Oui |   -   |   -   | D17           | Il faut voir l'original et etre membre de l'espace cible. L'adaptation lui appartient.                                                                       |
-| Comparer une adaptation avec l'original, marquer "vu"                                       |  -  |  -  |  Oui   | Oui | Oui |   -   |   -   | D17           | Comparer : tout membre qui voit l'adaptation. Marquer vu : ceux qui peuvent modifier l'adaptation.                                                           |
-| Supprimer une recette (disparait de tous les espaces)                                       |  -  |  -  | Auteur | Oui | Oui |   -   |  Oui  | F-REC-10, D57 | Auteur. MOD / OWNER de l'espace d'origine seulement si l'auteur n'en est plus membre.                                                                        |
-| Marquer une recette comme "base" (exclue de la generation)                                  |  -  |  -  | Auteur | Oui | Oui |   -   |   -   | D24           | Memes droits que modifier.                                                                                                                                   |
-| Mode cuisine, cocher les ingredients, changer les portions affichees                        |  -  |  -  |  Oui   | Oui | Oui |   -   |   -   | F-REC-12      | Rien n'est enregistre sur la recette.                                                                                                                        |
-| Recette d'un auteur parti : la reprendre (modifier, trancher, retirer, supprimer)           |  -  |  -  |   -    | Oui | Oui |   -   |   -   | D18, D57      | MOD et OWNER de l'espace d'origine.                                                                                                                          |
-| Acceder a ses anciennes recettes apres avoir quitte l'espace                                |  -  |  -  |   -    |  -  |  -  | Cond. |   -   | D18, D59      | Non dans l'espace quitte ; il garde celles dont l'origine est un autre espace. S'il revient, il retrouve ses droits d'auteur (D59).                          |
+| Action                                                                                                               | VIS | CON |  MEM   |  MOD  |  OWN  |  ANC  |  ADM  | Source        | Note                                                                                                                                                                                                                                    |
+| -------------------------------------------------------------------------------------------------------------------- | :-: | :-: | :----: | :---: | :---: | :---: | :---: | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Voir une recette visible dans l'espace (origine ou partagee), son historique, ses compteurs                          |  -  |  -  |  Oui   |  Oui  |  Oui  |   -   | Cond. | D03, D05, D39 | Super admin : moderation motivee (D52).                                                                                                                                                                                                 |
+| Creer une recette dans l'espace, l'importer par URL ou par texte                                                     |  -  |  -  |  Oui   |  Oui  |  Oui  |   -   |   -   | F-REC-4, D28  | Dans l'espace perso : son OWNER.                                                                                                                                                                                                        |
+| Modifier une recette (cree une revision)                                                                             |  -  |  -  | Auteur |  Oui  |  Oui  |   -   |  Oui  | D05, D06, D57 | Recettes de l'espace d'origine : auteur, MOD et OWNER de l'espace d'origine. Les moderateurs d'un espace ou elle est seulement partagee ne la modifient pas.                                                                            |
+| Restaurer une revision anterieure                                                                                    |  -  |  -  | Auteur |  Oui  |  Oui  |   -   |   -   | D05, D55      | Memes droits que modifier.                                                                                                                                                                                                              |
+| Partager dans un autre espace (par reference)                                                                        |  -  |  -  | Cond.  | Cond. | Cond. |   -   |   -   | D03, D81      | Auteur : directement. Autre membre : demande acceptee par l'auteur, ou directement si l'auteur a autorise les membres de cet espace (D81). Etre membre des deux espaces. Auteur parti : les MOD / OWNER de l'espace d'origine decident. |
+| Accepter ou refuser une demande de partage de sa recette ; autoriser les membres d'un espace a partager ses recettes |  -  |  -  | Auteur | Cond. | Cond. |   -   |   -   | D81           | Auteur. MOD / OWNER de l'espace d'origine seulement si l'auteur n'en est plus membre.                                                                                                                                                   |
+| Retirer une recette d'un espace ou elle est partagee                                                                 |  -  |  -  | Auteur |  Oui  |  Oui  |   -   |  Oui  | F-REC-9       | Auteur, ou MOD / OWNER de cet espace de partage.                                                                                                                                                                                        |
+| Adapter pour un espace (copie liee a l'original)                                                                     |  -  |  -  |  Oui   |  Oui  |  Oui  |   -   |   -   | D17           | Il faut voir l'original et etre membre de l'espace cible. L'adaptation lui appartient.                                                                                                                                                  |
+| Comparer une adaptation avec l'original, marquer "vu"                                                                |  -  |  -  |  Oui   |  Oui  |  Oui  |   -   |   -   | D17           | Comparer : tout membre qui voit l'adaptation. Marquer vu : ceux qui peuvent modifier l'adaptation.                                                                                                                                      |
+| Supprimer une recette (disparait de tous les espaces)                                                                |  -  |  -  | Auteur |  Oui  |  Oui  |   -   |  Oui  | F-REC-10, D57 | Auteur. MOD / OWNER de l'espace d'origine seulement si l'auteur n'en est plus membre.                                                                                                                                                   |
+| Marquer une recette comme "base" (exclue de la generation)                                                           |  -  |  -  | Auteur |  Oui  |  Oui  |   -   |   -   | D24           | Memes droits que modifier.                                                                                                                                                                                                              |
+| Mode cuisine, cocher les ingredients, changer les portions affichees                                                 |  -  |  -  |  Oui   |  Oui  |  Oui  |   -   |   -   | F-REC-12      | Rien n'est enregistre sur la recette.                                                                                                                                                                                                   |
+| Recette d'un auteur parti : la reprendre (modifier, trancher, retirer, supprimer)                                    |  -  |  -  |   -    |  Oui  |  Oui  |   -   |   -   | D18, D57      | MOD et OWNER de l'espace d'origine.                                                                                                                                                                                                     |
+| Acceder a ses anciennes recettes apres avoir quitte l'espace                                                         |  -  |  -  |   -    |   -   |   -   | Cond. |   -   | D18, D59      | Non dans l'espace quitte ; il garde celles dont l'origine est un autre espace. S'il revient, il retrouve ses droits d'auteur (D59).                                                                                                     |
 
 ## Recettes composees
 
@@ -110,7 +111,7 @@ Un meme utilisateur est MEM, MOD ou OWN selon l'espace. "Auteur" se cumule avec 
 | -------------------------------------------------------------- | :-: | :-: | :----: | :---: | :---: | :-: | :-: | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Ajouter un bloc lie a une autre recette                        |  -  |  -  | Auteur |  Oui  |  Oui  |  -  |  -  | D24      | Droit de modifier la recette composee ET voir la sous-recette.                                                                                                        |
 | Voir le contenu d'une sous-recette liee                        |  -  |  -  | Cond.  | Cond. | Cond. |  -  |  -  | D24, D26 | Seulement si elle est visible dans l'espace ; sinon le bloc affiche "recette non disponible" avec son nom.                                                            |
-| Partager une recette composee (partage auto des sous-recettes) |  -  |  -  | Auteur |   -   |   -   |  -  |  -  | D26, D56 | Les sous-recettes dont il est l'auteur sont partagees avec elle ; celles d'un autre ne le sont pas et s'affichent "non disponible" (liste affichee avant de valider). |
+| Partager une recette composee (partage auto des sous-recettes) |  -  |  -  | Auteur |   -   |   -   |  -  |  -  | D26, D81 | Les sous-recettes dont il est l'auteur sont partagees avec elle ; celles d'un autre ne le sont pas et s'affichent "non disponible" (liste affichee avant de valider). |
 | Modifier une sous-recette depuis la recette composee           |  -  |  -  | Auteur |  Oui  |  Oui  |  -  |  -  | D24      | Non : on ouvre la sous-recette, avec ses propres droits. Le lien est vivant.                                                                                          |
 
 ## Suggestions
@@ -196,43 +197,43 @@ Un meme utilisateur est MEM, MOD ou OWN selon l'espace. "Auteur" se cumule avec 
 
 A reporter dans le journal des decisions une fois tranchees.
 
-### D50 - Pas d'annuaire d'utilisateurs - PROPOSEE
+### D50 - Pas d'annuaire d'utilisateurs - VALIDEE (2026-11-03)
 
 - Un profil (username, avatar) n'est visible que par les personnes qui partagent un espace avec lui. Aucune recherche globale ; invitation par lien ou username exact (D07).
 
-### D51 - Suppression du compte d'un OWNER - PROPOSEE
+### D51 - Suppression du compte d'un OWNER - VALIDEE (2026-11-03)
 
 - La propriete de chaque espace passe automatiquement au MODERATOR le plus ancien, sinon au MEMBER le plus ancien ; les membres sont prevenus. S'il etait seul, l'espace est supprime avec le delai de 30 jours (D22). Plafond anti-abus : 20 espaces possedes par utilisateur.
 
-### D52 - Acces du super admin au contenu - PROPOSEE
+### D52 - Acces du super admin au contenu - VALIDEE (2026-11-03)
 
 - Pas de navigation libre dans les espaces. Acces seulement pour une moderation (signalement, demande d'un utilisateur), avec un motif saisi et trace dans l'audit. Jamais de connexion a la place d'un utilisateur.
 
-### D53 - Exclusion des moderateurs - PROPOSEE
+### D53 - Exclusion des moderateurs - VALIDEE (2026-11-03)
 
 - Un MODERATOR exclut des MEMBER ; seul l'OWNER exclut ou retrograde un MODERATOR.
 
-### D54 - Catalogue des modules visible par tous les membres - PROPOSEE
+### D54 - Catalogue des modules visible par tous les membres - VALIDEE (2026-11-03)
 
 - Lecture du catalogue et des statuts pour tous les membres ; seul l'OWNER demande l'acces et active.
 
-### D55 - Restaurer une revision - PROPOSEE
+### D55 - Restaurer une revision - VALIDEE (2026-11-03)
 
 - Meme droit que modifier la recette (auteur, ou MOD / OWNER de l'espace d'origine).
 
-### D56 - Partager dans un autre espace : l'auteur seulement - PROPOSEE
+### D56 - Partager dans un autre espace : l'auteur seulement - AMENDEE par D81 (demande de partage + confiance par espace, voir le journal)
 
 - Partager par reference expose le contenu de l'auteur : lui seul le decide. Les autres membres adaptent la recette pour leur espace (D17).
 
-### D57 - Recette d'un auteur parti - PROPOSEE
+### D57 - Recette d'un auteur parti - VALIDEE (2026-11-03)
 
 - MOD et OWNER de l'espace d'origine peuvent la modifier, trancher ses suggestions, la retirer et la supprimer. Ses partages dans d'autres espaces restent ; les moderateurs de ces espaces peuvent seulement les retirer.
 
-### D58 - Droits du planning - PROPOSEE
+### D58 - Droits du planning - VALIDEE (2026-11-03)
 
 - Modifier un repas : role minimal regle par l'OWNER, MEMBER par defaut. Creer, archiver un planning, regler les repas de la journee, gerer les parametres et generer tout un planning : MODERATOR et OWNER.
 
-### D59 - Retour d'un ancien membre - PROPOSEE
+### D59 - Retour d'un ancien membre - VALIDEE (2026-11-03)
 
 - Le lien auteur d'une recette n'est jamais casse (sauf compte supprime, anonymise) : un auteur qui revient retrouve ses droits d'auteur sur ses recettes de l'espace.
 

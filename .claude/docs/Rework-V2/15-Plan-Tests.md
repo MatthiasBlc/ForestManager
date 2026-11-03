@@ -143,11 +143,11 @@ Une **feuille de recette** courte avant chaque mise en prod : installation sur u
 
 ## 11. Decisions proposees
 
-| #   | Decision                                                                                                                                                                                                                                                | Statut   |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| D77 | Outils : Vitest partout, Supertest sur vraie base PostgreSQL remise a zero entre fichiers, Testing Library + MSW avec handlers issus des schemas Zod, Playwright mobile + desktop avec axe.                                                             | PROPOSEE |
-| D78 | CI bloquante : lint, typecheck, cles i18n, unitaires, integration, composants, E2E critiques, couverture, `npm audit` ; WebKit bloquant sur `master` seulement ; seuils 90 / 80 / 60 % (shared / api / web).                                            | PROPOSEE |
-| D79 | Donnees de test : fabriques partagees dans `packages/test-utils`, seed des referentiels identique a la prod, scenarios E2E crees par une route reservee a l'environnement de test, fixtures d'import servies localement (aucun appel a Internet en CI). | PROPOSEE |
+| #   | Decision                                                                                                                                                                                                                                                | Statut  |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| D77 | Outils : Vitest partout, Supertest sur vraie base PostgreSQL remise a zero entre fichiers, Testing Library + MSW avec handlers issus des schemas Zod, Playwright mobile + desktop avec axe.                                                             | VALIDEE |
+| D78 | CI bloquante : lint, typecheck, cles i18n, unitaires, integration, composants, E2E critiques, couverture, `npm audit` ; WebKit bloquant sur `master` seulement ; seuils 90 / 80 / 60 % (shared / api / web).                                            | VALIDEE |
+| D79 | Donnees de test : fabriques partagees dans `packages/test-utils`, seed des referentiels identique a la prod, scenarios E2E crees par une route reservee a l'environnement de test, fixtures d'import servies localement (aucun appel a Internet en CI). | VALIDEE |
 
 ## 12. Questions pour le proprietaire
 
