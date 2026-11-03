@@ -90,3 +90,22 @@ _D11, D12 et D14 sont reserves (planning, notifications, analytics) : a ecrire q
 ### D19 - Tags propres a chaque espace - VALIDEE (2026-11-03)
 
 - Les tags d'espace sont attaches a la recette **dans** un espace : une meme recette partagee peut etre taguee differemment dans chaque espace. Les tags globaux (vegetarien, dessert...) restent communs a la recette.
+
+### D20 - Suppression de compte : contenus partages conserves, auteur anonymise - VALIDEE (2026-11-03)
+
+- Les recettes partagees ou adaptees dans des espaces GROUP restent, auteur affiche "ancien membre", reprises par les moderateurs (meme regle que D18). L'espace personnel est supprime.
+
+### D21 - Emails optionnels, service gratuit sans carte bancaire - VALIDEE (2026-11-03)
+
+- Cible : un service SMTP gratuit sans carte bancaire (type Brevo), choisi en conception.
+- **L'application doit fonctionner sans email configure** : si le SMTP n'est pas parametre, l'inscription ne demande pas de verification, "mot de passe oublie" est masque et un admin peut reinitialiser un mot de passe a la main. Rien ne plante au demarrage.
+
+### D22 - Suppression d'espace avec delai de 30 jours - VALIDEE (2026-11-03)
+
+- L'espace est masque pour tous, les membres sont prevenus, l'OWNER peut restaurer pendant 30 jours ; ensuite purge (photos comprises).
+
+### D23 - Pas de migration de donnees V1 -> V2 - VALIDEE (2026-11-03)
+
+- La V1 n'a pas d'utilisateurs reels. La base et la stack deployee seront remises a zero avant la mise en prod de la V2.
+- Consequences : pas de script de migration ; la V2 part de son propre schema et de nouvelles migrations ; la strategie D01 est a reexaminer (la contrainte de reprise des donnees disparait).
+- Regle conservee pour plus tard : l'OWNER d'un espace est son createur, sinon le moderateur le plus ancien.

@@ -21,7 +21,7 @@ La premiere case non cochee est le point de reprise. **Aucune ligne de code appl
 - [ ] B4 Design system : tokens, theme, accent d'espace, composants de base (artefact Design System)
 - [ ] B5 Maquettes des ecrans du CDC S5.4 (artefact Design)
 - [ ] B6 Architecture technique : monorepo, registre de modules, contrats API
-- [ ] B7 Plan de migration des donnees V1 -> V2 + script de verification
+- [x] B7 Plan de migration des donnees : sans objet (pas d'utilisateurs en V1, remise a zero)
 - [ ] B8 Plan de tests (integration, composants, E2E)
 - [ ] B9 **Validation finale du CDC 1.0** - feu vert pour coder
 
@@ -33,6 +33,6 @@ La premiere case non cochee est le point de reprise. **Aucune ligne de code appl
 - [ ] C4 Referentiels et admin
 - [ ] C5 Module planning + generation
 - [ ] C6 Notifications, activite, changelog
-- [ ] C7 Migration repetee sur copie de prod, E2E, preprod
+- [ ] C7 E2E complets, preprod, remise a zero de la base et de la stack de prod
 - [ ] C8 Mise en prod V2
 - [ ] C9 Module liste de courses (V2.1)

@@ -79,11 +79,11 @@ Identifiants `F-<module>-<n>` pour que roadmap et tests s'y referent.
 
 ### 4.1 Comptes
 
-- F-ACC-1 Inscription email + username + mot de passe. Verification de l'email [Q05].
+- F-ACC-1 Inscription email + username + mot de passe. Verification de l'email si un SMTP est configure [D21].
 - F-ACC-2 Connexion avec option "rester connecte" (30 jours). Sans l'option : session 1 jour glissante [D13].
-- F-ACC-3 Mot de passe oublie par email [Q05].
+- F-ACC-3 Mot de passe oublie par email si un SMTP est configure ; sinon reinitialisation par un admin [D21]. L'app demarre et fonctionne sans SMTP.
 - F-ACC-4 Profil : username, email, mot de passe, avatar, theme d'interface (S5.3).
-- F-ACC-5 Suppression du compte (RGPD) : anonymisation de l'auteur sur les contenus restes dans des espaces GROUP [Q03].
+- F-ACC-5 Suppression du compte (RGPD) : les contenus partages dans des espaces GROUP restent, auteur anonymise, repris par les moderateurs [D20].
 - F-ACC-6 Export de ses donnees (recettes en JSON / Markdown).
 - A la creation du compte, l'espace PERSONAL est cree automatiquement.
 
@@ -93,7 +93,7 @@ Identifiants `F-<module>-<n>` pour que roadmap et tests s'y referent.
 - F-SPC-2 Inviter par **lien d'invitation** (expiration, nombre d'usages, revocable) ou par username exact [D07].
 - F-SPC-3 Accepter / refuser une invitation. Les invitations en attente sont visibles dans le centre de notifications.
 - F-SPC-4 Quitter, exclure, promouvoir, retrograder, transferer la propriete (S3.1).
-- F-SPC-5 Supprimer l'espace (OWNER) avec confirmation et delai de grace [Q06].
+- F-SPC-5 Supprimer l'espace (OWNER) : masque pour tous, restaurable 30 jours, puis purge [D22].
 - F-SPC-6 Activer / desactiver les modules autorises par la plateforme.
 - F-SPC-7 Fil d'activite de l'espace.
 
@@ -241,15 +241,7 @@ Points a trancher : revision en snapshot JSON ou tables normalisees [Q12] ; tags
 
 ## 8. Migration des donnees V1 -> V2
 
-La prod a de vraies donnees : la migration est un livrable a part entiere, testee sur une copie de la prod.
-
-- Chaque user recoit son espace PERSONAL ; ses recettes perso y sont rattachees.
-- Les paires "recette perso + copie communautaire synchronisee" sont **fusionnees** en une recette (origine : perso) + un partage vers chaque communaute.
-- Les forks (`sharedFromCommunityId`) deviennent des copies (`copiedFromId`).
-- Les variantes (`isVariant`) deviennent des copies de leur proposeur, avec la recette d'origine en `copiedFromId` [Q13].
-- Propositions PENDING : converties en suggestions. Historique ACCEPTED/REJECTED : conserve en lecture seule ou abandonne [Q13].
-- Tags PENDING -> tags d'espace actifs. Ingredients PENDING -> actifs.
-- Le role MODERATOR le plus ancien de chaque communaute devient OWNER [Q14].
+Sans objet [D23] : la V1 n'a pas d'utilisateurs reels, la base et la stack seront remises a zero avant la mise en prod de la V2.
 
 ## 9. Strategie : faire evoluer ou reecrire
 
@@ -257,21 +249,21 @@ Voir l'analyse (artefact `2-Analyse-V1.html`, section "Evoluer ou reecrire"). **
 
 ## 10. Questions ouvertes
 
-| #   | Question                                                                                                                                                        | Bloque     |
-| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| Q01 | REPONDU (D02) - Valides-tu l'espace PERSONAL comme un espace a part entiere (planning perso, courses perso) ?                                                   | S2, S3, S7 |
-| Q02 | REPONDU (D18) - Quand l'auteur d'une recette partagee quitte un groupe : la recette reste visible (figee, reprise par les moderateurs) ou disparait du groupe ? | S4.3       |
-| Q03 | Suppression de compte : ses recettes partagees restent (auteur "ancien membre") ou sont supprimees ?                                                            | S4.1       |
-| Q04 | REPONDU (D19) - Les tags sont-ils attaches a la recette (communs a tous les espaces) ou a la recette **dans** un espace ?                                       | S4.4, S7   |
-| Q05 | Envoi d'emails : quel service gratuit (SMTP perso, Brevo, Resend free tier...) ? Sans email, pas de reset de mot de passe.                                      | S4.1       |
-| Q06 | Suppression d'espace : delai de grace (ex : 30 jours restaurable) ou immediat ?                                                                                 | S4.2       |
-| Q07 | Sections de recette (sous-recettes) en V2.0 ou plus tard ?                                                                                                      | S4.3       |
-| Q08 | On supprime vraiment les suggestions de tags et l'option "masquer les tags" ? Les utilisais-tu ?                                                                | S4.4       |
-| Q09 | Import par texte colle : en V2.0 ou plus tard ?                                                                                                                 | S4.5       |
-| Q10 | Planning : faut-il d'autres repas que midi / soir (petit-dejeuner, gouter) ?                                                                                    | S4.6       |
-| Q11 | Catalogue de composants : page interne simple ou Storybook ?                                                                                                    | S5.3       |
-| Q12 | Revisions : snapshot JSON (simple) ou tables normalisees (requetable) ?                                                                                         | S7         |
-| Q13 | Que garder de l'historique V1 des propositions et variantes ?                                                                                                   | S8         |
-| Q14 | Choix de l'OWNER des communautes existantes lors de la migration ?                                                                                              | S8         |
-| Q15 | Combien d'utilisateurs / communautes reels en prod aujourd'hui ? (dimensionne l'effort de migration)                                                            | S8, S9     |
-| Q16 | Les failles V1 relevees (rooms socket, SSRF de l'import) : correctif immediat en V1 ou on attend la V2 ?                                                        | V1         |
+| #   | Question                                                                                                                                                                              | Bloque     |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| Q01 | REPONDU (D02) - Valides-tu l'espace PERSONAL comme un espace a part entiere (planning perso, courses perso) ?                                                                         | S2, S3, S7 |
+| Q02 | REPONDU (D18) - Quand l'auteur d'une recette partagee quitte un groupe : la recette reste visible (figee, reprise par les moderateurs) ou disparait du groupe ?                       | S4.3       |
+| Q03 | REPONDU (D20) - Suppression de compte : ses recettes partagees restent (auteur "ancien membre") ou sont supprimees ?                                                                  | S4.1       |
+| Q04 | REPONDU (D19) - Les tags sont-ils attaches a la recette (communs a tous les espaces) ou a la recette **dans** un espace ?                                                             | S4.4, S7   |
+| Q05 | REPONDU (D21) - Envoi d'emails : quel service gratuit (SMTP perso, Brevo, Resend free tier...) ? Sans email, pas de reset de mot de passe.                                            | S4.1       |
+| Q06 | REPONDU (D22) - Suppression d'espace : delai de grace (ex : 30 jours restaurable) ou immediat ?                                                                                       | S4.2       |
+| Q07 | Sections de recette (sous-recettes) en V2.0 ou plus tard ?                                                                                                                            | S4.3       |
+| Q08 | On supprime vraiment les suggestions de tags et l'option "masquer les tags" ? Les utilisais-tu ?                                                                                      | S4.4       |
+| Q09 | Import par texte colle : en V2.0 ou plus tard ?                                                                                                                                       | S4.5       |
+| Q10 | Planning : faut-il d'autres repas que midi / soir (petit-dejeuner, gouter) ?                                                                                                          | S4.6       |
+| Q11 | Catalogue de composants : page interne simple ou Storybook ?                                                                                                                          | S5.3       |
+| Q12 | Revisions : snapshot JSON (simple) ou tables normalisees (requetable) ?                                                                                                               | S7         |
+| Q13 | REPONDU (D23, sans objet) - Que garder de l'historique V1 des propositions et variantes ?                                                                                             | S8         |
+| Q14 | REPONDU (D23) - Choix de l'OWNER des communautes existantes lors de la migration ?                                                                                                    | S8         |
+| Q15 | REPONDU (D23, aucun user en V1) - Combien d'utilisateurs / communautes reels en prod aujourd'hui ? (dimensionne l'effort de migration)                                                | S8, S9     |
+| Q16 | REPONDU (D23, sans objet : pas d'utilisateurs, la V1 ne sera pas corrigee) - Les failles V1 relevees (rooms socket, SSRF de l'import) : correctif immediat en V1 ou on attend la V2 ? | V1         |
