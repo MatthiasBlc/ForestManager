@@ -24,7 +24,7 @@ Une decision validee ne se modifie pas : on en ajoute une nouvelle qui l'amende.
 - **Constat V1** : creer une recette dans une communaute cree 2 recettes (perso + copie, `communityRecipeService.ts:47`) ; publier en cree N ; `syncLinkedRecipes` (`recipeService.ts:303`) recopie titre, etapes et ingredients mais pas les tags ni la suppression. Les forks et variantes ne sont pas synchronises. Resultat : l'utilisateur voit sa recette en double et ne sait pas laquelle il modifie.
 - **Choix** : la recette vit dans son espace d'origine ; elle est **partagee** (reference) dans d'autres espaces ; la **copie** est un geste explicite qui cree une recette independante.
 
-### D04 - Suggestions : refuser ne cree rien - PROPOSEE
+### D04 - Suggestions : refuser ne cree rien - VALIDEE (2026-11-03)
 
 - **Constat V1** : refuser une proposition cree automatiquement une variante au nom du proposeur (`proposalService.ts:277`). Le depart du createur fait auto-refuser ses propositions, donc cree des variantes en cascade (`orphanHandling.ts`). Seul le createur peut trancher (`proposals.ts:354`) : une recette dont l'auteur est parti accepte encore des propositions que personne ne pourra jamais traiter.
 - **Choix** : accepter -> nouvelle revision ; refuser -> rien ; le suggereur peut convertir en copie s'il le veut. Si l'auteur n'est plus membre, les moderateurs tranchent.
@@ -34,12 +34,12 @@ Une decision validee ne se modifie pas : on en ajoute une nouvelle qui l'amende.
 - **Constat V1** : aucun historique ; une proposition acceptee ecrase la recette.
 - **Choix** : chaque modification cree une `RecipeRevision`. Permet diff, restauration, suggestions basees sur une revision precise. Format : Q12.
 
-### D06 - Roles OWNER / MODERATOR / MEMBER - PROPOSEE
+### D06 - Roles OWNER / MODERATOR / MEMBER - VALIDEE (2026-11-03)
 
 - **Constat V1** : pas de retrogradation, un moderateur ne peut pas en exclure un autre (`members.ts:251`), aucun moderateur ne peut supprimer une recette d'un membre (`membershipService.ts:57`), on ne peut pas supprimer une communaute sauf en etant le dernier a partir.
 - **Choix** : matrice du CDC S3.1, un OWNER unique, transfert de propriete.
 
-### D07 - Invitations par lien - PROPOSEE
+### D07 - Invitations par lien - VALIDEE (2026-11-03)
 
 - **Constat V1** : il faut connaitre le username exact ; `GET /api/users/search` permet a tout user connecte de lister les usernames par prefixe.
 - **Choix** : lien d'invitation (expiration, nombre d'usages, revocable) + invitation par username exact sans autocompletion globale.
@@ -49,26 +49,26 @@ Une decision validee ne se modifie pas : on en ajoute une nouvelle qui l'amende.
 - **Constat V1** : un tag d'espace cree par un membre est PENDING jusqu'a validation d'un moderateur ; suggestions de tags a deux niveaux (PENDING_OWNER puis PENDING_MODERATOR) ; resolution de tags a chaque fork. Beaucoup de code (tagService, tagSuggestions, communityTags) pour un geste simple.
 - **Choix** : creation libre, gestion a posteriori par les moderateurs (renommer, fusionner, supprimer). Question liee : Q04, Q08.
 
-### D09 - Ingredients utilisables immediatement - PROPOSEE
+### D09 - Ingredients utilisables immediatement - VALIDEE (2026-11-03)
 
 - **Constat V1** : un nouvel ingredient est PENDING et attend l'admin plateforme.
 - **Choix** : creation immediate, l'admin fusionne les doublons a posteriori.
 
-### D10 - Modules declares, activables par l'OWNER - PROPOSEE
+### D10 - Modules declares, activables par l'OWNER - AMENDEE par D33
 
 - **Constat V1** : `Feature` / `CommunityFeature` n'est accorde que par le SuperAdmin ; le planning est le seul module gate (`requireFeature("MEAL_PLAN")`) ; le front cable chaque page en dur.
 - **Choix** : registre de modules (code, routes, nav, permissions, notifications, widgets). La plateforme dit quels modules sont disponibles ; l'OWNER les active dans son espace.
 
-### D13 - Sessions : 1 jour glissant, 30 jours avec "rester connecte" - PROPOSEE
+### D13 - Sessions : 1 jour glissant, 30 jours avec "rester connecte" - VALIDEE (2026-11-03)
 
 - **Constat V1** : 1 h glissante. Sur mobile, on est deconnecte a chaque utilisation espacee.
 
-### D15 - Monorepo avec package partage - PROPOSEE
+### D15 - Monorepo avec package partage - VALIDEE (2026-11-03)
 
 - **Constat V1** : types et regles dupliques entre `backend/src/schemas` et `frontend/src/models` ; `frontend/src/network/api.ts` fait 739 lignes.
 - **Choix** : `packages/shared` (Zod, types, codes erreur, permissions) importe par l'API et le front.
 
-### D16 - Design system shadcn/ui + Tailwind v4, tokens et accent par espace - PROPOSEE
+### D16 - Design system shadcn/ui + Tailwind v4, tokens et accent par espace - VALIDEE (2026-11-03)
 
 - **Constat V1** : daisyUI (themes `coffee` / `winter`), classes `forest-accent` utilisees mais definies nulle part (`routes/adminRoutes.tsx`), composants mobiles separes, 3 jeux d'icones possibles via react-icons.
 - **Choix** : CDC S5.3.
@@ -110,11 +110,11 @@ _D11, D12 et D14 sont reserves (planning, notifications, analytics) : a ecrire q
 - Consequences : pas de script de migration ; la V2 part de son propre schema et de nouvelles migrations ; la strategie D01 est a reexaminer (la contrainte de reprise des donnees disparait).
 - Regle conservee pour plus tard : l'OWNER d'un espace est son createur, sinon le moderateur le plus ancien.
 
-### D24 - Recettes composees de blocs (locaux ou liens vers d'autres recettes) - ETUDE
+### D24 - Recettes composees de blocs (locaux ou liens vers d'autres recettes) - VALIDEE (2026-11-03)
 
 - **Constat** : idee du proprietaire (escalope milanaise + compotee de tomates cerises ; sauce teriyaki reutilisee dans plusieurs plats). Rejoint la question des sections de recette.
 - **Etude** : `6-Etude-Recettes-Composees.md`.
-- **Choix propose** : une recette = blocs ordonnes, locaux (ingredients + etapes) ou liens vers une autre recette avec une quantite exprimee dans le rendement de celle-ci ; lien vivant ; pas de boucle, 3 niveaux maximum.
+- **Choix valide** : une recette = blocs ordonnes, locaux (ingredients + etapes) ou liens vers une autre recette avec une quantite exprimee dans le rendement de celle-ci ; **lien vivant** (le plat montre toujours la version actuelle de la sous-recette) ; blocs locaux et liens des la V2.0 ; pas de boucle, 3 niveaux maximum. Maquette : `7-Proposition-Recettes-Composees.html`.
 
 ### D25 - Strategie : reecriture propre dans le meme depot - VALIDEE (2026-11-03)
 
@@ -151,7 +151,24 @@ _D11, D12 et D14 sont reserves (planning, notifications, analytics) : a ecrire q
 - Maquettes de toutes les vues apres validation du modele de donnees, des permissions et des parcours, dont elles dependent.
 - Repart d'une page blanche visuelle ; seule la navigation par rail d'espaces a gauche est imposee.
 
-### D32 - Direction visuelle - EN ATTENTE
+### D32 - Direction visuelle : Braise en signature, Sous-bois et Potager en alternatives - VALIDEE (2026-11-03)
 
-- Trois ambiances comparees sur une maquette interactive (`8-Directions-Visuelles.html`) : Sous-bois, Potager, Braise.
-- Piste soulevee par le proprietaire : proposer les trois au choix de l'utilisateur. Proposition : une ambiance signature par defaut (identite, icone, accueil) et les deux autres en alternatives dans Profil > Apparence, polices communes, seules les couleurs changent.
+- **Braise** (charbon, ardoise, accent ambre de braise) est l'ambiance signature : icone, page d'accueil, captures, ambiance par defaut.
+- **Sous-bois** et **Potager** sont proposees en alternatives dans Profil > Apparence. Polices communes a toutes les ambiances ; seules les couleurs changent.
+- Mode par defaut : **suivre le systeme** (clair ou sombre). Braise est soignee dans les deux modes ; l'utilisateur peut forcer l'un ou l'autre.
+- Consequence : 6 palettes (3 ambiances x clair / sombre) a verifier dans la page `/design`, contrastes AA compris.
+- Maquette de comparaison : `8-Directions-Visuelles.html`.
+
+### D33 - Modules accordes par la plateforme sur demande de l'OWNER - VALIDEE (2026-11-03)
+
+- **Constat** : remarque du proprietaire sur D10. Les modules sont un levier de l'application (premiere brique gratuite, d'autres peut-etre payantes un jour au cas par cas) : un espace n'a pas acces a tout.
+- **Regles** :
+  - A la creation d'un espace (perso ou groupe), seul le module **Recettes** est accorde et actif.
+  - L'OWNER voit le **catalogue des modules** de la plateforme avec leur statut (ex : disponible, beta, bientot).
+  - L'OWNER **demande l'acces** a un module pour son espace. Les super admins recoivent la demande et l'acceptent ou la refusent.
+  - L'acces est accorde **a l'espace demandeur** (pas a la personne) : il reste si l'espace change d'OWNER ; chaque espace fait sa propre demande.
+  - Une fois l'acces accorde, l'OWNER **active ou desactive** le module dans son espace quand il veut.
+  - L'espace personnel suit exactement les memes regles.
+  - Le super admin peut aussi accorder ou retirer un module de sa propre initiative ; tout est trace dans l'audit.
+- **Technique** : le registre de modules de D10 est conserve (routes, navigation, permissions, notifications, widgets declares par module) ; seule la gouvernance change.
+- **Monetisation** : le modele garde de quoi brancher un jour un tarif par module, sans rien implementer en V2.0.
