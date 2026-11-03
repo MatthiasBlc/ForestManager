@@ -220,55 +220,65 @@ _D11, D12 et D14 sont reserves (planning, notifications, analytics) : a ecrire q
 
 ---
 
-## Phase B - decisions proposees (en attente de validation)
+## Phase B - decisions de conception (validees en bloc le 2026-11-03)
 
-Le detail de chacune est dans le document qui l'a proposee ; ce journal porte le statut.
+Le detail de chacune est dans le document qui l'a proposee ; ce journal porte le statut. Validees en bloc par le proprietaire, sauf les arbitrages ci-dessous.
 
 ### Modele de donnees (`11-Modele-Donnees/`)
 
-- **D41 - Types de notification et d'activite en cles texte declarees par les modules** - PROPOSEE. Pas d'enum en base : un nouveau module n'impose pas de migration du socle (precise F-NOT-3).
-- **D42 - Suggestions et revisions au meme format (instantane JSON)** - PROPOSEE. Remplace les tables de proposition de la V1.
-- **D43 - Compteurs de recettes calcules depuis le planning, pas stockes** - PROPOSEE.
-- **D44 - Compte supprime : ligne utilisateur anonymisee conservee** - PROPOSEE.
-- **D45 - Referentiels globaux traduits par tables de traduction ; tags d'espace en nom simple** - PROPOSEE.
-- **D46 - Conversions : dimension et facteur vers la base, poids par ingredient et par unite** - PROPOSEE.
-- **D47 - Partage automatique des sous-recettes trace (viaRecipeId)** - PROPOSEE.
+- **D41 - Types de notification et d'activite en cles texte declarees par les modules** - VALIDEE (2026-11-03). Pas d'enum en base : un nouveau module n'impose pas de migration du socle (precise F-NOT-3).
+- **D42 - Suggestions et revisions au meme format (instantane JSON)** - VALIDEE (2026-11-03). Remplace les tables de proposition de la V1.
+- **D43 - Compteurs de recettes calcules depuis le planning, pas stockes** - VALIDEE (2026-11-03).
+- **D44 - Compte supprime : ligne utilisateur anonymisee conservee** - VALIDEE (2026-11-03).
+- **D45 - Referentiels globaux traduits par tables de traduction ; tags d'espace en nom simple** - VALIDEE (2026-11-03).
+- **D46 - Conversions : dimension et facteur vers la base, poids par ingredient et par unite** - VALIDEE (2026-11-03).
+- **D47 - Partage automatique des sous-recettes trace (viaRecipeId)** - VALIDEE (2026-11-03).
 
 ### Permissions (`12-Permissions.md`)
 
-- **D50 - Pas d'annuaire d'utilisateurs** - PROPOSEE.
-- **D51 - Suppression du compte d'un OWNER : transfert automatique, plafond de 20 espaces possedes** - PROPOSEE.
-- **D52 - Super admin : acces au contenu seulement pour une moderation motivee et tracee** - PROPOSEE.
-- **D53 - Seul l'OWNER exclut ou retrograde un moderateur** - PROPOSEE.
-- **D54 - Catalogue des modules visible par tous les membres, demande par l'OWNER** - PROPOSEE.
-- **D55 - Restaurer une revision = meme droit que modifier** - PROPOSEE.
-- **D56 - Seul l'auteur partage sa recette dans un autre espace** - PROPOSEE.
-- **D57 - Recette d'un auteur parti : MOD et OWNER de l'espace d'origine la reprennent** - PROPOSEE.
-- **D58 - Planning : role minimal reglable pour modifier un repas (MEMBER par defaut) ; generation et reglages aux moderateurs** - PROPOSEE.
-- **D59 - Un ancien membre qui revient retrouve ses droits d'auteur** - PROPOSEE.
+- **D50 - Pas d'annuaire d'utilisateurs** - VALIDEE (2026-11-03).
+- **D51 - Suppression du compte d'un OWNER : transfert automatique, plafond de 20 espaces possedes** - VALIDEE (2026-11-03).
+- **D52 - Super admin : acces au contenu seulement pour une moderation motivee et tracee** - VALIDEE (2026-11-03).
+- **D53 - Seul l'OWNER exclut ou retrograde un moderateur** - VALIDEE (2026-11-03).
+- **D54 - Catalogue des modules visible par tous les membres, demande par l'OWNER** - VALIDEE (2026-11-03).
+- **D55 - Restaurer une revision = meme droit que modifier** - VALIDEE (2026-11-03).
+- **D56 - Seul l'auteur partage sa recette dans un autre espace** - AMENDEE par D81.
+- **D57 - Recette d'un auteur parti : MOD et OWNER de l'espace d'origine la reprennent** - VALIDEE (2026-11-03).
+- **D58 - Planning : role minimal reglable pour modifier un repas (MEMBER par defaut) ; generation et reglages aux moderateurs** - VALIDEE (2026-11-03), MEMBER confirme.
+- **D59 - Un ancien membre qui revient retrouve ses droits d'auteur** - VALIDEE (2026-11-03).
 
 ### Parcours (`13-Parcours.md`)
 
-- **D60 - Ouverture sur le dernier espace et module visites** - PROPOSEE.
-- **D61 - Ecran de bienvenue a 3 choix apres l'inscription** - PROPOSEE.
-- **D62 - Lien d'invitation : apercu de l'espace, survit a l'inscription, confirmation** - PROPOSEE.
-- **D63 - Une seule porte d'entree pour creer ou importer une recette** - PROPOSEE.
-- **D64 - Suggestion redigee en mode suggestion, acceptee ou refusee en entier** - PROPOSEE.
-- **D65 - Partage regle dans une feuille a cases** - PROPOSEE.
-- **D66 - Espace en suppression grise dans le rail de l'OWNER avec compte a rebours** - PROPOSEE.
-- **D67 - Mode cuisine : une etape a la fois** - PROPOSEE.
-- **D68 - Hors ligne : bandeau, ecriture desactivee, brouillon local** - PROPOSEE.
-- **D69 - Echange de repas : glisser en desktop, menu puis cible sur mobile** - PROPOSEE.
+- **D60 - Ouverture sur le dernier espace et module visites** - VALIDEE (2026-11-03).
+- **D61 - Ecran de bienvenue a 3 choix apres l'inscription** - VALIDEE (2026-11-03). Une visite guidee est notee comme idee future.
+- **D62 - Lien d'invitation : apercu de l'espace, survit a l'inscription, confirmation** - VALIDEE (2026-11-03).
+- **D63 - Une seule porte d'entree pour creer ou importer une recette** - VALIDEE (2026-11-03).
+- **D64 - Suggestion redigee en mode suggestion, acceptee ou refusee en entier** - VALIDEE (2026-11-03).
+- **D65 - Partage regle dans une feuille a cases** - VALIDEE (2026-11-03).
+- **D66 - Espace en suppression grise dans le rail de l'OWNER avec compte a rebours** - VALIDEE (2026-11-03).
+- **D67 - Mode cuisine : une etape a la fois** - VALIDEE (2026-11-03).
+- **D68 - Hors ligne : bandeau, ecriture desactivee, brouillon local** - VALIDEE (2026-11-03).
+- **D69 - Echange de repas : glisser en desktop, menu puis cible sur mobile** - VALIDEE (2026-11-03).
 
 ### Architecture et tests (`14-Architecture.md`, `15-Plan-Tests.md`)
 
-- **D70 - Monorepo npm workspaces** - PROPOSEE.
-- **D71 - Registre de modules statique (manifestes API et web)** - PROPOSEE.
-- **D72 - API REST /api/v1, Zod partage, format d'erreur unique, pagination par curseur** - PROPOSEE.
-- **D73 - i18next, un namespace par module** - PROPOSEE.
-- **D74 - PWA : vite-plugin-pwa, donnees hors ligne par TanStack Query persiste** - PROPOSEE.
-- **D75 - Suivi d'erreurs : SDK Sentry, recepteur Bugsink auto-heberge** - PROPOSEE.
-- **D76 - CI/CD : preprod au push de Developement, images version + SHA, sauvegarde avant prod** - PROPOSEE.
-- **D77 - Outils de test : Vitest, Supertest sur vraie base, Testing Library + MSW, Playwright + axe** - PROPOSEE.
-- **D78 - CI bloquante et seuils de couverture** - PROPOSEE.
-- **D79 - Donnees de test partagees, sans appel a Internet en CI** - PROPOSEE.
+- **D70 - Monorepo npm workspaces** - VALIDEE (2026-11-03).
+- **D71 - Registre de modules statique (manifestes API et web)** - VALIDEE (2026-11-03).
+- **D72 - API REST /api/v1, Zod partage, format d'erreur unique, pagination par curseur** - VALIDEE (2026-11-03).
+- **D73 - i18next, un namespace par module** - VALIDEE (2026-11-03).
+- **D74 - PWA : vite-plugin-pwa, donnees hors ligne par TanStack Query persiste** - VALIDEE (2026-11-03).
+- **D75 - Suivi d'erreurs : SDK Sentry, recepteur Bugsink auto-heberge** - VALIDEE (2026-11-03).
+- **D76 - CI/CD : preprod au push de Developement, images version + SHA, sauvegarde avant prod** - VALIDEE (2026-11-03).
+- **D77 - Outils de test : Vitest, Supertest sur vraie base, Testing Library + MSW, Playwright + axe** - VALIDEE (2026-11-03).
+- **D78 - CI bloquante et seuils de couverture** - VALIDEE (2026-11-03).
+- **D79 - Donnees de test partagees, sans appel a Internet en CI** - VALIDEE (2026-11-03).
+
+### Arbitrages du proprietaire (2026-11-03)
+
+- **D80 - Backend en TypeScript avec Express 5** - VALIDEE. Rust envisage puis ecarte : pour quelques foyers (moins d'une requete par seconde), la performance n'est pas un enjeu ; on perdrait le package partage (schemas et types communs au front et au back), l'experience acquise sur la V1 et beaucoup de temps d'apprentissage. Versions : dernieres stables compatibles (TypeScript 6.0, Prisma 7, React 19, Express 5, Tailwind 4).
+- **D81 - Partager la recette de quelqu'un d'autre : demande + confiance par espace** - VALIDEE (amende D56). Tout membre qui voit une recette peut demander a la partager dans un autre de ses espaces ; l'auteur accepte ou refuse. L'auteur peut autoriser une fois pour toutes les membres d'un espace a partager ses recettes sans lui demander (il est informe). Il faut etre membre des deux espaces. Auteur parti : les moderateurs de l'espace d'origine decident. Exemple : partager dans Famille une recette creee par sa compagne dans Foyer.
+- **D82 - Espace perso : contenu propre + vue "Mes recettes"** - VALIDEE. La vue liste toutes les recettes dont on est l'auteur, dans tous ses espaces, avec leur espace d'origine.
+- **D83 - Espace d'origine purge : recettes partagees ailleurs rapatriees dans l'espace perso de l'auteur** - VALIDEE. Sans auteur (compte supprime), elles restent dans les espaces de partage, gerees par leurs moderateurs.
+- **D84 - Quitter un groupe ou l'on a partage des recettes de son espace perso : on demande** - VALIDEE. L'ecran "Quitter" liste ces recettes et l'utilisateur choisit de laisser ou de retirer chaque partage.
+- **D85 - Donnees d'un module desactive ou retire : conservees indefiniment, masquees** - VALIDEE. Elles reviennent a la reactivation ; elles partent seulement avec l'espace.
+- Confirmes au passage : suivi d'erreurs Bugsink auto-heberge (D75), photos servies par liens signes de courte duree, E2E a chaque push et PR sur Chromium + WebKit, seuils de couverture 90 / 80 / 60 % (D77, D78), super admin limite a la moderation motivee (D52), transfert automatique a la suppression du compte d'un OWNER (D51), ouverture sur le dernier espace visite (D60), suggestion acceptee en entier (D64), echange de repas par menu sur mobile (D69).

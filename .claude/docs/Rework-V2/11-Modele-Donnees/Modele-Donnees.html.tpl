@@ -96,12 +96,12 @@ details.model summary::-webkit-details-marker { display: none; }
   <a href="#tables">Tables</a>
   <a href="#enums">Enumerations</a>
   <a href="#contraintes">Contraintes</a>
-  <a href="#decisions">A valider</a>
+  <a href="#decisions">Choix</a>
 </nav>
 <main>
 
 <section id="resume">
-  <div class="eyebrow">Rework V2 - roadmap B1 - proposition a valider</div>
+  <div class="eyebrow">Rework V2 - roadmap B1 - valide le 2026-11-03</div>
   <h1>Le modele de donnees de la V2</h1>
   <p>Le schema Prisma cible, traduit des decisions du journal. Il est valide par Prisma mais n'est branche a rien. Les fiches de cette page sont generees depuis le fichier <code>schema.prisma</code> du chantier : elles disent exactement ce qu'il contient.</p>
   <div class="facts" id="facts"></div>
@@ -220,7 +220,7 @@ RecipeRevision  (Sauce teriyaki, n=2, source=SUGGESTION)   le plat voit la revis
 </section>
 
 <section id="decisions">
-  <div class="eyebrow">A valider</div>
+  <div class="eyebrow">Valide le 2026-11-03</div>
   <h2>Choix faits en construisant le modele</h2>
   <div class="dec">
     <div><b>D41 - Types de notification et d'activite en cles texte</b><span class="small">Chaque module declare ses types ("recipes.suggestion.created") dans le registre ; le package partage les valide. Pas d'enum en base, donc pas de migration du socle pour un nouveau module. Precise F-NOT-3 (qui parlait d'enum).</span></div>
@@ -230,8 +230,10 @@ RecipeRevision  (Sauce teriyaki, n=2, source=SUGGESTION)   le plat voit la revis
     <div><b>D45 - Referentiels traduits par tables de traduction</b><span class="small">Ingredients, unites, rayons et tags globaux ont une ligne par langue (recherche et unicite par langue). Les tags d'espace gardent un nom simple.</span></div>
     <div><b>D46 - Conversions d'unites</b><span class="small">Chaque unite a une dimension (masse, volume, piece, aucune) et un facteur vers la base (g, ml) ; un poids par ingredient et par unite permet d'additionner pieces et grammes.</span></div>
     <div><b>D47 - Partage automatique trace</b><span class="small">Une sous-recette partagee avec un plat garde le lien <code>viaRecipeId</code> : retirer le plat d'un espace propose de retirer aussi la sauce, sauf si elle y a ete partagee pour elle-meme.</span></div>
-    <div class="q"><b>Question - Planning : qui modifie les repas par defaut ?</b><span class="small">Proposition : tous les membres (<code>editRole = MEMBER</code>), l'OWNER peut restreindre aux moderateurs.</span></div>
-    <div class="q"><b>Question - Que montre l'espace perso ?</b><span class="small">Seulement les recettes creees dedans, ou aussi toutes mes recettes des autres espaces ? Proposition : une vue "Mes recettes" transverse dans l'espace perso, distincte de son contenu propre.</span></div>
+    <div><b>D58 - Planning : MEMBER par defaut</b><span class="small">Tous les membres modifient les repas (<code>MealPlanSettings.editRole = MEMBER</code>) ; l'OWNER peut restreindre. Generation et reglages : moderateurs et OWNER.</span></div>
+    <div><b>D81 - Partager la recette d'un autre</b><span class="small">Demande de partage (<code>RecipeShareRequest</code>) acceptee par l'auteur, ou partage immediat si l'auteur a coche <code>Membership.allowMembersToShare</code> dans cet espace.</span></div>
+    <div><b>D82 - Espace perso et "Mes recettes"</b><span class="small">L'espace perso montre son contenu propre et une vue "Mes recettes" de toutes les recettes dont on est l'auteur : simple requete sur <code>Recipe.authorId</code>, rien a dupliquer.</span></div>
+    <div><b>D83 - Espace d'origine purge</b><span class="small">Ses recettes partagees ailleurs sont rapatriees dans l'espace perso de leur auteur (changement de <code>homeSpaceId</code>).</span></div>
   </div>
 </section>
 

@@ -45,4 +45,5 @@ Artefact en ligne : voir le lien dans la section "Reprise" ci-dessous. La copie 
   - Parcours : https://claude.ai/artifact/Ryd9M1F6DKM3Ni7wuyNjqX (`13-Parcours.html`)
 - Phase A terminee : decisions D01 a D40 tranchees, CDC en 0.3.
 - Design System valide (B4), ajustable pendant les maquettes.
-- Prochaine etape : validation de B1, B2, B3, B6, B8 (decisions D41 a D79 PROPOSEE dans le journal), puis maquettes (B5).
+- Conception validee (B1 a B4, B6, B8), decisions D01 a D85, CDC en 0.4.
+- Prochaine etape : maquettes de toutes les vues (roadmap B5), a partir de l'inventaire des ecrans de `13-Parcours.md`.

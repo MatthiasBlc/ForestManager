@@ -16,15 +16,15 @@ La premiere case non cochee est le point de reprise. **Aucune ligne de code appl
 
 ## Phase B - Conception (artefacts a valider un par un)
 
-- [ ] B1 Modele de donnees V2 detaille (schema Prisma cible commente) - PROPOSE, en attente de validation
-- [ ] B2 Matrice des permissions complete, par module - PROPOSEE, en attente de validation
-- [ ] B3 Parcours utilisateurs - PROPOSES (17 parcours, 52 ecrans), en attente de validation
+- [x] B1 Modele de donnees V2 (`11-Modele-Donnees/`)
+- [x] B2 Matrice des permissions (`12-Permissions`)
+- [x] B3 Parcours utilisateurs, 17 parcours et 52 ecrans (`13-Parcours`)
 - [x] B4a Direction visuelle : Braise en signature, Sous-bois et Potager en alternatives
 - [x] B4 Design system : tokens, theme, accent d'espace, composants de base, app shell avec rail (artefact Design System) - valide le 2026-11-03 (ajustements possibles pendant les maquettes)
 - [ ] B5 Maquettes des ecrans du CDC S5.4 (artefact Design)
-- [ ] B6 Architecture technique - PROPOSEE, en attente de validation
+- [x] B6 Architecture technique (`14-Architecture.md`)
 - [x] B7 Plan de migration des donnees : sans objet (pas d'utilisateurs en V1, remise a zero)
-- [ ] B8 Plan de tests - PROPOSE, en attente de validation
+- [x] B8 Plan de tests (`15-Plan-Tests.md`)
 - [ ] B9 **Validation finale du CDC 1.0** - feu vert pour coder
 
 ## Phase C - Realisation (detaillee a la fin de la phase B)

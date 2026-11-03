@@ -1,6 +1,6 @@
 # Forest Manager V2 - Cahier des charges
 
-**Version : 0.3 (decisions de la phase d'etude toutes tranchees ; reste la conception, roadmap phase B)** - 2026-11-03
+**Version : 0.4 (conception B1, B2, B3, B6, B8 validee ; reste les maquettes et la validation finale)** - 2026-11-03
 Statut de chaque decision : voir `3-Journal-des-Decisions.md`. Une ligne marquee `[Dxx]` renvoie a sa decision.
 Les questions encore ouvertes sont au S10. Tant qu'une question touche une section, cette section n'est pas validable.
 
@@ -25,6 +25,7 @@ Principes directeurs :
 3. **Rien ne bloque l'utilisateur en attendant un admin** (tags et ingredients PENDING en V1).
 4. **Le personnel et le collectif fonctionnent pareil** : l'espace perso est un espace comme les autres [D02].
 5. **Modulaire de bout en bout** : un module se declare (back + front + nav + permissions) au lieu d'etre cable en dur [D10]. Recettes est fourni a tous ; les autres modules sont accordes par la plateforme a la demande de l'OWNER [D33].
+6. **Ergonomie la plus propre, optimisee et simple possible** : le moins d'ecrans et de gestes possible pour chaque tache, un seul chemin evident par action, pas d'option sans usage reel. Chaque maquette est jugee sur ce critere.
 
 ## 2. Glossaire
 
@@ -85,7 +86,7 @@ Identifiants `F-<module>-<n>` pour que roadmap et tests s'y referent.
 - F-ACC-4 Profil : username, email, mot de passe, avatar, theme d'interface (S5.3).
 - F-ACC-5 Suppression du compte (RGPD) : les contenus partages dans des espaces GROUP restent, auteur anonymise, repris par les moderateurs [D20].
 - F-ACC-6 Export natif de ses recettes (JSON reimportable, Markdown, photos en zip) [D37].
-- A la creation du compte, l'espace PERSONAL est cree automatiquement.
+- A la creation du compte, l'espace PERSONAL est cree automatiquement. Il montre son contenu propre et une vue "Mes recettes" (toutes les recettes dont on est l'auteur) [D82].
 
 ### 4.2 Espaces, membres, invitations
 
@@ -109,7 +110,7 @@ Contenu :
 Cycle de vie [D03][D04][D05] :
 
 - F-REC-4 Creer une recette **dans un espace** (perso ou groupe). Elle a **un** espace d'origine et **un** auteur. Plus de double creation perso + communaute.
-- F-REC-5 **Partager** une recette dans d'autres espaces dont on est membre : la recette apparait dans ces espaces, c'est la meme recette (une seule source de verite, pas de synchronisation).
+- F-REC-5 **Partager** une recette dans d'autres espaces dont on est membre : la recette apparait dans ces espaces, c'est la meme recette (une seule source de verite, pas de synchronisation). L'auteur partage directement ; un autre membre envoie une demande que l'auteur accepte, sauf si l'auteur a autorise les membres de cet espace a partager ses recettes [D81].
 - F-REC-6 **Adapter** une recette pour un espace ("chez nous on la fait au beurre") : nouvelle recette de cet espace, liee a l'original et a sa revision de depart (`adaptedFromId`). L'original n'est jamais modifie. L'adaptation signale quand l'original a change et offre un ecran "Comparer avec l'original" en lecture seule [D17].
 - F-REC-7 **Suggerer une modification** (membre non auteur) : diff lisible champ par champ. L'auteur (ou un moderateur si l'auteur n'est plus membre) accepte ou refuse. Accepter cree une revision. Refuser ne cree rien ; le suggereur peut, s'il le veut, transformer sa suggestion en copie personnelle.
 - F-REC-8 **Historique des revisions** consultable, avec restauration par l'auteur.
@@ -142,7 +143,7 @@ Reprend la V1 (grille jours x repas, slots recette / texte libre / vide, verroui
 
 - F-MPL-1 Disponible dans l'espace PERSONAL aussi.
 - F-MPL-2 Repas de la journee configurables par espace : petit-dejeuner, midi, gouter, soir (midi + soir par defaut) [D11].
-- F-MPL-3 Droit d'edition par role (S3.1) au lieu du booleen `editableByMembers`.
+- F-MPL-3 Droit de modifier un repas par role minimal, MEMBER par defaut, reglable par l'OWNER ; creer, generer et regler le planning : moderateurs et OWNER [D58].
 - F-MPL-4 Une idee de repas peut etre convertie en recette.
 - F-MPL-5 Un slot peut pointer vers n'importe quelle recette visible dans l'espace (origine ou partagee).
 - La generation (regles par tag ou recette, poids, frequences, cooldowns, exclusions, epinglages) est conservee telle quelle fonctionnellement ; son UI est refaite.
@@ -209,7 +210,7 @@ Accueil (widgets), liste de recettes, detail de recette (+ vue cuisine), formula
 
 - Monorepo npm workspaces : `apps/api`, `apps/web`, `packages/shared` (schemas Zod, types, codes erreur, constantes de permissions partages entre back et front) [D15].
 - **Socle generique** [D40] : comptes, espaces, membres, permissions, invitations, notifications, activite, recherche et administration ne connaissent aucun module ; Recettes se branche par le registre comme les autres.
-- Backend : Express + Prisma conserves (maitrises, testes). Organisation **par module** (`modules/recipes`, `modules/meal-plan`...) avec routes, service, schemas, permissions et notifications propres.
+- Backend : TypeScript, Express 5 et Prisma 7 [D80]. Organisation **par module** (`modules/recipes`, `modules/meal-plan`...) avec routes, service, schemas, permissions et notifications propres. Detail : `14-Architecture.md`.
 - Frontend : React + Vite + TanStack Query (cache et invalidation serveur), React Router, react-hook-form + Zod partages. Chaque module enregistre ses routes, sa nav et ses widgets dans un registre.
 - Temps reel : Socket.IO conserve, **jonction d'une room uniquement apres verification d'appartenance**.
 

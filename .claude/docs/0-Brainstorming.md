@@ -252,6 +252,10 @@ Service worker, manifest, cache des pages, installable sur mobile. Consultation 
 
 Barre de recherche unique (navbar) qui cherche simultanement dans les recettes, communautes, tags, ingredients, membres. Resultats groupes par type.
 
+## Visite guidee pour les nouveaux utilisateurs
+
+Idee notee pendant l'etude V2 : en V2.0, un ecran de bienvenue a 3 choix suffit (D61). Une visite guidee (rail des espaces, modules, ajout de recette) pourra venir ensuite si les nouveaux utilisateurs se perdent.
+
 ## Analytics recettes
 
 > **Statut V2** : pas de suivi des vues. Compteurs utiles : nombre de fois planifiee, derniere fois cuisinee, adaptations, espaces de partage (D39).
