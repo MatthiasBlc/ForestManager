@@ -84,7 +84,7 @@ Identifiants `F-<module>-<n>` pour que roadmap et tests s'y referent.
 - F-ACC-3 Mot de passe oublie par email si un SMTP est configure ; sinon reinitialisation par un admin [D21]. L'app demarre et fonctionne sans SMTP.
 - F-ACC-4 Profil : username, email, mot de passe, avatar, theme d'interface (S5.3).
 - F-ACC-5 Suppression du compte (RGPD) : les contenus partages dans des espaces GROUP restent, auteur anonymise, repris par les moderateurs [D20].
-- F-ACC-6 Export de ses donnees (recettes en JSON / Markdown).
+- F-ACC-6 Export natif de ses recettes (JSON reimportable, Markdown, photos en zip) [D37].
 - A la creation du compte, l'espace PERSONAL est cree automatiquement.
 
 ### 4.2 Espaces, membres, invitations
@@ -96,6 +96,7 @@ Identifiants `F-<module>-<n>` pour que roadmap et tests s'y referent.
 - F-SPC-5 Supprimer l'espace (OWNER) : masque pour tous, restaurable 30 jours, puis purge [D22].
 - F-SPC-6 Modules [D33] : a la creation, seul Recettes est accorde et actif. L'OWNER consulte le catalogue des modules (statuts : disponible, beta, bientot), demande l'acces pour son espace, puis active ou desactive chaque module accorde. L'acces est attache a l'espace, pas a la personne. Memes regles pour l'espace perso.
 - F-SPC-7 Fil d'activite de l'espace.
+- F-SPC-8 Export de tout l'espace par l'OWNER (memes formats), inscrit dans le fil d'activite, un par jour au maximum [D37].
 
 ### 4.3 Recettes (module coeur)
 
@@ -116,6 +117,7 @@ Cycle de vie [D03][D04][D05] :
 - F-REC-10 Supprimer une recette (auteur) : elle disparait de tous les espaces ou elle est partagee, apres confirmation listant ces espaces.
 - F-REC-11 Recherche et filtres : texte, tags, ingredients, temps max, auteur, espace. Tri.
 - F-REC-12 Vue cuisine : etapes en grand, ecran maintenu allume, cochage des ingredients.
+- F-REC-13 Compteurs : nombre de fois planifiee, derniere fois cuisinee, nombre d'adaptations, espaces de partage. Pas de suivi des vues [D39].
 
 Ce que l'on supprime de la V1 : la recette perso jumelle creee automatiquement, la synchronisation des copies, la variante creee automatiquement au refus d'une proposition, la gestion "recette orpheline" (remplacee par la reprise par les moderateurs).
 
@@ -124,6 +126,7 @@ Ce que l'on supprime de la V1 : la recette perso jumelle creee automatiquement, 
 - F-REF-1 Tags globaux : liste courte et curee par l'admin (ex : vegetarien, dessert, rapide).
 - F-REF-2 Tags d'espace : propres a chaque espace, y compris sur une recette partagee [D19]. Tout membre peut en creer en taguant une recette ; ils sont immediatement utilisables. Les moderateurs les renomment, fusionnent, suppriment.
 - F-REF-3 Ingredients : catalogue global. Un ingredient inconnu est cree a la volee et utilisable tout de suite ; l'admin fusionne les doublons a posteriori (le statut sert au tri de la file admin, pas a bloquer).
+- F-REF-5 Rayons : chaque ingredient a un rayon par defaut (fruits et legumes, boucherie...), gere par l'admin, utilise par la future liste de courses [D36].
 - F-REF-4 Unites : catalogue global gere par l'admin, avec categories (poids, volume, cuillere, piece, qualitatif) et conversions pour la liste de courses.
 - Supprime : workflow PENDING des tags d'espace, suggestions de tags, preference "masquer les tags" par espace [D27].
 
@@ -169,10 +172,13 @@ Reprise de la V1 (genere par la CI, page utilisateur, CRUD admin).
 
 ### 5.1 Principes
 
+- **Mobile first** [D38] : chaque ecran est concu pour le telephone d'abord. Gestes : glisser pour fermer les panneaux du bas, appui long pour le menu d'actions, tirer pour rafraichir.
 - **Une seule interface** desktop et mobile, construite avec les memes composants (pas de pages "mobile" a part).
 - **Navigation stable en 3 niveaux** : espace -> module -> contenu. L'utilisateur sait toujours dans quel espace il est.
 - **Le contenu d'abord** : les panneaux lateraux et les menus servent le contenu, pas l'inverse.
 - **Tout se retrouve** : palette de commandes (Ctrl+K) et recherche globale.
+- **Installable et lisible hors ligne** [D35] : PWA (ecran d'accueil, plein ecran), recettes deja ouvertes et planning de la semaine consultables sans connexion.
+- **Traduisible** [D34] : textes en cles de traduction, referentiels globaux nommes par langue ; francais seul en V2.0.
 
 ### 5.2 Structure d'ecran (App shell)
 
@@ -202,6 +208,7 @@ Accueil (widgets), liste de recettes, detail de recette (+ vue cuisine), formula
 ### 6.1 Architecture
 
 - Monorepo npm workspaces : `apps/api`, `apps/web`, `packages/shared` (schemas Zod, types, codes erreur, constantes de permissions partages entre back et front) [D15].
+- **Socle generique** [D40] : comptes, espaces, membres, permissions, invitations, notifications, activite, recherche et administration ne connaissent aucun module ; Recettes se branche par le registre comme les autres.
 - Backend : Express + Prisma conserves (maitrises, testes). Organisation **par module** (`modules/recipes`, `modules/meal-plan`...) avec routes, service, schemas, permissions et notifications propres.
 - Frontend : React + Vite + TanStack Query (cache et invalidation serveur), React Router, react-hook-form + Zod partages. Chaque module enregistre ses routes, sa nav et ses widgets dans un registre.
 - Temps reel : Socket.IO conserve, **jonction d'une room uniquement apres verification d'appartenance**.

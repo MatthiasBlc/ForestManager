@@ -2,6 +2,8 @@
 
 Revue du 2026-11-03 de `../0-Brainstorming.md` : pour chaque idee encore ouverte, est-elle deja couverte par la V2, et faut-il la decider **avant de coder** ?
 
+**Statut : traitee le 2026-11-03** (decisions D34 a D40). Reste ouvert : le choix de l'outil de suivi d'erreurs, en conception technique (roadmap B6).
+
 Critere "a decider maintenant" : l'idee change le modele de donnees, l'architecture ou le design system. L'ajouter apres coute une reprise ; la prevoir maintenant ne coute presque rien.
 
 ## 1. A decider maintenant
@@ -35,11 +37,11 @@ Critere "a decider maintenant" : l'idee change le modele de donnees, l'architect
 | Changelog public, markdown            | Petites evolutions du module changelog.                                                                        |
 | Analytics recettes (vues, stats)      | Les tables V1 n'etaient pas utilisees. Proposition : abandon en V2.0 ; le fil d'activite suffit (question R6). |
 
-## 4. Questions
+## 4. Questions (tranchees)
 
-- R1 Multi-langue : prevoir l'i18n des maintenant (FR seul livre) ?
-- R2 PWA et hors ligne : perimetre V2.0 ?
-- R3 Liste de courses : modeliser conversions d'unites et rayons des la V2.0 ?
-- R4 Export : seulement ses propres recettes, ou aussi tout un espace par son OWNER ?
-- R5 Gestes mobiles : lesquels dans le design system ?
-- R6 Analytics recettes : abandon ou compteurs simples ?
+- R1 (D34) Multi-langue : prevoir l'i18n des maintenant (FR seul livre) ?
+- R2 (D35) PWA et hors ligne : perimetre V2.0 ?
+- R3 (D36) Liste de courses : modeliser conversions d'unites et rayons des la V2.0 ?
+- R4 (D37) Export : seulement ses propres recettes, ou aussi tout un espace par son OWNER ?
+- R5 (D38) Gestes mobiles : lesquels dans le design system ?
+- R6 (D39) Analytics recettes : abandon ou compteurs simples ?

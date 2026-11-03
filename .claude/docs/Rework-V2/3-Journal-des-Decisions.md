@@ -172,3 +172,48 @@ _D11, D12 et D14 sont reserves (planning, notifications, analytics) : a ecrire q
   - Le super admin peut aussi accorder ou retirer un module de sa propre initiative ; tout est trace dans l'audit.
 - **Technique** : le registre de modules de D10 est conserve (routes, navigation, permissions, notifications, widgets declares par module) ; seule la gouvernance change.
 - **Monetisation** : le modele garde de quoi brancher un jour un tarif par module, sans rien implementer en V2.0.
+
+### D34 - Multi-langue prevu des le depart, francais seul livre - VALIDEE (2026-11-03)
+
+- Tous les textes de l'interface passent par des cles de traduction ; dates, nombres et unites sont formates selon la langue.
+- Referentiels globaux (ingredients, unites, tags globaux, noms de modules) : un nom par langue en base.
+- Les contenus des utilisateurs (recettes, tags d'espace) ne se traduisent pas.
+- V2.0 livree en francais ; l'anglais = ajouter les traductions, sans toucher au code.
+
+### D35 - PWA installable avec lecture hors ligne - VALIDEE (2026-11-03)
+
+- Installable sur l'ecran d'accueil (manifest, icone, plein ecran). Pas d'appli native sur les stores.
+- Hors connexion : consultation des recettes deja ouvertes et du planning de la semaine. Toute modification demande une connexion ; l'interface le signale clairement.
+- Mode cuisine : l'ecran reste allume pendant la recette.
+
+### D36 - Conversions d'unites et rayons modelises des la V2.0 - VALIDEE (2026-11-03)
+
+- Le schema V2.0 porte les conversions entre unites (poids, volume, cuilleres) et un rayon par defaut pour chaque ingredient (fruits et legumes, boucherie...), geres par l'admin.
+- Les conversions servent deja aux recettes composees (quantite d'une sous-recette dans son unite de rendement). Le module liste de courses reste en V2.1.
+
+### D37 - Export natif : ses recettes, et tout l'espace pour l'OWNER - VALIDEE (2026-11-03)
+
+- Chaque utilisateur exporte ses propres recettes : c'est un droit (portabilite de ses donnees), pas une option a accorder.
+- L'OWNER exporte toutes les recettes de son espace : garantie de garder ses recettes si la plateforme s'arrete. Il ne recupere que ce que les membres voient deja, donc pas de module a accorder.
+- Transparence : l'export d'un espace apparait dans le fil d'activite ("X a exporte l'espace") ; un export d'espace par jour au maximum.
+- Formats : JSON (reimportable) et Markdown (lisible), photos dans une archive zip.
+- Choix fait par Claude sur demande du proprietaire, qui hesitait (natif ou accorde par le super admin) ; a revoir s'il le souhaite.
+
+### D38 - Mobile first et gestes tactiles - VALIDEE (2026-11-03)
+
+- **Mobile first** : chaque ecran est concu et developpe d'abord pour le telephone, puis enrichi pour le grand ecran.
+- Gestes integres au design system : glisser vers le bas pour fermer les panneaux du bas, appui long sur une carte (recette, repas) pour son menu d'actions (le bouton "..." reste visible), tirer pour rafraichir sur les listes.
+- Exclus de la V2.0 : glisser depuis le bord (conflits avec le defilement) et vibration (absente sur iPhone).
+
+### D39 - Statistiques : compteurs utiles, pas de suivi des vues - VALIDEE (2026-11-03)
+
+- Choix laisse a Claude par le proprietaire.
+- On n'enregistre pas qui regarde quoi (pas d'interet pour un cercle prive, et des donnees personnelles en moins).
+- On affiche ce que l'application sait deja : nombre de fois ou la recette a ete planifiee et date de la derniere fois (sert au generateur et a "pas cuisinee depuis longtemps"), nombre d'adaptations, espaces ou elle est partagee. Sur l'accueil : "vos recettes les plus cuisinees".
+- Les tables V1 `RecipeView` et `RecipeAnalytics` ne sont pas reprises.
+
+### D40 - Socle generique : aucun module n'est code en dur - VALIDEE (2026-11-03)
+
+- Le socle (comptes, espaces, membres, permissions, invitations, notifications, activite, recherche, administration) ne connait aucun module.
+- Recettes se branche par le registre de modules comme tous les autres (D10, D33), meme s'il est fourni a tous les espaces.
+- Objectif : un futur module sans rapport avec la cuisine (jeux, films) s'ajoute sans toucher au socle.

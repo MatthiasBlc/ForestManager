@@ -12,6 +12,7 @@ La premiere case non cochee est le point de reprise. **Aucune ligne de code appl
 - [x] A6 **Relecture par le proprietaire** : analyse, CDC, decisions D01 a D16
 - [x] A7 Reponses aux questions Q01 a Q16 (CDC S10)
 - [x] A8 CDC 0.3 integrant les reponses ; toutes les decisions tranchees (D01 a D33)
+- [x] A9 Revue du brainstorming : idees a impact sur le socle tranchees (D34 a D40)
 
 ## Phase B - Conception (artefacts a valider un par un)
 
@@ -21,7 +22,7 @@ La premiere case non cochee est le point de reprise. **Aucune ligne de code appl
 - [x] B4a Direction visuelle : Braise en signature, Sous-bois et Potager en alternatives
 - [ ] B4 Design system : tokens, theme, accent d'espace, composants de base, app shell avec rail (artefact Design System)
 - [ ] B5 Maquettes des ecrans du CDC S5.4 (artefact Design)
-- [ ] B6 Architecture technique : monorepo, registre de modules, contrats API
+- [ ] B6 Architecture technique : monorepo, registre de modules, contrats API, i18n, PWA et cache hors ligne, outil de suivi d'erreurs
 - [x] B7 Plan de migration des donnees : sans objet (pas d'utilisateurs en V1, remise a zero)
 - [ ] B8 Plan de tests (integration, composants, E2E)
 - [ ] B9 **Validation finale du CDC 1.0** - feu vert pour coder
