@@ -7,7 +7,7 @@ Une decision validee ne se modifie pas : on en ajoute une nouvelle qui l'amende.
 
 ---
 
-### D01 - Strategie : reecrire le front, refondre le back par module, dans le meme depot - PROPOSEE
+### D01 - Strategie : reecrire le front, refondre le back par module, dans le meme depot - AMENDEE par D25
 
 - **Constat** : le code V1 est plutot propre (validation Zod, ~1550 tests, securite soignee). Ce qui ne va pas, c'est le modele metier (recettes dupliquees et synchronisees, roles incomplets, moderation qui bloque) et l'interface (daisyUI brut, pages mobiles a part, pas de cache de donnees).
 - **Options** : (A) faire evoluer la V1 feature par feature ; (B) reecrire tout from scratch dans un nouveau depot ; (C) reecriture du front + refonte du back par module + migration de donnees unique.
@@ -115,3 +115,16 @@ _D11, D12 et D14 sont reserves (planning, notifications, analytics) : a ecrire q
 - **Constat** : idee du proprietaire (escalope milanaise + compotee de tomates cerises ; sauce teriyaki reutilisee dans plusieurs plats). Rejoint la question des sections de recette.
 - **Etude** : `6-Etude-Recettes-Composees.md`.
 - **Choix propose** : une recette = blocs ordonnes, locaux (ingredients + etapes) ou liens vers une autre recette avec une quantite exprimee dans le rendement de celle-ci ; lien vivant ; pas de boucle, 3 niveaux maximum.
+
+### D25 - Strategie : reecriture propre dans le meme depot - VALIDEE (2026-11-03)
+
+- **Contexte** : D23 supprime la contrainte de reprise des donnees, qui etait la principale raison de refondre le backend existant plutot que de le reecrire (D01).
+- **Choix** : nouveau code de zero dans ce depot (monorepo `apps/api`, `apps/web`, `packages/shared`), nouveau schema, nouvelles migrations. Les parties solides de la V1 (securite, admin 2FA, import JSON-LD, algorithme de generation, CI/CD) sont reprises a la main, relues, pas copiees en bloc. Historique git et CI conserves ; le code V1 est supprime a la fin du chantier.
+
+### D11 - Repas du planning configurables par espace - VALIDEE (2026-11-03)
+
+- Chaque espace choisit ses repas parmi petit-dejeuner, midi, gouter, soir (midi et soir par defaut). La grille, les exclusions, les epinglages et la generation suivent ce reglage.
+
+### D26 - Partager une recette composee partage ses sous-recettes - VALIDEE (2026-11-03)
+
+- L'ecran de partage liste les sous-recettes qui seront partagees avec la recette composee. Le reste de D24 (blocs, lien vivant ou fige) attend la maquette de proposition.

@@ -138,7 +138,7 @@ Ce que l'on supprime de la V1 : la recette perso jumelle creee automatiquement, 
 Reprend la V1 (grille jours x repas, slots recette / texte libre / vide, verrouillage, echange par glisser-deposer, idees de repas, archives, generation par jeux de parametres) avec ces changements :
 
 - F-MPL-1 Disponible dans l'espace PERSONAL aussi.
-- F-MPL-2 Choix des repas de la journee configurable (V1 : midi / soir en dur) [Q10].
+- F-MPL-2 Repas de la journee configurables par espace : petit-dejeuner, midi, gouter, soir (midi + soir par defaut) [D11].
 - F-MPL-3 Droit d'edition par role (S3.1) au lieu du booleen `editableByMembers`.
 - F-MPL-4 Une idee de repas peut etre convertie en recette.
 - F-MPL-5 Un slot peut pointer vers n'importe quelle recette visible dans l'espace (origine ou partagee).
@@ -243,9 +243,9 @@ Points a trancher : revision en snapshot JSON ou tables normalisees [Q12] ; tags
 
 Sans objet [D23] : la V1 n'a pas d'utilisateurs reels, la base et la stack seront remises a zero avant la mise en prod de la V2.
 
-## 9. Strategie : faire evoluer ou reecrire
+## 9. Strategie
 
-Voir l'analyse (artefact `2-Analyse-V1.html`, section "Evoluer ou reecrire"). **Recommandation [D01]** : reecrire le frontend, refondre le backend par module dans le meme depot (en recuperant l'infra, la securite, l'admin, l'import, l'algorithme de generation et les tests), avec une migration de donnees unique. A valider.
+**Reecriture propre dans le meme depot [D25]** : monorepo neuf (`apps/api`, `apps/web`, `packages/shared`), nouveau schema et nouvelles migrations. Les parties solides de la V1 sont reprises a la main apres relecture : securite (helmet, CSRF, rate limiting, sessions), admin 2FA, import JSON-LD, algorithme de generation du planning, CI/CD. Le code V1 est supprime a la fin du chantier.
 
 ## 10. Questions ouvertes
 
@@ -260,7 +260,7 @@ Voir l'analyse (artefact `2-Analyse-V1.html`, section "Evoluer ou reecrire"). **
 | Q07 | REMPLACEE par D24 (recettes composees) - Sections de recette (sous-recettes) en V2.0 ou plus tard ?                                                                                   | S4.3       |
 | Q08 | On supprime vraiment les suggestions de tags et l'option "masquer les tags" ? Les utilisais-tu ?                                                                                      | S4.4       |
 | Q09 | Import par texte colle : en V2.0 ou plus tard ?                                                                                                                                       | S4.5       |
-| Q10 | Planning : faut-il d'autres repas que midi / soir (petit-dejeuner, gouter) ?                                                                                                          | S4.6       |
+| Q10 | REPONDU (D11) - Planning : faut-il d'autres repas que midi / soir (petit-dejeuner, gouter) ?                                                                                          | S4.6       |
 | Q11 | Catalogue de composants : page interne simple ou Storybook ?                                                                                                                          | S5.3       |
 | Q12 | Revisions : snapshot JSON (simple) ou tables normalisees (requetable) ?                                                                                                               | S7         |
 | Q13 | REPONDU (D23, sans objet) - Que garder de l'historique V1 des propositions et variantes ?                                                                                             | S8         |
