@@ -34,7 +34,7 @@ Application de gestion de communautes pour le partage de recettes. Communautes p
 
 | Couche          | Technologies                                                          |
 | --------------- | --------------------------------------------------------------------- |
-| Frontend        | React 18, TypeScript, Vite, TailwindCSS, daisyUI, React Router, Axios |
+| Frontend        | React 18, TypeScript, Vite, TailwindCSS, daisyUI, React Router, fetch |
 | Backend         | Node.js, Express, TypeScript, Prisma ORM, Socket.IO                   |
 | Base de donnees | PostgreSQL 15                                                         |
 | Stockage        | MinIO (compatible S3)                                                 |
@@ -205,7 +205,7 @@ ForestManager/
       pages/                # Pages React (Dashboard, Recipes, Communities, Profile...)
       components/           # Composants reutilisables (Layout, Navbar, modals, cards...)
       contexts/             # Contexts React (AuthContext, AdminAuthContext)
-      network/              # Client API (Axios)
+      network/              # Client API (fetch natif)
       models/               # Types TypeScript
       hooks/                # Custom hooks
   docker-compose.yml        # Configuration dev
@@ -291,24 +291,12 @@ Le script demande un username et un mot de passe, puis genere un QR code TOTP a 
 
 ## Documentation
 
-| Document                                           | Description                        |
-| -------------------------------------------------- | ---------------------------------- |
-| [Architecture](docs/mvp/ARCHITECTURE.md)           | Architecture technique et patterns |
-| [Specification API](docs/mvp/API_SPECIFICATION.md) | Contrat REST complet               |
-| [Regles metier](docs/mvp/BUSINESS_RULES.md)        | Regles metier detaillees           |
-| [User Stories](docs/mvp/USER_STORIES.md)           | Fonctionnalites utilisateur        |
-| [Roadmap MVP](docs/mvp/DEVELOPMENT_ROADMAP.md)     | Plan de developpement (archive)    |
+Toute la documentation projet est dans [`.claude/docs/`](.claude/docs/README.md) :
 
-### Features post-MVP
-
-| Feature            | Spec                                                                     | Description                                    |
-| ------------------ | ------------------------------------------------------------------------ | ---------------------------------------------- |
-| Tags Rework        | [SPEC](docs/features/tags-rework/SPEC_TAGS_REWORK.md)                    | Systeme de tags scope-aware (global/community) |
-| Ingredients Rework | [SPEC](docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md)      | Base ingredients avec unites et moderation     |
-| Recipe Rework v2   | [SPEC](docs/features/recipe-rework-v2/SPEC_RECIPE_REWORK_V2.md)          | Etapes numerotees, temps, portions             |
-| Notifications      | [SPEC](docs/features/notifications-rework/SPEC_NOTIFICATIONS_REWORK.md)  | Notifications temps reel (WebSocket)           |
-| Input Validation   | [SPEC](docs/features/input-validation-security/SPEC_INPUT_VALIDATION.md) | Validation et securite renforcees              |
-| Photo Upload       | [SPEC](docs/features/photo-upload/SPEC_PHOTO_UPLOAD.md)                  | Upload images via MinIO                        |
+| Dossier                                       | Contenu                                                |
+| --------------------------------------------- | ------------------------------------------------------ |
+| [Rework-V2](.claude/docs/Rework-V2/README.md) | Chantier en cours : analyse V1, cahier des charges V2  |
+| [V1](.claude/docs/V1/README.md)               | Archive : specs des features V1, references techniques |
 
 ## Auteur
 
