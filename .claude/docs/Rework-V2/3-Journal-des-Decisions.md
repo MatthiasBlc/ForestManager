@@ -109,3 +109,9 @@ _D11, D12 et D14 sont reserves (planning, notifications, analytics) : a ecrire q
 - La V1 n'a pas d'utilisateurs reels. La base et la stack deployee seront remises a zero avant la mise en prod de la V2.
 - Consequences : pas de script de migration ; la V2 part de son propre schema et de nouvelles migrations ; la strategie D01 est a reexaminer (la contrainte de reprise des donnees disparait).
 - Regle conservee pour plus tard : l'OWNER d'un espace est son createur, sinon le moderateur le plus ancien.
+
+### D24 - Recettes composees de blocs (locaux ou liens vers d'autres recettes) - ETUDE
+
+- **Constat** : idee du proprietaire (escalope milanaise + compotee de tomates cerises ; sauce teriyaki reutilisee dans plusieurs plats). Rejoint la question des sections de recette.
+- **Etude** : `6-Etude-Recettes-Composees.md`.
+- **Choix propose** : une recette = blocs ordonnes, locaux (ingredients + etapes) ou liens vers une autre recette avec une quantite exprimee dans le rendement de celle-ci ; lien vivant ; pas de boucle, 3 niveaux maximum.

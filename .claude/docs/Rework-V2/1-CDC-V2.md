@@ -102,7 +102,7 @@ Identifiants `F-<module>-<n>` pour que roadmap et tests s'y referent.
 Contenu :
 
 - F-REC-1 Titre, photo, portions (avec mise a l'echelle des quantites), temps (preparation, cuisson, repos, total calcule), ingredients (quantite, unite, ingredient), etapes ordonnees, notes, source (URL).
-- F-REC-2 **Sections** optionnelles (ex : "Sauce", "Pate") regroupant ingredients et etapes ; une recette simple = 1 section implicite [Q07].
+- F-REC-2 **Blocs** : une recette est une suite de blocs, soit locaux (titre optionnel, ingredients, etapes : "Sauce", "Assemblage"), soit **liens vers une autre recette** avec la quantite utilisee ("Sauce teriyaki : 150 ml"). Chaque recette a un **rendement** (portions par defaut, ou ml, pieces...). Une recette simple = 1 bloc local implicite [D24, en etude].
 - F-REC-3 Tags.
 
 Cycle de vie [D03][D04][D05] :
@@ -257,7 +257,7 @@ Voir l'analyse (artefact `2-Analyse-V1.html`, section "Evoluer ou reecrire"). **
 | Q04 | REPONDU (D19) - Les tags sont-ils attaches a la recette (communs a tous les espaces) ou a la recette **dans** un espace ?                                                             | S4.4, S7   |
 | Q05 | REPONDU (D21) - Envoi d'emails : quel service gratuit (SMTP perso, Brevo, Resend free tier...) ? Sans email, pas de reset de mot de passe.                                            | S4.1       |
 | Q06 | REPONDU (D22) - Suppression d'espace : delai de grace (ex : 30 jours restaurable) ou immediat ?                                                                                       | S4.2       |
-| Q07 | Sections de recette (sous-recettes) en V2.0 ou plus tard ?                                                                                                                            | S4.3       |
+| Q07 | REMPLACEE par D24 (recettes composees) - Sections de recette (sous-recettes) en V2.0 ou plus tard ?                                                                                   | S4.3       |
 | Q08 | On supprime vraiment les suggestions de tags et l'option "masquer les tags" ? Les utilisais-tu ?                                                                                      | S4.4       |
 | Q09 | Import par texte colle : en V2.0 ou plus tard ?                                                                                                                                       | S4.5       |
 | Q10 | Planning : faut-il d'autres repas que midi / soir (petit-dejeuner, gouter) ?                                                                                                          | S4.6       |
