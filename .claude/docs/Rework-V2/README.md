@@ -24,6 +24,11 @@ Refonte de Forest Manager : clarifier les concepts de la V1, refaire l'interface
 | `8-Directions-Visuelles.html`           | Comparaison interactive des trois ambiances (D32).                                                        |
 | `9-Revue-Brainstorming.md`              | Idees futures triees : a decider maintenant, couvertes, a attendre (D34 a D40).                           |
 | `10-Design-System/project/`             | Copie locale du design system (tokens, README, 25 composants, apercus). Source de verite : `tokens.json`. |
+| `11-Modele-Donnees/`                    | Schema Prisma cible (`schema.prisma`), page de presentation generee (`generer-page.py`).                  |
+| `12-Permissions.md` / `.html`           | Matrice des permissions par acteur et par module.                                                         |
+| `13-Parcours.md` / `.html`              | 17 parcours et inventaire des 52 ecrans (entree des maquettes).                                           |
+| `14-Architecture.md`                    | Architecture technique cible.                                                                             |
+| `15-Plan-Tests.md`                      | Plan de tests.                                                                                            |
 
 Artefact en ligne : voir le lien dans la section "Reprise" ci-dessous. La copie locale est toujours ecrite avant chaque publication.
 
@@ -35,6 +40,9 @@ Artefact en ligne : voir le lien dans la section "Reprise" ci-dessous. La copie 
   - Recettes composees : https://claude.ai/artifact/LCuB3UZkuVhQqqDMvnP8ae (`7-Proposition-Recettes-Composees.html`)
   - Directions visuelles : https://claude.ai/artifact/DEwK7Soo52ZvKi7qsbzpPr (`8-Directions-Visuelles.html`)
   - Design System : https://claude.ai/artifact/7Q9Uy9qGhUyPYt3bWVa5yc (`10-Design-System/project/`)
+  - Modele de donnees : https://claude.ai/artifact/T1MdLYv3PmTx1vDQQM3ajD (`11-Modele-Donnees/Modele-Donnees.html`)
+  - Permissions : https://claude.ai/artifact/Hkq6p1cHvv6SnEgV4VNGzE (`12-Permissions.html`)
+  - Parcours : https://claude.ai/artifact/Ryd9M1F6DKM3Ni7wuyNjqX (`13-Parcours.html`)
 - Phase A terminee : decisions D01 a D40 tranchees, CDC en 0.3.
 - Design System valide (B4), ajustable pendant les maquettes.
-- Prochaine etape : modele de donnees detaille (roadmap B1).
+- Prochaine etape : validation de B1, B2, B3, B6, B8 (decisions D41 a D79 PROPOSEE dans le journal), puis maquettes (B5).

@@ -217,3 +217,58 @@ _D11, D12 et D14 sont reserves (planning, notifications, analytics) : a ecrire q
 - Le socle (comptes, espaces, membres, permissions, invitations, notifications, activite, recherche, administration) ne connait aucun module.
 - Recettes se branche par le registre de modules comme tous les autres (D10, D33), meme s'il est fourni a tous les espaces.
 - Objectif : un futur module sans rapport avec la cuisine (jeux, films) s'ajoute sans toucher au socle.
+
+---
+
+## Phase B - decisions proposees (en attente de validation)
+
+Le detail de chacune est dans le document qui l'a proposee ; ce journal porte le statut.
+
+### Modele de donnees (`11-Modele-Donnees/`)
+
+- **D41 - Types de notification et d'activite en cles texte declarees par les modules** - PROPOSEE. Pas d'enum en base : un nouveau module n'impose pas de migration du socle (precise F-NOT-3).
+- **D42 - Suggestions et revisions au meme format (instantane JSON)** - PROPOSEE. Remplace les tables de proposition de la V1.
+- **D43 - Compteurs de recettes calcules depuis le planning, pas stockes** - PROPOSEE.
+- **D44 - Compte supprime : ligne utilisateur anonymisee conservee** - PROPOSEE.
+- **D45 - Referentiels globaux traduits par tables de traduction ; tags d'espace en nom simple** - PROPOSEE.
+- **D46 - Conversions : dimension et facteur vers la base, poids par ingredient et par unite** - PROPOSEE.
+- **D47 - Partage automatique des sous-recettes trace (viaRecipeId)** - PROPOSEE.
+
+### Permissions (`12-Permissions.md`)
+
+- **D50 - Pas d'annuaire d'utilisateurs** - PROPOSEE.
+- **D51 - Suppression du compte d'un OWNER : transfert automatique, plafond de 20 espaces possedes** - PROPOSEE.
+- **D52 - Super admin : acces au contenu seulement pour une moderation motivee et tracee** - PROPOSEE.
+- **D53 - Seul l'OWNER exclut ou retrograde un moderateur** - PROPOSEE.
+- **D54 - Catalogue des modules visible par tous les membres, demande par l'OWNER** - PROPOSEE.
+- **D55 - Restaurer une revision = meme droit que modifier** - PROPOSEE.
+- **D56 - Seul l'auteur partage sa recette dans un autre espace** - PROPOSEE.
+- **D57 - Recette d'un auteur parti : MOD et OWNER de l'espace d'origine la reprennent** - PROPOSEE.
+- **D58 - Planning : role minimal reglable pour modifier un repas (MEMBER par defaut) ; generation et reglages aux moderateurs** - PROPOSEE.
+- **D59 - Un ancien membre qui revient retrouve ses droits d'auteur** - PROPOSEE.
+
+### Parcours (`13-Parcours.md`)
+
+- **D60 - Ouverture sur le dernier espace et module visites** - PROPOSEE.
+- **D61 - Ecran de bienvenue a 3 choix apres l'inscription** - PROPOSEE.
+- **D62 - Lien d'invitation : apercu de l'espace, survit a l'inscription, confirmation** - PROPOSEE.
+- **D63 - Une seule porte d'entree pour creer ou importer une recette** - PROPOSEE.
+- **D64 - Suggestion redigee en mode suggestion, acceptee ou refusee en entier** - PROPOSEE.
+- **D65 - Partage regle dans une feuille a cases** - PROPOSEE.
+- **D66 - Espace en suppression grise dans le rail de l'OWNER avec compte a rebours** - PROPOSEE.
+- **D67 - Mode cuisine : une etape a la fois** - PROPOSEE.
+- **D68 - Hors ligne : bandeau, ecriture desactivee, brouillon local** - PROPOSEE.
+- **D69 - Echange de repas : glisser en desktop, menu puis cible sur mobile** - PROPOSEE.
+
+### Architecture et tests (`14-Architecture.md`, `15-Plan-Tests.md`)
+
+- **D70 - Monorepo npm workspaces** - PROPOSEE.
+- **D71 - Registre de modules statique (manifestes API et web)** - PROPOSEE.
+- **D72 - API REST /api/v1, Zod partage, format d'erreur unique, pagination par curseur** - PROPOSEE.
+- **D73 - i18next, un namespace par module** - PROPOSEE.
+- **D74 - PWA : vite-plugin-pwa, donnees hors ligne par TanStack Query persiste** - PROPOSEE.
+- **D75 - Suivi d'erreurs : SDK Sentry, recepteur Bugsink auto-heberge** - PROPOSEE.
+- **D76 - CI/CD : preprod au push de Developement, images version + SHA, sauvegarde avant prod** - PROPOSEE.
+- **D77 - Outils de test : Vitest, Supertest sur vraie base, Testing Library + MSW, Playwright + axe** - PROPOSEE.
+- **D78 - CI bloquante et seuils de couverture** - PROPOSEE.
+- **D79 - Donnees de test partagees, sans appel a Internet en CI** - PROPOSEE.
