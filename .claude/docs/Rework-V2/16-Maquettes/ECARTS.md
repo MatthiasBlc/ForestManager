@@ -51,4 +51,18 @@ Fait le 2026-11-04 (canevas Acces et espaces v36, Recettes v33, Planning et prof
 - [x] Apercu en pastilles dans RadioGroup (DS v9) [D137] ; E-APPARENCE a passer dessus
 - [x] Fleches de retour reliees en mode presentation (canevas Recettes)
 - [x] Pas de maquette bureau supplementaire pour l'espace en suppression (le composant SpaceRail le montre)
-- [ ] Verifier le rendu des quatre canevas (extension Chrome non connectee le 2026-11-04)
+- [x] Verifier le rendu des quatre canevas (fait le 2026-11-04 dans Chrome, artboard par artboard)
+
+## Revue du rendu (2026-11-04)
+
+Rien de casse a l'affichage ; ecarts releves :
+
+- [ ] Recettes : fonds de F-PARTAGER, F-PARTAGER-Demande, F-DEMANDE-PARTAGE et F-ADAPTER encore avec l'ancien en-tete texte ("Famille - Recettes"), pas la TopBar [D130]
+- [ ] Recettes bureau : liens en bleu par defaut du navigateur (E-RECETTE "historique", E-COMPARER-ORIGINAL), peu lisibles
+- [ ] DS, QuantityInput trop serre sur mobile : noms d'ingredients tronques dans E-RECETTE-EDITION ("creme fraic", "gruyere rap")
+- [ ] DS, SegmentedControl : barre de defilement parasite quand il prend toute la largeur (E-PLANNING-semaine)
+- [ ] Planning : E-PROFILS-GENERATION mobile, le Stepper "Delai" deborde a droite
+- [ ] Profil : F-SUPPRIMER-COMPTE presente Colloc comme espace dont Matthias est membre, alors qu'il en est OWNER [D132]
+- [ ] Recherche bureau : la palette s'ouvre en haut a gauche au lieu d'etre centree ; espace invente "Grand-mere et cousins" (hors brief)
+- [ ] Teinte 5 "Cendre" (Foyer) : le bouton principal gris parait desactive (E-PLANNING-vide, F-CREER-PLANNING, E-SUGGESTION-EDITION, F-DEMANDE-PARTAGE) ; a trancher
+- [ ] Details : E-REJOINDRE annonce 5 membres pour Famille (6 au brief) ; Lea "Moderateur" en mobile, "Moderatrice" en bureau ; dates en format americain dans F-CREER-PLANNING (rendu du champ date natif)

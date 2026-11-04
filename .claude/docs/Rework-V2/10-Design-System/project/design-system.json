@@ -27,8 +27,8 @@
   },
   "lastChange": {
     "by": "Matthias Bouloc",
-    "at": "2026-11-04T17:00:00Z",
+    "at": "2026-11-04T19:00:00Z",
     "via": "Claude Code",
-    "note": "TopBar en mode edition (D136) et apercu en pastilles dans RadioGroup (D137)"
+    "note": "Revue du rendu : bouton principal non grise dans l'espace Cendre (D139), QuantityInput sur deux lignes sur telephone, plus de barre de defilement dans SegmentedControl"
   }
 }

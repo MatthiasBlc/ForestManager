@@ -24,9 +24,9 @@ body{margin:0}
 <x-import component-from-global-scope="ForestUI.IconButton" icon="more" label="Actions du profil"></x-import>
 </div>
 <section style="display: flex; flex-direction: column; gap: 10px;">
-<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
 <span style="font-size: 14px; line-height: 20px; font-weight: 600;">Délai avant de reproposer une recette</span>
-<x-import component-from-global-scope="ForestUI.Stepper" label="Délai" default-value="{{three}}" unit="j"></x-import>
+<x-import component-from-global-scope="ForestUI.Stepper" label="Délai avant de reproposer une recette" default-value="{{three}}" unit="j"></x-import>
 </div>
 <x-import component-from-global-scope="ForestUI.Switch" label="Piocher aussi dans les idées de repas" default-checked="{{yes}}"></x-import>
 </section>

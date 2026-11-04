@@ -22,8 +22,14 @@ body{margin:0}
 <x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" contained="{{yes}}" title="Créer le planning" on-close="{{noop}}">
 <div style="display: flex; flex-direction: column; gap: 18px;">
 <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
-<x-import component-from-global-scope="ForestUI.Field" label="Du" type="date" default-value="2026-11-02"></x-import>
-<x-import component-from-global-scope="ForestUI.Field" label="Au" type="date" default-value="2026-11-08"></x-import>
+<div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;">
+<span style="font-size: 14px; line-height: 20px; font-weight: 600;">Du</span>
+<button type="button" class="fm-input" aria-label="Du : lundi 2 novembre, ouvrir le calendrier" style="display: flex; align-items: center; gap: 8px; text-align: left; cursor: pointer; font-family: var(--font-sans);"><x-import component-from-global-scope="ForestUI.Icon" name="calendar" size="{{eighteen}}"></x-import><span style="flex-grow: 1; white-space: nowrap;">lun. 2 nov.</span></button>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;">
+<span style="font-size: 14px; line-height: 20px; font-weight: 600;">Au</span>
+<button type="button" class="fm-input" aria-label="Au : dimanche 8 novembre, ouvrir le calendrier" style="display: flex; align-items: center; gap: 8px; text-align: left; cursor: pointer; font-family: var(--font-sans);"><x-import component-from-global-scope="ForestUI.Icon" name="calendar" size="{{eighteen}}"></x-import><span style="flex-grow: 1; white-space: nowrap;">dim. 8 nov.</span></button>
+</div>
 </div>
 <div style="display: flex; flex-direction: column; gap: 8px;">
 <span style="font-size: 14px; line-height: 20px; font-weight: 600;">Repas à planifier</span>
@@ -52,7 +58,7 @@ body{margin:0}
 class Component extends DCLogic {
   renderVals() {
     return {
-      yes: true, two: 2, noop: function () {},
+      yes: true, two: 2, eighteen: 18, noop: function () {},
       space: { id: 'foyer', name: 'Foyer', tint: 5 },
       tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }]
     };

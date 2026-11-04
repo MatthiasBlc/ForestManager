@@ -27,8 +27,8 @@ body{margin:0;background:var(--bg)}
 </main>
 </div>
 <div aria-hidden="true" style="position: absolute; inset: 0; background: var(--overlay);"></div>
-<div style="position: absolute; left: 0; right: 0; top: 96px; display: flex; justify-content: center; padding: 0 16px;">
-<x-import component-from-global-scope="ForestUI.CommandPalette" default-query="gra" groups="{{groups}}" style="width: 100%; max-width: 560px;"></x-import>
+<div style="position: absolute; top: 96px; left: 50%; transform: translateX(-50%); width: min(560px, calc(100% - 32px));">
+<x-import component-from-global-scope="ForestUI.CommandPalette" default-query="gra" groups="{{groups}}"></x-import>
 </div>
 </div>
 </x-dc>
@@ -44,9 +44,6 @@ class Component extends DCLogic {
         ] },
         { label: 'Ingrédients', items: [
           { id: 'i1', label: 'Graines de sésame', icon: 'search', hint: '3 recettes' }
-        ] },
-        { label: 'Espaces', items: [
-          { id: 's1', label: 'Grand-mère et cousins', icon: 'users', hint: 'Invitation en attente' }
         ] }
       ],
       me: { id: 'me', name: 'Matthias' },

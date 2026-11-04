@@ -31,6 +31,7 @@ Forest Manager rassemble des proches (famille, amis, colocs) dans des espaces pr
 - **Accent d'espace** : `accent`, `accent-soft`, `accent-text`, `on-accent`. Par defaut la teinte 1 ; un element `data-space="1"` a `"5"` les remplace par `tint-N`, `tint-N-soft`, `tint-N-text`, `on-tint-N`. L'AppShell pose `data-space` de l'espace courant : tout ce qu'il contient prend sa teinte.
   - `accent` : remplissage du bouton principal, interrupteur allume, case cochee, pastille de compteur. Son texte : `on-accent`.
   - `accent-soft` : element actif de navigation, puce selectionnee, repas planifie. Son texte : `accent-text`.
+  - Exception (D139) : en Braise, la teinte 5 (Cendre) est grise ; les remplissages pleins (`accent`, `on-accent`) y reprennent la teinte 1 pour ne pas paraitre desactives. La navigation et les elements actifs restent en Cendre.
 - Chaque ambiance a 5 teintes d'espace. Braise : Braise, Nuit, Tison, Flamme, Cendre. Sous-bois : Sapin, Lichen, Baie, Myrtille, Mousse. Potager : Tomate, Courge, Aubergine, Basilic, Betterave. Un espace garde son numero de teinte quand l'utilisateur change d'ambiance.
 - `second` (et `-soft`, `-text`, `on-`) : tout ce qui touche aux **recettes liees** (bloc "Recette liee", badges "Composee" et "Base"). Jamais pour une action.
 - Etats : `success`, `warning`, `danger`, chacun avec `-soft` (fond), `-text` (texte sur fond clair ou soft) et `on-` (texte sur le remplissage plein). Un etat porte toujours un mot ou une icone, jamais la couleur seule.

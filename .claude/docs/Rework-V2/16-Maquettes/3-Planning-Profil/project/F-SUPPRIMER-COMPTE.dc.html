@@ -22,7 +22,7 @@ body{margin:0}
 <div style="display: flex; flex-direction: column; gap: 14px;">
 <p style="margin: 0; font-size: 15px; line-height: 22px;">Voici ce qui se passera. Rien n’est supprimé avant ta confirmation.</p>
 <div style="display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden;">
-<sc-for list="{{spaces}}" as="s" hint-placeholder-count="4">
+<sc-for list="{{spaces}}" as="s" hint-placeholder-count="5">
 <div style="display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 6px 12px; border-bottom: 1px solid var(--line); background: var(--surface-raised);">
 <x-import component-from-global-scope="ForestUI.Avatar" name="{{s.name}}" tint="{{s.tint}}" size="{{twentyEight}}"></x-import>
 <span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column;"><b style="font-size: 14px; line-height: 20px;">{{s.name}}</b><span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">{{s.effect}}</span></span>
@@ -47,8 +47,9 @@ class Component extends DCLogic {
       spaces: [
         { name: 'Famille', tint: 1, effect: 'Tu en es l’OWNER : propriété transférée à Sam, modérateur le plus ancien' },
         { name: 'Foyer', tint: 5, effect: 'Tu en es l’OWNER : propriété transférée à Léa' },
+        { name: 'Colloc', tint: 2, effect: 'Tu en es l’OWNER : propriété transférée au membre le plus ancien' },
         { name: 'TOM', tint: 3, effect: 'Tu quittes l’espace (modérateur)' },
-        { name: 'Colloc et Amis', tint: 2, effect: 'Tu quittes les espaces (membre)' }
+        { name: 'Amis', tint: 4, effect: 'Tu quittes l’espace (membre)' }
       ]
     };
   }

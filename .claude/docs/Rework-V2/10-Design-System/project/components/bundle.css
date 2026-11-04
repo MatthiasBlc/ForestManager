@@ -34,6 +34,14 @@
   --accent-text: var(--tint-5-text);
   --on-accent: var(--on-tint-5);
 }
+/* D139 : en Braise, la teinte 5 (Cendre) est grise ; un remplissage gris parait desactive.
+   Les remplissages pleins (bouton principal, interrupteur, case, pastille) gardent la teinte 1
+   de l'ambiance ; la navigation et les elements actifs gardent Cendre. */
+:root:not([data-theme^="sousbois"]):not([data-theme^="potager"]) [data-space="5"],
+:root:not([data-theme^="sousbois"]):not([data-theme^="potager"])[data-space="5"] {
+  --accent: var(--tint-1);
+  --on-accent: var(--on-tint-1);
+}
 
 /* ---------- Base ---------- */
 html,
@@ -318,6 +326,11 @@ textarea.fm-input {
   border: 1px solid var(--line);
   max-width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+.fm-seg::-webkit-scrollbar {
+  display: none;
 }
 .fm-seg button {
   font: 600 14px/20px var(--font-sans);
@@ -1448,27 +1461,41 @@ textarea.fm-input {
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  container-type: inline-size;
 }
+/* Une ligne : quantite, unite, ingredient, retirer. Sous 400px de large (telephone, bloc),
+   l'ingredient passe sur sa propre ligne, pleine largeur, pour rester lisible. */
 .fm-qty-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 64px 96px minmax(0, 1fr) auto;
+  grid-template-areas: "num unit ing del";
   gap: var(--space-2);
-  align-items: flex-start;
+  align-items: start;
 }
 .fm-qty-num {
-  flex: 0 0 64px;
+  grid-area: num;
   font-family: var(--font-mono);
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 .fm-qty-unit {
-  flex: 0 0 96px;
+  grid-area: unit;
   appearance: none;
   padding-right: var(--space-2);
 }
 .fm-qty-ing {
-  flex: 1;
+  grid-area: ing;
   min-width: 0;
   position: relative;
+}
+.fm-qty-row > .fm-iconbtn {
+  grid-area: del;
+}
+@container (max-width: 399px) {
+  .fm-qty-row {
+    grid-template-columns: 72px minmax(0, 1fr) auto;
+    grid-template-areas: "num unit del" "ing ing ing";
+  }
 }
 .fm-qty-list {
   position: absolute;

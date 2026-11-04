@@ -231,10 +231,10 @@
   "designSystems": [
     {
       "artifact": "https://claude.ai/artifact/7Q9Uy9qGhUyPYt3bWVa5yc",
-      "copiedAt": "2026-11-04T14:00:00Z",
+      "copiedAt": "2026-11-04T15:00:00Z",
       "namespace": "forestui",
       "title": "Forest Manager",
-      "version": "1793797631-ebaa"
+      "version": "1793798732-c3dc"
     }
   ],
   "launch": {
