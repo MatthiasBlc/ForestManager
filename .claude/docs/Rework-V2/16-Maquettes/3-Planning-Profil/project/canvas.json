@@ -29,5 +29,5 @@
 "t-recherche":{"x":0,"y":2188,"text":"Recherche et notifications (P16, P17)","kind":"title1","maxW":1330},
 "t-bureau":{"x":0,"y":3412,"text":"Versions bureau","kind":"title1","maxW":4480}
 },
-"designSystems":[{"title":"Forest Manager","namespace":"forestui","artifact":"https://claude.ai/artifact/7Q9Uy9qGhUyPYt3bWVa5yc","version":"1793796615-35ad","copiedAt":"2026-11-04T13:00:00Z"}]
+"designSystems":[{"title":"Forest Manager","namespace":"forestui","artifact":"https://claude.ai/artifact/7Q9Uy9qGhUyPYt3bWVa5yc","version":"1793798732-c3dc","copiedAt":"2026-11-04T15:00:00Z"}]
 }
