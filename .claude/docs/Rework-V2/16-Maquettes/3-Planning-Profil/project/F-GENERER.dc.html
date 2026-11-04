@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Générer le planning</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="fm-root" data-space="1" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="f"></x-import>
+<x-import component-from-global-scope="ForestUI.TopBar" title="Planning"></x-import>
+<div style="flex-grow: 1;"></div>
+<x-import component-from-global-scope="ForestUI.TabBar" items="{{tabs}}" active-id="plan"></x-import>
+<x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" contained="{{yes}}" title="Générer le planning" on-close="{{noop}}">
+<div style="display: flex; flex-direction: column; gap: 18px;">
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<span style="font-size: 14px; line-height: 20px; font-weight: 600;">Profil de génération</span>
+<button type="button" aria-pressed="true" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 14px; border-radius: var(--radius-md); border: 2px solid var(--accent); background: var(--accent-soft); color: var(--ink); font-family: var(--font-sans); text-align: left; cursor: pointer;">
+<span style="flex-grow: 1; display: flex; flex-direction: column;"><b style="font-size: 15px; line-height: 20px;">Semaine classique</b><span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">Par défaut · 4 règles · pas le jeudi midi</span></span>
+<x-import component-from-global-scope="ForestUI.Icon" name="check"></x-import>
+</button>
+<button type="button" aria-pressed="false" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 14px; border-radius: var(--radius-md); border: 1px solid var(--line-strong); background: var(--surface-raised); color: var(--ink); font-family: var(--font-sans); text-align: left; cursor: pointer;">
+<span style="flex-grow: 1; display: flex; flex-direction: column;"><b style="font-size: 15px; line-height: 20px;">Été léger</b><span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">2 règles · plus de salades</span></span>
+</button>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<span style="font-size: 14px; line-height: 20px; font-weight: 600;">Période</span>
+<x-import component-from-global-scope="ForestUI.SegmentedControl" label="Période" options="{{periods}}" default-value="week"></x-import>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: var(--radius-md); background: var(--surface); border: 1px solid var(--line);">
+<span style="display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 20px;"><x-import component-from-global-scope="ForestUI.Icon" name="lock" size="{{sixteen}}"></x-import>2 repas verrouillés restent en place</span>
+<span style="display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 20px;"><x-import component-from-global-scope="ForestUI.Icon" name="calendar" size="{{sixteen}}"></x-import>11 repas à proposer, du 3 au 8 novembre</span>
+</div>
+<x-import component-from-global-scope="ForestUI.Switch" label="Remplacer aussi les repas déjà prévus"></x-import>
+<x-import component-from-global-scope="ForestUI.Button" variant="primary" block="{{yes}}" icon="sparkles">Générer</x-import>
+</div>
+</x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      yes: true, sixteen: 16, noop: function () {},
+      periods: [{ value: 'week', label: 'Cette semaine' }, { value: 'next', label: 'La suivante' }, { value: 'all', label: 'Tout' }],
+      me: { id: 'me', name: 'Matthias' },
+      spaces: [{ id: 'foyer', name: 'Foyer', tint: 5 }, { id: 'f', name: 'Famille', tint: 1 }, { id: 'c', name: 'Colloc', tint: 2 }, { id: 't', name: 'TOM', tint: 3 }, { id: 'a', name: 'Amis', tint: 4 }],
+      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }, { id: 'members', label: 'Membres', icon: 'users' }, { id: 'more', label: 'Plus', icon: 'more' }]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Profil de génération</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="fm-root" data-space="1" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="f"></x-import>
+<div style="display: flex; align-items: center; gap: 4px; min-height: 56px; padding: 0 8px; border-bottom: 1px solid var(--line);">
+<x-import component-from-global-scope="ForestUI.IconButton" icon="chevron-right" label="Retour au planning" style="transform: scaleX(-1);"></x-import>
+<h1 style="margin: 0; flex-grow: 1; font-family: var(--font-display); font-size: 20px; line-height: 26px;">Semaine classique</h1>
+<x-import component-from-global-scope="ForestUI.Badge" tone="accent">Par défaut</x-import>
+<x-import component-from-global-scope="ForestUI.IconButton" icon="more" label="Actions du profil"></x-import>
+</div>
+<div style="flex-grow: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding: 16px;">
+<section style="display: flex; flex-direction: column; gap: 10px;">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+<span style="font-size: 14px; line-height: 20px; font-weight: 600;">Délai avant de reproposer une recette</span>
+<x-import component-from-global-scope="ForestUI.Stepper" label="Délai" default-value="{{three}}" unit="j"></x-import>
+</div>
+<x-import component-from-global-scope="ForestUI.Switch" label="Piocher aussi dans les idées de repas" default-checked="{{yes}}"></x-import>
+</section>
+<section style="display: flex; flex-direction: column; gap: 8px;">
+<h2 style="margin: 0; font-family: var(--font-display); font-size: 16px; line-height: 22px;">Règles</h2>
+<sc-for list="{{rules}}" as="r" hint-placeholder-count="4">
+<div style="display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 6px 4px 6px 12px; border-radius: var(--radius-md); border: 1px solid var(--line); background: var(--surface-raised);">
+<span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column;"><b style="font-size: 15px; line-height: 20px;">{{r.target}}</b><span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">{{r.detail}}</span></span>
+<x-import component-from-global-scope="ForestUI.Badge" tone="{{r.tone}}">{{r.kind}}</x-import>
+<x-import component-from-global-scope="ForestUI.IconButton" icon="pencil" label="Modifier la règle"></x-import>
+</div>
+</sc-for>
+<x-import component-from-global-scope="ForestUI.Button" variant="secondary" icon="plus">Ajouter une règle</x-import>
+</section>
+<section style="display: flex; flex-direction: column; gap: 8px;">
+<h2 style="margin: 0; font-family: var(--font-display); font-size: 16px; line-height: 22px;">Repas de la semaine</h2>
+<span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">Touche un repas pour l’exclure ou y épingler un tag.</span>
+<div style="display: grid; grid-template-columns: 44px repeat(7, minmax(0, 1fr)); gap: 4px; align-items: center;">
+<span></span>
+<sc-for list="{{dayNames}}" as="d" hint-placeholder-count="7"><span style="text-align: center; font-size: 11px; line-height: 16px; font-weight: 700; color: var(--ink-muted);">{{d}}</span></sc-for>
+<span style="font-size: 12px; line-height: 16px; font-weight: 600; color: var(--ink-muted);">Midi</span>
+<sc-for list="{{lunch}}" as="c" hint-placeholder-count="7">
+<sc-if value="{{c.normal}}" hint-placeholder-val="{{true}}"><button type="button" aria-label="{{c.aria}}" style="height: 40px; min-width: 0; padding: 0; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-raised); color: var(--ink-muted); font-family: var(--font-sans); font-size: 11px; font-weight: 700; cursor: pointer;"></button></sc-if>
+<sc-if value="{{c.off}}" hint-placeholder-val="{{false}}"><button type="button" aria-label="{{c.aria}}" style="height: 40px; min-width: 0; padding: 0; border-radius: 8px; border: 1px dashed var(--line-strong); background: transparent; color: var(--ink-muted); font-family: var(--font-sans); font-size: 11px; font-weight: 700; cursor: pointer;">—</button></sc-if>
+<sc-if value="{{c.pin}}" hint-placeholder-val="{{false}}"><button type="button" aria-label="{{c.aria}}" style="height: 40px; min-width: 0; padding: 0; border-radius: 8px; border: 1px solid transparent; background: var(--accent-soft); color: var(--accent-text); font-family: var(--font-sans); font-size: 10px; font-weight: 700; cursor: pointer;">{{c.label}}</button></sc-if>
+</sc-for>
+<span style="font-size: 12px; line-height: 16px; font-weight: 600; color: var(--ink-muted);">Soir</span>
+<sc-for list="{{dinner}}" as="c" hint-placeholder-count="7">
+<sc-if value="{{c.normal}}" hint-placeholder-val="{{true}}"><button type="button" aria-label="{{c.aria}}" style="height: 40px; min-width: 0; padding: 0; border-radius: 8px; border: 1px solid var(--line); background: var(--surface-raised); color: var(--ink-muted); font-family: var(--font-sans); font-size: 11px; font-weight: 700; cursor: pointer;"></button></sc-if>
+<sc-if value="{{c.off}}" hint-placeholder-val="{{false}}"><button type="button" aria-label="{{c.aria}}" style="height: 40px; min-width: 0; padding: 0; border-radius: 8px; border: 1px dashed var(--line-strong); background: transparent; color: var(--ink-muted); font-family: var(--font-sans); font-size: 11px; font-weight: 700; cursor: pointer;">—</button></sc-if>
+<sc-if value="{{c.pin}}" hint-placeholder-val="{{false}}"><button type="button" aria-label="{{c.aria}}" style="height: 40px; min-width: 0; padding: 0; border-radius: 8px; border: 1px solid transparent; background: var(--accent-soft); color: var(--accent-text); font-family: var(--font-sans); font-size: 10px; font-weight: 700; cursor: pointer;">{{c.label}}</button></sc-if>
+</sc-for>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; line-height: 16px; color: var(--ink-muted);">
+<span>— exclu : pas de génération</span><span>Pizza : tag épinglé</span>
+</div>
+</section>
+</div>
+<x-import component-from-global-scope="ForestUI.TabBar" items="{{tabs}}" active-id="plan"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var names = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+    var full = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+    var lunch = full.map(function (d, i) { return i === 3 ? { off: true, aria: 'Jeudi midi : exclu' } : { normal: true, aria: d + ' midi : généré' }; });
+    var dinner = full.map(function (d, i) { return i === 4 ? { pin: true, label: 'Pizza', aria: 'Vendredi soir : tag Pizza épinglé' } : { normal: true, aria: d + ' soir : généré' }; });
+    return {
+      yes: true, three: 3, dayNames: names, lunch: lunch, dinner: dinner,
+      rules: [
+        { target: 'Végétarien', detail: '2 à 3 fois par semaine · poids ×1,5', kind: 'Tag', tone: 'accent' },
+        { target: 'Poisson', detail: 'Le soir · 1 fois par semaine', kind: 'Tag', tone: 'accent' },
+        { target: 'Rapide', detail: 'Le midi · poids ×1,2', kind: 'Tag', tone: 'accent' },
+        { target: 'Dahl de lentilles corail', detail: 'Poids ×0,5 · moins souvent', kind: 'Recette', tone: 'second' }
+      ],
+      me: { id: 'me', name: 'Matthias' },
+      spaces: [{ id: 'foyer', name: 'Foyer', tint: 5 }, { id: 'f', name: 'Famille', tint: 1 }, { id: 'c', name: 'Colloc', tint: 2 }, { id: 't', name: 'TOM', tint: 3 }, { id: 'a', name: 'Amis', tint: 4 }],
+      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }, { id: 'members', label: 'Membres', icon: 'users' }, { id: 'more', label: 'Plus', icon: 'more' }]
+    };
+  }
+}
+</script>
+</body>
+</html>

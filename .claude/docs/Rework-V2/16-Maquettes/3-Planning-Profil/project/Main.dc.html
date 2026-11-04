@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Planning - jour</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div class="fm-root" data-space="1" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="f"></x-import>
+<x-import component-from-global-scope="ForestUI.TopBar" title="Planning" unread="{{three}}"></x-import>
+<div style="flex-grow: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 16px; padding: 16px;">
+<div style="display: flex; gap: 6px; overflow-x: auto;">
+<sc-for list="{{days}}" as="d" hint-placeholder-count="7">
+<sc-if value="{{d.on}}" hint-placeholder-val="{{false}}">
+<button type="button" aria-current="date" style="flex: none; width: 46px; height: 56px; border-radius: var(--radius-md); border: 1px solid transparent; background: var(--accent); color: var(--on-accent); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-family: var(--font-sans); cursor: pointer;"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.04em;">{{d.day}}</span><span style="font-size: 17px; font-weight: 700;">{{d.num}}</span></button>
+</sc-if>
+<sc-if value="{{d.off}}" hint-placeholder-val="{{true}}">
+<button type="button" style="flex: none; width: 46px; height: 56px; border-radius: var(--radius-md); border: 1px solid var(--line); background: var(--surface-raised); color: var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-family: var(--font-sans); cursor: pointer;"><span style="font-size: 12px; font-weight: 600; letter-spacing: 0.04em; color: var(--ink-muted);">{{d.day}}</span><span style="font-size: 17px; font-weight: 700;">{{d.num}}</span></button>
+</sc-if>
+</sc-for>
+</div>
+<div style="display: flex; align-items: center; gap: 8px;">
+<h1 style="margin: 0; flex-grow: 1; font-family: var(--font-display); font-size: 22px; line-height: 28px;">Mardi 3 novembre</h1>
+<x-import component-from-global-scope="ForestUI.Button" variant="secondary" size="sm" icon="sparkles">Générer</x-import>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px;">
+<span style="font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-muted);">Midi</span>
+<x-import component-from-global-scope="ForestUI.MealSlot" kind="recipe" title="Saumon teriyaki et brocolis" servings="{{two}}" locked="{{yes}}" when="Mardi midi"></x-import>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px;">
+<span style="font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-muted);">Soir</span>
+<x-import component-from-global-scope="ForestUI.MealSlot" kind="empty" when="Mardi soir"></x-import>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px; padding-top: 16px; border-top: 1px solid var(--line);">
+<span style="font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-muted);">Mercredi 4</span>
+<x-import component-from-global-scope="ForestUI.MealSlot" kind="text" title="Restes du dimanche" when="Mercredi midi"></x-import>
+<x-import component-from-global-scope="ForestUI.MealSlot" kind="recipe" title="Gratin de pâtes" servings="{{six}}" when="Mercredi soir"></x-import>
+</div>
+</div>
+<x-import component-from-global-scope="ForestUI.TabBar" items="{{tabs}}" active-id="plan"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var names = ['LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM', 'DIM'];
+    var days = names.map(function (n, i) { return { day: n, num: String(i + 2), on: i === 1, off: i !== 1 }; });
+    return {
+      yes: true, two: 2, three: 3, six: 6, days: days,
+      me: { id: 'me', name: 'Matthias' },
+      spaces: [{ id: 'foyer', name: 'Foyer', tint: 5 }, { id: 'f', name: 'Famille', tint: 1 }, { id: 'c', name: 'Colloc', tint: 2, unread: true }, { id: 't', name: 'TOM', tint: 3 }, { id: 'a', name: 'Amis', tint: 4 }],
+      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }, { id: 'members', label: 'Membres', icon: 'users' }, { id: 'more', label: 'Plus', icon: 'more' }]
+    };
+  }
+}
+</script>
+</body>
+</html>

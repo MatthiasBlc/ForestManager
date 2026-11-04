@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Planning - semaine</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:var(--bg)}
+</style>
+</helmet>
+<div class="fm-root" data-space="1" style="min-height: 900px; display: flex; flex-wrap: wrap; align-items: stretch; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="f"></x-import>
+<div style="flex: 0 0 240px; display: flex; min-width: 0;">
+<x-import component-from-global-scope="ForestUI.ModuleNav" space-name="Famille" subtitle="6 membres" items="{{nav}}" active-id="plan" style="flex-grow: 1;"></x-import>
+</div>
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column;">
+<x-import component-from-global-scope="ForestUI.TopBar" title="Planning" unread="{{three}}" user="Matthias"></x-import>
+<main style="display: flex; flex-direction: column; gap: 20px; padding: 24px; min-width: 0;">
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+<div style="display: flex; align-items: center; gap: 4px;">
+<x-import component-from-global-scope="ForestUI.IconButton" icon="chevron-right" label="Semaine précédente" style="transform: scaleX(-1);"></x-import>
+<x-import component-from-global-scope="ForestUI.IconButton" icon="chevron-right" label="Semaine suivante"></x-import>
+</div>
+<h1 style="margin: 0; flex-grow: 1; font-family: var(--font-display); font-size: 26px; line-height: 32px;">Semaine du 2 au 8 novembre</h1>
+<x-import component-from-global-scope="ForestUI.Button" variant="ghost" icon="book-open">Idées de repas</x-import>
+<x-import component-from-global-scope="ForestUI.Button" variant="secondary" icon="settings">Profils de génération</x-import>
+<x-import component-from-global-scope="ForestUI.Button" variant="primary" icon="sparkles">Générer</x-import>
+</div>
+<div style="overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface);">
+<div style="min-width: 1000px; display: grid; grid-template-columns: 72px repeat(7, minmax(0, 1fr)); gap: 8px; padding: 12px;">
+<span></span>
+<sc-for list="{{days}}" as="d" hint-placeholder-count="7">
+<sc-if value="{{d.today}}" hint-placeholder-val="{{false}}"><span style="display: flex; flex-direction: column; padding: 4px 8px; border-radius: 8px; background: var(--accent-soft); color: var(--accent-text);"><b style="font-size: 12px; line-height: 16px; letter-spacing: 0.04em;">{{d.day}}</b><span style="font-size: 18px; line-height: 24px; font-weight: 700;">{{d.num}}</span></span></sc-if>
+<sc-if value="{{d.other}}" hint-placeholder-val="{{true}}"><span style="display: flex; flex-direction: column; padding: 4px 8px; color: var(--ink-muted);"><b style="font-size: 12px; line-height: 16px; letter-spacing: 0.04em;">{{d.day}}</b><span style="font-size: 18px; line-height: 24px; font-weight: 700; color: var(--ink);">{{d.num}}</span></span></sc-if>
+</sc-for>
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="2">
+<span style="align-self: center; font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-muted);">{{r.label}}</span>
+<sc-for list="{{r.cells}}" as="c" hint-placeholder-count="7">
+<x-import component-from-global-scope="ForestUI.MealSlot" kind="{{c.kind}}" title="{{c.title}}" servings="{{c.servings}}" locked="{{c.locked}}" disabled="{{c.disabled}}" when="{{c.when}}"></x-import>
+</sc-for>
+</sc-for>
+</div>
+</div>
+<span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">Glisse un repas sur un autre pour les échanger. Les repas verrouillés ne bougent pas à la génération.</span>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var names = ['LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM', 'DIM'];
+    var full = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
+    var lunch = [
+      { kind: 'recipe', title: 'Dahl de lentilles corail' },
+      { kind: 'recipe', title: 'Saumon teriyaki et brocolis', servings: 2, locked: true },
+      { kind: 'text', title: 'Restes du dimanche' },
+      { disabled: true, title: 'Cantine' },
+      { kind: 'empty' },
+      { kind: 'recipe', title: 'Escalope milanaise et compotée' },
+      { kind: 'recipe', title: 'Tarte aux pommes', servings: 8 }
+    ];
+    var dinner = [
+      { kind: 'text', title: 'Soupe maison' },
+      { kind: 'empty' },
+      { kind: 'recipe', title: 'Gratin de pâtes' },
+      { kind: 'recipe', title: 'Poulet teriyaki et riz', locked: true },
+      { kind: 'text', title: 'Pizza maison' },
+      { kind: 'empty' },
+      { kind: 'recipe', title: 'Dahl de lentilles corail' }
+    ];
+    function fill(list, meal) { return list.map(function (c, i) { return Object.assign({ kind: 'empty', title: '', servings: null, locked: false, disabled: false }, c, { when: full[i] + ' ' + meal }); }); }
+    return {
+      three: 3,
+      days: names.map(function (n, i) { return { day: n, num: String(i + 2), today: i === 1, other: i !== 1 }; }),
+      rows: [{ label: 'Midi', cells: fill(lunch, 'midi') }, { label: 'Soir', cells: fill(dinner, 'soir') }],
+      me: { id: 'me', name: 'Matthias' },
+      spaces: [{ id: 'foyer', name: 'Foyer', tint: 5 }, { id: 'f', name: 'Famille', tint: 1 }, { id: 'c', name: 'Colloc', tint: 2, unread: true }, { id: 't', name: 'TOM', tint: 3 }, { id: 'a', name: 'Amis', tint: 4 }],
+      nav: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }, { id: 'members', label: 'Membres', icon: 'users' }, { id: 'settings', label: 'Réglages', icon: 'settings' }]
+    };
+  }
+}
+</script>
+</body>
+</html>

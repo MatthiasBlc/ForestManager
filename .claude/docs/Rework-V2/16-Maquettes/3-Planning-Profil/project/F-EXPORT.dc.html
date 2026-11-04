@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Exporter</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="fm-root" data-space="1" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+<div style="display: flex; align-items: center; gap: 4px; min-height: 56px; padding: 0 8px; border-bottom: 1px solid var(--line);">
+<x-import component-from-global-scope="ForestUI.IconButton" icon="chevron-right" label="Retour" style="transform: scaleX(-1);"></x-import>
+<h1 style="margin: 0; flex-grow: 1; font-family: var(--font-display); font-size: 20px; line-height: 26px;">Profil</h1>
+</div>
+<div style="flex-grow: 1;"></div>
+<x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" contained="{{yes}}" title="Exporter des recettes" on-close="{{noop}}">
+<div style="display: flex; flex-direction: column; gap: 16px;">
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<button type="button" aria-pressed="false" style="display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 0 14px; border-radius: var(--radius-md); border: 1px solid var(--line-strong); background: var(--surface-raised); color: var(--ink); font-family: var(--font-sans); text-align: left; cursor: pointer;">
+<span style="flex-grow: 1; display: flex; flex-direction: column;"><b style="font-size: 15px; line-height: 20px;">Mes recettes</b><span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">42 recettes dont je suis l’auteur, tous espaces</span></span>
+</button>
+<button type="button" aria-pressed="true" style="display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 0 14px; border-radius: var(--radius-md); border: 2px solid var(--accent); background: var(--accent-soft); color: var(--ink); font-family: var(--font-sans); text-align: left; cursor: pointer;">
+<span style="flex-grow: 1; display: flex; flex-direction: column;"><b style="font-size: 15px; line-height: 20px;">Tout l’espace Famille</b><span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">118 recettes · tu en es l’OWNER</span></span>
+<x-import component-from-global-scope="ForestUI.Icon" name="check"></x-import>
+</button>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<span style="font-size: 14px; line-height: 20px; font-weight: 600;">Format</span>
+<x-import component-from-global-scope="ForestUI.SegmentedControl" label="Format" options="{{formats}}" default-value="json"></x-import>
+<span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">JSON se réimporte dans Forest Manager ; Markdown se lit partout.</span>
+</div>
+<x-import component-from-global-scope="ForestUI.Switch" label="Inclure les photos (archive zip)" default-checked="{{yes}}"></x-import>
+<div role="note" style="display: flex; gap: 10px; padding: 12px 14px; border-radius: var(--radius-md); background: var(--surface); border: 1px solid var(--line);">
+<x-import component-from-global-scope="ForestUI.Icon" name="users"></x-import>
+<span style="font-size: 14px; line-height: 20px;">Un export d’espace par jour. Les membres verront « Matthias a exporté l’espace » dans l’activité.</span>
+</div>
+<x-import component-from-global-scope="ForestUI.Button" variant="primary" block="{{yes}}">Préparer l’export</x-import>
+</div>
+</x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      yes: true, noop: function () {},
+      formats: [{ value: 'json', label: 'JSON' }, { value: 'md', label: 'Markdown' }]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{"v":3,"createdOnFiles":{"v":1,"at":"2026-11-03T15:10:00Z"},"title":"Maquettes V2 - Planning et profil","launch":{"view":"canvas"},"pages":[],
+"boards":{
+"Main.dc.html":{"x":0,"y":0,"w":390,"h":844,"title":"E-PLANNING - Jour (mobile)"},
+"E-PLANNING-vide.dc.html":{"x":470,"y":0,"w":390,"h":844,"title":"E-PLANNING - Vide"},
+"F-CREER-PLANNING.dc.html":{"x":940,"y":0,"w":390,"h":844,"title":"F-CREER-PLANNING - Creer le planning"},
+"F-REPAS.dc.html":{"x":1410,"y":0,"w":390,"h":844,"title":"F-REPAS - Modifier un repas"},
+"E-PLANNING-echange.dc.html":{"x":1880,"y":0,"w":390,"h":844,"title":"E-PLANNING - Echanger deux repas (D69)"},
+"F-GENERER.dc.html":{"x":2350,"y":0,"w":390,"h":844,"title":"F-GENERER - Generer"},
+"F-GENERER-rapport.dc.html":{"x":2820,"y":0,"w":390,"h":844,"title":"F-GENERER - Rapport"},
+"E-PROFILS-GENERATION.dc.html":{"x":3290,"y":0,"w":390,"h":844,"title":"E-PROFILS-GENERATION - Profil de generation"},
+"E-IDEES.dc.html":{"x":3760,"y":0,"w":390,"h":844,"title":"E-IDEES - Idees de repas"},
+"E-PROFIL.dc.html":{"x":0,"y":1224,"w":390,"h":844,"title":"E-PROFIL - Profil"},
+"E-APPARENCE.dc.html":{"x":470,"y":1224,"w":390,"h":844,"title":"E-APPARENCE - Apparence (D32)"},
+"F-EXPORT.dc.html":{"x":940,"y":1224,"w":390,"h":844,"title":"F-EXPORT - Exporter (D37)"},
+"F-SUPPRIMER-COMPTE.dc.html":{"x":1410,"y":1224,"w":390,"h":844,"title":"F-SUPPRIMER-COMPTE - Supprimer mon compte (D51)"},
+"F-RECHERCHE.dc.html":{"x":0,"y":2448,"w":390,"h":844,"title":"F-RECHERCHE - Recherche (mobile)"},
+"E-NOTIFICATIONS.dc.html":{"x":470,"y":2448,"w":390,"h":844,"title":"E-NOTIFICATIONS - Notifications (hors ligne)"},
+"E-NOTIF-PREFERENCES.dc.html":{"x":940,"y":2448,"w":390,"h":844,"title":"E-NOTIF-PREFERENCES - Preferences"},
+"E-PLANNING-bureau.dc.html":{"x":0,"y":3672,"w":1440,"h":900,"title":"E-PLANNING - Grille semaine (bureau)","expand":"fill"},
+"E-PROFILS-GENERATION-bureau.dc.html":{"x":1520,"y":3672,"w":1440,"h":900,"title":"E-PROFILS-GENERATION (bureau)","expand":"fill"},
+"F-RECHERCHE-bureau.dc.html":{"x":3040,"y":3672,"w":1440,"h":900,"title":"F-RECHERCHE - Ctrl K (bureau)","expand":"fill"}
+},
+"order":["Main.dc.html","E-PLANNING-vide.dc.html","F-CREER-PLANNING.dc.html","F-REPAS.dc.html","E-PLANNING-echange.dc.html","F-GENERER.dc.html","F-GENERER-rapport.dc.html","E-PROFILS-GENERATION.dc.html","E-IDEES.dc.html","E-PROFIL.dc.html","E-APPARENCE.dc.html","F-EXPORT.dc.html","F-SUPPRIMER-COMPTE.dc.html","F-RECHERCHE.dc.html","E-NOTIFICATIONS.dc.html","E-NOTIF-PREFERENCES.dc.html","E-PLANNING-bureau.dc.html","E-PROFILS-GENERATION-bureau.dc.html","F-RECHERCHE-bureau.dc.html"],
+"notes":{
+"t-planning":{"x":0,"y":-260,"text":"Planning de repas (P10)","kind":"title1","maxW":4150},
+"t-profil":{"x":0,"y":964,"text":"Profil, apparence, export, compte (P12, P13, P15)","kind":"title1","maxW":1800},
+"t-recherche":{"x":0,"y":2188,"text":"Recherche et notifications (P16, P17)","kind":"title1","maxW":1330},
+"t-bureau":{"x":0,"y":3412,"text":"Versions bureau","kind":"title1","maxW":4480}
+},
+"designSystems":[{"title":"Forest Manager","namespace":"forestui","artifact":"https://claude.ai/artifact/7Q9Uy9qGhUyPYt3bWVa5yc","version":"1793716217-53b8","copiedAt":"2026-11-03T15:10:00Z"}]
+}

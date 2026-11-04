@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Planning proposé</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="fm-root" data-space="1" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="f"></x-import>
+<x-import component-from-global-scope="ForestUI.TopBar" title="Planning"></x-import>
+<div style="flex-grow: 1;"></div>
+<x-import component-from-global-scope="ForestUI.TabBar" items="{{tabs}}" active-id="plan"></x-import>
+<x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" contained="{{yes}}" title="Planning proposé" on-close="{{noop}}">
+<div style="display: flex; flex-direction: column; gap: 14px;">
+<p style="margin: 0; font-size: 15px; line-height: 22px;"><b>10 repas proposés</b> sur 11, avec le profil Semaine classique. Rien n’est enregistré tant que tu ne gardes pas ce planning.</p>
+<div style="display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden;">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+<div style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 4px 0 12px; border-bottom: 1px solid var(--line); background: var(--surface-raised);">
+<span style="width: 74px; flex: none; font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-muted);">{{r.when}}</span>
+<span style="flex-grow: 1; min-width: 0; font-size: 14px; line-height: 20px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{r.title}}</span>
+<x-import component-from-global-scope="ForestUI.IconButton" icon="refresh" label="Proposer autre chose"></x-import>
+</div>
+</sc-for>
+<span style="padding: 10px 12px; font-size: 13px; line-height: 18px; color: var(--ink-muted); background: var(--surface);">+ 5 autres repas</span>
+</div>
+<div role="note" style="display: flex; gap: 10px; padding: 12px 14px; border-radius: var(--radius-md); background: var(--warning-soft); color: var(--warning-text);">
+<x-import component-from-global-scope="ForestUI.Icon" name="clock"></x-import>
+<span style="font-size: 14px; line-height: 20px;"><b>Jeudi soir laissé vide.</b> La règle « Poisson, 1 fois par semaine » n’a trouvé aucune recette : elles ont toutes été cuisinées il y a moins de 3 jours.</span>
+</div>
+<div style="display: flex; gap: 8px;">
+<x-import component-from-global-scope="ForestUI.Button" variant="secondary" style="flex-grow: 1;">Annuler</x-import>
+<x-import component-from-global-scope="ForestUI.Button" variant="primary" style="flex-grow: 1;">Garder ce planning</x-import>
+</div>
+</div>
+</x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      yes: true, noop: function () {},
+      rows: [
+        { when: 'Mar soir', title: 'Dahl de lentilles corail' },
+        { when: 'Mer midi', title: 'Escalope milanaise et compotée' },
+        { when: 'Mer soir', title: 'Poulet teriyaki et riz' },
+        { when: 'Jeu soir', title: 'Aucune recette' },
+        { when: 'Ven midi', title: 'Gratin de pâtes' }
+      ],
+      me: { id: 'me', name: 'Matthias' },
+      spaces: [{ id: 'foyer', name: 'Foyer', tint: 5 }, { id: 'f', name: 'Famille', tint: 1 }, { id: 'c', name: 'Colloc', tint: 2 }, { id: 't', name: 'TOM', tint: 3 }, { id: 'a', name: 'Amis', tint: 4 }],
+      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }, { id: 'members', label: 'Membres', icon: 'users' }, { id: 'more', label: 'Plus', icon: 'more' }]
+    };
+  }
+}
+</script>
+</body>
+</html>
