@@ -204,7 +204,7 @@
     },
     "E-RECETTE-EDITION-Idee.dc.html": {
       "h": 844,
-      "title": "E-RECETTE-EDITION - Depuis une idee du planning",
+      "title": "E-RECETTE-EDITION - Idee transformee en recette (arrive depuis E-IDEES du canevas Planning)",
       "w": 390,
       "x": 3290,
       "y": 1224
@@ -231,10 +231,10 @@
   "designSystems": [
     {
       "artifact": "https://claude.ai/artifact/7Q9Uy9qGhUyPYt3bWVa5yc",
-      "copiedAt": "2026-11-04T13:00:00Z",
+      "copiedAt": "2026-11-04T14:00:00Z",
       "namespace": "forestui",
       "title": "Forest Manager",
-      "version":"1793796615-35ad"
+      "version": "1793797631-ebaa"
     }
   ],
   "launch": {

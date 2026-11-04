@@ -34,7 +34,7 @@ body{margin:0}
 <x-import component-from-global-scope="ForestUI.Badge" tone="second" icon="link">Liée à Dahl de lentilles corail</x-import>
 </sc-if>
 <sc-if value="{{i.convertible}}" hint-placeholder-val="{{true}}">
-<a href="F-IDEE-RECETTE.dc.html" style="align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border-radius: var(--radius-md); font-size: 14px; line-height: 20px; font-weight: 600; color: var(--accent-text); text-decoration: none;"><x-import component-from-global-scope="ForestUI.Icon" name="chef-hat" size="{{eighteen}}"></x-import>Transformer en recette</a>
+<x-import component-from-global-scope="ForestUI.Button" variant="ghost" size="sm" icon="chef-hat" style="align-self: flex-start;">Transformer en recette</x-import>
 </sc-if>
 </article>
 </sc-for>
@@ -46,7 +46,7 @@ body{margin:0}
 class Component extends DCLogic {
   renderVals() {
     return {
-      twentyEight: 28, eighteen: 18,
+      twentyEight: 28,
       ideas: [
         { name: 'Lasagnes végétariennes', comment: 'Celles de la cantine de Noé, à retrouver', author: 'Sam', tint: 2, convertible: true, linked: false },
         { name: 'Curry de pois chiches', comment: 'Avec du lait de coco, pas trop épicé', author: 'Léa', tint: 5, convertible: true, linked: false },

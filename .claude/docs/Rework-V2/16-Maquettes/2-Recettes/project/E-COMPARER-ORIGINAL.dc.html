@@ -15,7 +15,10 @@
 <style>body{margin:0}</style>
 </helmet>
 <div class="fm-root" data-space="2" style="width: 390px; height: 844px; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
-  <x-import component-from-global-scope="ForestUI.TopBar" title="Comparer" on-back="{{noop}}" unread="{{unread}}"></x-import>
+  <div style="position: relative;">
+    <x-import component-from-global-scope="ForestUI.TopBar" title="Comparer" on-back="{{noop}}" unread="{{unread}}"></x-import>
+    <a href="E-RECETTE.dc.html" aria-hidden="true" tabindex="-1" title="Retour" style="position: absolute; left: 16px; top: 6px; width: 44px; height: 44px; border-radius: 10px;"></a>
+  </div>
   <main style="flex: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 14px;">
     <div style="display: flex; flex-direction: column; gap: 2px;">
       <b style="font-size: 17px;">Gratin de pâtes au beurre</b>

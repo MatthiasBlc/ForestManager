@@ -758,7 +758,29 @@
     );
   }
 
+  /* TopBar en mode edition (D136) : Annuler, titre, action principale. Ni recherche ni cloche. */
+  function EditBar(p) {
+    return h(
+      "header",
+      { className: "fm-top fm-top-edit" },
+      h(Button, { variant: "ghost", size: "sm", onClick: p.onCancel }, p.cancelLabel || "Annuler"),
+      h("span", { className: "fm-top-title fm-top-edit-title" }, p.title),
+      p.action
+        ? h(
+            Button,
+            {
+              variant: "primary",
+              size: "sm",
+              disabled: p.actionDisabled,
+              onClick: p.onAction,
+            },
+            p.action
+          )
+        : null
+    );
+  }
   function TopBar(p) {
+    if (p.onCancel || p.action) return h(EditBar, p);
     var lead = p.space
       ? h(
           "button",
@@ -1130,7 +1152,16 @@
             { className: "fm-radio-text" },
             h("b", null, o.label),
             o.hint ? h("small", null, o.hint) : null
-          )
+          ),
+          o.swatches && o.swatches.length
+            ? h(
+                "span",
+                { className: "fm-radio-swatches", "aria-hidden": "true" },
+                o.swatches.map(function (c, i) {
+                  return h("i", { key: i, style: { background: c } });
+                })
+              )
+            : null
         );
       })
     );

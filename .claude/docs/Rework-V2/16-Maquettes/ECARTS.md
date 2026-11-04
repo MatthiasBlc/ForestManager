@@ -40,13 +40,15 @@ Publie le 2026-11-04 (Design System, version 7). Les canevas de maquettes ont en
 
 Fait le 2026-11-04 (canevas Acces et espaces v36, Recettes v33, Planning et profil v22, Administration v20). Les ecrans de premier niveau ont la TopBar avec le bouton d'espace, ceux de second niveau une fleche de retour. L'AppShell en zones nommees n'est utilise par aucun canevas (corrige dans le DS v8 apres coup ; les canevas 1 et 4 gardent le CSS v7, sans effet visible).
 
-## Points ouverts apres B5b (a trancher avant B9)
+## Points ouverts apres B5b (tranches le 2026-11-04, D132 a D138)
 
-- [ ] Brief : Matthias est-il OWNER de Colloc ? E-MODULES et F-DEMANDE-MODULE le supposent (demande de Planning pour Colloc).
-- [ ] Doublon : l'idee transformee en recette existe dans deux canevas (F-IDEE-RECETTE dans Planning, E-RECETTE-EDITION-Idee dans Recettes). En garder une, l'autre renvoie.
-- [ ] Admin, reinitialisation sans SMTP (A12b) : hypotheses de l'agent a valider (mot de passe temporaire valable 24 h et une fois ; ancien mot de passe valable jusqu'a son usage ; autres sessions fermees ensuite).
-- [ ] Admin, reglages plateforme (A13) en lecture seule : la configuration reste en variables d'environnement (14-Architecture). A confirmer.
-- [ ] Admin A01 affiche "Etape 1 sur 2" alors qu'une premiere connexion passe par A01a (3 etapes).
-- [ ] En-tetes d'edition (E-RECETTE-EDITION, E-SUGGESTION-EDITION) gardes en "Annuler / titre / Enregistrer" fait main : ajouter une action principale a la TopBar du DS, ou garder tel quel.
-- [ ] Navigation en mode Play du canevas Recettes : les fleches de retour de la TopBar ne menent nulle part (les anciens liens le faisaient).
-- [ ] D-ACCUEIL (bureau) ne montre pas d'espace en suppression dans le rail ; E-APPARENCE garde ses boutons d'ambiance avec apercu (RadioGroup n'affiche pas d'apercu). Acceptable en l'etat ?
+- [x] Matthias OWNER de Colloc, ajoute au brief [D132]
+- [x] Idee transformee en recette : une seule maquette, E-RECETTE-EDITION-Idee (canevas Recettes) ; F-IDEE-RECETTE supprimee [D133]
+- [x] Reinitialisation sans SMTP : mot de passe temporaire 24 h, usage unique [D134]
+- [x] Reglages de la plateforme en lecture seule [D135]
+- [x] Plus de compteur d'etapes a la connexion admin [D138]
+- [x] TopBar en mode edition ajoutee au DS (v9) [D136] ; maquettes d'edition a passer dessus
+- [x] Apercu en pastilles dans RadioGroup (DS v9) [D137] ; E-APPARENCE a passer dessus
+- [x] Fleches de retour reliees en mode presentation (canevas Recettes)
+- [x] Pas de maquette bureau supplementaire pour l'espace en suppression (le composant SpaceRail le montre)
+- [ ] Verifier le rendu des quatre canevas (extension Chrome non connectee le 2026-11-04)

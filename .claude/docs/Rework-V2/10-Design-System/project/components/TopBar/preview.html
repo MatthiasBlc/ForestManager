@@ -1,4 +1,4 @@
-<!-- @dsCard group="Navigation" height=300 width=860 -->
+<!-- @dsCard group="Navigation" height=370 width=860 -->
 <!doctype html>
 <html>
 <head><meta charset="utf-8"><title>TopBar</title>
@@ -13,6 +13,8 @@ ReactDOM.createRoot(document.getElementById('root')).render(h('div', {className:
   h('div', {className:'fm-shell', 'data-space':'1', style:{maxWidth:390, height:'auto'}}, h(U.TopBar, {title:'Recettes', unread:3, space:{name:'Famille', tint:1, unread:true}})),
   h('p', {className:'lbl'}, 'Mobile, second niveau : retour'),
   h('div', {className:'fm-shell', style:{maxWidth:390, height:'auto'}}, h(U.TopBar, {title:'Saumon teriyaki', onBack:function(){}})),
+  h('p', {className:'lbl'}, 'Mode edition (D136)'),
+  h('div', {className:'fm-shell', style:{maxWidth:390, height:'auto'}}, h(U.TopBar, {title:'Modifier la recette', onCancel:function(){}, action:'Enregistrer', onAction:function(){}})),
   h('p', {className:'lbl'}, '768px et plus'),
   h('div', {className:'fm-shell', style:{height:'auto'}}, h('div', {style:{width:820}}, h(U.TopBar, {title:'Recettes', unread:3, user:'Matthias Bouloc', space:{name:'Famille', tint:1}})))));
 </script>

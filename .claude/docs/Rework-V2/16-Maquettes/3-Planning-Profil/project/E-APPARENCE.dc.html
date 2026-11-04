@@ -20,16 +20,7 @@ body{margin:0}
 <div style="flex-grow: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 22px; padding: 20px 16px;">
 <section style="display: flex; flex-direction: column; gap: 10px;">
 <h2 style="margin: 0; font-family: var(--font-display); font-size: 16px; line-height: 22px;">Ambiance</h2>
-<sc-for list="{{ambiances}}" as="a" hint-placeholder-count="3">
-<button type="button" aria-pressed="{{a.pressed}}" style="display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: var(--radius-lg); border: 1px solid var(--line-strong); background: var(--surface-raised); color: var(--ink); font-family: var(--font-sans); text-align: left; cursor: pointer;">
-<span data-theme="{{a.theme}}" aria-hidden="true" style="flex: none; width: 112px; height: 64px; border-radius: 10px; background: var(--bg); display: flex; gap: 6px; padding: 6px; box-sizing: border-box;">
-<span style="width: 18px; border-radius: 6px; background: var(--rail); display: flex; flex-direction: column; align-items: center; gap: 4px; padding-top: 4px;"><span style="width: 10px; height: 10px; border-radius: 50%; background: var(--tint-1);"></span><span style="width: 10px; height: 10px; border-radius: 50%; background: var(--tint-2);"></span><span style="width: 10px; height: 10px; border-radius: 50%; background: var(--tint-3);"></span></span>
-<span style="flex-grow: 1; border-radius: 6px; background: var(--surface-raised); display: flex; flex-direction: column; gap: 4px; padding: 6px;"><span style="height: 6px; width: 70%; border-radius: 3px; background: var(--ink);"></span><span style="height: 6px; width: 45%; border-radius: 3px; background: var(--ink-muted);"></span><span style="height: 12px; width: 52%; border-radius: 4px; background: var(--accent); margin-top: auto;"></span></span>
-</span>
-<span style="flex-grow: 1; display: flex; flex-direction: column;"><b style="font-size: 15px; line-height: 20px;">{{a.name}}</b><span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">{{a.desc}}</span></span>
-<sc-if value="{{a.selected}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="ForestUI.Badge" tone="accent" icon="check">Active</x-import></sc-if>
-</button>
-</sc-for>
+<x-import component-from-global-scope="ForestUI.RadioGroup" label="Ambiance" options="{{ambiances}}" default-value="braise"></x-import>
 </section>
 <section style="display: flex; flex-direction: column; gap: 8px;">
 <h2 style="margin: 0; font-family: var(--font-display); font-size: 16px; line-height: 22px;">Clair ou sombre</h2>
@@ -50,14 +41,13 @@ body{margin:0}
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
-    var list = [
-      { name: 'Braise', desc: 'Charbon et ambre, l’ambiance de Forest Manager', theme: 'braise-dark', selected: true },
-      { name: 'Sous-bois', desc: 'Verts de forêt, mousse et bois clair', theme: 'sousbois-dark', selected: false },
-      { name: 'Potager', desc: 'Les couleurs des légumes, vives et gaies', theme: 'potager-dark', selected: false }
-    ];
     return {
       noop: function () {},
-      ambiances: list.map(function (a) { return Object.assign({}, a, { pressed: String(a.selected) }); }),
+      ambiances: [
+        { value: 'braise', label: 'Braise', hint: 'Charbon et ambre, l’ambiance de Forest Manager', swatches: ['#e8913a', '#7d9be0', '#e2716c'] },
+        { value: 'sousbois', label: 'Sous-bois', hint: 'Verts de forêt, mousse et bois clair', swatches: ['#6fbf8e', '#b2cc6b', '#e07a95'] },
+        { value: 'potager', label: 'Potager', hint: 'Les couleurs des légumes, vives et gaies', swatches: ['#f0745f', '#f0b54e', '#a58bd6'] }
+      ],
       modes: [{ value: 'system', label: 'Système' }, { value: 'light', label: 'Clair' }, { value: 'dark', label: 'Sombre' }],
       densities: [{ value: 'comfortable', label: 'Confortable' }, { value: 'compact', label: 'Compacte' }],
       sizes: [{ value: '90', label: 'Petite' }, { value: '100', label: 'Normale' }, { value: '115', label: 'Grande' }, { value: '130', label: 'Très grande' }]

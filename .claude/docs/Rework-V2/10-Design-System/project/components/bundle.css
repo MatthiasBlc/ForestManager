@@ -1694,3 +1694,35 @@ textarea.fm-input {
     background-position: -100% 0;
   }
 }
+
+/* ---------- TopBar en mode edition (D136) ---------- */
+.fm-top-edit {
+  gap: var(--space-3);
+}
+.fm-top-edit .fm-top-edit-title {
+  display: block;
+  flex: 1;
+  text-align: center;
+  font: 600 17px/22px var(--font-display);
+}
+@container (min-width: 768px) {
+  .fm-top-edit .fm-top-edit-title {
+    display: block;
+  }
+}
+
+/* ---------- RadioGroup : apercu en pastilles (D137) ---------- */
+.fm-radio-swatches {
+  display: inline-flex;
+  flex: none;
+}
+.fm-radio-swatches i {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--surface-raised);
+  margin-left: -6px;
+}
+.fm-radio-swatches i:first-child {
+  margin-left: 0;
+}

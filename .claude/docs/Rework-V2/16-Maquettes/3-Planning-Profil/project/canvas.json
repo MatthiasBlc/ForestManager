@@ -11,7 +11,6 @@
 "E-IDEES.dc.html":{"x":3760,"y":0,"w":390,"h":844,"title":"E-IDEES - Idees de repas"},
 "E-PLANNING-semaine.dc.html":{"x":4230,"y":0,"w":390,"h":844,"title":"E-PLANNING - Semaine compacte (mobile, D111)"},
 "E-PLANNING-chargement.dc.html":{"x":4700,"y":0,"w":390,"h":844,"title":"E-PLANNING - Chargement"},
-"F-IDEE-RECETTE.dc.html":{"x":5170,"y":0,"w":390,"h":844,"title":"F-IDEE-RECETTE - Idee transformee en recette (editeur E-RECETTE-EDITION du canevas Recettes, pre-rempli)"},
 "E-PROFIL.dc.html":{"x":0,"y":1224,"w":390,"h":844,"title":"E-PROFIL - Profil"},
 "E-APPARENCE.dc.html":{"x":470,"y":1224,"w":390,"h":844,"title":"E-APPARENCE - Apparence (D32)"},
 "F-EXPORT.dc.html":{"x":940,"y":1224,"w":390,"h":844,"title":"F-EXPORT - Exporter (D37)"},
@@ -23,9 +22,9 @@
 "E-PROFILS-GENERATION-bureau.dc.html":{"x":1520,"y":3672,"w":1440,"h":900,"title":"E-PROFILS-GENERATION (bureau)","expand":"fill"},
 "F-RECHERCHE-bureau.dc.html":{"x":3040,"y":3672,"w":1440,"h":900,"title":"F-RECHERCHE - Ctrl K (bureau)","expand":"fill"}
 },
-"order":["Main.dc.html","E-PLANNING-vide.dc.html","F-CREER-PLANNING.dc.html","F-REPAS.dc.html","E-PLANNING-echange.dc.html","F-GENERER.dc.html","F-GENERER-rapport.dc.html","E-PROFILS-GENERATION.dc.html","E-IDEES.dc.html","E-PLANNING-semaine.dc.html","E-PLANNING-chargement.dc.html","F-IDEE-RECETTE.dc.html","E-PROFIL.dc.html","E-APPARENCE.dc.html","F-EXPORT.dc.html","F-SUPPRIMER-COMPTE.dc.html","F-RECHERCHE.dc.html","E-NOTIFICATIONS.dc.html","E-NOTIF-PREFERENCES.dc.html","E-PLANNING-bureau.dc.html","E-PROFILS-GENERATION-bureau.dc.html","F-RECHERCHE-bureau.dc.html"],
+"order":["Main.dc.html","E-PLANNING-vide.dc.html","F-CREER-PLANNING.dc.html","F-REPAS.dc.html","E-PLANNING-echange.dc.html","F-GENERER.dc.html","F-GENERER-rapport.dc.html","E-PROFILS-GENERATION.dc.html","E-IDEES.dc.html","E-PLANNING-semaine.dc.html","E-PLANNING-chargement.dc.html","E-PROFIL.dc.html","E-APPARENCE.dc.html","F-EXPORT.dc.html","F-SUPPRIMER-COMPTE.dc.html","F-RECHERCHE.dc.html","E-NOTIFICATIONS.dc.html","E-NOTIF-PREFERENCES.dc.html","E-PLANNING-bureau.dc.html","E-PROFILS-GENERATION-bureau.dc.html","F-RECHERCHE-bureau.dc.html"],
 "notes":{
-"t-planning":{"x":0,"y":-260,"text":"Planning de repas (P10)","kind":"title1","maxW":5560},
+"t-planning":{"x":0,"y":-260,"text":"Planning de repas (P10)","kind":"title1","maxW":5090},
 "t-profil":{"x":0,"y":964,"text":"Profil, apparence, export, compte (P12, P13, P15)","kind":"title1","maxW":1800},
 "t-recherche":{"x":0,"y":2188,"text":"Recherche et notifications (P16, P17)","kind":"title1","maxW":1330},
 "t-bureau":{"x":0,"y":3412,"text":"Versions bureau","kind":"title1","maxW":4480}

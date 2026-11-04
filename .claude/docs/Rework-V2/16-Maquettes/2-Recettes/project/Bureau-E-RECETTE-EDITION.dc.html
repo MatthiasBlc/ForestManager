@@ -17,11 +17,10 @@
 <div class="fm-root" data-space="1" style="container-type: inline-size; min-height: 900px; display: flex; flex-wrap: wrap; align-items: stretch; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
   <x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{personal}}" active-id="f"></x-import>
   <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column;">
-    <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 24px; border-bottom: 1px solid var(--line);">
-      <span style="flex: 1; min-width: 200px; font: 700 20px/26px var(--font-display);">Modifier : Saumon teriyaki et brocolis</span>
-      <x-import component-from-global-scope="ForestUI.Button" variant="ghost">Annuler</x-import>
-      <x-import component-from-global-scope="ForestUI.Button" variant="primary" icon="check">Enregistrer la révision 5</x-import>
-    </header>
+    <div style="position: relative;">
+      <x-import component-from-global-scope="ForestUI.TopBar" title="Modifier : Saumon teriyaki et brocolis" on-cancel="{{noop}}" action="Enregistrer la révision 5" on-action="{{noop}}"></x-import>
+      <a href="Bureau-E-RECETTE.dc.html" aria-hidden="true" tabindex="-1" title="Annuler" style="position: absolute; left: 16px; top: 6px; width: 96px; height: 44px; border-radius: 10px;"></a>
+    </div>
     <main style="padding: 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; max-width: 1180px; width: 100%; box-sizing: border-box;">
       <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
         <x-import component-from-global-scope="ForestUI.Field" label="Titre" default-value="Saumon teriyaki et brocolis"></x-import>

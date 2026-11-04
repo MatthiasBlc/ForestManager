@@ -199,6 +199,12 @@ export interface TopBarProps {
   onSpace?: () => void;
   /** Affiche une fleche de retour a gauche. */
   onBack?: () => void;
+  /** Mode edition (D136) : "Annuler" a gauche, titre, action principale a droite. */
+  onCancel?: () => void;
+  cancelLabel?: string;
+  action?: string;
+  actionDisabled?: boolean;
+  onAction?: () => void;
   unread?: number;
   user?: string;
   onSearch?: () => void;
@@ -264,7 +270,7 @@ export interface SheetFooterProps {
 }
 export interface RadioGroupProps {
   label: string;
-  options: { value: string; label: string; hint?: string; disabled?: boolean }[];
+  options: { value: string; label: string; hint?: string; disabled?: boolean; swatches?: string[] }[];
   value?: string;
   defaultValue?: string;
   onChange?: (v: string) => void;

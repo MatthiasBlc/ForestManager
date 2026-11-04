@@ -35,11 +35,11 @@ Artefact en ligne : voir le lien dans la section "Reprise" ci-dessous. La copie 
 ## Reprise
 
 - Derniere session : 2026-11-04. Contexte remis a zero apres cette session : tout l'etat est ici et dans les fichiers cites.
-- Fait : etude (A), design system (B4), modele de donnees (B1), permissions (B2), parcours (B3), architecture (B6), tests (B8), maquettes (B5). Decisions D01 a D131 toutes tranchees (journal). CDC en 0.4 : les decisions D87 a D131 n'y sont pas encore reportees.
-- Prochaine etape : **B5b etape 3**, apres avoir tranche les points ouverts en bas de `16-Maquettes/ECARTS.md` ; plan initial :
+- Fait : etude (A), design system (B4), modele de donnees (B1), permissions (B2), parcours (B3), architecture (B6), tests (B8), maquettes (B5). Decisions D01 a D138 toutes tranchees (journal). CDC en 0.4 : les decisions D87 a D131 n'y sont pas encore reportees.
+- Prochaine etape : **B5b etape 3**, reporter D87 a D138 dans le CDC (version 0.5), puis B9. Reste aussi a regarder le rendu des quatre canevas (extension Chrome non connectee le 2026-11-04 ; derniere case de ECARTS).
   1. ~~Design system~~ : fait et publie le 2026-11-04 (8 composants ajoutes, voir ECARTS).
-  2. ~~Maquettes~~ : faites et publiees le 2026-11-04 (4 canevas). Reste les points ouverts de ECARTS. Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact).
-  3. Reporter D87 a D131 dans le CDC (version 0.5), puis B9 : validation finale du CDC 1.0.
+  2. ~~Maquettes~~ : faites et publiees le 2026-11-04 (4 canevas), points ouverts tranches (D132 a D138), DS en v9. Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact).
+  3. Reporter D87 a D138 dans le CDC (version 0.5), puis B9 : validation finale du CDC 1.0.
 - Methode : copie locale d'abord, puis publication ; commits en francais, autonomes, sans Co-Authored-By ; taches independantes en agents paralleles.
 - Artefacts :
   - Analyse V1 : https://claude.ai/artifact/2j7eohGZT8qonftWqb1wUw (`2-Analyse-V1.html`)

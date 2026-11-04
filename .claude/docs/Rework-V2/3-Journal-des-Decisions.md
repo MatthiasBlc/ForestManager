@@ -340,3 +340,13 @@ Le detail de chacune est dans le document qui l'a proposee ; ce journal porte le
 
 - **D130 - Selecteur d'espace mobile dans l'en-tete** - VALIDEE. Sur mobile, l'espace courant (avatar + nom) est un bouton de l'en-tete qui ouvre la liste des espaces en feuille (avatars, pastilles de nouveautes, "+"). Remplace la bande d'espaces en haut. Le rail vertical reste en bureau. Choix fait par Claude a la demande du proprietaire ("au plus solide"), reversible.
 - **D131 - Barre d'onglets mobile : 4 modules maximum puis "Plus"** - VALIDEE. "Plus" regroupe membres, reglages et modules au-dela du quatrieme, dans l'ordre choisi par l'OWNER ; moins de modules = moins d'onglets.
+
+### Arbitrages apres B5b (2026-11-04)
+
+- **D132 - Donnees d'exemple : Matthias est OWNER de Colloc** - VALIDEE. Les maquettes de demande de module (E-MODULES, F-DEMANDE-MODULE) le supposaient ; ajoute au brief.
+- **D133 - Une idee de repas devient une recette dans l'editeur de recette pre-rempli** - VALIDEE. Une seule maquette : E-RECETTE-EDITION-Idee (canevas Recettes) ; E-IDEES y renvoie par "Transformer en recette". F-IDEE-RECETTE (canevas Planning) est supprimee.
+- **D134 - Reinitialisation d'un mot de passe sans SMTP : mot de passe temporaire de 24 h, a usage unique** - VALIDEE. Precise D21. L'admin le genere et le transmet lui-meme ; l'utilisateur doit en choisir un nouveau a la connexion. L'ancien mot de passe reste valable tant que le temporaire n'a pas servi ; ensuite les autres sessions sont fermees.
+- **D135 - Reglages de la plateforme en lecture seule** - VALIDEE. SMTP, Bugsink et stockage restent configures par variables d'environnement (14-Architecture) ; l'ecran admin affiche l'etat, les valeurs non secretes et un bouton "Tester" par service.
+- **D136 - TopBar en mode edition** - VALIDEE. Le design system fournit l'en-tete des editeurs : "Annuler" a gauche, titre, action principale a droite ("Enregistrer", "Envoyer"). Remplace les en-tetes faits main.
+- **D137 - RadioGroup avec apercu** - VALIDEE. Une option peut afficher un apercu en pastilles de couleur ; E-APPARENCE l'utilise pour le choix de l'ambiance.
+- **D138 - Pas de compteur d'etapes a la connexion admin** - VALIDEE. Le nombre d'etapes varie (2 ou 3 selon que la 2FA est deja configuree) : les titres suffisent.

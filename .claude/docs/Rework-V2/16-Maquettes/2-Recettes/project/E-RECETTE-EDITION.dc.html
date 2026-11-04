@@ -15,11 +15,10 @@
 <style>body{margin:0}</style>
 </helmet>
 <div class="fm-root" data-space="1" style="width: 390px; height: 844px; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
-  <header style="display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-bottom: 1px solid var(--line);">
-    <a href="F-CONFIRMER.dc.html" class="fm-btn fm-btn-ghost" style="text-decoration: none;">Annuler</a>
-    <span style="flex: 1; text-align: center; font: 600 16px/22px var(--font-display);">Nouvelle recette</span>
-    <x-import component-from-global-scope="ForestUI.Button" variant="primary" size="sm">Enregistrer</x-import>
-  </header>
+  <div style="position: relative;">
+    <x-import component-from-global-scope="ForestUI.TopBar" title="Nouvelle recette" on-cancel="{{noop}}" action="Enregistrer" on-action="{{noop}}"></x-import>
+    <a href="F-CONFIRMER.dc.html" aria-hidden="true" tabindex="-1" title="Annuler" style="position: absolute; left: 16px; top: 6px; width: 96px; height: 44px; border-radius: 10px;"></a>
+  </div>
   <main style="flex: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 14px;">
     <div role="status" style="display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 10px; background: var(--warning-soft); color: var(--warning-text); font-size: 14px; line-height: 20px;">
       <span style="font-weight: 700;">Importée depuis un texte.</span><span>Vérifie les champs marqués avant d'enregistrer.</span>

@@ -1,4 +1,4 @@
-<!-- @dsCard group="Formulaires" height=230 -->
+<!-- @dsCard group="Formulaires" height=470 -->
 <!doctype html>
 <html>
 <head><meta charset="utf-8"><title>RadioGroup</title>
@@ -8,7 +8,7 @@
 <div id="root"></div>
 <script>
 var U = window.ForestUI, h = React.createElement;
-ReactDOM.createRoot(document.getElementById('root')).render(h('div', {style:{maxWidth:390}}, h(U.RadioGroup, {label:"Qui peut inviter", defaultValue:'mods', options:[{value:'owner', label:'Le proprietaire seulement'}, {value:'mods', label:'Proprietaire et moderateurs', hint:'Recommande pour les grands espaces'}, {value:'all', label:'Tous les membres'}]})));
+ReactDOM.createRoot(document.getElementById('root')).render(h('div', {className:'fm-stack', style:{maxWidth:390}}, h(U.RadioGroup, {label:'Ambiance', defaultValue:'braise', options:[{value:'braise', label:'Braise', hint:'Signature', swatches:['#e8913a', '#7d9be0', '#e2716c']}, {value:'sousbois', label:'Sous-bois', swatches:['#6fbf8e', '#b2cc6b', '#e07a95']}, {value:'potager', label:'Potager', swatches:['#f0745f', '#f0b54e', '#a58bd6']}]}), h(U.RadioGroup, {label:'Mode', defaultValue:'system', options:[{value:'system', label:'Systeme', hint:'Suit le reglage du telephone'}, {value:'light', label:'Clair'}, {value:'dark', label:'Sombre'}]})));
 </script>
 </body>
 </html>

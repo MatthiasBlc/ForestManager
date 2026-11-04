@@ -21,7 +21,7 @@ a{color:var(--accent-text)}a:hover{color:var(--ink)}
   <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 24px; max-width: 1192px;">
     <header style="display: flex; flex-direction: column; gap: 4px;">
       <h1 style="margin: 0; font-family: var(--font-display); font-size: 26px; line-height: 32px;">Réglages de la plateforme</h1>
-      <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">Ces services se configurent par variables d'environnement dans la stack (Portainer), puis un redémarrage. Ici, tu vérifies leur état et tu les testes.</p>
+      <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">Ces services se configurent par variables d'environnement dans la stack (Portainer), puis un redémarrage. Ici, tu vérifies leur état et tu les testes ; aucun secret n'est affiché.</p>
     </header>
 
     <sc-for list="{{services}}" as="s" hint-placeholder-count="3">
@@ -74,7 +74,7 @@ class Component extends DCLogic {
         {
           name: 'Stockage des photos (S3)', icon: 'book-open', role: 'Photos des recettes et avatars, servies par liens signés de courte durée.',
           status: 'Connecté', tone: 'success',
-          rows: [ { k: 'Point d’accès', v: 'S3_ENDPOINT = http://minio:9000' }, { k: 'Compartiment', v: 'S3_BUCKET = forest-photos' }, { k: 'Utilisé', v: '1,2 Go, 486 photos' } ],
+          rows: [ { k: 'Point d’accès', v: 'S3_ENDPOINT = http://minio:9000' }, { k: 'Compartiment', v: 'S3_BUCKET = forest-photos' }, { k: 'Clés d\u2019accès', v: 'S3_ACCESS_KEY, S3_SECRET_KEY (masquées)' }, { k: 'Utilisé', v: '1,2 Go, 486 photos' } ],
           effect: 'Les photos sont converties en WebP et redimensionnées dans le navigateur avant l’envoi.',
           test: 'Tester la connexion', cannotTest: false, lastTest: "Dernier test réussi : aujourd'hui, 10 h 05."
         }
