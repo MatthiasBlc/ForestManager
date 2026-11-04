@@ -11,6 +11,9 @@ Liste unique, a traiter avant la validation finale (B9). Cocher au fil de l'eau.
 - [ ] SpaceRail : etat "espace en suppression" (icone grisee, compte a rebours) [D66, D96]
 - [ ] AppShell et pied de Sheet : accepter leurs zones comme enfants nommes, pour etre utilisables tels quels dans les maquettes et l'application (aujourd'hui recomposes a la main par les quatre canevas)
 
+- [ ] SpaceRail : variante mobile = selecteur d'espace dans l'en-tete + feuille de liste des espaces [D130]
+- [ ] TabBar : 4 modules maximum puis "Plus" [D131]
+
 ## Ecrans manquants
 
 - [ ] Admin : utilisateurs (reinitialisation de mot de passe sans SMTP, D21)
@@ -21,7 +24,12 @@ Liste unique, a traiter avant la validation finale (B9). Cocher au fil de l'eau.
 - [ ] Etats de chargement (aucun canevas ne les montre)
 - [ ] Planning : conversion d'une idee en recette (renvoie a l'editeur du canevas Recettes, a relier)
 
+- [ ] Planning mobile : vue "Semaine" compacte et selecteur Jour | Semaine [D111]
+- [ ] Rappel de verification d'email par notification dans l'app, sans blocage [D90]
+
 ## Coherence
+
+- [ ] Remplacer la bande d'espaces en haut par le selecteur d'en-tete dans toutes les maquettes mobiles [D130]
 
 - [ ] Ajouter F-DEMANDE-PARTAGE a l'inventaire des ecrans de `13-Parcours.md`
 - [ ] Recette "Saumon teriyaki" : revision 3 sur mobile, 4 en bureau et dans l'historique, a harmoniser

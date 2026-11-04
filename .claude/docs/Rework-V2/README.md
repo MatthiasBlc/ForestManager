@@ -34,21 +34,22 @@ Artefact en ligne : voir le lien dans la section "Reprise" ci-dessous. La copie 
 
 ## Reprise
 
-- Derniere session : 2026-11-03.
-- Artefacts publies :
+- Derniere session : 2026-11-04. Contexte remis a zero apres cette session : tout l'etat est ici et dans les fichiers cites.
+- Fait : etude (A), design system (B4), modele de donnees (B1), permissions (B2), parcours (B3), architecture (B6), tests (B8), maquettes (B5). Decisions D01 a D131 toutes tranchees (journal). CDC en 0.4 : les decisions D87 a D131 n'y sont pas encore reportees.
+- Prochaine etape : **B5b**, traiter `16-Maquettes/ECARTS.md` dans cet ordre :
+  1. Design system : ajouts listes (icones, choix, liste d'options, QuantityInput, SpaceRail en suppression et variante mobile D130, TabBar D131, AppShell et pied de Sheet utilisables en zones nommees). Republier l'artefact Design System (copie locale `10-Design-System/project/`, publier a l'URL ci-dessous).
+  2. Maquettes : ecrans manquants, vue Semaine mobile (D111), selecteur d'espace (D130), coherences. Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL.
+  3. Reporter D87 a D131 dans le CDC (version 0.5), puis B9 : validation finale du CDC 1.0.
+- Methode : copie locale d'abord, puis publication ; commits en francais, autonomes, sans Co-Authored-By ; taches independantes en agents paralleles.
+- Artefacts :
   - Analyse V1 : https://claude.ai/artifact/2j7eohGZT8qonftWqb1wUw (`2-Analyse-V1.html`)
   - Recettes composees : https://claude.ai/artifact/LCuB3UZkuVhQqqDMvnP8ae (`7-Proposition-Recettes-Composees.html`)
   - Directions visuelles : https://claude.ai/artifact/DEwK7Soo52ZvKi7qsbzpPr (`8-Directions-Visuelles.html`)
   - Design System : https://claude.ai/artifact/7Q9Uy9qGhUyPYt3bWVa5yc (`10-Design-System/project/`)
-  - Modele de donnees : https://claude.ai/artifact/T1MdLYv3PmTx1vDQQM3ajD (`11-Modele-Donnees/Modele-Donnees.html`)
+  - Modele de donnees : https://claude.ai/artifact/T1MdLYv3PmTx1vDQQM3ajD (`11-Modele-Donnees/Modele-Donnees.html`, regenere par `generer-page.py`)
   - Permissions : https://claude.ai/artifact/Hkq6p1cHvv6SnEgV4VNGzE (`12-Permissions.html`)
   - Parcours : https://claude.ai/artifact/Ryd9M1F6DKM3Ni7wuyNjqX (`13-Parcours.html`)
-- Phase A terminee : decisions D01 a D40 tranchees, CDC en 0.3.
-- Design System valide (B4), ajustable pendant les maquettes.
-- Conception validee (B1 a B4, B6, B8), decisions D01 a D85, CDC en 0.4.
-- Maquettes B5 publiees (2026-11-04), en attente de revue du proprietaire. Brief : `16-Maquettes/BRIEF.md` ; ecarts a traiter : `16-Maquettes/ECARTS.md` ; decisions D90 a D129 PROPOSEE dans le journal.
-  - Acces et espaces (23 artboards) : https://claude.ai/artifact/BT5twLkx7ayNLTsBSjGWuB
-  - Recettes (26) : https://claude.ai/artifact/D3NXrW3qfML3cWURVAARLJ
-  - Planning et profil (19) : https://claude.ai/artifact/8SoeKigajmFtEK4q8RPRrY
-  - Administration (17) : https://claude.ai/artifact/BW2txaUya8r2YnpHH8GF17
-- Ensuite : revue des maquettes, traitement des ecarts, puis validation finale du CDC 1.0 (B9).
+  - Maquettes Acces et espaces : https://claude.ai/artifact/BT5twLkx7ayNLTsBSjGWuB (`16-Maquettes/1-Acces-Espaces/project/`)
+  - Maquettes Recettes : https://claude.ai/artifact/D3NXrW3qfML3cWURVAARLJ (`16-Maquettes/2-Recettes/project/`)
+  - Maquettes Planning et profil : https://claude.ai/artifact/8SoeKigajmFtEK4q8RPRrY (`16-Maquettes/3-Planning-Profil/project/`)
+  - Maquettes Administration : https://claude.ai/artifact/BW2txaUya8r2YnpHH8GF17 (`16-Maquettes/4-Administration/project/`)

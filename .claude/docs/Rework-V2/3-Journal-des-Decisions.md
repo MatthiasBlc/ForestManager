@@ -285,53 +285,58 @@ Le detail de chacune est dans le document qui l'a proposee ; ce journal porte le
 - **D86 - Prisma 7 confirme comme ORM** - VALIDEE (2026-11-03). Drizzle compare : il declare index partiels et CHECK dans le schema, mais Prisma est maitrise, le schema V2 est deja ecrit et valide, et ses limites se contournent (contraintes ecrites une fois en SQL dans la premiere migration, requetes recursives et recherche floue en TypedSQL), couvertes par les tests.
 - **D87 - Textes d'interface en francais correct (accents, accords)** - VALIDEE (2026-11-04). La regle "ASCII uniquement" vaut pour le code, les commentaires et la documentation. Les textes vus par les utilisateurs (fichiers de traduction i18n, maquettes) sont en francais correct, accents compris.
 
-## Phase B5 - decisions proposees par les maquettes (en attente de validation)
+## Phase B5 - decisions issues des maquettes (validees le 2026-11-04)
 
 ### Acces et espaces (canevas 1)
 
-- **D90 - La verification de l'email ne bloque que le fait de rejoindre un espace** - PROPOSEE.
-- **D91 - Le module Recettes est toujours actif, il ne se desactive pas** - PROPOSEE.
-- **D92 - Le transfert de propriete est une proposition que le destinataire accepte ; l'ancien OWNER devient moderateur** - PROPOSEE.
-- **D93 - Supprimer un espace se confirme en tapant son nom, avec l'export propose dans la meme feuille** - PROPOSEE.
-- **D94 - Lien d'invitation : deux reglages seulement (duree 1, 7 ou 30 jours ; nombre de personnes), revocation dans la meme feuille** - PROPOSEE.
-- **D95 - Navigation de l'espace perso : Accueil, Recettes, Mes recettes, Plus** - PROPOSEE.
-- **D96 - Ajouter au design system un composant de choix (radio, nuancier) et l'etat "en suppression" du rail** - PROPOSEE.
+- **D90 - La verification de l'email ne bloque rien** - VALIDEE (2026-11-04), amendee par le proprietaire : on peut rejoindre un espace sans email verifie ; un rappel arrive par notification dans l'app.
+- **D91 - Le module Recettes est toujours actif, il ne se desactive pas** - VALIDEE (2026-11-04).
+- **D92 - Le transfert de propriete est une proposition que le destinataire accepte ; l'ancien OWNER devient moderateur** - VALIDEE (2026-11-04).
+- **D93 - Supprimer un espace se confirme en tapant son nom, avec l'export propose dans la meme feuille** - VALIDEE (2026-11-04).
+- **D94 - Lien d'invitation : deux reglages seulement (duree 1, 7 ou 30 jours ; nombre de personnes), revocation dans la meme feuille** - VALIDEE (2026-11-04).
+- **D95 - Navigation de l'espace perso : Accueil, Recettes, Mes recettes, Plus** - VALIDEE (2026-11-04).
+- **D96 - Ajouter au design system un composant de choix (radio, nuancier) et l'etat "en suppression" du rail** - VALIDEE (2026-11-04).
 
 ### Recettes (canevas 2)
 
-- **D100 - Detail d'une recette sur mobile : en-tete avec retour, une seule action principale fixee en bas (Mode cuisine)** - PROPOSEE.
-- **D101 - Une demande de partage s'ouvre en feuille depuis la notification, avec le reglage de confiance sur place** - PROPOSEE.
-- **D102 - Le bouton d'enregistrement annonce la revision creee ("Enregistrer la revision 5")** - PROPOSEE.
-- **D103 - Champs importes douteux : badge "A verifier" et bandeau, sans bloquer l'enregistrement** - PROPOSEE.
-- **D104 - Quitter l'editeur sans enregistrer garde un brouillon sur l'appareil** - PROPOSEE.
-- **D105 - Comparer avec l'original : "Original modifie" et "Ce que ton espace a change", plus "Proposer a l'original"** - PROPOSEE.
-- **D106 - Hors ligne, les actions d'ecriture sont desactivees (pas masquees) et les cartes portent un badge** - PROPOSEE.
-- **D107 - Lier une recette : les bases d'abord, quantite saisie dans l'unite de rendement de la sous-recette** - PROPOSEE.
-- **D108 - Ajouter un composant QuantityInput au design system** - PROPOSEE.
-- **D109 - Ajouter les icones arrow-left et wifi-off au design system** - PROPOSEE.
+- **D100 - Detail d'une recette sur mobile : en-tete avec retour, une seule action principale fixee en bas (Mode cuisine)** - VALIDEE (2026-11-04).
+- **D101 - Une demande de partage s'ouvre en feuille depuis la notification, avec le reglage de confiance sur place** - VALIDEE (2026-11-04).
+- **D102 - Le bouton d'enregistrement annonce la revision creee ("Enregistrer la revision 5")** - VALIDEE (2026-11-04).
+- **D103 - Champs importes douteux : badge "A verifier" et bandeau, sans bloquer l'enregistrement** - VALIDEE (2026-11-04).
+- **D104 - Quitter l'editeur sans enregistrer garde un brouillon sur l'appareil** - VALIDEE (2026-11-04).
+- **D105 - Comparer avec l'original : "Original modifie" et "Ce que ton espace a change", plus "Proposer a l'original"** - VALIDEE (2026-11-04).
+- **D106 - Hors ligne, les actions d'ecriture sont desactivees (pas masquees) et les cartes portent un badge** - VALIDEE (2026-11-04).
+- **D107 - Lier une recette : les bases d'abord, quantite saisie dans l'unite de rendement de la sous-recette** - VALIDEE (2026-11-04).
+- **D108 - Ajouter un composant QuantityInput au design system** - VALIDEE (2026-11-04).
+- **D109 - Ajouter les icones arrow-left et wifi-off au design system** - VALIDEE (2026-11-04).
 
 ### Planning et profil (canevas 3)
 
-- **D110 - La generation produit un apercu ; rien n'est enregistre avant "Garder ce planning"** - PROPOSEE.
-- **D111 - Planning jour par jour sur mobile, grille semaine en bureau** - PROPOSEE.
-- **D112 - Echange de repas sur mobile en mode "echange" (bandeau, cibles en pointilles, Annuler)** - PROPOSEE.
-- **D113 - Le rapport de generation explique chaque repas laisse vide au lieu de le remplir de force** - PROPOSEE.
-- **D114 - Exclusions et epinglages dans une seule grille jours x repas** - PROPOSEE.
-- **D115 - Choix de l'ambiance avec apercu reel, applique immediatement** - PROPOSEE.
-- **D116 - Suppression de compte : consequences espace par espace et export propose avant le mot de passe** - PROPOSEE.
-- **D117 - Hors ligne, notifications lisibles et actions desactivees avec la raison** - PROPOSEE.
-- **D118 - Preferences de notifications globales par categorie, reglage personnalise par espace** - PROPOSEE.
-- **D119 - La recherche Ctrl K couvre aussi le planning et les actions** - PROPOSEE.
+- **D110 - La generation produit un apercu ; rien n'est enregistre avant "Garder ce planning"** - VALIDEE (2026-11-04).
+- **D111 - Planning sur mobile : selecteur "Jour | Semaine"** - VALIDEE (2026-11-04), amendee : Jour = vue detaillee ; Semaine = liste compacte des 7 jours, une ligne par jour avec ses repas en pastilles, toucher un repas l'ouvre. Grille semaine complete en bureau.
+- **D112 - Echange de repas sur mobile en mode "echange" (bandeau, cibles en pointilles, Annuler)** - VALIDEE (2026-11-04).
+- **D113 - Le rapport de generation explique chaque repas laisse vide au lieu de le remplir de force** - VALIDEE (2026-11-04).
+- **D114 - Exclusions et epinglages dans une seule grille jours x repas** - VALIDEE (2026-11-04).
+- **D115 - Choix de l'ambiance avec apercu reel, applique immediatement** - VALIDEE (2026-11-04).
+- **D116 - Suppression de compte : consequences espace par espace et export propose avant le mot de passe** - VALIDEE (2026-11-04).
+- **D117 - Hors ligne, notifications lisibles et actions desactivees avec la raison** - VALIDEE (2026-11-04).
+- **D118 - Preferences de notifications globales par categorie, reglage personnalise par espace** - VALIDEE (2026-11-04).
+- **D119 - La recherche Ctrl K couvre aussi le planning et les actions** - VALIDEE (2026-11-04).
 
 ### Administration (canevas 4)
 
-- **D120 - Un ingredient fusionne devient un synonyme : propose a la saisie, remplace par la cible** - PROPOSEE.
-- **D121 - L'OWNER est informe, avec le motif, quand un admin ouvre son espace pour moderation** - PROPOSEE.
-- **D122 - Acces de moderation en lecture seule, 30 minutes, seules les actions de moderation possibles** - PROPOSEE.
-- **D123 - Un module "bientot" est visible au catalogue mais pas encore demandable** - PROPOSEE.
-- **D124 - Refuser une demande d'acces exige un motif visible par l'OWNER, qui peut redemander** - PROPOSEE.
-- **D125 - Les rayons suivent le parcours en magasin ; sans rayon, l'ingredient va dans "Autres"** - PROPOSEE.
-- **D126 - La liste de courses additionne pieces et grammes grace au poids par unite, sinon deux lignes** - PROPOSEE.
-- **D127 - Publier une version du changelog peut notifier tous les utilisateurs (interrupteur a la publication)** - PROPOSEE.
-- **D128 - Le journal d'audit ne se modifie ni ne se supprime ; il se filtre par categorie** - PROPOSEE.
-- **D129 - Le tableau de bord admin s'ouvre sur "A traiter" et l'etat des services** - PROPOSEE.
+- **D120 - Un ingredient fusionne devient un synonyme : propose a la saisie, remplace par la cible** - VALIDEE (2026-11-04).
+- **D121 - L'OWNER est informe, avec le motif, quand un admin ouvre son espace pour moderation** - VALIDEE (2026-11-04).
+- **D122 - Acces de moderation en lecture seule, 30 minutes, seules les actions de moderation possibles** - VALIDEE (2026-11-04).
+- **D123 - Un module "bientot" est visible au catalogue mais pas encore demandable** - VALIDEE (2026-11-04).
+- **D124 - Refuser une demande d'acces exige un motif visible par l'OWNER, qui peut redemander** - VALIDEE (2026-11-04).
+- **D125 - Les rayons suivent le parcours en magasin ; sans rayon, l'ingredient va dans "Autres"** - VALIDEE (2026-11-04).
+- **D126 - La liste de courses additionne pieces et grammes grace au poids par unite, sinon deux lignes** - VALIDEE (2026-11-04).
+- **D127 - Publier une version du changelog peut notifier tous les utilisateurs (interrupteur a la publication)** - VALIDEE (2026-11-04).
+- **D128 - Le journal d'audit ne se modifie ni ne se supprime ; il se filtre par categorie** - VALIDEE (2026-11-04).
+- **D129 - Le tableau de bord admin s'ouvre sur "A traiter" et l'etat des services** - VALIDEE (2026-11-04).
+
+### Arbitrages du 2026-11-04
+
+- **D130 - Selecteur d'espace mobile dans l'en-tete** - VALIDEE. Sur mobile, l'espace courant (avatar + nom) est un bouton de l'en-tete qui ouvre la liste des espaces en feuille (avatars, pastilles de nouveautes, "+"). Remplace la bande d'espaces en haut. Le rail vertical reste en bureau. Choix fait par Claude a la demande du proprietaire ("au plus solide"), reversible.
+- **D131 - Barre d'onglets mobile : 4 modules maximum puis "Plus"** - VALIDEE. "Plus" regroupe membres, reglages et modules au-dela du quatrieme, dans l'ordre choisi par l'OWNER ; moins de modules = moins d'onglets.

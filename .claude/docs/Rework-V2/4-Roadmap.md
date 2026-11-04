@@ -21,7 +21,8 @@ La premiere case non cochee est le point de reprise. **Aucune ligne de code appl
 - [x] B3 Parcours utilisateurs, 17 parcours et 52 ecrans (`13-Parcours`)
 - [x] B4a Direction visuelle : Braise en signature, Sous-bois et Potager en alternatives
 - [x] B4 Design system : tokens, theme, accent d'espace, composants de base, app shell avec rail (artefact Design System) - valide le 2026-11-03 (ajustements possibles pendant les maquettes)
-- [ ] B5 Maquettes des ecrans (4 canevas, 85 artboards) - PUBLIEES, en attente de revue ; ecarts dans `16-Maquettes/ECARTS.md`
+- [x] B5 Maquettes des ecrans : 4 canevas, 85 artboards, decisions D90 a D131 validees
+- [ ] B5b Traiter `16-Maquettes/ECARTS.md` : design system, ecrans manquants, mise a jour des maquettes
 - [x] B6 Architecture technique (`14-Architecture.md`)
 - [x] B7 Plan de migration des donnees : sans objet (pas d'utilisateurs en V1, remise a zero)
 - [x] B8 Plan de tests (`15-Plan-Tests.md`)
