@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Adapter pour un espace</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="fm-root" data-space="5" style="width: 390px; height: 844px; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
+  <header style="display: flex; align-items: center; padding: 6px 8px; border-bottom: 1px solid var(--line);">
+    <span style="flex: 1; padding-left: 8px; font: 600 15px/20px var(--font-sans); color: var(--ink-muted);">Foyer · Recettes</span>
+  </header>
+  <main style="flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 4px;">
+    <h1 style="margin: 0; font: 700 26px/32px var(--font-display);">Gratin de pâtes</h1>
+    <span style="font-size: 14px; color: var(--ink-muted);">par Léa · Foyer</span>
+  </main>
+  <x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" title="Adapter pour un espace" on-close="{{noop}}">
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <p style="margin: 0; font-size: 15px; line-height: 22px;">Crée ta version de la recette pour un autre espace. L'original de Léa n'est jamais modifié.</p>
+      <x-import component-from-global-scope="ForestUI.SegmentedControl" label="Espace" default-value="colloc" options="{{targets}}"></x-import>
+      <x-import component-from-global-scope="ForestUI.Field" label="Titre de l'adaptation" default-value="Gratin de pâtes au beurre"></x-import>
+      <div style="display: flex; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--second-soft); font-size: 14px; line-height: 20px;">
+        <span style="color: var(--second-text); flex: none;"><x-import component-from-global-scope="ForestUI.Icon" name="git-branch"></x-import></span>
+        <span>Elle reste liée à l'original : si Léa modifie sa recette, Colloc verra « Original modifié » et pourra comparer.</span>
+      </div>
+      <x-import component-from-global-scope="ForestUI.Button" variant="primary" block="{{yes}}">Créer et modifier l'adaptation</x-import>
+    </div>
+  </x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      yes: true,
+      noop: function () {},
+      targets: [
+        { value: 'famille', label: 'Famille' },
+        { value: 'colloc', label: 'Colloc' },
+        { value: 'tom', label: 'TOM' },
+        { value: 'amis', label: 'Amis' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

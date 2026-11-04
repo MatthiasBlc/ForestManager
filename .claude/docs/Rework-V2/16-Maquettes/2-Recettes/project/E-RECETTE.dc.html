@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Saumon teriyaki et brocolis</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="fm-root" data-space="1" style="width: 390px; height: 844px; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
+  <header style="display: flex; align-items: center; gap: 4px; padding: 6px 8px; border-bottom: 1px solid var(--line);">
+    <a href="Main.dc.html" aria-label="Retour aux recettes" style="width: 44px; height: 44px; display: grid; place-items: center; color: var(--ink); border-radius: 10px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
+    </a>
+    <span style="flex: 1; font: 600 15px/20px var(--font-sans); color: var(--ink-muted);">Famille · Recettes</span>
+    <x-import component-from-global-scope="ForestUI.IconButton" icon="share" label="Partager"></x-import>
+    <x-import component-from-global-scope="ForestUI.IconButton" icon="more" label="Plus d'actions"></x-import>
+  </header>
+  <main style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+    <div style="height: 150px; background: linear-gradient(140deg, var(--accent-soft), var(--surface));" aria-hidden="true"></div>
+    <div class="fm-cq" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <h1 style="margin: 0; font: 700 26px/32px var(--font-display);">Saumon teriyaki et brocolis</h1>
+        <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">par Matthias · partagée dans Famille et TOM · révision 3</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <x-import component-from-global-scope="ForestUI.Stepper" label="Portions" default-value="{{two}}" unit="pers."></x-import>
+        <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--ink-muted);">
+          <x-import component-from-global-scope="ForestUI.Icon" name="clock" size="{{iconSize}}"></x-import>35 min
+        </span>
+      </div>
+      <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+        <x-import component-from-global-scope="ForestUI.Badge" tone="second" icon="link">Composée</x-import>
+        <x-import component-from-global-scope="ForestUI.Badge" tone="accent">Rapide</x-import>
+        <x-import component-from-global-scope="ForestUI.Badge">Poisson</x-import>
+      </div>
+      <x-import component-from-global-scope="ForestUI.RecipeBlock" kind="linked" title="Sauce teriyaki" quantity="150 ml" factor="{{half}}" ingredients="{{sauce}}" steps="{{sauceSteps}}" default-open="{{no}}"></x-import>
+      <x-import component-from-global-scope="ForestUI.RecipeBlock" kind="local" title="Saumon et brocolis" ingredients="{{saumon}}" steps="{{saumonSteps}}"></x-import>
+    </div>
+  </main>
+  <div style="padding: 12px 16px; border-top: 1px solid var(--line); background: var(--surface); display: flex; gap: 8px;">
+    <a href="E-MODE-CUISINE.dc.html" class="fm-btn fm-btn-primary" style="flex: 1; text-decoration: none;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 13.9A4 4 0 0 1 7.5 6a5 5 0 0 1 9 0A4 4 0 0 1 18 13.9V21H6z"></path><path d="M6 17h12"></path></svg>
+      Mode cuisine
+    </a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      two: 2,
+      half: 0.5,
+      no: false,
+      iconSize: 16,
+      sauce: [
+        { quantity: 100, unit: 'ml', name: 'sauce soja' },
+        { quantity: 60, unit: 'ml', name: 'mirin' },
+        { quantity: 2, unit: 'c. à soupe', name: 'sucre' }
+      ],
+      sauceSteps: ['Mélanger soja, mirin et sucre.', 'Porter à frémissement, lier 2 min.'],
+      saumon: [
+        { quantity: 2, unit: 'pavés', name: 'saumon' },
+        { quantity: 300, unit: 'g', name: 'brocolis' },
+        { quantity: 1, unit: 'c. à soupe', name: 'sésame' }
+      ],
+      saumonSteps: ['Cuire les brocolis 6 min à la vapeur.', 'Saisir le saumon 3 min par face.', 'Napper de sauce, parsemer de sésame.']
+    };
+  }
+}
+</script>
+</body>
+</html>

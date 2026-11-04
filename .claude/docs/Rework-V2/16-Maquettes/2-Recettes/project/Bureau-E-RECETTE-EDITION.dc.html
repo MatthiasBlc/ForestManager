@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Éditeur de recette composée, bureau</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="fm-root" data-space="1" style="container-type: inline-size; min-height: 900px; display: flex; flex-wrap: wrap; align-items: stretch; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+  <x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{personal}}" active-id="f"></x-import>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column;">
+    <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 24px; border-bottom: 1px solid var(--line);">
+      <span style="flex: 1; min-width: 200px; font: 700 20px/26px var(--font-display);">Modifier : Saumon teriyaki et brocolis</span>
+      <x-import component-from-global-scope="ForestUI.Button" variant="ghost">Annuler</x-import>
+      <x-import component-from-global-scope="ForestUI.Button" variant="primary" icon="check">Enregistrer la révision 5</x-import>
+    </header>
+    <main style="padding: 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; max-width: 1180px; width: 100%; box-sizing: border-box;">
+      <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 16px;">
+        <x-import component-from-global-scope="ForestUI.Field" label="Titre" default-value="Saumon teriyaki et brocolis"></x-import>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
+          <div style="display: flex; flex-direction: column; gap: 4px;"><span class="fm-label">Rendement</span><x-import component-from-global-scope="ForestUI.Stepper" label="Portions" default-value="{{two}}" unit="pers."></x-import></div>
+          <x-import component-from-global-scope="ForestUI.Field" label="Préparation" default-value="15 min" style="width: 140px;"></x-import>
+          <x-import component-from-global-scope="ForestUI.Field" label="Cuisson" default-value="20 min" style="width: 140px;"></x-import>
+          <x-import component-from-global-scope="ForestUI.Field" label="Repos" placeholder="—" style="width: 140px;"></x-import>
+        </div>
+        <section style="border: 1px solid var(--second-text); border-radius: 10px; overflow: hidden;">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 12px; background: var(--second-soft);">
+            <span style="color: var(--second-text);"><x-import component-from-global-scope="ForestUI.Icon" name="link"></x-import></span>
+            <span style="flex: 1; display: flex; flex-direction: column;"><span class="fm-block-kind" style="color: var(--second-text);">Recette liée</span><b style="font: 600 16px/22px var(--font-display);">Sauce teriyaki</b></span>
+            <x-import component-from-global-scope="ForestUI.Field" label="Quantité (ml sur 300)" default-value="150" input-mode="decimal" style="width: 170px;"></x-import>
+            <x-import component-from-global-scope="ForestUI.Button" size="sm">Ouvrir la sauce</x-import>
+            <x-import component-from-global-scope="ForestUI.IconButton" icon="trash" label="Retirer ce bloc"></x-import>
+          </div>
+          <p style="margin: 0; padding: 10px 12px; font-size: 14px; line-height: 20px; color: var(--ink-muted); background: var(--surface-raised);">Lien vivant : les ingrédients de la sauce se modifient dans la sauce. Ce plat utilise toujours sa version actuelle.</p>
+        </section>
+        <section style="border: 1px solid var(--line); border-radius: 10px; background: var(--surface-raised); overflow: hidden;">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--surface);">
+            <x-import component-from-global-scope="ForestUI.Field" label="Titre du bloc" default-value="Saumon et brocolis" style="flex: 1;"></x-import>
+            <x-import component-from-global-scope="ForestUI.IconButton" icon="more" label="Actions du bloc"></x-import>
+          </div>
+          <div style="padding: 8px 12px; display: grid; grid-template-columns: 120px 140px minmax(0, 1fr); gap: 8px; align-items: center;">
+            <span class="fm-label">Quantité</span><span class="fm-label">Unité</span><span class="fm-label">Ingrédient</span>
+            <input class="fm-input" aria-label="Quantité" value="2"><input class="fm-input" aria-label="Unité" value="pavés"><input class="fm-input" aria-label="Ingrédient" value="saumon">
+            <input class="fm-input" aria-label="Quantité" value="400"><input class="fm-input" aria-label="Unité" value="g"><input class="fm-input" aria-label="Ingrédient" value="brocolis">
+          </div>
+          <div style="padding: 0 12px 12px; display: flex; flex-direction: column; gap: 8px;">
+            <button type="button" class="fm-btn fm-btn-ghost" style="align-self: flex-start;">+ Ajouter un ingrédient</button>
+            <x-import component-from-global-scope="ForestUI.Field" label="Étapes" multiline="{{yes}}" default-value="{{steps}}"></x-import>
+          </div>
+        </section>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <x-import component-from-global-scope="ForestUI.Button" icon="plus">Bloc local</x-import>
+          <x-import component-from-global-scope="ForestUI.Button" icon="link">Lier une recette</x-import>
+        </div>
+      </div>
+      <aside style="flex: 1 1 280px; display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 14px; background: var(--surface-raised); border: 1px solid var(--line);">
+          <b style="font-size: 15px;">Tags dans Famille</b>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <x-import component-from-global-scope="ForestUI.Chip" default-selected="{{yes}}">Rapide</x-import>
+            <x-import component-from-global-scope="ForestUI.Chip" default-selected="{{yes}}">Poisson</x-import>
+            <x-import component-from-global-scope="ForestUI.Chip">+ Nouveau tag</x-import>
+          </div>
+          <span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">Les tags de TOM se règlent dans TOM.</span>
+        </div>
+        <div style="padding: 16px; border-radius: 14px; background: var(--surface-raised); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px;">
+          <x-import component-from-global-scope="ForestUI.Switch" label="Recette de base"></x-import>
+          <span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">Une base (sauce, pâte) se lie dans d'autres plats et n'est pas proposée seule par le générateur de planning.</span>
+        </div>
+      </aside>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      yes: true,
+      two: 2,
+      steps: '1. Cuire les brocolis 6 min à la vapeur.\n2. Saisir le saumon 3 min par face.',
+      personal: { id: 'me', name: 'Matthias' },
+      spaces: [
+        { id: 'foyer', name: 'Foyer', tint: 5 },
+        { id: 'f', name: 'Famille', tint: 1 },
+        { id: 'c', name: 'Colloc', tint: 2 },
+        { id: 't', name: 'TOM', tint: 3 },
+        { id: 'a', name: 'Amis', tint: 4 }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Nouvelle recette</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="fm-root" data-space="1" style="width: 390px; height: 844px; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
+  <x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{personal}}" active-id="f"></x-import>
+  <x-import component-from-global-scope="ForestUI.TopBar" title="Recettes" unread="{{unread}}"></x-import>
+  <main style="flex: 1; overflow: hidden; padding: 16px;">
+    <div class="fm-cq">
+      <div class="fm-grid">
+        <sc-for list="{{recipes}}" as="r" hint-placeholder-count="4">
+          <x-import component-from-global-scope="ForestUI.RecipeCard" title="{{r.title}}" meta="{{r.meta}}"></x-import>
+        </sc-for>
+      </div>
+    </div>
+  </main>
+  <x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" title="Nouvelle recette dans Famille" on-close="{{noop}}">
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <a href="E-RECETTE-EDITION.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); text-decoration: none;">
+        <span style="width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text);"><x-import component-from-global-scope="ForestUI.Icon" name="pencil"></x-import></span>
+        <span style="display: flex; flex-direction: column;"><b style="font-size: 15px;">Saisir</b><span style="font-size: 14px; color: var(--ink-muted);">Écrire la recette toi-même</span></span>
+      </a>
+      <a href="F-IMPORT-URL.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); text-decoration: none;">
+        <span style="width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text);"><x-import component-from-global-scope="ForestUI.Icon" name="link"></x-import></span>
+        <span style="display: flex; flex-direction: column;"><b style="font-size: 15px;">Importer un lien</b><span style="font-size: 14px; color: var(--ink-muted);">Une page de recette sur le web</span></span>
+      </a>
+      <a href="F-IMPORT-TEXTE.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); text-decoration: none;">
+        <span style="width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text);"><x-import component-from-global-scope="ForestUI.Icon" name="book-open"></x-import></span>
+        <span style="display: flex; flex-direction: column;"><b style="font-size: 15px;">Coller un texte</b><span style="font-size: 14px; color: var(--ink-muted);">Depuis un mail, une note, un PDF</span></span>
+      </a>
+      <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted); padding-top: 4px;">Dans les trois cas, tu vérifies tout dans l'éditeur avant d'enregistrer.</span>
+    </div>
+  </x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      yes: true,
+      unread: 3,
+      noop: function () {},
+      personal: { id: 'me', name: 'Matthias' },
+      spaces: [
+        { id: 'foyer', name: 'Foyer', tint: 5 },
+        { id: 'f', name: 'Famille', tint: 1 },
+        { id: 'c', name: 'Colloc', tint: 2 },
+        { id: 't', name: 'TOM', tint: 3 },
+        { id: 'a', name: 'Amis', tint: 4 }
+      ],
+      recipes: [
+        { title: 'Saumon teriyaki et brocolis', meta: '2 pers. · 35 min' },
+        { title: 'Sauce teriyaki', meta: '300 ml · 10 min' },
+        { title: 'Poulet teriyaki et riz', meta: '4 pers. · 40 min' },
+        { title: 'Dahl de lentilles corail', meta: '4 pers. · 40 min' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

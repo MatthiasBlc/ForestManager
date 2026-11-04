@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Recettes de Famille, hors ligne</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="fm-root" data-space="1" style="width: 390px; height: 844px; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
+  <x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{personal}}" active-id="f"></x-import>
+  <x-import component-from-global-scope="ForestUI.TopBar" title="Recettes" unread="{{unread}}"></x-import>
+  <div role="status" style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--warning-soft); color: var(--warning-text); font-size: 14px; line-height: 20px; font-weight: 600;">
+    <x-import component-from-global-scope="ForestUI.Icon" name="refresh" size="{{iconSize}}"></x-import>
+    <span style="flex: 1;">Hors ligne. Tu consultes les recettes déjà ouvertes ; les modifications reviendront avec le réseau.</span>
+  </div>
+  <main style="flex: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <x-import component-from-global-scope="ForestUI.Button" variant="primary" icon="plus" disabled="{{yes}}" style="flex: 1;">Nouvelle recette</x-import>
+      <x-import component-from-global-scope="ForestUI.IconButton" icon="search" label="Rechercher" outline="{{yes}}"></x-import>
+    </div>
+    <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted);">Disponibles hors ligne : 4 recettes ouvertes récemment.</p>
+    <div class="fm-cq">
+      <div class="fm-grid">
+        <sc-for list="{{recipes}}" as="r" hint-placeholder-count="4">
+          <x-import component-from-global-scope="ForestUI.RecipeCard" title="{{r.title}}" meta="{{r.meta}}" badges="{{r.badges}}"></x-import>
+        </sc-for>
+      </div>
+    </div>
+  </main>
+  <x-import component-from-global-scope="ForestUI.TabBar" items="{{tabs}}" active-id="recipes"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      yes: true,
+      unread: 3,
+      iconSize: 18,
+      personal: { id: 'me', name: 'Matthias' },
+      spaces: [
+        { id: 'foyer', name: 'Foyer', tint: 5 },
+        { id: 'f', name: 'Famille', tint: 1 },
+        { id: 'c', name: 'Colloc', tint: 2 },
+        { id: 't', name: 'TOM', tint: 3 },
+        { id: 'a', name: 'Amis', tint: 4 }
+      ],
+      tabs: [
+        { id: 'recipes', label: 'Recettes', icon: 'book-open' },
+        { id: 'plan', label: 'Planning', icon: 'calendar' },
+        { id: 'members', label: 'Membres', icon: 'users' },
+        { id: 'more', label: 'Plus', icon: 'more' }
+      ],
+      recipes: [
+        { title: 'Saumon teriyaki et brocolis', meta: '2 pers. · 35 min', badges: [{ label: 'Hors ligne', tone: 'warning' }] },
+        { title: 'Sauce teriyaki', meta: '300 ml · 10 min', badges: [{ label: 'Hors ligne', tone: 'warning' }] },
+        { title: 'Dahl de lentilles corail', meta: '4 pers. · 40 min', badges: [{ label: 'Hors ligne', tone: 'warning' }] },
+        { title: 'Tarte aux pommes', meta: '6 pers. · 55 min', badges: [{ label: 'Hors ligne', tone: 'warning' }] }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

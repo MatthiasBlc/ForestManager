@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Ingrédients à cocher</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="fm-root" data-space="1" style="width: 390px; height: 844px; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
+  <header style="display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 16px;">
+    <div style="flex: 1; display: flex; flex-direction: column;">
+      <span style="font: 600 12px/16px var(--font-sans); letter-spacing: .04em; text-transform: uppercase; color: var(--ink-muted);">Étape 2 sur 6</span>
+      <span style="font: 600 15px/20px var(--font-sans);">Saumon teriyaki et brocolis</span>
+    </div>
+    <x-import component-from-global-scope="ForestUI.IconButton" icon="x" label="Quitter le mode cuisine"></x-import>
+  </header>
+  <main style="flex: 1; padding: 28px 20px;">
+    <p style="margin: 0; font: 600 26px/36px var(--font-display);">Porter à frémissement, puis lier 2 minutes avec la fécule délayée dans un peu d'eau.</p>
+  </main>
+  <x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" title="Ingrédients pour 2 pers." on-close="{{noop}}">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <span style="font: 600 12px/16px var(--font-sans); letter-spacing: .04em; text-transform: uppercase; color: var(--second-text); padding-top: 4px;">Sauce teriyaki · 150 ml</span>
+      <sc-for list="{{sauce}}" as="i" hint-placeholder-count="4">
+        <x-import component-from-global-scope="ForestUI.IngredientRow" quantity="{{i.q}}" unit="{{i.u}}" name="{{i.n}}" default-checked="{{i.c}}"></x-import>
+      </sc-for>
+      <span style="font: 600 12px/16px var(--font-sans); letter-spacing: .04em; text-transform: uppercase; color: var(--ink-muted); padding-top: 12px;">Saumon et brocolis</span>
+      <sc-for list="{{saumon}}" as="i" hint-placeholder-count="3">
+        <x-import component-from-global-scope="ForestUI.IngredientRow" quantity="{{i.q}}" unit="{{i.u}}" name="{{i.n}}" default-checked="{{i.c}}"></x-import>
+      </sc-for>
+      <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted); padding-top: 8px;">Coche ce que tu as sorti. Rien n'est enregistré sur la recette.</span>
+    </div>
+  </x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      yes: true,
+      noop: function () {},
+      sauce: [
+        { q: 50, u: 'ml', n: 'sauce soja', c: true },
+        { q: 30, u: 'ml', n: 'mirin', c: true },
+        { q: 1, u: 'c. à soupe', n: 'sucre', c: true },
+        { q: 0.5, u: 'c. à café', n: 'fécule de maïs', c: false }
+      ],
+      saumon: [
+        { q: 2, u: 'pavés', n: 'saumon', c: false },
+        { q: 300, u: 'g', n: 'brocolis', c: false },
+        { q: 1, u: 'c. à soupe', n: 'sésame', c: false }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

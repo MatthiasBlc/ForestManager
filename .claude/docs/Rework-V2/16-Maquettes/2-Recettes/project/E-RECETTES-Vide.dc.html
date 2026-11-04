@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Recettes d'Amis, vide</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="fm-root" data-space="4" style="width: 390px; height: 844px; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
+  <x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{personal}}" active-id="a"></x-import>
+  <x-import component-from-global-scope="ForestUI.TopBar" title="Recettes" unread="{{unread}}"></x-import>
+  <main style="flex: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+    <x-import component-from-global-scope="ForestUI.EmptyState" icon="book-open" title="Pas encore de recette dans Amis">Ajoute une recette, importe-la depuis un lien, ou partage une des tiennes : les 5 membres la verront ici.</x-import>
+    <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 300px;">
+      <x-import component-from-global-scope="ForestUI.Button" variant="primary" icon="plus" block="{{yes}}">Nouvelle recette</x-import>
+      <x-import component-from-global-scope="ForestUI.Button" icon="share" block="{{yes}}">Partager une de mes recettes</x-import>
+    </div>
+  </main>
+  <x-import component-from-global-scope="ForestUI.TabBar" items="{{tabs}}" active-id="recipes"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      yes: true,
+      unread: 3,
+      personal: { id: 'me', name: 'Matthias' },
+      spaces: [
+        { id: 'foyer', name: 'Foyer', tint: 5 },
+        { id: 'f', name: 'Famille', tint: 1 },
+        { id: 'c', name: 'Colloc', tint: 2 },
+        { id: 't', name: 'TOM', tint: 3, unread: true },
+        { id: 'a', name: 'Amis', tint: 4 }
+      ],
+      tabs: [
+        { id: 'recipes', label: 'Recettes', icon: 'book-open' },
+        { id: 'members', label: 'Membres', icon: 'users' },
+        { id: 'more', label: 'Plus', icon: 'more' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
