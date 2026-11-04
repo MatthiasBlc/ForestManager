@@ -46,7 +46,9 @@ Artefact en ligne : voir le lien dans la section "Reprise" ci-dessous. La copie 
 - Phase A terminee : decisions D01 a D40 tranchees, CDC en 0.3.
 - Design System valide (B4), ajustable pendant les maquettes.
 - Conception validee (B1 a B4, B6, B8), decisions D01 a D85, CDC en 0.4.
-- En cours (2026-11-04) : maquettes B5, quatre canevas faits en parallele selon `16-Maquettes/BRIEF.md`. Interrompus a mi-parcours par une limite d'usage puis relances. Copies locales dans `16-Maquettes/<canevas>/project/` ; un artboard prevu dans `canvas.json` mais absent du disque reste a faire.
-  - Acces et espaces : https://claude.ai/artifact/BT5twLkx7ayNLTsBSjGWuB
-  - Recettes, Planning et profil, Administration : URL a reporter a la fin des agents.
-- Ensuite : revue des maquettes par le proprietaire, puis validation finale du CDC 1.0 (B9).
+- Maquettes B5 publiees (2026-11-04), en attente de revue du proprietaire. Brief : `16-Maquettes/BRIEF.md` ; ecarts a traiter : `16-Maquettes/ECARTS.md` ; decisions D90 a D129 PROPOSEE dans le journal.
+  - Acces et espaces (23 artboards) : https://claude.ai/artifact/BT5twLkx7ayNLTsBSjGWuB
+  - Recettes (26) : https://claude.ai/artifact/D3NXrW3qfML3cWURVAARLJ
+  - Planning et profil (19) : https://claude.ai/artifact/8SoeKigajmFtEK4q8RPRrY
+  - Administration (17) : https://claude.ai/artifact/BW2txaUya8r2YnpHH8GF17
+- Ensuite : revue des maquettes, traitement des ecarts, puis validation finale du CDC 1.0 (B9).
