@@ -35,7 +35,7 @@ Artefact en ligne : voir le lien dans la section "Reprise" ci-dessous. La copie 
 ## Reprise
 
 - Derniere session : 2026-11-04. Contexte remis a zero apres cette session : tout l'etat est ici et dans les fichiers cites.
-- Fait : etude (A), design system (B4), modele de donnees (B1), permissions (B2), parcours (B3), architecture (B6), tests (B8), maquettes (B5). Decisions D01 a D138 toutes tranchees (journal). CDC en 0.4 : les decisions D87 a D131 n'y sont pas encore reportees.
+- Fait : etude (A), design system (B4), modele de donnees (B1), permissions (B2), parcours (B3), architecture (B6), tests (B8), maquettes (B5). Decisions D01 a D138 toutes tranchees (journal). CDC en 0.4 : les decisions D87 a D138 n'y sont pas encore reportees.
 - Prochaine etape : **B5b etape 3**, reporter D87 a D138 dans le CDC (version 0.5), puis B9. Reste aussi a regarder le rendu des quatre canevas (extension Chrome non connectee le 2026-11-04 ; derniere case de ECARTS).
   1. ~~Design system~~ : fait et publie le 2026-11-04 (8 composants ajoutes, voir ECARTS).
   2. ~~Maquettes~~ : faites et publiees le 2026-11-04 (4 canevas), points ouverts tranches (D132 a D138), DS en v9. Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact).
