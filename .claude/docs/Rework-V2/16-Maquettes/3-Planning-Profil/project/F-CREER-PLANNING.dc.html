@@ -16,8 +16,7 @@ body{margin:0}
 </style>
 </helmet>
 <div class="fm-root" data-space="5" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
-<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="foyer"></x-import>
-<x-import component-from-global-scope="ForestUI.TopBar" title="Planning"></x-import>
+<x-import component-from-global-scope="ForestUI.TopBar" title="Planning" space="{{space}}" on-space="{{noop}}"></x-import>
 <div style="flex-grow: 1;"></div>
 <x-import component-from-global-scope="ForestUI.TabBar" items="{{tabs}}" active-id="plan"></x-import>
 <x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" contained="{{yes}}" title="Créer le planning" on-close="{{noop}}">
@@ -42,8 +41,10 @@ body{margin:0}
 </div>
 <x-import component-from-global-scope="ForestUI.Stepper" label="Portions par repas" default-value="{{two}}" unit="pers."></x-import>
 </div>
-<x-import component-from-global-scope="ForestUI.Button" variant="primary" block="{{yes}}">Créer le planning</x-import>
 </div>
+<x-import component-from-global-scope="ForestUI.SheetFooter">
+<x-import component-from-global-scope="ForestUI.Button" variant="primary">Créer le planning</x-import>
+</x-import>
 </x-import>
 </div>
 </x-dc>
@@ -52,9 +53,8 @@ class Component extends DCLogic {
   renderVals() {
     return {
       yes: true, two: 2, noop: function () {},
-      me: { id: 'me', name: 'Matthias' },
-      spaces: [{ id: 'foyer', name: 'Foyer', tint: 5 }, { id: 'f', name: 'Famille', tint: 1 }, { id: 'c', name: 'Colloc', tint: 2 }, { id: 't', name: 'TOM', tint: 3 }, { id: 'a', name: 'Amis', tint: 4 }],
-      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }, { id: 'members', label: 'Membres', icon: 'users' }, { id: 'more', label: 'Plus', icon: 'more' }]
+      space: { id: 'foyer', name: 'Foyer', tint: 5 },
+      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }]
     };
   }
 }

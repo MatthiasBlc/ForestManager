@@ -15,12 +15,7 @@
 <style>body{margin:0}</style>
 </helmet>
 <div class="fm-root" data-space="2" style="width: 390px; height: 844px; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
-  <header style="display: flex; align-items: center; gap: 4px; padding: 6px 8px; border-bottom: 1px solid var(--line);">
-    <a href="E-RECETTE.dc.html" aria-label="Retour à la recette" style="width: 44px; height: 44px; display: grid; place-items: center; color: var(--ink); border-radius: 10px;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
-    </a>
-    <span style="flex: 1; font: 600 16px/22px var(--font-display);">Comparer avec l'original</span>
-  </header>
+  <x-import component-from-global-scope="ForestUI.TopBar" title="Comparer" on-back="{{noop}}" unread="{{unread}}"></x-import>
   <main style="flex: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 14px;">
     <div style="display: flex; flex-direction: column; gap: 2px;">
       <b style="font-size: 17px;">Gratin de pâtes au beurre</b>
@@ -56,7 +51,9 @@
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   renderVals() {
-    return {};
+    return {
+      noop: function () {},
+      unread: 3 };
   }
 }
 </script>

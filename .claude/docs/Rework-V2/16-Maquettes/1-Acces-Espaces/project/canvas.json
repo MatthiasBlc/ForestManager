@@ -1,35 +1,271 @@
-{"v":3,"createdOnFiles":{"v":1,"at":"2026-11-03T14:30:00Z"},"title":"Maquettes V2 - Acces et espaces","launch":{"view":"canvas"},"pages":[],
-"boards":{
-"Main.dc.html":{"x":0,"y":0,"w":390,"h":844,"title":"E-ACCUEIL-PUBLIC - Presentation"},
-"E-INSCRIPTION.dc.html":{"x":470,"y":0,"w":390,"h":844,"title":"E-INSCRIPTION - Creer un compte"},
-"E-CONNEXION.dc.html":{"x":940,"y":0,"w":390,"h":844,"title":"E-CONNEXION - Se connecter (erreur)"},
-"E-VERIF-EMAIL.dc.html":{"x":1410,"y":0,"w":390,"h":844,"title":"E-VERIF-EMAIL - Confirmer l'adresse"},
-"E-MDP-OUBLIE.dc.html":{"x":1880,"y":0,"w":390,"h":844,"title":"E-MDP-OUBLIE - Mot de passe oublie"},
-"E-MDP-NOUVEAU.dc.html":{"x":2350,"y":0,"w":390,"h":844,"title":"E-MDP-NOUVEAU - Nouveau mot de passe"},
-"E-BIENVENUE.dc.html":{"x":2820,"y":0,"w":390,"h":844,"title":"E-BIENVENUE - Bienvenue"},
-"E-ACCUEIL.dc.html":{"x":0,"y":1300,"w":390,"h":844,"title":"E-ACCUEIL - Accueil (hors ligne)"},
-"E-REJOINDRE.dc.html":{"x":470,"y":1300,"w":390,"h":844,"title":"E-REJOINDRE - Rejoindre par lien"},
-"F-INVITATION.dc.html":{"x":940,"y":1300,"w":390,"h":844,"title":"F-INVITATION - Invitation recue"},
-"F-CREER-ESPACE.dc.html":{"x":1410,"y":1300,"w":390,"h":844,"title":"F-CREER-ESPACE - Creer un espace"},
-"F-INVITER.dc.html":{"x":1880,"y":1300,"w":390,"h":844,"title":"F-INVITER - Inviter par lien"},
-"E-MEMBRES.dc.html":{"x":0,"y":2600,"w":390,"h":844,"title":"E-MEMBRES - Membres"},
-"E-REGLAGES-ESPACE.dc.html":{"x":470,"y":2600,"w":390,"h":844,"title":"E-REGLAGES-ESPACE - Reglages"},
-"F-QUITTER.dc.html":{"x":940,"y":2600,"w":390,"h":844,"title":"F-QUITTER - Quitter TOM"},
-"F-TRANSFERER.dc.html":{"x":1410,"y":2600,"w":390,"h":844,"title":"F-TRANSFERER - Transferer la propriete"},
-"F-SUPPRIMER-ESPACE.dc.html":{"x":1880,"y":2600,"w":390,"h":844,"title":"F-SUPPRIMER-ESPACE - Supprimer"},
-"E-ESPACE-EN-SUPPRESSION.dc.html":{"x":2350,"y":2600,"w":390,"h":844,"title":"E-ESPACE-EN-SUPPRESSION - Restaurer"},
-"E-MODULES.dc.html":{"x":0,"y":3900,"w":390,"h":844,"title":"E-MODULES - Modules de Colloc"},
-"F-DEMANDE-MODULE.dc.html":{"x":470,"y":3900,"w":390,"h":844,"title":"F-DEMANDE-MODULE - Demander Planning"},
-"D-ACCUEIL.dc.html":{"x":0,"y":5200,"w":1440,"h":900,"title":"E-ACCUEIL - Bureau","expand":"fill"},
-"D-MEMBRES.dc.html":{"x":1520,"y":5200,"w":1440,"h":900,"title":"E-MEMBRES - Bureau","expand":"fill"},
-"D-MODULES.dc.html":{"x":3040,"y":5200,"w":1440,"h":900,"title":"E-MODULES - Bureau","expand":"fill"}
-},
-"order":["Main.dc.html","E-INSCRIPTION.dc.html","E-CONNEXION.dc.html","E-VERIF-EMAIL.dc.html","E-MDP-OUBLIE.dc.html","E-MDP-NOUVEAU.dc.html","E-BIENVENUE.dc.html","E-ACCUEIL.dc.html","E-REJOINDRE.dc.html","F-INVITATION.dc.html","F-CREER-ESPACE.dc.html","F-INVITER.dc.html","E-MEMBRES.dc.html","E-REGLAGES-ESPACE.dc.html","F-QUITTER.dc.html","F-TRANSFERER.dc.html","F-SUPPRIMER-ESPACE.dc.html","E-ESPACE-EN-SUPPRESSION.dc.html","E-MODULES.dc.html","F-DEMANDE-MODULE.dc.html","D-ACCUEIL.dc.html","D-MEMBRES.dc.html","D-MODULES.dc.html"],
-"notes":{
-"t1":{"x":0,"y":-300,"text":"Arrivee et compte (P01)","kind":"title1","maxW":3210},
-"t2":{"x":0,"y":1000,"text":"Accueil, rejoindre, creer, inviter (P01 a P03)","kind":"title1","maxW":2270},
-"t3":{"x":0,"y":2300,"text":"Membres, reglages, depart et suppression (P08, P14)","kind":"title1","maxW":2740},
-"t4":{"x":0,"y":3600,"text":"Modules (P09)","kind":"title1","maxW":860},
-"t5":{"x":0,"y":4900,"text":"Versions bureau","kind":"title1","maxW":4480}
-},
-"designSystems":[{"title":"Forest Manager","namespace":"forestui","artifact":"https://claude.ai/artifact/7Q9Uy9qGhUyPYt3bWVa5yc","version":"1793716217-53b8","copiedAt":"2026-11-03T14:30:00Z"}]}
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "D-ACCUEIL.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "title": "E-ACCUEIL - Bureau",
+      "w": 1440,
+      "x": 0,
+      "y": 5200
+    },
+    "D-MEMBRES.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "title": "E-MEMBRES - Bureau",
+      "w": 1440,
+      "x": 1520,
+      "y": 5200
+    },
+    "D-MODULES.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "title": "E-MODULES - Bureau",
+      "w": 1440,
+      "x": 3040,
+      "y": 5200
+    },
+    "E-ACCUEIL.dc.html": {
+      "h": 844,
+      "title": "E-ACCUEIL - Accueil (hors ligne)",
+      "w": 390,
+      "x": 0,
+      "y": 1300
+    },
+    "E-BIENVENUE.dc.html": {
+      "h": 844,
+      "title": "E-BIENVENUE - Bienvenue",
+      "w": 390,
+      "x": 2820,
+      "y": 0
+    },
+    "E-CONNEXION.dc.html": {
+      "h": 844,
+      "title": "E-CONNEXION - Se connecter (erreur)",
+      "w": 390,
+      "x": 940,
+      "y": 0
+    },
+    "E-ESPACE-EN-SUPPRESSION.dc.html": {
+      "h": 844,
+      "title": "E-ESPACE-EN-SUPPRESSION - Restaurer",
+      "w": 390,
+      "x": 2350,
+      "y": 2600
+    },
+    "E-INSCRIPTION.dc.html": {
+      "h": 844,
+      "title": "E-INSCRIPTION - Creer un compte",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "E-MDP-NOUVEAU.dc.html": {
+      "h": 844,
+      "title": "E-MDP-NOUVEAU - Nouveau mot de passe",
+      "w": 390,
+      "x": 2350,
+      "y": 0
+    },
+    "E-MDP-OUBLIE.dc.html": {
+      "h": 844,
+      "title": "E-MDP-OUBLIE - Mot de passe oublie",
+      "w": 390,
+      "x": 1880,
+      "y": 0
+    },
+    "E-MEMBRES.dc.html": {
+      "h": 844,
+      "title": "E-MEMBRES - Membres",
+      "w": 390,
+      "x": 0,
+      "y": 2600
+    },
+    "E-MODULES.dc.html": {
+      "h": 844,
+      "title": "E-MODULES - Modules de Colloc",
+      "w": 390,
+      "x": 0,
+      "y": 3900
+    },
+    "E-REGLAGES-ESPACE.dc.html": {
+      "h": 844,
+      "title": "E-REGLAGES-ESPACE - Reglages",
+      "w": 390,
+      "x": 470,
+      "y": 2600
+    },
+    "E-REJOINDRE.dc.html": {
+      "h": 844,
+      "title": "E-REJOINDRE - Rejoindre par lien",
+      "w": 390,
+      "x": 470,
+      "y": 1300
+    },
+    "E-VERIF-EMAIL.dc.html": {
+      "h": 844,
+      "title": "E-VERIF-EMAIL - Confirmer l'adresse",
+      "w": 390,
+      "x": 1410,
+      "y": 0
+    },
+    "F-CREER-ESPACE.dc.html": {
+      "h": 844,
+      "title": "F-CREER-ESPACE - Creer un espace",
+      "w": 390,
+      "x": 1410,
+      "y": 1300
+    },
+    "F-DEMANDE-MODULE.dc.html": {
+      "h": 844,
+      "title": "F-DEMANDE-MODULE - Demander Planning",
+      "w": 390,
+      "x": 470,
+      "y": 3900
+    },
+    "F-INVITATION.dc.html": {
+      "h": 844,
+      "title": "F-INVITATION - Invitation recue (vue de Claire)",
+      "w": 390,
+      "x": 940,
+      "y": 1300
+    },
+    "F-INVITER.dc.html": {
+      "h": 844,
+      "title": "F-INVITER - Inviter par lien",
+      "w": 390,
+      "x": 1880,
+      "y": 1300
+    },
+    "F-QUITTER.dc.html": {
+      "h": 844,
+      "title": "F-QUITTER - Quitter TOM",
+      "w": 390,
+      "x": 940,
+      "y": 2600
+    },
+    "F-SUPPRIMER-ESPACE.dc.html": {
+      "h": 844,
+      "title": "F-SUPPRIMER-ESPACE - Supprimer",
+      "w": 390,
+      "x": 1880,
+      "y": 2600
+    },
+    "F-TRANSFERER.dc.html": {
+      "h": 844,
+      "title": "F-TRANSFERER - Transferer la propriete",
+      "w": 390,
+      "x": 1410,
+      "y": 2600
+    },
+    "Main.dc.html": {
+      "h": 844,
+      "title": "E-ACCUEIL-PUBLIC - Presentation",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "E-RAPPEL-EMAIL.dc.html": {
+      "h": 844,
+      "title": "E-RAPPEL-EMAIL - Rappel de confirmation (D90)",
+      "w": 390,
+      "x": 3290,
+      "y": 0
+    },
+    "F-ESPACES.dc.html": {
+      "h": 844,
+      "title": "F-ESPACES - Changer d'espace (D130)",
+      "w": 390,
+      "x": 2350,
+      "y": 1300
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-11-03T14:30:00Z",
+    "v": 1
+  },
+  "designSystems": [
+    {
+      "artifact": "https://claude.ai/artifact/7Q9Uy9qGhUyPYt3bWVa5yc",
+      "copiedAt": "2026-11-04T13:00:00Z",
+      "namespace": "forestui",
+      "title": "Forest Manager",
+      "version": "1793795440-27fb"
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "t1": {
+      "kind": "title1",
+      "maxW": 3680,
+      "text": "Arrivee et compte (P01)",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "t2": {
+      "kind": "title1",
+      "maxW": 2740,
+      "text": "Accueil, rejoindre, creer, inviter (P01 a P03)",
+      "w": 240,
+      "x": 0,
+      "y": 1000
+    },
+    "t3": {
+      "kind": "title1",
+      "maxW": 2740,
+      "text": "Membres, reglages, depart et suppression (P08, P14)",
+      "w": 240,
+      "x": 0,
+      "y": 2300
+    },
+    "t4": {
+      "kind": "title1",
+      "maxW": 860,
+      "text": "Modules (P09)",
+      "w": 240,
+      "x": 0,
+      "y": 3600
+    },
+    "t5": {
+      "kind": "title1",
+      "maxW": 4480,
+      "text": "Versions bureau",
+      "w": 240,
+      "x": 0,
+      "y": 4900
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "E-INSCRIPTION.dc.html",
+    "E-CONNEXION.dc.html",
+    "E-VERIF-EMAIL.dc.html",
+    "E-MDP-OUBLIE.dc.html",
+    "E-MDP-NOUVEAU.dc.html",
+    "E-BIENVENUE.dc.html",
+    "E-RAPPEL-EMAIL.dc.html",
+    "E-ACCUEIL.dc.html",
+    "E-REJOINDRE.dc.html",
+    "F-INVITATION.dc.html",
+    "F-CREER-ESPACE.dc.html",
+    "F-INVITER.dc.html",
+    "F-ESPACES.dc.html",
+    "E-MEMBRES.dc.html",
+    "E-REGLAGES-ESPACE.dc.html",
+    "F-QUITTER.dc.html",
+    "F-TRANSFERER.dc.html",
+    "F-SUPPRIMER-ESPACE.dc.html",
+    "E-ESPACE-EN-SUPPRESSION.dc.html",
+    "E-MODULES.dc.html",
+    "F-DEMANDE-MODULE.dc.html",
+    "D-ACCUEIL.dc.html",
+    "D-MEMBRES.dc.html",
+    "D-MODULES.dc.html"
+  ],
+  "pages": [],
+  "title": "Maquettes V2 - Acces et espaces"
+}

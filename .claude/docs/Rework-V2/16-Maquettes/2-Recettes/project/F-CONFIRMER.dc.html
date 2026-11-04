@@ -25,12 +25,12 @@
   </main>
   <x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" title="Quitter sans enregistrer ?" on-close="{{noop}}">
     <div style="display: flex; flex-direction: column; gap: 16px;">
-      <p style="margin: 0; font-size: 15px; line-height: 22px;">Ta recette « Gratin de Jeanne » n'est pas enregistrée. Un brouillon est gardé sur ce téléphone : tu le retrouveras en créant une nouvelle recette.</p>
-      <div style="display: flex; flex-direction: column; gap: 8px;">
-        <x-import component-from-global-scope="ForestUI.Button" variant="primary" block="{{yes}}">Continuer l'édition</x-import>
-        <x-import component-from-global-scope="ForestUI.Button" variant="danger" block="{{yes}}">Quitter et supprimer le brouillon</x-import>
-      </div>
+      <p style="margin: 0; font-size: 15px; line-height: 22px;">Ta recette « Gratin de Jeanne » n'est pas enregistrée. Quitter supprime aussi le brouillon gardé sur ce téléphone.</p>
     </div>
+    <x-import component-from-global-scope="ForestUI.SheetFooter">
+      <x-import component-from-global-scope="ForestUI.Button" variant="danger">Quitter</x-import>
+      <x-import component-from-global-scope="ForestUI.Button" variant="primary">Continuer l'édition</x-import>
+    </x-import>
   </x-import>
 </div>
 </x-dc>

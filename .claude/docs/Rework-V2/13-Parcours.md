@@ -257,6 +257,7 @@ Conventions :
 | F-INVITATION            | Feuille | Accepter une invitation par nom  | P03                |
 | F-CREER-ESPACE          | Feuille | Creer un espace                  | P01, P02           |
 | F-INVITER               | Feuille | Inviter (lien / nom)             | P02                |
+| F-ESPACES               | Feuille | Changer d'espace, mobile (D130)  | Tous               |
 | E-MEMBRES               | Ecran   | Membres et roles                 | P02, P08           |
 | E-REGLAGES-ESPACE       | Ecran   | Reglages de l'espace             | P08, P09, P12, P14 |
 | F-QUITTER               | Feuille | Quitter l'espace                 | P08                |
@@ -273,6 +274,7 @@ Conventions :
 | F-AJOUT-BLOC            | Feuille | Ajouter un bloc                  | P05                |
 | F-LIER-RECETTE          | Feuille | Lier une recette                 | P05                |
 | F-PARTAGER              | Feuille | Partager dans des espaces        | P06                |
+| F-DEMANDE-PARTAGE       | Feuille | Demande de partage recue (D101)  | P06, P17           |
 | F-ADAPTER               | Feuille | Adapter pour un espace           | P06                |
 | E-COMPARER-ORIGINAL     | Ecran   | Comparer avec l'original         | P06                |
 | E-SUGGESTION-EDITION    | Ecran   | Rediger une suggestion           | P07                |

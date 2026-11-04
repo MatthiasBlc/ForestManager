@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Escalope milanaise, sous-recette non disponible</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="fm-root" data-space="3" style="width: 390px; height: 844px; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
+  <x-import component-from-global-scope="ForestUI.TopBar" title="Recette" on-back="{{noop}}" unread="{{unread}}"></x-import>
+  <main style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
+    <div style="height: 120px; background: linear-gradient(140deg, var(--accent-soft), var(--surface));" aria-hidden="true"></div>
+    <div class="fm-cq" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <h1 style="margin: 0; font: 700 24px/30px var(--font-display);">Escalope milanaise et compotée de tomates cerises</h1>
+        <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">par Paul · TOM</span>
+      </div>
+      <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+        <x-import component-from-global-scope="ForestUI.Badge" tone="second" icon="link">Composée</x-import>
+      </div>
+      <section aria-label="Recette liée non disponible" style="border: 1px dashed var(--line-strong); border-radius: 10px; background: var(--surface); overflow: hidden;">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px;">
+          <span style="color: var(--ink-muted);"><x-import component-from-global-scope="ForestUI.Icon" name="lock"></x-import></span>
+          <span style="flex: 1; display: flex; flex-direction: column;">
+            <span class="fm-block-kind">Recette liée</span>
+            <b style="font: 600 16px/22px var(--font-display); color: var(--ink-muted);">Recette non disponible</b>
+          </span>
+          <span class="fm-block-qty" style="color: var(--ink-muted);">200 g</span>
+        </div>
+        <div style="padding: 0 12px 12px; display: flex; flex-direction: column; gap: 8px;">
+          <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">Cette recette liée n'est plus partagée dans TOM : ses ingrédients et ses étapes ne s'affichent pas ici.</span>
+          <a href="F-PARTAGER-Demande.dc.html" class="fm-btn fm-btn-secondary fm-btn-sm" style="align-self: flex-start; text-decoration: none;">Demander à Paul de la partager</a>
+        </div>
+      </section>
+      <x-import component-from-global-scope="ForestUI.RecipeBlock" kind="local" title="Escalopes" ingredients="{{escalope}}" steps="{{steps}}" default-open="{{no}}"></x-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      noop: function () {},
+      no: false,
+      unread: 3,
+      escalope: [
+        { quantity: 4, unit: 'pièce', name: 'escalopes de veau' },
+        { quantity: 100, unit: 'g', name: 'chapelure' },
+        { quantity: 2, unit: 'pièce', name: 'œufs' }
+      ],
+      steps: ['Paner les escalopes : farine, œuf, chapelure.', 'Cuire 3 min par face au beurre.']
+    };
+  }
+}
+</script>
+</body>
+</html>

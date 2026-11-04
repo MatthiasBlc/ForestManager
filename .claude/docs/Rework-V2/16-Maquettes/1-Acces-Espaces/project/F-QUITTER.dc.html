@@ -16,8 +16,7 @@ body{margin:0}
 </style>
 </helmet>
 <div class="fm-root" data-space="3" style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
-<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="tom"></x-import>
-<x-import component-from-global-scope="ForestUI.TopBar" title="Réglages de TOM"></x-import>
+<x-import component-from-global-scope="ForestUI.TopBar" title="Réglages" space="{{space}}"></x-import>
 <x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" title="Quitter TOM" on-close="{{noop}}">
 <div style="display: flex; flex-direction: column; gap: 14px;">
 <ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 15px; line-height: 22px;">
@@ -37,11 +36,11 @@ body{margin:0}
 </div>
 <span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">Laissées dans TOM, elles restent à toi : les membres continuent de les voir.</span>
 </div>
-<div style="display: flex; gap: 8px;">
-<x-import component-from-global-scope="ForestUI.Button" style="flex: 1;">Annuler</x-import>
-<x-import component-from-global-scope="ForestUI.Button" variant="danger" style="flex: 1;">Quitter TOM</x-import>
 </div>
-</div>
+<x-import component-from-global-scope="ForestUI.SheetFooter">
+<x-import component-from-global-scope="ForestUI.Button">Annuler</x-import>
+<x-import component-from-global-scope="ForestUI.Button" variant="danger">Quitter TOM</x-import>
+</x-import>
 </x-import>
 </div>
 </x-dc>
@@ -52,6 +51,8 @@ return {
 yes: true, noop: () => {},
 keep: [{ value: 'leave', label: 'Laisser dans TOM' }, { value: 'remove', label: 'Retirer de TOM' }],
 me: { id: 'me', name: 'Matthias' },
+space: { id: 'tom', name: 'TOM', tint: 3 },
+
 spaces: [
 { id: 'foyer', name: 'Foyer', tint: 5 },
 { id: 'famille', name: 'Famille', tint: 1 },

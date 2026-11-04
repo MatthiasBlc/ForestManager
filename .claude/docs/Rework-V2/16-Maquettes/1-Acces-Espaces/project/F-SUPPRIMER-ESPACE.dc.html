@@ -16,8 +16,7 @@ body{margin:0}
 </style>
 </helmet>
 <div class="fm-root" data-space="1" style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
-<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="famille"></x-import>
-<x-import component-from-global-scope="ForestUI.TopBar" title="Réglages de Famille"></x-import>
+<x-import component-from-global-scope="ForestUI.TopBar" title="Réglages" space="{{space}}"></x-import>
 <x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" title="Supprimer Famille" on-close="{{noop}}">
 <div style="display: flex; flex-direction: column; gap: 14px;">
 <ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 15px; line-height: 22px;">
@@ -30,8 +29,10 @@ body{margin:0}
 <x-import component-from-global-scope="ForestUI.Button" size="sm">Exporter</x-import>
 </div>
 <x-import component-from-global-scope="ForestUI.Field" label="Pour confirmer, tape Famille" default-value="Famille"></x-import>
-<x-import component-from-global-scope="ForestUI.Button" variant="danger" block="{{yes}}" icon="trash">Supprimer Famille</x-import>
 </div>
+<x-import component-from-global-scope="ForestUI.SheetFooter">
+<x-import component-from-global-scope="ForestUI.Button" variant="danger" icon="trash">Supprimer Famille</x-import>
+</x-import>
 </x-import>
 </div>
 </x-dc>
@@ -41,6 +42,8 @@ renderVals() {
 return {
 yes: true, noop: () => {},
 me: { id: 'me', name: 'Matthias' },
+space: { id: 'famille', name: 'Famille', tint: 1 },
+
 spaces: [
 { id: 'foyer', name: 'Foyer', tint: 5 },
 { id: 'famille', name: 'Famille', tint: 1 },

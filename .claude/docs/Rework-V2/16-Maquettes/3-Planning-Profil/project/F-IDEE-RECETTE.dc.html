@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Idée transformée en recette</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="fm-root" data-space="1" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+<x-import component-from-global-scope="ForestUI.TopBar" title="Nouvelle recette" on-back="{{noop}}"></x-import>
+<div style="flex-grow: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 16px;">
+<div role="note" style="display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: var(--radius-md); background: var(--accent-soft); color: var(--accent-text);">
+<x-import component-from-global-scope="ForestUI.Icon" name="sparkles"></x-import>
+<span style="font-size: 14px; line-height: 20px;">À partir de l’idée de <b>Sam</b>. Une fois la recette enregistrée, l’idée y reste liée dans Idées de repas.</span>
+</div>
+<x-import component-from-global-scope="ForestUI.Field" label="Nom de la recette" default-value="Lasagnes végétariennes"></x-import>
+<x-import component-from-global-scope="ForestUI.Field" label="Description" multiline="{{yes}}" default-value="Celles de la cantine de Noé, à retrouver"></x-import>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+<span style="font-size: 14px; line-height: 20px; font-weight: 600;">Portions</span>
+<x-import component-from-global-scope="ForestUI.Stepper" label="Portions" default-value="{{four}}" unit="pers."></x-import>
+</div>
+<section style="display: flex; flex-direction: column; gap: 8px;">
+<h2 style="margin: 0; font-family: var(--font-display); font-size: 16px; line-height: 22px;">Ingrédients</h2>
+<x-import component-from-global-scope="ForestUI.QuantityInput" units="{{units}}" suggestions="{{ingredients}}" placeholder="Premier ingrédient"></x-import>
+<x-import component-from-global-scope="ForestUI.Button" variant="ghost" size="sm" icon="plus" style="align-self: flex-start;">Ajouter un ingrédient</x-import>
+</section>
+<section style="display: flex; flex-direction: column; gap: 8px;">
+<h2 style="margin: 0; font-family: var(--font-display); font-size: 16px; line-height: 22px;">Étapes</h2>
+<x-import component-from-global-scope="ForestUI.Button" variant="ghost" size="sm" icon="plus" style="align-self: flex-start;">Ajouter une étape</x-import>
+</section>
+</div>
+<div style="display: flex; padding: 12px 16px; border-top: 1px solid var(--line); background: var(--surface);">
+<x-import component-from-global-scope="ForestUI.Button" variant="primary" block="{{yes}}">Enregistrer la recette</x-import>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      yes: true, four: 4,
+      noop: function () {},
+      units: ['g', 'kg', 'ml', 'cl', 'l', 'c. à soupe', 'c. à café', 'pièce', 'pincée'],
+      ingredients: ['Pâtes à lasagnes', 'Courgette', 'Aubergine', 'Ricotta', 'Mozzarella', 'Coulis de tomate', 'Épinards']
+    };
+  }
+}
+</script>
+</body>
+</html>

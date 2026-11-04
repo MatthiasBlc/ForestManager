@@ -31,8 +31,10 @@
         <span style="color: var(--second-text); flex: none;"><x-import component-from-global-scope="ForestUI.Icon" name="git-branch"></x-import></span>
         <span>Elle reste liée à l'original : si Léa modifie sa recette, Colloc verra « Original modifié » et pourra comparer.</span>
       </div>
-      <x-import component-from-global-scope="ForestUI.Button" variant="primary" block="{{yes}}">Créer et modifier l'adaptation</x-import>
     </div>
+    <x-import component-from-global-scope="ForestUI.SheetFooter">
+      <x-import component-from-global-scope="ForestUI.Button" variant="primary">Créer et modifier l'adaptation</x-import>
+    </x-import>
   </x-import>
 </div>
 </x-dc>

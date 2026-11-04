@@ -18,7 +18,7 @@ La premiere case non cochee est le point de reprise. **Aucune ligne de code appl
 
 - [x] B1 Modele de donnees V2 (`11-Modele-Donnees/`)
 - [x] B2 Matrice des permissions (`12-Permissions`)
-- [x] B3 Parcours utilisateurs, 17 parcours et 52 ecrans (`13-Parcours`)
+- [x] B3 Parcours utilisateurs, 17 parcours et 54 ecrans (`13-Parcours`)
 - [x] B4a Direction visuelle : Braise en signature, Sous-bois et Potager en alternatives
 - [x] B4 Design system : tokens, theme, accent d'espace, composants de base, app shell avec rail (artefact Design System) - valide le 2026-11-03 (ajustements possibles pendant les maquettes)
 - [x] B5 Maquettes des ecrans : 4 canevas, 85 artboards, decisions D90 a D131 validees

@@ -16,8 +16,7 @@ body{margin:0}
 </style>
 </helmet>
 <div class="fm-root" data-space="1" style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
-<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="famille"></x-import>
-<x-import component-from-global-scope="ForestUI.TopBar" title="Membres" unread="{{unread}}"></x-import>
+<x-import component-from-global-scope="ForestUI.TopBar" title="Membres" space="{{space}}" unread="{{unread}}"></x-import>
 <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column; gap: 16px; padding: 16px;">
 <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
 <span style="font-size: 14px; color: var(--ink-muted);">6 membres</span>
@@ -42,7 +41,7 @@ body{margin:0}
 </div>
 </section>
 </div>
-<x-import component-from-global-scope="ForestUI.TabBar" items="{{tabs}}" active-id="members"></x-import>
+<x-import component-from-global-scope="ForestUI.TabBar" items="{{tabs}}" more-active="{{yes}}"></x-import>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
@@ -54,9 +53,11 @@ const raw = [
 ['Paul', 4, 'MEMBER', 'Depuis avril'], ['Sam', 3, 'MEMBER', 'Depuis juin'], ['Claire', 1, 'MEMBER', 'Depuis hier']
 ];
 return {
-unread: 2, forty: 40,
+yes: true, unread: 2, forty: 40,
 members: raw.map(([name, tint, r, since]) => Object.assign({ name, tint, since, actions: 'Actions pour ' + name }, role(r))),
 me: { id: 'me', name: 'Matthias' },
+space: { id: 'famille', name: 'Famille', tint: 1 },
+
 spaces: [
 { id: 'foyer', name: 'Foyer', tint: 5 },
 { id: 'famille', name: 'Famille', tint: 1 },
@@ -66,9 +67,7 @@ spaces: [
 ],
 tabs: [
 { id: 'recipes', label: 'Recettes', icon: 'book-open' },
-{ id: 'plan', label: 'Planning', icon: 'calendar' },
-{ id: 'members', label: 'Membres', icon: 'users' },
-{ id: 'more', label: 'Plus', icon: 'more' }
+{ id: 'plan', label: 'Planning', icon: 'calendar' }
 ]
 };
 }

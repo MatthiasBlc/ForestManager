@@ -29,12 +29,12 @@
       <p style="margin: 0; font-size: 15px; line-height: 22px;"><b>Matthias</b> voudrait partager <b>Gratin de pâtes</b> (Foyer) dans <b>Famille</b>, ses 6 membres la verront.</p>
       <blockquote style="margin: 0; padding: 10px 12px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); font-size: 15px; line-height: 22px;">« Ta tante la réclame depuis Noël ! »</blockquote>
       <x-import component-from-global-scope="ForestUI.Switch" label="Les membres de Foyer peuvent partager mes recettes sans me demander"></x-import>
-      <div style="display: flex; gap: 8px;">
-        <x-import component-from-global-scope="ForestUI.Button" style="flex: 1;">Refuser</x-import>
-        <x-import component-from-global-scope="ForestUI.Button" variant="primary" style="flex: 1;">Accepter</x-import>
-      </div>
       <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">Tu restes l'autrice : la recette pourra être retirée de Famille quand tu veux.</span>
     </div>
+    <x-import component-from-global-scope="ForestUI.SheetFooter">
+      <x-import component-from-global-scope="ForestUI.Button">Refuser</x-import>
+      <x-import component-from-global-scope="ForestUI.Button" variant="primary">Accepter</x-import>
+    </x-import>
   </x-import>
 </div>
 </x-dc>

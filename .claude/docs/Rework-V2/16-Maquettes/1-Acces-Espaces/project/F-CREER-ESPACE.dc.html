@@ -13,13 +13,10 @@
 <helmet>
 <style>
 body{margin:0}
-.sw input{position:absolute;opacity:0;width:1px;height:1px}
-.sw input:focus-visible + span{outline:2px solid var(--focus);outline-offset:2px}
 </style>
 </helmet>
 <div class="fm-root" data-space="2" style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
-<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="me"></x-import>
-<x-import component-from-global-scope="ForestUI.TopBar" title="Accueil"></x-import>
+<x-import component-from-global-scope="ForestUI.TopBar" title="Accueil" space="{{me}}"></x-import>
 <x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" title="Créer un espace" on-close="{{noop}}">
 <div style="display: flex; flex-direction: column; gap: 18px;">
 <div style="display: flex; gap: 14px; align-items: center;">
@@ -27,19 +24,15 @@ body{margin:0}
 <x-import component-from-global-scope="ForestUI.Button" icon="plus" size="sm">Ajouter une photo</x-import>
 </div>
 <x-import component-from-global-scope="ForestUI.Field" label="Nom de l'espace" default-value="Vacances au chalet"></x-import>
-<fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px;">
-<legend style="font: 600 14px/20px var(--font-sans); padding: 0; margin-bottom: 8px;">Couleur de l'espace</legend>
-<div style="display: flex; gap: 10px;">
-<label class="sw" style="position: relative; cursor: pointer;"><input type="radio" name="tint" value="1"><span style="display: block; width: 44px; height: 44px; border-radius: 50%; background: var(--tint-1);" aria-label="Braise"></span></label>
-<label class="sw" style="position: relative; cursor: pointer;"><input type="radio" name="tint" value="2" checked><span style="display: block; width: 44px; height: 44px; border-radius: 50%; background: var(--tint-2); box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--ink);" aria-label="Nuit"></span></label>
-<label class="sw" style="position: relative; cursor: pointer;"><input type="radio" name="tint" value="3"><span style="display: block; width: 44px; height: 44px; border-radius: 50%; background: var(--tint-3);" aria-label="Tison"></span></label>
-<label class="sw" style="position: relative; cursor: pointer;"><input type="radio" name="tint" value="4"><span style="display: block; width: 44px; height: 44px; border-radius: 50%; background: var(--tint-4);" aria-label="Flamme"></span></label>
-<label class="sw" style="position: relative; cursor: pointer;"><input type="radio" name="tint" value="5"><span style="display: block; width: 44px; height: 44px; border-radius: 50%; background: var(--tint-5);" aria-label="Cendre"></span></label>
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<span style="font: 600 14px/20px var(--font-sans);">Couleur de l'espace</span>
+<x-import component-from-global-scope="ForestUI.TintPicker" label="Couleur de l'espace" default-value="{{two}}" names="{{tintNames}}"></x-import>
 </div>
-</fieldset>
 <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted);">Tu en seras le propriétaire. L'espace commence avec le module Recettes ; tu pourras inviter des membres juste après.</p>
-<x-import component-from-global-scope="ForestUI.Button" variant="primary" block="{{yes}}">Créer l'espace</x-import>
 </div>
+<x-import component-from-global-scope="ForestUI.SheetFooter">
+<x-import component-from-global-scope="ForestUI.Button" variant="primary">Créer l'espace</x-import>
+</x-import>
 </x-import>
 </div>
 </x-dc>
@@ -47,8 +40,10 @@ body{margin:0}
 class Component extends DCLogic {
 renderVals() {
 return {
-yes: true, noop: () => {},
+yes: true, noop: () => {}, two: 2,
+tintNames: ['Braise', 'Nuit', 'Tison', 'Flamme', 'Cendre'],
 me: { id: 'me', name: 'Matthias' },
+
 spaces: [
 { id: 'foyer', name: 'Foyer', tint: 5 },
 { id: 'famille', name: 'Famille', tint: 1 },

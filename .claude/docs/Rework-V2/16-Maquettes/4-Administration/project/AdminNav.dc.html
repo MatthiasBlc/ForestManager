@@ -29,6 +29,7 @@ a{color:inherit}a:hover{color:inherit}
       <span style="padding: 0 12px 4px; font-size: 12px; line-height: 16px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-muted);">{{g.label}}</span>
       <sc-for list="{{g.items}}" as="it" hint-placeholder-count="2">
         <a href="{{it.href}}" aria-current="{{it.current}}" style="{{it.style}}">
+          <x-import component-from-global-scope="ForestUI.Icon" name="{{it.icon}}" size="{{n18}}"></x-import>
           <span style="flex: 1;">{{it.label}}</span>
           <sc-if value="{{it.hasCount}}" hint-placeholder-val="{{false}}">
             <span style="min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: var(--radius-full); background: var(--accent); color: var(--on-accent); font-size: 12px; font-weight: 700; line-height: 22px; text-align: center;">{{it.count}}</span>
@@ -43,18 +44,19 @@ a{color:inherit}a:hover{color:inherit}
   </div>
 </nav>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"active":{"editor":"enum","options":["dash","demandes","modules","ing","unites","rayons","tags","espaces","changelog","audit"],"default":"dash"},"$preview":{"width":248,"height":1040}}'>
+<script type="text/x-dc" data-dc-script data-props='{"active":{"editor":"enum","options":["dash","demandes","modules","ing","unites","rayons","tags","users","espaces","changelog","audit","reglages"],"default":"dash"},"$preview":{"width":248,"height":1040}}'>
 class Component extends DCLogic {
   renderVals() {
     const active = this.props.active ?? 'dash';
-    const base = 'display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px; border-radius: var(--radius-md); text-decoration: none; font-size: 14px; line-height: 20px; font-weight: 600;';
+    const base = 'display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 12px; border-radius: var(--radius-md); text-decoration: none; font-size: 14px; line-height: 20px; font-weight: 600;';
     const groups = [
-      { label: 'Pilotage', items: [ { id: 'dash', label: 'Tableau de bord', href: 'Main.dc.html' } ] },
-      { label: 'Modules', items: [ { id: 'demandes', label: "Demandes d'accès", href: 'A03-Demandes.dc.html', count: 2 }, { id: 'modules', label: 'Catalogue', href: 'A04-Catalogue-modules.dc.html' } ] },
-      { label: 'Référentiels', items: [ { id: 'ing', label: 'Ingrédients', href: 'A05-Ingredients.dc.html', count: 4 }, { id: 'unites', label: 'Unités et conversions', href: 'A06-Unites.dc.html' }, { id: 'rayons', label: 'Rayons', href: 'A07-Rayons.dc.html' }, { id: 'tags', label: 'Tags globaux', href: 'A08-Tags-globaux.dc.html' } ] },
-      { label: 'Plateforme', items: [ { id: 'espaces', label: 'Espaces', href: 'A09-Espaces.dc.html' }, { id: 'changelog', label: 'Changelog', href: 'A10-Changelog.dc.html' }, { id: 'audit', label: "Journal d'audit", href: 'A11-Journal-audit.dc.html' } ] }
+      { label: 'Pilotage', items: [ { id: 'dash', label: 'Tableau de bord', icon: 'home', href: 'Main.dc.html' } ] },
+      { label: 'Modules', items: [ { id: 'demandes', label: "Demandes d'accès", icon: 'check', href: 'A03-Demandes.dc.html', count: 2 }, { id: 'modules', label: 'Catalogue', icon: 'sparkles', href: 'A04-Catalogue-modules.dc.html' } ] },
+      { label: 'Référentiels', items: [ { id: 'ing', label: 'Ingrédients', icon: 'chef-hat', href: 'A05-Ingredients.dc.html', count: 4 }, { id: 'unites', label: 'Unités et conversions', icon: 'ruler', href: 'A06-Unites.dc.html' }, { id: 'rayons', label: 'Rayons', icon: 'shopping-basket', href: 'A07-Rayons.dc.html' }, { id: 'tags', label: 'Tags globaux', icon: 'tag', href: 'A08-Tags-globaux.dc.html' } ] },
+      { label: 'Plateforme', items: [ { id: 'users', label: 'Utilisateurs', icon: 'users', href: 'A12-Utilisateurs.dc.html' }, { id: 'espaces', label: 'Espaces', icon: 'shield', href: 'A09-Espaces.dc.html' }, { id: 'changelog', label: 'Changelog', icon: 'refresh', href: 'A10-Changelog.dc.html' }, { id: 'audit', label: "Journal d'audit", icon: 'clock', href: 'A11-Journal-audit.dc.html' }, { id: 'reglages', label: 'Réglages', icon: 'settings', href: 'A13-Reglages.dc.html' } ] }
     ];
     return {
+      n18: 18,
       groups: groups.map((g) => ({
         label: g.label,
         items: g.items.map((it) => {

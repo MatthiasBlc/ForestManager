@@ -940,7 +940,8 @@ textarea.fm-input {
   height: 100%;
   background: var(--bg);
 }
-.fm-shell-grid > .fm-nav {
+.fm-shell-grid > .fm-nav,
+.fm-shell-grid > * > .fm-nav {
   display: none;
 }
 .fm-shell-main {
@@ -952,20 +953,26 @@ textarea.fm-input {
     grid-template-columns: var(--size-rail) minmax(0, 1fr);
     grid-template-rows: auto minmax(0, 1fr);
   }
-  .fm-shell-grid > .fm-rail {
+  .fm-shell-grid > .fm-rail,
+.fm-shell-grid > * > .fm-rail {
     grid-row: 1 / -1;
   }
-  .fm-shell-grid > .fm-tabbar {
+  .fm-shell-grid > .fm-tabbar,
+.fm-shell-grid > * > .fm-tabbar {
     display: none;
   }
   .fm-shell-grid > .fm-top,
-  .fm-shell-grid > .fm-shell-main {
+.fm-shell-grid > * > .fm-top,
+  .fm-shell-grid > .fm-shell-main,
+.fm-shell-grid > * > .fm-shell-main {
     grid-column: -2 / -1;
   }
-  .fm-shell-grid > .fm-top {
+  .fm-shell-grid > .fm-top,
+.fm-shell-grid > * > .fm-top {
     grid-row: 1;
   }
-  .fm-shell-grid > .fm-shell-main {
+  .fm-shell-grid > .fm-shell-main,
+.fm-shell-grid > * > .fm-shell-main {
     grid-row: 2;
   }
   .fm-top-title {
@@ -982,7 +989,8 @@ textarea.fm-input {
   .fm-shell-grid {
     grid-template-columns: var(--size-rail) var(--size-sidebar) minmax(0, 1fr);
   }
-  .fm-shell-grid > .fm-nav {
+  .fm-shell-grid > .fm-nav,
+.fm-shell-grid > * > .fm-nav {
     display: flex;
     grid-row: 1 / -1;
   }
@@ -1573,20 +1581,25 @@ textarea.fm-input {
 .fm-shell-grid {
   grid-template-areas: "rail" "top" "main" "tabbar";
 }
-.fm-shell-grid > .fm-rail {
+.fm-shell-grid > .fm-rail,
+.fm-shell-grid > * > .fm-rail {
   grid-area: rail;
 }
-.fm-shell-grid > .fm-top {
+.fm-shell-grid > .fm-top,
+.fm-shell-grid > * > .fm-top {
   grid-area: top;
 }
-.fm-shell-grid > .fm-shell-main {
+.fm-shell-grid > .fm-shell-main,
+.fm-shell-grid > * > .fm-shell-main {
   grid-area: main;
 }
-.fm-shell-grid > .fm-tabbar {
+.fm-shell-grid > .fm-tabbar,
+.fm-shell-grid > * > .fm-tabbar {
   grid-area: tabbar;
 }
 /* D130 : sur mobile, le rail laisse la place au selecteur d'en-tete */
-.fm-shell-grid:has(> .fm-top-has-space) > .fm-rail {
+.fm-shell-grid:has(> .fm-top-has-space, > * > .fm-top-has-space) > .fm-rail,
+.fm-shell-grid:has(> .fm-top-has-space, > * > .fm-top-has-space) > * > .fm-rail {
   display: none;
 }
 @container (min-width: 768px) {
@@ -1594,14 +1607,18 @@ textarea.fm-input {
     grid-template-areas: "rail top" "rail main";
   }
   .fm-shell-grid > .fm-rail,
-  .fm-shell-grid:has(> .fm-top-has-space) > .fm-rail {
+.fm-shell-grid > * > .fm-rail,
+  .fm-shell-grid:has(> .fm-top-has-space, > * > .fm-top-has-space) > .fm-rail,
+.fm-shell-grid:has(> .fm-top-has-space, > * > .fm-top-has-space) > * > .fm-rail {
     display: flex;
     grid-area: rail;
   }
-  .fm-shell-grid > .fm-top {
+  .fm-shell-grid > .fm-top,
+.fm-shell-grid > * > .fm-top {
     grid-area: top;
   }
-  .fm-shell-grid > .fm-shell-main {
+  .fm-shell-grid > .fm-shell-main,
+.fm-shell-grid > * > .fm-shell-main {
     grid-area: main;
   }
   .fm-top-space {
@@ -1612,7 +1629,8 @@ textarea.fm-input {
   .fm-shell-grid {
     grid-template-areas: "rail nav top" "rail nav main";
   }
-  .fm-shell-grid > .fm-nav {
+  .fm-shell-grid > .fm-nav,
+.fm-shell-grid > * > .fm-nav {
     grid-area: nav;
   }
 }

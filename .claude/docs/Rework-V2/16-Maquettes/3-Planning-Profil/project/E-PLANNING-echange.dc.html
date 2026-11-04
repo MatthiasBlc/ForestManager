@@ -16,8 +16,7 @@ body{margin:0}
 </style>
 </helmet>
 <div class="fm-root" data-space="1" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
-<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="f"></x-import>
-<x-import component-from-global-scope="ForestUI.TopBar" title="Planning"></x-import>
+<x-import component-from-global-scope="ForestUI.TopBar" title="Planning" space="{{space}}" on-space="{{noop}}"></x-import>
 <div role="status" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--accent-soft); color: var(--accent-text); border-bottom: 1px solid var(--line);">
 <x-import component-from-global-scope="ForestUI.Icon" name="refresh"></x-import>
 <span style="flex-grow: 1; font-size: 14px; line-height: 20px; font-weight: 600;">Touche le repas qui prend la place de « Saumon teriyaki », sur n’importe quel jour.</span>
@@ -66,9 +65,9 @@ class Component extends DCLogic {
     return {
       two: 2, six: 6,
       days: names.map(function (n, i) { return { day: n, num: String(i + 2), on: i === 1, off: i !== 1 }; }),
-      me: { id: 'me', name: 'Matthias' },
-      spaces: [{ id: 'foyer', name: 'Foyer', tint: 5 }, { id: 'f', name: 'Famille', tint: 1 }, { id: 'c', name: 'Colloc', tint: 2 }, { id: 't', name: 'TOM', tint: 3 }, { id: 'a', name: 'Amis', tint: 4 }],
-      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }, { id: 'members', label: 'Membres', icon: 'users' }, { id: 'more', label: 'Plus', icon: 'more' }]
+      noop: function () {},
+      space: { id: 'f', name: 'Famille', tint: 1 },
+      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }]
     };
   }
 }

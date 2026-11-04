@@ -15,11 +15,8 @@
 body{margin:0}
 </style>
 </helmet>
-<div class="fm-root" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
-<div style="display: flex; align-items: center; gap: 4px; min-height: 56px; padding: 0 8px; border-bottom: 1px solid var(--line);">
-<x-import component-from-global-scope="ForestUI.IconButton" icon="chevron-right" label="Retour" style="transform: scaleX(-1);"></x-import>
-<h1 style="margin: 0; flex-grow: 1; font-family: var(--font-display); font-size: 20px; line-height: 26px;">Profil</h1>
-</div>
+<div class="fm-root" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+<x-import component-from-global-scope="ForestUI.TopBar" title="Profil" on-back="{{noop}}"></x-import>
 <div style="flex-grow: 1;"></div>
 <x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" contained="{{yes}}" title="Supprimer mon compte" on-close="{{noop}}">
 <div style="display: flex; flex-direction: column; gap: 14px;">
@@ -35,8 +32,10 @@ body{margin:0}
 <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted);">Tes recettes partagées dans ces espaces restent, signées « Ancien membre ». Ton espace perso et tes recettes perso sont supprimés.</p>
 <x-import component-from-global-scope="ForestUI.Button" variant="secondary" icon="book-open" block="{{yes}}">Exporter mes recettes d’abord</x-import>
 <x-import component-from-global-scope="ForestUI.Field" label="Mot de passe" type="password" default-value="motdepasse" error="Mot de passe incorrect. Vérifie-le et réessaie."></x-import>
-<x-import component-from-global-scope="ForestUI.Button" variant="danger" block="{{yes}}" icon="trash">Supprimer définitivement mon compte</x-import>
 </div>
+<x-import component-from-global-scope="ForestUI.SheetFooter">
+<x-import component-from-global-scope="ForestUI.Button" variant="danger" icon="trash">Supprimer définitivement mon compte</x-import>
+</x-import>
 </x-import>
 </div>
 </x-dc>

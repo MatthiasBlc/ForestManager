@@ -16,8 +16,7 @@ body{margin:0}
 </style>
 </helmet>
 <div class="fm-root" data-space="1" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
-<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="f"></x-import>
-<x-import component-from-global-scope="ForestUI.TopBar" title="Planning"></x-import>
+<x-import component-from-global-scope="ForestUI.TopBar" title="Planning" space="{{space}}" on-space="{{noop}}"></x-import>
 <div style="flex-grow: 1;"></div>
 <x-import component-from-global-scope="ForestUI.TabBar" items="{{tabs}}" active-id="plan"></x-import>
 <x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" contained="{{yes}}" title="Planning proposé" on-close="{{noop}}">
@@ -37,11 +36,11 @@ body{margin:0}
 <x-import component-from-global-scope="ForestUI.Icon" name="clock"></x-import>
 <span style="font-size: 14px; line-height: 20px;"><b>Jeudi soir laissé vide.</b> La règle « Poisson, 1 fois par semaine » n’a trouvé aucune recette : elles ont toutes été cuisinées il y a moins de 3 jours.</span>
 </div>
-<div style="display: flex; gap: 8px;">
-<x-import component-from-global-scope="ForestUI.Button" variant="secondary" style="flex-grow: 1;">Annuler</x-import>
-<x-import component-from-global-scope="ForestUI.Button" variant="primary" style="flex-grow: 1;">Garder ce planning</x-import>
 </div>
-</div>
+<x-import component-from-global-scope="ForestUI.SheetFooter">
+<x-import component-from-global-scope="ForestUI.Button" variant="secondary">Annuler</x-import>
+<x-import component-from-global-scope="ForestUI.Button" variant="primary">Garder ce planning</x-import>
+</x-import>
 </x-import>
 </div>
 </x-dc>
@@ -57,9 +56,8 @@ class Component extends DCLogic {
         { when: 'Jeu soir', title: 'Aucune recette' },
         { when: 'Ven midi', title: 'Gratin de pâtes' }
       ],
-      me: { id: 'me', name: 'Matthias' },
-      spaces: [{ id: 'foyer', name: 'Foyer', tint: 5 }, { id: 'f', name: 'Famille', tint: 1 }, { id: 'c', name: 'Colloc', tint: 2 }, { id: 't', name: 'TOM', tint: 3 }, { id: 'a', name: 'Amis', tint: 4 }],
-      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }, { id: 'members', label: 'Membres', icon: 'users' }, { id: 'more', label: 'Plus', icon: 'more' }]
+      space: { id: 'f', name: 'Famille', tint: 1 },
+      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }]
     };
   }
 }

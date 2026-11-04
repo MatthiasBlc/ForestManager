@@ -16,14 +16,13 @@ body{margin:0}
 </style>
 </helmet>
 <div class="fm-root" data-space="1" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
-<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="f"></x-import>
-<div style="display: flex; align-items: center; gap: 4px; min-height: 56px; padding: 0 8px; border-bottom: 1px solid var(--line);">
-<x-import component-from-global-scope="ForestUI.IconButton" icon="chevron-right" label="Retour au planning" style="transform: scaleX(-1);"></x-import>
-<h1 style="margin: 0; flex-grow: 1; font-family: var(--font-display); font-size: 20px; line-height: 26px;">Semaine classique</h1>
+<x-import component-from-global-scope="ForestUI.TopBar" title="Semaine classique" on-back="{{noop}}"></x-import>
+<div style="flex-grow: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding: 16px;">
+<div style="display: flex; align-items: center; gap: 8px;">
+<span style="flex-grow: 1; font-size: 13px; line-height: 18px; color: var(--ink-muted);">Profil de génération de Famille</span>
 <x-import component-from-global-scope="ForestUI.Badge" tone="accent">Par défaut</x-import>
 <x-import component-from-global-scope="ForestUI.IconButton" icon="more" label="Actions du profil"></x-import>
 </div>
-<div style="flex-grow: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding: 16px;">
 <section style="display: flex; flex-direction: column; gap: 10px;">
 <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
 <span style="font-size: 14px; line-height: 20px; font-weight: 600;">Délai avant de reproposer une recette</span>
@@ -84,9 +83,9 @@ class Component extends DCLogic {
         { target: 'Rapide', detail: 'Le midi · poids ×1,2', kind: 'Tag', tone: 'accent' },
         { target: 'Dahl de lentilles corail', detail: 'Poids ×0,5 · moins souvent', kind: 'Recette', tone: 'second' }
       ],
-      me: { id: 'me', name: 'Matthias' },
-      spaces: [{ id: 'foyer', name: 'Foyer', tint: 5 }, { id: 'f', name: 'Famille', tint: 1 }, { id: 'c', name: 'Colloc', tint: 2 }, { id: 't', name: 'TOM', tint: 3 }, { id: 'a', name: 'Amis', tint: 4 }],
-      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }, { id: 'members', label: 'Membres', icon: 'users' }, { id: 'more', label: 'Plus', icon: 'more' }]
+      noop: function () {},
+      space: { id: 'f', name: 'Famille', tint: 1 },
+      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }]
     };
   }
 }

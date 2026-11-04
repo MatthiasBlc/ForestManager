@@ -46,10 +46,10 @@
             <x-import component-from-global-scope="ForestUI.Field" label="Titre du bloc" default-value="Saumon et brocolis" style="flex: 1;"></x-import>
             <x-import component-from-global-scope="ForestUI.IconButton" icon="more" label="Actions du bloc"></x-import>
           </div>
-          <div style="padding: 8px 12px; display: grid; grid-template-columns: 120px 140px minmax(0, 1fr); gap: 8px; align-items: center;">
-            <span class="fm-label">Quantité</span><span class="fm-label">Unité</span><span class="fm-label">Ingrédient</span>
-            <input class="fm-input" aria-label="Quantité" value="2"><input class="fm-input" aria-label="Unité" value="pavés"><input class="fm-input" aria-label="Ingrédient" value="saumon">
-            <input class="fm-input" aria-label="Quantité" value="400"><input class="fm-input" aria-label="Unité" value="g"><input class="fm-input" aria-label="Ingrédient" value="brocolis">
+          <div style="padding: 8px 12px; display: flex; flex-direction: column; gap: 8px; max-width: 640px;">
+            <x-import component-from-global-scope="ForestUI.QuantityInput" units="{{units}}" suggestions="{{suggestions}}" default-quantity="{{two}}" default-unit="pavé" default-ingredient="saumon" on-remove="{{noop}}"></x-import>
+            <x-import component-from-global-scope="ForestUI.QuantityInput" units="{{units}}" suggestions="{{suggestions}}" default-quantity="{{q400}}" default-unit="g" default-ingredient="brocolis" on-remove="{{noop}}"></x-import>
+            <x-import component-from-global-scope="ForestUI.QuantityInput" units="{{units}}" suggestions="{{suggestions}}" default-ingredient="ci" default-open="{{yes}}" on-remove="{{noop}}"></x-import>
           </div>
           <div style="padding: 0 12px 12px; display: flex; flex-direction: column; gap: 8px;">
             <button type="button" class="fm-btn fm-btn-ghost" style="align-self: flex-start;">+ Ajouter un ingrédient</button>
@@ -86,6 +86,11 @@ class Component extends DCLogic {
     return {
       yes: true,
       two: 2,
+      q400: 400,
+      noop: function () {},
+      units: ['g', 'kg', 'ml', 'cl', 'l', 'c. à soupe', 'c. à café', 'pièce', 'pavé', 'gousse', 'pincée', 'à goût'],
+      suggestions: ['pâtes', 'pâtes fraîches', 'crème fraîche', 'crème liquide', 'gruyère râpé', 'emmental râpé', 'ail', 'sel', 'poivre', 'saumon', 'brocolis', 'sésame', 'citron vert', 'ciboulette', 'citron jaune'],
+
       steps: '1. Cuire les brocolis 6 min à la vapeur.\n2. Saisir le saumon 3 min par face.',
       personal: { id: 'me', name: 'Matthias' },
       spaces: [

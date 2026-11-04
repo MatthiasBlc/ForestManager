@@ -15,8 +15,7 @@
 <style>body{margin:0}</style>
 </helmet>
 <div class="fm-root" data-space="1" style="width: 390px; height: 844px; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
-  <x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{personal}}" active-id="f"></x-import>
-  <x-import component-from-global-scope="ForestUI.TopBar" title="Recettes" unread="{{unread}}"></x-import>
+  <x-import component-from-global-scope="ForestUI.TopBar" title="Recettes" space="{{space}}" unread="{{unread}}"></x-import>
   <main style="flex: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
     <div style="display: flex; gap: 8px; align-items: center;">
       <x-import component-from-global-scope="ForestUI.Button" variant="primary" icon="plus" style="flex: 1;">Nouvelle recette</x-import>
@@ -46,6 +45,7 @@ class Component extends DCLogic {
       yes: true,
       unread: 3,
       noop: function () {},
+      space: { id: 'f', name: 'Famille', tint: 1 },
       personal: { id: 'me', name: 'Matthias' },
       spaces: [
         { id: 'foyer', name: 'Foyer', tint: 5 },
@@ -56,9 +56,7 @@ class Component extends DCLogic {
       ],
       tabs: [
         { id: 'recipes', label: 'Recettes', icon: 'book-open' },
-        { id: 'plan', label: 'Planning', icon: 'calendar' },
-        { id: 'members', label: 'Membres', icon: 'users' },
-        { id: 'more', label: 'Plus', icon: 'more' }
+        { id: 'plan', label: 'Planning', icon: 'calendar' }
       ],
       recipes: [
         { title: 'Saumon teriyaki et brocolis', meta: '2 pers. · 35 min', badges: [{ label: 'Composée', tone: 'second', icon: 'link' }] },

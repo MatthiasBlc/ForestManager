@@ -30,9 +30,11 @@
       </div>
       <x-import component-from-global-scope="ForestUI.SegmentedControl" label="Espace cible" default-value="famille" options="{{targets}}"></x-import>
       <x-import component-from-global-scope="ForestUI.Field" label="Un mot pour Léa (facultatif)" default-value="Ta tante la réclame depuis Noël !"></x-import>
-      <x-import component-from-global-scope="ForestUI.Button" variant="primary" icon="share" block="{{yes}}">Envoyer la demande</x-import>
       <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">Tu seras prévenu de sa réponse. Si Léa a autorisé les membres de Foyer à partager ses recettes, le partage est immédiat.</span>
     </div>
+    <x-import component-from-global-scope="ForestUI.SheetFooter">
+      <x-import component-from-global-scope="ForestUI.Button" variant="primary" icon="share">Envoyer la demande</x-import>
+    </x-import>
   </x-import>
 </div>
 </x-dc>

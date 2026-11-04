@@ -17,9 +17,9 @@ a{color:var(--accent-text)}a:hover{color:var(--ink)}
 </style>
 </helmet>
 <div class="fm-root" data-space="1" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
-<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="f"></x-import>
-<x-import component-from-global-scope="ForestUI.TopBar" title="Planning" unread="{{three}}"></x-import>
+<x-import component-from-global-scope="ForestUI.TopBar" title="Planning" space="{{space}}" on-space="{{noop}}" unread="{{three}}"></x-import>
 <div style="flex-grow: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 16px; padding: 16px;">
+<x-import component-from-global-scope="ForestUI.SegmentedControl" label="Vue du planning" options="{{views}}" default-value="day" style="align-self: flex-start;"></x-import>
 <div style="display: flex; gap: 6px; overflow-x: auto;">
 <sc-for list="{{days}}" as="d" hint-placeholder-count="7">
 <sc-if value="{{d.on}}" hint-placeholder-val="{{false}}">
@@ -58,9 +58,10 @@ class Component extends DCLogic {
     var days = names.map(function (n, i) { return { day: n, num: String(i + 2), on: i === 1, off: i !== 1 }; });
     return {
       yes: true, two: 2, three: 3, six: 6, days: days,
-      me: { id: 'me', name: 'Matthias' },
-      spaces: [{ id: 'foyer', name: 'Foyer', tint: 5 }, { id: 'f', name: 'Famille', tint: 1 }, { id: 'c', name: 'Colloc', tint: 2, unread: true }, { id: 't', name: 'TOM', tint: 3 }, { id: 'a', name: 'Amis', tint: 4 }],
-      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }, { id: 'members', label: 'Membres', icon: 'users' }, { id: 'more', label: 'Plus', icon: 'more' }]
+      noop: function () {},
+      views: [{ value: 'day', label: 'Jour' }, { value: 'week', label: 'Semaine' }],
+      space: { id: 'f', name: 'Famille', tint: 1 },
+      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }]
     };
   }
 }

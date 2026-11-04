@@ -15,10 +15,9 @@
 <style>body{margin:0}</style>
 </helmet>
 <div class="fm-root" data-space="1" style="width: 390px; height: 844px; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
-  <x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{personal}}" active-id="f"></x-import>
-  <x-import component-from-global-scope="ForestUI.TopBar" title="Recettes" unread="{{unread}}"></x-import>
+  <x-import component-from-global-scope="ForestUI.TopBar" title="Recettes" space="{{space}}" unread="{{unread}}"></x-import>
   <div role="status" style="display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--warning-soft); color: var(--warning-text); font-size: 14px; line-height: 20px; font-weight: 600;">
-    <x-import component-from-global-scope="ForestUI.Icon" name="refresh" size="{{iconSize}}"></x-import>
+    <x-import component-from-global-scope="ForestUI.Icon" name="wifi-off" size="{{iconSize}}"></x-import>
     <span style="flex: 1;">Hors ligne. Tu consultes les recettes déjà ouvertes ; les modifications reviendront avec le réseau.</span>
   </div>
   <main style="flex: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
@@ -45,6 +44,7 @@ class Component extends DCLogic {
       yes: true,
       unread: 3,
       iconSize: 18,
+      space: { id: 'f', name: 'Famille', tint: 1 },
       personal: { id: 'me', name: 'Matthias' },
       spaces: [
         { id: 'foyer', name: 'Foyer', tint: 5 },
@@ -55,9 +55,7 @@ class Component extends DCLogic {
       ],
       tabs: [
         { id: 'recipes', label: 'Recettes', icon: 'book-open' },
-        { id: 'plan', label: 'Planning', icon: 'calendar' },
-        { id: 'members', label: 'Membres', icon: 'users' },
-        { id: 'more', label: 'Plus', icon: 'more' }
+        { id: 'plan', label: 'Planning', icon: 'calendar' }
       ],
       recipes: [
         { title: 'Saumon teriyaki et brocolis', meta: '2 pers. · 35 min', badges: [{ label: 'Hors ligne', tone: 'warning' }] },

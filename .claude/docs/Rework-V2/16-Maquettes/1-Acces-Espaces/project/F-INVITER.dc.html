@@ -16,8 +16,7 @@ body{margin:0}
 </style>
 </helmet>
 <div class="fm-root" data-space="1" style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
-<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="famille"></x-import>
-<x-import component-from-global-scope="ForestUI.TopBar" title="Membres"></x-import>
+<x-import component-from-global-scope="ForestUI.TopBar" title="Membres" space="{{space}}"></x-import>
 <x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" title="Inviter dans Famille" on-close="{{noop}}">
 <div style="display: flex; flex-direction: column; gap: 16px;">
 <x-import component-from-global-scope="ForestUI.SegmentedControl" label="Mode d'invitation" options="{{modes}}" default-value="link"></x-import>
@@ -53,6 +52,8 @@ yes: true, noop: () => {}, uses: 3, one: 1, twenty: 20,
 modes: [{ value: 'link', label: 'Par lien' }, { value: 'name', label: 'Par nom d’utilisateur' }],
 durations: [{ value: '1', label: '1 jour' }, { value: '7', label: '7 jours' }, { value: '30', label: '30 jours' }],
 me: { id: 'me', name: 'Matthias' },
+space: { id: 'famille', name: 'Famille', tint: 1 },
+
 spaces: [
 { id: 'foyer', name: 'Foyer', tint: 5 },
 { id: 'famille', name: 'Famille', tint: 1 },

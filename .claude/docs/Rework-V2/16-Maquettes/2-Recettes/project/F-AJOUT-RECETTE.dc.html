@@ -15,8 +15,7 @@
 <style>body{margin:0}</style>
 </helmet>
 <div class="fm-root" data-space="1" style="width: 390px; height: 844px; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
-  <x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{personal}}" active-id="f"></x-import>
-  <x-import component-from-global-scope="ForestUI.TopBar" title="Recettes" unread="{{unread}}"></x-import>
+  <x-import component-from-global-scope="ForestUI.TopBar" title="Recettes" space="{{space}}" unread="{{unread}}"></x-import>
   <main style="flex: 1; overflow: hidden; padding: 16px;">
     <div class="fm-cq">
       <div class="fm-grid">
@@ -52,6 +51,7 @@ class Component extends DCLogic {
       yes: true,
       unread: 3,
       noop: function () {},
+      space: { id: 'f', name: 'Famille', tint: 1 },
       personal: { id: 'me', name: 'Matthias' },
       spaces: [
         { id: 'foyer', name: 'Foyer', tint: 5 },

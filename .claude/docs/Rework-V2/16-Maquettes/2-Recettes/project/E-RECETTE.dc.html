@@ -15,20 +15,17 @@
 <style>body{margin:0}</style>
 </helmet>
 <div class="fm-root" data-space="1" style="width: 390px; height: 844px; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
-  <header style="display: flex; align-items: center; gap: 4px; padding: 6px 8px; border-bottom: 1px solid var(--line);">
-    <a href="Main.dc.html" aria-label="Retour aux recettes" style="width: 44px; height: 44px; display: grid; place-items: center; color: var(--ink); border-radius: 10px;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
-    </a>
-    <span style="flex: 1; font: 600 15px/20px var(--font-sans); color: var(--ink-muted);">Famille · Recettes</span>
-    <x-import component-from-global-scope="ForestUI.IconButton" icon="share" label="Partager"></x-import>
-    <x-import component-from-global-scope="ForestUI.IconButton" icon="more" label="Plus d'actions"></x-import>
-  </header>
+  <x-import component-from-global-scope="ForestUI.TopBar" title="Recette" on-back="{{noop}}" unread="{{unread}}"></x-import>
   <main style="flex: 1; overflow: hidden; display: flex; flex-direction: column;">
     <div style="height: 150px; background: linear-gradient(140deg, var(--accent-soft), var(--surface));" aria-hidden="true"></div>
     <div class="fm-cq" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
-      <div style="display: flex; flex-direction: column; gap: 4px;">
-        <h1 style="margin: 0; font: 700 26px/32px var(--font-display);">Saumon teriyaki et brocolis</h1>
-        <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">par Matthias · partagée dans Famille et TOM · révision 3</span>
+      <div style="display: flex; gap: 4px; align-items: flex-start;">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+          <h1 style="margin: 0; font: 700 26px/32px var(--font-display);">Saumon teriyaki et brocolis</h1>
+          <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">par Matthias · partagée dans Famille et TOM · révision 4</span>
+        </div>
+        <x-import component-from-global-scope="ForestUI.IconButton" icon="share" label="Partager"></x-import>
+        <x-import component-from-global-scope="ForestUI.IconButton" icon="more" label="Plus d'actions"></x-import>
       </div>
       <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
         <x-import component-from-global-scope="ForestUI.Stepper" label="Portions" default-value="{{two}}" unit="pers."></x-import>
@@ -57,6 +54,8 @@
 class Component extends DCLogic {
   renderVals() {
     return {
+      noop: function () {},
+      unread: 3,
       two: 2,
       half: 0.5,
       no: false,
@@ -69,10 +68,11 @@ class Component extends DCLogic {
       sauceSteps: ['Mélanger soja, mirin et sucre.', 'Porter à frémissement, lier 2 min.'],
       saumon: [
         { quantity: 2, unit: 'pavés', name: 'saumon' },
-        { quantity: 300, unit: 'g', name: 'brocolis' },
-        { quantity: 1, unit: 'c. à soupe', name: 'sésame' }
+        { quantity: 400, unit: 'g', name: 'brocolis' },
+        { quantity: 1, unit: 'c. à soupe', name: 'sésame' },
+        { quantity: 0.5, unit: 'pièce', name: 'citron vert' }
       ],
-      saumonSteps: ['Cuire les brocolis 6 min à la vapeur.', 'Saisir le saumon 3 min par face.', 'Napper de sauce, parsemer de sésame.']
+      saumonSteps: ['Cuire les brocolis 6 min à la vapeur.', 'Saisir le saumon 3 min par face.', 'Napper de sauce, parsemer de sésame, finir avec un filet de citron vert.']
     };
   }
 }

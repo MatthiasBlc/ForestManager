@@ -16,8 +16,7 @@ body{margin:0}
 </style>
 </helmet>
 <div class="fm-root" data-space="5" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
-<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="foyer"></x-import>
-<x-import component-from-global-scope="ForestUI.TopBar" title="Planning"></x-import>
+<x-import component-from-global-scope="ForestUI.TopBar" title="Planning" space="{{space}}" on-space="{{noop}}"></x-import>
 <div style="flex-grow: 1; min-height: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 0; padding: 16px;">
 <x-import component-from-global-scope="ForestUI.EmptyState" icon="calendar" title="Pas encore de planning dans Foyer">Prévois vos repas de la semaine, à la main ou en un geste avec la génération.</x-import>
 <x-import component-from-global-scope="ForestUI.Button" variant="primary" icon="plus">Créer le planning</x-import>
@@ -29,9 +28,9 @@ body{margin:0}
 class Component extends DCLogic {
   renderVals() {
     return {
-      me: { id: 'me', name: 'Matthias' },
-      spaces: [{ id: 'foyer', name: 'Foyer', tint: 5 }, { id: 'f', name: 'Famille', tint: 1 }, { id: 'c', name: 'Colloc', tint: 2 }, { id: 't', name: 'TOM', tint: 3 }, { id: 'a', name: 'Amis', tint: 4 }],
-      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }, { id: 'members', label: 'Membres', icon: 'users' }, { id: 'more', label: 'Plus', icon: 'more' }]
+      noop: function () {},
+      space: { id: 'foyer', name: 'Foyer', tint: 5 },
+      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }]
     };
   }
 }

@@ -17,26 +17,17 @@ a{color:var(--accent-text)}a:hover{color:var(--ink)}
 </style>
 </helmet>
 <div class="fm-root" data-space="1" style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
-<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="me"></x-import>
 <div role="status" style="display: flex; gap: 8px; align-items: center; padding: 8px 16px; background: var(--warning-soft); color: var(--warning-text); font-size: 13px; line-height: 18px; font-weight: 600;">
-<x-import component-from-global-scope="ForestUI.Icon" name="refresh" size="{{small}}"></x-import>
+<x-import component-from-global-scope="ForestUI.Icon" name="wifi-off" size="{{small}}"></x-import>
 <span>Hors ligne. Tu consultes la dernière version enregistrée.</span>
 </div>
-<x-import component-from-global-scope="ForestUI.TopBar" title="Accueil" unread="{{unread}}"></x-import>
+<x-import component-from-global-scope="ForestUI.TopBar" title="Accueil" space="{{me}}" unread="{{unread}}"></x-import>
 <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column; gap: 20px; padding: 16px;">
 <h1 style="margin: 0; font: 700 26px/32px var(--font-display);">Bonsoir, Matthias</h1>
 <section style="display: flex; flex-direction: column; gap: 8px;">
 <div style="display: flex; justify-content: space-between; align-items: baseline;"><h2 style="margin: 0; font: 600 16px/22px var(--font-display);">Prochains repas</h2><span style="font-size: 13px; color: var(--ink-muted);">Famille</span></div>
 <x-import component-from-global-scope="ForestUI.MealSlot" kind="recipe" title="Saumon teriyaki et brocolis" servings="{{two}}" when="Ce soir"></x-import>
 <x-import component-from-global-scope="ForestUI.MealSlot" kind="recipe" title="Gratin de pâtes" locked="{{yes}}" when="Demain midi"></x-import>
-</section>
-<section style="display: flex; flex-direction: column; gap: 8px;">
-<h2 style="margin: 0; font: 600 16px/22px var(--font-display);">Invitation en attente</h2>
-<div style="display: flex; gap: 12px; align-items: center; padding: 12px; border-radius: var(--radius-lg); background: var(--surface-raised); border: 1px solid var(--line);">
-<x-import component-from-global-scope="ForestUI.Avatar" name="Claire" tint="{{four}}" size="{{forty}}"></x-import>
-<span style="flex: 1; font-size: 14px; line-height: 20px;"><b>Claire</b> t'invite dans <b>Cousins</b></span>
-<x-import component-from-global-scope="ForestUI.Button" size="sm" disabled="{{yes}}">Voir</x-import>
-</div>
 </section>
 <section style="display: flex; flex-direction: column; gap: 8px;">
 <h2 style="margin: 0; font: 600 16px/22px var(--font-display);">Tes recettes les plus cuisinées</h2>
@@ -54,7 +45,7 @@ class Component extends DCLogic {
 renderVals() {
 return {
 yes: true, two: 2, four: 4, forty: 40, small: 16, unread: 2,
-me: { id: 'me', name: 'Matthias' },
+me: { id: 'me', name: 'Matthias', hint: 'Espace perso' },
 spaces: [
 { id: 'foyer', name: 'Foyer', tint: 5 },
 { id: 'famille', name: 'Famille', tint: 1, unread: true },
@@ -65,8 +56,7 @@ spaces: [
 tabs: [
 { id: 'home', label: 'Accueil', icon: 'home' },
 { id: 'recipes', label: 'Recettes', icon: 'book-open' },
-{ id: 'mine', label: 'Mes recettes', icon: 'chef-hat' },
-{ id: 'more', label: 'Plus', icon: 'more' }
+{ id: 'mine', label: 'Mes recettes', icon: 'chef-hat' }
 ]
 };
 }

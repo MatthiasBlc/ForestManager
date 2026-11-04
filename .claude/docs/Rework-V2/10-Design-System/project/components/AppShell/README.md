@@ -9,3 +9,4 @@ Structure de toute l'application, **mobile first** : elle s'adapte a la largeur 
 - **Deux facons de remplir les zones**, au choix :
   - en props : `rail`, `nav`, `top`, `tabbar`, et le contenu en `children` ;
   - en **enfants nommes** (sans `rail` ni `top`) : SpaceRail, ModuleNav, TopBar, ShellMain (le contenu) et TabBar poses directement dans l'AppShell, dans n'importe quel ordre ; chacun prend sa zone. C'est la forme a utiliser dans les maquettes.
+  - Un enveloppement en `display: contents` autour de chaque zone (runtime des maquettes) est accepte.

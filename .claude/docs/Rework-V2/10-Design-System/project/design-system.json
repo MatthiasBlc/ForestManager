@@ -27,8 +27,8 @@
   },
   "lastChange": {
     "by": "Matthias Bouloc",
-    "at": "2026-11-04T12:00:00Z",
+    "at": "2026-11-04T15:00:00Z",
     "via": "Claude Code",
-    "note": "B5b : icones (arrow-left, wifi-off, tag, ruler, shield), RadioGroup, TintPicker, OptionList, QuantityInput, Skeleton, SpaceSwitcher et bouton d'espace de la TopBar (D130), TabBar 4 modules puis Plus (D131), espace en suppression dans le rail (D66), zones nommees AppShell et SheetFooter"
+    "note": "AppShell : les zones nommees se placent aussi quand le runtime des maquettes enveloppe chaque composant (display: contents)"
   }
 }

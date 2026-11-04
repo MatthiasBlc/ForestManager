@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Réglages de la plateforme</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div class="fm-root" style="min-height: 1100px; display: flex; flex-wrap: wrap; align-items: stretch; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+  <dc-import name="AdminNav" active="reglages" hint-size="248px,1100px"></dc-import>
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 24px; max-width: 1192px;">
+    <header style="display: flex; flex-direction: column; gap: 4px;">
+      <h1 style="margin: 0; font-family: var(--font-display); font-size: 26px; line-height: 32px;">Réglages de la plateforme</h1>
+      <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">Ces services se configurent par variables d'environnement dans la stack (Portainer), puis un redémarrage. Ici, tu vérifies leur état et tu les testes.</p>
+    </header>
+
+    <sc-for list="{{services}}" as="s" hint-placeholder-count="3">
+      <section aria-label="{{s.name}}" style="background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+          <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--surface); color: var(--ink-muted); display: grid; place-items: center;">
+            <x-import component-from-global-scope="ForestUI.Icon" name="{{s.icon}}"></x-import>
+          </div>
+          <div style="flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column;">
+            <h2 style="margin: 0; font-family: var(--font-display); font-size: 18px; line-height: 24px;">{{s.name}}</h2>
+            <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">{{s.role}}</span>
+          </div>
+          <x-import component-from-global-scope="ForestUI.Badge" tone="{{s.tone}}">{{s.status}}</x-import>
+        </div>
+        <dl style="margin: 0; display: grid; grid-template-columns: minmax(140px, 220px) minmax(0, 1fr); gap: 8px 16px; font-size: 14px; line-height: 20px;">
+          <sc-for list="{{s.rows}}" as="r" hint-placeholder-count="3">
+            <dt style="color: var(--ink-muted);">{{r.k}}</dt>
+            <dd style="margin: 0; font-family: var(--font-mono); font-size: 13px; overflow-wrap: anywhere;">{{r.v}}</dd>
+          </sc-for>
+        </dl>
+        <p style="margin: 0; padding: 10px 12px; border-radius: var(--radius-md); background: var(--surface); font-size: 14px; line-height: 20px;">{{s.effect}}</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+          <x-import component-from-global-scope="ForestUI.Button" icon="refresh" disabled="{{s.cannotTest}}">{{s.test}}</x-import>
+          <span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">{{s.lastTest}}</span>
+        </div>
+      </section>
+    </sc-for>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      services: [
+        {
+          name: "Envoi d'e-mails (SMTP)", icon: 'bell', role: 'Vérification des adresses, mot de passe oublié, invitations par e-mail.',
+          status: 'Non configuré', tone: 'warning',
+          rows: [ { k: 'Variable', v: 'SMTP_URL (absente)' }, { k: 'Expéditeur', v: 'SMTP_FROM (absente)' } ],
+          effect: "Sans SMTP, tout fonctionne : l'inscription ne demande pas de vérification, « mot de passe oublié » est masqué et tu réinitialises les mots de passe depuis Utilisateurs.",
+          test: 'Envoyer un e-mail de test', cannotTest: true, lastTest: "Disponible une fois SMTP_URL renseignée."
+        },
+        {
+          name: 'Suivi des erreurs (Bugsink)', icon: 'shield', role: "Reçoit les erreurs de l'application et du navigateur.",
+          status: 'Connecté', tone: 'success',
+          rows: [ { k: 'Variable', v: 'SENTRY_DSN' }, { k: 'Adresse', v: 'https://bugsink.forest.example/2' }, { k: 'Cette semaine', v: '3 erreurs' } ],
+          effect: "Changer d'outil de suivi ne demande que de changer le DSN.",
+          test: 'Envoyer une erreur de test', cannotTest: false, lastTest: "Dernier test réussi : aujourd'hui, 10 h 05."
+        },
+        {
+          name: 'Stockage des photos (S3)', icon: 'book-open', role: 'Photos des recettes et avatars, servies par liens signés de courte durée.',
+          status: 'Connecté', tone: 'success',
+          rows: [ { k: 'Point d’accès', v: 'S3_ENDPOINT = http://minio:9000' }, { k: 'Compartiment', v: 'S3_BUCKET = forest-photos' }, { k: 'Utilisé', v: '1,2 Go, 486 photos' } ],
+          effect: 'Les photos sont converties en WebP et redimensionnées dans le navigateur avant l’envoi.',
+          test: 'Tester la connexion', cannotTest: false, lastTest: "Dernier test réussi : aujourd'hui, 10 h 05."
+        }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

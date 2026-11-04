@@ -43,7 +43,7 @@
       "expand": "fill"
     },
     "A01b-Code-2FA.dc.html": {
-      "x": 1520,
+      "x": 3040,
       "y": 1420,
       "w": 1440,
       "h": 900,
@@ -154,6 +154,39 @@
       "title": "A11 - Journal d'audit",
       "expand": "fill",
       "is_interactive": true
+    },
+    "A01a-Configurer-2FA.dc.html": {
+      "x": 1520,
+      "y": 1420,
+      "w": 1440,
+      "h": 900,
+      "title": "A01a - Configurer la 2FA (première connexion)",
+      "expand": "fill"
+    },
+    "A12-Utilisateurs.dc.html": {
+      "x": 0,
+      "y": 7080,
+      "w": 1440,
+      "h": 1000,
+      "title": "A12 - Utilisateurs",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "A12b-Reinitialiser-mot-de-passe.dc.html": {
+      "x": 1520,
+      "y": 7080,
+      "w": 1440,
+      "h": 1000,
+      "title": "A12b - Réinitialiser un mot de passe (sans SMTP, D21)",
+      "expand": "fill"
+    },
+    "A13-Reglages.dc.html": {
+      "x": 3040,
+      "y": 7080,
+      "w": 1440,
+      "h": 1100,
+      "title": "A13 - Réglages de la plateforme",
+      "expand": "fill"
     }
   },
   "order": [
@@ -161,6 +194,7 @@
     "A02m-Tableau-de-bord-mobile.dc.html",
     "AdminNav.dc.html",
     "A01-Connexion.dc.html",
+    "A01a-Configurer-2FA.dc.html",
     "A01b-Code-2FA.dc.html",
     "A03-Demandes.dc.html",
     "A03b-Refuser-demande.dc.html",
@@ -173,7 +207,10 @@
     "A09-Espaces.dc.html",
     "A09b-Moderation-motif.dc.html",
     "A10-Changelog.dc.html",
-    "A11-Journal-audit.dc.html"
+    "A11-Journal-audit.dc.html",
+    "A12-Utilisateurs.dc.html",
+    "A12b-Reinitialiser-mot-de-passe.dc.html",
+    "A13-Reglages.dc.html"
   ],
   "notes": {
     "t-pilotage": {
@@ -188,7 +225,7 @@
       "y": 1160,
       "text": "Accès admin (session isolée, 2FA)",
       "kind": "title1",
-      "maxW": 2960
+      "maxW": 4480
     },
     "t-modules": {
       "x": 0,
@@ -210,6 +247,13 @@
       "text": "Espaces, modération et suivi (D52)",
       "kind": "title1",
       "maxW": 6000
+    },
+    "t-comptes": {
+      "x": 0,
+      "y": 6820,
+      "text": "Comptes et plateforme (D21, D52, D75)",
+      "kind": "title1",
+      "maxW": 4480
     }
   },
   "designSystems": [
@@ -217,8 +261,8 @@
       "title": "Forest Manager",
       "namespace": "forestui",
       "artifact": "https://claude.ai/artifact/7Q9Uy9qGhUyPYt3bWVa5yc",
-      "version": "1793716217-53b8",
-      "copiedAt": "2026-11-03T14:30:00Z"
+      "version": "1793795440-27fb",
+      "copiedAt": "2026-11-04T16:00:00Z"
     }
   ]
 }

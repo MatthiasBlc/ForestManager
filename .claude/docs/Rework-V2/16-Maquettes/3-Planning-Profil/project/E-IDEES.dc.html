@@ -16,14 +16,10 @@ body{margin:0}
 </style>
 </helmet>
 <div class="fm-root" data-space="1" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
-<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="f"></x-import>
-<div style="display: flex; align-items: center; gap: 4px; min-height: 56px; padding: 0 8px; border-bottom: 1px solid var(--line);">
-<x-import component-from-global-scope="ForestUI.IconButton" icon="chevron-right" label="Retour au planning" style="transform: scaleX(-1);"></x-import>
-<h1 style="margin: 0; flex-grow: 1; font-family: var(--font-display); font-size: 20px; line-height: 26px;">Idées de repas</h1>
-<x-import component-from-global-scope="ForestUI.Button" variant="primary" size="sm" icon="plus">Nouvelle idée</x-import>
-</div>
+<x-import component-from-global-scope="ForestUI.TopBar" title="Idées de repas" on-back="{{noop}}"></x-import>
 <div style="flex-grow: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 16px;">
 <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted);">Ce qu’on aimerait cuisiner un jour. La génération peut les proposer dans le planning.</p>
+<x-import component-from-global-scope="ForestUI.Button" variant="primary" icon="plus" style="align-self: flex-start;">Nouvelle idée</x-import>
 <sc-for list="{{ideas}}" as="i" hint-placeholder-count="4">
 <article style="display: flex; flex-direction: column; gap: 8px; padding: 12px 12px 8px; border-radius: var(--radius-lg); border: 1px solid var(--line); background: var(--surface-raised);">
 <div style="display: flex; align-items: flex-start; gap: 10px;">
@@ -38,7 +34,7 @@ body{margin:0}
 <x-import component-from-global-scope="ForestUI.Badge" tone="second" icon="link">Liée à Dahl de lentilles corail</x-import>
 </sc-if>
 <sc-if value="{{i.convertible}}" hint-placeholder-val="{{true}}">
-<x-import component-from-global-scope="ForestUI.Button" variant="ghost" size="sm" icon="chef-hat" style="align-self: flex-start;">En faire une recette</x-import>
+<a href="F-IDEE-RECETTE.dc.html" style="align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border-radius: var(--radius-md); font-size: 14px; line-height: 20px; font-weight: 600; color: var(--accent-text); text-decoration: none;"><x-import component-from-global-scope="ForestUI.Icon" name="chef-hat" size="{{eighteen}}"></x-import>Transformer en recette</a>
 </sc-if>
 </article>
 </sc-for>
@@ -50,16 +46,16 @@ body{margin:0}
 class Component extends DCLogic {
   renderVals() {
     return {
-      twentyEight: 28,
+      twentyEight: 28, eighteen: 18,
       ideas: [
         { name: 'Lasagnes végétariennes', comment: 'Celles de la cantine de Noé, à retrouver', author: 'Sam', tint: 2, convertible: true, linked: false },
         { name: 'Curry de pois chiches', comment: 'Avec du lait de coco, pas trop épicé', author: 'Léa', tint: 5, convertible: true, linked: false },
         { name: 'Dahl version courge', comment: 'Ajouter de la courge rôtie', author: 'Matthias', tint: 1, convertible: false, linked: true },
         { name: 'Raclette', comment: 'Un dimanche soir en hiver', author: 'Jeanne', tint: 3, convertible: true, linked: false }
       ],
-      me: { id: 'me', name: 'Matthias' },
-      spaces: [{ id: 'foyer', name: 'Foyer', tint: 5 }, { id: 'f', name: 'Famille', tint: 1 }, { id: 'c', name: 'Colloc', tint: 2 }, { id: 't', name: 'TOM', tint: 3 }, { id: 'a', name: 'Amis', tint: 4 }],
-      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }, { id: 'members', label: 'Membres', icon: 'users' }, { id: 'more', label: 'Plus', icon: 'more' }]
+      noop: function () {},
+      space: { id: 'f', name: 'Famille', tint: 1 },
+      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }]
     };
   }
 }

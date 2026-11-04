@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Rappel de confirmation</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="fm-root" data-space="1" style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
+<x-import component-from-global-scope="ForestUI.TopBar" title="Notifications" space="{{me}}" unread="{{unread}}"></x-import>
+<div style="flex: 1; overflow: hidden; display: flex; flex-direction: column; gap: 12px; padding: 16px;">
+<h1 style="margin: 0; font: 700 26px/32px var(--font-display);">Notifications</h1>
+<section aria-label="Non lues" style="display: flex; flex-direction: column; gap: 8px;">
+<div style="display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: var(--radius-lg); background: var(--accent-soft); border: 1px solid var(--line);">
+<span style="width: 40px; height: 40px; flex: none; border-radius: var(--radius-md); background: var(--surface-raised); color: var(--accent-text); display: grid; place-items: center;"><x-import component-from-global-scope="ForestUI.Icon" name="bell"></x-import></span>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
+<b style="font: 600 15px/22px var(--font-sans);">Confirme ton adresse e-mail</b>
+<span style="font-size: 14px; line-height: 20px;">Elle sert à retrouver ton compte si tu oublies ton mot de passe. Le lien a été envoyé à matthias@exemple.fr.</span>
+<div style="display: flex; gap: 8px; flex-wrap: wrap;">
+<x-import component-from-global-scope="ForestUI.Button" variant="primary" size="sm">Renvoyer le lien</x-import>
+<x-import component-from-global-scope="ForestUI.Button" variant="ghost" size="sm">Changer d'adresse</x-import>
+</div>
+</div>
+</div>
+<div style="display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: var(--radius-lg); background: var(--surface-raised); border: 1px solid var(--line);">
+<x-import component-from-global-scope="ForestUI.Avatar" name="Lea" tint="{{five}}" size="{{forty}}"></x-import>
+<span style="flex: 1; font-size: 14px; line-height: 20px;"><b>Lea</b> a ajouté Gratin de pâtes dans Foyer<br><span style="color: var(--ink-muted); font-size: 13px;">Il y a 2 heures</span></span>
+</div>
+</section>
+<p style="margin: 0; font-size: 13px; line-height: 18px; color: var(--ink-muted);">Le rappel reste en haut tant que l'adresse n'est pas confirmée. Tout le reste fonctionne sans attendre.</p>
+</div>
+<x-import component-from-global-scope="ForestUI.TabBar" items="{{tabs}}" active-id="home"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+unread: 2, five: 5, forty: 40,
+me: { id: 'me', name: 'Matthias' },
+tabs: [
+{ id: 'home', label: 'Accueil', icon: 'home' },
+{ id: 'recipes', label: 'Recettes', icon: 'book-open' },
+{ id: 'mine', label: 'Mes recettes', icon: 'chef-hat' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

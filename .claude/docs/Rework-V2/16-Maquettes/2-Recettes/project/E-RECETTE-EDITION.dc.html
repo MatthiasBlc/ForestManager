@@ -36,15 +36,11 @@
     <section style="border: 1px solid var(--line); border-radius: 10px; background: var(--surface-raised); overflow: hidden;">
       <div style="padding: 10px 12px; background: var(--surface); font: 600 16px/22px var(--font-display);">Ingrédients</div>
       <div style="padding: 4px 12px 8px; display: flex; flex-direction: column;">
-        <sc-for list="{{ings}}" as="i" hint-placeholder-count="5">
-          <div style="display: flex; align-items: center; gap: 8px; min-height: 44px; border-bottom: 1px solid var(--line);">
-            <span style="font: 500 14px/20px var(--font-mono); min-width: 76px;">{{i.q}}</span>
-            <span style="flex: 1; font-size: 15px;">{{i.n}}</span>
-            <sc-if value="{{i.check}}" hint-placeholder-val="{{false}}">
-              <x-import component-from-global-scope="ForestUI.Badge" tone="warning">À vérifier</x-import>
-            </sc-if>
-          </div>
-        </sc-for>
+        <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 8px;">
+          <sc-for list="{{ings}}" as="i" hint-placeholder-count="5">
+            <x-import component-from-global-scope="ForestUI.QuantityInput" units="{{units}}" suggestions="{{suggestions}}" default-quantity="{{i.q}}" default-unit="{{i.u}}" default-ingredient="{{i.n}}" error="{{i.error}}" on-remove="{{noop}}"></x-import>
+          </sc-for>
+        </div>
         <button type="button" class="fm-btn fm-btn-ghost" style="align-self: flex-start;">+ Ajouter un ingrédient</button>
       </div>
     </section>
@@ -64,12 +60,15 @@ class Component extends DCLogic {
   renderVals() {
     return {
       four: 4,
+      noop: function () {},
+      units: ['g', 'kg', 'ml', 'cl', 'l', 'c. à soupe', 'c. à café', 'pièce', 'pavé', 'gousse', 'pincée', 'à goût'],
+      suggestions: ['pâtes', 'pâtes fraîches', 'crème fraîche', 'crème liquide', 'gruyère râpé', 'emmental râpé', 'ail', 'sel', 'poivre', 'saumon', 'brocolis', 'sésame', 'citron vert'],
       ings: [
-        { q: '500 g', n: 'pâtes', check: false },
-        { q: '40 cl', n: 'crème fraîche', check: false },
-        { q: '150 g', n: 'gruyère râpé', check: false },
-        { q: '1 gousse', n: 'ail', check: false },
-        { q: '?', n: 'sel, poivre', check: true }
+        { q: 500, u: 'g', n: 'pâtes' },
+        { q: 40, u: 'cl', n: 'crème fraîche' },
+        { q: 150, u: 'g', n: 'gruyère râpé' },
+        { q: 1, u: 'gousse', n: 'ail' },
+        { q: '', u: 'à goût', n: 'sel, poivre', error: 'Quantité non lue : choisis une unité ou « à goût ».' }
       ]
     };
   }

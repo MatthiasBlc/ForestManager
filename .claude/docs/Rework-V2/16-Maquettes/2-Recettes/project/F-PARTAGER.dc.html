@@ -37,10 +37,10 @@
         <span style="font: 600 14px/20px var(--font-sans); color: var(--second-text);">Partagée avec elle</span>
         <span style="font-size: 14px; line-height: 20px;">Sauce teriyaki, la recette liée, est partagée dans les mêmes espaces pour que tout le monde voie les quantités.</span>
       </div>
-      <div style="padding-top: 12px;">
-        <x-import component-from-global-scope="ForestUI.Button" variant="primary" block="{{yes}}">Enregistrer</x-import>
-      </div>
     </div>
+    <x-import component-from-global-scope="ForestUI.SheetFooter">
+      <x-import component-from-global-scope="ForestUI.Button" variant="primary">Enregistrer</x-import>
+    </x-import>
   </x-import>
 </div>
 </x-dc>

@@ -15,12 +15,7 @@
 <style>body{margin:0}</style>
 </helmet>
 <div class="fm-root" data-space="1" style="width: 390px; height: 844px; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
-  <header style="display: flex; align-items: center; gap: 4px; padding: 6px 8px; border-bottom: 1px solid var(--line);">
-    <a href="E-RECETTE.dc.html" aria-label="Retour à la recette" style="width: 44px; height: 44px; display: grid; place-items: center; color: var(--ink); border-radius: 10px;">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>
-    </a>
-    <span style="flex: 1; font: 600 16px/22px var(--font-display);">Historique</span>
-  </header>
+  <x-import component-from-global-scope="ForestUI.TopBar" title="Historique" on-back="{{noop}}" unread="{{unread}}"></x-import>
   <main style="flex: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
     <b style="font-size: 17px;">Saumon teriyaki et brocolis</b>
     <ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px;">
@@ -48,6 +43,8 @@
 class Component extends DCLogic {
   renderVals() {
     return {
+      noop: function () {},
+      unread: 3,
       revs: [
         { n: '4', what: 'Suggestion de Sam acceptée', who: 'Brocolis 400 g, citron vert · aujourd’hui', current: true, restorable: false },
         { n: '3', what: 'Modifiée par Matthias', who: 'Sauce teriyaki liée à la place des ingrédients · 28 oct.', current: false, restorable: true },

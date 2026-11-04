@@ -15,8 +15,7 @@
 <style>body{margin:0}</style>
 </helmet>
 <div class="fm-root" data-space="4" style="width: 390px; height: 844px; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
-  <x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{personal}}" active-id="a"></x-import>
-  <x-import component-from-global-scope="ForestUI.TopBar" title="Recettes" unread="{{unread}}"></x-import>
+  <x-import component-from-global-scope="ForestUI.TopBar" title="Recettes" space="{{space}}" unread="{{unread}}"></x-import>
   <main style="flex: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
     <x-import component-from-global-scope="ForestUI.EmptyState" icon="book-open" title="Pas encore de recette dans Amis">Ajoute une recette, importe-la depuis un lien, ou partage une des tiennes : les 5 membres la verront ici.</x-import>
     <div style="display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 300px;">
@@ -33,6 +32,7 @@ class Component extends DCLogic {
     return {
       yes: true,
       unread: 3,
+      space: { id: 'a', name: 'Amis', tint: 4 },
       personal: { id: 'me', name: 'Matthias' },
       spaces: [
         { id: 'foyer', name: 'Foyer', tint: 5 },
@@ -42,9 +42,7 @@ class Component extends DCLogic {
         { id: 'a', name: 'Amis', tint: 4 }
       ],
       tabs: [
-        { id: 'recipes', label: 'Recettes', icon: 'book-open' },
-        { id: 'members', label: 'Membres', icon: 'users' },
-        { id: 'more', label: 'Plus', icon: 'more' }
+        { id: 'recipes', label: 'Recettes', icon: 'book-open' }
       ]
     };
   }

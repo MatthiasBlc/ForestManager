@@ -26,7 +26,7 @@ Refonte de Forest Manager : clarifier les concepts de la V1, refaire l'interface
 | `10-Design-System/project/`             | Copie locale du design system (tokens, README, 25 composants, apercus). Source de verite : `tokens.json`. |
 | `11-Modele-Donnees/`                    | Schema Prisma cible (`schema.prisma`), page de presentation generee (`generer-page.py`).                  |
 | `12-Permissions.md` / `.html`           | Matrice des permissions par acteur et par module.                                                         |
-| `13-Parcours.md` / `.html`              | 17 parcours et inventaire des 52 ecrans (entree des maquettes).                                           |
+| `13-Parcours.md` / `.html`              | 17 parcours et inventaire des 54 ecrans (entree des maquettes).                                           |
 | `14-Architecture.md`                    | Architecture technique cible.                                                                             |
 | `15-Plan-Tests.md`                      | Plan de tests.                                                                                            |
 
@@ -36,9 +36,9 @@ Artefact en ligne : voir le lien dans la section "Reprise" ci-dessous. La copie 
 
 - Derniere session : 2026-11-04. Contexte remis a zero apres cette session : tout l'etat est ici et dans les fichiers cites.
 - Fait : etude (A), design system (B4), modele de donnees (B1), permissions (B2), parcours (B3), architecture (B6), tests (B8), maquettes (B5). Decisions D01 a D131 toutes tranchees (journal). CDC en 0.4 : les decisions D87 a D131 n'y sont pas encore reportees.
-- Prochaine etape : **B5b etape 2** (maquettes), traiter `16-Maquettes/ECARTS.md` dans cet ordre :
+- Prochaine etape : **B5b etape 3**, apres avoir tranche les points ouverts en bas de `16-Maquettes/ECARTS.md` ; plan initial :
   1. ~~Design system~~ : fait et publie le 2026-11-04 (8 composants ajoutes, voir ECARTS).
-  2. Maquettes : ecrans manquants, vue Semaine mobile (D111), selecteur d'espace (D130), coherences. Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL.
+  2. ~~Maquettes~~ : faites et publiees le 2026-11-04 (4 canevas). Reste les points ouverts de ECARTS. Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact).
   3. Reporter D87 a D131 dans le CDC (version 0.5), puis B9 : validation finale du CDC 1.0.
 - Methode : copie locale d'abord, puis publication ; commits en francais, autonomes, sans Co-Authored-By ; taches independantes en agents paralleles.
 - Artefacts :
