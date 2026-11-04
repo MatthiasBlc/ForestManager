@@ -4,15 +4,18 @@ Liste unique, a traiter avant la validation finale (B9). Cocher au fil de l'eau.
 
 ## Design system : a ajouter ou corriger
 
-- [ ] Icones `arrow-left` (retour), `wifi-off` (hors ligne), et icones de l'admin (tag, regle, bouclier) [D109]
-- [ ] Composant de choix d'une option : boutons radio et nuancier de couleur (teinte d'espace) [D96]
-- [ ] Composant liste d'options selectionnables (choix d'un profil, d'un export, resultats de recherche d'une recette)
-- [ ] Composant QuantityInput : quantite + unite + ingredient avec autocompletion [D108]
-- [ ] SpaceRail : etat "espace en suppression" (icone grisee, compte a rebours) [D66, D96]
-- [ ] AppShell et pied de Sheet : accepter leurs zones comme enfants nommes, pour etre utilisables tels quels dans les maquettes et l'application (aujourd'hui recomposes a la main par les quatre canevas)
+- [x] Icones `arrow-left` (retour), `wifi-off` (hors ligne), et icones de l'admin (tag, regle, bouclier) [D109]
+- [x] Composant de choix d'une option : boutons radio et nuancier de couleur (teinte d'espace) [D96]
+- [x] Composant liste d'options selectionnables (choix d'un profil, d'un export, resultats de recherche d'une recette)
+- [x] Composant QuantityInput : quantite + unite + ingredient avec autocompletion [D108]
+- [x] SpaceRail : etat "espace en suppression" (icone grisee, compte a rebours) [D66, D96]
+- [x] AppShell et pied de Sheet : accepter leurs zones comme enfants nommes, pour etre utilisables tels quels dans les maquettes et l'application (aujourd'hui recomposes a la main par les quatre canevas) : enfants nommes (SpaceRail, ModuleNav, TopBar, ShellMain, TabBar) et SheetFooter
 
-- [ ] SpaceRail : variante mobile = selecteur d'espace dans l'en-tete + feuille de liste des espaces [D130]
-- [ ] TabBar : 4 modules maximum puis "Plus" [D131]
+- [x] SpaceRail : variante mobile = selecteur d'espace dans l'en-tete + feuille de liste des espaces [D130]
+- [x] TabBar : 4 modules maximum puis "Plus" [D131]
+- [x] Ajoute en plus : Skeleton (etats de chargement), TopBar `onBack` (retour) et `space` (bouton d'espace mobile)
+
+Publie le 2026-11-04 (Design System, version 7). Les canevas de maquettes ont encore l'ancienne copie du bundle dans `project/ds/forestui/` : a recopier a l'etape suivante.
 
 ## Ecrans manquants
 

@@ -8,14 +8,20 @@
 <div id="root"></div>
 <script>
 var U = window.ForestUI, h = React.createElement;
-var nav = [{id:'recipes', label:'Recettes', icon:'book-open'}, {id:'plan', label:'Planning', icon:'calendar'}, {id:'shop', label:'Courses', icon:'shopping-basket'}, {id:'members', label:'Membres', icon:'users'}];
+var nav = [{id:'recipes', label:'Recettes', icon:'book-open'}, {id:'plan', label:'Planning', icon:'calendar'}, {id:'members', label:'Membres', icon:'users'}];
 var spaces = [{id:'f', name:'Famille', tint:1, unread:true}, {id:'c', name:'Colloc', tint:2}, {id:'t', name:'TOM', tint:3}, {id:'a', name:'Amis', tint:4}];
 function Content(){ return h('div', {className:'fm-pad fm-stack fm-cq'},
   h('div', {className:'fm-row'}, h(U.Chip, {defaultSelected:true}, 'Toutes'), h(U.Chip, null, 'Rapide'), h(U.Chip, null, 'Bases')),
   h('div', {className:'fm-grid'}, ['Saumon teriyaki et brocolis', 'Gratin de pates', 'Sauce teriyaki', 'Dahl de lentilles'].map(function(t, i){ return h(U.RecipeCard, {key:t, title:t, meta:['2 pers. - 35 min','4 pers. - 50 min','300 ml - 10 min','4 pers. - 40 min'][i], badges: i===0?[{label:'Composee', tone:'second'}]:i===2?[{label:'Base', tone:'second'}]:[], onActions:function(){}}); }))); }
-function Shell(w, tint, active){ return h('div', {style:{width:w, height:600, border:'1px solid var(--line)', borderRadius:18, overflow:'hidden', flex:'none'}},
-  h(U.AppShell, {tint:tint, rail:h(U.SpaceRail, {activeId:active, personal:{id:'me', name:'Matthias'}, spaces:spaces}), nav:h(U.ModuleNav, {spaceName:'Famille', subtitle:'6 membres', activeId:'recipes', items:nav}), top:h(U.TopBar, {title:'Recettes', unread:3, user:'Matthias Bouloc'}), tabbar:h(U.TabBar, {activeId:'recipes', items:nav})}, h(Content))); }
-ReactDOM.createRoot(document.getElementById('root')).render(h('div', {style:{display:'flex', gap:24, alignItems:'flex-start'}}, Shell(375, '1', 'f'), Shell(1080, '1', 'f')));
+/* Forme "enfants nommes" : chaque composant prend sa zone. */
+function Shell(w){ return h('div', {style:{width:w, height:600, border:'1px solid var(--line)', borderRadius:18, overflow:'hidden', flex:'none'}},
+  h(U.AppShell, {tint:'1'},
+    h(U.SpaceRail, {activeId:'f', personal:{id:'me', name:'Matthias'}, spaces:spaces}),
+    h(U.ModuleNav, {spaceName:'Famille', subtitle:'6 membres', activeId:'recipes', items:nav.slice(0,2)}),
+    h(U.TopBar, {title:'Recettes', unread:3, user:'Matthias Bouloc', space:{name:'Famille', tint:1}}),
+    h(U.ShellMain, null, h(Content)),
+    h(U.TabBar, {activeId:'recipes', items:nav.slice(0,2)}))); }
+ReactDOM.createRoot(document.getElementById('root')).render(h('div', {style:{display:'flex', gap:24, alignItems:'flex-start'}}, Shell(375), Shell(1080)));
 </script>
 </body>
 </html>

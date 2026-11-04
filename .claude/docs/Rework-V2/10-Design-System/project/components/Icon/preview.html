@@ -1,4 +1,4 @@
-<!-- @dsCard group="Affichage" height=120 -->
+<!-- @dsCard group="Affichage" height=200 -->
 <!doctype html>
 <html>
 <head><meta charset="utf-8"><title>Icon</title>
@@ -8,7 +8,7 @@
 <div id="root"></div>
 <script>
 var U = window.ForestUI, h = React.createElement;
-var names = ['book-open','calendar','shopping-basket','users','settings','search','bell','plus','pencil','share','git-branch','link','lock','clock','chef-hat','trash'];
+var names = ['book-open','calendar','shopping-basket','users','settings','search','bell','plus','pencil','share','git-branch','link','lock','clock','chef-hat','trash','arrow-left','wifi-off','tag','ruler','shield','chevrons-up-down'];
 ReactDOM.createRoot(document.getElementById('root')).render(h('div', {className:'fm-row', style:{gap:16}}, names.map(function(n){ return h('span', {key:n, title:n, style:{display:'inline-flex', flexDirection:'column', alignItems:'center', gap:4, width:64, fontSize:11, color:'var(--ink-muted)'}}, h('span', {style:{color:'var(--ink)'}}, h(U.Icon, {name:n, size:24})), n); })));
 </script>
 </body>

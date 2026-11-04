@@ -36,8 +36,8 @@ Artefact en ligne : voir le lien dans la section "Reprise" ci-dessous. La copie 
 
 - Derniere session : 2026-11-04. Contexte remis a zero apres cette session : tout l'etat est ici et dans les fichiers cites.
 - Fait : etude (A), design system (B4), modele de donnees (B1), permissions (B2), parcours (B3), architecture (B6), tests (B8), maquettes (B5). Decisions D01 a D131 toutes tranchees (journal). CDC en 0.4 : les decisions D87 a D131 n'y sont pas encore reportees.
-- Prochaine etape : **B5b**, traiter `16-Maquettes/ECARTS.md` dans cet ordre :
-  1. Design system : ajouts listes (icones, choix, liste d'options, QuantityInput, SpaceRail en suppression et variante mobile D130, TabBar D131, AppShell et pied de Sheet utilisables en zones nommees). Republier l'artefact Design System (copie locale `10-Design-System/project/`, publier a l'URL ci-dessous).
+- Prochaine etape : **B5b etape 2** (maquettes), traiter `16-Maquettes/ECARTS.md` dans cet ordre :
+  1. ~~Design system~~ : fait et publie le 2026-11-04 (8 composants ajoutes, voir ECARTS).
   2. Maquettes : ecrans manquants, vue Semaine mobile (D111), selecteur d'espace (D130), coherences. Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL.
   3. Reporter D87 a D131 dans le CDC (version 0.5), puis B9 : validation finale du CDC 1.0.
 - Methode : copie locale d'abord, puis publication ; commits en francais, autonomes, sans Co-Authored-By ; taches independantes en agents paralleles.

@@ -1,4 +1,4 @@
-/* @ds-bundle: {"format":4,"namespace":"ForestUI","components":[{"name":"Icon"},{"name":"Button"},{"name":"IconButton"},{"name":"Field"},{"name":"Switch"},{"name":"Stepper"},{"name":"SegmentedControl"},{"name":"Badge"},{"name":"Chip"},{"name":"Avatar"},{"name":"EmptyState"},{"name":"Sheet"},{"name":"ActionMenu"},{"name":"Toast"},{"name":"CommandPalette"},{"name":"SpaceRail"},{"name":"ModuleNav"},{"name":"TabBar"},{"name":"TopBar"},{"name":"AppShell"},{"name":"RecipeCard"},{"name":"IngredientRow"},{"name":"RecipeBlock"},{"name":"MealSlot"},{"name":"PullToRefresh"}]} */
+/* @ds-bundle: {"format":4,"namespace":"ForestUI","components":[{"name":"Icon"},{"name":"Button"},{"name":"IconButton"},{"name":"Field"},{"name":"Switch"},{"name":"Stepper"},{"name":"SegmentedControl"},{"name":"Badge"},{"name":"Chip"},{"name":"Avatar"},{"name":"EmptyState"},{"name":"Sheet"},{"name":"ActionMenu"},{"name":"Toast"},{"name":"CommandPalette"},{"name":"SpaceRail"},{"name":"ModuleNav"},{"name":"TabBar"},{"name":"TopBar"},{"name":"AppShell"},{"name":"RecipeCard"},{"name":"IngredientRow"},{"name":"RecipeBlock"},{"name":"MealSlot"},{"name":"PullToRefresh"},{"name":"RadioGroup"},{"name":"TintPicker"},{"name":"OptionList"},{"name":"QuantityInput"},{"name":"SpaceSwitcher"},{"name":"SheetFooter"},{"name":"ShellMain"},{"name":"Skeleton"}]} */
 (function () {
   "use strict";
   var R = window.React;
@@ -92,6 +92,29 @@
       "M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z",
       "M19 17l.8 2.2L22 20l-2.2.8L19 23l-.8-2.2L16 20l2.2-.8z",
     ],
+    "arrow-left": ["M19 12H5", "M12 19l-7-7 7-7"],
+    "wifi-off": [
+      "M2 2l20 20",
+      "M8.5 16.5a5 5 0 0 1 7 0",
+      "M2 8.8a15 15 0 0 1 4.2-2.7",
+      "M10.7 5.1A15 15 0 0 1 22 8.8",
+      "M5 12.9a10 10 0 0 1 5.2-2.8",
+      "M16.8 11.3a10 10 0 0 1 2.2 1.6",
+      "M12 20h.01",
+    ],
+    tag: [
+      "M12.6 2.6A2 2 0 0 0 11.2 2H4a2 2 0 0 0-2 2v7.2a2 2 0 0 0 .6 1.4l8.7 8.7a2.4 2.4 0 0 0 3.4 0l6.6-6.6a2.4 2.4 0 0 0 0-3.4z",
+      "M7.5 7.5h.01",
+    ],
+    ruler: [
+      "M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.4 2.4 0 0 1 0-3.4l2.6-2.6a2.4 2.4 0 0 1 3.4 0z",
+      "M14.5 12.5l2-2",
+      "M11.5 9.5l2-2",
+      "M8.5 6.5l2-2",
+      "M17.5 15.5l2-2",
+    ],
+    shield: ["M20 13c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V5l8-3 8 3z"],
+    "chevrons-up-down": ["M7 15l5 5 5-5", "M7 9l5-5 5 5"],
   };
   function Icon(p) {
     var d = PATHS[p.name] || PATHS.more;
@@ -581,6 +604,34 @@
     );
   }
 
+  /* Libelle accessible d'un espace : nom, suppression programmee, nouveautes. */
+  function spaceLabel(s) {
+    return (
+      s.name +
+      (s.deleting
+        ? ", suppression dans " + s.deleting.daysLeft + " jour" + (s.deleting.daysLeft > 1 ? "s" : "")
+        : "") +
+      (s.unread ? ", nouveautes" : "")
+    );
+  }
+  function SpaceIcon(p) {
+    var s = p.space;
+    var style = s.tint
+      ? { "--tint": "var(--tint-" + s.tint + ")", "--tint-ink": "var(--on-tint-" + s.tint + ")" }
+      : undefined;
+    return h(
+      "span",
+      {
+        className: cx("fm-space", "fm-space-static", s.deleting && "fm-space-deleting"),
+        style: style,
+        "aria-hidden": "true",
+      },
+      s.image ? h("img", { src: s.image, alt: "" }) : initials(s.name),
+      s.deleting ? h("b", { className: "fm-space-count" }, "J-" + s.deleting.daysLeft) : null,
+      s.unread && !s.deleting ? h("i", { className: "fm-space-dot" }) : null
+    );
+  }
+
   function SpaceRail(p) {
     function item(s) {
       var style = s.tint
@@ -591,17 +642,22 @@
         {
           key: s.id,
           type: "button",
-          className: "fm-space",
+          className: cx("fm-space", s.deleting && "fm-space-deleting"),
           style: style,
-          title: s.name,
-          "aria-label": s.name + (s.unread ? ", nouveautes" : ""),
+          title: spaceLabel(s),
+          "aria-label": spaceLabel(s),
           "aria-current": s.id === p.activeId ? "true" : undefined,
           onClick: function () {
             if (p.onSelect) p.onSelect(s.id);
           },
         },
         s.image ? h("img", { src: s.image, alt: "" }) : initials(s.name),
-        s.unread ? h("i", { className: "fm-space-dot", "aria-hidden": "true" }) : null
+        s.deleting
+          ? h("b", { className: "fm-space-count", "aria-hidden": "true" }, "J-" + s.deleting.daysLeft)
+          : null,
+        s.unread && !s.deleting
+          ? h("i", { className: "fm-space-dot", "aria-hidden": "true" })
+          : null
       );
     }
     return h(
@@ -663,21 +719,35 @@
     );
   }
 
+  /* TabBar (D131) : les 4 premiers modules, puis "Plus" (membres, reglages, modules suivants).
+     moreActive : la page courante est dans "Plus" (ou activeId est un module au-dela du 4e). */
+  var TAB_MAX = 4;
   function TabBar(p) {
+    var shown = p.items.slice(0, TAB_MAX);
+    var overflow = p.items.slice(TAB_MAX).some(function (it) {
+      return it.id === p.activeId;
+    });
+    var more = {
+      id: "more",
+      label: "Plus",
+      icon: "more",
+      current: p.moreActive || overflow || p.activeId === "more",
+    };
     return h(
       "nav",
       { className: "fm-tabbar", "aria-label": "Navigation" },
-      p.items.map(function (it) {
+      shown.concat(p.noMore ? [] : [more]).map(function (it) {
         return h(
           "a",
           {
             key: it.id,
             href: it.href || "#" + it.id,
-            "aria-current": it.id === p.activeId ? "page" : undefined,
+            "aria-current": (it === more ? more.current : it.id === p.activeId) ? "page" : undefined,
             onClick: function (e) {
-              if (p.onSelect) {
+              var cb = it === more ? p.onMore : p.onSelect;
+              if (cb) {
                 e.preventDefault();
-                p.onSelect(it.id);
+                cb(it.id);
               }
             },
           },
@@ -689,10 +759,31 @@
   }
 
   function TopBar(p) {
+    var lead = p.space
+      ? h(
+          "button",
+          {
+            type: "button",
+            className: "fm-top-space",
+            "aria-label": "Changer d'espace, espace courant : " + spaceLabel(p.space),
+            "aria-haspopup": "dialog",
+            onClick: p.onSpace,
+          },
+          h(SpaceIcon, { space: p.space }),
+          h(
+            "span",
+            { className: "fm-top-space-text" },
+            h("b", null, p.space.name),
+            p.title ? h("small", null, p.title) : null
+          ),
+          h(Icon, { name: "chevron-down", size: 16 })
+        )
+      : h("span", { className: "fm-top-title" }, p.title);
     return h(
       "header",
-      { className: "fm-top" },
-      h("span", { className: "fm-top-title" }, p.title),
+      { className: cx("fm-top", p.space && "fm-top-has-space") },
+      p.onBack ? h(IconButton, { icon: "arrow-left", label: "Retour", onClick: p.onBack }) : null,
+      lead,
       h(
         "button",
         { type: "button", className: "fm-search", onClick: p.onSearch },
@@ -716,20 +807,33 @@
     );
   }
 
+  /* AppShell : chaque zone se place par sa classe (grid-area), qu'elle arrive en prop
+     (rail, nav, top, tabbar) ou en enfant direct. Sans prop "top" ni "rail", les enfants sont
+     poses tels quels : le contenu va dans un ShellMain. */
   function AppShell(p) {
+    var slotted = !p.rail && !p.top;
     return h(
       "div",
-      { className: "fm-shell fm-root", "data-space": p.tint || undefined },
-      h(
-        "div",
-        { className: "fm-shell-grid" },
-        p.rail,
-        p.nav,
-        p.top,
-        h("main", { className: "fm-shell-main" }, p.children),
-        p.tabbar
-      )
+      {
+        className: cx("fm-shell", "fm-root", p.className),
+        "data-space": p.tint ? String(p.tint) : undefined,
+        style: p.style,
+      },
+      slotted
+        ? h("div", { className: "fm-shell-grid" }, p.children)
+        : h(
+            "div",
+            { className: "fm-shell-grid" },
+            p.rail,
+            p.nav,
+            p.top,
+            h("main", { className: "fm-shell-main" }, p.children),
+            p.tabbar
+          )
     );
+  }
+  function ShellMain(p) {
+    return h("main", { className: cx("fm-shell-main", p.className), style: p.style }, p.children);
   }
 
   function RecipeCard(p) {
@@ -995,6 +1099,383 @@
     );
   }
 
+  /* RadioGroup : choix d'une seule option parmi quelques-unes (2 a 6), toutes visibles. */
+  var radioSeq = 0;
+  function RadioGroup(p) {
+    var nameRef = useRef("fm-radio-" + ++radioSeq);
+    var st = useState(p.defaultValue),
+      v = p.value !== undefined ? p.value : st[0];
+    return h(
+      "div",
+      { className: "fm-radios", role: "radiogroup", "aria-label": p.label },
+      p.options.map(function (o) {
+        var on = o.value === v;
+        return h(
+          "label",
+          { key: o.value, className: cx("fm-radio", on && "fm-radio-on", o.disabled && "fm-radio-off") },
+          h("input", {
+            type: "radio",
+            name: nameRef.current,
+            value: o.value,
+            checked: on,
+            disabled: o.disabled,
+            onChange: function () {
+              if (p.value === undefined) st[1](o.value);
+              if (p.onChange) p.onChange(o.value);
+            },
+          }),
+          h("span", { className: "fm-radio-dot", "aria-hidden": "true" }),
+          h(
+            "span",
+            { className: "fm-radio-text" },
+            h("b", null, o.label),
+            o.hint ? h("small", null, o.hint) : null
+          )
+        );
+      })
+    );
+  }
+
+  /* TintPicker : nuancier des 5 teintes d'espace de l'ambiance courante. */
+  var TINT_NAMES = ["Teinte 1", "Teinte 2", "Teinte 3", "Teinte 4", "Teinte 5"];
+  function TintPicker(p) {
+    var st = useState(p.defaultValue || 1),
+      v = p.value !== undefined ? p.value : st[0];
+    return h(
+      "div",
+      { className: "fm-tints", role: "radiogroup", "aria-label": p.label || "Teinte de l'espace" },
+      [1, 2, 3, 4, 5].map(function (n) {
+        var on = n === Number(v);
+        return h(
+          "button",
+          {
+            key: n,
+            type: "button",
+            role: "radio",
+            "aria-checked": String(on),
+            "aria-label": (p.names && p.names[n - 1]) || TINT_NAMES[n - 1],
+            title: (p.names && p.names[n - 1]) || TINT_NAMES[n - 1],
+            className: "fm-tint",
+            style: { background: "var(--tint-" + n + ")", color: "var(--on-tint-" + n + ")" },
+            onClick: function () {
+              if (p.value === undefined) st[1](n);
+              if (p.onChange) p.onChange(n);
+            },
+          },
+          on ? h(Icon, { name: "check" }) : null
+        );
+      })
+    );
+  }
+
+  /* OptionList : liste de lignes selectionnables (profil, export, espace, resultat de recherche).
+     Une ligne = visuel (avatar, icone ou icone d'espace) + libelle + precision + coche.
+     multiple : plusieurs choix (coches) ; sinon un seul (option courante). */
+  function OptionList(p) {
+    var st = useState(p.defaultValue !== undefined ? p.defaultValue : p.multiple ? [] : null),
+      v = p.value !== undefined ? p.value : st[0];
+    function isOn(val) {
+      return p.multiple ? (v || []).indexOf(val) >= 0 : v === val;
+    }
+    function pick(val) {
+      var n = p.multiple
+        ? isOn(val)
+          ? v.filter(function (x) {
+              return x !== val;
+            })
+          : (v || []).concat([val])
+        : val;
+      if (p.value === undefined) st[1](n);
+      if (p.onChange) p.onChange(n);
+    }
+    return h(
+      "div",
+      {
+        className: "fm-options",
+        role: "listbox",
+        "aria-label": p.label,
+        "aria-multiselectable": p.multiple ? "true" : undefined,
+      },
+      p.options.map(function (o) {
+        var on = isOn(o.value);
+        var lead = o.space
+          ? h(SpaceIcon, { space: o.space })
+          : o.avatar
+            ? h(Avatar, { name: o.avatar, tint: o.tint, size: 36 })
+            : o.icon
+              ? h("span", { className: "fm-option-icon" }, h(Icon, { name: o.icon }))
+              : null;
+        return h(
+          "button",
+          {
+            key: o.value,
+            type: "button",
+            role: "option",
+            "aria-selected": String(on),
+            disabled: o.disabled,
+            className: cx("fm-option", on && "fm-option-on"),
+            onClick: function () {
+              pick(o.value);
+            },
+          },
+          lead,
+          h(
+            "span",
+            { className: "fm-option-text" },
+            h("b", null, o.label),
+            o.hint ? h("small", null, o.hint) : null
+          ),
+          o.badge ? h(Badge, { tone: o.badgeTone }, o.badge) : null,
+          p.selectable === false
+            ? h(Icon, { name: "chevron-right", className: "fm-option-go" })
+            : h(
+                "span",
+                { className: cx("fm-option-check", p.multiple && "fm-option-box"), "aria-hidden": "true" },
+                on ? h(Icon, { name: "check", size: 16 }) : null
+              )
+        );
+      })
+    );
+  }
+
+  /* QuantityInput (D108) : quantite + unite + ingredient, avec autocompletion de l'ingredient.
+     Saisie a la francaise (virgule). Un ingredient inconnu est propose en "Ajouter ..." (file admin). */
+  function QuantityInput(p) {
+    var q = useState(p.defaultQuantity != null ? String(p.defaultQuantity).replace(".", ",") : ""),
+      u = useState(p.defaultUnit || ""),
+      ing = useState(p.defaultIngredient || ""),
+      open = useState(!!p.defaultOpen),
+      sel = useState(0);
+    var term = ing[0].trim().toLowerCase();
+    var list = (p.suggestions || [])
+      .filter(function (s) {
+        return term && s.toLowerCase().indexOf(term) >= 0;
+      })
+      .slice(0, 6);
+    var exact = list.some(function (s) {
+      return s.toLowerCase() === term;
+    });
+    var rows = list.map(function (s) {
+      return { value: s, label: s };
+    });
+    if (term && !exact) rows.push({ value: ing[0].trim(), label: 'Ajouter "' + ing[0].trim() + '"', add: true });
+    function emit(patch) {
+      if (p.onChange)
+        p.onChange(
+          Object.assign({ quantity: q[0], unit: u[0], ingredient: ing[0] }, patch)
+        );
+    }
+    function choose(r) {
+      ing[1](r.value);
+      open[1](false);
+      emit({ ingredient: r.value, isNew: !!r.add });
+    }
+    return h(
+      "div",
+      { className: cx("fm-qty", p.error && "fm-field-error"), role: "group", "aria-label": p.label || "Ingredient" },
+      h(
+        "div",
+        { className: "fm-qty-row" },
+        h("input", {
+          className: "fm-input fm-qty-num",
+          inputMode: "decimal",
+          "aria-label": "Quantite",
+          placeholder: "Qte",
+          value: q[0],
+          onChange: function (e) {
+            var val = e.target.value.replace(".", ",");
+            q[1](val);
+            emit({ quantity: val });
+          },
+        }),
+        h(
+          "select",
+          {
+            className: "fm-input fm-qty-unit",
+            "aria-label": "Unite",
+            value: u[0],
+            onChange: function (e) {
+              u[1](e.target.value);
+              emit({ unit: e.target.value });
+            },
+          },
+          h("option", { value: "" }, "-"),
+          (p.units || []).map(function (x) {
+            return h("option", { key: x, value: x }, x);
+          })
+        ),
+        h(
+          "div",
+          { className: "fm-qty-ing" },
+          h("input", {
+            className: "fm-input",
+            role: "combobox",
+            "aria-label": "Ingredient",
+            "aria-expanded": String(open[0] && rows.length > 0),
+            "aria-autocomplete": "list",
+            placeholder: p.placeholder || "Ingredient",
+            value: ing[0],
+            onChange: function (e) {
+              ing[1](e.target.value);
+              open[1](true);
+              sel[1](0);
+              emit({ ingredient: e.target.value });
+            },
+            onFocus: function () {
+              open[1](true);
+            },
+            onBlur: function () {
+              setTimeout(function () {
+                open[1](false);
+              }, 120);
+            },
+            onKeyDown: function (e) {
+              if (!rows.length) return;
+              if (e.key === "ArrowDown") {
+                e.preventDefault();
+                sel[1](Math.min(rows.length - 1, sel[0] + 1));
+              } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                sel[1](Math.max(0, sel[0] - 1));
+              } else if (e.key === "Enter") {
+                e.preventDefault();
+                choose(rows[sel[0]]);
+              } else if (e.key === "Escape") open[1](false);
+            },
+          }),
+          open[0] && rows.length
+            ? h(
+                "ul",
+                { className: "fm-qty-list", role: "listbox", "aria-label": "Ingredients" },
+                rows.map(function (r, i) {
+                  return h(
+                    "li",
+                    {
+                      key: r.label,
+                      role: "option",
+                      "aria-selected": String(i === sel[0]),
+                      className: r.add ? "fm-qty-add" : undefined,
+                      onMouseDown: function (e) {
+                        e.preventDefault();
+                        choose(r);
+                      },
+                    },
+                    r.add ? h(Icon, { name: "plus", size: 16 }) : null,
+                    r.label
+                  );
+                })
+              )
+            : null
+        ),
+        p.onRemove
+          ? h(IconButton, { icon: "x", label: "Retirer cet ingredient", onClick: p.onRemove })
+          : null
+      ),
+      p.error || p.hint ? h("span", { className: "fm-hint" }, p.error || p.hint) : null
+    );
+  }
+
+  /* SpaceSwitcher (D130) : liste des espaces en feuille, ouverte par le bouton d'espace de la
+     TopBar sur mobile. Espace perso, separateur, groupes, puis "Creer ou rejoindre un espace". */
+  function SpaceSwitcher(p) {
+    function row(s) {
+      var on = s.id === p.activeId;
+      return h(
+        "button",
+        {
+          key: s.id,
+          type: "button",
+          className: cx("fm-option", on && "fm-option-on"),
+          "aria-current": on ? "true" : undefined,
+          "aria-label": spaceLabel(s),
+          onClick: function () {
+            if (p.onSelect) p.onSelect(s.id);
+          },
+        },
+        h(SpaceIcon, { space: s }),
+        h(
+          "span",
+          { className: "fm-option-text" },
+          h("b", null, s.name),
+          s.deleting
+            ? h("small", { className: "fm-danger-text" }, "Suppression dans " + s.deleting.daysLeft + " j")
+            : s.hint
+              ? h("small", null, s.hint)
+              : null
+        ),
+        s.unread && !s.deleting ? h(Badge, { tone: "accent" }, "Nouveau") : null,
+        on ? h(Icon, { name: "check", className: "fm-option-go" }) : null
+      );
+    }
+    return h(
+      Sheet,
+      { open: p.open, title: "Espaces", onClose: p.onClose, contained: p.contained },
+      h(
+        "div",
+        { className: "fm-options", role: "list" },
+        p.personal ? row(p.personal) : null,
+        p.personal ? h("hr", { className: "fm-options-sep" }) : null,
+        p.spaces.map(row),
+        h(
+          "button",
+          { type: "button", className: "fm-option fm-option-add", onClick: p.onAdd },
+          h("span", { className: "fm-space fm-space-static fm-space-add" }, h(Icon, { name: "plus" })),
+          h("span", { className: "fm-option-text" }, h("b", null, "Creer ou rejoindre un espace"))
+        )
+      )
+    );
+  }
+
+  /* SheetFooter : pied de feuille passe en enfant (zone nommee), colle en bas du corps. */
+  function SheetFooter(p) {
+    return h("div", { className: "fm-sheet-foot fm-sheet-foot-slot" }, p.children);
+  }
+
+  /* Skeleton : etat de chargement. Les formes reprennent celles du contenu attendu. */
+  function Skeleton(p) {
+    var kind = p.kind || "lines";
+    var n = p.count || (kind === "lines" ? 3 : 4);
+    var items = [];
+    for (var i = 0; i < n; i++) {
+      if (kind === "card")
+        items.push(
+          h(
+            "div",
+            { key: i, className: "fm-skel-card" },
+            h("i", { className: "fm-skel fm-skel-img" }),
+            h("i", { className: "fm-skel fm-skel-line", style: { width: "70%" } }),
+            h("i", { className: "fm-skel fm-skel-line fm-skel-sm", style: { width: "40%" } })
+          )
+        );
+      else if (kind === "row")
+        items.push(
+          h(
+            "div",
+            { key: i, className: "fm-skel-row" },
+            h("i", { className: "fm-skel fm-skel-dot" }),
+            h("i", { className: "fm-skel fm-skel-line", style: { width: 40 + ((i * 17) % 40) + "%" } })
+          )
+        );
+      else
+        items.push(
+          h("i", {
+            key: i,
+            className: "fm-skel fm-skel-line",
+            style: { width: i === n - 1 ? "60%" : "100%" },
+          })
+        );
+    }
+    return h(
+      "div",
+      {
+        className: cx("fm-skeleton", kind === "card" ? "fm-grid" : "fm-stack"),
+        role: "status",
+        "aria-label": p.label || "Chargement",
+      },
+      items
+    );
+  }
+
   var api = {
     Icon: Icon,
     Button: Button,
@@ -1021,6 +1502,14 @@
     RecipeBlock: RecipeBlock,
     MealSlot: MealSlot,
     PullToRefresh: PullToRefresh,
+    RadioGroup: RadioGroup,
+    TintPicker: TintPicker,
+    OptionList: OptionList,
+    QuantityInput: QuantityInput,
+    SpaceSwitcher: SpaceSwitcher,
+    SheetFooter: SheetFooter,
+    ShellMain: ShellMain,
+    Skeleton: Skeleton,
     useLongPress: useLongPress,
   };
   window.ForestUI = Object.assign(window.ForestUI || {}, api);

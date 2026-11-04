@@ -11,9 +11,9 @@ var U = window.ForestUI, h = React.createElement;
 function Demo(){ var s = React.useState(true);
   return h('div', {style:{position:'relative', height:520, maxWidth:390, border:'1px solid var(--line)', borderRadius:22, overflow:'hidden', background:'var(--bg)'}},
     h('div', {className:'fm-pad fm-stack'}, h('b', null, 'Mardi soir'), h(U.Button, {onClick:function(){s[1](true);}}, 'Ouvrir la feuille')),
-    h(U.Sheet, {open:s[0], contained:true, title:'Mardi soir', onClose:function(){s[1](false);},
-      footer:[h(U.Button, {key:'a'}, 'Vider le repas'), h(U.Button, {key:'b', variant:'primary'}, 'Enregistrer')]},
-      h('div', {className:'fm-stack'}, h(U.Field, {label:'Repas', defaultValue:'Saumon teriyaki et brocolis'}), h('div', {className:'fm-row'}, h('span', {className:'fm-muted'}, 'Portions'), h(U.Stepper, {label:'Portions', defaultValue:2, unit:'pers.'})), h(U.Switch, {label:'Verrouiller ce repas pour la generation'}))));
+    h(U.Sheet, {open:s[0], contained:true, title:'Mardi soir', onClose:function(){s[1](false);}},
+      h('div', {className:'fm-stack'}, h(U.Field, {label:'Repas', defaultValue:'Saumon teriyaki et brocolis'}), h('div', {className:'fm-row'}, h('span', {className:'fm-muted'}, 'Portions'), h(U.Stepper, {label:'Portions', defaultValue:2, unit:'pers.'})), h(U.Switch, {label:'Verrouiller ce repas pour la generation'})),
+      h(U.SheetFooter, null, h(U.Button, null, 'Vider le repas'), h(U.Button, {variant:'primary'}, 'Enregistrer'))));
 }
 ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
 </script>

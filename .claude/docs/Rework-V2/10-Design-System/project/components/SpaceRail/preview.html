@@ -1,4 +1,4 @@
-<!-- @dsCard group="Navigation" height=260 width=1260 -->
+<!-- @dsCard group="Navigation" height=600 width=1260 -->
 <!doctype html>
 <html>
 <head><meta charset="utf-8"><title>SpaceRail</title>
@@ -9,11 +9,11 @@
 <script>
 var U = window.ForestUI, h = React.createElement;
 function Demo(){ var s = React.useState('f');
-  var rail = function(){ return h(U.SpaceRail, {activeId:s[0], onSelect:s[1], personal:{id:'me', name:'Matthias'}, spaces:[{id:'f', name:'Famille', tint:1, unread:true}, {id:'c', name:'Colloc', tint:2}, {id:'t', name:'TOM', tint:3}, {id:'a', name:'Amis', tint:4}]}); };
+  var rail = function(){ return h(U.SpaceRail, {activeId:s[0], onSelect:s[1], personal:{id:'me', name:'Matthias'}, spaces:[{id:'f', name:'Famille', tint:1, unread:true}, {id:'c', name:'Colloc', tint:2}, {id:'t', name:'TOM', tint:3}, {id:'a', name:'Amis', tint:4}, {id:'v', name:'Vacances 2025', tint:5, deleting:{daysLeft:12}}]}); };
   return h('div', {style:{display:'flex', gap:32, alignItems:'flex-start', flexWrap:'wrap'}},
-    h('div', {className:'fm-stack'}, h('p', {className:'lbl'}, 'Mobile : bande en haut'), h('div', {style:{containerType:'inline-size', width:360, borderRadius:14, overflow:'hidden'}}, rail())),
+    h('div', {className:'fm-stack'}, h('p', {className:'lbl'}, 'Hors AppShell : bande (remplacee par SpaceSwitcher sur mobile)'), h('div', {style:{containerType:'inline-size', width:360, borderRadius:14, overflow:'hidden'}}, rail())),
     h('div', {className:'fm-stack'}, h('p', {className:'lbl'}, '768px et plus : rail a gauche'),
-      h('div', {className:'fm-shell', style:{width:820, height:'auto'}}, h('div', {style:{display:'flex', height:200, width:72, borderRadius:14, overflow:'hidden'}}, rail()))));
+      h('div', {className:'fm-shell', style:{width:820, height:'auto'}}, h('div', {style:{display:'flex', height:420, width:72, borderRadius:14, overflow:'hidden'}}, rail()))));
 }
 ReactDOM.createRoot(document.getElementById('root')).render(h(Demo));
 </script>

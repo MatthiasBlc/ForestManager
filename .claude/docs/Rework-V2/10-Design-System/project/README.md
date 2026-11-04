@@ -3,7 +3,7 @@ Forest Manager rassemble des proches (famille, amis, colocs) dans des espaces pr
 ## Principes
 
 - **Le contenu d'abord.** Une recette, un repas, une liste : la navigation se fait discrete autour.
-- **On sait toujours ou l'on est.** L'espace courant est visible dans le rail et teinte l'interface ; le module courant est actif dans la barre du module ou la barre d'onglets.
+- **On sait toujours ou l'on est.** L'espace courant est visible dans le rail (bureau) ou le bouton d'espace de l'en-tete (mobile) et teinte l'interface ; le module courant est actif dans la barre du module ou la barre d'onglets.
 - **Un geste, un resultat visible.** Chaque action confirme ce qui s'est passe (Toast) ; rien ne se modifie en silence.
 - **Le telephone d'abord.** Chaque ecran se concoit a 375px, puis s'enrichit a 768px et 1024px.
 
@@ -75,11 +75,13 @@ Forest Manager rassemble des proches (famille, amis, colocs) dans des espaces pr
 ## Composants
 
 - **Actions** : Button, IconButton.
-- **Formulaires** : Field, Switch, Stepper, SegmentedControl.
-- **Affichage** : Badge, Chip, Avatar, Icon, EmptyState.
-- **Superpositions** : Sheet, ActionMenu, Toast, CommandPalette.
-- **Navigation** : SpaceRail, ModuleNav, TabBar, TopBar, AppShell.
-- **Recettes** : RecipeCard, IngredientRow, RecipeBlock.
+- **Formulaires** : Field, Switch, Stepper, SegmentedControl, RadioGroup, TintPicker, OptionList.
+- **Affichage** : Badge, Chip, Avatar, Icon, EmptyState, Skeleton (chargement).
+- **Superpositions** : Sheet (et SheetFooter), ActionMenu, Toast, CommandPalette.
+- **Navigation** : SpaceRail, SpaceSwitcher (mobile, D130), ModuleNav, TabBar (4 modules puis "Plus", D131), TopBar, AppShell (et ShellMain).
+- **Recettes** : RecipeCard, IngredientRow, RecipeBlock, QuantityInput.
 - **Planning** : MealSlot, PullToRefresh.
+
+Zones nommees : AppShell accepte ses zones en enfants directs (SpaceRail, ModuleNav, TopBar, ShellMain, TabBar) et Sheet son pied en enfant (SheetFooter), pour que maquettes et application utilisent les memes composants tels quels.
 
 Dans l'application, les primitives viennent de shadcn/ui (Radix) avec ces tokens ; les composants metier (SpaceRail, RecipeCard, RecipeBlock, MealSlot...) sont propres a Forest Manager.

@@ -1252,3 +1252,427 @@ textarea.fm-input {
     transform: rotate(360deg);
   }
 }
+
+/* ======================================================================
+   Ajouts B5b (2026-11-04) : icones, choix, liste d'options, QuantityInput,
+   selecteur d'espace mobile (D130), TabBar "Plus" (D131), rail en suppression
+   (D66), zones nommees de l'AppShell et du pied de Sheet, Skeleton.
+   ====================================================================== */
+
+/* ---------- RadioGroup ---------- */
+.fm-radios {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.fm-radio {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--size-touch);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  cursor: pointer;
+  position: relative;
+}
+.fm-radio input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.fm-radio-dot {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--line-strong);
+  display: grid;
+  place-items: center;
+}
+.fm-radio-on {
+  border-color: var(--accent-text);
+  background: var(--accent-soft);
+}
+.fm-radio-on .fm-radio-dot {
+  border-color: var(--accent);
+}
+.fm-radio-on .fm-radio-dot::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.fm-radio input:focus-visible + .fm-radio-dot {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.fm-radio-off {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.fm-radio-text,
+.fm-option-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.fm-radio-text b,
+.fm-option-text b {
+  font: 600 15px/22px var(--font-sans);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fm-radio-text small,
+.fm-option-text small {
+  font: 400 13px/18px var(--font-sans);
+  color: var(--ink-muted);
+}
+
+/* ---------- TintPicker ---------- */
+.fm-tints {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.fm-tint {
+  width: var(--size-touch);
+  height: var(--size-touch);
+  border-radius: var(--radius-full);
+  border: 0;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.fm-tint[aria-checked="true"] {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* ---------- OptionList (et liste du SpaceSwitcher) ---------- */
+.fm-options {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.fm-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 56px;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+.fm-option:hover {
+  background: var(--surface);
+}
+.fm-option-on,
+.fm-option-on:hover {
+  background: var(--accent-soft);
+}
+.fm-option-on .fm-option-text b {
+  color: var(--accent-text);
+}
+.fm-option[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.fm-option-icon {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
+  background: var(--surface);
+  color: var(--ink-muted);
+}
+.fm-option-check {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--on-accent);
+}
+.fm-option-box {
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--line-strong);
+}
+.fm-option-on .fm-option-check {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.fm-option-go {
+  color: var(--ink-muted);
+}
+.fm-option-on .fm-option-go {
+  color: var(--accent-text);
+}
+.fm-options-sep {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: var(--space-1) var(--space-3);
+}
+.fm-option-add .fm-option-text b {
+  color: var(--ink-muted);
+}
+.fm-danger-text {
+  color: var(--danger-text) !important;
+}
+
+/* ---------- QuantityInput ---------- */
+.fm-qty {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.fm-qty-row {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+.fm-qty-num {
+  flex: 0 0 64px;
+  font-family: var(--font-mono);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.fm-qty-unit {
+  flex: 0 0 96px;
+  appearance: none;
+  padding-right: var(--space-2);
+}
+.fm-qty-ing {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+}
+.fm-qty-list {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  list-style: none;
+  margin: 0;
+  padding: var(--space-1);
+  background: var(--surface-raised);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+.fm-qty-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--size-touch);
+  padding: 0 var(--space-3);
+  border-radius: 8px;
+  cursor: pointer;
+  font: 500 15px/22px var(--font-sans);
+}
+.fm-qty-list li[aria-selected="true"] {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+.fm-qty-add {
+  color: var(--ink-muted);
+  border-top: 1px solid var(--line);
+}
+.fm-field-error .fm-qty-row .fm-input {
+  border-color: var(--danger);
+}
+
+/* ---------- SpaceRail : espace en suppression (D66) ---------- */
+.fm-space-static {
+  cursor: default;
+}
+/* Grise par les tokens (pas de filtre, pour garder le compte a rebours lisible en couleur) */
+.fm-space-deleting {
+  background: var(--surface) !important;
+  color: var(--ink-muted) !important;
+  box-shadow: inset 0 0 0 2px var(--line-strong);
+}
+.fm-space-deleting img {
+  opacity: 0.45;
+}
+.fm-option .fm-space:not([style]):not(.fm-space-add) {
+  background: var(--surface);
+}
+.fm-space-count {
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  transform: translateX(-50%);
+  padding: 0 4px;
+  border-radius: var(--radius-sm);
+  background: var(--danger);
+  color: var(--on-danger);
+  font: 700 10px/14px var(--font-sans);
+  white-space: nowrap;
+}
+
+/* ---------- TopBar : selecteur d'espace mobile (D130) ---------- */
+.fm-top-space {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--size-touch);
+  padding: 0 var(--space-2) 0 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.fm-top-space .fm-space {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+}
+.fm-top-space-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.fm-top-space-text b {
+  font: 700 17px/22px var(--font-display);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fm-top-space-text small {
+  font: 500 13px/16px var(--font-sans);
+  color: var(--ink-muted);
+}
+.fm-top-space > .fm-icon {
+  color: var(--ink-muted);
+}
+
+/* ---------- AppShell : zones nommees (enfants directs) ---------- */
+.fm-shell-grid {
+  grid-template-areas: "rail" "top" "main" "tabbar";
+}
+.fm-shell-grid > .fm-rail {
+  grid-area: rail;
+}
+.fm-shell-grid > .fm-top {
+  grid-area: top;
+}
+.fm-shell-grid > .fm-shell-main {
+  grid-area: main;
+}
+.fm-shell-grid > .fm-tabbar {
+  grid-area: tabbar;
+}
+/* D130 : sur mobile, le rail laisse la place au selecteur d'en-tete */
+.fm-shell-grid:has(> .fm-top-has-space) > .fm-rail {
+  display: none;
+}
+@container (min-width: 768px) {
+  .fm-shell-grid {
+    grid-template-areas: "rail top" "rail main";
+  }
+  .fm-shell-grid > .fm-rail,
+  .fm-shell-grid:has(> .fm-top-has-space) > .fm-rail {
+    display: flex;
+    grid-area: rail;
+  }
+  .fm-shell-grid > .fm-top {
+    grid-area: top;
+  }
+  .fm-shell-grid > .fm-shell-main {
+    grid-area: main;
+  }
+  .fm-top-space {
+    display: none;
+  }
+}
+@container (min-width: 1024px) {
+  .fm-shell-grid {
+    grid-template-areas: "rail nav top" "rail nav main";
+  }
+  .fm-shell-grid > .fm-nav {
+    grid-area: nav;
+  }
+}
+
+/* ---------- Sheet : pied passe en enfant (SheetFooter) ---------- */
+.fm-sheet-foot-slot {
+  position: sticky;
+  bottom: calc(-1 * var(--space-5));
+  margin: var(--space-4) calc(-1 * var(--space-5)) calc(-1 * var(--space-5));
+  background: var(--surface-raised);
+}
+
+/* ---------- Skeleton (chargement) ---------- */
+.fm-skel {
+  display: block;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(90deg, var(--surface) 0%, var(--line) 50%, var(--surface) 100%);
+  background-size: 200% 100%;
+  animation: fm-shimmer 1.4s ease-in-out infinite;
+}
+.fm-skel-line {
+  height: 14px;
+}
+.fm-skel-sm {
+  height: 10px;
+}
+.fm-skel-img {
+  aspect-ratio: 4 / 3;
+  border-radius: 0;
+}
+.fm-skel-dot {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+}
+.fm-skel-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--surface-raised);
+}
+.fm-skel-card .fm-skel-line {
+  margin: 0 var(--space-3);
+}
+.fm-skel-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 56px;
+}
+@keyframes fm-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}

@@ -26,7 +26,13 @@ export type IconName =
   | "refresh"
   | "chef-hat"
   | "home"
-  | "sparkles";
+  | "sparkles"
+  | "arrow-left"
+  | "wifi-off"
+  | "tag"
+  | "ruler"
+  | "shield"
+  | "chevrons-up-down";
 export interface IconProps {
   name: IconName;
   size?: number;
@@ -148,6 +154,10 @@ export interface Space {
   tint?: 1 | 2 | 3 | 4 | 5;
   image?: string;
   unread?: boolean;
+  /** Espace en suppression (D66) : icone grisee et compte a rebours "J-n". */
+  deleting?: { daysLeft: number };
+  /** Precision affichee dans le SpaceSwitcher (ex. "6 membres"). */
+  hint?: string;
 }
 export interface SpaceRailProps {
   spaces: Space[];
@@ -172,23 +182,39 @@ export interface ModuleNavProps {
   onSelect?: (id: string) => void;
 }
 export interface TabBarProps {
+  /** Modules de l'espace dans l'ordre de l'OWNER ; seuls les 4 premiers s'affichent (D131). */
   items: NavItem[];
   activeId?: string;
   onSelect?: (id: string) => void;
+  /** Ouvre la feuille "Plus" (membres, reglages, modules au-dela du 4e). */
+  onMore?: () => void;
+  /** La page courante est dans "Plus". */
+  moreActive?: boolean;
+  noMore?: boolean;
 }
 export interface TopBarProps {
   title: string;
+  /** Mobile (D130) : espace courant en bouton d'en-tete, qui ouvre le SpaceSwitcher. */
+  space?: Space;
+  onSpace?: () => void;
+  /** Affiche une fleche de retour a gauche. */
+  onBack?: () => void;
   unread?: number;
   user?: string;
   onSearch?: () => void;
   onNotifications?: () => void;
 }
 export interface AppShellProps {
-  tint?: "1" | "2" | "3" | "4" | "5";
-  rail: ReactNode;
+  tint?: "1" | "2" | "3" | "4" | "5" | 1 | 2 | 3 | 4 | 5;
+  /** Zones en props, ou bien omises : les enfants directs (SpaceRail, ModuleNav, TopBar,
+   *  ShellMain, TabBar) se placent alors seuls dans la grille. */
+  rail?: ReactNode;
   nav?: ReactNode;
-  top: ReactNode;
+  top?: ReactNode;
   tabbar?: ReactNode;
+  children: ReactNode;
+}
+export interface ShellMainProps {
   children: ReactNode;
 }
 export interface RecipeCardProps {
@@ -231,4 +257,74 @@ export interface PullToRefreshProps {
   onRefresh: () => Promise<unknown> | void;
   height?: number;
   children: ReactNode;
+}
+export interface SheetFooterProps {
+  /** Boutons du pied de feuille, passes en enfant de Sheet (equivalent de la prop footer). */
+  children: ReactNode;
+}
+export interface RadioGroupProps {
+  label: string;
+  options: { value: string; label: string; hint?: string; disabled?: boolean }[];
+  value?: string;
+  defaultValue?: string;
+  onChange?: (v: string) => void;
+}
+export interface TintPickerProps {
+  label?: string;
+  value?: 1 | 2 | 3 | 4 | 5;
+  defaultValue?: 1 | 2 | 3 | 4 | 5;
+  /** Noms des teintes de l'ambiance (ex. Braise, Nuit, Tison, Flamme, Cendre). */
+  names?: string[];
+  onChange?: (n: number) => void;
+}
+export interface OptionItem {
+  value: string;
+  label: string;
+  hint?: string;
+  icon?: IconName;
+  avatar?: string;
+  tint?: 1 | 2 | 3 | 4 | 5;
+  space?: Space;
+  badge?: string;
+  badgeTone?: Tone;
+  disabled?: boolean;
+}
+export interface OptionListProps {
+  label: string;
+  options: OptionItem[];
+  multiple?: boolean;
+  /** false : lignes de navigation (chevron), sans etat selectionne. */
+  selectable?: boolean;
+  value?: string | string[] | null;
+  defaultValue?: string | string[] | null;
+  onChange?: (v: string | string[]) => void;
+}
+export interface QuantityInputProps {
+  label?: string;
+  units: string[];
+  suggestions: string[];
+  defaultQuantity?: number | string;
+  defaultUnit?: string;
+  defaultIngredient?: string;
+  defaultOpen?: boolean;
+  placeholder?: string;
+  hint?: string;
+  error?: string;
+  onChange?: (v: { quantity: string; unit: string; ingredient: string; isNew?: boolean }) => void;
+  onRemove?: () => void;
+}
+export interface SpaceSwitcherProps {
+  open: boolean;
+  spaces: Space[];
+  personal?: Space;
+  activeId?: string;
+  contained?: boolean;
+  onSelect?: (id: string) => void;
+  onAdd?: () => void;
+  onClose: () => void;
+}
+export interface SkeletonProps {
+  kind?: "lines" | "row" | "card";
+  count?: number;
+  label?: string;
 }

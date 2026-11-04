@@ -1,0 +1,14 @@
+<!-- @dsCard group="Formulaires" height=230 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>RadioGroup</title>
+<style>body{margin:0;padding:16px;background:var(--bg);color:var(--ink);font-family:var(--font-sans)} .lbl{font:600 12px/16px var(--font-sans);letter-spacing:.04em;text-transform:uppercase;color:var(--ink-muted);margin:0 0 8px}</style>
+</head>
+<body class="fm-root">
+<div id="root"></div>
+<script>
+var U = window.ForestUI, h = React.createElement;
+ReactDOM.createRoot(document.getElementById('root')).render(h('div', {style:{maxWidth:390}}, h(U.RadioGroup, {label:"Qui peut inviter", defaultValue:'mods', options:[{value:'owner', label:'Le proprietaire seulement'}, {value:'mods', label:'Proprietaire et moderateurs', hint:'Recommande pour les grands espaces'}, {value:'all', label:'Tous les membres'}]})));
+</script>
+</body>
+</html>
