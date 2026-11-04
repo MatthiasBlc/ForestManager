@@ -1,0 +1,224 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-03T14:30:00Z"
+  },
+  "title": "Maquettes V2 - Administration",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 1040,
+      "title": "A02 - Tableau de bord",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "A02m-Tableau-de-bord-mobile.dc.html": {
+      "x": 1520,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "A02m - Tableau de bord (mobile)"
+    },
+    "AdminNav.dc.html": {
+      "x": 1990,
+      "y": 0,
+      "w": 248,
+      "h": 1040,
+      "title": "Composant - Navigation admin",
+      "is_interactive": true
+    },
+    "A01-Connexion.dc.html": {
+      "x": 0,
+      "y": 1420,
+      "w": 1440,
+      "h": 900,
+      "title": "A01 - Connexion admin",
+      "expand": "fill"
+    },
+    "A01b-Code-2FA.dc.html": {
+      "x": 1520,
+      "y": 1420,
+      "w": 1440,
+      "h": 900,
+      "title": "A01b - Code de vérification 2FA",
+      "expand": "fill"
+    },
+    "A03-Demandes.dc.html": {
+      "x": 0,
+      "y": 2700,
+      "w": 1440,
+      "h": 1000,
+      "title": "A03 - Demandes d'accès aux modules",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "A03b-Refuser-demande.dc.html": {
+      "x": 1520,
+      "y": 2700,
+      "w": 1440,
+      "h": 1000,
+      "title": "A03b - Refuser une demande (motif)",
+      "expand": "fill"
+    },
+    "A04-Catalogue-modules.dc.html": {
+      "x": 3040,
+      "y": 2700,
+      "w": 1440,
+      "h": 1000,
+      "title": "A04 - Catalogue des modules",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "A05-Ingredients.dc.html": {
+      "x": 0,
+      "y": 4080,
+      "w": 1440,
+      "h": 1100,
+      "title": "A05 - Ingrédients (nouveaux, détail)",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "A05b-Fusion-ingredient.dc.html": {
+      "x": 1520,
+      "y": 4080,
+      "w": 1440,
+      "h": 1100,
+      "title": "A05b - Fusionner un ingrédient",
+      "expand": "fill"
+    },
+    "A06-Unites.dc.html": {
+      "x": 3040,
+      "y": 4080,
+      "w": 1440,
+      "h": 1000,
+      "title": "A06 - Unités et conversions",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "A07-Rayons.dc.html": {
+      "x": 4560,
+      "y": 4080,
+      "w": 1440,
+      "h": 1000,
+      "title": "A07 - Rayons",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "A08-Tags-globaux.dc.html": {
+      "x": 6080,
+      "y": 4080,
+      "w": 1440,
+      "h": 1000,
+      "title": "A08 - Tags globaux",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "A09-Espaces.dc.html": {
+      "x": 0,
+      "y": 5560,
+      "w": 1440,
+      "h": 1000,
+      "title": "A09 - Espaces",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "A09b-Moderation-motif.dc.html": {
+      "x": 1520,
+      "y": 5560,
+      "w": 1440,
+      "h": 1000,
+      "title": "A09b - Accès de modération (motif obligatoire)",
+      "expand": "fill"
+    },
+    "A10-Changelog.dc.html": {
+      "x": 3040,
+      "y": 5560,
+      "w": 1440,
+      "h": 1000,
+      "title": "A10 - Changelog",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "A11-Journal-audit.dc.html": {
+      "x": 4560,
+      "y": 5560,
+      "w": 1440,
+      "h": 1000,
+      "title": "A11 - Journal d'audit",
+      "expand": "fill",
+      "is_interactive": true
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "A02m-Tableau-de-bord-mobile.dc.html",
+    "AdminNav.dc.html",
+    "A01-Connexion.dc.html",
+    "A01b-Code-2FA.dc.html",
+    "A03-Demandes.dc.html",
+    "A03b-Refuser-demande.dc.html",
+    "A04-Catalogue-modules.dc.html",
+    "A05-Ingredients.dc.html",
+    "A05b-Fusion-ingredient.dc.html",
+    "A06-Unites.dc.html",
+    "A07-Rayons.dc.html",
+    "A08-Tags-globaux.dc.html",
+    "A09-Espaces.dc.html",
+    "A09b-Moderation-motif.dc.html",
+    "A10-Changelog.dc.html",
+    "A11-Journal-audit.dc.html"
+  ],
+  "notes": {
+    "t-pilotage": {
+      "x": 0,
+      "y": -260,
+      "text": "Pilotage",
+      "kind": "title1",
+      "maxW": 2240
+    },
+    "t-acces": {
+      "x": 0,
+      "y": 1160,
+      "text": "Accès admin (session isolée, 2FA)",
+      "kind": "title1",
+      "maxW": 2960
+    },
+    "t-modules": {
+      "x": 0,
+      "y": 2440,
+      "text": "Modules (D33)",
+      "kind": "title1",
+      "maxW": 4480
+    },
+    "t-referentiels": {
+      "x": 0,
+      "y": 3820,
+      "text": "Référentiels (D09, D34, D36)",
+      "kind": "title1",
+      "maxW": 7520
+    },
+    "t-suivi": {
+      "x": 0,
+      "y": 5300,
+      "text": "Espaces, modération et suivi (D52)",
+      "kind": "title1",
+      "maxW": 6000
+    }
+  },
+  "designSystems": [
+    {
+      "title": "Forest Manager",
+      "namespace": "forestui",
+      "artifact": "https://claude.ai/artifact/7Q9Uy9qGhUyPYt3bWVa5yc",
+      "version": "1793716217-53b8",
+      "copiedAt": "2026-11-03T14:30:00Z"
+    }
+  ]
+}

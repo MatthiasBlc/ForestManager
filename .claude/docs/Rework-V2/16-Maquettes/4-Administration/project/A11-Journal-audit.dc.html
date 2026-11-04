@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Journal d'audit</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div class="fm-root" style="min-height: 1000px; display: flex; flex-wrap: wrap; align-items: stretch; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+  <dc-import name="AdminNav" active="audit" hint-size="248px,1000px"></dc-import>
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px; max-width: 1192px;">
+    <header style="display: flex; flex-direction: column; gap: 4px;">
+      <h1 style="margin: 0; font-family: var(--font-display); font-size: 26px; line-height: 32px;">Journal d'audit</h1>
+      <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">Toutes les actions des administrateurs, sans exception. Le journal ne se modifie pas et ne se supprime pas.</p>
+    </header>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <x-import component-from-global-scope="ForestUI.Chip" default-selected="{{yes}}">Tout</x-import>
+      <x-import component-from-global-scope="ForestUI.Chip">Modération</x-import>
+      <x-import component-from-global-scope="ForestUI.Chip">Modules</x-import>
+      <x-import component-from-global-scope="ForestUI.Chip">Référentiels</x-import>
+      <x-import component-from-global-scope="ForestUI.Chip">Comptes</x-import>
+      <x-import component-from-global-scope="ForestUI.Chip">Connexions</x-import>
+    </div>
+    <div style="overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface-raised);">
+      <table style="width: 100%; min-width: 860px; border-collapse: collapse; font-size: 14px; line-height: 20px;">
+        <thead>
+          <tr style="text-align: left; color: var(--ink-muted); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase;">
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Quand</th>
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Admin</th>
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Action</th>
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Cible</th>
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Motif ou détail</th>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="8">
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); white-space: nowrap; color: var(--ink-muted); font-variant-numeric: tabular-nums;">{{r.when}}</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">admin.matthias</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);"><x-import component-from-global-scope="ForestUI.Badge" tone="{{r.tone}}">{{r.action}}</x-import></td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">{{r.target}}</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); color: var(--ink-muted);">{{r.detail}}</td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span style="flex: 1; font-size: 13px; line-height: 18px; color: var(--ink-muted);">8 entrées sur 1 284</span>
+      <x-import component-from-global-scope="ForestUI.Button" size="sm">Voir les plus anciennes</x-import>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      yes: true,
+      rows: [
+        { when: '4 nov., 09 h 12', action: 'Connexion', tone: 'neutral', target: 'Session admin', detail: 'Code 2FA validé' },
+        { when: '3 nov., 14 h 02', action: 'Module accordé', tone: 'success', target: 'Foyer · Planning', detail: 'Demande de Matthias' },
+        { when: '3 nov., 11 h 40', action: 'Ingrédient fusionné', tone: 'neutral', target: 'sauce soya → sauce soja', detail: '3 recettes mises à jour' },
+        { when: '2 nov., 21 h 15', action: 'Tag traduit', tone: 'neutral', target: 'Rapide', detail: 'Anglais : Quick' },
+        { when: '2 nov., 18 h 09', action: 'Contenu masqué', tone: 'danger', target: 'TOM · Gâteau du week-end', detail: 'Même motif ; l’OWNER a été informée' },
+        { when: '2 nov., 18 h 03', action: 'Accès de modération', tone: 'warning', target: 'TOM', detail: 'Signalement d’un membre : propos insultants dans une recette' },
+        { when: '1 nov., 10 h 30', action: 'Mot de passe réinitialisé', tone: 'warning', target: 'Paul', detail: 'Demande par téléphone, aucun SMTP configuré' },
+        { when: '25 oct., 16 h 48', action: 'Demande refusée', tone: 'danger', target: 'Amis · Planning', detail: 'L’espace n’a encore aucune recette' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Tableau de bord admin</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div class="fm-root" style="min-height: 1040px; display: flex; flex-wrap: wrap; align-items: stretch; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+  <dc-import name="AdminNav" active="dash" hint-size="248px,1040px"></dc-import>
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 28px; max-width: 1192px;">
+    <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+      <div style="flex: 1 1 320px; display: flex; flex-direction: column; gap: 4px;">
+        <h1 style="margin: 0; font-family: var(--font-display); font-size: 26px; line-height: 32px;">Tableau de bord</h1>
+        <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">Mardi 3 novembre, 15 h 30</span>
+      </div>
+      <x-import component-from-global-scope="ForestUI.IconButton" icon="bell" label="Notifications admin" count="{{n2}}" outline="{{yes}}"></x-import>
+      <x-import component-from-global-scope="ForestUI.Button" variant="ghost">Se déconnecter</x-import>
+    </header>
+
+    <section aria-labelledby="todo" style="display: flex; flex-direction: column; gap: 12px;">
+      <h2 id="todo" style="margin: 0; font-family: var(--font-display); font-size: 20px; line-height: 26px;">À traiter</h2>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+        <a href="A03-Demandes.dc.html" style="text-decoration: none; color: var(--ink); background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px; display: flex; flex-direction: column; gap: 8px;">
+          <span style="font-family: var(--font-display); font-size: 36px; line-height: 40px; font-weight: 700; color: var(--accent-text);">2</span>
+          <b style="font-size: 16px; line-height: 22px;">Demandes d'accès aux modules</b>
+          <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">Colloc et TOM demandent le Planning. La plus ancienne attend depuis 2 jours.</span>
+        </a>
+        <a href="A05-Ingredients.dc.html" style="text-decoration: none; color: var(--ink); background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px; display: flex; flex-direction: column; gap: 8px;">
+          <span style="font-family: var(--font-display); font-size: 36px; line-height: 40px; font-weight: 700; color: var(--accent-text);">4</span>
+          <b style="font-size: 16px; line-height: 22px;">Nouveaux ingrédients à revoir</b>
+          <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">Déjà utilisables dans les recettes. 1 doublon probable : « tomates cerises ».</span>
+        </a>
+        <a href="A09-Espaces.dc.html" style="text-decoration: none; color: var(--ink); background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px; display: flex; flex-direction: column; gap: 8px;">
+          <span style="font-family: var(--font-display); font-size: 36px; line-height: 40px; font-weight: 700; color: var(--warning-text);">1</span>
+          <b style="font-size: 16px; line-height: 22px;">Espace en suppression</b>
+          <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">« Vacances 2025 » sera purgé dans 12 jours, sauf restauration par son OWNER.</span>
+        </a>
+      </div>
+    </section>
+
+    <section aria-labelledby="plateforme" style="display: flex; flex-direction: column; gap: 12px;">
+      <h2 id="plateforme" style="margin: 0; font-family: var(--font-display); font-size: 20px; line-height: 26px;">La plateforme</h2>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden;">
+        <div style="background: var(--surface-raised); padding: 16px 20px; display: flex; flex-direction: column; gap: 2px;"><b style="font-family: var(--font-display); font-size: 24px; line-height: 30px; font-variant-numeric: tabular-nums;">34</b><span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">utilisateurs</span></div>
+        <div style="background: var(--surface-raised); padding: 16px 20px; display: flex; flex-direction: column; gap: 2px;"><b style="font-family: var(--font-display); font-size: 24px; line-height: 30px; font-variant-numeric: tabular-nums;">9</b><span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">espaces groupe (et 34 perso)</span></div>
+        <div style="background: var(--surface-raised); padding: 16px 20px; display: flex; flex-direction: column; gap: 2px;"><b style="font-family: var(--font-display); font-size: 24px; line-height: 30px; font-variant-numeric: tabular-nums;">212</b><span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">recettes</span></div>
+        <div style="background: var(--surface-raised); padding: 16px 20px; display: flex; flex-direction: column; gap: 2px;"><b style="font-family: var(--font-display); font-size: 24px; line-height: 30px; font-variant-numeric: tabular-nums;">2</b><span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">espaces avec le Planning</span></div>
+      </div>
+    </section>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+      <section aria-labelledby="etat" style="flex: 1 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 12px;">
+        <h2 id="etat" style="margin: 0; font-family: var(--font-display); font-size: 20px; line-height: 26px;">État des services</h2>
+        <ul style="list-style: none; margin: 0; padding: 0; background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg);">
+          <li style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--line);">
+            <span style="flex: 1; font-size: 15px; line-height: 22px;">Envoi d'e-mails</span>
+            <x-import component-from-global-scope="ForestUI.Badge" tone="warning">Non configuré</x-import>
+          </li>
+          <li style="padding: 0 16px 14px; margin-top: -6px; border-bottom: 1px solid var(--line); font-size: 13px; line-height: 18px; color: var(--ink-muted);">Sans SMTP, « mot de passe oublié » est masqué : les mots de passe se réinitialisent depuis la fiche d'un utilisateur.</li>
+          <li style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--line);">
+            <span style="flex: 1; font-size: 15px; line-height: 22px;">Suivi des erreurs (Bugsink)</span>
+            <x-import component-from-global-scope="ForestUI.Badge" tone="neutral">3 cette semaine</x-import>
+          </li>
+          <li style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--line);">
+            <span style="flex: 1; font-size: 15px; line-height: 22px;">Stockage des photos</span>
+            <x-import component-from-global-scope="ForestUI.Badge" tone="success">En ligne</x-import>
+          </li>
+          <li style="display: flex; align-items: center; gap: 12px; padding: 14px 16px;">
+            <span style="flex: 1; font-size: 15px; line-height: 22px;">Version en production</span>
+            <span style="font-family: var(--font-mono); font-size: 14px; line-height: 20px;">2.0.0</span>
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="recent" style="flex: 1 1 360px; min-width: 0; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: baseline; gap: 12px;">
+          <h2 id="recent" style="margin: 0; flex: 1; font-family: var(--font-display); font-size: 20px; line-height: 26px;">Dernières actions admin</h2>
+          <a href="A11-Journal-audit.dc.html" style="font-size: 14px; line-height: 20px; font-weight: 600;">Tout le journal</a>
+        </div>
+        <ul style="list-style: none; margin: 0; padding: 0; background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg);">
+          <sc-for list="{{recent}}" as="r" hint-placeholder-count="5">
+            <li style="display: flex; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line);">
+              <span style="width: 96px; flex: none; font-size: 13px; line-height: 20px; color: var(--ink-muted); font-variant-numeric: tabular-nums;">{{r.when}}</span>
+              <span style="flex: 1; min-width: 0; font-size: 14px; line-height: 20px;">{{r.what}}</span>
+            </li>
+          </sc-for>
+        </ul>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1040}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      yes: true,
+      n2: 2,
+      recent: [
+        { when: "Auj. 14 h 02", what: "Planning accordé à Foyer (demande de Matthias)" },
+        { when: "Auj. 11 h 40", what: "Ingrédient « sauce soya » fusionné dans « sauce soja »" },
+        { when: "Hier 21 h 15", what: "Traduction anglaise ajoutée au tag global « Rapide »" },
+        { when: "Hier 18 h 03", what: "Accès de modération à TOM : signalement d'une recette" },
+        { when: "31 oct.", what: "Version 2.0.0 publiée dans le changelog" }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

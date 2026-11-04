@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Connexion admin</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div class="fm-root" style="min-height: 900px; box-sizing: border-box; padding: 48px 16px; display: flex; align-items: center; justify-content: center; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+  <form style="width: 100%; max-width: 420px; box-sizing: border-box; padding: 32px; background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: 20px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--accent); color: var(--on-accent); display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 16px;">FM</div>
+      <div style="display: flex; flex-direction: column;">
+        <h1 style="margin: 0; font-family: var(--font-display); font-size: 22px; line-height: 28px;">Administration</h1>
+        <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">Forest Manager</span>
+      </div>
+    </div>
+    <p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted);">Accès réservé aux administrateurs de la plateforme. Ce compte est distinct de ton compte utilisateur.</p>
+    <x-import component-from-global-scope="ForestUI.Field" label="Identifiant admin" default-value="admin.matthias" autocomplete="username"></x-import>
+    <x-import component-from-global-scope="ForestUI.Field" label="Mot de passe" type="password" default-value="motdepasse" autocomplete="current-password"></x-import>
+    <x-import component-from-global-scope="ForestUI.Button" variant="primary" block="{{yes}}">Continuer</x-import>
+    <div style="display: flex; gap: 8px; align-items: flex-start; font-size: 13px; line-height: 18px; color: var(--ink-muted);">
+      <x-import component-from-global-scope="ForestUI.Icon" name="lock" size="{{n16}}"></x-import>
+      <span>Étape 1 sur 2. Un code de ton application d'authentification te sera demandé. La session expire après 30 minutes.</span>
+    </div>
+  </form>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { yes: true, n16: 16 };
+  }
+}
+</script>
+</body>
+</html>
