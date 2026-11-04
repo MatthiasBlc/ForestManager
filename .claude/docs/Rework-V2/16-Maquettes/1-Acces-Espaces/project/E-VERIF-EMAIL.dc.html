@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Confirme ton adresse</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div class="fm-root" data-space="1" style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; padding: 96px 24px 32px; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+<div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px;">
+<span style="width: 72px; height: 72px; border-radius: var(--radius-lg); background: var(--accent-soft); color: var(--accent-text); display: grid; place-items: center;"><x-import component-from-global-scope="ForestUI.Icon" name="bell" size="{{iconSize}}"></x-import></span>
+<h1 style="margin: 0; font: 700 26px/32px var(--font-display);">Confirme ton adresse</h1>
+<p style="margin: 0; font-size: 16px; line-height: 24px; color: var(--ink-muted); max-width: 30ch;">Nous avons envoyé un lien à <b style="color: var(--ink);">matthias@exemple.fr</b>. Il reste valable 24 heures.</p>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted); max-width: 32ch;">Tu peux déjà utiliser Forest Manager. Rejoindre un espace attendra la confirmation.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px;">
+<x-import component-from-global-scope="ForestUI.Button" variant="primary" block="{{yes}}">Continuer</x-import>
+<x-import component-from-global-scope="ForestUI.Button" block="{{yes}}">Renvoyer le lien</x-import>
+<x-import component-from-global-scope="ForestUI.Button" variant="ghost" block="{{yes}}">Changer d'adresse</x-import>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() { return { yes: true, iconSize: 32 }; }
+}
+</script>
+</body>
+</html>

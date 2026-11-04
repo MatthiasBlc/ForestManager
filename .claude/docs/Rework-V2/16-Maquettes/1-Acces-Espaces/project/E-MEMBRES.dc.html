@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Membres de Famille</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="fm-root" data-space="1" style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
+<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="famille"></x-import>
+<x-import component-from-global-scope="ForestUI.TopBar" title="Membres" unread="{{unread}}"></x-import>
+<div style="flex: 1; overflow: hidden; display: flex; flex-direction: column; gap: 16px; padding: 16px;">
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+<span style="font-size: 14px; color: var(--ink-muted);">6 membres</span>
+<x-import component-from-global-scope="ForestUI.Button" variant="primary" icon="plus" size="sm">Inviter</x-import>
+</div>
+<div style="display: flex; flex-direction: column; border-radius: var(--radius-lg); background: var(--surface-raised); border: 1px solid var(--line); overflow: hidden;">
+<sc-for list="{{members}}" as="m" hint-placeholder-count="6">
+<div style="display: flex; align-items: center; gap: 12px; padding: 8px 4px 8px 12px; border-bottom: 1px solid var(--line); min-height: 56px;">
+<x-import component-from-global-scope="ForestUI.Avatar" name="{{m.name}}" tint="{{m.tint}}" size="{{forty}}"></x-import>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column;"><b style="font-size: 15px; line-height: 20px;">{{m.name}}</b><span style="font-size: 13px; color: var(--ink-muted);">{{m.since}}</span></span>
+<x-import component-from-global-scope="ForestUI.Badge" tone="{{m.tone}}">{{m.role}}</x-import>
+<x-import component-from-global-scope="ForestUI.IconButton" icon="more" label="{{m.actions}}"></x-import>
+</div>
+</sc-for>
+</div>
+<section style="display: flex; flex-direction: column; gap: 8px;">
+<h2 style="margin: 0; font: 600 12px/16px var(--font-sans); letter-spacing: .04em; text-transform: uppercase; color: var(--ink-muted);">Invitations en attente</h2>
+<div style="display: flex; align-items: center; gap: 12px; padding: 8px 4px 8px 12px; border-radius: var(--radius-lg); border: 1px dashed var(--line-strong);">
+<x-import component-from-global-scope="ForestUI.Avatar" name="Hugo" size="{{forty}}"></x-import>
+<span style="flex: 1; font-size: 14px; line-height: 20px;"><b>hugo</b><br><span style="color: var(--ink-muted); font-size: 13px;">Invité par nom il y a 2 jours</span></span>
+<x-import component-from-global-scope="ForestUI.Button" variant="ghost" size="sm">Annuler</x-import>
+</div>
+</section>
+</div>
+<x-import component-from-global-scope="ForestUI.TabBar" items="{{tabs}}" active-id="members"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+const role = (r) => r === 'OWNER' ? { role: 'Propriétaire', tone: 'accent' } : r === 'MOD' ? { role: 'Modérateur', tone: 'second' } : { role: 'Membre', tone: 'neutral' };
+const raw = [
+['Matthias', null, 'OWNER', 'Toi'], ['Lea', 5, 'MOD', 'Depuis mars'], ['Jeanne', 2, 'MEMBER', 'Depuis mars'],
+['Paul', 4, 'MEMBER', 'Depuis avril'], ['Sam', 3, 'MEMBER', 'Depuis juin'], ['Claire', 1, 'MEMBER', 'Depuis hier']
+];
+return {
+unread: 2, forty: 40,
+members: raw.map(([name, tint, r, since]) => Object.assign({ name, tint, since, actions: 'Actions pour ' + name }, role(r))),
+me: { id: 'me', name: 'Matthias' },
+spaces: [
+{ id: 'foyer', name: 'Foyer', tint: 5 },
+{ id: 'famille', name: 'Famille', tint: 1 },
+{ id: 'colloc', name: 'Colloc', tint: 2 },
+{ id: 'tom', name: 'TOM', tint: 3 },
+{ id: 'amis', name: 'Amis', tint: 4 }
+],
+tabs: [
+{ id: 'recipes', label: 'Recettes', icon: 'book-open' },
+{ id: 'plan', label: 'Planning', icon: 'calendar' },
+{ id: 'members', label: 'Membres', icon: 'users' },
+{ id: 'more', label: 'Plus', icon: 'more' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

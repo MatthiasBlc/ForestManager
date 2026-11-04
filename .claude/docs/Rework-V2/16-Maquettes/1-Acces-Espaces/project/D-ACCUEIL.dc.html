@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Accueil - bureau</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="fm-root" data-space="1" style="container-type: inline-size; min-height: 900px; display: flex; flex-wrap: wrap; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+<div style="display: flex; flex: 0 0 auto;">
+<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="me"></x-import>
+</div>
+<div style="display: flex; flex: 0 0 240px; min-height: 900px;">
+<x-import component-from-global-scope="ForestUI.ModuleNav" space-name="Matthias" subtitle="Ton espace perso" items="{{nav}}" active-id="home" style="width: 100%;"></x-import>
+</div>
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column;">
+<x-import component-from-global-scope="ForestUI.TopBar" title="Accueil" unread="{{unread}}" user="Matthias"></x-import>
+<main style="padding: 24px; display: flex; flex-direction: column; gap: 24px; max-width: 1100px;">
+<h1 style="margin: 0; font: 700 32px/38px var(--font-display);">Bonsoir, Matthias</h1>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px;">
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: var(--radius-lg); background: var(--surface-raised); border: 1px solid var(--line);">
+<div style="display: flex; justify-content: space-between; align-items: baseline;"><h2 style="margin: 0; font: 600 16px/22px var(--font-display);">Prochains repas</h2><span style="font-size: 13px; color: var(--ink-muted);">Famille</span></div>
+<x-import component-from-global-scope="ForestUI.MealSlot" kind="recipe" title="Saumon teriyaki et brocolis" servings="{{two}}" when="Ce soir"></x-import>
+<x-import component-from-global-scope="ForestUI.MealSlot" kind="recipe" title="Gratin de pâtes" locked="{{yes}}" when="Demain midi"></x-import>
+<x-import component-from-global-scope="ForestUI.MealSlot" kind="empty" when="Demain soir"></x-import>
+</section>
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: var(--radius-lg); background: var(--surface-raised); border: 1px solid var(--line);">
+<h2 style="margin: 0; font: 600 16px/22px var(--font-display);">Invitations</h2>
+<div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 24px 8px; color: var(--ink-muted); font-size: 14px; line-height: 20px;">
+<x-import component-from-global-scope="ForestUI.Icon" name="users"></x-import>
+<span>Aucune invitation en attente.<br>Quand quelqu'un t'invite dans un espace, tu le verras ici.</span>
+</div>
+</section>
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: var(--radius-lg); background: var(--surface-raised); border: 1px solid var(--line);">
+<h2 style="margin: 0; font: 600 16px/22px var(--font-display);">Tes recettes les plus cuisinées</h2>
+<ol style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 15px; line-height: 22px;">
+<li>Poulet teriyaki et riz <span style="color: var(--ink-muted); font-size: 13px;">- 9 fois</span></li>
+<li>Dahl de lentilles corail <span style="color: var(--ink-muted); font-size: 13px;">- 7 fois</span></li>
+<li>Gratin de pâtes <span style="color: var(--ink-muted); font-size: 13px;">- 5 fois</span></li>
+</ol>
+</section>
+</div>
+<section style="display: flex; flex-direction: column; gap: 12px;">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;"><h2 style="margin: 0; font: 600 20px/26px var(--font-display);">Récemment ajoutées dans tes espaces</h2><x-import component-from-global-scope="ForestUI.Button" variant="primary" icon="plus">Nouvelle recette</x-import></div>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
+<x-import component-from-global-scope="ForestUI.RecipeCard" title="Escalope milanaise et compotée de tomates cerises" meta="Famille - par Lea" badges="{{composee}}"></x-import>
+<x-import component-from-global-scope="ForestUI.RecipeCard" title="Tarte aux pommes" meta="TOM - par Sam"></x-import>
+<x-import component-from-global-scope="ForestUI.RecipeCard" title="Sauce teriyaki" meta="Famille - par toi" badges="{{base}}"></x-import>
+<x-import component-from-global-scope="ForestUI.RecipeCard" title="Gratin de pâtes" meta="Colloc - adaptée" badges="{{adaptee}}"></x-import>
+</div>
+</section>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+yes: true, two: 2, unread: 2,
+composee: [{ label: 'Composée', tone: 'second', icon: 'link' }],
+base: [{ label: 'Base', tone: 'second' }],
+adaptee: [{ label: 'Adaptée', tone: 'accent' }],
+me: { id: 'me', name: 'Matthias' },
+spaces: [
+{ id: 'foyer', name: 'Foyer', tint: 5 },
+{ id: 'famille', name: 'Famille', tint: 1, unread: true },
+{ id: 'colloc', name: 'Colloc', tint: 2 },
+{ id: 'tom', name: 'TOM', tint: 3 },
+{ id: 'amis', name: 'Amis', tint: 4 }
+],
+nav: [
+{ id: 'home', label: 'Accueil', icon: 'home' },
+{ id: 'recipes', label: 'Recettes', icon: 'book-open' },
+{ id: 'mine', label: 'Mes recettes', icon: 'chef-hat' },
+{ id: 'settings', label: 'Réglages', icon: 'settings' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

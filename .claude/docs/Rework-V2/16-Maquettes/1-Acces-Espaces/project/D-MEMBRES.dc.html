@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Membres - bureau</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="fm-root" data-space="1" style="container-type: inline-size; min-height: 900px; display: flex; flex-wrap: wrap; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+<div style="display: flex; flex: 0 0 auto;">
+<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="famille"></x-import>
+</div>
+<div style="display: flex; flex: 0 0 240px; min-height: 900px;">
+<x-import component-from-global-scope="ForestUI.ModuleNav" space-name="Famille" subtitle="6 membres" items="{{nav}}" active-id="members" style="width: 100%;"></x-import>
+</div>
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column;">
+<x-import component-from-global-scope="ForestUI.TopBar" title="Membres" unread="{{unread}}" user="Matthias"></x-import>
+<main style="padding: 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start;">
+<section style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+<div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+<h1 style="margin: 0; font: 700 26px/32px var(--font-display);">Membres de Famille</h1>
+<x-import component-from-global-scope="ForestUI.Button" variant="primary" icon="plus">Inviter</x-import>
+</div>
+<div style="overflow-x: auto; border-radius: var(--radius-lg); background: var(--surface-raised); border: 1px solid var(--line);">
+<table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+<thead><tr style="text-align: left; color: var(--ink-muted); font-size: 12px; letter-spacing: .04em; text-transform: uppercase;"><th style="padding: 10px 14px; font-weight: 600;">Membre</th><th style="padding: 10px 14px; font-weight: 600;">Rôle</th><th style="padding: 10px 14px; font-weight: 600;">Arrivé</th><th style="padding: 10px 14px;"><span class="fm-sr">Actions</span></th></tr></thead>
+<tbody>
+<sc-for list="{{members}}" as="m" hint-placeholder-count="6">
+<tr style="border-top: 1px solid var(--line);">
+<td style="padding: 8px 14px;"><span style="display: flex; align-items: center; gap: 10px;"><x-import component-from-global-scope="ForestUI.Avatar" name="{{m.name}}" tint="{{m.tint}}"></x-import><b>{{m.name}}</b></span></td>
+<td style="padding: 8px 14px;"><x-import component-from-global-scope="ForestUI.Badge" tone="{{m.tone}}">{{m.role}}</x-import></td>
+<td style="padding: 8px 14px; color: var(--ink-muted);">{{m.since}}</td>
+<td style="padding: 4px 8px; text-align: right;"><x-import component-from-global-scope="ForestUI.IconButton" icon="more" label="{{m.actions}}"></x-import></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</section>
+<aside style="flex: 1 1 300px; display: flex; flex-direction: column; gap: 12px;">
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: var(--radius-lg); background: var(--surface-raised); border: 1px solid var(--line);">
+<h2 style="margin: 0; font: 600 16px/22px var(--font-display);">Liens d'invitation</h2>
+<div style="display: flex; align-items: center; gap: 8px;"><span style="flex: 1; font-size: 14px; line-height: 20px;">Créé le 28 octobre<br><span style="color: var(--ink-muted); font-size: 13px;">2 sur 5, expire le 4 novembre</span></span><x-import component-from-global-scope="ForestUI.Button" variant="ghost" size="sm">Révoquer</x-import></div>
+</section>
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: var(--radius-lg); background: var(--surface-raised); border: 1px solid var(--line);">
+<h2 style="margin: 0; font: 600 16px/22px var(--font-display);">Invitations en attente</h2>
+<div style="display: flex; align-items: center; gap: 10px;"><x-import component-from-global-scope="ForestUI.Avatar" name="Hugo"></x-import><span style="flex: 1; font-size: 14px;"><b>hugo</b><br><span style="color: var(--ink-muted); font-size: 13px;">il y a 2 jours</span></span><x-import component-from-global-scope="ForestUI.Button" variant="ghost" size="sm">Annuler</x-import></div>
+</section>
+<p style="margin: 0; font-size: 13px; line-height: 18px; color: var(--ink-muted);">Les modérateurs invitent et excluent des membres. Seul le propriétaire nomme ou retire un modérateur.</p>
+</aside>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() {
+const role = (r) => r === 'OWNER' ? { role: 'Propriétaire', tone: 'accent' } : r === 'MOD' ? { role: 'Modératrice', tone: 'second' } : { role: 'Membre', tone: 'neutral' };
+const raw = [
+['Matthias', null, 'OWNER', 'mars 2026'], ['Lea', 5, 'MOD', 'mars 2026'], ['Jeanne', 2, 'MEMBER', 'mars 2026'],
+['Paul', 4, 'MEMBER', 'avril 2026'], ['Sam', 3, 'MEMBER', 'juin 2026'], ['Claire', 1, 'MEMBER', 'hier']
+];
+return {
+unread: 2,
+members: raw.map(([name, tint, r, since]) => Object.assign({ name, tint, since, actions: 'Actions pour ' + name }, role(r))),
+me: { id: 'me', name: 'Matthias' },
+spaces: [
+{ id: 'foyer', name: 'Foyer', tint: 5 },
+{ id: 'famille', name: 'Famille', tint: 1 },
+{ id: 'colloc', name: 'Colloc', tint: 2 },
+{ id: 'tom', name: 'TOM', tint: 3 },
+{ id: 'amis', name: 'Amis', tint: 4 }
+],
+nav: [
+{ id: 'recipes', label: 'Recettes', icon: 'book-open' },
+{ id: 'plan', label: 'Planning', icon: 'calendar' },
+{ id: 'members', label: 'Membres', icon: 'users' },
+{ id: 'settings', label: 'Réglages', icon: 'settings' }
+]
+};
+}
+}
+</script>
+</body>
+</html>
