@@ -6,7 +6,7 @@ Refonte de Forest Manager : clarifier les concepts de la V1, refaire l'interface
 
 1. Ce README.
 2. `4-Roadmap.md` : la premiere case non cochee est le point de reprise.
-3. Le plan de l'etape en cours (`18-Plan-C2.md` pour C2 ; `17-Plan-C1.md` pour C1, termine).
+3. Le plan de l'etape en cours (`19-Plan-C3.md` pour C3 quand il existe ; `17-Plan-C1.md` et `18-Plan-C2.md` pour C1 et C2, termines).
 4. `1-CDC-V2.md` : S1 a S3 (vision, glossaire, roles) pour tout le monde, puis la section du module concerne.
 5. `3-Journal-des-Decisions.md` : seulement pour comprendre le pourquoi d'une regle (chercher le `D##`).
 
@@ -87,7 +87,9 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
 - C2.6 fait le 2026-11-05 (TDD) : `core/spaces/` (creation depuis le rail, le selecteur ou `?create=1` avec collage d'un lien ; membres et actions par role ; invitations par lien et par nom avec message neutre ; invitations en attente ; reglages ; transfert propose, accepte, refuse, annule ; quitter ; supprimer en tapant le nom ; espace en suppression restaurable). Faux serveur d'espace pour les tests (`test/space-server.ts`). Ecarts : photo d'espace en C3 (D146), recettes perso partagees au depart (D84) en C3, export propose en C6.
 - C2.7 fait le 2026-11-05 (TDD) : `core/modules/` (E-MODULES : statuts Inclus, Accorde, Disponible, Beta, Bientot, Demande envoyee, Refusee avec motif ; demande avec message, annulation, redemande ; activation ; ordre par boutons monter / descendre ; lecture seule pour les membres). Noms et descriptions des modules dans `module-info.ts` (textes de l'interface).
 - C2.8 fait le 2026-11-05 (TDD) : `core/profile/` (profil, nom et email avec mot de passe actuel pour l'email, mot de passe, apparence appliquee et enregistree a chaque choix D115, suppression du compte avec consequences par espace D116, deconnexion), `core/home/` (salutation, invitations et transferts recus a accepter ou refuser). Plus aucune page d'attente dans le shell. Reportes : notifications et export dans le profil (C6), avatar (C3), widgets d'accueil (C3, C5, C6).
-- Prochaine etape : C2.9 (coquille PWA).
+- C2.9 fait le 2026-11-05 (TDD) : `pwa/` (bandeau hors ligne, bandeau "Nouvelle version disponible", enregistrement du service worker en production seulement), refus immediat des ecritures hors ligne (D159), `vite-plugin-pwa` 2.0.0 (manifeste, precache, icones provisoires dans `apps/web/public/`), type du manifeste dans nginx. Audit npm : 12 alertes faibles ou moderees dans les dependances de dev (typescript-eslint, workbox-build), aucune en production.
+- **C2 termine le 2026-11-05.** Reste a faire par le proprietaire : revue visuelle des ecrans (captures Chrome indisponibles pendant la session) et premier passage de la CI sur GitHub.
+- Prochaine etape : C3 (module Recettes) ; plan a ecrire (`19-Plan-C3.md`).
 - Tout est publie et committe au 2026-11-05 : DS v10, Acces v39, Recettes v35, Planning v26, Admin v26, Permissions v5, Parcours v6, Modele de donnees v5. Maquettes revues dans Chrome le 2026-11-05 (B5b, voir `archive/16-Maquettes-ECARTS.md`).
   - Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact) : relire l'artefact (action read sur l'URL), puis publier avec `root` = le dossier du canevas, `file_path` = un fichier modifie, `files` = les autres (`project/...`).
   - Les numeros de version des artefacts avancent aussi a la simple consultation : comparer le contenu en ligne au commit avant d'ecraser.

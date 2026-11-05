@@ -17,8 +17,12 @@ import { RequireAuth } from "../core/session/require-auth.tsx";
 import { RootPage } from "../core/session/root-page.tsx";
 import { JoinPage } from "../core/spaces/join-page.tsx";
 import { SpaceLayout } from "../core/shell/space-layout.tsx";
+import { OfflineBanner } from "../pwa/offline-banner.tsx";
 import { ThemeController } from "../theme/theme.tsx";
 import { ToastProvider } from "../ui/toast.tsx";
+
+// Service worker seulement dans le build de production (pas en dev ni en test).
+const PwaUpdater = import.meta.env.PROD ? lazy(() => import("../pwa/pwa-updater.tsx")) : null;
 
 const DesignPage = lazy(() =>
   import("../core/design/design-page.tsx").then((m) => ({ default: m.DesignPage }))
@@ -33,6 +37,12 @@ export function App() {
   return (
     <ToastProvider>
       <SessionTheme />
+      <OfflineBanner />
+      {PwaUpdater ? (
+        <Suspense fallback={null}>
+          <PwaUpdater />
+        </Suspense>
+      ) : null}
       <Routes>
         <Route
           path="/design"

@@ -10,6 +10,7 @@ import { core } from "./fr/core.ts";
 const errors: Record<string, string> = {
   ...Object.fromEntries(ERROR_CODES.map((code) => [code, ERRORS[code].message])),
   NETWORK: "Connexion impossible. Vérifie ton réseau.",
+  OFFLINE: "Tu es hors ligne : réessaie quand le réseau sera revenu.",
   CONTRACT: "Réponse inattendue du serveur. Recharge la page.",
 };
 

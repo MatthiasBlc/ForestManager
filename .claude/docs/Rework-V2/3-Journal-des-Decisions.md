@@ -465,3 +465,8 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
 
 - **Constat** : le design system est en px et ne prevoit ni densite ni taille du texte, alors que le profil les propose (F-ACC-4, `textScale` 90 a 130 %, `density`).
 - **Choix** : la taille du texte agrandit toute l'interface (`zoom` sur `body`, comme un zoom du navigateur : les requetes de conteneur s'adaptent) ; la densite compacte resserre les espacements (`--space-3` a `--space-6`) sans toucher aux cibles tactiles de 44px. Preferences posees sur `<html>` (`data-theme`, `data-density`, `--text-scale`), la teinte de l'espace aussi (`data-space`) pour que les portails (feuilles, menus) la recoivent.
+
+### D159 - Hors ligne en C2 : ecritures refusees par le client, bandeau global - VALIDEE (2026-11-05, realisation C2.9)
+
+- **Constat** : D106 demande des actions d'ecriture desactivees avec la raison quand on est hors ligne. En C2, aucune donnee n'est encore lisible hors ligne (la persistance TanStack Query arrive avec les recettes, C3).
+- **Choix** : en C2, un bandeau global annonce le hors ligne et le client API refuse toute ecriture sans reseau (`OFFLINE`, message clair, aucune file d'attente conforme a D35). La desactivation bouton par bouton se fait en C3, avec la persistance hors ligne et le badge des cartes. Service worker : coquille en precache (polices latines seulement), mise a jour proposee par un bandeau, jamais de reponse de l'API en cache ; icone provisoire (un "F" ambre sur fond Braise) en attendant un logo.

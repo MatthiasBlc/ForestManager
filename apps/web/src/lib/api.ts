@@ -39,6 +39,14 @@ function url(path: string): string {
 
 async function send(method: string, path: string, body?: unknown): Promise<Response> {
   const headers: Record<string, string> = { accept: "application/json" };
+  if (method !== "GET" && !navigator.onLine) {
+    // Hors ligne : pas de file d'attente des modifications (D35).
+    throw new ApiRequestError(
+      "OFFLINE",
+      0,
+      "Tu es hors ligne : réessaie quand le réseau sera revenu."
+    );
+  }
   if (method !== "GET") {
     let csrf = readCsrfCookie();
     if (!csrf) {

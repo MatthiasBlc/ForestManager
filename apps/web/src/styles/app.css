@@ -60,3 +60,13 @@ body,
 #root {
   height: 100%;
 }
+/* Bandeaux (hors ligne) au-dessus, le shell prend le reste. */
+#root {
+  display: flex;
+  flex-direction: column;
+}
+#root > .fm-shell,
+#root > .fm-root:last-child {
+  flex: 1;
+  min-height: 0;
+}
