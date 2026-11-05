@@ -175,7 +175,7 @@ Reprend la V1 (grille jours x repas, slots recette / texte libre / vide, verroui
 Dashboard, referentiels, catalogue de modules (statut de chaque module), **file des demandes d'acces aux modules** (accepter / refuser, accorder ou retirer d'office), espaces, recettes (moderation), changelog, journal d'audit. Reprise de la V1 avec le design system V2.
 
 - Le tableau de bord s'ouvre sur "A traiter" et l'etat des services [D129].
-- Moderation d'un espace : acces en lecture seule pendant 30 minutes, seules les actions de moderation sont possibles [D122] ; l'OWNER est informe, avec le motif [D121].
+- Moderation d'un espace : acces en lecture seule pendant 30 minutes, seules les actions de moderation sont possibles (sur une recette : masquer, supprimer, ou la retirer d'un espace de partage, ou elle reste chez son auteur ; motif obligatoire, audit) [D122] ; l'OWNER est informe, avec le motif [D121].
 - Le journal d'audit ne se modifie ni ne se supprime ; il se filtre par categorie [D128].
 - Reglages de la plateforme en lecture seule : SMTP, Bugsink et stockage restent configures par variables d'environnement (`14-Architecture.md`) ; l'ecran affiche l'etat, les valeurs non secretes et un bouton "Tester" par service [D135].
 - Connexion admin sans compteur d'etapes (2 ou 3 selon que la 2FA est deja configuree) : les titres suffisent [D138].

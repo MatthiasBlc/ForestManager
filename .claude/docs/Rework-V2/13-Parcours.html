@@ -509,7 +509,9 @@ F -->|En faire mon adaptation| G["F-ADAPTER"]
         <h2>Un auteur quitte l&#x27;espace</h2>
       </header>
       <p class="trig"><b>Declencheur</b> Quitter l&#x27;espace ou exclusion</p>
-      <div class="chips"><span class="chip">D06</span><span class="chip">D18</span></div>
+      <div class="chips">
+        <span class="chip">D06</span><span class="chip">D18</span><span class="chip">D84</span>
+      </div>
       <div class="diagram">
         <pre class="mermaid">
 flowchart TD
@@ -519,6 +521,7 @@ B -->|non| D["F-QUITTER : consequences"]
 D --> E["Recettes creees dans l'espace : restent, ancien membre"]
 D --> F["Suggestions en attente : aux moderateurs"]
 F --> G["Notification aux moderateurs"]
+D --> H["Recettes partagees depuis l'espace perso : laisser ou retirer, une par une"]
 </pre
         >
       </div>
@@ -652,12 +655,14 @@ C -->|30 jours| F["Purge definitive"]
         <h2>Supprimer son compte</h2>
       </header>
       <p class="trig"><b>Declencheur</b> Profil &gt; Supprimer mon compte</p>
-      <div class="chips"><span class="chip">D06</span><span class="chip">D20</span></div>
+      <div class="chips">
+        <span class="chip">D06</span><span class="chip">D20</span><span class="chip">D51</span>
+      </div>
       <div class="diagram">
         <pre class="mermaid">
 flowchart TD
 A["F-SUPPRIMER-COMPTE"] --> B{"OWNER d'espaces groupe ?"}
-B -->|oui| C["Transferer ou supprimer chacun"]
+B -->|oui| C["Transfert automatique au plus ancien moderateur, sinon membre"]
 C --> D
 B -->|non| D["Consequences + export propose"]
 D -->|mot de passe| E["Compte supprime, recettes de groupe : ancien membre"]

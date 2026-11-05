@@ -115,10 +115,10 @@ Conventions :
 
 - **Declencheur** : E-REGLAGES-ESPACE "Quitter l'espace" (ou exclusion par un moderateur, E-MEMBRES).
 - **Etapes** :
-  1. F-QUITTER : "Tes recettes creees dans Famille y restent ; les moderateurs pourront les modifier. Tes recettes partagees depuis ton espace perso seront retirees de Famille." (cf. question QP5). OWNER : impossible sans transfert -> F-TRANSFERER (choix d'un membre) ou suppression de l'espace (P13).
+  1. F-QUITTER : "Tes recettes creees dans Famille y restent ; les moderateurs pourront les modifier. Pour chacune de tes recettes partagees depuis ton espace perso, choisis : la laisser dans Famille ou retirer le partage." Rien n'est retire d'office (D84). OWNER : impossible sans transfert -> F-TRANSFERER (choix d'un membre) ou suppression de l'espace (P13).
   2. Apres depart : sur ses recettes restees, l'auteur s'affiche "ancien membre" (Avatar neutre). Les suggestions en attente passent aux moderateurs.
 - **Notifications** : moderateurs : "X a quitte Famille. 2 suggestions en attente sur ses recettes." ; activite de l'espace.
-- **Decisions** : D06, D18.
+- **Decisions** : D06, D18, D84.
 
 ## P09 - Demander l'acces a un module et l'activer
 
@@ -195,10 +195,10 @@ Conventions :
 - **Declencheur** : E-PROFIL > "Supprimer mon compte".
 - **Ecrans** : F-SUPPRIMER-COMPTE.
 - **Etapes** :
-  1. Si l'utilisateur est OWNER d'espaces groupe : liste de ces espaces, pour chacun "Transferer a..." ou "Supprimer l'espace" ; impossible de continuer sans avoir regle chacun.
+  1. Si l'utilisateur est OWNER d'espaces groupe : liste de ces espaces avec leur futur OWNER, designe automatiquement (MODERATOR le plus ancien, sinon MEMBER le plus ancien ; seul membre : espace supprime avec le delai de 30 jours) (D51). Les membres sont prevenus.
   2. Consequences : "Ton espace perso et ses recettes seront supprimes. Tes recettes dans les groupes resteront, signees ancien membre." Proposition d'export (P12).
   3. Mot de passe pour confirmer, Button danger "Supprimer mon compte". Deconnexion, E-ACCUEIL-PUBLIC avec message "Ton compte a ete supprime".
-- **Decisions** : D20, D06.
+- **Decisions** : D20, D06, D51.
 
 ## P16 - Recherche globale
 

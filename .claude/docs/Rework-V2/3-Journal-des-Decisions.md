@@ -327,7 +327,7 @@ Le detail de chacune est dans le document qui l'a proposee ; ce journal porte le
 
 - **D120 - Un ingredient fusionne devient un synonyme : propose a la saisie, remplace par la cible** - VALIDEE (2026-11-04).
 - **D121 - L'OWNER est informe, avec le motif, quand un admin ouvre son espace pour moderation** - VALIDEE (2026-11-04).
-- **D122 - Acces de moderation en lecture seule, 30 minutes, seules les actions de moderation possibles** - VALIDEE (2026-11-04).
+- **D122 - Acces de moderation en lecture seule, 30 minutes, seules les actions de moderation possibles** - VALIDEE (2026-11-04). Complete le 2026-11-05 : les actions de moderation sur une recette sont masquer, supprimer et retirer d'un espace de partage (plus doux que supprimer : la recette reste chez son auteur), toujours avec motif obligatoire et trace dans le journal d'audit.
 - **D123 - Un module "bientot" est visible au catalogue mais pas encore demandable** - VALIDEE (2026-11-04).
 - **D124 - Refuser une demande d'acces exige un motif visible par l'OWNER, qui peut redemander** - VALIDEE (2026-11-04).
 - **D125 - Les rayons suivent le parcours en magasin ; sans rayon, l'ingredient va dans "Autres"** - VALIDEE (2026-11-04).

@@ -1,6 +1,6 @@
 # Architecture technique V2
 
-Statut : **VALIDE** le 2026-11-03 (roadmap B6). Decisions d'origine citees `Dxx` (journal), decisions nouvelles D70 a D76 en fin de document.
+Statut : voir le journal des decisions. Decisions d'origine citees `Dxx` (journal), decisions nouvelles D70 a D76 en fin de document.
 Ce document decrit la cible ; il ne decrit pas la V1. Il ne recopie pas le modele de donnees (voir B1).
 
 ## 1. Principes
