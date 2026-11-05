@@ -101,7 +101,7 @@ details.model summary::-webkit-details-marker { display: none; }
 <main>
 
 <section id="resume">
-  <div class="eyebrow">Rework V2 - roadmap B1 - valide le 2026-11-03</div>
+  <div class="eyebrow">Rework V2 - roadmap B1, mis a jour en B9 (2026-11-05) - statut : voir le journal des decisions</div>
   <h1>Le modele de donnees de la V2</h1>
   <p>Le schema Prisma cible, traduit des decisions du journal. Il est valide par Prisma mais n'est branche a rien. Les fiches de cette page sont generees depuis le fichier <code>schema.prisma</code> du chantier : elles disent exactement ce qu'il contient.</p>
   <div class="facts" id="facts"></div>
@@ -124,7 +124,7 @@ details.model summary::-webkit-details-marker { display: none; }
       <tr><td>Unites</td><td>Categories, pas de conversion</td><td>Dimension + facteur vers la base, poids par ingredient</td><td>D36</td></tr>
       <tr><td>Modules</td><td><code>Feature</code> accorde par l'admin</td><td><code>Module</code>, <code>SpaceModule</code>, <code>ModuleAccessRequest</code></td><td>D33</td></tr>
       <tr><td>Roles</td><td>MEMBER, MODERATOR</td><td>+ OWNER unique (index partiel)</td><td>D06</td></tr>
-      <tr><td>Invitations</td><td>Par username</td><td>Liens d'invitation + username exact</td><td>D07</td></tr>
+      <tr><td>Invitations</td><td>Par username</td><td>Liens d'invitation (expiration obligatoire) + username exact</td><td>D07, D94</td></tr>
       <tr><td>Planning</td><td>Midi / soir en dur, <code>editableByMembers</code></td><td><code>MealPlanSettings</code> : repas choisis, role minimal d'edition</td><td>D11</td></tr>
       <tr><td>Notifications, activite</td><td>Enums en base</td><td>Cles texte declarees par les modules</td><td>D40, D41</td></tr>
       <tr><td>Retire</td><td colspan="2"><code>Visibility</code>, <code>RecipeView</code>, <code>RecipeAnalytics</code>, <code>TagSuggestion</code>, <code>UserCommunityTagPreference</code>, <code>isVariant</code>, <code>sharedFromCommunityId</code></td><td>D27, D39</td></tr>
@@ -220,7 +220,7 @@ RecipeRevision  (Sauce teriyaki, n=2, source=SUGGESTION)   le plat voit la revis
 </section>
 
 <section id="decisions">
-  <div class="eyebrow">Valide le 2026-11-03</div>
+  <div class="eyebrow">Statut : voir le journal des decisions</div>
   <h2>Choix faits en construisant le modele</h2>
   <div class="dec">
     <div><b>D41 - Types de notification et d'activite en cles texte</b><span class="small">Chaque module declare ses types ("recipes.suggestion.created") dans le registre ; le package partage les valide. Pas d'enum en base, donc pas de migration du socle pour un nouveau module. Precise F-NOT-3 (qui parlait d'enum).</span></div>
@@ -234,6 +234,12 @@ RecipeRevision  (Sauce teriyaki, n=2, source=SUGGESTION)   le plat voit la revis
     <div><b>D81 - Partager la recette d'un autre</b><span class="small">Demande de partage (<code>RecipeShareRequest</code>) acceptee par l'auteur, ou partage immediat si l'auteur a coche <code>Membership.allowMembersToShare</code> dans cet espace.</span></div>
     <div><b>D82 - Espace perso et "Mes recettes"</b><span class="small">L'espace perso montre son contenu propre et une vue "Mes recettes" de toutes les recettes dont on est l'auteur : simple requete sur <code>Recipe.authorId</code>, rien a dupliquer.</span></div>
     <div><b>D83 - Espace d'origine purge</b><span class="small">Ses recettes partagees ailleurs sont rapatriees dans l'espace perso de leur auteur (changement de <code>homeSpaceId</code>).</span></div>
+    <div><b>D92 - Transfert de propriete propose</b><span class="small">Une ligne <code>SpaceOwnershipTransfer</code> en attente, acceptee ou refusee par le destinataire ; une seule en attente par espace. A l'acceptation, il devient OWNER et l'ancien OWNER moderateur.</span></div>
+    <div><b>D94 - Lien d'invitation qui expire toujours</b><span class="small"><code>SpaceInviteLink.expiresAt</code> est obligatoire (1, 7 ou 30 jours) ; <code>maxUses</code> vide = illimite.</span></div>
+    <div><b>D120 - Ingredient fusionne = synonyme</b><span class="small">Statut <code>MERGED</code> avec <code>mergedIntoId</code> obligatoire : ses noms restent proposes a la saisie et c'est la cible qui est enregistree.</span></div>
+    <div><b>D131 - Ordre des modules</b><span class="small"><code>SpaceModule.sortOrder</code>, regle par l'OWNER : les 4 premiers modules actifs forment la barre d'onglets mobile, les suivants vont dans "Plus".</span></div>
+    <div><b>D134 - Mot de passe temporaire</b><span class="small"><code>AuthToken</code> de type <code>TEMP_PASSWORD</code> : 24 h, usage unique ; il n'ouvre que le choix d'un nouveau mot de passe, l'ancien reste valable jusque-la.</span></div>
+    <div><b>Widgets d'accueil</b><span class="small"><code>User.homeWidgets</code> : liste ordonnee des widgets choisis (cles du registre) ; absente = choix par defaut (CDC S5.2).</span></div>
   </div>
 </section>
 

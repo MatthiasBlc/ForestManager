@@ -1,5 +1,6 @@
 // =============================================================================
-// Forest Manager V2 - schema cible (PROPOSITION, roadmap B1)
+// Forest Manager V2 - schema cible (roadmap B1, mis a jour en B9)
+// Statut : voir le journal des decisions.
 // =============================================================================
 // Document de conception : rien n'est branche a l'application.
 // Conventions : UUID v4 partout ; soft delete (deletedAt) sur les entites
@@ -53,6 +54,7 @@ model User {
   colorMode       ColorMode @default(SYSTEM) // [D32]
   density         Density   @default(COMFORTABLE)
   textScale       Int       @default(100) // pourcentage : 90, 100, 115, 130
+  homeWidgets     Json? // accueil : liste ordonnee des cles de widgets choisis ; null = choix par defaut du registre (CDC S5.2)
   lastLoginAt     DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -83,6 +85,8 @@ model User {
   notificationPrefs    NotificationPreference[]
   activities           ActivityEvent[]
   exports              DataExport[]
+  ownershipOffersSent  SpaceOwnershipTransfer[] @relation("TransferFrom")
+  ownershipOffersRecv  SpaceOwnershipTransfer[] @relation("TransferTo")
 
   @@index([deletedAt])
 }
@@ -90,10 +94,15 @@ model User {
 enum AuthTokenKind {
   VERIFY_EMAIL
   RESET_PASSWORD
+  TEMP_PASSWORD // genere par un admin sans SMTP : 24 h, usage unique [D134]
 }
 
 /// Jeton a usage unique (verification d'email, mot de passe oublie) [D21].
-/// Seul le hash est stocke.
+/// Seul le hash est stocke. TEMP_PASSWORD [D134] : tokenHash = hash du mot de
+/// passe temporaire, expiresAt = creation + 24 h. Il n'ouvre qu'une session
+/// restreinte au choix d'un nouveau mot de passe ; l'ancien passwordHash reste
+/// valable jusque-la. A l'enregistrement du nouveau : usedAt renseigne,
+/// passwordHash remplace, autres sessions fermees.
 model AuthToken {
   id        String        @id @default(uuid())
   userId    String
@@ -167,6 +176,7 @@ model Space {
   notificationPrefs  NotificationPreference[]
   activities         ActivityEvent[]
   exports            DataExport[]
+  ownershipTransfers SpaceOwnershipTransfer[]
 
   @@index([deletedAt])
   @@index([purgeAfter])
@@ -194,15 +204,16 @@ model Membership {
   @@index([spaceId, role])
 }
 
-/// Lien d'invitation [D07] : expiration, nombre d'usages, revocable.
+/// Lien d'invitation [D07] : expiration obligatoire (1, 7 ou 30 jours [D94]),
+/// nombre de personnes (maxUses null = illimite), revocable.
 /// Seul le hash du code est stocke ; le lien complet n'est montre qu'a la creation.
 model SpaceInviteLink {
   id          String    @id @default(uuid())
   spaceId     String
   createdById String
   codeHash    String    @unique
-  expiresAt   DateTime?
-  maxUses     Int?
+  expiresAt   DateTime // creation + 1, 7 ou 30 jours [D94]
+  maxUses     Int? // null = illimite
   useCount    Int       @default(0)
   revokedAt   DateTime?
   createdAt   DateTime  @default(now())
@@ -239,6 +250,34 @@ model SpaceInvitation {
   @@index([spaceId, status])
 }
 
+enum OwnershipTransferStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+}
+
+/// Proposition de transfert de propriete [D92] : le destinataire (membre actif)
+/// accepte ou refuse ; a l'acceptation il devient OWNER et l'ancien OWNER
+/// MODERATOR. Une seule PENDING par espace : index partiel. Le transfert
+/// automatique a la suppression du compte d'un OWNER [D51] ne passe pas par ici.
+model SpaceOwnershipTransfer {
+  id          String                  @id @default(uuid())
+  spaceId     String
+  fromUserId  String
+  toUserId    String
+  status      OwnershipTransferStatus @default(PENDING)
+  createdAt   DateTime                @default(now())
+  respondedAt DateTime?
+
+  space    Space @relation(fields: [spaceId], references: [id])
+  fromUser User  @relation("TransferFrom", fields: [fromUserId], references: [id])
+  toUser   User  @relation("TransferTo", fields: [toUserId], references: [id])
+
+  @@index([toUserId, status])
+  @@index([spaceId, status])
+}
+
 // =============================================================================
 // 3. SOCLE - MODULES [D10] [D33] [D40]
 // =============================================================================
@@ -265,7 +304,8 @@ model Module {
 }
 
 /// Acces d'un espace a un module [D33]. L'acces est attache a l'espace, pas a
-/// la personne. grantedAt = accorde ; enabled = active par l'OWNER.
+/// la personne. grantedAt = accorde ; enabled = active par l'OWNER ; sortOrder =
+/// ordre de la barre des modules choisi par l'OWNER (4 onglets mobiles puis "Plus") [D131].
 /// Monetisation future : une colonne `planId` nullable s'ajoutera ici.
 model SpaceModule {
   id               String    @id @default(uuid())
@@ -276,6 +316,7 @@ model SpaceModule {
   revokedAt        DateTime? // retire par un super admin ; donnees conservees
   enabled          Boolean   @default(false)
   enabledChangedAt DateTime?
+  sortOrder        Int       @default(0) // ordre choisi par l'OWNER [D131]
 
   space     Space      @relation(fields: [spaceId], references: [id])
   module    Module     @relation(fields: [moduleCode], references: [code])
@@ -377,10 +418,13 @@ model AisleTranslation {
 enum IngredientStatus {
   ACTIVE // verifie par l'admin
   NEW // cree a la volee, utilisable tout de suite, a revoir [D09]
-  MERGED // fusionne dans un autre (mergedIntoId) ; plus propose
+  MERGED // fusionne (mergedIntoId) : synonyme propose a la saisie, remplace par la cible [D120]
 }
 
 /// Ingredient du catalogue global. Utilisable des sa creation [D09].
+/// Fusion [D120] : l'ingredient passe MERGED et garde ses noms ; l'autocompletion
+/// les propose encore comme synonymes de la cible, et c'est la cible qui est
+/// enregistree. Les usages existants sont reportes sur la cible a la fusion.
 model Ingredient {
   id            String           @id @default(uuid())
   status        IngredientStatus @default(NEW)
@@ -1090,8 +1134,14 @@ model ChangelogEntry {
 // 12. Une demande de partage PENDING par (recette, espace cible) :
 //     UNIQUE ("recipeId", "targetSpaceId") WHERE status = 'PENDING'.
 // 11. Slot : CHECK ((kind = 'RECIPE') = ("recipeId" IS NOT NULL)).
+// 13. Une proposition de transfert de propriete PENDING par espace [D92] :
+//     UNIQUE ("spaceId") WHERE status = 'PENDING'.
+// 14. Ingredient fusionne [D120] : CHECK ((status = 'MERGED') = ("mergedIntoId" IS NOT NULL)).
 // Regles verifiees par l'application (pas en SQL) : pas de boucle entre
 // recettes composees et 3 niveaux maximum [D24] ; un export d'espace par jour
-// [D37] ; visibilite d'une recette = espace d'origine ou partage actif [D03] ;
+// [D37] ; duree d'un lien d'invitation de 1, 7 ou 30 jours [D94] ; le
+// destinataire d'un transfert de propriete est un membre actif [D92] ; les
+// cles de User.homeWidgets existent dans le registre et leur module est actif
+// (sinon le widget est ignore) ; visibilite d'une recette = espace d'origine ou partage actif [D03] ;
 // a la purge d'un espace, ses recettes partagees ailleurs sont rapatriees dans
 // l'espace perso de leur auteur (homeSpaceId) [D83].
