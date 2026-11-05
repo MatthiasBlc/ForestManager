@@ -35,7 +35,7 @@ Artefact en ligne : voir le lien dans la section "Reprise" ci-dessous. La copie 
 ## Reprise
 
 - Derniere session : 2026-11-05. Contexte remis a zero apres cette session : tout l'etat est ici et dans les fichiers cites.
-- Fait : etude (A), design system (B4), modele de donnees (B1), permissions (B2), parcours (B3), architecture (B6), tests (B8), maquettes (B5). Decisions D01 a D139 toutes tranchees (journal). CDC en 0.5 : il couvre D01 a D139.
+- Fait : etude (A), design system (B4), modele de donnees (B1), permissions (B2), parcours (B3), architecture (B6), tests (B8), maquettes (B5). Decisions D01 a D139 toutes tranchees (journal). CDC en 0.5 : il couvre D01 a D139 (D41 a D79 par renvoi aux documents de conception 11 a 15).
 - Prochaine etape : B9, validation finale du CDC 1.0. Maquettes revues dans Chrome le 2026-11-05 (B5b termine, voir `16-Maquettes/ECARTS.md`). Tout est publie et committe au 2026-11-05 : DS v10, Acces v39, Recettes v35, Planning v26, Admin v26.
   - Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact) : relire l'artefact (action read sur l'URL), puis publier avec `root` = le dossier du canevas, `file_path` = un fichier modifie, `files` = les autres (`project/...`).
   - Les numeros de version des canevas avancent aussi a la simple consultation : comparer le contenu en ligne au commit avant d'ecraser.
