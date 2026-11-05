@@ -70,3 +70,14 @@ body,
   flex: 1;
   min-height: 0;
 }
+
+/* Page avec ses propres barres (detail, editeur : PageChrome) : sur mobile, l'en-tete
+   de la page remplace le rail comme le selecteur d'espace (D130). */
+.fm-shell-grid:has(> .contents > .fm-top) > .fm-rail {
+  display: none;
+}
+@container (min-width: 768px) {
+  .fm-shell-grid:has(> .contents > .fm-top) > .fm-rail {
+    display: flex;
+  }
+}

@@ -7,12 +7,14 @@ import { App } from "../../app/App.tsx";
 import { buildMe, buildPersonalSpace } from "../../test/fixtures.ts";
 import { renderWithProviders } from "../../test/render.tsx";
 import { server } from "../../test/server.ts";
+import { mockEmptyRecipes } from "../../test/session.ts";
 
 /** Serveur sans session au depart ; /auth/login et /auth/register ouvrent la session. */
 function loggedOut({ email = true }: { email?: boolean } = {}) {
   let me: Me | null = null;
   const account = buildMe({ username: "matthias", emailVerified: false });
   const bodies: Record<string, unknown> = {};
+  mockEmptyRecipes();
   server.use(
     http.get("/api/v1/config", () => HttpResponse.json({ features: { email } })),
     http.get("/api/v1/me", () =>

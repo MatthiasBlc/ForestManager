@@ -1,8 +1,9 @@
-// Handlers MSW d'une session connectee : /me, /spaces, /spaces/:id, /config.
+// Handlers MSW d'une session connectee : /me, /spaces, /spaces/:id, /config, et
+// un module Recettes vide (page d'arrivee d'un espace).
 import { errorBody, type Me, type SpaceDetail } from "@fm/shared";
 import { http, HttpResponse } from "msw";
 
-import { buildMe, buildPersonalSpace } from "./fixtures.ts";
+import { buildMe, buildPersonalSpace, UNITS } from "./fixtures.ts";
 import { server } from "./server.ts";
 
 export interface SessionOptions {
@@ -33,5 +34,18 @@ export function mockSession({ me = buildMe(), spaces, email = true }: SessionOpt
     http.get("/api/v1/me/invitations", () => HttpResponse.json({ data: [] })),
     http.get("/api/v1/me/transfers", () => HttpResponse.json({ data: [] }))
   );
+  mockEmptyRecipes();
   return { me, spaces: all };
+}
+
+/** Module Recettes vide : referentiels et liste vide dans tout espace. */
+export function mockEmptyRecipes(): void {
+  server.use(
+    http.get("/api/v1/units", () => HttpResponse.json({ data: UNITS })),
+    http.get("/api/v1/tags", () => HttpResponse.json({ data: [] })),
+    http.get("/api/v1/spaces/:spaceId/recipes/tags", () => HttpResponse.json({ data: [] })),
+    http.get("/api/v1/spaces/:spaceId/recipes", () =>
+      HttpResponse.json({ data: [], nextCursor: null })
+    )
+  );
 }

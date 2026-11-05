@@ -35,6 +35,8 @@ import { DeletedSpacePage } from "../spaces/deleted-space-page.tsx";
 import { MembersPage } from "../spaces/members-page.tsx";
 import { SettingsPage } from "../spaces/settings-page.tsx";
 import { buildNavigation } from "./navigation.ts";
+import { ChromeProvider } from "./page-chrome.tsx";
+import { useChromeSlots } from "./use-chrome-slots.tsx";
 import { toVisual } from "./space-visual.ts";
 
 /** Entree active : celle dont le chemin couvre le mieux l'adresse courante. */
@@ -99,6 +101,7 @@ export function SpaceLayout() {
   const space = useQuery(spaceQuery(spaceId));
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const chrome = useChromeSlots();
   const [params, setParams] = useSearchParams();
   const createOpen = params.get("create") === "1";
   const setCreateOpen = (open: boolean) => {
@@ -204,53 +207,69 @@ export function SpaceLayout() {
         />
       }
       top={
-        <TopBar
-          title={active?.label}
-          space={current}
-          onSpace={() => setSwitcherOpen(true)}
-          user={user}
-        />
+        <>
+          {chrome.claimed ? null : (
+            <TopBar
+              title={active?.label}
+              space={current}
+              onSpace={() => setSwitcherOpen(true)}
+              user={user}
+            />
+          )}
+          {chrome.topSlot}
+        </>
       }
-      tabbar={<TabBar items={nav.tabs} activeId={active?.id} onMore={() => setMoreOpen(true)} />}
+      tabbar={
+        <>
+          {chrome.claimed ? null : (
+            <TabBar items={nav.tabs} activeId={active?.id} onMore={() => setMoreOpen(true)} />
+          )}
+          {chrome.bottomSlot}
+        </>
+      }
     >
-      <Routes>
-        <Route index element={<Navigate to={nav.items[0]?.to ?? "home"} replace />} />
-        <Route path="home" element={<HomePage />} />
-        <Route path="members" element={<MembersPage space={space.data} />} />
-        <Route path="settings" element={<SettingsPage space={space.data} />} />
-        <Route path="modules" element={<ModulesPage space={space.data} />} />
-        {WEB_MODULES.map((module) => (
+      <ChromeProvider value={chrome.value}>
+        <Routes>
+          <Route index element={<Navigate to={nav.items[0]?.to ?? "home"} replace />} />
+          <Route path="home" element={<HomePage />} />
+          <Route path="members" element={<MembersPage space={space.data} />} />
+          <Route path="settings" element={<SettingsPage space={space.data} />} />
+          <Route path="modules" element={<ModulesPage space={space.data} />} />
+          {WEB_MODULES.map((module) => (
+            <Route
+              key={module.code}
+              path={`${module.code}/*`}
+              element={
+                activeCodes.has(module.code) ? (
+                  moduleRoute(<module.Routes />)
+                ) : (
+                  <div className="p-4">
+                    <EmptyState icon="puzzle" title="Module inactif">
+                      Ce module n'est pas actif dans cet espace.
+                    </EmptyState>
+                  </div>
+                )
+              }
+            />
+          ))}
           <Route
-            key={module.code}
-            path={`${module.code}/*`}
+            path="*"
             element={
-              activeCodes.has(module.code) ? (
-                moduleRoute(<module.Routes />)
-              ) : (
-                <div className="p-4">
-                  <EmptyState icon="puzzle" title="Module inactif">
-                    Ce module n'est pas actif dans cet espace.
-                  </EmptyState>
-                </div>
-              )
+              <div className="p-4">
+                <EmptyState
+                  icon="search"
+                  title="Page introuvable"
+                  action={
+                    <Button onClick={() => void navigate(`/s/${spaceId}`)}>
+                      Retour à l'espace
+                    </Button>
+                  }
+                />
+              </div>
             }
           />
-        ))}
-        <Route
-          path="*"
-          element={
-            <div className="p-4">
-              <EmptyState
-                icon="search"
-                title="Page introuvable"
-                action={
-                  <Button onClick={() => void navigate(`/s/${spaceId}`)}>Retour à l'espace</Button>
-                }
-              />
-            </div>
-          }
-        />
-      </Routes>
+        </Routes>
+      </ChromeProvider>
       {switcher}
       {createSheet}
       <MoreSheet open={moreOpen} onClose={() => setMoreOpen(false)} items={nav.more} />

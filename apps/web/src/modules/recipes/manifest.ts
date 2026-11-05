@@ -1,5 +1,4 @@
-// Manifeste web du module Recettes. C2 : navigation et page d'attente ; les
-// ecrans arrivent en C3.
+// Manifeste web du module Recettes : navigation et routes (ecrans en C3).
 import { lazy } from "react";
 
 import type { WebModule } from "../../app/registry.ts";
