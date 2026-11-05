@@ -5,6 +5,7 @@ import type { PasswordHasher } from "./auth/password.ts";
 import type { Env } from "./config/env.ts";
 import type { Db } from "./db/client.ts";
 import type { Mailer } from "./mail/mailer.ts";
+import type { LifecycleHooks } from "./modules/hooks.ts";
 
 export interface Context {
   env: Env;
@@ -12,4 +13,5 @@ export interface Context {
   logger: Logger;
   mailer: Mailer | null;
   hasher: PasswordHasher;
+  hooks: LifecycleHooks;
 }

@@ -13,6 +13,8 @@ import type { Env } from "../config/env.ts";
 import type { Context } from "../context.ts";
 import type { Db } from "../db/client.ts";
 import { createMailer, type Mailer } from "../mail/mailer.ts";
+import { emptyHooks, type LifecycleHooks } from "../modules/hooks.ts";
+import { spacesRouter } from "../spaces/routes.ts";
 import { errorHandler, notFoundHandler } from "./errors.ts";
 import { httpLogger } from "./logger.ts";
 import { csrfProtection, securityHeaders } from "./security.ts";
@@ -27,22 +29,30 @@ export interface AppDeps {
   /** Transport des emails ; par defaut celui de SMTP_URL (null sans SMTP). */
   mailer?: Mailer | null;
   hasher?: PasswordHasher;
+  hooks?: LifecycleHooks;
 }
 
 /** Taille maximale d'un corps JSON (comme la V1). */
 const JSON_LIMIT = "50kb";
 
-export function createApp(deps: AppDeps): express.Express {
+/** Contexte complet a partir des dependances (valeurs par defaut selon l'environnement). */
+export function createContext(deps: AppDeps): Context {
   const { env } = deps;
-  const production = env.NODE_ENV === "production";
-  const rateLimit = deps.rateLimit ?? env.NODE_ENV !== "test";
-  const ctx: Context = {
+  return {
     env,
     db: deps.db,
     logger: deps.logger,
     mailer: deps.mailer === undefined ? createMailer(env) : deps.mailer,
     hasher: deps.hasher ?? createPasswordHasher(env.NODE_ENV === "test"),
+    hooks: deps.hooks ?? emptyHooks(),
   };
+}
+
+export function createApp(deps: AppDeps): express.Express {
+  const { env } = deps;
+  const production = env.NODE_ENV === "production";
+  const rateLimit = deps.rateLimit ?? env.NODE_ENV !== "test";
+  const ctx = createContext(deps);
   const app = express();
 
   app.disable("x-powered-by");
@@ -68,6 +78,7 @@ export function createApp(deps: AppDeps): express.Express {
   });
   api.use(sessionMiddleware(deps.db, env.SESSION_SECRET, production));
   api.use(authRouter(ctx, rateLimit));
+  api.use(spacesRouter(ctx));
   app.use(API_PREFIX, api);
 
   app.use(notFoundHandler);

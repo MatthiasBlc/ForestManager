@@ -417,3 +417,8 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
 
 - **Constat** : changer de mot de passe doit fermer les autres sessions (F-ACC-4), la reinitialisation et la suppression du compte toutes ses sessions. Le schema cible ne reliait pas une session a son compte (donnees serialisees seulement), et la V1 dependait de `@quixo3/prisma-session-store`.
 - **Choix** : store express-session ecrit dans `core/auth/session.ts` sur la table `UserSession`, avec une colonne `userId` indexee (sans cle etrangere : les sessions d'un compte sont supprimees explicitement). Purge horaire des sessions expirees. Schema cible mis a jour.
+
+### D149 - Exclusion distinguee d'un depart : `Membership.excludedAt` - VALIDEE (2026-11-05, realisation C1.6)
+
+- **Constat** : un membre exclu ne revient que par invitation directe, jamais par un lien (D07, D53) ; un membre parti de lui-meme peut revenir par un lien. Le schema cible n'avait que `leftAt` et ne permettait pas de les distinguer.
+- **Choix** : colonne `excludedAt` sur `Membership`, renseignee a l'exclusion et effacee au retour. Au depart, le role revient a MEMBER et les propositions de transfert de propriete en cours qui le concernent sont annulees. Schema cible mis a jour.

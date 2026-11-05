@@ -163,6 +163,8 @@ model Membership {
   role                SpaceRole @default(MEMBER)
   joinedAt            DateTime  @default(now())
   leftAt              DateTime?
+  /// Exclusion par un moderateur [D53] : on ne revient que par invitation directe [D07, D149].
+  excludedAt          DateTime?
   /// Confiance de l'auteur [D81] : les autres membres de cet espace peuvent partager
   /// ses recettes ailleurs sans lui demander (il est simplement informe).
   allowMembersToShare Boolean   @default(false)

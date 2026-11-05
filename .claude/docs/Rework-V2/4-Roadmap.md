@@ -37,7 +37,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C1.3 Package partage (erreurs, permissions, schemas, contrat de module)
   - [x] C1.4 Squelette API, Prisma du socle, seed, harnais de test
   - [x] C1.5 Comptes et sessions
-  - [ ] C1.6 Espaces et membres
+  - [x] C1.6 Espaces et membres
   - [ ] C1.7 Invitations
   - [ ] C1.8 Registre de modules
   - [ ] C1.9 Suppression du compte

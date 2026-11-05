@@ -38,6 +38,11 @@ export function pageSchema<T extends z.ZodType>(item: T) {
   return z.object({ data: z.array(item), nextCursor: z.string().nullable() });
 }
 
+/** Liste courte non paginee (espaces, membres) : meme enveloppe que les pages. */
+export function listSchema<T extends z.ZodType>(item: T) {
+  return z.object({ data: z.array(item) });
+}
+
 /** Utilisateur tel que vu par les autres membres (D50 : pas plus). */
 export const userSummarySchema = z.object({
   id: uuidSchema,
