@@ -1,6 +1,6 @@
 # Forest Manager V2 - Cahier des charges
 
-**Version : 0.5 (conception B1 a B8 validee, maquettes comprises ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception ; reste la validation finale)** - 2026-11-05
+**Version : 1.0 (valide par le proprietaire le 2026-11-05, feu vert pour coder ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception)** - 2026-11-05
 Statut de chaque decision : voir `3-Journal-des-Decisions.md`. Une ligne marquee `[Dxx]` renvoie a sa decision.
 Les questions de la phase A sont au S10 (toutes repondues). Tant qu'une question touche une section, cette section n'est pas validable.
 

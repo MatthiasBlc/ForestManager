@@ -26,7 +26,7 @@ La premiere case non cochee est le point de reprise. **Aucune ligne de code appl
 - [x] B6 Architecture technique (`14-Architecture.md`)
 - [x] B7 Plan de migration des donnees : sans objet (pas d'utilisateurs en V1, remise a zero)
 - [x] B8 Plan de tests (`15-Plan-Tests.md`)
-- [ ] B9 **Validation finale du CDC 1.0** - feu vert pour coder
+- [x] B9 **Validation finale du CDC 1.0** - feu vert pour coder (2026-11-05)
 
 ## Phase C - Realisation (detaillee a la fin de la phase B)
 
