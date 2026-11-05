@@ -1,0 +1,23 @@
+/* Complements propres a l'application (le design system ne les fournit pas). */
+
+/* Pile des toasts : en bas, au-dessus de la barre d'onglets sur mobile. */
+.fm-toasts {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--size-tabbar) + var(--space-4) + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: var(--z-toast, 60);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(100vw - 2 * var(--space-4), 420px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  outline: none;
+}
+@media (min-width: 768px) {
+  .fm-toasts {
+    bottom: var(--space-6);
+  }
+}

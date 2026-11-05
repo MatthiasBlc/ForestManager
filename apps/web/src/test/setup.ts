@@ -6,6 +6,27 @@ import { afterAll, afterEach, beforeAll } from "vitest";
 
 import { server } from "./server.ts";
 
+// API absentes de jsdom dont Radix a besoin (positionnement, pointeur).
+class ResizeObserverStub {
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+}
+if (!("ResizeObserver" in globalThis)) {
+  Object.assign(globalThis, { ResizeObserver: ResizeObserverStub });
+}
+const proto = Element.prototype as unknown as Record<string, unknown>;
+for (const name of [
+  "hasPointerCapture",
+  "setPointerCapture",
+  "releasePointerCapture",
+  "scrollIntoView",
+]) {
+  if (typeof proto[name] !== "function") {
+    proto[name] = name === "hasPointerCapture" ? () => false : () => undefined;
+  }
+}
+
 // Une requete sans handler est une erreur de test, pas un appel reseau reel.
 beforeAll(() => {
   server.listen({ onUnhandledFrame: "error" });

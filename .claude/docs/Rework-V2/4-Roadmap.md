@@ -45,7 +45,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
 - [ ] C2 Design system, app shell et ecrans du socle (plan : `18-Plan-C2.md`)
   - [x] C2.0 Plan de C2 (D154 a D157)
   - [x] C2.1 Outillage web
-  - [ ] C2.2 Composants du design system
+  - [x] C2.2 Composants du design system
   - [ ] C2.3 Themes et preferences
   - [ ] C2.4 App shell et registre web
   - [ ] C2.5 Acces

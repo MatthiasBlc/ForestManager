@@ -32,6 +32,8 @@ export default tseslint.config(
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
       "@typescript-eslint/restrict-template-expressions": ["error", { allowNumber: true }],
+      // `onClick={() => setOpen(true)}` : idiome React, garde pour le reste.
+      "@typescript-eslint/no-confusing-void-expression": ["error", { ignoreArrowShorthand: true }],
       eqeqeq: ["error", "always"],
       "no-console": "error",
     },
@@ -60,7 +62,7 @@ export default tseslint.config(
   },
   {
     // Tests : les corps de reponse Supertest sont `any`.
-    files: ["**/test/**/*.ts"],
+    files: ["**/test/**/*.ts", "**/*.test.{ts,tsx}"],
     rules: {
       "@typescript-eslint/no-unsafe-assignment": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",

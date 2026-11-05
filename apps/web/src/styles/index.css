@@ -42,3 +42,4 @@
   --radius-lg: var(--radius-lg);
   --radius-xl: var(--radius-xl);
 }
+@import "./app.css";
