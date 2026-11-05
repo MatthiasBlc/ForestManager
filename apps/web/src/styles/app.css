@@ -81,3 +81,8 @@ body,
     display: flex;
   }
 }
+
+/* Etapes numerotees (le reset de Tailwind retire les puces des listes). */
+.fm-block-body ol {
+  list-style: decimal;
+}
