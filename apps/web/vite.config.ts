@@ -7,6 +7,8 @@ import { defineConfig } from "vite";
 const apiTarget = process.env.API_PROXY_TARGET ?? "http://localhost:3001";
 
 export default defineConfig({
+  // Hors de l'arbre dans les conteneurs (VITE_CACHE_DIR), pour ne rien y ecrire en root.
+  cacheDir: process.env.VITE_CACHE_DIR ?? "node_modules/.vite",
   plugins: [react(), tailwindcss()],
   server: {
     host: true,
