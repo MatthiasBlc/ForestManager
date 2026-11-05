@@ -8,6 +8,9 @@ import { ForgotPasswordPage, ResetPasswordPage } from "../core/access/password-p
 import { RegisterPage } from "../core/access/register-page.tsx";
 import { VerifyEmailPage } from "../core/access/verify-email-page.tsx";
 import { WelcomePage } from "../core/access/welcome-page.tsx";
+import { AppearancePage } from "../core/profile/appearance-page.tsx";
+import { DeleteAccountPage } from "../core/profile/delete-account-page.tsx";
+import { AccountPage, PasswordPage, ProfilePage } from "../core/profile/profile-pages.tsx";
 import { GuestOnly } from "../core/session/guest-only.tsx";
 import { meQuery } from "../core/session/queries.ts";
 import { RequireAuth } from "../core/session/require-auth.tsx";
@@ -51,6 +54,11 @@ export function App() {
         <Route element={<RequireAuth />}>
           <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/s/:spaceId/*" element={<SpaceLayout />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile/account" element={<AccountPage />} />
+          <Route path="/profile/password" element={<PasswordPage />} />
+          <Route path="/profile/appearance" element={<AppearancePage />} />
+          <Route path="/profile/delete" element={<DeleteAccountPage />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

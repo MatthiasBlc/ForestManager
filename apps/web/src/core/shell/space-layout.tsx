@@ -28,13 +28,13 @@ import { Icon } from "../../ui/icon.tsx";
 import { Sheet } from "../../ui/sheet.tsx";
 import { writeLastSpace } from "../session/last-space.ts";
 import { meQuery, spaceQuery, spacesQuery } from "../session/queries.ts";
+import { HomePage } from "../home/home-page.tsx";
 import { ModulesPage } from "../modules/modules-page.tsx";
 import { CreateSpaceSheet } from "../spaces/create-space-sheet.tsx";
 import { DeletedSpacePage } from "../spaces/deleted-space-page.tsx";
 import { MembersPage } from "../spaces/members-page.tsx";
 import { SettingsPage } from "../spaces/settings-page.tsx";
 import { buildNavigation } from "./navigation.ts";
-import { PendingPage } from "./pending-page.tsx";
 import { toVisual } from "./space-visual.ts";
 
 /** Entree active : celle dont le chemin couvre le mieux l'adresse courante. */
@@ -215,7 +215,7 @@ export function SpaceLayout() {
     >
       <Routes>
         <Route index element={<Navigate to={nav.items[0]?.to ?? "home"} replace />} />
-        <Route path="home" element={<PendingPage title="Accueil" />} />
+        <Route path="home" element={<HomePage />} />
         <Route path="members" element={<MembersPage space={space.data} />} />
         <Route path="settings" element={<SettingsPage space={space.data} />} />
         <Route path="modules" element={<ModulesPage space={space.data} />} />
