@@ -28,6 +28,7 @@ import { Icon } from "../../ui/icon.tsx";
 import { Sheet } from "../../ui/sheet.tsx";
 import { writeLastSpace } from "../session/last-space.ts";
 import { meQuery, spaceQuery, spacesQuery } from "../session/queries.ts";
+import { ModulesPage } from "../modules/modules-page.tsx";
 import { CreateSpaceSheet } from "../spaces/create-space-sheet.tsx";
 import { DeletedSpacePage } from "../spaces/deleted-space-page.tsx";
 import { MembersPage } from "../spaces/members-page.tsx";
@@ -217,6 +218,7 @@ export function SpaceLayout() {
         <Route path="home" element={<PendingPage title="Accueil" />} />
         <Route path="members" element={<MembersPage space={space.data} />} />
         <Route path="settings" element={<SettingsPage space={space.data} />} />
+        <Route path="modules" element={<ModulesPage space={space.data} />} />
         {WEB_MODULES.map((module) => (
           <Route
             key={module.code}
