@@ -2,7 +2,7 @@
 
 **Version : 0.5 (conception B1 a B8 validee, maquettes comprises ; decisions D01 a D139 reportees, D41 a D79 par renvoi aux documents de conception ; reste la validation finale)** - 2026-11-05
 Statut de chaque decision : voir `3-Journal-des-Decisions.md`. Une ligne marquee `[Dxx]` renvoie a sa decision.
-Les questions encore ouvertes sont au S10. Tant qu'une question touche une section, cette section n'est pas validable.
+Les questions de la phase A sont au S10 (toutes repondues). Tant qu'une question touche une section, cette section n'est pas validable.
 
 ---
 
@@ -51,11 +51,12 @@ Principes directeurs :
 | Voir le contenu, ajouter des recettes                   |   x    |     x     |   x   |
 | Suggerer une modification                               |   x    |     x     |   x   |
 | Modifier / retirer **sa** recette                       |   x    |     x     |   x   |
-| Modifier / retirer la recette d'un autre                |        |     x     |   x   |
+| Modifier / retirer la recette d'un autre [D57]          |        |     x     |   x   |
 | Trancher une suggestion si l'auteur est parti           |        |     x     |   x   |
 | Gerer les tags de l'espace                              |        |     x     |   x   |
-| Inviter, exclure un membre                              |        |     x     |   x   |
-| Promouvoir / retrograder un moderateur                  |        |           |   x   |
+| Inviter, exclure un MEMBER                              |        |     x     |   x   |
+| Exclure un moderateur [D53]                             |        |           |   x   |
+| Promouvoir / retrograder un moderateur [D53]            |        |           |   x   |
 | Demander l'acces a un module, l'activer / le desactiver |        |           |   x   |
 | Renommer, changer l'avatar                              |        |     x     |   x   |
 | Supprimer l'espace, transferer la propriete             |        |           |   x   |
@@ -64,11 +65,13 @@ Regles :
 
 - Un espace GROUP a toujours **exactement un OWNER**. Il ne peut pas partir sans transferer la propriete (ou supprimer l'espace).
 - Le dernier membre qui part supprime l'espace (soft delete) apres confirmation explicite.
+- Modifier la recette d'un autre : MOD et OWNER de l'espace d'origine ; dans un espace ou elle est seulement partagee, ils peuvent seulement la retirer [D57].
+- Un moderateur n'exclut jamais un autre moderateur [D53].
 - Les droits des modules (ex : qui peut editer le planning) se reglent par module, sur la base de ces 3 roles.
 
 ### 3.2 Espace PERSONAL
 
-Un seul membre, OWNER. Pas d'invitation, pas de suggestions. Tous les modules qui ont du sens en solo y sont disponibles (recettes, planning, courses).
+Un seul membre, OWNER. Pas d'invitation, pas de suggestions. Les modules qui ont du sens en solo (planning, courses) s'y demandent et s'y activent comme dans un groupe [D33].
 
 ### 3.3 Administration plateforme
 
@@ -90,7 +93,7 @@ Identifiants `F-<module>-<n>` pour que roadmap et tests s'y referent.
 
 ### 4.2 Espaces, membres, invitations
 
-- F-SPC-1 Creer un espace GROUP (nom, description, avatar, couleur d'accent). Le createur est OWNER.
+- F-SPC-1 Creer un espace GROUP (nom, description, avatar, teinte d'accent, S5.3). Le createur est OWNER.
 - F-SPC-2 Inviter par **lien d'invitation** ou par username exact [D07]. Le lien a deux reglages seulement (duree 1, 7 ou 30 jours ; nombre de personnes) et se revoque dans la meme feuille [D94].
 - F-SPC-3 Accepter / refuser une invitation. Les invitations en attente sont visibles dans le centre de notifications.
 - F-SPC-4 Quitter, exclure, promouvoir, retrograder, transferer la propriete (S3.1). Le transfert est une proposition que le destinataire accepte ; l'ancien OWNER devient moderateur [D92]. Quitter un groupe ou l'on a partage des recettes de son espace perso : l'ecran liste ces recettes et l'on choisit de laisser ou de retirer chaque partage [D84].
@@ -110,12 +113,12 @@ Contenu :
 Cycle de vie [D03][D04][D05] :
 
 - F-REC-4 Creer une recette **dans un espace** (perso ou groupe). Elle a **un** espace d'origine et **un** auteur. Plus de double creation perso + communaute.
-- F-REC-5 **Partager** une recette dans d'autres espaces dont on est membre : la recette apparait dans ces espaces, c'est la meme recette (une seule source de verite, pas de synchronisation). L'auteur partage directement ; un autre membre envoie une demande que l'auteur accepte, sauf si l'auteur a autorise les membres de cet espace a partager ses recettes [D81]. La demande s'ouvre en feuille depuis la notification, avec le reglage de confiance sur place [D101].
+- F-REC-5 **Partager** une recette dans d'autres espaces dont on est membre : la recette apparait dans ces espaces, c'est la meme recette (une seule source de verite, pas de synchronisation). Partager une recette composee partage ses sous-recettes, listees avant de valider [D26]. L'auteur partage directement ; un autre membre envoie une demande que l'auteur accepte, sauf si l'auteur a autorise les membres de cet espace a partager ses recettes [D81]. La demande s'ouvre en feuille depuis la notification, avec le reglage de confiance sur place [D101].
 - F-REC-6 **Adapter** une recette pour un espace ("chez nous on la fait au beurre") : nouvelle recette de cet espace, liee a l'original et a sa revision de depart (`adaptedFromId`). L'original n'est jamais modifie. L'adaptation signale quand l'original a change et offre un ecran "Comparer avec l'original" en lecture seule [D17] : "Original modifie", "Ce que ton espace a change" et l'action "Proposer a l'original" [D105].
 - F-REC-7 **Suggerer une modification** (membre non auteur) : diff lisible champ par champ. L'auteur (ou un moderateur si l'auteur n'est plus membre) accepte ou refuse. Accepter cree une revision. Refuser ne cree rien ; le suggereur peut, s'il le veut, transformer sa suggestion en copie personnelle.
-- F-REC-8 **Historique des revisions** consultable, avec restauration par l'auteur. Le bouton d'enregistrement annonce la revision creee ("Enregistrer la revision 5") [D102]. Quitter l'editeur sans enregistrer garde un brouillon sur l'appareil [D104].
+- F-REC-8 **Historique des revisions** consultable, avec restauration (meme droit que modifier [D55]). Le bouton d'enregistrement annonce la revision creee ("Enregistrer la revision 5") [D102]. Quitter l'editeur sans enregistrer garde un brouillon sur l'appareil [D104].
 - F-REC-9 Retirer une recette d'un espace de partage (auteur ou moderateur de cet espace) sans la supprimer.
-- F-REC-10 Supprimer une recette (auteur) : elle disparait de tous les espaces ou elle est partagee, apres confirmation listant ces espaces.
+- F-REC-10 Supprimer une recette (auteur ; MOD et OWNER de l'espace d'origine si l'auteur n'en est plus membre [D57]) : elle disparait de tous les espaces ou elle est partagee, apres confirmation listant ces espaces.
 - F-REC-11 Recherche et filtres : texte, tags, ingredients, temps max, auteur, espace. Tri.
 - F-REC-12 Vue cuisine : etapes en grand, ecran maintenu allume, cochage des ingredients. Sur mobile, le detail d'une recette a un en-tete avec retour et une seule action principale fixee en bas (Mode cuisine) [D100].
 - F-REC-13 Compteurs : nombre de fois planifiee, derniere fois cuisinee, nombre d'adaptations, espaces de partage. Pas de suivi des vues [D39].
@@ -127,8 +130,8 @@ Ce que l'on supprime de la V1 : la recette perso jumelle creee automatiquement, 
 - F-REF-1 Tags globaux : liste courte et curee par l'admin (ex : vegetarien, dessert, rapide).
 - F-REF-2 Tags d'espace : propres a chaque espace, y compris sur une recette partagee [D19]. Tout membre peut en creer en taguant une recette ; ils sont immediatement utilisables. Les moderateurs les renomment, fusionnent, suppriment.
 - F-REF-3 Ingredients : catalogue global. Un ingredient inconnu est cree a la volee et utilisable tout de suite ; l'admin fusionne les doublons a posteriori (le statut sert au tri de la file admin, pas a bloquer). Un ingredient fusionne devient un synonyme de la cible : propose a la saisie, remplace par la cible [D120].
+- F-REF-4 Unites : catalogue global gere par l'admin, par dimension (poids, volume, piece, qualitatif ; les cuilleres sont des volumes) avec un facteur vers l'unite de base, et un poids par ingredient et par unite pour passer des pieces aux grammes [D46]. Sert aux recettes composees et a la liste de courses [D36].
 - F-REF-5 Rayons : chaque ingredient a un rayon par defaut (fruits et legumes, boucherie...), gere par l'admin, utilise par la future liste de courses [D36]. Les rayons sont ordonnes selon le parcours en magasin ; sans rayon, l'ingredient va dans "Autres" [D125].
-- F-REF-4 Unites : catalogue global gere par l'admin, avec categories (poids, volume, cuillere, piece, qualitatif) et conversions pour la liste de courses.
 - Supprime : workflow PENDING des tags d'espace, suggestions de tags, preference "masquer les tags" par espace [D27].
 
 ### 4.5 Import
@@ -158,13 +161,13 @@ Reprend la V1 (grille jours x repas, slots recette / texte libre / vide, verroui
 
 - F-SHP-1 Generer une liste depuis une periode du planning (agregation des ingredients, conversion d'unites, mise a l'echelle des portions). Pieces et grammes s'additionnent grace au poids par unite, sinon deux lignes [D126].
 - F-SHP-2 Articles libres, cocher "achete", archiver.
-- F-SHP-3 Regroupement par type de magasin, magasin favori par ingredient.
+- F-SHP-3 Regroupement par rayon, dans l'ordre du parcours en magasin (F-REF-5) [D125] ; magasin favori par ingredient.
 
 ### 4.8 Notifications et activite
 
 - F-NOT-1 Centre de notifications persistant (comme V1), temps reel par WebSocket, groupement.
 - F-NOT-2 Preferences globales par categorie, avec un reglage personnalise par espace [D118].
-- F-NOT-3 Types de notification types (enum) et declares par chaque module.
+- F-NOT-3 Types de notification et d'activite : cles texte declarees par chaque module dans le registre, pas d'enum en base (un nouveau module n'impose pas de migration du socle) [D41].
 - F-NOT-4 Notification "nouvelle version" liee au changelog, envoyee a tous les utilisateurs si l'admin l'active a la publication (interrupteur) [D127].
 
 ### 4.9 Administration plateforme
@@ -203,7 +206,7 @@ Reprise de la V1 (genere par la CI, page utilisateur, CRUD admin).
 
 ### 5.3 Design system
 
-- **shadcn/ui** (Radix + Tailwind) : composants copies dans le depot, donc modifiables, organises en 3 couches : `ui/` (primitives shadcn), `patterns/` (composites : RecipeCard, IngredientInput, SlotCell...), `modules/` (ecrans).
+- **shadcn/ui** (Radix + Tailwind) [D16] : composants copies dans le depot, donc modifiables, organises en 3 couches : `ui/` (primitives shadcn), `patterns/` (composites : RecipeCard, IngredientInput, SlotCell...), `modules/` (ecrans).
 - **Tailwind v4** avec des **tokens CSS** (`--background`, `--foreground`, `--primary`, `--muted`, `--radius`, etc.) definis une fois.
 - **Ambiances** [D32] : **Braise** en signature (charbon, ardoise, accent ambre) ; **Sous-bois** et **Potager** en alternatives dans Profil > Apparence. Polices communes, seules les couleurs changent. Chaque ambiance existe en clair et en sombre ; par defaut l'app suit le reglage du systeme.
 - **Personnalisable** : ambiance, mode clair / sombre / systeme, densite (confortable / compacte), taille du texte, et **couleur d'accent par espace** (chaque espace a sa teinte, adaptee a l'ambiance, appliquee quand on y entre). L'ambiance se choisit avec un apercu reel et s'applique immediatement [D115].
@@ -243,24 +246,11 @@ Conserver l'acquis V1 (helmet, CSRF double submit, rate limiting, validation Zod
 - Le seed de deploiement ne contient que les referentiels ; les donnees de demo sont un script separe.
 - Migrations Prisma revues avant merge, sauvegarde DB avant chaque deploy prod.
 
-## 7. Modele de donnees cible (esquisse a valider)
+## 7. Modele de donnees cible
 
-```
-User -+- Membership(role) -- Space(kind: PERSONAL|GROUP, accentColor, avatar)
-      |                         +- SpaceModule(moduleCode, enabled, settings)
-      |                         +- Invite(code, expiresAt, maxUses, uses)
-      |                         \- SpaceTag
-      \- Recipe(authorId, homeSpaceId, adaptedFromId?, adaptedFromRevisionId?, currentRevisionId)
-            +- RecipeRevision(n, snapshot: sections/ingredients/steps, authorId, createdAt)
-            +- RecipeShare(spaceId, sharedById, sharedAt)     -- visibilite par reference
-            +- RecipeSuggestion(baseRevisionId, diff, status)
-            \- RecipeTag(tagId, spaceId)   -- tags d'espace par espace, globaux avec spaceId null
-Referentiels : Tag(scope GLOBAL|SPACE), Ingredient, Unit(+conversions)
-Modules : MealPlan/MealSlot/MealIdea/GenerationParams..., ShoppingList/ShoppingItem
-Transverse : Notification(type enum), ActivityLog, ChangelogEntry, Admin*
-```
+Source de verite : `11-Modele-Donnees/schema.prisma` (contraintes SQL hors Prisma listees en fin de fichier). Presentation : `11-Modele-Donnees/Modele-Donnees.html`, generee par `generer-page.py` (artefact en ligne : lien dans le `README.md` du chantier). Le CDC ne recopie pas le schema.
 
-Revisions en instantane JSON [D30] ; tags d'espace portes par le couple recette + espace, tags globaux par la recette [D19].
+Choix structurants : revisions en instantane JSON [D30][D42] ; tags d'espace portes par le couple recette + espace, tags globaux par la recette [D19] ; types de notification et d'activite en cles texte [D41] ; compteurs calcules, pas stockes [D43]. Detail des decisions de modelisation : D41 a D47.
 
 ## 8. Migration des donnees V1 -> V2
 

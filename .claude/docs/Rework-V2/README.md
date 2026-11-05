@@ -35,10 +35,19 @@ Artefact en ligne : voir le lien dans la section "Reprise" ci-dessous. La copie 
 ## Reprise
 
 - Derniere session : 2026-11-05. Contexte remis a zero apres cette session : tout l'etat est ici et dans les fichiers cites.
-- Fait : etude (A), design system (B4), modele de donnees (B1), permissions (B2), parcours (B3), architecture (B6), tests (B8), maquettes (B5). Decisions D01 a D139 toutes tranchees (journal). CDC en 0.5 : il couvre D01 a D139 (D41 a D79 par renvoi aux documents de conception 11 a 15).
+- Fait : etude (A), design system (B4), modele de donnees (B1), permissions (B2), parcours (B3), architecture (B6), tests (B8), maquettes (B5). Decisions D01 a D139 toutes tranchees (journal). Version et couverture du CDC : son en-tete.
 - Prochaine etape : B9, validation finale du CDC 1.0. Maquettes revues dans Chrome le 2026-11-05 (B5b termine, voir `16-Maquettes/ECARTS.md`). Tout est publie et committe au 2026-11-05 : DS v10, Acces v39, Recettes v35, Planning v26, Admin v26.
   - Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact) : relire l'artefact (action read sur l'URL), puis publier avec `root` = le dossier du canevas, `file_path` = un fichier modifie, `files` = les autres (`project/...`).
   - Les numeros de version des canevas avancent aussi a la simple consultation : comparer le contenu en ligne au commit avant d'ecraser.
+- Preparation de B9 faite le 2026-11-05 : contradictions de report corrigees dans le CDC (F-NOT-3 et D41, S3.1 et D53, S7 remplacee par un renvoi au schema, D26, D46, D55, D57, D125). Le CDC reste en 0.5 ; la validation et la case B9 appartiennent au proprietaire.
+- Points ouverts pour B9 :
+  - S2, S4.3 (F-REC-7), roadmap C3 : la "Copie (fork)" independante n'existe ni dans le schema, ni dans `12-Permissions.md`, ni dans les parcours (seule copie = adaptation D17, et 12 dit "transformer sa suggestion refusee en adaptation" quand D04 dit "copie"). Supprimer la copie independante ou l'ajouter partout ?
+  - S7 : `schema.prisma` date de B1 et ne porte pas les decisions B5 : proposition de transfert de propriete (D92), lien d'invitation sans expiration possible alors que la duree est 1, 7 ou 30 jours (D94), ingredient MERGED "plus propose" contre synonyme propose a la saisie (D120), ordre des modules choisi par l'OWNER (D131), mot de passe temporaire (D134), choix et ordre des widgets d'accueil (S5.2). Mettre a jour le schema avant la 1.0 ou en C1 ?
+  - S3.3, S4.9 : `12-Permissions.md` donne au super admin le droit de modifier une recette, alors que D52 et D122 limitent son acces a la lecture et aux actions de moderation (masquer, supprimer).
+  - S4.7 : droits de la liste de courses encore "proposes" dans `12-Permissions.md` (memes droits que modifier le planning) ; aucune decision du journal.
+  - En-tete, S5.4, S6 : documents de conception aux statuts perimes alors que le journal les valide (12 PROPOSEE avec P1 et P2 "a trancher", 13 BROUILLON, 15 PROPOSE, schema PROPOSITION ; sections "Questions pour le proprietaire" deja tranchees). Aligner sur "statut : voir le journal" et republier 12 et 13 ?
+  - S4.1 (F-ACC-6), S4.2 (F-SPC-8) : D37 (export natif) a ete choisi par Claude, "a revoir" selon le journal ; D130 (selecteur mobile, S5.2) est note "reversible". A confirmer.
+  - S4.3 (F-REC-13), S4.8 : D12 et D14 sont reserves dans le journal (notifications, analytics) sans jamais avoir ete ecrits ; couverts par D41, D118 et D39. Les marquer "non utilises" ?
 - Methode : copie locale d'abord, puis publication ; commits en francais, autonomes, sans Co-Authored-By ; taches independantes en agents paralleles.
 - Artefacts :
   - Analyse V1 : https://claude.ai/artifact/2j7eohGZT8qonftWqb1wUw (`2-Analyse-V1.html`)
