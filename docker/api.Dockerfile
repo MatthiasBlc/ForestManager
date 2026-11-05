@@ -12,6 +12,7 @@ RUN npm install -g npm@11.21.1 && npm cache clean --force
 WORKDIR /app
 # Pas de hooks git dans une image.
 ENV HUSKY=0
+ENV PRISMA_HIDE_UPDATE_MESSAGE=1
 
 # ---------- manifests : seulement ce qui invalide l'installation ----------
 FROM base AS manifests
@@ -27,7 +28,11 @@ ENV NODE_ENV=development
 RUN --mount=type=cache,target=/root/.npm npm ci
 COPY . .
 EXPOSE 3001
-CMD ["npm", "run", "dev", "--workspace=@fm/api"]
+CMD ["sh", "docker/api-start.sh", "dev"]
+
+# ---------- generate : client Prisma pour l'image prod ----------
+FROM dev AS generate
+RUN cd apps/api && npx prisma generate
 
 # ---------- prod-deps : dependances de production de l'API ----------
 FROM manifests AS prod-deps
@@ -42,15 +47,19 @@ FROM ${NODE_IMAGE} AS prod
 RUN apk add --no-cache tini
 WORKDIR /app
 ENV NODE_ENV=production
+ENV NPM_CONFIG_UPDATE_NOTIFIER=false PRISMA_HIDE_UPDATE_MESSAGE=1
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY package.json ./
 COPY packages/shared/package.json packages/shared/
 COPY packages/shared/src packages/shared/src
-COPY apps/api/package.json apps/api/
+COPY apps/api/package.json apps/api/prisma.config.ts apps/api/
+COPY apps/api/prisma apps/api/prisma
 COPY apps/api/src apps/api/src
+COPY --from=generate /app/apps/api/src/generated apps/api/src/generated
+COPY docker/api-start.sh docker/
 USER node
 EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD wget -qO /dev/null http://127.0.0.1:3001/health || exit 1
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["node", "apps/api/src/server.ts"]
+CMD ["sh", "docker/api-start.sh", "prod"]

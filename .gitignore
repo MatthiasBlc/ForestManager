@@ -37,3 +37,6 @@ Thumbs.db
 
 # Deployment artifacts
 stack_substituted.yml
+
+# Client Prisma genere (prisma generate)
+apps/api/src/generated/

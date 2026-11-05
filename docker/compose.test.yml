@@ -34,10 +34,12 @@ services:
     environment:
       NODE_ENV: test
       DATABASE_URL: postgresql://test:test@postgres:5432/forestmanager_test
+      SESSION_SECRET: test-session-secret-not-for-production
     volumes:
       - .:/app
       - /app/node_modules
     depends_on:
       postgres:
         condition: service_healthy
+    entrypoint: ["sh", "docker/test-entrypoint.sh"]
     command: ["npx", "vitest", "run"]

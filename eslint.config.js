@@ -7,7 +7,14 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["**/dist/", "**/build/", "**/coverage/", "**/node_modules/", ".claude/"],
+    ignores: [
+      "**/dist/",
+      "**/generated/",
+      "**/build/",
+      "**/coverage/",
+      "**/node_modules/",
+      ".claude/",
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
@@ -49,6 +56,14 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+    },
+  },
+  {
+    // Tests : les corps de reponse Supertest sont `any`.
+    files: ["**/test/**/*.ts"],
+    rules: {
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off",
     },
   },
   prettier

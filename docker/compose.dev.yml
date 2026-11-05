@@ -53,6 +53,10 @@ services:
       NODE_ENV: development
       PORT: 3001
       DATABASE_URL: postgresql://${POSTGRES_USER:-forestmanager}:${POSTGRES_PASSWORD:-forestmanager_dev}@postgres:5432/${POSTGRES_DB:-forestmanager_db}
+      SESSION_SECRET: ${SESSION_SECRET:-dev-session-secret-change-me}
+      CORS_ORIGIN: ${CORS_ORIGIN:-}
+      APP_URL: http://localhost:3000
+      SMTP_URL: ${SMTP_URL:-}
     depends_on:
       postgres:
         condition: service_healthy

@@ -1,0 +1,344 @@
+// =============================================================================
+// Forest Manager V2 - schema de l'API
+// =============================================================================
+// Copie du schema cible (.claude/docs/Rework-V2/11-Modele-Donnees/schema.prisma),
+// une section a la fois : C1 = socle (sections 1 a 3) + AdminUser reduit.
+// Chaque etape suivante (C3 a C6) ajoute ses modeles et relations par sa
+// propre migration. Index partiels et CHECK : en SQL dans les migrations.
+// =============================================================================
+
+generator client {
+  provider               = "prisma-client"
+  output                 = "../src/generated/prisma"
+  runtime                = "nodejs"
+  moduleFormat           = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// =============================================================================
+// 1. SOCLE - COMPTES
+// =============================================================================
+
+enum Ambiance {
+  BRAISE
+  SOUSBOIS
+  POTAGER
+}
+
+enum ColorMode {
+  SYSTEM
+  LIGHT
+  DARK
+}
+
+enum Density {
+  COMFORTABLE
+  COMPACT
+}
+
+/// Utilisateur. Un compte supprime est anonymise, pas efface [D20] :
+/// username et email remplaces, deletedAt renseigne, contenus partages conserves.
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique // stocke en minuscules
+  username        String    @unique
+  passwordHash    String
+  emailVerifiedAt DateTime? // null tant que non verifie ; ignore si aucun SMTP [D21]
+  avatarKey       String? // cle MinIO
+  locale          String    @default("fr") // [D34]
+  ambiance        Ambiance  @default(BRAISE) // [D32]
+  colorMode       ColorMode @default(SYSTEM) // [D32]
+  density         Density   @default(COMFORTABLE)
+  textScale       Int       @default(100) // pourcentage : 90, 100, 115, 130
+  homeWidgets     Json? // accueil : liste ordonnee des cles de widgets choisis ; null = choix par defaut du registre (CDC S5.2)
+  lastLoginAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime? // compte supprime et anonymise [D20]
+
+  personalSpace        Space?                   @relation("PersonalSpace")
+  memberships          Membership[]
+  authTokens           AuthToken[]
+  invitationsSent      SpaceInvitation[]        @relation("InvitationSender")
+  invitationsRecv      SpaceInvitation[]        @relation("InvitationInvitee")
+  inviteLinks          SpaceInviteLink[]
+  moduleRequests       ModuleAccessRequest[]
+  ownershipOffersSent  SpaceOwnershipTransfer[] @relation("TransferFrom")
+  ownershipOffersRecv  SpaceOwnershipTransfer[] @relation("TransferTo")
+
+  @@index([deletedAt])
+}
+
+enum AuthTokenKind {
+  VERIFY_EMAIL
+  RESET_PASSWORD
+  TEMP_PASSWORD // genere par un admin sans SMTP : 24 h, usage unique [D134]
+}
+
+/// Jeton a usage unique (verification d'email, mot de passe oublie) [D21].
+/// Seul le hash est stocke. TEMP_PASSWORD [D134] : tokenHash = hash du mot de
+/// passe temporaire, expiresAt = creation + 24 h. Il n'ouvre qu'une session
+/// restreinte au choix d'un nouveau mot de passe ; l'ancien passwordHash reste
+/// valable jusque-la. A l'enregistrement du nouveau : usedAt renseigne,
+/// passwordHash remplace, autres sessions fermees.
+model AuthToken {
+  id        String        @id @default(uuid())
+  userId    String
+  kind      AuthTokenKind
+  tokenHash String        @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime      @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind])
+}
+
+/// Store express-session des utilisateurs (duree selon "rester connecte" [D13]).
+model UserSession {
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}
+
+// =============================================================================
+// 2. SOCLE - ESPACES, MEMBRES, INVITATIONS
+// =============================================================================
+
+enum SpaceKind {
+  PERSONAL
+  GROUP
+}
+
+enum SpaceRole {
+  MEMBER
+  MODERATOR
+  OWNER
+}
+
+/// Espace : perso (un par utilisateur, un seul membre) ou groupe [D02].
+model Space {
+  id             String    @id @default(uuid())
+  kind           SpaceKind
+  name           String
+  description    String?
+  avatarKey      String? // icone dans le rail ; sinon initiales sur la teinte
+  tintIndex      Int       @default(1) // teinte d'espace 1 a 5 [D32]
+  personalUserId String?   @unique // renseigne seulement pour PERSONAL
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime? // suppression demandee : espace masque [D22]
+  purgeAfter     DateTime? // deletedAt + 30 jours ; restaurable avant [D22]
+
+  personalUser       User?                    @relation("PersonalSpace", fields: [personalUserId], references: [id])
+  memberships        Membership[]
+  inviteLinks        SpaceInviteLink[]
+  invitations        SpaceInvitation[]
+  modules            SpaceModule[]
+  moduleRequests     ModuleAccessRequest[]
+  ownershipTransfers SpaceOwnershipTransfer[]
+
+  @@index([deletedAt])
+  @@index([purgeAfter])
+}
+
+/// Appartenance a un espace. Un depart garde la ligne (leftAt) pour l'historique ;
+/// revenir reactive la meme ligne. Exactement un OWNER actif par espace [D06]
+/// (index partiel, voir fin de fichier).
+model Membership {
+  id                  String    @id @default(uuid())
+  spaceId             String
+  userId              String
+  role                SpaceRole @default(MEMBER)
+  joinedAt            DateTime  @default(now())
+  leftAt              DateTime?
+  /// Confiance de l'auteur [D81] : les autres membres de cet espace peuvent partager
+  /// ses recettes ailleurs sans lui demander (il est simplement informe).
+  allowMembersToShare Boolean   @default(false)
+
+  space Space @relation(fields: [spaceId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([spaceId, userId])
+  @@index([userId, leftAt])
+  @@index([spaceId, role])
+}
+
+/// Lien d'invitation [D07] : expiration obligatoire (1, 7 ou 30 jours [D94]),
+/// nombre de personnes (maxUses null = illimite), revocable.
+/// Seul le hash du code est stocke ; le lien complet n'est montre qu'a la creation.
+model SpaceInviteLink {
+  id          String    @id @default(uuid())
+  spaceId     String
+  createdById String
+  codeHash    String    @unique
+  expiresAt   DateTime // creation + 1, 7 ou 30 jours [D94]
+  maxUses     Int? // null = illimite
+  useCount    Int       @default(0)
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  space     Space @relation(fields: [spaceId], references: [id])
+  createdBy User  @relation(fields: [createdById], references: [id])
+
+  @@index([spaceId, revokedAt])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+}
+
+/// Invitation directe par username exact [D07] (pas de recherche par prefixe).
+/// Une seule PENDING par (espace, invite) : index partiel.
+model SpaceInvitation {
+  id          String           @id @default(uuid())
+  spaceId     String
+  inviterId   String
+  inviteeId   String
+  status      InvitationStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  respondedAt DateTime?
+
+  space   Space @relation(fields: [spaceId], references: [id])
+  inviter User  @relation("InvitationSender", fields: [inviterId], references: [id])
+  invitee User  @relation("InvitationInvitee", fields: [inviteeId], references: [id])
+
+  @@index([inviteeId, status])
+  @@index([spaceId, status])
+}
+
+enum OwnershipTransferStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+}
+
+/// Proposition de transfert de propriete [D92] : le destinataire (membre actif)
+/// accepte ou refuse ; a l'acceptation il devient OWNER et l'ancien OWNER
+/// MODERATOR. Une seule PENDING par espace : index partiel. Le transfert
+/// automatique a la suppression du compte d'un OWNER [D51] ne passe pas par ici.
+model SpaceOwnershipTransfer {
+  id          String                  @id @default(uuid())
+  spaceId     String
+  fromUserId  String
+  toUserId    String
+  status      OwnershipTransferStatus @default(PENDING)
+  createdAt   DateTime                @default(now())
+  respondedAt DateTime?
+
+  space    Space @relation(fields: [spaceId], references: [id])
+  fromUser User  @relation("TransferFrom", fields: [fromUserId], references: [id])
+  toUser   User  @relation("TransferTo", fields: [toUserId], references: [id])
+
+  @@index([toUserId, status])
+  @@index([spaceId, status])
+}
+
+// =============================================================================
+// 3. SOCLE - MODULES [D10] [D33] [D40]
+// =============================================================================
+// Le registre des modules (routes, permissions, notifications, widgets, libelles
+// traduits) vit dans le code. La base ne porte que leur disponibilite et les acces.
+
+enum ModuleStatus {
+  AVAILABLE
+  BETA
+  COMING_SOON
+  RETIRED
+}
+
+/// Catalogue des modules de la plateforme. `code` = identifiant du registre.
+model Module {
+  code      String       @id // "recipes", "meal-plan", "shopping"...
+  status    ModuleStatus @default(COMING_SOON)
+  isDefault Boolean      @default(false) // accorde et actif a la creation d'un espace (Recettes) [D33]
+  sortOrder Int          @default(0)
+  updatedAt DateTime     @updatedAt
+
+  spaces   SpaceModule[]
+  requests ModuleAccessRequest[]
+}
+
+/// Acces d'un espace a un module [D33]. L'acces est attache a l'espace, pas a
+/// la personne. grantedAt = accorde ; enabled = active par l'OWNER ; sortOrder =
+/// ordre de la barre des modules choisi par l'OWNER (4 onglets mobiles puis "Plus") [D131].
+/// Monetisation future : une colonne `planId` nullable s'ajoutera ici.
+model SpaceModule {
+  id               String    @id @default(uuid())
+  spaceId          String
+  moduleCode       String
+  grantedAt        DateTime  @default(now())
+  grantedByAdminId String? // null = accorde d'office (module par defaut)
+  revokedAt        DateTime? // retire par un super admin ; donnees conservees
+  enabled          Boolean   @default(false)
+  enabledChangedAt DateTime?
+  sortOrder        Int       @default(0) // ordre choisi par l'OWNER [D131]
+
+  space     Space      @relation(fields: [spaceId], references: [id])
+  module    Module     @relation(fields: [moduleCode], references: [code])
+  grantedBy AdminUser? @relation(fields: [grantedByAdminId], references: [id])
+
+  @@unique([spaceId, moduleCode])
+}
+
+enum AccessRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+/// Demande d'acces a un module par l'OWNER d'un espace [D33].
+/// Une seule PENDING par (espace, module) : index partiel.
+model ModuleAccessRequest {
+  id               String              @id @default(uuid())
+  spaceId          String
+  moduleCode       String
+  requestedById    String
+  message          String?
+  status           AccessRequestStatus @default(PENDING)
+  decidedByAdminId String?
+  decidedAt        DateTime?
+  decisionNote     String?
+  createdAt        DateTime            @default(now())
+
+  space       Space      @relation(fields: [spaceId], references: [id])
+  module      Module     @relation(fields: [moduleCode], references: [code])
+  requestedBy User       @relation(fields: [requestedById], references: [id])
+  decidedBy   AdminUser? @relation(fields: [decidedByAdminId], references: [id])
+
+  @@index([status, createdAt])
+  @@index([spaceId])
+}
+
+// =============================================================================
+// ADMIN (reduit en C1 : seulement ce qu'exigent les relations du socle ; C4 complete)
+// =============================================================================
+
+model AdminUser {
+  id          String    @id @default(uuid())
+  email       String    @unique
+  username    String    @unique
+  password    String
+  totpSecret  String
+  totpEnabled Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lastLoginAt DateTime?
+
+  moduleGrants    SpaceModule[]
+  requestsDecided ModuleAccessRequest[]
+}

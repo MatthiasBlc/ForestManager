@@ -1,16 +1,28 @@
-// Point d'entree provisoire : remplace par l'app Express 5 en C1.4.
-import { createServer } from "node:http";
+// Point d'entree : charge l'environnement, ouvre la base, demarre HTTP et
+// s'arrete proprement sur SIGTERM / SIGINT (docker stop).
 
-import { API_PREFIX } from "@fm/shared";
+import { loadEnv } from "./core/config/env.ts";
+import { createDb } from "./core/db/client.ts";
+import { createApp } from "./core/http/app.ts";
+import { createLogger } from "./core/http/logger.ts";
 
-const port = Number(process.env.PORT ?? 3001);
+const env = loadEnv();
+const logger = createLogger(env);
+const db = createDb(env.DATABASE_URL);
+const app = createApp({ env, db, logger });
 
-const server = createServer((req, res) => {
-  const ok = req.url === "/health";
-  res.writeHead(ok ? 200 : 404, { "content-type": "application/json" });
-  res.end(JSON.stringify(ok ? { status: "ok" } : { error: { code: "COMMON_NOT_FOUND" } }));
+const server = app.listen(env.PORT, () => {
+  logger.info({ port: env.PORT }, "API ready");
 });
 
-server.listen(port, () => {
-  process.stdout.write(`API prete sur :${port} (prefixe ${API_PREFIX})\n`);
-});
+function shutdown(signal: string): void {
+  logger.info({ signal }, "shutting down");
+  server.close(() => {
+    void db.$disconnect().finally(() => process.exit(0));
+  });
+  // Filet : les connexions keep-alive ne doivent pas bloquer l'arret.
+  setTimeout(() => process.exit(1), 10_000).unref();
+}
+
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
