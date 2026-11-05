@@ -9,6 +9,10 @@ Point de reprise : `.claude/docs/Rework-V2/README.md`, puis la premiere case non
 
 La V1 (code actuel) est figee : on ne la modifie que pour un correctif valide explicitement.
 
+## Contexte de session
+
+Des que le contexte depasse 30 a 40 % et qu'un point de reprise propre existe (tache terminee, etat ecrit dans le `README.md` du chantier, travail committe), **marquer une pause et prevenir l'utilisateur** qu'il faut nettoyer le contexte (`/clear`) avant de continuer. Ne pas enchainer sur l'etape suivante.
+
 ## Stack
 
 React 18 + TS + Vite + Tailwind 3 + daisyUI | Node 22 + Express + TS + Zod | PostgreSQL 15 + Prisma 6 | Socket.IO | MinIO (S3) | Docker + GitHub Actions + Portainer
