@@ -1,6 +1,6 @@
 # Forest Manager V2 - Cahier des charges
 
-**Version : 0.4 (conception B1, B2, B3, B6, B8 validee ; reste les maquettes et la validation finale)** - 2026-11-03
+**Version : 0.5 (conception B1 a B8 validee, maquettes comprises ; decisions D01 a D139 reportees, D41 a D79 par renvoi aux documents de conception ; reste la validation finale)** - 2026-11-05
 Statut de chaque decision : voir `3-Journal-des-Decisions.md`. Une ligne marquee `[Dxx]` renvoie a sa decision.
 Les questions encore ouvertes sont au S10. Tant qu'une question touche une section, cette section n'est pas validable.
 
@@ -80,22 +80,22 @@ Identifiants `F-<module>-<n>` pour que roadmap et tests s'y referent.
 
 ### 4.1 Comptes
 
-- F-ACC-1 Inscription email + username + mot de passe. Verification de l'email si un SMTP est configure [D21].
+- F-ACC-1 Inscription email + username + mot de passe. Verification de l'email si un SMTP est configure [D21] ; elle ne bloque rien (on peut rejoindre un espace sans email verifie), un rappel arrive par notification [D90].
 - F-ACC-2 Connexion avec option "rester connecte" (30 jours). Sans l'option : session 1 jour glissante [D13].
-- F-ACC-3 Mot de passe oublie par email si un SMTP est configure ; sinon reinitialisation par un admin [D21]. L'app demarre et fonctionne sans SMTP.
+- F-ACC-3 Mot de passe oublie par email si un SMTP est configure ; sinon reinitialisation par un admin [D21] : mot de passe temporaire de 24 h a usage unique, transmis par l'admin lui-meme, a changer a la connexion ; l'ancien reste valable tant que le temporaire n'a pas servi, puis les autres sessions sont fermees [D134]. L'app demarre et fonctionne sans SMTP.
 - F-ACC-4 Profil : username, email, mot de passe, avatar, theme d'interface (S5.3).
-- F-ACC-5 Suppression du compte (RGPD) : les contenus partages dans des espaces GROUP restent, auteur anonymise, repris par les moderateurs [D20].
+- F-ACC-5 Suppression du compte (RGPD) : les contenus partages dans des espaces GROUP restent, auteur anonymise, repris par les moderateurs [D20]. L'ecran montre les consequences espace par espace et propose l'export avant de demander le mot de passe [D116].
 - F-ACC-6 Export natif de ses recettes (JSON reimportable, Markdown, photos en zip) [D37].
 - A la creation du compte, l'espace PERSONAL est cree automatiquement. Il montre son contenu propre et une vue "Mes recettes" (toutes les recettes dont on est l'auteur) [D82].
 
 ### 4.2 Espaces, membres, invitations
 
 - F-SPC-1 Creer un espace GROUP (nom, description, avatar, couleur d'accent). Le createur est OWNER.
-- F-SPC-2 Inviter par **lien d'invitation** (expiration, nombre d'usages, revocable) ou par username exact [D07].
+- F-SPC-2 Inviter par **lien d'invitation** ou par username exact [D07]. Le lien a deux reglages seulement (duree 1, 7 ou 30 jours ; nombre de personnes) et se revoque dans la meme feuille [D94].
 - F-SPC-3 Accepter / refuser une invitation. Les invitations en attente sont visibles dans le centre de notifications.
-- F-SPC-4 Quitter, exclure, promouvoir, retrograder, transferer la propriete (S3.1).
-- F-SPC-5 Supprimer l'espace (OWNER) : masque pour tous, restaurable 30 jours, puis purge [D22].
-- F-SPC-6 Modules [D33] : a la creation, seul Recettes est accorde et actif. L'OWNER consulte le catalogue des modules (statuts : disponible, beta, bientot), demande l'acces pour son espace, puis active ou desactive chaque module accorde. L'acces est attache a l'espace, pas a la personne. Memes regles pour l'espace perso.
+- F-SPC-4 Quitter, exclure, promouvoir, retrograder, transferer la propriete (S3.1). Le transfert est une proposition que le destinataire accepte ; l'ancien OWNER devient moderateur [D92]. Quitter un groupe ou l'on a partage des recettes de son espace perso : l'ecran liste ces recettes et l'on choisit de laisser ou de retirer chaque partage [D84].
+- F-SPC-5 Supprimer l'espace (OWNER) : masque pour tous, restaurable 30 jours, puis purge [D22]. Confirmation en tapant le nom de l'espace, export propose dans la meme feuille [D93]. A la purge, les recettes partagees ailleurs sont rapatriees dans l'espace perso de leur auteur ; sans auteur, elles restent dans les espaces de partage, gerees par leurs moderateurs [D83].
+- F-SPC-6 Modules [D33] : a la creation, seul Recettes est accorde et actif. L'OWNER consulte le catalogue des modules (statuts : disponible, beta, bientot), demande l'acces pour son espace, puis active ou desactive chaque module accorde. L'acces est attache a l'espace, pas a la personne. Memes regles pour l'espace perso. Recettes est toujours actif et ne se desactive pas [D91]. Un module "bientot" est visible au catalogue mais pas encore demandable [D123]. Un refus porte un motif visible par l'OWNER, qui peut redemander [D124]. Les donnees d'un module desactive ou retire sont conservees, masquees, et reviennent a la reactivation ; elles partent seulement avec l'espace [D85].
 - F-SPC-7 Fil d'activite de l'espace.
 - F-SPC-8 Export de tout l'espace par l'OWNER (memes formats), inscrit dans le fil d'activite, un par jour au maximum [D37].
 
@@ -104,20 +104,20 @@ Identifiants `F-<module>-<n>` pour que roadmap et tests s'y referent.
 Contenu :
 
 - F-REC-1 Titre, photo, portions (avec mise a l'echelle des quantites), temps (preparation, cuisson, repos, total calcule), ingredients (quantite, unite, ingredient), etapes ordonnees, notes, source (URL).
-- F-REC-2 **Blocs** : une recette est une suite de blocs, soit locaux (titre optionnel, ingredients, etapes : "Sauce", "Assemblage"), soit **liens vers une autre recette** avec la quantite utilisee ("Sauce teriyaki : 150 ml"). Chaque recette a un **rendement** (portions par defaut, ou ml, pieces...). Une recette simple = 1 bloc local implicite ; lien **vivant** : un plat montre toujours la version actuelle de sa sous-recette ; pas de boucle, 3 niveaux maximum [D24].
+- F-REC-2 **Blocs** : une recette est une suite de blocs, soit locaux (titre optionnel, ingredients, etapes : "Sauce", "Assemblage"), soit **liens vers une autre recette** avec la quantite utilisee ("Sauce teriyaki : 150 ml"). Chaque recette a un **rendement** (portions par defaut, ou ml, pieces...). Une recette simple = 1 bloc local implicite ; lien **vivant** : un plat montre toujours la version actuelle de sa sous-recette ; pas de boucle, 3 niveaux maximum [D24]. Pour lier une recette, les bases sont proposees d'abord et la quantite se saisit dans l'unite de rendement de la sous-recette [D107].
 - F-REC-3 Tags.
 
 Cycle de vie [D03][D04][D05] :
 
 - F-REC-4 Creer une recette **dans un espace** (perso ou groupe). Elle a **un** espace d'origine et **un** auteur. Plus de double creation perso + communaute.
-- F-REC-5 **Partager** une recette dans d'autres espaces dont on est membre : la recette apparait dans ces espaces, c'est la meme recette (une seule source de verite, pas de synchronisation). L'auteur partage directement ; un autre membre envoie une demande que l'auteur accepte, sauf si l'auteur a autorise les membres de cet espace a partager ses recettes [D81].
-- F-REC-6 **Adapter** une recette pour un espace ("chez nous on la fait au beurre") : nouvelle recette de cet espace, liee a l'original et a sa revision de depart (`adaptedFromId`). L'original n'est jamais modifie. L'adaptation signale quand l'original a change et offre un ecran "Comparer avec l'original" en lecture seule [D17].
+- F-REC-5 **Partager** une recette dans d'autres espaces dont on est membre : la recette apparait dans ces espaces, c'est la meme recette (une seule source de verite, pas de synchronisation). L'auteur partage directement ; un autre membre envoie une demande que l'auteur accepte, sauf si l'auteur a autorise les membres de cet espace a partager ses recettes [D81]. La demande s'ouvre en feuille depuis la notification, avec le reglage de confiance sur place [D101].
+- F-REC-6 **Adapter** une recette pour un espace ("chez nous on la fait au beurre") : nouvelle recette de cet espace, liee a l'original et a sa revision de depart (`adaptedFromId`). L'original n'est jamais modifie. L'adaptation signale quand l'original a change et offre un ecran "Comparer avec l'original" en lecture seule [D17] : "Original modifie", "Ce que ton espace a change" et l'action "Proposer a l'original" [D105].
 - F-REC-7 **Suggerer une modification** (membre non auteur) : diff lisible champ par champ. L'auteur (ou un moderateur si l'auteur n'est plus membre) accepte ou refuse. Accepter cree une revision. Refuser ne cree rien ; le suggereur peut, s'il le veut, transformer sa suggestion en copie personnelle.
-- F-REC-8 **Historique des revisions** consultable, avec restauration par l'auteur.
+- F-REC-8 **Historique des revisions** consultable, avec restauration par l'auteur. Le bouton d'enregistrement annonce la revision creee ("Enregistrer la revision 5") [D102]. Quitter l'editeur sans enregistrer garde un brouillon sur l'appareil [D104].
 - F-REC-9 Retirer une recette d'un espace de partage (auteur ou moderateur de cet espace) sans la supprimer.
 - F-REC-10 Supprimer une recette (auteur) : elle disparait de tous les espaces ou elle est partagee, apres confirmation listant ces espaces.
 - F-REC-11 Recherche et filtres : texte, tags, ingredients, temps max, auteur, espace. Tri.
-- F-REC-12 Vue cuisine : etapes en grand, ecran maintenu allume, cochage des ingredients.
+- F-REC-12 Vue cuisine : etapes en grand, ecran maintenu allume, cochage des ingredients. Sur mobile, le detail d'une recette a un en-tete avec retour et une seule action principale fixee en bas (Mode cuisine) [D100].
 - F-REC-13 Compteurs : nombre de fois planifiee, derniere fois cuisinee, nombre d'adaptations, espaces de partage. Pas de suivi des vues [D39].
 
 Ce que l'on supprime de la V1 : la recette perso jumelle creee automatiquement, la synchronisation des copies, la variante creee automatiquement au refus d'une proposition, la gestion "recette orpheline" (remplacee par la reprise par les moderateurs).
@@ -126,8 +126,8 @@ Ce que l'on supprime de la V1 : la recette perso jumelle creee automatiquement, 
 
 - F-REF-1 Tags globaux : liste courte et curee par l'admin (ex : vegetarien, dessert, rapide).
 - F-REF-2 Tags d'espace : propres a chaque espace, y compris sur une recette partagee [D19]. Tout membre peut en creer en taguant une recette ; ils sont immediatement utilisables. Les moderateurs les renomment, fusionnent, suppriment.
-- F-REF-3 Ingredients : catalogue global. Un ingredient inconnu est cree a la volee et utilisable tout de suite ; l'admin fusionne les doublons a posteriori (le statut sert au tri de la file admin, pas a bloquer).
-- F-REF-5 Rayons : chaque ingredient a un rayon par defaut (fruits et legumes, boucherie...), gere par l'admin, utilise par la future liste de courses [D36].
+- F-REF-3 Ingredients : catalogue global. Un ingredient inconnu est cree a la volee et utilisable tout de suite ; l'admin fusionne les doublons a posteriori (le statut sert au tri de la file admin, pas a bloquer). Un ingredient fusionne devient un synonyme de la cible : propose a la saisie, remplace par la cible [D120].
+- F-REF-5 Rayons : chaque ingredient a un rayon par defaut (fruits et legumes, boucherie...), gere par l'admin, utilise par la future liste de courses [D36]. Les rayons sont ordonnes selon le parcours en magasin ; sans rayon, l'ingredient va dans "Autres" [D125].
 - F-REF-4 Unites : catalogue global gere par l'admin, avec categories (poids, volume, cuillere, piece, qualitatif) et conversions pour la liste de courses.
 - Supprime : workflow PENDING des tags d'espace, suggestions de tags, preference "masquer les tags" par espace [D27].
 
@@ -135,6 +135,7 @@ Ce que l'on supprime de la V1 : la recette perso jumelle creee automatiquement, 
 
 - F-IMP-1 Import depuis une URL (JSON-LD schema.org, comme en V1) vers un formulaire pre-rempli que l'utilisateur valide.
 - F-IMP-2 Import depuis un texte colle, en V2.0 : decoupage heuristique sans LLM payant, formulaire pre-rempli a valider [D28].
+- Les champs importes douteux portent un badge "A verifier" et un bandeau, sans bloquer l'enregistrement [D103].
 - Securite : resolution DNS et verification d'IP privee **a chaque redirection**, taille et duree bornees.
 
 ### 4.6 Planning de repas (module)
@@ -144,26 +145,37 @@ Reprend la V1 (grille jours x repas, slots recette / texte libre / vide, verroui
 - F-MPL-1 Disponible dans l'espace PERSONAL aussi.
 - F-MPL-2 Repas de la journee configurables par espace : petit-dejeuner, midi, gouter, soir (midi + soir par defaut) [D11].
 - F-MPL-3 Droit de modifier un repas par role minimal, MEMBER par defaut, reglable par l'OWNER ; creer, generer et regler le planning : moderateurs et OWNER [D58].
-- F-MPL-4 Une idee de repas peut etre convertie en recette.
+- F-MPL-4 Une idee de repas peut etre convertie en recette : elle ouvre l'editeur de recette pre-rempli [D133].
 - F-MPL-5 Un slot peut pointer vers n'importe quelle recette visible dans l'espace (origine ou partagee).
-- La generation (regles par tag ou recette, poids, frequences, cooldowns, exclusions, epinglages) est conservee telle quelle fonctionnellement ; son UI est refaite.
+- La generation (regles par tag ou recette, poids, frequences, cooldowns, exclusions, epinglages) est conservee telle quelle fonctionnellement ; son UI est refaite :
+  - elle produit un apercu ; rien n'est enregistre avant "Garder ce planning" [D110] ;
+  - le rapport explique chaque repas laisse vide au lieu de le remplir de force [D113] ;
+  - exclusions et epinglages se reglent dans une seule grille jours x repas [D114].
+- F-MPL-6 Sur mobile, selecteur "Jour | Semaine" : Jour = vue detaillee, Semaine = liste compacte des 7 jours (une ligne par jour, repas en pastilles, toucher un repas l'ouvre) ; grille semaine complete en bureau [D111].
+- F-MPL-7 Echange de repas sur mobile en mode "echange" : bandeau, cibles en pointilles, Annuler [D112].
 
 ### 4.7 Liste de courses (module, V2.1)
 
-- F-SHP-1 Generer une liste depuis une periode du planning (agregation des ingredients, conversion d'unites, mise a l'echelle des portions).
+- F-SHP-1 Generer une liste depuis une periode du planning (agregation des ingredients, conversion d'unites, mise a l'echelle des portions). Pieces et grammes s'additionnent grace au poids par unite, sinon deux lignes [D126].
 - F-SHP-2 Articles libres, cocher "achete", archiver.
 - F-SHP-3 Regroupement par type de magasin, magasin favori par ingredient.
 
 ### 4.8 Notifications et activite
 
 - F-NOT-1 Centre de notifications persistant (comme V1), temps reel par WebSocket, groupement.
-- F-NOT-2 Preferences par categorie et par espace.
+- F-NOT-2 Preferences globales par categorie, avec un reglage personnalise par espace [D118].
 - F-NOT-3 Types de notification types (enum) et declares par chaque module.
-- F-NOT-4 Notification "nouvelle version" liee au changelog.
+- F-NOT-4 Notification "nouvelle version" liee au changelog, envoyee a tous les utilisateurs si l'admin l'active a la publication (interrupteur) [D127].
 
 ### 4.9 Administration plateforme
 
 Dashboard, referentiels, catalogue de modules (statut de chaque module), **file des demandes d'acces aux modules** (accepter / refuser, accorder ou retirer d'office), espaces, recettes (moderation), changelog, journal d'audit. Reprise de la V1 avec le design system V2.
+
+- Le tableau de bord s'ouvre sur "A traiter" et l'etat des services [D129].
+- Moderation d'un espace : acces en lecture seule pendant 30 minutes, seules les actions de moderation sont possibles [D122] ; l'OWNER est informe, avec le motif [D121].
+- Le journal d'audit ne se modifie ni ne se supprime ; il se filtre par categorie [D128].
+- Reglages de la plateforme en lecture seule : SMTP, Bugsink et stockage restent configures par variables d'environnement (`14-Architecture.md`) ; l'ecran affiche l'etat, les valeurs non secretes et un bouton "Tester" par service [D135].
+- Connexion admin sans compteur d'etapes (2 ou 3 selon que la 2FA est deja configuree) : les titres suffisent [D138].
 
 ### 4.10 Changelog
 
@@ -177,14 +189,14 @@ Reprise de la V1 (genere par la CI, page utilisateur, CRUD admin).
 - **Une seule interface** desktop et mobile, construite avec les memes composants (pas de pages "mobile" a part).
 - **Navigation stable en 3 niveaux** : espace -> module -> contenu. L'utilisateur sait toujours dans quel espace il est.
 - **Le contenu d'abord** : les panneaux lateraux et les menus servent le contenu, pas l'inverse.
-- **Tout se retrouve** : palette de commandes (Ctrl+K) et recherche globale.
-- **Installable et lisible hors ligne** [D35] : PWA (ecran d'accueil, plein ecran), recettes deja ouvertes et planning de la semaine consultables sans connexion.
-- **Traduisible** [D34] : textes en cles de traduction, referentiels globaux nommes par langue ; francais seul en V2.0.
+- **Tout se retrouve** : palette de commandes (Ctrl+K) et recherche globale, qui couvre aussi le planning et les actions [D119].
+- **Installable et lisible hors ligne** [D35] : PWA (ecran d'accueil, plein ecran), recettes deja ouvertes et planning de la semaine consultables sans connexion. Hors ligne, les actions d'ecriture sont desactivees (pas masquees) avec la raison, les cartes portent un badge et les notifications restent lisibles [D106][D117].
+- **Traduisible** [D34] : textes en cles de traduction, referentiels globaux nommes par langue ; francais seul en V2.0. Les textes vus par les utilisateurs (traductions, maquettes) sont en francais correct, accents compris ; l'ASCII seul vaut pour le code, les commentaires et la documentation [D87].
 
 ### 5.2 Structure d'ecran (App shell)
 
-- **Rail des espaces** (gauche, etroit) : avatar de l'espace perso puis des groupes, bouton "+". Sur mobile : selecteur d'espace en haut.
-- **Barre du module** : modules actifs de l'espace courant (Recettes, Planning, Courses, Membres, Reglages). Sur mobile : barre d'onglets en bas.
+- **Rail des espaces** (gauche, etroit) en bureau : avatar de l'espace perso puis des groupes, bouton "+". Sur mobile : l'espace courant (avatar + nom) est un bouton de l'en-tete qui ouvre la liste des espaces en feuille (avatars, pastilles de nouveautes, "+") [D130].
+- **Barre du module** : modules actifs de l'espace courant (Recettes, Planning, Courses, Membres, Reglages). Sur mobile : barre d'onglets en bas, 4 modules maximum puis "Plus" (membres, reglages et modules au-dela du quatrieme, dans l'ordre choisi par l'OWNER) [D131]. Espace perso : Accueil, Recettes, Mes recettes, Plus [D95].
 - **Zone de contenu** : liste / detail, avec panneau de detail lateral sur grand ecran et page pleine sur mobile.
 - **En-tete** : recherche, notifications, profil.
 - Dashboard d'accueil fait de **widgets** que l'utilisateur choisit et ordonne (prochains repas, recettes recentes, invitations, activite).
@@ -194,15 +206,16 @@ Reprise de la V1 (genere par la CI, page utilisateur, CRUD admin).
 - **shadcn/ui** (Radix + Tailwind) : composants copies dans le depot, donc modifiables, organises en 3 couches : `ui/` (primitives shadcn), `patterns/` (composites : RecipeCard, IngredientInput, SlotCell...), `modules/` (ecrans).
 - **Tailwind v4** avec des **tokens CSS** (`--background`, `--foreground`, `--primary`, `--muted`, `--radius`, etc.) definis une fois.
 - **Ambiances** [D32] : **Braise** en signature (charbon, ardoise, accent ambre) ; **Sous-bois** et **Potager** en alternatives dans Profil > Apparence. Polices communes, seules les couleurs changent. Chaque ambiance existe en clair et en sombre ; par defaut l'app suit le reglage du systeme.
-- **Personnalisable** : ambiance, mode clair / sombre / systeme, densite (confortable / compacte), taille du texte, et **couleur d'accent par espace** (chaque espace a sa teinte, adaptee a l'ambiance, appliquee quand on y entre).
+- **Personnalisable** : ambiance, mode clair / sombre / systeme, densite (confortable / compacte), taille du texte, et **couleur d'accent par espace** (chaque espace a sa teinte, adaptee a l'ambiance, appliquee quand on y entre). L'ambiance se choisit avec un apercu reel et s'applique immediatement [D115].
+- Teinte Cendre (Braise) : les remplissages pleins (bouton principal, interrupteur, case, pastille) reprennent la teinte 1 de l'ambiance pour ne pas paraitre desactives ; la navigation et les elements actifs gardent Cendre [D139].
 - **Navigation** : rail des espaces a gauche facon Discord.
 - Icones : un seul jeu (Lucide, livre avec shadcn). daisyUI et react-icons sont retires.
 - Accessibilite : focus visible, navigation clavier complete (Radix), contraste AA, cibles tactiles de 44px.
-- Un **catalogue de composants** vivant (page interne `/design` [D29]) sert de reference.
+- Un **catalogue de composants** vivant (page interne `/design` [D29]) sert de reference. Ajouts issus des maquettes : composant de choix (radio, nuancier) et etat "en suppression" du rail [D96], QuantityInput [D108], icones arrow-left et wifi-off [D109], TopBar en mode edition ("Annuler", titre, action principale) pour tous les editeurs [D136], RadioGroup avec apercu en pastilles de couleur [D137]. Detail : `10-Design-System/project/README.md`.
 
-### 5.4 Ecrans a maquetter avant de coder
+### 5.4 Maquettes
 
-Accueil (widgets), liste de recettes, detail de recette (+ vue cuisine), formulaire de recette (sections, ingredients, etapes), suggestion et diff, planning (semaine, mobile jour par jour), parametres de generation, espace (membres, invitations, modules, reglages), notifications, profil et apparence, admin.
+Inventaire des ecrans : `13-Parcours.md`. Maquettes : `16-Maquettes/` (4 canevas, liens dans le `README.md` du chantier). Donnees d'exemple : `16-Maquettes/BRIEF.md` (Matthias OWNER de Colloc [D132]).
 
 ## 6. Exigences techniques
 
@@ -210,7 +223,7 @@ Accueil (widgets), liste de recettes, detail de recette (+ vue cuisine), formula
 
 - Monorepo npm workspaces : `apps/api`, `apps/web`, `packages/shared` (schemas Zod, types, codes erreur, constantes de permissions partages entre back et front) [D15].
 - **Socle generique** [D40] : comptes, espaces, membres, permissions, invitations, notifications, activite, recherche et administration ne connaissent aucun module ; Recettes se branche par le registre comme les autres.
-- Backend : TypeScript, Express 5 et Prisma 7 [D80]. Organisation **par module** (`modules/recipes`, `modules/meal-plan`...) avec routes, service, schemas, permissions et notifications propres. Detail : `14-Architecture.md`.
+- Backend : TypeScript, Express 5 et Prisma 7 [D80][D86]. Organisation **par module** (`modules/recipes`, `modules/meal-plan`...) avec routes, service, schemas, permissions et notifications propres. Detail : `14-Architecture.md`.
 - Frontend : React + Vite + TanStack Query (cache et invalidation serveur), React Router, react-hook-form + Zod partages. Chaque module enregistre ses routes, sa nav et ses widgets dans un registre.
 - Temps reel : Socket.IO conserve, **jonction d'une room uniquement apres verification d'appartenance**.
 
