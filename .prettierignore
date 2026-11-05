@@ -5,3 +5,6 @@ coverage
 *.lock
 package-lock.json
 backend/prisma/migrations
+
+# Sources d artefacts publies (design system, maquettes) : identiques a la version en ligne
+.claude/docs/**/project/

@@ -10,6 +10,7 @@ import IngredientMergeModal from "../../components/admin/IngredientMergeModal";
 import IngredientApproveModal from "../../components/admin/IngredientApproveModal";
 import IngredientRejectModal from "../../components/admin/IngredientRejectModal";
 import toast from "react-hot-toast";
+import { toastError } from "../../utils/toastError";
 
 type StatusFilter = "" | "APPROVED" | "PENDING";
 type SortColumn = "name" | "status" | "defaultUnit" | "popularUnit" | "createdBy" | "recipeCount";
@@ -114,7 +115,7 @@ function AdminIngredientsPage() {
       setEditModalItem(null);
       loadIngredients();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save ingredient");
+      toastError(err, "Failed to save ingredient");
     }
   }
 
@@ -131,7 +132,7 @@ function AdminIngredientsPage() {
       toast.success("Ingredient deleted");
       loadIngredients();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete ingredient");
+      toastError(err, "Failed to delete ingredient");
     }
   }
 
@@ -143,7 +144,7 @@ function AdminIngredientsPage() {
       setMergeSource(null);
       loadIngredients();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to merge ingredients");
+      toastError(err, "Failed to merge ingredients");
     }
   }
 
@@ -153,7 +154,7 @@ function AdminIngredientsPage() {
       toast.success(`Ingredient "${item.name}" approved`);
       loadIngredients();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to approve ingredient");
+      toastError(err, "Failed to approve ingredient");
     }
   }
 
@@ -167,7 +168,7 @@ function AdminIngredientsPage() {
       setApproveItem(null);
       loadIngredients();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to approve ingredient");
+      toastError(err, "Failed to approve ingredient");
     }
   }
 
@@ -179,7 +180,7 @@ function AdminIngredientsPage() {
       setRejectItem(null);
       loadIngredients();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to reject ingredient");
+      toastError(err, "Failed to reject ingredient");
     }
   }
 

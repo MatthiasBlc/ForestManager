@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { FaCheck, FaTimes, FaEdit, FaTrash } from "react-icons/fa";
 import toast from "react-hot-toast";
+import { toastError } from "../../utils/toastError";
 import { CommunityTag } from "../../models/tag";
 import APIManager from "../../network/api";
 import { useConfirm } from "../../hooks/useConfirm";
@@ -69,7 +70,7 @@ const CommunityTagsList = ({ communityId }: CommunityTagsListProps) => {
       setModalOpen(false);
       loadTags();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save tag");
+      toastError(err, "Failed to save tag");
     } finally {
       setSaving(false);
     }
@@ -89,7 +90,7 @@ const CommunityTagsList = ({ communityId }: CommunityTagsListProps) => {
       toast.success("Tag deleted");
       loadTags();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete tag");
+      toastError(err, "Failed to delete tag");
     } finally {
       setActionLoading(null);
     }
@@ -102,7 +103,7 @@ const CommunityTagsList = ({ communityId }: CommunityTagsListProps) => {
       toast.success("Tag approved");
       loadTags();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to approve tag");
+      toastError(err, "Failed to approve tag");
     } finally {
       setActionLoading(null);
     }
@@ -123,7 +124,7 @@ const CommunityTagsList = ({ communityId }: CommunityTagsListProps) => {
       toast.success("Tag rejected");
       loadTags();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to reject tag");
+      toastError(err, "Failed to reject tag");
     } finally {
       setActionLoading(null);
     }

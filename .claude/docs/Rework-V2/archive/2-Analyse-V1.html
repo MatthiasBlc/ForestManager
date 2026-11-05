@@ -1,0 +1,468 @@
+<title>Forest Manager, analyse V1</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout : rapport long, sommaire collant a gauche sur grand ecran, colonne unique sur mobile */
+:root {
+  --bg: #f3f5f2;
+  --surface: #ffffff;
+  --ink: #18221c;
+  --muted: #5b6a60;
+  --line: #d8dfd9;
+  --pine: #2f6b4a;
+  --pine-soft: #e1eee6;
+  --crit: #b3261e;
+  --crit-soft: #fbe5e3;
+  --warn: #9a6200;
+  --warn-soft: #fbefd9;
+  --info: #2b5c8a;
+  --info-soft: #e2ecf6;
+  --ok: #2f6b4a;
+  --ok-soft: #e1eee6;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111612; --surface: #182019; --ink: #e5ece6; --muted: #9aaa9f; --line: #2c372f;
+    --pine: #7cc49b; --pine-soft: #1f3327;
+    --crit: #f2a19a; --crit-soft: #3a1f1d; --warn: #e8bf6a; --warn-soft: #3a2f17;
+    --info: #9cc3ea; --info-soft: #1c2a38; --ok: #7cc49b; --ok-soft: #1f3327;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111612; --surface: #182019; --ink: #e5ece6; --muted: #9aaa9f; --line: #2c372f;
+  --pine: #7cc49b; --pine-soft: #1f3327;
+  --crit: #f2a19a; --crit-soft: #3a1f1d; --warn: #e8bf6a; --warn-soft: #3a2f17;
+  --info: #9cc3ea; --info-soft: #1c2a38; --ok: #7cc49b; --ok-soft: #1f3327;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.6; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 48px; }
+nav.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; display: flex; flex-direction: column; gap: 2px; font-size: 13.5px; }
+nav.toc .brand { font-family: var(--f-display); font-weight: 700; font-size: 17px; margin-bottom: 12px; color: var(--pine); }
+nav.toc a { color: var(--muted); text-decoration: none; padding: 5px 10px; border-left: 2px solid var(--line); }
+nav.toc a:hover, nav.toc a:focus-visible { color: var(--ink); border-left-color: var(--pine); outline: none; }
+main { min-width: 0; display: flex; flex-direction: column; gap: 56px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; line-height: 1.15; margin: 0; }
+h1 { font-size: clamp(30px, 4.5vw, 44px); font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 26px; font-weight: 700; }
+h3 { font-size: 18px; font-weight: 500; }
+section { display: flex; flex-direction: column; gap: 16px; scroll-margin-top: 24px; }
+p { margin: 0; max-width: 72ch; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.lede { font-size: 17px; max-width: 70ch; }
+code, .mono { font-family: var(--f-mono); font-size: 0.86em; }
+code { background: var(--pine-soft); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+.verdict { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; }
+.verdict ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; max-width: 75ch; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.fact { background: var(--surface); padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; }
+.fact b { font-family: var(--f-display); font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.fact span { font-size: 12.5px; color: var(--muted); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.panel ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; }
+.tablebox { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; background: var(--bg); }
+tr:last-child td { border-bottom: 0; }
+.pill { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; letter-spacing: 0.02em; }
+.p-crit { background: var(--crit-soft); color: var(--crit); }
+.p-warn { background: var(--warn-soft); color: var(--warn); }
+.p-info { background: var(--info-soft); color: var(--info); }
+.p-ok { background: var(--ok-soft); color: var(--ok); }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.filters button { font: inherit; font-size: 13px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 5px 12px; border-radius: 999px; cursor: pointer; }
+.filters button[aria-pressed="true"] { background: var(--pine); border-color: var(--pine); color: var(--surface); }
+.filters button:focus-visible { outline: 2px solid var(--pine); outline-offset: 2px; }
+.finding { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px 16px 20px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; position: relative; }
+.finding::before { content: ""; position: absolute; left: 0; top: 12px; bottom: 12px; width: 3px; border-radius: 0 3px 3px 0; background: var(--sev, var(--line)); }
+.finding[data-sev="crit"] { --sev: var(--crit); }
+.finding[data-sev="warn"] { --sev: var(--warn); }
+.finding[data-sev="info"] { --sev: var(--info); }
+.finding header { display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; }
+.finding header h3 { font-size: 16.5px; flex: 1 1 260px; }
+.finding .meta { font-size: 12.5px; color: var(--muted); }
+.finding dl { margin: 0; display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 4px 12px; font-size: 14px; }
+.finding dt { color: var(--muted); font-size: 12.5px; padding-top: 2px; }
+.finding dd { margin: 0; min-width: 0; }
+.list { display: flex; flex-direction: column; gap: 12px; }
+.count { font-size: 13px; color: var(--muted); }
+/* Maquette d'app shell */
+.shell { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); display: grid; grid-template-columns: 56px 180px minmax(0, 1fr); min-height: 300px; font-size: 13px; }
+.rail { background: var(--bg); border-right: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 12px 0; }
+.dot { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-weight: 700; font-family: var(--f-display); color: #fff; }
+.dot.me { background: #5b6a60; } .dot.a { background: #2f6b4a; outline: 2px solid var(--ink); outline-offset: 2px; } .dot.b { background: #8a4f9e; } .dot.c { background: #b06a1c; }
+.dot.add { background: transparent; color: var(--muted); border: 1px dashed var(--muted); }
+.modnav { border-right: 1px solid var(--line); padding: 12px; display: flex; flex-direction: column; gap: 4px; }
+.modnav .sp { font-family: var(--f-display); font-weight: 700; font-size: 15px; margin-bottom: 8px; }
+.modnav div.it { padding: 6px 8px; border-radius: 6px; color: var(--muted); }
+.modnav div.it.on { background: var(--pine-soft); color: var(--pine); font-weight: 600; }
+.content { padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.topbar { display: flex; gap: 8px; align-items: center; }
+.search { flex: 1; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; color: var(--muted); }
+.kbd { font-family: var(--f-mono); font-size: 11px; border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+.rc { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.rc i { display: block; height: 54px; background: linear-gradient(135deg, var(--pine-soft), var(--bg)); }
+.rc div { padding: 6px 8px; display: flex; flex-direction: column; }
+.rc small { color: var(--muted); }
+pre.mermaid { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; overflow-x: auto; margin: 0; }
+.opt { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.opt .panel.rec { border-color: var(--pine); box-shadow: 0 0 0 1px var(--pine) inset; }
+.small { font-size: 13px; color: var(--muted); }
+footer { font-size: 13px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; }
+@media (max-width: 880px) {
+  .wrap { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-block: 20px 48px; }
+  nav.toc { position: static; flex-direction: row; flex-wrap: wrap; gap: 6px; }
+  nav.toc .brand { width: 100%; margin-bottom: 0; }
+  nav.toc a { border-left: 0; border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; }
+  .shell { grid-template-columns: 48px minmax(0, 1fr); }
+  .modnav { display: none; }
+  .finding dl { grid-template-columns: minmax(0, 1fr); }
+  .finding dt { padding-top: 6px; }
+}
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+
+<div class="wrap">
+<nav class="toc" aria-label="Sommaire">
+  <div class="brand">Forest Manager V1</div>
+  <a href="#synthese">Synthese</a>
+  <a href="#usages">Usages</a>
+  <a href="#fonctionnement">Fonctionnement</a>
+  <a href="#points">Points douteux</a>
+  <a href="#acquis">A garder</a>
+  <a href="#cible">Cible V2</a>
+  <a href="#design">Design system</a>
+  <a href="#strategie">Evoluer ou reecrire</a>
+  <a href="#suite">A valider</a>
+</nav>
+
+<main>
+
+<section id="synthese">
+  <div class="eyebrow">Analyse du 2026-11-03 - commit 1b99db6 - branche Developement</div>
+  <h1>Ce que fait Forest Manager, et ce qui coince</h1>
+  <p class="lede">Le code est mieux fait que tu ne le penses. Ce qui est mal pense, c'est le modele metier des recettes et des roles, et une interface assemblee page par page. La V2 doit corriger les concepts d'abord ; le reste suivra.</p>
+  <div class="verdict">
+    <h3>Verdict en quatre points</h3>
+    <ul>
+      <li><b>Qualite technique correcte</b> : validation Zod partout, CSRF, helmet, rate limiting, sessions en base, admin isole avec 2FA, 1010 tests backend et 563 frontend.</li>
+      <li><b>Modele recettes incoherent</b> : une recette communautaire existe en 2 a N copies synchronisees a moitie (contenu oui, tags et suppression non). Les variantes naissent toutes seules quand on refuse une proposition.</li>
+      <li><b>Gouvernance incomplete</b> : un moderateur ne peut ni retirer une recette, ni retrograder, ni exclure un autre moderateur. Une recette dont l'auteur est parti devient intouchable.</li>
+      <li><b>Interface sans systeme</b> : daisyUI brut, composants mobiles a part, pas de cache de donnees cote front, des classes de theme utilisees mais jamais definies.</li>
+    </ul>
+  </div>
+  <div class="facts" role="list">
+    <div class="fact" role="listitem"><b>16 700</b><span>lignes TS backend (hors tests)</span></div>
+    <div class="fact" role="listitem"><b>21 750</b><span>lignes TS/TSX frontend (hors tests)</span></div>
+    <div class="fact" role="listitem"><b>134</b><span>routes API (user + admin)</span></div>
+    <div class="fact" role="listitem"><b>35 / 17</b><span>modeles / enums Prisma</span></div>
+    <div class="fact" role="listitem"><b>1 573</b><span>tests (1010 back, 563 front)</span></div>
+    <div class="fact" role="listitem"><b>68</b><span>commits sur Developement absents de la prod</span></div>
+  </div>
+</section>
+
+<section id="usages">
+  <div class="eyebrow">1. Usages</div>
+  <h2>A quoi sert l'application aujourd'hui</h2>
+  <p>Des groupes prives (famille, amis, colocs) partagent leurs recettes. Chaque utilisateur a aussi un carnet personnel. Un module de planning de repas, avec generation automatique, est reserve aux communautes a qui l'admin l'a accorde.</p>
+  <div class="cols">
+    <div class="panel"><h3>Utilisateur</h3><ul>
+      <li>Carnet perso : recettes avec photo, portions ajustables, temps, ingredients normalises, etapes, tags</li>
+      <li>Import depuis une URL (JSON-LD, HelloFresh corrige)</li>
+      <li>Profil, notifications temps reel, preferences par categorie</li>
+    </ul></div>
+    <div class="panel"><h3>Membre de communaute</h3><ul>
+      <li>Voir et ajouter des recettes, proposer une modification</li>
+      <li>Partager (forker) une recette vers une autre de ses communautes</li>
+      <li>Suggerer des tags, fil d'activite</li>
+      <li>Planning de repas si la feature est accordee</li>
+    </ul></div>
+    <div class="panel"><h3>Moderateur</h3><ul>
+      <li>Inviter par username, exclure un membre, promouvoir</li>
+      <li>Valider les tags PENDING et les suggestions de tags</li>
+      <li>Creer et generer le planning, regler ses parametres</li>
+    </ul></div>
+    <div class="panel"><h3>SuperAdmin</h3><ul>
+      <li>Tags, ingredients (validation des PENDING), unites</li>
+      <li>Communautes, features, recettes, changelog</li>
+      <li>Journal d'audit, dashboard</li>
+    </ul></div>
+  </div>
+</section>
+
+<section id="fonctionnement">
+  <div class="eyebrow">2. Fonctionnement</div>
+  <h2>Comment c'est construit</h2>
+  <div class="cols">
+    <div class="panel"><h3>Backend</h3><ul>
+      <li>Express + Prisma, 26 controllers, 15 services, schemas Zod</li>
+      <li>Deux systemes de session isoles en base (user 1 h glissante, admin 30 min)</li>
+      <li>Socket.IO pour notifications et activite, rooms par user et par communaute</li>
+      <li>MinIO en upload presigne, conversion WebP, jobs cron de nettoyage</li>
+    </ul></div>
+    <div class="panel"><h3>Frontend</h3><ul>
+      <li>React 18 + Vite + Tailwind 3 + daisyUI 4 (themes coffee / winter)</li>
+      <li>Client <code>fetch</code> maison, hook <code>useAsyncData</code> (pas de cache partage)</li>
+      <li>Layout sidebar + barre d'onglets mobile, bottom sheets</li>
+      <li>Fichier <code>network/api.ts</code> de 739 lignes</li>
+    </ul></div>
+    <div class="panel"><h3>Livraison</h3><ul>
+      <li>GitHub Actions : tests, build, push registry, deploy Portainer</li>
+      <li>Prod au push sur <code>master</code>, preprod sur une PR vers <code>master</code></li>
+      <li>Images en <code>:latest</code> uniquement, seed de 1467 lignes a chaque deploy</li>
+    </ul></div>
+  </div>
+  <h3>Le cycle de vie d'une recette en V1</h3>
+  <p class="small">Chaque fleche pleine cree une nouvelle ligne <code>Recipe</code>. Seules les fleches marquees "sync" se resynchronisent a l'edition, et seulement pour titre, temps, portions, image, etapes et ingredients.</p>
+<pre class="mermaid">
+flowchart LR
+  P["Recette perso<br/>communityId = null"]
+  C1["Copie com A"]
+  C2["Copie com B"]
+  F["Fork com C<br/>sharedFrom = A"]
+  V["Variante com A<br/>isVariant, auteur = proposeur"]
+  P -- "creation dans A (2 lignes)" --> C1
+  P -- "publish vers B" --> C2
+  C1 -. sync .- P
+  C2 -. sync .- P
+  C1 -- "share vers C" --> F
+  C1 -- "proposition refusee" --> V
+</pre>
+</section>
+
+<section id="points">
+  <div class="eyebrow">3. Points non logiques ou douteux</div>
+  <h2>Ce qui ne tient pas</h2>
+  <p>Chaque point cite le fichier qui le montre. Les deux failles de securite sont reelles et exploitables par un utilisateur connecte ; elles meritent un correctif en V1 sans attendre la V2 (question Q16).</p>
+  <div class="filters" role="group" aria-label="Filtrer par gravite">
+    <button type="button" data-f="all" aria-pressed="true">Tout</button>
+    <button type="button" data-f="crit" aria-pressed="false">Critique</button>
+    <button type="button" data-f="warn" aria-pressed="false">Important</button>
+    <button type="button" data-f="info" aria-pressed="false">Mineur</button>
+    <span class="count" id="count"></span>
+  </div>
+  <div class="list" id="findings">
+
+    <article class="finding" data-sev="crit"><header><span class="pill p-crit">Critique</span><h3>N'importe quel utilisateur peut ecouter l'activite d'une communaute</h3><span class="meta">Securite</span></header>
+      <dl><dt>Preuve</dt><dd><code>backend/src/services/socketServer.ts:106</code> : <code>socket.on("join:community", id =&gt; socket.join(...))</code> sans verifier l'appartenance.</dd>
+      <dt>Impact</dt><dd>Avec l'UUID d'une communaute, un user connecte recoit ses evenements d'activite en temps reel.</dd>
+      <dt>Proposition</dt><dd>Verifier la membership avant <code>join</code>. Correctif de quelques lignes.</dd></dl></article>
+
+    <article class="finding" data-sev="crit"><header><span class="pill p-crit">Critique</span><h3>L'import par URL contourne sa propre protection SSRF</h3><span class="meta">Securite</span></header>
+      <dl><dt>Preuve</dt><dd><code>recipeImportService.ts:428</code> verifie le nom d'hote, puis <code>:444</code> appelle <code>fetch</code> avec <code>redirect: "follow"</code>.</dd>
+      <dt>Impact</dt><dd>Une URL publique qui redirige vers <code>http://minio:9000</code> ou une IP interne passe le controle. Un nom DNS qui pointe vers une IP privee aussi.</dd>
+      <dt>Proposition</dt><dd>Redirections manuelles, resolution DNS et controle d'IP a chaque saut.</dd></dl></article>
+
+    <article class="finding" data-sev="crit"><header><span class="pill p-crit">Critique</span><h3>Une recette communautaire existe en plusieurs exemplaires synchronises a moitie</h3><span class="meta">Modele metier</span></header>
+      <dl><dt>Preuve</dt><dd><code>communityRecipeService.ts:47</code> cree une recette perso et une copie ; <code>recipeService.ts:303</code> resynchronise contenu, etapes et ingredients mais ni les tags ni la suppression (<code>recipes.ts</code> <code>deleteRecipe</code> ne touche qu'une ligne).</dd>
+      <dt>Impact</dt><dd>L'utilisateur voit sa recette en double, ne sait pas laquelle il modifie, et une suppression laisse des copies vivantes. Les forks et variantes divergent sans retour possible.</dd>
+      <dt>Proposition</dt><dd>Une recette, un espace d'origine, des partages par reference, une copie seulement sur demande (D03).</dd></dl></article>
+
+    <article class="finding" data-sev="warn"><header><span class="pill p-warn">Important</span><h3>Refuser une proposition fabrique une variante</h3><span class="meta">Modele metier</span></header>
+      <dl><dt>Preuve</dt><dd><code>proposalService.ts:277</code> <code>rejectProposal</code> cree une recette <code>isVariant</code> au nom du proposeur. <code>orphanHandling.ts</code> fait de meme pour toutes les propositions en attente quand l'auteur quitte.</dd>
+      <dt>Impact</dt><dd>La liste des recettes se remplit de variantes que personne n'a demandees ; refuser n'est plus un geste neutre.</dd>
+      <dt>Proposition</dt><dd>Refuser ne cree rien ; le suggereur peut convertir sa suggestion en copie (D04).</dd></dl></article>
+
+    <article class="finding" data-sev="warn"><header><span class="pill p-warn">Important</span><h3>Une recette dont l'auteur est parti devient intouchable</h3><span class="meta">Gouvernance</span></header>
+      <dl><dt>Preuve</dt><dd>Seul le createur edite ou supprime (<code>membershipService.ts:57</code>) et tranche une proposition (<code>proposals.ts:354</code>). La creation de proposition ne verifie pas que l'auteur est encore membre (<code>proposals.ts:97</code>).</dd>
+      <dt>Impact</dt><dd>Recette figee pour toujours, propositions qui restent en attente sans personne pour les traiter.</dd>
+      <dt>Proposition</dt><dd>Les moderateurs reprennent la main sur le contenu d'un ancien membre (Q02).</dd></dl></article>
+
+    <article class="finding" data-sev="warn"><header><span class="pill p-warn">Important</span><h3>Les moderateurs ne moderent pas le contenu</h3><span class="meta">Gouvernance</span></header>
+      <dl><dt>Preuve</dt><dd>Aucune route ne permet a un moderateur de retirer la recette d'un membre ; seul l'admin plateforme le peut (<code>admin/routes/recipesRoutes.ts</code>). Pas de retrogradation, interdiction d'exclure un moderateur (<code>members.ts:251</code>), pas de suppression de communaute hors "dernier qui part".</dd>
+      <dt>Impact</dt><dd>Un groupe ne peut pas faire le menage chez lui ; un moderateur malveillant ne peut pas etre retire.</dd>
+      <dt>Proposition</dt><dd>Roles OWNER / MODERATOR / MEMBER avec une matrice claire (D06).</dd></dl></article>
+
+    <article class="finding" data-sev="warn"><header><span class="pill p-warn">Important</span><h3>La moderation bloque l'utilisateur en attendant quelqu'un d'autre</h3><span class="meta">UX</span></header>
+      <dl><dt>Preuve</dt><dd>Tags d'espace crees PENDING, suggestions de tags a deux niveaux (<code>PENDING_OWNER</code> puis <code>PENDING_MODERATOR</code>), ingredients PENDING jusqu'a l'admin plateforme.</dd>
+      <dt>Impact</dt><dd>Beaucoup de code (tagService, tagSuggestions, communityTags : environ 1 200 lignes) pour un geste qui devrait etre immediat ; l'admin plateforme devient un goulot.</dd>
+      <dt>Proposition</dt><dd>Creation libre, nettoyage a posteriori (D08, D09).</dd></dl></article>
+
+    <article class="finding" data-sev="warn"><header><span class="pill p-warn">Important</span><h3>Le "perso" et le "communautaire" sont deux mondes</h3><span class="meta">Modele metier</span></header>
+      <dl><dt>Preuve</dt><dd>Perso = <code>communityId: null</code>. Deux jeux de routes (<code>/recipes</code>, <code>/communities/:id/recipes</code>), deux regles d'acces, des interdits croises documentes (pas de proposition en perso, pas de share en perso, pas de publish en communautaire).</dd>
+      <dt>Impact</dt><dd>Le planning n'existe pas pour un utilisateur seul ; chaque nouveau module devra gerer les deux cas.</dd>
+      <dt>Proposition</dt><dd>L'espace perso est un espace comme un autre (D02).</dd></dl></article>
+
+    <article class="finding" data-sev="warn"><header><span class="pill p-warn">Important</span><h3>Les modules ne sont pas modulaires</h3><span class="meta">Architecture</span></header>
+      <dl><dt>Preuve</dt><dd><code>Feature</code> / <code>CommunityFeature</code> n'est accorde que par le SuperAdmin ; un seul module gate (<code>requireFeature("MEAL_PLAN")</code>) ; routes, nav et pages cablees en dur cote front.</dd>
+      <dt>Impact</dt><dd>Ajouter la liste de courses ou une liste de films touchera tout le code.</dd>
+      <dt>Proposition</dt><dd>Registre de modules, activation par l'OWNER de l'espace (D10).</dd></dl></article>
+
+    <article class="finding" data-sev="warn"><header><span class="pill p-warn">Important</span><h3>La prod a 68 commits de retard et le deploy n'a pas de retour arriere</h3><span class="meta">Infra</span></header>
+      <dl><dt>Preuve</dt><dd><code>master</code> = <code>c100859</code> (2026-03-17). Images poussees en <code>:latest</code> seulement (<code>deploy.yml</code>). Preprod deployee uniquement sur une PR.</dd>
+      <dt>Impact</dt><dd>Impossible de savoir quelle version tourne, ni de revenir a la precedente. Changelog, planning et generation ne sont pas en prod.</dd>
+      <dt>Proposition</dt><dd>Tags par version et SHA, preprod au push sur la branche de travail.</dd></dl></article>
+
+    <article class="finding" data-sev="warn"><header><span class="pill p-warn">Important</span><h3>Pas de reinitialisation de mot de passe, deconnexion apres une heure</h3><span class="meta">Comptes</span></header>
+      <dl><dt>Preuve</dt><dd>Aucun envoi d'email dans le projet ; session user <code>maxAge</code> 1 h glissante (<code>config/session.ts:13</code>) ; pas de suppression de compte.</dd>
+      <dt>Impact</dt><dd>Un mot de passe oublie = un compte perdu. Sur mobile on se reconnecte a chaque usage. Pas de conformite RGPD sur la suppression.</dd>
+      <dt>Proposition</dt><dd>Email (Q05), "rester connecte" (D13), suppression et export de compte.</dd></dl></article>
+
+    <article class="finding" data-sev="info"><header><span class="pill p-info">Mineur</span><h3>Recherche d'utilisateurs ouverte a tous</h3><span class="meta">Securite</span></header>
+      <dl><dt>Preuve</dt><dd><code>GET /api/users/search</code> renvoie les usernames par prefixe a tout user connecte.</dd>
+      <dt>Impact</dt><dd>Enumeration des comptes de la plateforme.</dd>
+      <dt>Proposition</dt><dd>Invitation par lien ou par username exact (D07).</dd></dl></article>
+
+    <article class="finding" data-sev="info"><header><span class="pill p-info">Mineur</span><h3>Code et schema morts</h3><span class="meta">Dette</span></header>
+      <dl><dt>Preuve</dt><dd>Enum <code>Visibility</code> a une seule valeur ; <code>RecipeView</code> jamais ecrit, <code>RecipeAnalytics</code> seulement incremente au fork ; <code>Notification.type</code> en string libre.</dd>
+      <dt>Impact</dt><dd>Du schema a maintenir et a migrer sans usage.</dd>
+      <dt>Proposition</dt><dd>Retirer, ou typer (enum par module).</dd></dl></article>
+
+    <article class="finding" data-sev="info"><header><span class="pill p-info">Mineur</span><h3>Theme incomplet et interface sans systeme</h3><span class="meta">Front</span></header>
+      <dl><dt>Preuve</dt><dd><code>border-forest-accent</code> utilise dans <code>routes/adminRoutes.tsx</code> mais defini nulle part (le spinner admin est invisible) ; 272 <code>btn</code> daisyUI ecrits a la main ; composants mobiles separes ; <code>body { overflow: hidden }</code> avec scroll gere par conteneur.</dd>
+      <dt>Impact</dt><dd>Chaque ecran est un cas particulier ; personnaliser le theme demande de toucher tout le code.</dd>
+      <dt>Proposition</dt><dd>Design system shadcn/ui avec tokens (D16).</dd></dl></article>
+
+    <article class="finding" data-sev="info"><header><span class="pill p-info">Mineur</span><h3>La documentation a derive du code</h3><span class="meta">Docs</span></header>
+      <dl><dt>Preuve</dt><dd><code>RECIPE_FLOWS.md</code> annonce "editer : owner/membre", le code dit owner seul. Le README pointait vers <code>docs/mvp/</code> supprime et citait Axios retire. <code>CLAUDE.md</code> listait des dossiers deplaces dans <code>V1/</code>.</dd>
+      <dt>Impact</dt><dd>On re-derive ce qui existe a chaque session.</dd>
+      <dt>Proposition</dt><dd>Fait dans ce chantier : docs rassemblees dans <code>.claude/docs/</code>, V1 archivee, regle "pas de recopie du code".</dd></dl></article>
+  </div>
+</section>
+
+<section id="acquis">
+  <div class="eyebrow">4. A garder</div>
+  <h2>Ce qui est bon et qu'on recupere</h2>
+  <div class="cols">
+    <div class="panel"><h3>Securite et socle</h3><ul>
+      <li>Validation Zod, CSRF double submit, helmet, rate limiting, limite de body</li>
+      <li>Admin isole : session dediee, TOTP, audit log</li>
+      <li>Codes erreur centralises</li>
+    </ul></div>
+    <div class="panel"><h3>Fonctionnel</h3><ul>
+      <li>Import JSON-LD et ses correctifs</li>
+      <li>Algorithme de generation du planning (regles, poids, frequences, cooldowns)</li>
+      <li>Ingredients normalises et unites categorisees</li>
+      <li>Notifications persistantes et groupees</li>
+    </ul></div>
+    <div class="panel"><h3>Outillage</h3><ul>
+      <li>Tests d'integration API sur vraie base</li>
+      <li>Upload presigne MinIO + nettoyage</li>
+      <li>Changelog genere par la CI</li>
+    </ul></div>
+  </div>
+</section>
+
+<section id="cible">
+  <div class="eyebrow">5. Cible V2</div>
+  <h2>Des concepts plus simples</h2>
+  <div class="tablebox"><table>
+    <thead><tr><th>Sujet</th><th>V1</th><th>V2 proposee</th><th>Decision</th></tr></thead>
+    <tbody>
+      <tr><td>Espace perso</td><td><code>communityId: null</code>, regles a part</td><td>Un espace <code>PERSONAL</code>, memes modules</td><td><span class="pill p-info">D02</span></td></tr>
+      <tr><td>Recette partagee</td><td>2 a N copies synchronisees en partie</td><td>Une recette + des partages par reference</td><td><span class="pill p-info">D03</span></td></tr>
+      <tr><td>Version personnelle</td><td>Fork ou variante automatique</td><td>Copie explicite avec origine tracee</td><td><span class="pill p-info">D03</span></td></tr>
+      <tr><td>Proposition</td><td>Refus = variante, seul l'auteur tranche</td><td>Suggestion avec diff, refus neutre, moderateur si auteur parti</td><td><span class="pill p-info">D04</span></td></tr>
+      <tr><td>Historique</td><td>Aucun</td><td>Revisions avec restauration</td><td><span class="pill p-info">D05</span></td></tr>
+      <tr><td>Roles</td><td>MEMBER / MODERATOR, incomplets</td><td>OWNER / MODERATOR / MEMBER, matrice complete</td><td><span class="pill p-info">D06</span></td></tr>
+      <tr><td>Invitations</td><td>Username + recherche ouverte</td><td>Lien d'invitation + username exact</td><td><span class="pill p-info">D07</span></td></tr>
+      <tr><td>Tags, ingredients</td><td>PENDING, attente moderateur ou admin</td><td>Immediats, nettoyage a posteriori</td><td><span class="pill p-info">D08 D09</span></td></tr>
+      <tr><td>Modules</td><td>Accordes par l'admin, cables en dur</td><td>Registre, activation par l'OWNER</td><td><span class="pill p-info">D10</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="design">
+  <div class="eyebrow">6. Design system</div>
+  <h2>Une interface unique, modulaire, personnalisable</h2>
+  <p>shadcn/ui (Radix + Tailwind v4) : les composants sont copies dans le depot, donc on les possede et on les modifie. Tout passe par des tokens CSS ; chaque espace porte sa propre couleur d'accent, appliquee quand on y entre. Une seule interface pour desktop et mobile.</p>
+  <div class="shell" aria-label="Esquisse de l'app shell V2">
+    <div class="rail"><div class="dot me">M</div><div class="dot a">F</div><div class="dot b">C</div><div class="dot c">T</div><div class="dot add">+</div></div>
+    <div class="modnav"><div class="sp">Famille</div><div class="it on">Recettes</div><div class="it">Planning</div><div class="it">Courses</div><div class="it">Membres</div><div class="it">Reglages</div></div>
+    <div class="content">
+      <div class="topbar"><div class="search">Rechercher une recette, un ingredient... <span class="kbd">Ctrl K</span></div></div>
+      <div class="cards">
+        <div class="rc"><i></i><div><b>Gratin dauphinois</b><small>4 pers. - 1 h 15</small></div></div>
+        <div class="rc"><i></i><div><b>Dahl de lentilles</b><small>4 pers. - 40 min</small></div></div>
+        <div class="rc"><i></i><div><b>Tarte aux pommes</b><small>6 pers. - 55 min</small></div></div>
+        <div class="rc"><i></i><div><b>Enchiladas</b><small>4 pers. - 1 h</small></div></div>
+      </div>
+      <p class="small">Esquisse indicative : rail des espaces (perso, Famille, Colloc, TOM), modules de l'espace, contenu. Sur mobile, le rail devient un selecteur en haut et les modules une barre d'onglets.</p>
+    </div>
+  </div>
+  <div class="cols">
+    <div class="panel"><h3>Trois couches</h3><ul>
+      <li><code>ui/</code> : primitives shadcn (Button, Dialog, Sheet, Command, Table...)</li>
+      <li><code>patterns/</code> : RecipeCard, IngredientRow, SlotCell, MemberRow</li>
+      <li><code>modules/</code> : ecrans de chaque module</li>
+    </ul></div>
+    <div class="panel"><h3>Personnalisation</h3><ul>
+      <li>Theme clair, sombre ou systeme</li>
+      <li>Densite et taille du texte</li>
+      <li>Accent par espace, avatar d'espace dans le rail</li>
+      <li>Accueil fait de widgets choisis et ordonnes</li>
+    </ul></div>
+    <div class="panel"><h3>Ce qui part</h3><ul>
+      <li>daisyUI, react-icons (remplace par Lucide)</li>
+      <li>Composants mobiles separes</li>
+      <li><code>useAsyncData</code> (remplace par TanStack Query)</li>
+    </ul></div>
+  </div>
+</section>
+
+<section id="strategie">
+  <div class="eyebrow">7. Evoluer ou reecrire</div>
+  <h2>Trois options</h2>
+  <div class="opt">
+    <div class="panel"><span class="pill p-warn">A - Faire evoluer</span><h3>Refactor feature par feature</h3>
+      <p class="small">Pour : pas de big bang, prod toujours a jour.</p>
+      <p class="small">Contre : chaque etape doit rester compatible avec le modele de copies que l'on veut supprimer ; le front daisyUI serait refait ecran par ecran en cohabitant avec l'ancien. Le plus long au total.</p></div>
+    <div class="panel rec"><span class="pill p-ok">C - Recommandee</span><h3>Front reecrit, back refondu par module</h3>
+      <p class="small">Meme depot, monorepo avec package partage. On reprend infra, securite, admin, import, generation et tests ; on remodele les recettes, les espaces et les roles ; une migration de donnees unique, repetee sur une copie de la prod.</p>
+      <p class="small">Contre : V1 gelee pendant le chantier (sauf correctifs).</p></div>
+    <div class="panel"><span class="pill p-warn">B - Tout reecrire</span><h3>Nouveau depot from scratch</h3>
+      <p class="small">Pour : page blanche.</p>
+      <p class="small">Contre : on jette du code qui marche (auth, admin, securite, import, algorithme), on refait l'infra, et la migration reste necessaire de toute facon.</p></div>
+  </div>
+</section>
+
+<section id="suite">
+  <div class="eyebrow">8. A valider avant toute ligne de code</div>
+  <h2>Ce que j'attends de toi</h2>
+  <div class="cols">
+    <div class="panel"><h3>Relire et trancher</h3><ul>
+      <li>Les decisions D01 a D16 (journal des decisions)</li>
+      <li>Les 16 questions du CDC (section 10), en particulier Q01 espace perso, Q02 depart d'un auteur, Q04 tags, Q05 emails, Q15 volume de donnees en prod</li>
+      <li>Q16 : corriger tout de suite les deux failles en V1 ?</li>
+    </ul></div>
+    <div class="panel"><h3>Ensuite, phase B (un artefact a valider a chaque etape)</h3><ul>
+      <li>Modele de donnees, matrice des permissions, parcours</li>
+      <li>Design system et maquettes</li>
+      <li>Architecture, plan de migration, plan de tests</li>
+      <li>CDC 1.0 valide, puis seulement le code</li>
+    </ul></div>
+  </div>
+  <footer>Sources dans le depot : <code>.claude/docs/Rework-V2/</code> (CDC, journal des decisions, roadmap, copie locale de cette page).</footer>
+</section>
+
+</main>
+</div>
+
+<script>
+(function () {
+  var buttons = document.querySelectorAll(".filters button");
+  var items = document.querySelectorAll("#findings .finding");
+  var count = document.getElementById("count");
+  function apply(f) {
+    var n = 0;
+    items.forEach(function (el) {
+      var show = f === "all" || el.getAttribute("data-sev") === f;
+      el.hidden = !show;
+      if (show) n++;
+    });
+    buttons.forEach(function (b) { b.setAttribute("aria-pressed", String(b.getAttribute("data-f") === f)); });
+    count.textContent = n + " point" + (n > 1 ? "s" : "");
+  }
+  buttons.forEach(function (b) { b.addEventListener("click", function () { apply(b.getAttribute("data-f")); }); });
+  apply("all");
+})();
+</script>

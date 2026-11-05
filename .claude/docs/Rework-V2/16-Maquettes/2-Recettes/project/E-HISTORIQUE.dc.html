@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Historique des révisions</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap">
+<style>body{margin:0} a{color:var(--accent-text)} a:hover{color:var(--ink)}</style>
+</helmet>
+<div class="fm-root" data-space="1" style="width: 390px; height: 844px; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
+  <div style="position: relative;">
+    <x-import component-from-global-scope="ForestUI.TopBar" title="Historique" on-back="{{noop}}" unread="{{unread}}"></x-import>
+    <a href="E-RECETTE.dc.html" aria-hidden="true" tabindex="-1" title="Retour" style="position: absolute; left: 16px; top: 6px; width: 44px; height: 44px; border-radius: 10px;"></a>
+  </div>
+  <main style="flex: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+    <b style="font-size: 17px;">Saumon teriyaki et brocolis</b>
+    <ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px;">
+      <sc-for list="{{revs}}" as="r" hint-placeholder-count="4">
+        <li style="display: flex; gap: 12px; padding: 12px; border-radius: 14px; background: var(--surface-raised); border: 1px solid var(--line);">
+          <span style="font: 600 14px/20px var(--font-mono); color: var(--ink-muted); min-width: 28px;">{{r.n}}</span>
+          <span style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+            <span style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+              <b style="font-size: 15px;">{{r.what}}</b>
+              <sc-if value="{{r.current}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="ForestUI.Badge" tone="accent">Actuelle</x-import></sc-if>
+            </span>
+            <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">{{r.who}}</span>
+          </span>
+          <sc-if value="{{r.restorable}}" hint-placeholder-val="{{false}}">
+            <x-import component-from-global-scope="ForestUI.Button" size="sm">Restaurer</x-import>
+          </sc-if>
+        </li>
+      </sc-for>
+    </ol>
+    <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">Restaurer crée une nouvelle révision : rien n'est effacé.</span>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      noop: function () {},
+      unread: 3,
+      revs: [
+        { n: '4', what: 'Suggestion de Sam acceptée', who: 'Brocolis 400 g, citron vert · aujourd’hui', current: true, restorable: false },
+        { n: '3', what: 'Modifiée par Matthias', who: 'Sauce teriyaki liée à la place des ingrédients · 28 oct.', current: false, restorable: true },
+        { n: '2', what: 'Modifiée par Matthias', who: 'Temps de cuisson du saumon · 12 oct.', current: false, restorable: true },
+        { n: '1', what: 'Créée par Matthias', who: 'Importée depuis un lien · 3 oct.', current: false, restorable: true }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

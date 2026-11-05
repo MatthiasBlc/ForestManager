@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Quitter sans enregistrer</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap">
+<style>body{margin:0} a{color:var(--accent-text)} a:hover{color:var(--ink)}</style>
+</helmet>
+<div class="fm-root" data-space="1" style="width: 390px; height: 844px; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
+  <x-import component-from-global-scope="ForestUI.TopBar" title="Nouvelle recette" on-cancel="{{noop}}" action="Enregistrer" on-action="{{noop}}"></x-import>
+  <main style="flex: 1; padding: 16px;">
+    <x-import component-from-global-scope="ForestUI.Field" label="Titre" default-value="Gratin de Jeanne"></x-import>
+  </main>
+  <x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" title="Quitter sans enregistrer ?" on-close="{{noop}}">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <p style="margin: 0; font-size: 15px; line-height: 22px;">Ta recette « Gratin de Jeanne » n'est pas enregistrée. Quitter supprime aussi le brouillon gardé sur ce téléphone.</p>
+    </div>
+    <x-import component-from-global-scope="ForestUI.SheetFooter">
+      <x-import component-from-global-scope="ForestUI.Button" variant="danger">Quitter</x-import>
+      <x-import component-from-global-scope="ForestUI.Button" variant="primary">Continuer l'édition</x-import>
+    </x-import>
+  </x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { yes: true, noop: function () {} };
+  }
+}
+</script>
+</body>
+</html>

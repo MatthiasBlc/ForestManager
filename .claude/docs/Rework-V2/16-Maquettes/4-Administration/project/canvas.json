@@ -1,0 +1,283 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "A01-Connexion.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "title": "A01 - Connexion admin",
+      "w": 1440,
+      "x": 0,
+      "y": 1420
+    },
+    "A01a-Configurer-2FA.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "title": "A01a - Configurer la 2FA (première connexion)",
+      "w": 1440,
+      "x": 1520,
+      "y": 1420
+    },
+    "A01b-Code-2FA.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "title": "A01b - Code de vérification 2FA",
+      "w": 1440,
+      "x": 3040,
+      "y": 1420
+    },
+    "A02m-Tableau-de-bord-mobile.dc.html": {
+      "h": 844,
+      "title": "A02m - Tableau de bord (mobile)",
+      "w": 390,
+      "x": 1520,
+      "y": 0
+    },
+    "A03-Demandes.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "A03 - Demandes d'accès aux modules",
+      "w": 1440,
+      "x": 0,
+      "y": 2700
+    },
+    "A03b-Refuser-demande.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "title": "A03b - Refuser une demande (motif)",
+      "w": 1440,
+      "x": 1520,
+      "y": 2700
+    },
+    "A04-Catalogue-modules.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "A04 - Catalogue des modules",
+      "w": 1440,
+      "x": 3040,
+      "y": 2700
+    },
+    "A05-Ingredients.dc.html": {
+      "expand": "fill",
+      "h": 1100,
+      "is_interactive": true,
+      "title": "A05 - Ingrédients (nouveaux, détail)",
+      "w": 1440,
+      "x": 0,
+      "y": 4080
+    },
+    "A05b-Fusion-ingredient.dc.html": {
+      "expand": "fill",
+      "h": 1100,
+      "title": "A05b - Fusionner un ingrédient",
+      "w": 1440,
+      "x": 1520,
+      "y": 4080
+    },
+    "A06-Unites.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "A06 - Unités et conversions",
+      "w": 1440,
+      "x": 3040,
+      "y": 4080
+    },
+    "A07-Rayons.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "A07 - Rayons",
+      "w": 1440,
+      "x": 4560,
+      "y": 4080
+    },
+    "A08-Tags-globaux.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "A08 - Tags globaux",
+      "w": 1440,
+      "x": 6080,
+      "y": 4080
+    },
+    "A09-Espaces.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "A09 - Espaces",
+      "w": 1440,
+      "x": 0,
+      "y": 5560
+    },
+    "A09b-Moderation-motif.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "title": "A09b - Accès de modération (motif obligatoire)",
+      "w": 1440,
+      "x": 1520,
+      "y": 5560
+    },
+    "A10-Changelog.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "A10 - Changelog",
+      "w": 1440,
+      "x": 3040,
+      "y": 5560
+    },
+    "A11-Journal-audit.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "A11 - Journal d'audit",
+      "w": 1440,
+      "x": 4560,
+      "y": 5560
+    },
+    "A12-Utilisateurs.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "is_interactive": true,
+      "title": "A12 - Utilisateurs",
+      "w": 1440,
+      "x": 0,
+      "y": 7080
+    },
+    "A12b-Reinitialiser-mot-de-passe.dc.html": {
+      "expand": "fill",
+      "h": 1000,
+      "title": "A12b - Réinitialiser un mot de passe (sans SMTP, D21)",
+      "w": 1440,
+      "x": 1520,
+      "y": 7080
+    },
+    "A13-Reglages.dc.html": {
+      "expand": "fill",
+      "h": 1100,
+      "title": "A13 - Réglages de la plateforme",
+      "w": 1440,
+      "x": 3040,
+      "y": 7080
+    },
+    "AdminNav.dc.html": {
+      "h": 1040,
+      "is_interactive": true,
+      "title": "Composant - Navigation admin",
+      "w": 248,
+      "x": 1990,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "expand": "fill",
+      "h": 1040,
+      "is_interactive": true,
+      "title": "A02 - Tableau de bord",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-11-03T14:30:00Z",
+    "v": 1
+  },
+  "designSystems": [
+    {
+      "artifact": "https://claude.ai/artifact/7Q9Uy9qGhUyPYt3bWVa5yc",
+      "copiedAt": "2026-11-04T17:30:00Z",
+      "namespace": "forestui",
+      "title": "Forest Manager",
+      "version": "1793798732-c3dc"
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  },
+  "noteOrder": [
+    "t-pilotage",
+    "t-acces",
+    "t-modules",
+    "t-referentiels",
+    "t-suivi",
+    "t-comptes"
+  ],
+  "notes": {
+    "t-acces": {
+      "kind": "title1",
+      "maxW": 4480,
+      "text": "Accès admin (session isolée, 2FA)",
+      "w": 240,
+      "x": 0,
+      "y": 1160
+    },
+    "t-comptes": {
+      "kind": "title1",
+      "maxW": 4480,
+      "text": "Comptes et plateforme (D21, D52, D75)",
+      "w": 240,
+      "x": 0,
+      "y": 6820
+    },
+    "t-modules": {
+      "kind": "title1",
+      "maxW": 4480,
+      "text": "Modules (D33)",
+      "w": 240,
+      "x": 0,
+      "y": 2440
+    },
+    "t-pilotage": {
+      "kind": "title1",
+      "maxW": 2240,
+      "text": "Pilotage",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    },
+    "t-referentiels": {
+      "kind": "title1",
+      "maxW": 7520,
+      "text": "Référentiels (D09, D34, D36)",
+      "w": 240,
+      "x": 0,
+      "y": 3820
+    },
+    "t-suivi": {
+      "kind": "title1",
+      "maxW": 6000,
+      "text": "Espaces, modération et suivi (D52)",
+      "w": 240,
+      "x": 0,
+      "y": 5300
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "A02m-Tableau-de-bord-mobile.dc.html",
+    "AdminNav.dc.html",
+    "A01-Connexion.dc.html",
+    "A01a-Configurer-2FA.dc.html",
+    "A01b-Code-2FA.dc.html",
+    "A03-Demandes.dc.html",
+    "A03b-Refuser-demande.dc.html",
+    "A04-Catalogue-modules.dc.html",
+    "A05-Ingredients.dc.html",
+    "A05b-Fusion-ingredient.dc.html",
+    "A06-Unites.dc.html",
+    "A07-Rayons.dc.html",
+    "A08-Tags-globaux.dc.html",
+    "A09-Espaces.dc.html",
+    "A09b-Moderation-motif.dc.html",
+    "A10-Changelog.dc.html",
+    "A11-Journal-audit.dc.html",
+    "A12-Utilisateurs.dc.html",
+    "A12b-Reinitialiser-mot-de-passe.dc.html",
+    "A13-Reglages.dc.html"
+  ],
+  "pages": [],
+  "title": "Maquettes V2 - Administration"
+}

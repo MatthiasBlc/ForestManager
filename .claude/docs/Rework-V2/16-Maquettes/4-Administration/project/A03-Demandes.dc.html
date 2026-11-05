@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Demandes d'accès aux modules</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div class="fm-root" style="min-height: 1000px; display: flex; flex-wrap: wrap; align-items: stretch; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+  <dc-import name="AdminNav" active="demandes" hint-size="248px,1000px"></dc-import>
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 24px; max-width: 1192px;">
+    <header style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px;">
+      <div style="flex: 1 1 360px; display: flex; flex-direction: column; gap: 4px;">
+        <h1 style="margin: 0; font-family: var(--font-display); font-size: 26px; line-height: 32px;">Demandes d'accès aux modules</h1>
+        <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">L'accès est accordé à l'espace, pas à la personne. Une fois accordé, l'OWNER active le module quand il veut.</p>
+      </div>
+      <x-import component-from-global-scope="ForestUI.SegmentedControl" label="Filtrer les demandes" options="{{filters}}" default-value="pending"></x-import>
+    </header>
+
+    <section aria-label="Demandes en attente" style="display: flex; flex-direction: column; gap: 12px;">
+      <sc-for list="{{pending}}" as="d" hint-placeholder-count="2">
+        <article style="background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px; display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: flex-start;">
+          <div style="flex: 1 1 420px; min-width: 0; display: flex; gap: 14px;">
+            <x-import component-from-global-scope="ForestUI.Avatar" name="{{d.space}}" tint="{{d.tint}}" size="{{n44}}"></x-import>
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px;">
+              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+                <b style="font-family: var(--font-display); font-size: 17px; line-height: 22px;">{{d.space}}</b>
+                <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">demande</span>
+                <x-import component-from-global-scope="ForestUI.Badge" tone="accent">{{d.module}}</x-import>
+                <x-import component-from-global-scope="ForestUI.Badge" tone="warning">{{d.status}}</x-import>
+              </div>
+              <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">{{d.meta}}</span>
+              <blockquote style="margin: 4px 0 0; padding: 10px 14px; border-radius: var(--radius-md); background: var(--surface); font-size: 15px; line-height: 22px;">{{d.message}}</blockquote>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <a href="A03b-Refuser-demande.dc.html" class="fm-btn fm-btn-secondary" style="text-decoration: none;">Refuser</a>
+            <x-import component-from-global-scope="ForestUI.Button" variant="primary" icon="check">Accorder</x-import>
+          </div>
+        </article>
+      </sc-for>
+    </section>
+
+    <section aria-labelledby="hist" style="display: flex; flex-direction: column; gap: 12px;">
+      <h2 id="hist" style="margin: 0; font-family: var(--font-display); font-size: 20px; line-height: 26px;">Traitées récemment</h2>
+      <div style="overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface-raised);">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px; line-height: 20px;">
+          <thead>
+            <tr style="text-align: left; color: var(--ink-muted); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase;">
+              <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Espace</th>
+              <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Module</th>
+              <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Décision</th>
+              <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Motif</th>
+              <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <sc-for list="{{history}}" as="h" hint-placeholder-count="3">
+              <tr>
+                <td style="padding: 12px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">{{h.space}}</td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid var(--line);">{{h.module}}</td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid var(--line);"><x-import component-from-global-scope="ForestUI.Badge" tone="{{h.tone}}">{{h.decision}}</x-import></td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid var(--line); color: var(--ink-muted);">{{h.note}}</td>
+                <td style="padding: 12px 16px; border-bottom: 1px solid var(--line); color: var(--ink-muted); white-space: nowrap;">{{h.when}}</td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      n44: 44,
+      filters: [ { value: 'pending', label: 'En attente (2)' }, { value: 'done', label: 'Traitées' }, { value: 'all', label: 'Toutes' } ],
+      pending: [
+        { space: 'Colloc', tint: 2, module: 'Planning', status: 'Beta', meta: 'Demandée par Matthias, OWNER, il y a 2 jours · 3 membres · 41 recettes', message: 'On voudrait organiser les repas de la semaine entre colocs, surtout les soirs.' },
+        { space: 'TOM', tint: 3, module: 'Planning', status: 'Beta', meta: 'Demandée par Jeanne, OWNER, hier · 11 membres · 96 recettes', message: 'Pour planifier les repas du week-end de la troupe.' }
+      ],
+      history: [
+        { space: 'Foyer', module: 'Planning', decision: 'Accordée', tone: 'success', note: '', when: "Aujourd'hui, 14 h 02" },
+        { space: 'Famille', module: 'Planning', decision: 'Accordée', tone: 'success', note: '', when: '28 oct.' },
+        { space: 'Amis', module: 'Planning', decision: 'Refusée', tone: 'danger', note: "L'espace n'a encore aucune recette : refais la demande quand vous aurez commencé.", when: '25 oct.' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Utilisateurs</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div class="fm-root" style="min-height: 1000px; display: flex; flex-wrap: wrap; align-items: stretch; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+  <dc-import name="AdminNav" active="users" hint-size="248px,1000px"></dc-import>
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px; max-width: 1192px;">
+    <header style="display: flex; flex-direction: column; gap: 4px;">
+      <h1 style="margin: 0; font-family: var(--font-display); font-size: 26px; line-height: 32px;">Utilisateurs</h1>
+      <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">34 comptes. Tu vois leur compte, pas leur contenu : se connecter à la place d'un utilisateur est impossible.</p>
+    </header>
+
+    <div role="status" style="display: flex; gap: 12px; align-items: flex-start; padding: 12px 16px; border-radius: var(--radius-md); background: var(--warning-soft); color: var(--warning-text); font-size: 14px; line-height: 20px;">
+      <x-import component-from-global-scope="ForestUI.Icon" name="lock" size="{{n18}}"></x-import>
+      <span style="flex: 1;"><b>E-mails non configurés.</b> « Mot de passe oublié » est masqué pour les utilisateurs : quand l'un d'eux est bloqué, réinitialise son mot de passe ici et transmets-le lui toi-même.</span>
+      <a href="A13-Reglages.dc.html" style="font-weight: 600; white-space: nowrap;">Réglages</a>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
+      <x-import component-from-global-scope="ForestUI.Field" label="Rechercher" placeholder="Nom d'utilisateur ou e-mail" style="flex: 1 1 320px;"></x-import>
+      <x-import component-from-global-scope="ForestUI.SegmentedControl" label="Filtrer les comptes" options="{{filters}}" default-value="all"></x-import>
+    </div>
+
+    <div style="overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface-raised);">
+      <table style="width: 100%; min-width: 860px; border-collapse: collapse; font-size: 14px; line-height: 20px;">
+        <thead>
+          <tr style="text-align: left; color: var(--ink-muted); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase;">
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Utilisateur</th>
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Espaces</th>
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Inscription</th>
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Dernière connexion</th>
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;"><span class="fm-sr">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{users}}" as="u" hint-placeholder-count="3">
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                  <x-import component-from-global-scope="ForestUI.Avatar" name="{{u.name}}" size="{{n36}}"></x-import>
+                  <div style="display: flex; flex-direction: column; min-width: 0;">
+                    <b style="font-size: 15px; line-height: 22px;">{{u.name}}</b>
+                    <span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">{{u.email}}</span>
+                  </div>
+                </div>
+              </td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); color: var(--ink-muted);">{{u.spaces}}</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); color: var(--ink-muted); white-space: nowrap;">{{u.since}}</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); color: var(--ink-muted); white-space: nowrap;">{{u.last}}</td>
+              <td style="padding: 6px 16px; border-bottom: 1px solid var(--line); text-align: right;">
+                <a href="A12b-Reinitialiser-mot-de-passe.dc.html" class="fm-btn fm-btn-ghost fm-btn-sm" style="text-decoration: none;">Réinitialiser le mot de passe</a>
+              </td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin: 0; font-size: 13px; line-height: 18px; color: var(--ink-muted);">6 premiers comptes sur 34, par dernière connexion. Chaque réinitialisation est enregistrée dans le journal d'audit.</p>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      n18: 18,
+      n36: 36,
+      filters: [ { value: 'all', label: 'Tous' }, { value: 'admins', label: 'OWNER d\'un espace' }, { value: 'inactive', label: 'Inactifs depuis 6 mois' } ],
+      users: [
+        { name: 'Matthias', email: 'matthias@exemple.fr', spaces: 'Foyer, Famille, Colloc, TOM, Amis', since: '2 oct.', last: "Aujourd'hui, 15 h 10" },
+        { name: 'Léa', email: 'lea@exemple.fr', spaces: 'Foyer, Famille, Colloc', since: '2 oct.', last: "Aujourd'hui, 12 h 48" },
+        { name: 'Sam', email: 'sam@exemple.fr', spaces: 'Famille, Colloc', since: '5 oct.', last: 'Hier, 20 h 31' },
+        { name: 'Jeanne', email: 'jeanne@exemple.fr', spaces: 'Famille, TOM', since: '9 oct.', last: '1er nov.' },
+        { name: 'Paul', email: 'paul@exemple.fr', spaces: 'Famille, Amis', since: '12 oct.', last: '28 oct.' },
+        { name: 'Noé', email: 'noe@exemple.fr', spaces: 'Famille', since: '20 oct.', last: 'Il y a 2 semaines' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

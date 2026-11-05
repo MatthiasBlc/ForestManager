@@ -1,0 +1,1154 @@
+<title>Parcours V2</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap"
+/>
+<style>
+  /* Layout : sommaire des parcours colle a gauche en desktop, liste a puces en haut sur mobile ; un diagramme par parcours, puis l'inventaire des ecrans */
+  :root {
+    --bg: #f5f3ef;
+    --surface: #fbfaf7;
+    --raised: #ffffff;
+    --line: #ddd6cb;
+    --ink: #1f1d1a;
+    --muted: #5f5a53;
+    --accent: #b8611a;
+    --accent-soft: #f6e6d6;
+    --accent-text: #8a470f;
+    --second-soft: #e3e9f1;
+    --second-text: #3d5470;
+    --f-display: "Sora", "Segoe UI", system-ui, sans-serif;
+    --f-body: "Manrope", "Segoe UI", system-ui, sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16181b;
+      --surface: #1f2226;
+      --raised: #282c31;
+      --line: #32363c;
+      --ink: #eceae6;
+      --muted: #a6a39e;
+      --accent: #e8913a;
+      --accent-soft: #3d2c1d;
+      --accent-text: #f0a65b;
+      --second-soft: #262f3b;
+      --second-text: #a9bdd6;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16181b;
+    --surface: #1f2226;
+    --raised: #282c31;
+    --line: #32363c;
+    --ink: #eceae6;
+    --muted: #a6a39e;
+    --accent: #e8913a;
+    --accent-soft: #3d2c1d;
+    --accent-text: #f0a65b;
+    --second-soft: #262f3b;
+    --second-text: #a9bdd6;
+    color-scheme: dark;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 28px 64px;
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr);
+    gap: 40px;
+  }
+  nav {
+    position: sticky;
+    top: calc(env(safe-area-inset-top, 0px) + 20px);
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 13.5px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+  }
+  nav b {
+    font-family: var(--f-display);
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  nav a {
+    color: var(--muted);
+    text-decoration: none;
+    padding: 5px 8px;
+    border-radius: 8px;
+    display: flex;
+    gap: 8px;
+  }
+  nav a span {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    color: var(--accent-text);
+    min-width: 28px;
+  }
+  nav a:hover,
+  nav a:focus-visible {
+    background: var(--accent-soft);
+    color: var(--ink);
+    outline: none;
+  }
+  main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 36px;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--f-display);
+    margin: 0;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+  h1 {
+    font-size: clamp(28px, 4.5vw, 40px);
+  }
+  h2 {
+    font-size: 21px;
+  }
+  p {
+    margin: 0;
+    max-width: 72ch;
+  }
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  .intro {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+  .legend code,
+  td code {
+    font-family: var(--f-mono);
+    font-size: 12.5px;
+    background: var(--accent-soft);
+    color: var(--accent-text);
+    padding: 1px 6px;
+    border-radius: 5px;
+    white-space: nowrap;
+  }
+  .journey {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    scroll-margin-top: 16px;
+    min-width: 0;
+  }
+  .journey header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .pid {
+    font-family: var(--f-mono);
+    font-size: 13px;
+    color: var(--accent-text);
+  }
+  .trig {
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .trig b {
+    color: var(--ink);
+    margin-right: 6px;
+  }
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--second-soft);
+    color: var(--second-text);
+  }
+  .diagram {
+    overflow-x: auto;
+    background: var(--raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px;
+  }
+  .diagram pre {
+    margin: 0;
+  }
+  .box {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .box ul {
+    margin: 0;
+    padding-left: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .box li span {
+    display: block;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .box li b {
+    font-family: var(--f-mono);
+    font-size: 13px;
+    color: var(--accent-text);
+    margin-right: 6px;
+  }
+  .tablebox {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--raised);
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+  }
+  th,
+  td {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    background: var(--surface);
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  @media (max-width: 880px) {
+    .wrap {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 20px;
+      padding-block: 20px 48px;
+    }
+    nav {
+      position: static;
+      max-height: none;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    nav b {
+      width: 100%;
+      margin-bottom: 0;
+    }
+    nav a {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 10px;
+    }
+    nav a span {
+      min-width: 0;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+</style>
+<div class="wrap">
+  <nav aria-label="Parcours">
+    <b>Parcours V2</b><a href="#p01"><span>P01</span>Premiere visite et inscription</a
+    ><a href="#p02"><span>P02</span>Creer un espace et inviter par lien</a
+    ><a href="#p03"><span>P03</span>Rejoindre via un lien</a
+    ><a href="#p04"><span>P04</span>Creer une recette</a
+    ><a href="#p05"><span>P05</span>Recette composee</a
+    ><a href="#p06"><span>P06</span>Partager ou adapter</a
+    ><a href="#p07"><span>P07</span>Suggerer, accepter, refuser</a
+    ><a href="#p08"><span>P08</span>Un auteur quitte l&#x27;espace</a
+    ><a href="#p09"><span>P09</span>Demander l&#x27;acces a un module</a
+    ><a href="#p10"><span>P10</span>Planning de la semaine</a
+    ><a href="#p11"><span>P11</span>Mode cuisine</a><a href="#p12"><span>P12</span>Exporter</a
+    ><a href="#p13"><span>P13</span>Changer d&#x27;ambiance</a
+    ><a href="#p14"><span>P14</span>Supprimer puis restaurer un espace</a
+    ><a href="#p15"><span>P15</span>Supprimer son compte</a
+    ><a href="#p16"><span>P16</span>Recherche globale</a
+    ><a href="#p17"><span>P17</span>Notifications</a
+    ><a href="#ecrans"><span>--</span>Inventaire des ecrans</a
+    ><a href="#decisions"><span>--</span>Decisions et questions</a>
+  </nav>
+  <main>
+    <section class="intro">
+      <div class="eyebrow">Rework V2 - roadmap B3 - statut : voir le journal des decisions</div>
+      <h1>Les parcours de Forest Manager</h1>
+      <p>
+        Dix-sept parcours, decrits au telephone d'abord. Chaque case nomme l'ecran ou la feuille
+        traverses : ces identifiants serviront tels quels aux maquettes. Le detail pas a pas
+        (composants, etats, notifications) est dans <code>13-Parcours.md</code>.
+      </p>
+      <div class="legend">
+        <span><code>E-</code> ecran plein</span
+        ><span><code>F-</code> feuille du bas (dialogue en desktop)</span
+        ><span>Puces bleues : decisions d'origine</span>
+      </div>
+    </section>
+    <section class="journey" id="p01">
+      <header>
+        <span class="pid">P01</span>
+        <h2>Premiere visite et inscription</h2>
+      </header>
+      <p class="trig"><b>Declencheur</b> Visiteur non connecte ouvre l&#x27;app</p>
+      <div class="chips">
+        <span class="chip">D02</span><span class="chip">D13</span><span class="chip">D21</span
+        ><span class="chip">D61</span>
+      </div>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+A["E-ACCUEIL-PUBLIC"] --> B["E-INSCRIPTION"]
+B -->|SMTP configure| C["E-VERIF-EMAIL"]
+B -->|sans SMTP| D["E-BIENVENUE"]
+C -->|lien ouvert| D
+D -->|Creer un espace| E["F-CREER-ESPACE"]
+D -->|J'ai un lien| F["E-REJOINDRE"]
+D -->|Premiere recette| G["F-AJOUT-RECETTE"]
+D -->|Plus tard| H["E-RECETTES espace perso, vide"]
+</pre
+        >
+      </div>
+    </section>
+    <section class="journey" id="p02">
+      <header>
+        <span class="pid">P02</span>
+        <h2>Creer un espace et inviter par lien</h2>
+      </header>
+      <p class="trig"><b>Declencheur</b> Bouton + du rail des espaces</p>
+      <div class="chips">
+        <span class="chip">D06</span><span class="chip">D07</span><span class="chip">D32</span
+        ><span class="chip">D33</span>
+      </div>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+A["SpaceRail : +"] --> B["F-CREER-ESPACE : nom, teinte, photo"]
+B --> C["E-RECETTES du nouvel espace (OWNER, module Recettes seul)"]
+C -->|Inviter des membres| D["F-INVITER"]
+D -->|onglet Lien| E["Duree + usages : Copier le lien"]
+D -->|onglet Nom| F["Nom exact : Inviter"]
+F --> G["Notification a l'invite"]
+</pre
+        >
+      </div>
+    </section>
+    <section class="journey" id="p03">
+      <header>
+        <span class="pid">P03</span>
+        <h2>Rejoindre via un lien</h2>
+      </header>
+      <p class="trig"><b>Declencheur</b> Ouverture d&#x27;un lien /i/code</p>
+      <div class="chips"><span class="chip">D07</span><span class="chip">D62</span></div>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+A["Lien /i/code"] --> B{"Lien valable ?"}
+B -->|non| X["E-REJOINDRE : lien plus valable"]
+B -->|oui| C{"Connecte ?"}
+C -->|non| D["E-INSCRIPTION ou E-CONNEXION"]
+D --> E["E-REJOINDRE : nom, avatar, membres"]
+C -->|oui| E
+E -->|Rejoindre| F["E-RECETTES de l'espace"]
+F --> G["Activite : Y a rejoint"]
+</pre
+        >
+      </div>
+    </section>
+    <section class="journey" id="p04">
+      <header>
+        <span class="pid">P04</span>
+        <h2>Creer une recette</h2>
+      </header>
+      <p class="trig"><b>Declencheur</b> Nouvelle recette, palette Ctrl K, bienvenue</p>
+      <div class="chips">
+        <span class="chip">D05</span><span class="chip">D08</span><span class="chip">D09</span
+        ><span class="chip">D28</span><span class="chip">D63</span>
+      </div>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+A["F-AJOUT-RECETTE"] -->|Saisir| D["E-RECETTE-EDITION"]
+A -->|Importer un lien| B["F-IMPORT-URL"]
+A -->|Coller un texte| C["F-IMPORT-TEXTE"]
+B -->|lu| D
+B -->|echec| C
+C --> D
+D -->|Enregistrer| E["E-RECETTE (revision 1)"]
+D -->|Quitter| F["F-CONFIRMER abandon"]
+</pre
+        >
+      </div>
+    </section>
+    <section class="journey" id="p05">
+      <header>
+        <span class="pid">P05</span>
+        <h2>Recette composee</h2>
+      </header>
+      <p class="trig"><b>Declencheur</b> Ajouter un bloc dans l&#x27;editeur</p>
+      <div class="chips"><span class="chip">D24</span><span class="chip">D26</span></div>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+A["E-RECETTE-EDITION"] --> B["F-AJOUT-BLOC"]
+B -->|Bloc local| C["Titre, ingredients, etapes"]
+B -->|Lier une recette| D["F-LIER-RECETTE : recherche, Bases d'abord"]
+D --> E["Quantite dans le rendement : 150 ml"]
+E --> F["RecipeBlock lie (second)"]
+C --> A
+F --> A
+A -->|Extraire en recette| G["Nouvelle recette Base + lien"]
+</pre
+        >
+      </div>
+    </section>
+    <section class="journey" id="p06">
+      <header>
+        <span class="pid">P06</span>
+        <h2>Partager ou adapter</h2>
+      </header>
+      <p class="trig"><b>Declencheur</b> Menu d&#x27;actions d&#x27;une recette</p>
+      <div class="chips">
+        <span class="chip">D03</span><span class="chip">D17</span><span class="chip">D26</span
+        ><span class="chip">D65</span>
+      </div>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+A["F-ACTIONS"] -->|Partager| B["F-PARTAGER : cases par espace"]
+B --> C["Sous-recettes partagees aussi"]
+C --> D["Toast : Partagee dans TOM"]
+A -->|Adapter| E["F-ADAPTER : espace cible, titre"]
+E --> F["E-RECETTE-EDITION de l'adaptation"]
+F --> G["Recette de Colloc liee a l'original"]
+G -->|original modifie| H["Badge Original modifie"]
+H --> I["E-COMPARER-ORIGINAL"]
+I -->|Marquer comme vu| G
+</pre
+        >
+      </div>
+    </section>
+    <section class="journey" id="p07">
+      <header>
+        <span class="pid">P07</span>
+        <h2>Suggerer, accepter, refuser</h2>
+      </header>
+      <p class="trig"><b>Declencheur</b> Membre non auteur : Suggerer une modification</p>
+      <div class="chips">
+        <span class="chip">D04</span><span class="chip">D05</span><span class="chip">D17</span
+        ><span class="chip">D18</span><span class="chip">D64</span>
+      </div>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+A["E-SUGGESTION-EDITION"] -->|Envoyer| B["Notification au decideur"]
+B --> C["E-SUGGESTION : differences par bloc"]
+C -->|Accepter| D["Nouvelle revision"]
+C -->|Refuser| E["F-CONFIRMER + motif"]
+E --> F["Notification au suggereur"]
+F -->|En faire mon adaptation| G["F-ADAPTER"]
+</pre
+        >
+      </div>
+    </section>
+    <section class="journey" id="p08">
+      <header>
+        <span class="pid">P08</span>
+        <h2>Un auteur quitte l&#x27;espace</h2>
+      </header>
+      <p class="trig"><b>Declencheur</b> Quitter l&#x27;espace ou exclusion</p>
+      <div class="chips">
+        <span class="chip">D06</span><span class="chip">D18</span><span class="chip">D84</span>
+      </div>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+A["E-REGLAGES-ESPACE : Quitter"] --> B{"OWNER ?"}
+B -->|oui| C["F-TRANSFERER ou suppression (P14)"]
+B -->|non| D["F-QUITTER : consequences"]
+D --> E["Recettes creees dans l'espace : restent, ancien membre"]
+D --> F["Suggestions en attente : aux moderateurs"]
+F --> G["Notification aux moderateurs"]
+D --> H["Recettes partagees depuis l'espace perso : laisser ou retirer, une par une"]
+</pre
+        >
+      </div>
+    </section>
+    <section class="journey" id="p09">
+      <header>
+        <span class="pid">P09</span>
+        <h2>Demander l&#x27;acces a un module</h2>
+      </header>
+      <p class="trig"><b>Declencheur</b> OWNER : Reglages &gt; Modules</p>
+      <div class="chips">
+        <span class="chip">D10</span><span class="chip">D33</span><span class="chip">D40</span>
+      </div>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+A["E-MODULES : catalogue + statuts"] -->|Demander l'acces| B["F-DEMANDE-MODULE"]
+B --> C["E-ADMIN-DEMANDES"]
+C -->|Accorder| D["Notification OWNER"]
+C -->|Refuser + motif| E["Notification OWNER, nouvelle demande possible"]
+D --> F["Switch Activer"]
+F --> G["Module visible pour tous les membres"]
+</pre
+        >
+      </div>
+    </section>
+    <section class="journey" id="p10">
+      <header>
+        <span class="pid">P10</span>
+        <h2>Planning de la semaine</h2>
+      </header>
+      <p class="trig"><b>Declencheur</b> Onglet Planning (module actif)</p>
+      <div class="chips"><span class="chip">D11</span><span class="chip">D69</span></div>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+A["E-PLANNING vide"] --> B["F-CREER-PLANNING"]
+B --> C["E-PLANNING jour / semaine"]
+C -->|repas vide| D["F-REPAS : recette, texte, portions, verrou"]
+C -->|Generer| E["F-GENERER : profil, periode, rapport"]
+C -->|appui long| F["F-ACTIONS : remplacer, verrouiller, echanger"]
+F -->|Echanger avec| G["Toucher le repas cible (mobile) / glisser (desktop)"]
+D --> C
+E --> C
+G --> C
+</pre
+        >
+      </div>
+    </section>
+    <section class="journey" id="p11">
+      <header>
+        <span class="pid">P11</span>
+        <h2>Mode cuisine</h2>
+      </header>
+      <p class="trig"><b>Declencheur</b> Bouton Mode cuisine</p>
+      <div class="chips">
+        <span class="chip">D24</span><span class="chip">D35</span><span class="chip">D67</span>
+      </div>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+A["E-RECETTE"] -->|Mode cuisine| B["E-MODE-CUISINE : ecran allume"]
+B -->|Ingredients| C["F-INGREDIENTS a cocher"]
+C --> B
+B -->|Suivante / Precedente| B
+B -->|derniere etape| D["Bon appetit : Quitter"]
+</pre
+        >
+      </div>
+    </section>
+    <section class="journey" id="p12">
+      <header>
+        <span class="pid">P12</span>
+        <h2>Exporter</h2>
+      </header>
+      <p class="trig"><b>Declencheur</b> Profil ou reglages de l&#x27;espace (OWNER)</p>
+      <div class="chips"><span class="chip">D37</span></div>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+A["E-PROFIL ou E-REGLAGES-ESPACE"] --> B["F-EXPORT : JSON / Markdown, photos"]
+B --> C{"Export d'espace deja fait aujourd'hui ?"}
+C -->|oui| D["Prochain export possible demain"]
+C -->|non| E["Preparation puis Telecharger"]
+E --> F["Activite : X a exporte l'espace"]
+</pre
+        >
+      </div>
+    </section>
+    <section class="journey" id="p13">
+      <header>
+        <span class="pid">P13</span>
+        <h2>Changer d&#x27;ambiance</h2>
+      </header>
+      <p class="trig"><b>Declencheur</b> Profil &gt; Apparence</p>
+      <div class="chips"><span class="chip">D32</span></div>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+A["E-PROFIL"] --> B["E-APPARENCE"]
+B --> C["Ambiance : Braise / Sous-bois / Potager"]
+B --> D["Mode : Systeme / Clair / Sombre"]
+C --> E["Application immediate"]
+D --> E
+</pre
+        >
+      </div>
+    </section>
+    <section class="journey" id="p14">
+      <header>
+        <span class="pid">P14</span>
+        <h2>Supprimer puis restaurer un espace</h2>
+      </header>
+      <p class="trig"><b>Declencheur</b> OWNER : Supprimer l&#x27;espace</p>
+      <div class="chips"><span class="chip">D22</span><span class="chip">D66</span></div>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+A["F-SUPPRIMER-ESPACE : taper le nom"] --> B["Espace masque pour les membres + notification"]
+A --> C["Rail de l'OWNER : icone grisee J-30"]
+C --> D["E-ESPACE-EN-SUPPRESSION"]
+D -->|Restaurer| E["Espace revenu, membres notifies"]
+C -->|30 jours| F["Purge definitive"]
+</pre
+        >
+      </div>
+    </section>
+    <section class="journey" id="p15">
+      <header>
+        <span class="pid">P15</span>
+        <h2>Supprimer son compte</h2>
+      </header>
+      <p class="trig"><b>Declencheur</b> Profil &gt; Supprimer mon compte</p>
+      <div class="chips">
+        <span class="chip">D06</span><span class="chip">D20</span><span class="chip">D51</span>
+      </div>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+A["F-SUPPRIMER-COMPTE"] --> B{"OWNER d'espaces groupe ?"}
+B -->|oui| C["Transfert automatique au plus ancien moderateur, sinon membre"]
+C --> D
+B -->|non| D["Consequences + export propose"]
+D -->|mot de passe| E["Compte supprime, recettes de groupe : ancien membre"]
+E --> F["E-ACCUEIL-PUBLIC"]
+</pre
+        >
+      </div>
+    </section>
+    <section class="journey" id="p16">
+      <header>
+        <span class="pid">P16</span>
+        <h2>Recherche globale</h2>
+      </header>
+      <p class="trig"><b>Declencheur</b> Ctrl K ou loupe</p>
+      <div class="chips"><span class="chip">CDC S5.1</span></div>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+A["F-RECHERCHE"] --> B["Recettes"]
+A --> C["Ingredients"]
+A --> D["Membres"]
+A --> E["Espaces"]
+A --> F["Actions"]
+C --> G["E-RECETTES filtre sur l'ingredient"]
+</pre
+        >
+      </div>
+    </section>
+    <section class="journey" id="p17">
+      <header>
+        <span class="pid">P17</span>
+        <h2>Notifications</h2>
+      </header>
+      <p class="trig"><b>Declencheur</b> Cloche de la TopBar</p>
+      <div class="chips"><span class="chip">F-NOT-1</span><span class="chip">F-NOT-2</span></div>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+A["E-NOTIFICATIONS"] -->|toucher| B["Cible ouverte, notification lue"]
+A -->|Tout marquer comme lu| A
+A -->|Preferences| C["E-NOTIF-PREFERENCES : par categorie et espace"]
+</pre
+        >
+      </div>
+    </section>
+    <section class="box" id="ecrans">
+      <h2>Inventaire des ecrans</h2>
+      <p>
+        54 ecrans et feuilles, l'entree des maquettes (roadmap B5). L'administration plateforme est
+        a maquetter en plus.
+      </p>
+      <div class="tablebox">
+        <table>
+          <thead>
+            <tr>
+              <th>Id</th>
+              <th>Type</th>
+              <th>Titre</th>
+              <th>Parcours</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>E-ACCUEIL-PUBLIC</code></td>
+              <td>Ecran</td>
+              <td>Presentation, non connecte</td>
+              <td>P01, P15</td>
+            </tr>
+            <tr>
+              <td><code>E-INSCRIPTION</code></td>
+              <td>Ecran</td>
+              <td>Creer un compte</td>
+              <td>P01, P03</td>
+            </tr>
+            <tr>
+              <td><code>E-CONNEXION</code></td>
+              <td>Ecran</td>
+              <td>Se connecter</td>
+              <td>P01, P03</td>
+            </tr>
+            <tr>
+              <td><code>E-VERIF-EMAIL</code></td>
+              <td>Ecran</td>
+              <td>Confirme ton adresse (SMTP)</td>
+              <td>P01</td>
+            </tr>
+            <tr>
+              <td><code>E-MDP-OUBLIE</code></td>
+              <td>Ecran</td>
+              <td>Mot de passe oublie (SMTP)</td>
+              <td>P01</td>
+            </tr>
+            <tr>
+              <td><code>E-MDP-NOUVEAU</code></td>
+              <td>Ecran</td>
+              <td>Nouveau mot de passe (SMTP)</td>
+              <td>P01</td>
+            </tr>
+            <tr>
+              <td><code>E-BIENVENUE</code></td>
+              <td>Ecran</td>
+              <td>Bienvenue, 3 choix</td>
+              <td>P01</td>
+            </tr>
+            <tr>
+              <td><code>E-ACCUEIL</code></td>
+              <td>Ecran</td>
+              <td>Accueil a widgets (espace perso)</td>
+              <td>D60</td>
+            </tr>
+            <tr>
+              <td><code>E-REJOINDRE</code></td>
+              <td>Ecran</td>
+              <td>Rejoindre un espace par lien</td>
+              <td>P03</td>
+            </tr>
+            <tr>
+              <td><code>F-INVITATION</code></td>
+              <td>Feuille</td>
+              <td>Accepter une invitation par nom</td>
+              <td>P03</td>
+            </tr>
+            <tr>
+              <td><code>F-CREER-ESPACE</code></td>
+              <td>Feuille</td>
+              <td>Creer un espace</td>
+              <td>P01, P02</td>
+            </tr>
+            <tr>
+              <td><code>F-INVITER</code></td>
+              <td>Feuille</td>
+              <td>Inviter (lien / nom)</td>
+              <td>P02</td>
+            </tr>
+            <tr>
+              <td><code>F-ESPACES</code></td>
+              <td>Feuille</td>
+              <td>Changer d'espace, mobile (D130)</td>
+              <td>Tous</td>
+            </tr>
+            <tr>
+              <td><code>E-MEMBRES</code></td>
+              <td>Ecran</td>
+              <td>Membres et roles</td>
+              <td>P02, P08</td>
+            </tr>
+            <tr>
+              <td><code>E-REGLAGES-ESPACE</code></td>
+              <td>Ecran</td>
+              <td>Reglages de l&#x27;espace</td>
+              <td>P08, P09, P12, P14</td>
+            </tr>
+            <tr>
+              <td><code>F-QUITTER</code></td>
+              <td>Feuille</td>
+              <td>Quitter l&#x27;espace</td>
+              <td>P08</td>
+            </tr>
+            <tr>
+              <td><code>F-TRANSFERER</code></td>
+              <td>Feuille</td>
+              <td>Transferer la propriete</td>
+              <td>P08, P15</td>
+            </tr>
+            <tr>
+              <td><code>E-MODULES</code></td>
+              <td>Ecran</td>
+              <td>Modules de l&#x27;espace</td>
+              <td>P09</td>
+            </tr>
+            <tr>
+              <td><code>F-DEMANDE-MODULE</code></td>
+              <td>Feuille</td>
+              <td>Demander l&#x27;acces a un module</td>
+              <td>P09</td>
+            </tr>
+            <tr>
+              <td><code>E-ADMIN-DEMANDES</code></td>
+              <td>Ecran</td>
+              <td>Admin : demandes d&#x27;acces</td>
+              <td>P09</td>
+            </tr>
+            <tr>
+              <td><code>E-RECETTES</code></td>
+              <td>Ecran</td>
+              <td>Liste des recettes de l&#x27;espace</td>
+              <td>P01, P02, P04, P16</td>
+            </tr>
+            <tr>
+              <td><code>E-RECETTE</code></td>
+              <td>Ecran</td>
+              <td>Detail d&#x27;une recette</td>
+              <td>P04 a P07, P11</td>
+            </tr>
+            <tr>
+              <td><code>E-RECETTE-EDITION</code></td>
+              <td>Ecran</td>
+              <td>Creer / modifier une recette</td>
+              <td>P04, P05, P06</td>
+            </tr>
+            <tr>
+              <td><code>F-AJOUT-RECETTE</code></td>
+              <td>Feuille</td>
+              <td>Nouvelle recette : 3 choix</td>
+              <td>P01, P04</td>
+            </tr>
+            <tr>
+              <td><code>F-IMPORT-URL</code></td>
+              <td>Feuille</td>
+              <td>Importer depuis un lien</td>
+              <td>P04</td>
+            </tr>
+            <tr>
+              <td><code>F-IMPORT-TEXTE</code></td>
+              <td>Feuille</td>
+              <td>Coller un texte</td>
+              <td>P04</td>
+            </tr>
+            <tr>
+              <td><code>F-AJOUT-BLOC</code></td>
+              <td>Feuille</td>
+              <td>Ajouter un bloc</td>
+              <td>P05</td>
+            </tr>
+            <tr>
+              <td><code>F-LIER-RECETTE</code></td>
+              <td>Feuille</td>
+              <td>Lier une recette</td>
+              <td>P05</td>
+            </tr>
+            <tr>
+              <td><code>F-PARTAGER</code></td>
+              <td>Feuille</td>
+              <td>Partager dans des espaces</td>
+              <td>P06</td>
+            </tr>
+            <tr>
+              <td><code>F-DEMANDE-PARTAGE</code></td>
+              <td>Feuille</td>
+              <td>Demande de partage recue (D101)</td>
+              <td>P06, P17</td>
+            </tr>
+            <tr>
+              <td><code>F-ADAPTER</code></td>
+              <td>Feuille</td>
+              <td>Adapter pour un espace</td>
+              <td>P06</td>
+            </tr>
+            <tr>
+              <td><code>E-COMPARER-ORIGINAL</code></td>
+              <td>Ecran</td>
+              <td>Comparer avec l&#x27;original</td>
+              <td>P06</td>
+            </tr>
+            <tr>
+              <td><code>E-SUGGESTION-EDITION</code></td>
+              <td>Ecran</td>
+              <td>Rediger une suggestion</td>
+              <td>P07</td>
+            </tr>
+            <tr>
+              <td><code>E-SUGGESTION</code></td>
+              <td>Ecran</td>
+              <td>Examiner une suggestion</td>
+              <td>P07, P08</td>
+            </tr>
+            <tr>
+              <td><code>E-HISTORIQUE</code></td>
+              <td>Ecran</td>
+              <td>Historique des revisions</td>
+              <td>P07</td>
+            </tr>
+            <tr>
+              <td><code>F-ACTIONS</code></td>
+              <td>Feuille</td>
+              <td>Menu d&#x27;actions (ActionMenu)</td>
+              <td>P06, P07, P10</td>
+            </tr>
+            <tr>
+              <td><code>F-CONFIRMER</code></td>
+              <td>Feuille</td>
+              <td>Confirmation generique</td>
+              <td>P04, P07, P10</td>
+            </tr>
+            <tr>
+              <td><code>E-MODE-CUISINE</code></td>
+              <td>Ecran</td>
+              <td>Mode cuisine</td>
+              <td>P11</td>
+            </tr>
+            <tr>
+              <td><code>F-INGREDIENTS</code></td>
+              <td>Feuille</td>
+              <td>Ingredients a cocher</td>
+              <td>P11</td>
+            </tr>
+            <tr>
+              <td><code>E-PLANNING</code></td>
+              <td>Ecran</td>
+              <td>Planning (jour / semaine)</td>
+              <td>P10</td>
+            </tr>
+            <tr>
+              <td><code>F-CREER-PLANNING</code></td>
+              <td>Feuille</td>
+              <td>Creer le planning</td>
+              <td>P10</td>
+            </tr>
+            <tr>
+              <td><code>F-REPAS</code></td>
+              <td>Feuille</td>
+              <td>Modifier un repas</td>
+              <td>P10</td>
+            </tr>
+            <tr>
+              <td><code>F-GENERER</code></td>
+              <td>Feuille</td>
+              <td>Generer le planning + rapport</td>
+              <td>P10</td>
+            </tr>
+            <tr>
+              <td><code>E-PROFILS-GENERATION</code></td>
+              <td>Ecran</td>
+              <td>Profils de generation et regles</td>
+              <td>P10</td>
+            </tr>
+            <tr>
+              <td><code>E-IDEES</code></td>
+              <td>Ecran</td>
+              <td>Idees de repas</td>
+              <td>P10</td>
+            </tr>
+            <tr>
+              <td><code>F-EXPORT</code></td>
+              <td>Feuille</td>
+              <td>Exporter</td>
+              <td>P12, P14, P15</td>
+            </tr>
+            <tr>
+              <td><code>E-PROFIL</code></td>
+              <td>Ecran</td>
+              <td>Profil</td>
+              <td>P12, P13, P15</td>
+            </tr>
+            <tr>
+              <td><code>E-APPARENCE</code></td>
+              <td>Ecran</td>
+              <td>Apparence (ambiance, mode)</td>
+              <td>P13</td>
+            </tr>
+            <tr>
+              <td><code>F-SUPPRIMER-ESPACE</code></td>
+              <td>Feuille</td>
+              <td>Supprimer l&#x27;espace</td>
+              <td>P14</td>
+            </tr>
+            <tr>
+              <td><code>E-ESPACE-EN-SUPPRESSION</code></td>
+              <td>Ecran</td>
+              <td>Espace en suppression, restaurer</td>
+              <td>P14</td>
+            </tr>
+            <tr>
+              <td><code>F-SUPPRIMER-COMPTE</code></td>
+              <td>Feuille</td>
+              <td>Supprimer mon compte</td>
+              <td>P15</td>
+            </tr>
+            <tr>
+              <td><code>F-RECHERCHE</code></td>
+              <td>Feuille</td>
+              <td>Recherche globale (Ctrl K)</td>
+              <td>P16</td>
+            </tr>
+            <tr>
+              <td><code>E-NOTIFICATIONS</code></td>
+              <td>Ecran</td>
+              <td>Notifications</td>
+              <td>P17</td>
+            </tr>
+            <tr>
+              <td><code>E-NOTIF-PREFERENCES</code></td>
+              <td>Ecran</td>
+              <td>Preferences de notifications</td>
+              <td>P17</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+    <section class="box" id="decisions">
+      <h2>Decisions</h2>
+      <p>Introduites par ces parcours. Statut : voir le journal des decisions.</p>
+      <ul>
+        <li>
+          <b>D60</b> A l&#x27;ouverture, l&#x27;app reprend le dernier espace et module visites.
+          L&#x27;accueil a widgets (E-ACCUEIL) est l&#x27;ecran d&#x27;entree de l&#x27;espace
+          perso.
+        </li>
+        <li>
+          <b>D61</b> Apres l&#x27;inscription, un ecran de bienvenue a 3 choix passables (creer un
+          espace, rejoindre par lien, ajouter une recette). Pas de visite guidee en plusieurs
+          ecrans.
+        </li>
+        <li>
+          <b>D62</b> Un lien d&#x27;invitation montre l&#x27;espace (nom, avatar, membres) avant de
+          rejoindre ; il survit a l&#x27;inscription ou la connexion ; rejoindre demande un clic de
+          confirmation. Un lien invalide ne montre rien de l&#x27;espace.
+        </li>
+        <li>
+          <b>D63</b> Une seule porte d&#x27;entree pour creer une recette (Saisir, Importer un lien,
+          Coller un texte) ; tout import aboutit au meme editeur pre-rempli, champs douteux marques
+          &quot;A verifier&quot;.
+        </li>
+        <li>
+          <b>D64</b> Une suggestion se redige dans l&#x27;editeur de recette en &quot;mode
+          suggestion&quot; ; l&#x27;auteur l&#x27;accepte ou la refuse en entier en V2.0 (pas
+          d&#x27;acceptation partielle).
+        </li>
+        <li>
+          <b>D65</b> Le partage se regle dans une seule feuille a cases (espaces ou la recette est
+          visible) : cocher partage, decocher retire.
+        </li>
+        <li>
+          <b>D66</b> Un espace en suppression reste visible, grise, dans le rail de son OWNER
+          seulement, avec le compte a rebours et &quot;Restaurer&quot;.
+        </li>
+        <li>
+          <b>D67</b> Mode cuisine : une etape a la fois en grand, boutons Precedente / Suivante,
+          ingredients dans une feuille, ecran maintenu allume.
+        </li>
+        <li>
+          <b>D68</b> Hors ligne : bandeau permanent &quot;Hors ligne&quot;, actions d&#x27;ecriture
+          desactivees avec la raison, pas de file d&#x27;attente de modifications ; brouillon de
+          recette conserve localement.
+        </li>
+        <li>
+          <b>D69</b> Echanger deux repas : glisser-deposer en desktop ; sur mobile, ActionMenu
+          &quot;Echanger avec...&quot; puis toucher le repas cible (pas de glisser-deposer tactile,
+          conflit avec le defilement).
+        </li>
+      </ul>
+      <h2>Questions (toutes tranchees)</h2>
+      <p>
+        QP1 par D60, QP2 par D61, QP3 par D64, QP4 par D69, QP5 par D84 (l&#x27;ecran
+        &quot;Quitter&quot; demande pour chaque recette).
+      </p>
+      <ul>
+        <li>
+          <b>QP1 - Ecran d&#x27;ouverture</b
+          ><span
+            >(a) dernier espace et module visites (recommande, D60) ; (b) toujours l&#x27;accueil a
+            widgets ; (c) toujours l&#x27;espace perso.</span
+          >
+        </li>
+        <li>
+          <b>QP2 - Accueil des nouveaux</b
+          ><span
+            >(a) ecran de bienvenue a 3 choix passables (recommande, D61) ; (b) visite guidee en
+            plusieurs etapes ; (c) rien, arrivee directe dans l&#x27;espace perso vide.</span
+          >
+        </li>
+        <li>
+          <b>QP3 - Acceptation d&#x27;une suggestion</b
+          ><span
+            >(a) en entier seulement en V2.0 (recommande, D64) ; (b) bloc par bloc des la V2.0 ; (c)
+            ligne par ligne.</span
+          >
+        </li>
+        <li>
+          <b>QP4 - Echange de repas sur mobile</b
+          ><span
+            >(a) menu &quot;Echanger avec...&quot; puis toucher la cible (recommande, D69) ; (b)
+            glisser-deposer apres un appui long ; (c) les deux.</span
+          >
+        </li>
+        <li>
+          <b>QP5 - Recette partagee depuis l&#x27;espace perso quand on quitte un groupe</b
+          ><span
+            >(a) le partage est retire, la recette reste dans l&#x27;espace perso (recommande :
+            c&#x27;est le contenu de l&#x27;auteur, D18 vise les recettes creees dans le groupe) ;
+            (b) le partage reste, la recette devient modifiable par les moderateurs ; (c) demander a
+            l&#x27;auteur au moment du depart.</span
+          >
+        </li>
+      </ul>
+    </section>
+  </main>
+</div>

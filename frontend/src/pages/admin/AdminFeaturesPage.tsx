@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AdminFeature } from "../../models/admin";
 import APIManager from "../../network/api";
 import toast from "react-hot-toast";
+import { toastError } from "../../utils/toastError";
 import DataContainer from "../../components/DataContainer";
 import { useAsyncData } from "../../hooks/useAsyncData";
 
@@ -63,7 +64,7 @@ function AdminFeaturesPage() {
       setModalOpen(false);
       loadFeatures();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save feature");
+      toastError(err, "Failed to save feature");
     } finally {
       setSaving(false);
     }

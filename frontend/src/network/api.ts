@@ -1,4 +1,3 @@
-import axios, { AxiosError } from "axios";
 import {
   RecipeDetail,
   RecipesResponse,
@@ -14,23 +13,8 @@ import {
   SuggestedUnit,
 } from "../models/recipe";
 import { ActivityResponse } from "../models/activity";
+import { ChangelogResponse, ChangelogEntry } from "../models/changelog";
 import { User } from "../models/user";
-import {
-  AdminLoginResponse,
-  AdminTotpResponse,
-  AdminUser,
-  DashboardStats,
-  AdminTag,
-  AdminIngredient,
-  AdminUnit,
-  AdminFeature,
-  AdminCommunity,
-  AdminCommunityDetail,
-  AdminActivityResponse,
-  AdminRecipeListItem,
-  AdminRecipeDetail,
-  AdminRecipeUpdateInput,
-} from "../models/admin";
 import { CommunityTag } from "../models/tag";
 import { TagSuggestion, TagSuggestionsResponse } from "../models/tagSuggestion";
 import { TagPreference } from "../models/preferences";
@@ -46,69 +30,11 @@ import {
   CommunityInvite,
   ReceivedInvite,
 } from "../models/community";
-import { ConflictError, UnauthorizedError } from "../errors/http_errors";
+import { ConflictError } from "../errors/http_errors";
 
-const apiUrl = import.meta.env.VITE_BACKEND_URL;
-const API = axios.create({ withCredentials: true, baseURL: apiUrl });
-
-function buildQueryString(params: Record<string, string | number | string[] | undefined>): string {
-  const searchParams = new URLSearchParams();
-  for (const [key, val] of Object.entries(params)) {
-    if (val === undefined) continue;
-    if (Array.isArray(val)) {
-      if (val.length > 0) searchParams.set(key, val.join(","));
-    } else {
-      searchParams.set(key, val.toString());
-    }
-  }
-  const qs = searchParams.toString();
-  return qs ? `?${qs}` : "";
-}
-
-API.interceptors.request.use((config) => {
-  config.headers["Content-Type"] = "application/json";
-
-  // CSRF: lire le cookie XSRF-TOKEN et l'envoyer dans le header
-  const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
-  if (match) {
-    config.headers["X-XSRF-TOKEN"] = decodeURIComponent(match[1]);
-  }
-
-  return config;
-});
-
-// Utility function to handle API errors safely
-function handleApiError(error: AxiosError<{ error?: string }>): never {
-  if (!error.response) {
-    throw new Error("Network error - please check your connection");
-  }
-  if (error.response.status === 401) {
-    throw new UnauthorizedError(error.response.data?.error || "Unauthorized");
-  }
-  if (error.response.status === 409) {
-    throw new ConflictError(error.response.data?.error || "Conflict");
-  }
-  throw new Error(error.response.data?.error || `Request failed (${error.response.status})`);
-}
-
-// Custom error handler with status-specific fallback messages
-function handleApiErrorWith(
-  overrides: Record<number, string | typeof ConflictError | typeof UnauthorizedError>
-): (error: AxiosError<{ error?: string }>) => never {
-  return (error: AxiosError<{ error?: string }>) => {
-    const status = error.response?.status;
-    const msg = error.response?.data?.error;
-
-    if (status && overrides[status]) {
-      const override = overrides[status];
-      if (override === ConflictError) throw new ConflictError(msg || "Conflict");
-      if (override === UnauthorizedError) throw new UnauthorizedError(msg || "Unauthorized");
-      throw new Error(msg || (override as string));
-    }
-
-    return handleApiError(error);
-  };
-}
+import { API, ApiError, buildQueryString, handleApiError, handleApiErrorWith } from "./apiClient";
+import * as adminApi from "./adminApi";
+import * as mealApi from "./mealApi";
 
 export interface RecipeInput {
   title: string;
@@ -377,7 +303,7 @@ export default class APIManager {
   }
 
   // --------------- Users Auth ---------------
-  // Need credentials in the header if front and back are on differents domain / sub-domains
+
   static async getLoggedInUser(): Promise<User> {
     const response = await API.get("/api/auth/me").catch(handleApiError);
     return response.data.user;
@@ -495,10 +421,9 @@ export default class APIManager {
 
   static async removeMember(communityId: string, userId: string): Promise<{ message: string }> {
     const response = await API.delete(`/api/communities/${communityId}/members/${userId}`).catch(
-      (error: AxiosError<{ message?: string; error?: string }>) => {
-        if (error.response?.status === 410) {
-          // Community was destroyed (last member left) - treat as successful leave
-          return error.response;
+      (error: ApiError | Error) => {
+        if (error instanceof ApiError && error.status === 410) {
+          return { data: error.message };
         }
         return handleApiError(error);
       }
@@ -658,36 +583,18 @@ export default class APIManager {
     return response.data;
   }
 
-  // --------------- Admin Auth ---------------
+  // --------------- Changelog ---------------
 
-  static async adminLogin(email: string, password: string): Promise<AdminLoginResponse> {
-    const response = await API.post(
-      "/api/admin/auth/login",
-      JSON.stringify({ email, password })
-    ).catch(handleApiErrorWith({ 401: UnauthorizedError, 429: "Too many login attempts" }));
+  static async getChangelog(
+    params: { limit?: number; offset?: number } = {}
+  ): Promise<ChangelogResponse> {
+    const qs = buildQueryString({ limit: params.limit, offset: params.offset });
+    const response = await API.get(`/api/changelog${qs}`).catch(handleApiError);
     return response.data;
   }
 
-  static async adminVerifyTotp(code: string): Promise<AdminTotpResponse> {
-    const response = await API.post("/api/admin/auth/totp/verify", JSON.stringify({ code })).catch(
-      handleApiErrorWith({ 401: UnauthorizedError, 429: "Too many attempts" })
-    );
-    return response.data;
-  }
-
-  static async adminLogout(): Promise<void> {
-    await API.post("/api/admin/auth/logout").catch(handleApiError);
-  }
-
-  static async getLoggedInAdmin(): Promise<AdminUser> {
-    const response = await API.get("/api/admin/auth/me").catch(handleApiError);
-    return response.data.admin;
-  }
-
-  // --------------- Admin Dashboard ---------------
-
-  static async getAdminDashboardStats(): Promise<DashboardStats> {
-    const response = await API.get("/api/admin/dashboard/stats").catch(handleApiError);
+  static async getChangelogEntry(id: string): Promise<ChangelogEntry> {
+    const response = await API.get(`/api/changelog/${id}`).catch(handleApiError);
     return response.data;
   }
 
@@ -760,224 +667,73 @@ export default class APIManager {
     await API.post(`/api/communities/${communityId}/tags/${tagId}/reject`).catch(handleApiError);
   }
 
-  // --------------- Admin Tags ---------------
+  // --------------- Admin (delegated to adminApi) ---------------
 
-  static async getAdminTags(search?: string, scope?: string): Promise<AdminTag[]> {
-    const qs = buildQueryString({ search, scope });
-    const response = await API.get(`/api/admin/tags${qs}`).catch(handleApiError);
-    return response.data.tags;
-  }
+  static adminLogin = adminApi.adminLogin;
+  static adminVerifyTotp = adminApi.adminVerifyTotp;
+  static adminLogout = adminApi.adminLogout;
+  static getLoggedInAdmin = adminApi.getLoggedInAdmin;
+  static getAdminDashboardStats = adminApi.getAdminDashboardStats;
+  static getAdminTags = adminApi.getAdminTags;
+  static createAdminTag = adminApi.createAdminTag;
+  static updateAdminTag = adminApi.updateAdminTag;
+  static deleteAdminTag = adminApi.deleteAdminTag;
+  static mergeAdminTags = adminApi.mergeAdminTags;
+  static getAdminTagRecipes = adminApi.getAdminTagRecipes;
+  static getAdminRecipe = adminApi.getAdminRecipe;
+  static updateAdminRecipe = adminApi.updateAdminRecipe;
+  static deleteAdminRecipe = adminApi.deleteAdminRecipe;
+  static getAdminIngredients = adminApi.getAdminIngredients;
+  static createAdminIngredient = adminApi.createAdminIngredient;
+  static updateAdminIngredient = adminApi.updateAdminIngredient;
+  static deleteAdminIngredient = adminApi.deleteAdminIngredient;
+  static mergeAdminIngredients = adminApi.mergeAdminIngredients;
+  static approveAdminIngredient = adminApi.approveAdminIngredient;
+  static rejectAdminIngredient = adminApi.rejectAdminIngredient;
+  static getAdminUnits = adminApi.getAdminUnits;
+  static createAdminUnit = adminApi.createAdminUnit;
+  static updateAdminUnit = adminApi.updateAdminUnit;
+  static deleteAdminUnit = adminApi.deleteAdminUnit;
+  static getAdminFeatures = adminApi.getAdminFeatures;
+  static createAdminFeature = adminApi.createAdminFeature;
+  static updateAdminFeature = adminApi.updateAdminFeature;
+  static getAdminCommunities = adminApi.getAdminCommunities;
+  static getAdminCommunity = adminApi.getAdminCommunity;
+  static updateAdminCommunity = adminApi.updateAdminCommunity;
+  static deleteAdminCommunity = adminApi.deleteAdminCommunity;
+  static grantFeature = adminApi.grantFeature;
+  static revokeFeature = adminApi.revokeFeature;
+  static getAdminActivity = adminApi.getAdminActivity;
+  static getAdminChangelog = adminApi.getAdminChangelog;
+  static createAdminChangelog = adminApi.createAdminChangelog;
+  static updateAdminChangelog = adminApi.updateAdminChangelog;
+  static deleteAdminChangelog = adminApi.deleteAdminChangelog;
 
-  static async createAdminTag(name: string): Promise<AdminTag> {
-    const response = await API.post("/api/admin/tags", JSON.stringify({ name })).catch(
-      handleApiErrorWith({ 409: ConflictError })
-    );
-    return response.data.tag;
-  }
+  // --------------- Meal Plan (delegated to mealApi) ---------------
 
-  static async updateAdminTag(id: string, name: string): Promise<AdminTag> {
-    const response = await API.patch(`/api/admin/tags/${id}`, JSON.stringify({ name })).catch(
-      handleApiErrorWith({ 409: ConflictError })
-    );
-    return response.data.tag;
-  }
-
-  static async deleteAdminTag(id: string): Promise<void> {
-    await API.delete(`/api/admin/tags/${id}`).catch(handleApiError);
-  }
-
-  static async mergeAdminTags(sourceId: string, targetId: string): Promise<void> {
-    await API.post(`/api/admin/tags/${sourceId}/merge`, JSON.stringify({ targetId })).catch(
-      handleApiError
-    );
-  }
-
-  // --------------- Admin Recipes ---------------
-
-  static async getAdminTagRecipes(
-    tagId: string,
-    includeDeleted?: boolean
-  ): Promise<{ recipes: AdminRecipeListItem[]; pagination: { total: number; hasMore: boolean } }> {
-    const qs = buildQueryString({ includeDeleted: includeDeleted ? "true" : undefined });
-    const response = await API.get(`/api/admin/tags/${tagId}/recipes${qs}`).catch(handleApiError);
-    return response.data;
-  }
-
-  static async getAdminRecipe(recipeId: string): Promise<AdminRecipeDetail> {
-    const response = await API.get(`/api/admin/recipes/${recipeId}`).catch(handleApiError);
-    return response.data.recipe;
-  }
-
-  static async updateAdminRecipe(recipeId: string, data: AdminRecipeUpdateInput): Promise<void> {
-    await API.patch(`/api/admin/recipes/${recipeId}`, JSON.stringify(data)).catch(handleApiError);
-  }
-
-  static async deleteAdminRecipe(recipeId: string): Promise<void> {
-    await API.delete(`/api/admin/recipes/${recipeId}`).catch(handleApiError);
-  }
-
-  // --------------- Admin Ingredients ---------------
-
-  static async getAdminIngredients(search?: string, status?: string): Promise<AdminIngredient[]> {
-    const qs = buildQueryString({ search, status });
-    const response = await API.get(`/api/admin/ingredients${qs}`).catch(handleApiError);
-    return response.data.ingredients;
-  }
-
-  static async createAdminIngredient(
-    name: string,
-    defaultUnitId?: string
-  ): Promise<AdminIngredient> {
-    const response = await API.post(
-      "/api/admin/ingredients",
-      JSON.stringify({ name, defaultUnitId })
-    ).catch(handleApiErrorWith({ 409: ConflictError }));
-    return response.data.ingredient;
-  }
-
-  static async updateAdminIngredient(
-    id: string,
-    data: { name?: string; defaultUnitId?: string | null }
-  ): Promise<AdminIngredient> {
-    const response = await API.patch(`/api/admin/ingredients/${id}`, JSON.stringify(data)).catch(
-      handleApiErrorWith({ 409: ConflictError })
-    );
-    return response.data.ingredient;
-  }
-
-  static async deleteAdminIngredient(id: string): Promise<void> {
-    await API.delete(`/api/admin/ingredients/${id}`).catch(handleApiError);
-  }
-
-  static async mergeAdminIngredients(sourceId: string, targetId: string): Promise<void> {
-    await API.post(`/api/admin/ingredients/${sourceId}/merge`, JSON.stringify({ targetId })).catch(
-      handleApiError
-    );
-  }
-
-  static async approveAdminIngredient(id: string, newName?: string): Promise<AdminIngredient> {
-    const body = newName ? { newName } : {};
-    const response = await API.post(
-      `/api/admin/ingredients/${id}/approve`,
-      JSON.stringify(body)
-    ).catch(handleApiErrorWith({ 409: ConflictError }));
-    return response.data.ingredient;
-  }
-
-  static async rejectAdminIngredient(id: string, reason: string): Promise<void> {
-    await API.post(`/api/admin/ingredients/${id}/reject`, JSON.stringify({ reason })).catch(
-      handleApiError
-    );
-  }
-
-  // --------------- Admin Units ---------------
-
-  static async getAdminUnits(search?: string, category?: string): Promise<AdminUnit[]> {
-    const qs = buildQueryString({ search, category });
-    const response = await API.get(`/api/admin/units${qs}`).catch(handleApiError);
-    return response.data.units;
-  }
-
-  static async createAdminUnit(data: {
-    name: string;
-    abbreviation: string;
-    category: string;
-    sortOrder?: number;
-  }): Promise<AdminUnit> {
-    const response = await API.post("/api/admin/units", JSON.stringify(data)).catch(
-      handleApiErrorWith({ 409: ConflictError })
-    );
-    return response.data.unit;
-  }
-
-  static async updateAdminUnit(
-    id: string,
-    data: { name?: string; abbreviation?: string; category?: string; sortOrder?: number }
-  ): Promise<AdminUnit> {
-    const response = await API.patch(`/api/admin/units/${id}`, JSON.stringify(data)).catch(
-      handleApiErrorWith({ 409: ConflictError })
-    );
-    return response.data.unit;
-  }
-
-  static async deleteAdminUnit(id: string): Promise<void> {
-    await API.delete(`/api/admin/units/${id}`).catch(
-      handleApiErrorWith({ 409: "Cannot delete unit that is in use" })
-    );
-  }
-
-  // --------------- Admin Features ---------------
-
-  static async getAdminFeatures(): Promise<AdminFeature[]> {
-    const response = await API.get("/api/admin/features").catch(handleApiError);
-    return response.data.features;
-  }
-
-  static async createAdminFeature(data: {
-    code: string;
-    name: string;
-    description?: string;
-    isDefault?: boolean;
-  }): Promise<AdminFeature> {
-    const response = await API.post("/api/admin/features", JSON.stringify(data)).catch(
-      handleApiErrorWith({ 409: ConflictError })
-    );
-    return response.data.feature;
-  }
-
-  static async updateAdminFeature(
-    id: string,
-    data: { name?: string; description?: string; isDefault?: boolean }
-  ): Promise<AdminFeature> {
-    const response = await API.patch(`/api/admin/features/${id}`, JSON.stringify(data)).catch(
-      handleApiError
-    );
-    return response.data.feature;
-  }
-
-  // --------------- Admin Communities ---------------
-
-  static async getAdminCommunities(
-    search?: string,
-    includeDeleted?: boolean
-  ): Promise<AdminCommunity[]> {
-    const qs = buildQueryString({ search, includeDeleted: includeDeleted ? "true" : undefined });
-    const response = await API.get(`/api/admin/communities${qs}`).catch(handleApiError);
-    return response.data.communities;
-  }
-
-  static async getAdminCommunity(id: string): Promise<AdminCommunityDetail> {
-    const response = await API.get(`/api/admin/communities/${id}`).catch(handleApiError);
-    return response.data.community;
-  }
-
-  static async updateAdminCommunity(id: string, name: string): Promise<void> {
-    await API.patch(`/api/admin/communities/${id}`, JSON.stringify({ name })).catch(handleApiError);
-  }
-
-  static async deleteAdminCommunity(id: string): Promise<void> {
-    await API.delete(`/api/admin/communities/${id}`).catch(handleApiError);
-  }
-
-  static async grantFeature(communityId: string, featureId: string): Promise<void> {
-    await API.post(`/api/admin/communities/${communityId}/features/${featureId}`).catch(
-      handleApiError
-    );
-  }
-
-  static async revokeFeature(communityId: string, featureId: string): Promise<void> {
-    await API.delete(`/api/admin/communities/${communityId}/features/${featureId}`).catch(
-      handleApiError
-    );
-  }
-
-  // --------------- Admin Activity ---------------
-
-  static async getAdminActivity(
-    params: { type?: string; limit?: number; offset?: number } = {}
-  ): Promise<AdminActivityResponse> {
-    const qs = buildQueryString({ type: params.type, limit: params.limit, offset: params.offset });
-    const response = await API.get(`/api/admin/activity${qs}`).catch(handleApiError);
-    return response.data;
-  }
+  static getMealPlan = mealApi.getMealPlan;
+  static createMealPlan = mealApi.createMealPlan;
+  static updateMealPlan = mealApi.updateMealPlan;
+  static deleteMealPlan = mealApi.deleteMealPlan;
+  static updateMealSlot = mealApi.updateMealSlot;
+  static swapMealSlots = mealApi.swapMealSlots;
+  static getMealPlanArchives = mealApi.getMealPlanArchives;
+  static getMealPlanArchive = mealApi.getMealPlanArchive;
+  static deleteMealPlanArchive = mealApi.deleteMealPlanArchive;
+  static getMealIdeas = mealApi.getMealIdeas;
+  static createMealIdea = mealApi.createMealIdea;
+  static updateMealIdea = mealApi.updateMealIdea;
+  static deleteMealIdea = mealApi.deleteMealIdea;
+  static listMealGenerationParams = mealApi.listMealGenerationParams;
+  static getMealGenerationParams = mealApi.getMealGenerationParams;
+  static createMealGenerationParams = mealApi.createMealGenerationParams;
+  static updateMealGenerationParams = mealApi.updateMealGenerationParams;
+  static deleteMealGenerationParams = mealApi.deleteMealGenerationParams;
+  static setMealExclusions = mealApi.setMealExclusions;
+  static setMealPins = mealApi.setMealPins;
+  static createMealGenerationRule = mealApi.createMealGenerationRule;
+  static updateMealGenerationRule = mealApi.updateMealGenerationRule;
+  static deleteMealGenerationRule = mealApi.deleteMealGenerationRule;
+  static generateMealPlan = mealApi.generateMealPlan;
+  static replaceMealSlot = mealApi.replaceMealSlot;
 }

@@ -1,0 +1,309 @@
+<title>Directions visuelles V2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&family=Baloo+2:wght@600;700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700&family=Sora:wght@600;700&family=Manrope:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout : page de comparaison neutre ; la maquette d'app au centre recoit ses jetons du theme choisi (variables --a-*) */
+:root {
+  --bg: #f2f3f1; --surface: #ffffff; --ink: #1d211f; --muted: #5f6662; --line: #d9ddd9; --focus: #2e6b47;
+  --f-ui: "Figtree", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg: #121413; --surface: #1a1d1b; --ink: #e6e9e7; --muted: #9ba39f; --line: #2c312e; --focus: #7cc49b; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --bg: #121413; --surface: #1a1d1b; --ink: #e6e9e7; --muted: #9ba39f; --line: #2c312e; --focus: #7cc49b; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-ui); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 64px; display: flex; flex-direction: column; gap: 28px; }
+h1, h2, h3 { margin: 0; line-height: 1.15; text-wrap: balance; }
+h1 { font-family: "Bricolage Grotesque", var(--f-ui); font-size: clamp(26px, 4vw, 38px); }
+h2 { font-family: "Bricolage Grotesque", var(--f-ui); font-size: 22px; }
+p { margin: 0; max-width: 72ch; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.small { font-size: 13px; color: var(--muted); }
+.controls { display: flex; flex-wrap: wrap; gap: 18px 28px; align-items: flex-end; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.ctl { display: flex; flex-direction: column; gap: 6px; }
+.ctl > span { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 600; }
+.seg { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+.seg button { font: inherit; font-size: 14px; border: 0; background: var(--surface); color: var(--ink); padding: 7px 14px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+.seg button:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+.pitch { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.pitch div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.pitch div[aria-current="true"] { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink) inset; }
+.pitch b { font-size: 16px; }
+.swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+.sw { width: 22px; height: 22px; border-radius: 6px; border: 1px solid rgba(127,127,127,0.35); }
+
+/* ---------- Maquette ---------- */
+.app { font-family: var(--a-font); background: var(--a-bg); color: var(--a-ink); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; display: grid; grid-template-columns: 72px 210px minmax(0, 1fr); min-height: 620px; transition: background 0.25s, color 0.25s; }
+.app h1, .app h2, .app h3, .app .disp { font-family: var(--a-display); }
+.rail { background: var(--a-rail); display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 14px 0; }
+.sp { position: relative; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-family: var(--a-display); font-weight: 700; font-size: 16px; border: 0; cursor: pointer; transition: border-radius 0.2s; color: var(--sp-ink); background: var(--sp); }
+.sp:hover, .sp[aria-current="true"] { border-radius: 14px; }
+.sp[aria-current="true"]::before { content: ""; position: absolute; left: -14px; top: 8px; bottom: 8px; width: 4px; border-radius: 0 4px 4px 0; background: var(--a-ink); }
+.sp:focus-visible { outline: 2px solid var(--a-ink); outline-offset: 2px; }
+.sp.me { --sp: var(--a-surface2); --sp-ink: var(--a-ink); }
+.sp.add { background: transparent; color: var(--a-muted); border: 2px dashed var(--a-line); }
+.rail hr { width: 30px; border: 0; border-top: 2px solid var(--a-line); margin: 2px 0; }
+.side { background: var(--a-surface); border-right: 1px solid var(--a-line); display: flex; flex-direction: column; min-width: 0; }
+.side .head { padding: 16px 16px 12px; border-bottom: 1px solid var(--a-line); display: flex; flex-direction: column; gap: 2px; }
+.side .head b { font-family: var(--a-display); font-size: 18px; }
+.side nav { padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; }
+.side nav a { display: flex; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 8px; color: var(--a-muted); text-decoration: none; font-weight: 500; font-size: 14.5px; }
+.side nav a.on { background: var(--a-accent-soft); color: var(--a-accent-text); font-weight: 600; }
+.ico { width: 16px; height: 16px; flex: none; }
+.side .foot { margin-top: auto; padding: 12px 16px; border-top: 1px solid var(--a-line); display: flex; gap: 10px; align-items: center; font-size: 13.5px; }
+.av { width: 30px; height: 30px; border-radius: 50%; background: var(--a-second); color: var(--a-second-ink); display: grid; place-items: center; font-weight: 700; font-size: 13px; }
+.main { display: flex; flex-direction: column; min-width: 0; }
+.top { display: flex; gap: 10px; align-items: center; padding: 12px 18px; border-bottom: 1px solid var(--a-line); background: var(--a-bg); }
+.search { flex: 1; display: flex; align-items: center; gap: 8px; background: var(--a-surface); border: 1px solid var(--a-line); border-radius: 9px; padding: 7px 12px; color: var(--a-muted); font-size: 14px; min-width: 0; }
+.search span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kbd { margin-left: auto; font-family: var(--f-mono); font-size: 11px; border: 1px solid var(--a-line); border-radius: 5px; padding: 1px 6px; }
+.iconbtn { width: 36px; height: 36px; border-radius: 9px; border: 1px solid var(--a-line); background: var(--a-surface); color: var(--a-ink); display: grid; place-items: center; position: relative; }
+.badge { position: absolute; top: -4px; right: -4px; min-width: 17px; height: 17px; border-radius: 9px; background: var(--a-accent); color: var(--a-accent-ink); font-size: 10.5px; font-weight: 700; display: grid; place-items: center; padding: 0 4px; }
+.body { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 18px; padding: 18px; min-width: 0; }
+.col { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.bar h2 { font-size: 22px; margin-right: auto; }
+.btn { font: inherit; font-size: 13.5px; font-weight: 600; border-radius: 9px; padding: 8px 14px; border: 1px solid var(--a-line); background: var(--a-surface); color: var(--a-ink); }
+.btn.primary { background: var(--a-accent); border-color: var(--a-accent); color: var(--a-accent-ink); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 12.5px; padding: 3px 10px; border-radius: 999px; background: var(--a-surface2); color: var(--a-ink); border: 1px solid var(--a-line); }
+.chip.on { background: var(--a-accent-soft); color: var(--a-accent-text); border-color: transparent; font-weight: 600; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.card { background: var(--a-surface); border: 1px solid var(--a-line); border-radius: var(--a-radius); overflow: hidden; display: flex; flex-direction: column; }
+.card.sel { border-color: var(--a-accent); box-shadow: 0 0 0 1px var(--a-accent) inset; }
+.ph { height: 92px; position: relative; }
+.ph.p1 { background: radial-gradient(circle at 30% 40%, var(--a-second) 0 18%, transparent 19%), linear-gradient(135deg, var(--a-accent-soft), var(--a-surface2)); }
+.ph.p2 { background: radial-gradient(circle at 70% 60%, var(--a-accent) 0 14%, transparent 15%), linear-gradient(135deg, var(--a-surface2), var(--a-accent-soft)); }
+.ph.p3 { background: radial-gradient(circle at 50% 50%, var(--a-second) 0 22%, transparent 23%), linear-gradient(160deg, var(--a-surface2), var(--a-bg)); }
+.ph.p4 { background: radial-gradient(circle at 35% 55%, var(--a-accent) 0 10%, transparent 11%), radial-gradient(circle at 62% 45%, var(--a-second) 0 12%, transparent 13%), linear-gradient(135deg, var(--a-accent-soft), var(--a-surface2)); }
+.ph .tag { position: absolute; left: 8px; bottom: 8px; font-size: 11px; font-weight: 700; background: var(--a-surface); color: var(--a-ink); border-radius: 6px; padding: 1px 7px; }
+.card .ct { padding: 9px 11px 11px; display: flex; flex-direction: column; gap: 2px; }
+.card .ct b { font-size: 14.5px; line-height: 1.25; }
+.meta { font-size: 12.5px; color: var(--a-muted); }
+.plan { background: var(--a-surface); border: 1px solid var(--a-line); border-radius: var(--a-radius); padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+.plan .days { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.day { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.day > span { font-size: 11.5px; font-weight: 700; color: var(--a-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.slot { font-size: 12.5px; border-radius: 8px; padding: 6px 8px; background: var(--a-surface2); border: 1px solid var(--a-line); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.slot.r { background: var(--a-accent-soft); color: var(--a-accent-text); border-color: transparent; font-weight: 600; }
+.slot.e { background: transparent; border-style: dashed; color: var(--a-muted); }
+.detail { background: var(--a-surface); border: 1px solid var(--a-line); border-radius: var(--a-radius); overflow: hidden; display: flex; flex-direction: column; align-self: start; }
+.detail .hero { height: 120px; }
+.detail .in { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px; }
+.detail h3 { font-size: 20px; }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--a-line); border-radius: 9px; overflow: hidden; }
+.stepper i { font-style: normal; width: 30px; text-align: center; background: var(--a-surface2); padding: 4px 0; }
+.stepper b { padding: 0 12px; font-size: 13.5px; }
+.blk { border: 1px solid var(--a-line); border-radius: 10px; overflow: hidden; }
+.blk header { padding: 7px 10px; background: var(--a-surface2); font-size: 13px; font-weight: 600; display: flex; gap: 8px; align-items: center; }
+.blk.link { border-color: var(--a-second); }
+.blk.link header { background: var(--a-second-soft); color: var(--a-second-text); }
+.blk header em { font-style: normal; margin-left: auto; font-family: var(--f-mono); font-weight: 500; font-size: 12px; }
+.blk ul { margin: 0; padding: 8px 10px 10px 26px; font-size: 13px; display: flex; flex-direction: column; gap: 2px; }
+.tabbar { display: none; }
+
+@media (max-width: 900px) {
+  .body { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 680px) {
+  .app { grid-template-columns: minmax(0, 1fr); min-height: 0; }
+  .rail { flex-direction: row; justify-content: flex-start; padding: 10px 12px; overflow-x: auto; }
+  .rail hr { width: 2px; height: 28px; border-top: 0; border-left: 2px solid var(--a-line); }
+  .sp { width: 38px; height: 38px; font-size: 14px; flex: none; }
+  .sp[aria-current="true"]::before { left: 8px; right: 8px; top: auto; bottom: -10px; width: auto; height: 4px; border-radius: 4px 4px 0 0; }
+  .side { display: none; }
+  .kbd { display: none; }
+  .plan .days { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .plan .day:nth-child(n+4) { display: none; }
+  .tabbar { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--a-line); background: var(--a-surface); }
+  .tabbar span { text-align: center; padding: 10px 0; font-size: 12px; color: var(--a-muted); font-weight: 600; }
+  .tabbar span.on { color: var(--a-accent-text); }
+}
+@media (prefers-reduced-motion: reduce) { .app, .sp { transition: none; } }
+
+.verdict { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
+.verdict div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.verdict ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+</style>
+
+<div class="wrap">
+  <header style="display:flex;flex-direction:column;gap:8px">
+    <div class="eyebrow">Rework V2 - choix de la direction visuelle - maquette de principe</div>
+    <h1>Trois ambiances pour Forest Manager</h1>
+    <p>La meme interface, trois habillages. Change d'ambiance, passe en clair ou en sombre, et clique sur les espaces du rail : chaque espace a sa couleur, qui teinte toute l'interface quand on y entre.</p>
+  </header>
+
+  <div class="controls" role="group" aria-label="Reglages de la maquette">
+    <div class="ctl"><span>Ambiance</span><div class="seg" id="c-theme"></div></div>
+    <div class="ctl"><span>Mode</span><div class="seg" id="c-mode"></div></div>
+    <div class="ctl"><span>Espace actif</span><div class="seg" id="c-space"></div></div>
+  </div>
+
+  <div class="pitch" id="pitch"></div>
+
+  <div class="app" id="app" aria-label="Maquette de l'application">
+    <div class="rail" id="rail"></div>
+    <aside class="side">
+      <div class="head"><b id="sp-name">Famille</b><span class="meta" id="sp-meta">6 membres</span></div>
+      <nav>
+        <a class="on" href="#app"><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 2.5h8.5a1.5 1.5 0 0 1 1.5 1.5v9.5H4.5A1.5 1.5 0 0 1 3 12z"/><path d="M3 12a1.5 1.5 0 0 1 1.5-1.5H13"/></svg>Recettes</a>
+        <a href="#app"><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2.5" y="3.5" width="11" height="10" rx="1.5"/><path d="M2.5 6.5h11M5.5 2v3M10.5 2v3"/></svg>Planning</a>
+        <a href="#app"><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 3h2l1.5 7.5h7L14 5H5"/><circle cx="6.5" cy="13" r="1"/><circle cx="11.5" cy="13" r="1"/></svg>Courses</a>
+        <a href="#app"><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="6" cy="5.5" r="2.5"/><path d="M1.5 13.5a4.5 4.5 0 0 1 9 0"/><path d="M11 3.2a2.5 2.5 0 0 1 0 4.6M12.5 9.5a4.5 4.5 0 0 1 2 4"/></svg>Membres</a>
+        <a href="#app"><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="8" cy="8" r="2.2"/><path d="M8 1.8v2M8 12.2v2M1.8 8h2M12.2 8h2M3.6 3.6l1.4 1.4M11 11l1.4 1.4M3.6 12.4 5 11M11 5l1.4-1.4"/></svg>Reglages</a>
+      </nav>
+      <div class="foot"><div class="av">MB</div><div style="display:flex;flex-direction:column"><b>matthias</b><span class="meta">en ligne</span></div></div>
+    </aside>
+    <div class="main">
+      <div class="top">
+        <div class="search"><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.5"/><path d="m10.5 10.5 3 3"/></svg><span>Rechercher une recette, un ingredient, un membre</span><span class="kbd">Ctrl K</span></div>
+        <div class="iconbtn" aria-label="Notifications"><svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 11V7a4 4 0 0 1 8 0v4l1.2 1.5H2.8z"/><path d="M6.5 14a1.5 1.5 0 0 0 3 0"/></svg><span class="badge">3</span></div>
+      </div>
+      <div class="body">
+        <div class="col">
+          <div class="bar"><h2>Recettes</h2><button class="btn" type="button">Importer</button><button class="btn primary" type="button">Nouvelle recette</button></div>
+          <div class="chips"><span class="chip on">Toutes</span><span class="chip">Rapide</span><span class="chip">Vegetarien</span><span class="chip">Plat du dimanche</span><span class="chip">Bases</span></div>
+          <div class="grid">
+            <div class="card sel"><div class="ph p1"><span class="tag">Compose</span></div><div class="ct"><b>Saumon teriyaki et brocolis</b><span class="meta">2 pers. - 35 min</span></div></div>
+            <div class="card"><div class="ph p2"></div><div class="ct"><b>Gratin de pates</b><span class="meta">4 pers. - 50 min - adaptee</span></div></div>
+            <div class="card"><div class="ph p3"><span class="tag">Base</span></div><div class="ct"><b>Sauce teriyaki</b><span class="meta">300 ml - 10 min</span></div></div>
+            <div class="card"><div class="ph p4"></div><div class="ct"><b>Dahl de lentilles corail</b><span class="meta">4 pers. - 40 min</span></div></div>
+          </div>
+          <div class="plan">
+            <div class="bar"><b class="disp" style="margin-right:auto;font-size:16px">Cette semaine</b><span class="meta">midi et soir</span></div>
+            <div class="days">
+              <div class="day"><span>Lun</span><div class="slot r">Dahl corail</div><div class="slot">Restes</div></div>
+              <div class="day"><span>Mar</span><div class="slot r">Saumon teriyaki</div><div class="slot e">+ ajouter</div></div>
+              <div class="day"><span>Mer</span><div class="slot">Cantine</div><div class="slot r">Gratin de pates</div></div>
+              <div class="day"><span>Jeu</span><div class="slot r">Poulet teriyaki</div><div class="slot e">+ ajouter</div></div>
+              <div class="day"><span>Ven</span><div class="slot e">+ ajouter</div><div class="slot">Pizza maison</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="detail">
+          <div class="hero ph p1"></div>
+          <div class="in">
+            <div style="display:flex;flex-direction:column;gap:4px"><h3>Saumon teriyaki et brocolis</h3><span class="meta">par matthias - partagee dans Famille et TOM</span></div>
+            <div class="bar"><div class="stepper"><i>-</i><b>2 pers.</b><i>+</i></div><span class="meta">35 min</span></div>
+            <div class="blk link"><header>Sauce teriyaki<em>150 ml</em></header><ul><li>50 ml sauce soja</li><li>30 ml mirin</li><li>1 c. a soupe sucre</li></ul></div>
+            <div class="blk"><header>Saumon et brocolis</header><ul><li>2 paves de saumon</li><li>300 g brocolis</li></ul></div>
+            <button class="btn primary" type="button">Mode cuisine</button>
+          </div>
+        </div>
+      </div>
+      <div class="tabbar"><span class="on">Recettes</span><span>Planning</span><span>Courses</span><span>Plus</span></div>
+    </div>
+  </div>
+
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <h2>Et si on proposait les trois ?</h2>
+    <p>C'est faisable : en V2 toutes les couleurs passent par des variables, donc une ambiance n'est qu'un jeu de valeurs. Ce que ca implique :</p>
+    <div class="verdict">
+      <div><b>Ce que ca apporte</b><ul><li>Chacun choisit l'ambiance qui lui plait dans Profil > Apparence</li><li>Aucun cout de code en plus pour les composants : ils lisent les memes variables</li><li>Les couleurs d'espaces restent celles du createur de l'espace, adaptees a l'ambiance</li></ul></div>
+      <div><b>Ce que ca coute</b><ul><li>Trois ambiances x clair / sombre = six palettes a verifier (contrastes, etats, graphiques)</li><li>Une identite moins nette : captures, icone et page d'accueil montrent une seule ambiance</li><li>Chaque nouveau composant doit etre controle six fois dans la page <code>/design</code></li></ul></div>
+      <div><b>Ma proposition</b><ul><li>Une ambiance signature par defaut, qui porte l'identite (icone, accueil, captures)</li><li>Les deux autres proposees comme ambiances alternatives dans Apparence</li><li>Polices identiques partout pour simplifier : seules les couleurs changent d'une ambiance a l'autre</li></ul></div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var THEMES = {
+    sousbois: { label: "Sous-bois", font: '"Figtree", "Segoe UI", system-ui, sans-serif', display: '"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif', radius: "12px",
+      pitch: "Les verts de la foret, de la mousse et du bois clair. Calme et chaleureux ; le soir, une foret de nuit.",
+      light: { bg: "#F4F6F1", surface: "#FFFFFF", surface2: "#E9EEE6", rail: "#DCE4D8", ink: "#1B2620", muted: "#5D6B61", line: "#D3DBD0", second: "#B9824A" },
+      dark:  { bg: "#0F1712", surface: "#16211A", surface2: "#1E2B22", rail: "#0A100C", ink: "#E3ECE4", muted: "#93A497", line: "#27352B", second: "#D3A06A" },
+      spaces: [["Famille", "F", "#2E6B47", "#6FBF8E", "Sapin"], ["Colloc", "C", "#6E8A2C", "#B2CC6B", "Lichen"], ["TOM", "T", "#9C3550", "#E07A95", "Baie"], ["Amis", "A", "#8A5A35", "#C99368", "Ecorce"]] },
+    potager: { label: "Potager", font: '"Nunito Sans", "Segoe UI", system-ui, sans-serif', display: '"Baloo 2", "Segoe UI", system-ui, sans-serif', radius: "16px",
+      pitch: "Un fond neutre et des espaces aux couleurs des legumes. Vif, joueur, on reconnait un espace d'un coup d'oeil.",
+      light: { bg: "#F7F7F4", surface: "#FFFFFF", surface2: "#EFEFEA", rail: "#E7E6E0", ink: "#202024", muted: "#64646B", line: "#DDDCD5", second: "#3E8E4E" },
+      dark:  { bg: "#15151A", surface: "#1D1D23", surface2: "#26262D", rail: "#0F0F13", ink: "#ECECEF", muted: "#A0A0AA", line: "#30303A", second: "#6CC27C" },
+      spaces: [["Famille", "F", "#D2452F", "#F0745F", "Tomate"], ["Colloc", "C", "#B87414", "#F0B54E", "Courge"], ["TOM", "T", "#5B3F8C", "#A58BD6", "Aubergine"], ["Amis", "A", "#A3305A", "#E06A93", "Betterave"]] },
+    braise: { label: "Braise", font: '"Manrope", "Segoe UI", system-ui, sans-serif', display: '"Sora", "Segoe UI", system-ui, sans-serif', radius: "10px",
+      pitch: "Sombre d'abord, comme Discord : charbon, ardoise et l'ambre du feu de cuisine, le foyer qui rassemble.",
+      light: { bg: "#F5F3EF", surface: "#FFFFFF", surface2: "#ECE8E1", rail: "#E3DED5", ink: "#1F1D1A", muted: "#6B665F", line: "#DDD6CB", second: "#5F6B77" },
+      dark:  { bg: "#16181B", surface: "#1F2226", surface2: "#282C31", rail: "#0F1113", ink: "#E8E6E3", muted: "#9C9A96", line: "#32363C", second: "#8E9AA6" },
+      spaces: [["Famille", "F", "#B8611A", "#E8913A", "Braise"], ["Colloc", "C", "#3F5FA8", "#7D9BE0", "Nuit"], ["TOM", "T", "#B53A36", "#E2716C", "Tison"], ["Amis", "A", "#8F6F0E", "#E5C04B", "Flamme"]] }
+  };
+  var META = { Famille: "6 membres", Colloc: "3 membres", TOM: "11 membres", Amis: "5 membres" };
+  var prefersDark = false;
+  try { prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches; } catch (e) {}
+  var state = { theme: "sousbois", mode: prefersDark ? "dark" : "light", space: 0 };
+  try {
+    var saved = JSON.parse(localStorage.getItem("fm-directions") || "null");
+    if (saved && THEMES[saved.theme]) state = saved;
+  } catch (e) {}
+
+  function hexToRgb(h) { var n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+  function lum(h) { return hexToRgb(h).map(function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }).reduce(function (a, v, i) { return a + v * [0.2126, 0.7152, 0.0722][i]; }, 0); }
+  function contrast(a, b) { var x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+  function inkOn(bg) { return contrast(bg, "#FFFFFF") >= contrast(bg, "#14171A") ? "#FFFFFF" : "#14171A"; }
+  function mix(a, b, t) { var x = hexToRgb(a), y = hexToRgb(b); return "#" + x.map(function (v, i) { return Math.round(v + (y[i] - v) * t).toString(16).padStart(2, "0"); }).join(""); }
+  function textOn(color, surface, ink) {
+    // couleur d'accent lisible en texte sur la surface ; on la rapproche de l'encre si le contraste est faible
+    var c = color, t = 0;
+    while (contrast(c, surface) < 4.5 && t < 1) { t += 0.1; c = mix(color, ink, t); }
+    return c;
+  }
+
+  function apply() {
+    var th = THEMES[state.theme], p = th[state.mode], app = document.getElementById("app");
+    var sp = th.spaces[state.space], accent = state.mode === "dark" ? sp[3] : sp[2];
+    var vars = {
+      "--a-font": th.font, "--a-display": th.display, "--a-radius": th.radius,
+      "--a-bg": p.bg, "--a-surface": p.surface, "--a-surface2": p.surface2, "--a-rail": p.rail,
+      "--a-ink": p.ink, "--a-muted": p.muted, "--a-line": p.line,
+      "--a-accent": accent, "--a-accent-ink": inkOn(accent),
+      "--a-accent-soft": mix(p.surface, accent, state.mode === "dark" ? 0.22 : 0.14),
+      "--a-accent-text": textOn(accent, mix(p.surface, accent, state.mode === "dark" ? 0.22 : 0.14), p.ink),
+      "--a-second": p.second, "--a-second-ink": inkOn(p.second),
+      "--a-second-soft": mix(p.surface, p.second, state.mode === "dark" ? 0.22 : 0.14),
+      "--a-second-text": textOn(p.second, mix(p.surface, p.second, state.mode === "dark" ? 0.22 : 0.14), p.ink)
+    };
+    Object.keys(vars).forEach(function (k) { app.style.setProperty(k, vars[k]); });
+    app.style.colorScheme = state.mode;
+
+    var rail = '<button type="button" class="sp me" title="Mon espace" aria-label="Mon espace">M</button><hr>';
+    th.spaces.forEach(function (s, i) {
+      var c = state.mode === "dark" ? s[3] : s[2];
+      rail += '<button type="button" class="sp" data-space="' + i + '" style="--sp:' + c + ';--sp-ink:' + inkOn(c) + '" title="' + s[0] + '" aria-label="Espace ' + s[0] + '"' + (i === state.space ? ' aria-current="true"' : "") + ">" + s[1] + "</button>";
+    });
+    document.getElementById("rail").innerHTML = rail + '<button type="button" class="sp add" aria-label="Creer un espace">+</button>';
+    document.getElementById("sp-name").textContent = sp[0];
+    document.getElementById("sp-meta").textContent = META[sp[0]] + " - teinte " + sp[4].toLowerCase();
+
+    seg("c-theme", Object.keys(THEMES).map(function (k) { return [k, THEMES[k].label]; }), state.theme, "theme");
+    seg("c-mode", [["light", "Clair"], ["dark", "Sombre"]], state.mode, "mode");
+    seg("c-space", th.spaces.map(function (s, i) { return [String(i), s[0] + " - " + s[4]]; }), String(state.space), "space");
+
+    document.getElementById("pitch").innerHTML = Object.keys(THEMES).map(function (k) {
+      var t = THEMES[k], pp = t[state.mode];
+      var sw = [pp.bg, pp.surface2, pp.ink, pp.second].concat(t.spaces.map(function (s) { return state.mode === "dark" ? s[3] : s[2]; }));
+      return '<div' + (k === state.theme ? ' aria-current="true"' : "") + '><b>' + t.label + '</b><span class="small">' + t.pitch + '</span><div class="swatches">' +
+        sw.map(function (c) { return '<span class="sw" style="background:' + c + '" title="' + c + '"></span>'; }).join("") + "</div></div>";
+    }).join("");
+    try { localStorage.setItem("fm-directions", JSON.stringify(state)); } catch (e) {}
+  }
+  function seg(id, items, current, key) {
+    document.getElementById(id).innerHTML = items.map(function (it) {
+      return '<button type="button" data-k="' + key + '" data-v="' + it[0] + '" aria-pressed="' + (it[0] === current) + '">' + it[1] + "</button>";
+    }).join("");
+  }
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.k === "theme") { state.theme = b.dataset.v; }
+    else if (b.dataset.k === "mode") { state.mode = b.dataset.v; }
+    else if (b.dataset.k === "space") { state.space = Number(b.dataset.v); }
+    else if (b.dataset.space !== undefined) { state.space = Number(b.dataset.space); }
+    else return;
+    apply();
+  });
+  apply();
+})();
+</script>

@@ -10,6 +10,7 @@ import TagMergeModal from "../../components/admin/TagMergeModal";
 import AdminRecipeListModal from "../../components/admin/AdminRecipeListModal";
 import AdminRecipeDetailModal from "../../components/admin/AdminRecipeDetailModal";
 import toast from "react-hot-toast";
+import { toastError } from "../../utils/toastError";
 
 type ScopeFilter = "ALL" | "GLOBAL" | "COMMUNITY";
 type TagSortColumn = "name" | "scope" | "status" | "recipeCount";
@@ -102,7 +103,7 @@ function AdminTagsPage() {
       setEditModalTag(null);
       loadTags();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save tag");
+      toastError(err, "Failed to save tag");
     }
   }
 
@@ -119,7 +120,7 @@ function AdminTagsPage() {
       toast.success("Tag deleted");
       loadTags();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to delete tag");
+      toastError(err, "Failed to delete tag");
     }
   }
 
@@ -131,7 +132,7 @@ function AdminTagsPage() {
       setMergeSource(null);
       loadTags();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to merge tags");
+      toastError(err, "Failed to merge tags");
     }
   }
 

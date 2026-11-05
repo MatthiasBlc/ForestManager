@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Modifier un repas</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="fm-root" data-space="1" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+<x-import component-from-global-scope="ForestUI.TopBar" title="Planning" space="{{space}}" on-space="{{noop}}"></x-import>
+<div style="flex-grow: 1;"></div>
+<x-import component-from-global-scope="ForestUI.TabBar" items="{{tabs}}" active-id="plan"></x-import>
+<x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" contained="{{yes}}" title="Mardi 3, soir" on-close="{{noop}}">
+<div style="display: flex; flex-direction: column; gap: 16px;">
+<x-import component-from-global-scope="ForestUI.SegmentedControl" label="Type de repas" options="{{kinds}}" default-value="recipe"></x-import>
+<x-import component-from-global-scope="ForestUI.Field" label="Recette" placeholder="Rechercher dans Famille et dans mes recettes" default-value="teri"></x-import>
+<x-import component-from-global-scope="ForestUI.OptionList" label="Recettes trouvées" options="{{results}}" default-value="poulet" style="margin-top: -8px;"></x-import>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+<span style="font-size: 14px; line-height: 20px; font-weight: 600;">Portions</span>
+<x-import component-from-global-scope="ForestUI.Stepper" label="Portions" default-value="{{six}}" unit="pers."></x-import>
+</div>
+<x-import component-from-global-scope="ForestUI.Field" label="Commentaire" placeholder="Visible en touchant le repas" default-value="Sam apporte le dessert"></x-import>
+<x-import component-from-global-scope="ForestUI.Switch" label="Verrouiller : la génération ne le remplace pas"></x-import>
+</div>
+<x-import component-from-global-scope="ForestUI.SheetFooter">
+<x-import component-from-global-scope="ForestUI.Button" variant="secondary">Vider le repas</x-import>
+<x-import component-from-global-scope="ForestUI.Button" variant="primary">Enregistrer</x-import>
+</x-import>
+</x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      yes: true, six: 6, noop: function () {},
+      kinds: [{ value: 'recipe', label: 'Recette' }, { value: 'text', label: 'Texte libre' }],
+      results: [
+        { value: 'poulet', label: 'Poulet teriyaki et riz', hint: 'Famille · 4 pers. · planifié il y a 3 semaines', icon: 'book-open' },
+        { value: 'saumon', label: 'Saumon teriyaki et brocolis', hint: 'Famille · déjà prévu mardi midi', icon: 'book-open' }
+      ],
+      space: { id: 'f', name: 'Famille', tint: 1 },
+      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }]
+    };
+  }
+}
+</script>
+</body>
+</html>

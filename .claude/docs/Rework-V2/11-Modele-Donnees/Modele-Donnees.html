@@ -1,0 +1,4433 @@
+<title>Modele de donnees V2</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+/>
+<style>
+  /* Layout : document technique, sommaire collant sur grand ecran ; fiches de tables generees depuis schema.prisma. Couleurs : ambiance Braise du design system */
+  :root {
+    --bg: #f5f3ef;
+    --surface: #fbfaf7;
+    --raised: #ffffff;
+    --line: #ddd6cb;
+    --line-strong: #918a7f;
+    --ink: #1f1d1a;
+    --muted: #5f5a53;
+    --accent: #b8611a;
+    --accent-soft: #f3e6da;
+    --accent-text: #8f4a12;
+    --second: #46607f;
+    --second-soft: #e6ebf0;
+    --warn-soft: #f6ead2;
+    --warn-text: #7a5300;
+    --f-display: "Sora", "Segoe UI", system-ui, sans-serif;
+    --f-body: "Manrope", "Segoe UI", system-ui, sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16181b;
+      --surface: #1f2226;
+      --raised: #282c31;
+      --line: #32363c;
+      --line-strong: #74777c;
+      --ink: #eceae6;
+      --muted: #a6a39e;
+      --accent: #e8913a;
+      --accent-soft: #3d2c1d;
+      --accent-text: #efa868;
+      --second: #8fa8c8;
+      --second-soft: #2a313b;
+      --warn-soft: #3b3020;
+      --warn-text: #e8b44a;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16181b;
+    --surface: #1f2226;
+    --raised: #282c31;
+    --line: #32363c;
+    --line-strong: #74777c;
+    --ink: #eceae6;
+    --muted: #a6a39e;
+    --accent: #e8913a;
+    --accent-soft: #3d2c1d;
+    --accent-text: #efa868;
+    --second: #8fa8c8;
+    --second-soft: #2a313b;
+    --warn-soft: #3b3020;
+    --warn-text: #e8b44a;
+    color-scheme: dark;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+  .wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 28px 64px;
+    display: grid;
+    grid-template-columns: 210px minmax(0, 1fr);
+    gap: 40px;
+  }
+  nav.toc {
+    position: sticky;
+    top: calc(env(safe-area-inset-top, 0px) + 20px);
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 13.5px;
+  }
+  nav.toc b {
+    font-family: var(--f-display);
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: var(--accent-text);
+  }
+  nav.toc a {
+    color: var(--muted);
+    text-decoration: none;
+    padding: 5px 10px;
+    border-left: 2px solid var(--line);
+  }
+  nav.toc a:hover,
+  nav.toc a:focus-visible {
+    color: var(--ink);
+    border-left-color: var(--accent);
+    outline: none;
+  }
+  main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+  }
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    scroll-margin-top: 20px;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--f-display);
+    margin: 0;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+  h1 {
+    font-size: clamp(28px, 4.2vw, 40px);
+  }
+  h2 {
+    font-size: 24px;
+  }
+  h3 {
+    font-size: 16px;
+  }
+  p {
+    margin: 0;
+    max-width: 74ch;
+  }
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  .small {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  code {
+    font-family: var(--f-mono);
+    font-size: 0.86em;
+    background: var(--accent-soft);
+    color: var(--ink);
+    padding: 1px 5px;
+    border-radius: 4px;
+    overflow-wrap: anywhere;
+  }
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .fact {
+    background: var(--raised);
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+  }
+  .fact b {
+    font-family: var(--f-display);
+    font-size: 24px;
+    font-variant-numeric: tabular-nums;
+  }
+  .fact span {
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .tablebox {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--raised);
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+  }
+  th,
+  td {
+    text-align: left;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    background: var(--surface);
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  pre.mermaid {
+    background: var(--raised);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    overflow-x: auto;
+    margin: 0;
+  }
+  pre.code {
+    background: var(--raised);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    overflow-x: auto;
+    margin: 0;
+    font: 13px/1.6 var(--f-mono);
+    white-space: pre;
+  }
+  .tools {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  .tools input {
+    font: 400 15px/22px var(--f-body);
+    color: var(--ink);
+    background: var(--raised);
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    padding: 8px 12px;
+    min-width: 0;
+    flex: 1 1 240px;
+  }
+  .tools input:focus-visible,
+  .chip:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .chip {
+    font: 600 13px/18px var(--f-body);
+    border: 1px solid var(--line-strong);
+    background: var(--raised);
+    color: var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px;
+    cursor: pointer;
+  }
+  .chip[aria-pressed="true"] {
+    background: var(--accent-soft);
+    color: var(--accent-text);
+    border-color: var(--accent-text);
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 12px;
+  }
+  details.model {
+    background: var(--raised);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    min-width: 0;
+  }
+  details.model summary {
+    cursor: pointer;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    list-style: none;
+  }
+  details.model summary::-webkit-details-marker {
+    display: none;
+  }
+  .mhead {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: baseline;
+  }
+  .mname {
+    font: 600 15px/20px var(--f-mono);
+  }
+  .pill {
+    font: 700 11px/16px var(--f-body);
+    padding: 1px 7px;
+    border-radius: 6px;
+    background: var(--second-soft);
+    color: var(--second);
+  }
+  .pill.d {
+    background: var(--accent-soft);
+    color: var(--accent-text);
+  }
+  .mdoc {
+    font-size: 13.5px;
+    color: var(--muted);
+  }
+  .fields {
+    border-top: 1px solid var(--line);
+    padding: 6px 0;
+    font-size: 13px;
+  }
+  .f {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+    padding: 4px 14px;
+  }
+  .f:nth-child(odd) {
+    background: var(--surface);
+  }
+  .fn {
+    font-family: var(--f-mono);
+    overflow-wrap: anywhere;
+  }
+  .ft {
+    font-family: var(--f-mono);
+    color: var(--muted);
+    overflow-wrap: anywhere;
+  }
+  .ft.rel {
+    color: var(--second);
+  }
+  .ft.enum {
+    color: var(--accent-text);
+  }
+  .fc {
+    grid-column: 1 / -1;
+    color: var(--muted);
+    font-size: 12.5px;
+    padding-left: 10px;
+  }
+  .attrs {
+    border-top: 1px solid var(--line);
+    padding: 8px 14px;
+    font: 12px/1.6 var(--f-mono);
+    color: var(--muted);
+    overflow-wrap: anywhere;
+  }
+  .enums {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .enum {
+    background: var(--raised);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 13px;
+    min-width: 0;
+  }
+  .enum b {
+    font-family: var(--f-mono);
+  }
+  .enum span {
+    font-family: var(--f-mono);
+    color: var(--muted);
+  }
+  .dec {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 12px;
+  }
+  .dec div {
+    background: var(--raised);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .dec .q {
+    border-color: var(--warn-text);
+    background: var(--warn-soft);
+  }
+  .count {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  @media (max-width: 880px) {
+    .wrap {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 20px;
+      padding-block: 20px 48px;
+    }
+    nav.toc {
+      position: static;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    nav.toc b {
+      width: 100%;
+      margin-bottom: 0;
+    }
+    nav.toc a {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 10px;
+    }
+    .cards {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>
+
+<div class="wrap">
+  <nav class="toc" aria-label="Sommaire">
+    <b>Modele V2</b>
+    <a href="#resume">Resume</a>
+    <a href="#changements">Ce qui change</a>
+    <a href="#vue">Vue d'ensemble</a>
+    <a href="#exemple">Exemple</a>
+    <a href="#tables">Tables</a>
+    <a href="#enums">Enumerations</a>
+    <a href="#contraintes">Contraintes</a>
+    <a href="#decisions">Choix</a>
+  </nav>
+  <main>
+    <section id="resume">
+      <div class="eyebrow">
+        Rework V2 - roadmap B1, mis a jour en B9 (2026-11-05) - statut : voir le journal des
+        decisions
+      </div>
+      <h1>Le modele de donnees de la V2</h1>
+      <p>
+        Le schema Prisma cible, traduit des decisions du journal. Il est valide par Prisma mais
+        n'est branche a rien. Les fiches de cette page sont generees depuis le fichier
+        <code>schema.prisma</code> du chantier : elles disent exactement ce qu'il contient.
+      </p>
+      <div class="facts" id="facts"></div>
+    </section>
+
+    <section id="changements">
+      <div class="eyebrow">Par rapport a la V1</div>
+      <h2>Ce qui change</h2>
+      <div class="tablebox">
+        <table>
+          <thead>
+            <tr>
+              <th>Sujet</th>
+              <th>V1</th>
+              <th>V2</th>
+              <th>Decision</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Espace perso</td>
+              <td><code>communityId = null</code></td>
+              <td><code>Space</code> de type <code>PERSONAL</code>, lie a son utilisateur</td>
+              <td>D02</td>
+            </tr>
+            <tr>
+              <td>Recette partagee</td>
+              <td>2 a N lignes <code>Recipe</code> synchronisees</td>
+              <td>Une <code>Recipe</code> + des <code>RecipeShare</code></td>
+              <td>D03</td>
+            </tr>
+            <tr>
+              <td>Version d'un autre espace</td>
+              <td>Fork, variante automatique</td>
+              <td><code>adaptedFromId</code> + <code>adaptedFromRevision</code></td>
+              <td>D17</td>
+            </tr>
+            <tr>
+              <td>Contenu d'une recette</td>
+              <td>Ingredients et etapes a plat</td>
+              <td><code>RecipeBlock</code> local ou lien vivant vers une autre recette</td>
+              <td>D24</td>
+            </tr>
+            <tr>
+              <td>Historique</td>
+              <td>Aucun</td>
+              <td><code>RecipeRevision</code> en instantane JSON</td>
+              <td>D05, D30</td>
+            </tr>
+            <tr>
+              <td>Proposition</td>
+              <td>Tables <code>ProposalStep</code>, <code>ProposalIngredient</code></td>
+              <td><code>RecipeSuggestion</code> : instantane propose + revision de base</td>
+              <td>D04</td>
+            </tr>
+            <tr>
+              <td>Tags</td>
+              <td>PENDING, suggestions, masquage</td>
+              <td>Globaux traduits + tags d'espace libres, poses par espace</td>
+              <td>D08, D19, D27</td>
+            </tr>
+            <tr>
+              <td>Ingredients</td>
+              <td>Nom unique, PENDING</td>
+              <td>Traduits, <code>NEW</code> utilisable tout de suite, fusion, rayon</td>
+              <td>D09, D34, D36</td>
+            </tr>
+            <tr>
+              <td>Unites</td>
+              <td>Categories, pas de conversion</td>
+              <td>Dimension + facteur vers la base, poids par ingredient</td>
+              <td>D36</td>
+            </tr>
+            <tr>
+              <td>Modules</td>
+              <td><code>Feature</code> accorde par l'admin</td>
+              <td>
+                <code>Module</code>, <code>SpaceModule</code>, <code>ModuleAccessRequest</code>
+              </td>
+              <td>D33</td>
+            </tr>
+            <tr>
+              <td>Roles</td>
+              <td>MEMBER, MODERATOR</td>
+              <td>+ OWNER unique (index partiel)</td>
+              <td>D06</td>
+            </tr>
+            <tr>
+              <td>Invitations</td>
+              <td>Par username</td>
+              <td>Liens d'invitation (expiration obligatoire) + username exact</td>
+              <td>D07, D94</td>
+            </tr>
+            <tr>
+              <td>Planning</td>
+              <td>Midi / soir en dur, <code>editableByMembers</code></td>
+              <td><code>MealPlanSettings</code> : repas choisis, role minimal d'edition</td>
+              <td>D11</td>
+            </tr>
+            <tr>
+              <td>Notifications, activite</td>
+              <td>Enums en base</td>
+              <td>Cles texte declarees par les modules</td>
+              <td>D40, D41</td>
+            </tr>
+            <tr>
+              <td>Retire</td>
+              <td colspan="2">
+                <code>Visibility</code>, <code>RecipeView</code>, <code>RecipeAnalytics</code>,
+                <code>TagSuggestion</code>, <code>UserCommunityTagPreference</code>,
+                <code>isVariant</code>, <code>sharedFromCommunityId</code>
+              </td>
+              <td>D27, D39</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="vue">
+      <div class="eyebrow">Relations principales</div>
+      <h2>Vue d'ensemble</h2>
+      <p class="small">
+        Socle a gauche (il ne connait aucun module), puis le module Recettes et le module Planning
+        qui s'y rattachent par l'espace.
+      </p>
+      <pre class="mermaid">
+erDiagram
+  User ||--o| Space : "espace perso"
+  User ||--o{ Membership : ""
+  Space ||--o{ Membership : "role"
+  Space ||--o{ SpaceModule : "modules accordes"
+  Module ||--o{ SpaceModule : ""
+  Space ||--o{ ModuleAccessRequest : "demandes"
+  Space ||--o{ Recipe : "espace d'origine"
+  User ||--o{ Recipe : "auteur"
+  Recipe ||--o{ RecipeShare : "partagee dans"
+  Space ||--o{ RecipeShare : ""
+  Recipe ||--o{ RecipeBlock : "blocs"
+  RecipeBlock }o--o| Recipe : "lien vivant"
+  Recipe ||--o{ RecipeRevision : "historique"
+  Recipe ||--o{ RecipeSuggestion : ""
+  Recipe |o--o{ Recipe : "adaptation"
+  Space ||--o{ MealPlan : ""
+  MealPlan ||--o{ MealSlot : ""
+  MealSlot }o--o| Recipe : ""
+</pre
+      >
+      <pre class="mermaid">
+erDiagram
+  RecipeBlock ||--o{ RecipeIngredient : ""
+  RecipeBlock ||--o{ RecipeStep : ""
+  RecipeIngredient }o--|| Ingredient : ""
+  RecipeIngredient }o--o| Unit : ""
+  Ingredient ||--o{ IngredientTranslation : "nom par langue"
+  Ingredient ||--o{ IngredientUnitWeight : "poids par unite"
+  Ingredient }o--o| Aisle : "rayon"
+  Recipe ||--o{ RecipeGlobalTag : ""
+  Recipe ||--o{ RecipeSpaceTag : "par espace"
+  Tag ||--o{ RecipeSpaceTag : ""
+  Tag ||--o{ TagTranslation : "tags globaux"
+</pre
+      >
+    </section>
+
+    <section id="exemple">
+      <div class="eyebrow">Exemple concret</div>
+      <h2>Saumon teriyaki et brocolis, en base</h2>
+      <p>
+        La recette composee de la maquette, telle qu'elle serait enregistree. La sauce est une
+        recette a part, liee par un bloc ; elle est partagee dans TOM en meme temps que le plat.
+      </p>
+      <pre class="code">
+Recipe  "Sauce teriyaki"      homeSpace=Famille  isBase=true  yield=300 ml  currentRevision=2
+  RecipeBlock #0  LOCAL
+    RecipeIngredient  100  ml           sauce soja
+    RecipeIngredient   60  ml           mirin
+    RecipeIngredient    2  c. a soupe   sucre
+    RecipeStep        "Melanger soja, mirin et sucre."
+
+Recipe  "Saumon teriyaki et brocolis"   homeSpace=Famille  yield=2 (portions)
+  RecipeBlock #0  RECIPE  subRecipe="Sauce teriyaki"  subQuantity=150  subUnit=ml   -> facteur 0,5
+  RecipeBlock #1  LOCAL   title="Saumon et brocolis"
+    RecipeIngredient    2  piece        pave de saumon
+    RecipeIngredient  300  g            brocoli
+  RecipeBlock #2  LOCAL   title="Assemblage"
+
+RecipeShare  "Saumon teriyaki et brocolis" -> TOM
+RecipeShare  "Sauce teriyaki"              -> TOM   viaRecipe="Saumon teriyaki et brocolis"
+RecipeSpaceTag  (Saumon..., Famille, "Rapide")      RecipeSpaceTag  (Saumon..., TOM, "Plat du lundi")
+RecipeRevision  (Sauce teriyaki, n=2, source=SUGGESTION)   le plat voit la revision 2 (lien vivant)</pre
+      >
+    </section>
+
+    <section id="tables">
+      <div class="eyebrow">Fiches generees depuis schema.prisma</div>
+      <h2>Les tables</h2>
+      <div class="tools">
+        <input
+          id="q"
+          type="search"
+          placeholder="Filtrer : recipe, space, D17, deletedAt..."
+          aria-label="Filtrer les tables"
+        />
+        <span class="count" id="count"></span>
+      </div>
+      <div class="tools" id="domains" role="group" aria-label="Domaines"></div>
+      <div class="cards" id="cards"></div>
+    </section>
+
+    <section id="enums">
+      <h2>Enumerations</h2>
+      <div class="enums" id="enumlist"></div>
+    </section>
+
+    <section id="contraintes">
+      <h2>Contraintes ajoutees en SQL</h2>
+      <p class="small">
+        Prisma ne sait pas exprimer les index partiels ni les CHECK : elles seront ecrites dans les
+        migrations. Les dernieres lignes listent ce que l'application verifie elle-meme.
+      </p>
+      <pre class="code" id="cons"></pre>
+    </section>
+
+    <section id="decisions">
+      <div class="eyebrow">Statut : voir le journal des decisions</div>
+      <h2>Choix faits en construisant le modele</h2>
+      <div class="dec">
+        <div>
+          <b>D41 - Types de notification et d'activite en cles texte</b
+          ><span class="small"
+            >Chaque module declare ses types ("recipes.suggestion.created") dans le registre ; le
+            package partage les valide. Pas d'enum en base, donc pas de migration du socle pour un
+            nouveau module. Precise F-NOT-3 (qui parlait d'enum).</span
+          >
+        </div>
+        <div>
+          <b>D42 - Suggestions et revisions au meme format</b
+          ><span class="small"
+            >Une suggestion porte un instantane complet propose, compare a sa revision de base.
+            Remplace les tables ProposalStep et ProposalIngredient de la V1.</span
+          >
+        </div>
+        <div>
+          <b>D43 - Compteurs calcules, pas stockes</b
+          ><span class="small"
+            >"Planifiee N fois", "derniere fois cuisinee" se calculent depuis les repas du planning
+            (index recette + date). Rien a resynchroniser.</span
+          >
+        </div>
+        <div>
+          <b>D44 - Compte supprime : ligne anonymisee</b
+          ><span class="small"
+            >La ligne User reste (username et email remplaces) pour que les recettes laissees aux
+            espaces gardent un auteur "ancien membre".</span
+          >
+        </div>
+        <div>
+          <b>D45 - Referentiels traduits par tables de traduction</b
+          ><span class="small"
+            >Ingredients, unites, rayons et tags globaux ont une ligne par langue (recherche et
+            unicite par langue). Les tags d'espace gardent un nom simple.</span
+          >
+        </div>
+        <div>
+          <b>D46 - Conversions d'unites</b
+          ><span class="small"
+            >Chaque unite a une dimension (masse, volume, piece, aucune) et un facteur vers la base
+            (g, ml) ; un poids par ingredient et par unite permet d'additionner pieces et
+            grammes.</span
+          >
+        </div>
+        <div>
+          <b>D47 - Partage automatique trace</b
+          ><span class="small"
+            >Une sous-recette partagee avec un plat garde le lien <code>viaRecipeId</code> : retirer
+            le plat d'un espace propose de retirer aussi la sauce, sauf si elle y a ete partagee
+            pour elle-meme.</span
+          >
+        </div>
+        <div>
+          <b>D58 - Planning : MEMBER par defaut</b
+          ><span class="small"
+            >Tous les membres modifient les repas (<code>MealPlanSettings.editRole = MEMBER</code>)
+            ; l'OWNER peut restreindre. Generation et reglages : moderateurs et OWNER.</span
+          >
+        </div>
+        <div>
+          <b>D81 - Partager la recette d'un autre</b
+          ><span class="small"
+            >Demande de partage (<code>RecipeShareRequest</code>) acceptee par l'auteur, ou partage
+            immediat si l'auteur a coche <code>Membership.allowMembersToShare</code> dans cet
+            espace.</span
+          >
+        </div>
+        <div>
+          <b>D82 - Espace perso et "Mes recettes"</b
+          ><span class="small"
+            >L'espace perso montre son contenu propre et une vue "Mes recettes" de toutes les
+            recettes dont on est l'auteur : simple requete sur <code>Recipe.authorId</code>, rien a
+            dupliquer.</span
+          >
+        </div>
+        <div>
+          <b>D83 - Espace d'origine purge</b
+          ><span class="small"
+            >Ses recettes partagees ailleurs sont rapatriees dans l'espace perso de leur auteur
+            (changement de <code>homeSpaceId</code>).</span
+          >
+        </div>
+        <div>
+          <b>D92 - Transfert de propriete propose</b
+          ><span class="small"
+            >Une ligne <code>SpaceOwnershipTransfer</code> en attente, acceptee ou refusee par le
+            destinataire ; une seule en attente par espace. A l'acceptation, il devient OWNER et
+            l'ancien OWNER moderateur.</span
+          >
+        </div>
+        <div>
+          <b>D94 - Lien d'invitation qui expire toujours</b
+          ><span class="small"
+            ><code>SpaceInviteLink.expiresAt</code> est obligatoire (1, 7 ou 30 jours) ;
+            <code>maxUses</code> vide = illimite.</span
+          >
+        </div>
+        <div>
+          <b>D120 - Ingredient fusionne = synonyme</b
+          ><span class="small"
+            >Statut <code>MERGED</code> avec <code>mergedIntoId</code> obligatoire : ses noms
+            restent proposes a la saisie et c'est la cible qui est enregistree.</span
+          >
+        </div>
+        <div>
+          <b>D131 - Ordre des modules</b
+          ><span class="small"
+            ><code>SpaceModule.sortOrder</code>, regle par l'OWNER : les 4 premiers modules actifs
+            forment la barre d'onglets mobile, les suivants vont dans "Plus".</span
+          >
+        </div>
+        <div>
+          <b>D134 - Mot de passe temporaire</b
+          ><span class="small"
+            ><code>AuthToken</code> de type <code>TEMP_PASSWORD</code> : 24 h, usage unique ; il
+            n'ouvre que le choix d'un nouveau mot de passe, l'ancien reste valable jusque-la.</span
+          >
+        </div>
+        <div>
+          <b>Widgets d'accueil</b
+          ><span class="small"
+            ><code>User.homeWidgets</code> : liste ordonnee des widgets choisis (cles du registre) ;
+            absente = choix par defaut (CDC S5.2).</span
+          >
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+  (function () {
+    "use strict";
+    var DATA = {
+      domains: [
+        "SOCLE - COMPTES",
+        "SOCLE - ESPACES, MEMBRES, INVITATIONS",
+        "SOCLE - MODULES [D10] [D33] [D40]",
+        "REFERENTIELS (globaux, traduits) [D09] [D34] [D36]",
+        "MODULE RECETTES [D03] [D04] [D05] [D17] [D19] [D24] [D26] [D30] [D39]",
+        "MODULE PLANNING [D02] [D11]",
+        "SOCLE - NOTIFICATIONS, ACTIVITE, EXPORTS",
+        "PLATEFORME - ADMINISTRATION, CHANGELOG",
+      ],
+      models: [
+        {
+          name: "User",
+          domain: "SOCLE - COMPTES",
+          doc: "Utilisateur. Un compte supprime est anonymise, pas efface [D20] : username et email remplaces, deletedAt renseigne, contenus partages conserves.",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "email",
+              t: "String",
+              a: "@unique",
+              c: "stocke en minuscules",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "username", t: "String", a: "@unique", c: "", rel: false, enum: false, d: [] },
+            { n: "passwordHash", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "emailVerifiedAt",
+              t: "DateTime?",
+              a: "",
+              c: "null tant que non verifie ; ignore si aucun SMTP [D21]",
+              rel: false,
+              enum: false,
+              d: ["D21"],
+            },
+            { n: "avatarKey", t: "String?", a: "", c: "cle MinIO", rel: false, enum: false, d: [] },
+            {
+              n: "locale",
+              t: "String",
+              a: '@default("fr")',
+              c: "[D34]",
+              rel: false,
+              enum: false,
+              d: ["D34"],
+            },
+            {
+              n: "ambiance",
+              t: "Ambiance",
+              a: "@default(BRAISE)",
+              c: "[D32]",
+              rel: false,
+              enum: true,
+              d: ["D32"],
+            },
+            {
+              n: "colorMode",
+              t: "ColorMode",
+              a: "@default(SYSTEM)",
+              c: "[D32]",
+              rel: false,
+              enum: true,
+              d: ["D32"],
+            },
+            {
+              n: "density",
+              t: "Density",
+              a: "@default(COMFORTABLE)",
+              c: "",
+              rel: false,
+              enum: true,
+              d: [],
+            },
+            {
+              n: "textScale",
+              t: "Int",
+              a: "@default(100)",
+              c: "pourcentage : 90, 100, 115, 130",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "homeWidgets",
+              t: "Json?",
+              a: "",
+              c: "accueil : liste ordonnee des cles de widgets choisis ; null = choix par defaut du registre (CDC S5.2)",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "lastLoginAt", t: "DateTime?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "updatedAt",
+              t: "DateTime",
+              a: "@updatedAt",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "deletedAt",
+              t: "DateTime?",
+              a: "",
+              c: "compte supprime et anonymise [D20]",
+              rel: false,
+              enum: false,
+              d: ["D20"],
+            },
+            {
+              n: "personalSpace",
+              t: "Space?",
+              a: '@relation("PersonalSpace")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "memberships", t: "Membership[]", a: "", c: "", rel: true, enum: false, d: [] },
+            { n: "authTokens", t: "AuthToken[]", a: "", c: "", rel: true, enum: false, d: [] },
+            {
+              n: "invitationsSent",
+              t: "SpaceInvitation[]",
+              a: '@relation("InvitationSender")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "invitationsRecv",
+              t: "SpaceInvitation[]",
+              a: '@relation("InvitationInvitee")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "inviteLinks",
+              t: "SpaceInviteLink[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "moduleRequests",
+              t: "ModuleAccessRequest[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "recipes",
+              t: "Recipe[]",
+              a: '@relation("RecipeAuthor")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "revisions", t: "RecipeRevision[]", a: "", c: "", rel: true, enum: false, d: [] },
+            {
+              n: "sharesMade",
+              t: "RecipeShare[]",
+              a: '@relation("ShareSharedBy")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "sharesRemoved",
+              t: "RecipeShare[]",
+              a: '@relation("ShareRemovedBy")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "sharesApproved",
+              t: "RecipeShare[]",
+              a: '@relation("ShareApprovedBy")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "shareRequests",
+              t: "RecipeShareRequest[]",
+              a: '@relation("ShareRequester")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "shareRequestsDecided",
+              t: "RecipeShareRequest[]",
+              a: '@relation("ShareRequestDecider")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "suggestions",
+              t: "RecipeSuggestion[]",
+              a: '@relation("SuggestionProposer")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "suggestionsDecided",
+              t: "RecipeSuggestion[]",
+              a: '@relation("SuggestionDecider")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "tagsCreated", t: "Tag[]", a: "", c: "", rel: true, enum: false, d: [] },
+            {
+              n: "ingredientsCreated",
+              t: "Ingredient[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "mealSlotsUpdated", t: "MealSlot[]", a: "", c: "", rel: true, enum: false, d: [] },
+            { n: "mealIdeas", t: "MealIdea[]", a: "", c: "", rel: true, enum: false, d: [] },
+            {
+              n: "notifications",
+              t: "Notification[]",
+              a: '@relation("NotificationRecipient")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "notificationsActed",
+              t: "Notification[]",
+              a: '@relation("NotificationActor")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "notificationPrefs",
+              t: "NotificationPreference[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "activities", t: "ActivityEvent[]", a: "", c: "", rel: true, enum: false, d: [] },
+            { n: "exports", t: "DataExport[]", a: "", c: "", rel: true, enum: false, d: [] },
+            {
+              n: "ownershipOffersSent",
+              t: "SpaceOwnershipTransfer[]",
+              a: '@relation("TransferFrom")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "ownershipOffersRecv",
+              t: "SpaceOwnershipTransfer[]",
+              a: '@relation("TransferTo")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@index([deletedAt])"],
+          d: ["D20"],
+        },
+        {
+          name: "AuthToken",
+          domain: "SOCLE - COMPTES",
+          doc: "Jeton a usage unique (verification d'email, mot de passe oublie) [D21]. Seul le hash est stocke. TEMP_PASSWORD [D134] : tokenHash = hash du mot de passe temporaire, expiresAt = creation + 24 h. Il n'ouvre qu'une session restreinte au choix d'un nouveau mot de passe ; l'ancien passwordHash reste valable jusque-la. A l'enregistrement du nouveau : usedAt renseigne, passwordHash remplace, autres sessions fermees.",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "userId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "kind", t: "AuthTokenKind", a: "", c: "", rel: false, enum: true, d: [] },
+            { n: "tokenHash", t: "String", a: "@unique", c: "", rel: false, enum: false, d: [] },
+            { n: "expiresAt", t: "DateTime", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "usedAt", t: "DateTime?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "user",
+              t: "User",
+              a: "@relation(fields: [userId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@index([userId, kind])"],
+          d: ["D21", "D134"],
+        },
+        {
+          name: "UserSession",
+          domain: "SOCLE - COMPTES",
+          doc: 'Store express-session des utilisateurs (duree selon "rester connecte" [D13]).',
+          fields: [
+            { n: "id", t: "String", a: "@id", c: "", rel: false, enum: false, d: [] },
+            { n: "sid", t: "String", a: "@unique", c: "", rel: false, enum: false, d: [] },
+            { n: "data", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "expiresAt", t: "DateTime", a: "", c: "", rel: false, enum: false, d: [] },
+          ],
+          attrs: ["@@index([expiresAt])"],
+          d: ["D13"],
+        },
+        {
+          name: "Space",
+          domain: "SOCLE - ESPACES, MEMBRES, INVITATIONS",
+          doc: "Espace : perso (un par utilisateur, un seul membre) ou groupe [D02].",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "kind", t: "SpaceKind", a: "", c: "", rel: false, enum: true, d: [] },
+            { n: "name", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "description", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "avatarKey",
+              t: "String?",
+              a: "",
+              c: "icone dans le rail ; sinon initiales sur la teinte",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "tintIndex",
+              t: "Int",
+              a: "@default(1)",
+              c: "teinte d'espace 1 a 5 [D32]",
+              rel: false,
+              enum: false,
+              d: ["D32"],
+            },
+            {
+              n: "personalUserId",
+              t: "String?",
+              a: "@unique",
+              c: "renseigne seulement pour PERSONAL",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "updatedAt",
+              t: "DateTime",
+              a: "@updatedAt",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "deletedAt",
+              t: "DateTime?",
+              a: "",
+              c: "suppression demandee : espace masque [D22]",
+              rel: false,
+              enum: false,
+              d: ["D22"],
+            },
+            {
+              n: "purgeAfter",
+              t: "DateTime?",
+              a: "",
+              c: "deletedAt + 30 jours ; restaurable avant [D22]",
+              rel: false,
+              enum: false,
+              d: ["D22"],
+            },
+            {
+              n: "personalUser",
+              t: "User?",
+              a: '@relation("PersonalSpace", fields: [personalUserId], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "memberships", t: "Membership[]", a: "", c: "", rel: true, enum: false, d: [] },
+            {
+              n: "inviteLinks",
+              t: "SpaceInviteLink[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "invitations",
+              t: "SpaceInvitation[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "modules", t: "SpaceModule[]", a: "", c: "", rel: true, enum: false, d: [] },
+            {
+              n: "moduleRequests",
+              t: "ModuleAccessRequest[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "homeRecipes",
+              t: "Recipe[]",
+              a: '@relation("RecipeHomeSpace")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "shares", t: "RecipeShare[]", a: "", c: "", rel: true, enum: false, d: [] },
+            {
+              n: "shareRequests",
+              t: "RecipeShareRequest[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "spaceTags", t: "Tag[]", a: "", c: "", rel: true, enum: false, d: [] },
+            {
+              n: "recipeSpaceTags",
+              t: "RecipeSpaceTag[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "suggestions",
+              t: "RecipeSuggestion[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "mealSettings",
+              t: "MealPlanSettings?",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "mealPlans", t: "MealPlan[]", a: "", c: "", rel: true, enum: false, d: [] },
+            { n: "mealIdeas", t: "MealIdea[]", a: "", c: "", rel: true, enum: false, d: [] },
+            {
+              n: "generationProfiles",
+              t: "MealGenerationProfile[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "notifications",
+              t: "Notification[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "notificationPrefs",
+              t: "NotificationPreference[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "activities", t: "ActivityEvent[]", a: "", c: "", rel: true, enum: false, d: [] },
+            { n: "exports", t: "DataExport[]", a: "", c: "", rel: true, enum: false, d: [] },
+            {
+              n: "ownershipTransfers",
+              t: "SpaceOwnershipTransfer[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@index([deletedAt])", "@@index([purgeAfter])"],
+          d: ["D02"],
+        },
+        {
+          name: "Membership",
+          domain: "SOCLE - ESPACES, MEMBRES, INVITATIONS",
+          doc: "Appartenance a un espace. Un depart garde la ligne (leftAt) pour l'historique ; revenir reactive la meme ligne. Exactement un OWNER actif par espace [D06] (index partiel, voir fin de fichier).",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "spaceId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "userId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "role",
+              t: "SpaceRole",
+              a: "@default(MEMBER)",
+              c: "",
+              rel: false,
+              enum: true,
+              d: [],
+            },
+            {
+              n: "joinedAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "leftAt", t: "DateTime?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "allowMembersToShare",
+              t: "Boolean",
+              a: "@default(false)",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "space",
+              t: "Space",
+              a: "@relation(fields: [spaceId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "user",
+              t: "User",
+              a: "@relation(fields: [userId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: [
+            "@@unique([spaceId, userId])",
+            "@@index([userId, leftAt])",
+            "@@index([spaceId, role])",
+          ],
+          d: ["D06"],
+        },
+        {
+          name: "SpaceInviteLink",
+          domain: "SOCLE - ESPACES, MEMBRES, INVITATIONS",
+          doc: "Lien d'invitation [D07] : expiration obligatoire (1, 7 ou 30 jours [D94]), nombre de personnes (maxUses null = illimite), revocable. Seul le hash du code est stocke ; le lien complet n'est montre qu'a la creation.",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "spaceId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "createdById", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "codeHash", t: "String", a: "@unique", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "expiresAt",
+              t: "DateTime",
+              a: "",
+              c: "creation + 1, 7 ou 30 jours [D94]",
+              rel: false,
+              enum: false,
+              d: ["D94"],
+            },
+            {
+              n: "maxUses",
+              t: "Int?",
+              a: "",
+              c: "null = illimite",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "useCount", t: "Int", a: "@default(0)", c: "", rel: false, enum: false, d: [] },
+            { n: "revokedAt", t: "DateTime?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "space",
+              t: "Space",
+              a: "@relation(fields: [spaceId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "createdBy",
+              t: "User",
+              a: "@relation(fields: [createdById], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@index([spaceId, revokedAt])"],
+          d: ["D07", "D94"],
+        },
+        {
+          name: "SpaceInvitation",
+          domain: "SOCLE - ESPACES, MEMBRES, INVITATIONS",
+          doc: "Invitation directe par username exact [D07] (pas de recherche par prefixe). Une seule PENDING par (espace, invite) : index partiel.",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "spaceId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "inviterId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "inviteeId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "status",
+              t: "InvitationStatus",
+              a: "@default(PENDING)",
+              c: "",
+              rel: false,
+              enum: true,
+              d: [],
+            },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "respondedAt", t: "DateTime?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "space",
+              t: "Space",
+              a: "@relation(fields: [spaceId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "inviter",
+              t: "User",
+              a: '@relation("InvitationSender", fields: [inviterId], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "invitee",
+              t: "User",
+              a: '@relation("InvitationInvitee", fields: [inviteeId], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@index([inviteeId, status])", "@@index([spaceId, status])"],
+          d: ["D07"],
+        },
+        {
+          name: "SpaceOwnershipTransfer",
+          domain: "SOCLE - ESPACES, MEMBRES, INVITATIONS",
+          doc: "Proposition de transfert de propriete [D92] : le destinataire (membre actif) accepte ou refuse ; a l'acceptation il devient OWNER et l'ancien OWNER MODERATOR. Une seule PENDING par espace : index partiel. Le transfert automatique a la suppression du compte d'un OWNER [D51] ne passe pas par ici.",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "spaceId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "fromUserId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "toUserId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "status",
+              t: "OwnershipTransferStatus",
+              a: "@default(PENDING)",
+              c: "",
+              rel: false,
+              enum: true,
+              d: [],
+            },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "respondedAt", t: "DateTime?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "space",
+              t: "Space",
+              a: "@relation(fields: [spaceId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "fromUser",
+              t: "User",
+              a: '@relation("TransferFrom", fields: [fromUserId], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "toUser",
+              t: "User",
+              a: '@relation("TransferTo", fields: [toUserId], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@index([toUserId, status])", "@@index([spaceId, status])"],
+          d: ["D51", "D92"],
+        },
+        {
+          name: "Module",
+          domain: "SOCLE - MODULES [D10] [D33] [D40]",
+          doc: "Catalogue des modules de la plateforme. `code` = identifiant du registre.",
+          fields: [
+            {
+              n: "code",
+              t: "String",
+              a: "@id",
+              c: '"recipes", "meal-plan", "shopping"...',
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "status",
+              t: "ModuleStatus",
+              a: "@default(COMING_SOON)",
+              c: "",
+              rel: false,
+              enum: true,
+              d: [],
+            },
+            {
+              n: "isDefault",
+              t: "Boolean",
+              a: "@default(false)",
+              c: "accorde et actif a la creation d'un espace (Recettes) [D33]",
+              rel: false,
+              enum: false,
+              d: ["D33"],
+            },
+            { n: "sortOrder", t: "Int", a: "@default(0)", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "updatedAt",
+              t: "DateTime",
+              a: "@updatedAt",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "spaces", t: "SpaceModule[]", a: "", c: "", rel: true, enum: false, d: [] },
+            {
+              n: "requests",
+              t: "ModuleAccessRequest[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: [],
+          d: [],
+        },
+        {
+          name: "SpaceModule",
+          domain: "SOCLE - MODULES [D10] [D33] [D40]",
+          doc: "Acces d'un espace a un module [D33]. L'acces est attache a l'espace, pas a la personne. grantedAt = accorde ; enabled = active par l'OWNER ; sortOrder = ordre de la barre des modules choisi par l'OWNER (4 onglets mobiles puis \"Plus\") [D131]. Monetisation future : une colonne `planId` nullable s'ajoutera ici.",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "spaceId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "moduleCode", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "grantedAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "grantedByAdminId",
+              t: "String?",
+              a: "",
+              c: "null = accorde d'office (module par defaut)",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "revokedAt",
+              t: "DateTime?",
+              a: "",
+              c: "retire par un super admin ; donnees conservees",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "enabled",
+              t: "Boolean",
+              a: "@default(false)",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "enabledChangedAt", t: "DateTime?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "sortOrder",
+              t: "Int",
+              a: "@default(0)",
+              c: "ordre choisi par l'OWNER [D131]",
+              rel: false,
+              enum: false,
+              d: ["D131"],
+            },
+            {
+              n: "space",
+              t: "Space",
+              a: "@relation(fields: [spaceId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "module",
+              t: "Module",
+              a: "@relation(fields: [moduleCode], references: [code])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "grantedBy",
+              t: "AdminUser?",
+              a: "@relation(fields: [grantedByAdminId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@unique([spaceId, moduleCode])"],
+          d: ["D33", "D131"],
+        },
+        {
+          name: "ModuleAccessRequest",
+          domain: "SOCLE - MODULES [D10] [D33] [D40]",
+          doc: "Demande d'acces a un module par l'OWNER d'un espace [D33]. Une seule PENDING par (espace, module) : index partiel.",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "spaceId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "moduleCode", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "requestedById", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "message", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "status",
+              t: "AccessRequestStatus",
+              a: "@default(PENDING)",
+              c: "",
+              rel: false,
+              enum: true,
+              d: [],
+            },
+            { n: "decidedByAdminId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "decidedAt", t: "DateTime?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "decisionNote", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "space",
+              t: "Space",
+              a: "@relation(fields: [spaceId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "module",
+              t: "Module",
+              a: "@relation(fields: [moduleCode], references: [code])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "requestedBy",
+              t: "User",
+              a: "@relation(fields: [requestedById], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "decidedBy",
+              t: "AdminUser?",
+              a: "@relation(fields: [decidedByAdminId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@index([status, createdAt])", "@@index([spaceId])"],
+          d: ["D33"],
+        },
+        {
+          name: "Unit",
+          domain: "REFERENTIELS (globaux, traduits) [D09] [D34] [D36]",
+          doc: "Unite de mesure. toBase = combien d'unites de base vaut 1 unite (1 kg = 1000 g, 1 c. a soupe = 15 ml). null pour COUNT et NONE.",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "code",
+              t: "String",
+              a: "@unique",
+              c: '"g", "kg", "ml", "tbsp", "piece"...',
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "dimension", t: "UnitDimension", a: "", c: "", rel: false, enum: true, d: [] },
+            { n: "toBase", t: "Float?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "sortOrder", t: "Int", a: "@default(0)", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "translations",
+              t: "UnitTranslation[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "ingredientWeights",
+              t: "IngredientUnitWeight[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "recipeIngredients",
+              t: "RecipeIngredient[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "defaultFor", t: "Ingredient[]", a: "", c: "", rel: true, enum: false, d: [] },
+            {
+              n: "recipeYields",
+              t: "Recipe[]",
+              a: '@relation("RecipeYieldUnit")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "blockQuantities",
+              t: "RecipeBlock[]",
+              a: '@relation("BlockSubUnit")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: [],
+          d: [],
+        },
+        {
+          name: "UnitTranslation",
+          domain: "REFERENTIELS (globaux, traduits) [D09] [D34] [D36]",
+          doc: "",
+          fields: [
+            { n: "unitId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "locale", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "name",
+              t: "String",
+              a: "",
+              c: '"cuillere a soupe"',
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "namePlural", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "abbreviation",
+              t: "String",
+              a: "",
+              c: '"c. a soupe"',
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "unit",
+              t: "Unit",
+              a: "@relation(fields: [unitId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@id([unitId, locale])"],
+          d: [],
+        },
+        {
+          name: "Aisle",
+          domain: "REFERENTIELS (globaux, traduits) [D09] [D34] [D36]",
+          doc: "Rayon du magasin (fruits et legumes, boucherie...) pour la liste de courses [D36].",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "code", t: "String", a: "@unique", c: "", rel: false, enum: false, d: [] },
+            { n: "sortOrder", t: "Int", a: "@default(0)", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "translations",
+              t: "AisleTranslation[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "ingredients", t: "Ingredient[]", a: "", c: "", rel: true, enum: false, d: [] },
+          ],
+          attrs: [],
+          d: ["D36"],
+        },
+        {
+          name: "AisleTranslation",
+          domain: "REFERENTIELS (globaux, traduits) [D09] [D34] [D36]",
+          doc: "",
+          fields: [
+            { n: "aisleId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "locale", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "name", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "aisle",
+              t: "Aisle",
+              a: "@relation(fields: [aisleId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@id([aisleId, locale])"],
+          d: [],
+        },
+        {
+          name: "Ingredient",
+          domain: "REFERENTIELS (globaux, traduits) [D09] [D34] [D36]",
+          doc: "Ingredient du catalogue global. Utilisable des sa creation [D09]. Fusion [D120] : l'ingredient passe MERGED et garde ses noms ; l'autocompletion les propose encore comme synonymes de la cible, et c'est la cible qui est enregistree. Les usages existants sont reportes sur la cible a la fusion.",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "status",
+              t: "IngredientStatus",
+              a: "@default(NEW)",
+              c: "",
+              rel: false,
+              enum: true,
+              d: [],
+            },
+            { n: "defaultUnitId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "aisleId",
+              t: "String?",
+              a: "",
+              c: "rayon par defaut [D36]",
+              rel: false,
+              enum: false,
+              d: ["D36"],
+            },
+            { n: "mergedIntoId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "createdById", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "updatedAt",
+              t: "DateTime",
+              a: "@updatedAt",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "defaultUnit",
+              t: "Unit?",
+              a: "@relation(fields: [defaultUnitId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "aisle",
+              t: "Aisle?",
+              a: "@relation(fields: [aisleId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "mergedInto",
+              t: "Ingredient?",
+              a: '@relation("IngredientMerge", fields: [mergedIntoId], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "mergedFrom",
+              t: "Ingredient[]",
+              a: '@relation("IngredientMerge")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "createdBy",
+              t: "User?",
+              a: "@relation(fields: [createdById], references: [id], onDelete: SetNull)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "translations",
+              t: "IngredientTranslation[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "unitWeights",
+              t: "IngredientUnitWeight[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "usages", t: "RecipeIngredient[]", a: "", c: "", rel: true, enum: false, d: [] },
+          ],
+          attrs: ["@@index([status])"],
+          d: ["D09", "D120"],
+        },
+        {
+          name: "IngredientTranslation",
+          domain: "REFERENTIELS (globaux, traduits) [D09] [D34] [D36]",
+          doc: "Nom d'un ingredient dans une langue [D34]. normalized = minuscules, sans accents, singulier : sert a l'autocompletion et a l'unicite.",
+          fields: [
+            { n: "ingredientId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "locale", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "name", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "namePlural", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "normalized", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "ingredient",
+              t: "Ingredient",
+              a: "@relation(fields: [ingredientId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@id([ingredientId, locale])", "@@unique([locale, normalized])"],
+          d: ["D34"],
+        },
+        {
+          name: "IngredientUnitWeight",
+          domain: "REFERENTIELS (globaux, traduits) [D09] [D34] [D36]",
+          doc: "Poids d'une unite pour un ingredient donne (1 oeuf = 60 g, 1 c. a soupe de farine = 8 g) : permet d'additionner des grammes et des pieces [D36].",
+          fields: [
+            { n: "ingredientId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "unitId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "grams", t: "Float", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "ingredient",
+              t: "Ingredient",
+              a: "@relation(fields: [ingredientId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "unit",
+              t: "Unit",
+              a: "@relation(fields: [unitId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@id([ingredientId, unitId])"],
+          d: ["D36"],
+        },
+        {
+          name: "Tag",
+          domain: "REFERENTIELS (globaux, traduits) [D09] [D34] [D36]",
+          doc: "Tag. Les tags d'espace ont un nom unique (slug) dans leur espace ; les tags globaux ont un slug unique et des traductions (index partiel pour les globaux).",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "scope", t: "TagScope", a: "", c: "", rel: false, enum: true, d: [] },
+            {
+              n: "spaceId",
+              t: "String?",
+              a: "",
+              c: "renseigne seulement pour SPACE",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "name",
+              t: "String",
+              a: "",
+              c: "nom affiche (tag d'espace) ; nom par defaut (global)",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "slug",
+              t: "String",
+              a: "",
+              c: "minuscules, sans accents",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "createdById", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "mergedIntoId",
+              t: "String?",
+              a: "",
+              c: "fusion par un moderateur ou l'admin",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "deletedAt", t: "DateTime?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "space",
+              t: "Space?",
+              a: "@relation(fields: [spaceId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "createdBy",
+              t: "User?",
+              a: "@relation(fields: [createdById], references: [id], onDelete: SetNull)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "mergedInto",
+              t: "Tag?",
+              a: '@relation("TagMerge", fields: [mergedIntoId], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "mergedFrom",
+              t: "Tag[]",
+              a: '@relation("TagMerge")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "translations",
+              t: "TagTranslation[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "globalUsages",
+              t: "RecipeGlobalTag[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "spaceUsages",
+              t: "RecipeSpaceTag[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "rules", t: "MealGenerationRule[]", a: "", c: "", rel: true, enum: false, d: [] },
+            { n: "pins", t: "MealSlotPin[]", a: "", c: "", rel: true, enum: false, d: [] },
+          ],
+          attrs: ["@@unique([spaceId, slug])", "@@index([scope, deletedAt])"],
+          d: [],
+        },
+        {
+          name: "TagTranslation",
+          domain: "REFERENTIELS (globaux, traduits) [D09] [D34] [D36]",
+          doc: "",
+          fields: [
+            { n: "tagId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "locale", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "name", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "tag",
+              t: "Tag",
+              a: "@relation(fields: [tagId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@id([tagId, locale])"],
+          d: [],
+        },
+        {
+          name: "Recipe",
+          domain: "MODULE RECETTES [D03] [D04] [D05] [D17] [D19] [D24] [D26] [D30] [D39]",
+          doc: "Recette. Une seule source de verite : elle vit dans son espace d'origine (homeSpaceId) et apparait ailleurs par RecipeShare [D03]. Rendement : yieldQuantity dans yieldUnit (null = portions) [D24]. Adaptation : copie liee a l'original ; adaptedFromRevision = derniere revision de l'original avec laquelle l'adaptation est alignee (badge \"l'original a change\" si l'original l'a depassee) [D17]. Compteurs (fois planifiee, derniere fois cuisinee) calcules depuis MealSlot, pas stockes [D39].",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "homeSpaceId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "authorId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "title", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "description", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "notes", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "sourceUrl", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "imageKey", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "yieldQuantity",
+              t: "Float",
+              a: "@default(4)",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "yieldUnitId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "prepMinutes", t: "Int?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "cookMinutes", t: "Int?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "restMinutes", t: "Int?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "isBase",
+              t: "Boolean",
+              a: "@default(false)",
+              c: "sauce, pate... : pas proposee seule au generateur [D24]",
+              rel: false,
+              enum: false,
+              d: ["D24"],
+            },
+            {
+              n: "currentRevision",
+              t: "Int",
+              a: "@default(1)",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "adaptedFromId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "adaptedFromRevision", t: "Int?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "updatedAt",
+              t: "DateTime",
+              a: "@updatedAt",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "deletedAt", t: "DateTime?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "homeSpace",
+              t: "Space",
+              a: '@relation("RecipeHomeSpace", fields: [homeSpaceId], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "author",
+              t: "User",
+              a: '@relation("RecipeAuthor", fields: [authorId], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "yieldUnit",
+              t: "Unit?",
+              a: '@relation("RecipeYieldUnit", fields: [yieldUnitId], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "adaptedFrom",
+              t: "Recipe?",
+              a: '@relation("RecipeAdaptation", fields: [adaptedFromId], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "adaptations",
+              t: "Recipe[]",
+              a: '@relation("RecipeAdaptation")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "blocks",
+              t: "RecipeBlock[]",
+              a: '@relation("RecipeBlocks")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "usedIn",
+              t: "RecipeBlock[]",
+              a: '@relation("BlockSubRecipe")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "revisions", t: "RecipeRevision[]", a: "", c: "", rel: true, enum: false, d: [] },
+            { n: "shares", t: "RecipeShare[]", a: "", c: "", rel: true, enum: false, d: [] },
+            {
+              n: "shareRequests",
+              t: "RecipeShareRequest[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "globalTags",
+              t: "RecipeGlobalTag[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "spaceTags", t: "RecipeSpaceTag[]", a: "", c: "", rel: true, enum: false, d: [] },
+            {
+              n: "suggestions",
+              t: "RecipeSuggestion[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "mealSlots", t: "MealSlot[]", a: "", c: "", rel: true, enum: false, d: [] },
+            {
+              n: "mealIdeas",
+              t: "MealIdea[]",
+              a: '@relation("IdeaRecipe")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "ideasConverted",
+              t: "MealIdea[]",
+              a: '@relation("IdeaConverted")',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "rules", t: "MealGenerationRule[]", a: "", c: "", rel: true, enum: false, d: [] },
+          ],
+          attrs: [
+            "@@index([homeSpaceId, deletedAt])",
+            "@@index([authorId, deletedAt])",
+            "@@index([adaptedFromId])",
+          ],
+          d: ["D03", "D17", "D24", "D39"],
+        },
+        {
+          name: "RecipeBlock",
+          domain: "MODULE RECETTES [D03] [D04] [D05] [D17] [D19] [D24] [D26] [D30] [D39]",
+          doc: "Bloc d'une recette. Une recette simple = un bloc LOCAL sans titre. RECIPE : subRecipeId + subQuantity dans l'unite de rendement de la sous-recette (subUnitId, null = portions). Pas de boucle, 3 niveaux maximum (verifie par l'application).",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "recipeId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "position", t: "Int", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "kind", t: "BlockKind", a: "", c: "", rel: false, enum: true, d: [] },
+            { n: "title", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "subRecipeId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "subQuantity", t: "Float?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "subUnitId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "recipe",
+              t: "Recipe",
+              a: '@relation("RecipeBlocks", fields: [recipeId], references: [id], onDelete: Cascade)',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "subRecipe",
+              t: "Recipe?",
+              a: '@relation("BlockSubRecipe", fields: [subRecipeId], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "subUnit",
+              t: "Unit?",
+              a: '@relation("BlockSubUnit", fields: [subUnitId], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "ingredients",
+              t: "RecipeIngredient[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "steps", t: "RecipeStep[]", a: "", c: "", rel: true, enum: false, d: [] },
+          ],
+          attrs: ["@@unique([recipeId, position])", "@@index([subRecipeId])"],
+          d: [],
+        },
+        {
+          name: "RecipeIngredient",
+          domain: "MODULE RECETTES [D03] [D04] [D05] [D17] [D19] [D24] [D26] [D30] [D39]",
+          doc: "",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "blockId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "position", t: "Int", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "ingredientId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "quantity",
+              t: "Float?",
+              a: "",
+              c: 'null = "a gout"',
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "unitId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "note",
+              t: "String?",
+              a: "",
+              c: '"finement hache"',
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "optional",
+              t: "Boolean",
+              a: "@default(false)",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "block",
+              t: "RecipeBlock",
+              a: "@relation(fields: [blockId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "ingredient",
+              t: "Ingredient",
+              a: "@relation(fields: [ingredientId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "unit",
+              t: "Unit?",
+              a: "@relation(fields: [unitId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@unique([blockId, position])", "@@index([ingredientId])"],
+          d: [],
+        },
+        {
+          name: "RecipeStep",
+          domain: "MODULE RECETTES [D03] [D04] [D05] [D17] [D19] [D24] [D26] [D30] [D39]",
+          doc: "",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "blockId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "position", t: "Int", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "text", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "block",
+              t: "RecipeBlock",
+              a: "@relation(fields: [blockId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@unique([blockId, position])"],
+          d: [],
+        },
+        {
+          name: "RecipeRevision",
+          domain: "MODULE RECETTES [D03] [D04] [D05] [D17] [D19] [D24] [D26] [D30] [D39]",
+          doc: "Instantane complet d'une recette a un moment donne [D05] [D30] : { title, yield, times, isBase, blocks: [{ kind, title, sub, ingredients, steps }] }. Les tags ne sont pas versionnes (propres a chaque espace [D19]).",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "recipeId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "number", t: "Int", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "snapshot", t: "Json", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "source", t: "RevisionSource", a: "", c: "", rel: false, enum: true, d: [] },
+            { n: "authorId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "suggestionId",
+              t: "String?",
+              a: "@unique",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "recipe",
+              t: "Recipe",
+              a: "@relation(fields: [recipeId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "author",
+              t: "User",
+              a: "@relation(fields: [authorId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "suggestion",
+              t: "RecipeSuggestion?",
+              a: "@relation(fields: [suggestionId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@unique([recipeId, number])"],
+          d: ["D05", "D19", "D30"],
+        },
+        {
+          name: "RecipeShare",
+          domain: "MODULE RECETTES [D03] [D04] [D05] [D17] [D19] [D24] [D26] [D30] [D39]",
+          doc: "Partage par reference d'une recette dans un autre espace [D03]. Partager une recette composee partage aussi ses sous-recettes [D26]. Retirer d'un espace = removedAt (auteur ou moderateur de cet espace).",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "recipeId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "spaceId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "sharedById", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "sharedAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "viaRecipeId",
+              t: "String?",
+              a: "",
+              c: "partagee automatiquement avec cette recette composee [D26]",
+              rel: false,
+              enum: false,
+              d: ["D26"],
+            },
+            {
+              n: "approvedById",
+              t: "String?",
+              a: "",
+              c: "auteur (ou moderateur si auteur parti) qui a accepte une demande [D81]",
+              rel: false,
+              enum: false,
+              d: ["D81"],
+            },
+            { n: "removedAt", t: "DateTime?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "removedById", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "recipe",
+              t: "Recipe",
+              a: "@relation(fields: [recipeId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "space",
+              t: "Space",
+              a: "@relation(fields: [spaceId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "sharedBy",
+              t: "User",
+              a: '@relation("ShareSharedBy", fields: [sharedById], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "removedBy",
+              t: "User?",
+              a: '@relation("ShareRemovedBy", fields: [removedById], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "approvedBy",
+              t: "User?",
+              a: '@relation("ShareApprovedBy", fields: [approvedById], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@unique([recipeId, spaceId])", "@@index([spaceId, removedAt])"],
+          d: ["D03", "D26"],
+        },
+        {
+          name: "RecipeShareRequest",
+          domain: "MODULE RECETTES [D03] [D04] [D05] [D17] [D19] [D24] [D26] [D30] [D39]",
+          doc: "Demande de partage d'une recette dont on n'est pas l'auteur [D81] : le demandeur est membre de l'espace ou il la voit et de l'espace cible ; l'auteur (ou les moderateurs de l'espace d'origine si l'auteur est parti) accepte ou refuse. Si l'auteur a coche allowMembersToShare, le partage est immediat et aucune demande n'est creee. Une seule PENDING par (recette, espace cible) : index partiel.",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "recipeId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "targetSpaceId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "requesterId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "status",
+              t: "ShareRequestStatus",
+              a: "@default(PENDING)",
+              c: "",
+              rel: false,
+              enum: true,
+              d: [],
+            },
+            { n: "decidedById", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "decidedAt", t: "DateTime?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "recipe",
+              t: "Recipe",
+              a: "@relation(fields: [recipeId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "targetSpace",
+              t: "Space",
+              a: "@relation(fields: [targetSpaceId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "requester",
+              t: "User",
+              a: '@relation("ShareRequester", fields: [requesterId], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "decidedBy",
+              t: "User?",
+              a: '@relation("ShareRequestDecider", fields: [decidedById], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@index([recipeId, status])"],
+          d: ["D81"],
+        },
+        {
+          name: "RecipeGlobalTag",
+          domain: "MODULE RECETTES [D03] [D04] [D05] [D17] [D19] [D24] [D26] [D30] [D39]",
+          doc: "Tag global attache a la recette elle-meme [D19].",
+          fields: [
+            { n: "recipeId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "tagId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "recipe",
+              t: "Recipe",
+              a: "@relation(fields: [recipeId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "tag",
+              t: "Tag",
+              a: "@relation(fields: [tagId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@id([recipeId, tagId])", "@@index([tagId])"],
+          d: ["D19"],
+        },
+        {
+          name: "RecipeSpaceTag",
+          domain: "MODULE RECETTES [D03] [D04] [D05] [D17] [D19] [D24] [D26] [D30] [D39]",
+          doc: "Tag d'espace attache a la recette DANS un espace [D19] : la meme recette partagee peut etre taguee differemment dans chaque espace.",
+          fields: [
+            { n: "recipeId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "spaceId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "tagId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "recipe",
+              t: "Recipe",
+              a: "@relation(fields: [recipeId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "space",
+              t: "Space",
+              a: "@relation(fields: [spaceId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "tag",
+              t: "Tag",
+              a: "@relation(fields: [tagId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@id([recipeId, spaceId, tagId])", "@@index([spaceId, tagId])"],
+          d: ["D19"],
+        },
+        {
+          name: "RecipeSuggestion",
+          domain: "MODULE RECETTES [D03] [D04] [D05] [D17] [D19] [D24] [D26] [D30] [D39]",
+          doc: "Suggestion de modification [D04]. proposed = instantane complet propose (meme forme que RecipeRevision.snapshot) ; le diff se calcule contre baseRevision. spaceId = espace ou la suggestion a ete faite.",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "recipeId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "spaceId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "proposerId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "baseRevision", t: "Int", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "proposed", t: "Json", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "message", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "status",
+              t: "SuggestionStatus",
+              a: "@default(PENDING)",
+              c: "",
+              rel: false,
+              enum: true,
+              d: [],
+            },
+            { n: "decidedById", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "decidedAt", t: "DateTime?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "convertedRecipeId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "recipe",
+              t: "Recipe",
+              a: "@relation(fields: [recipeId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "space",
+              t: "Space",
+              a: "@relation(fields: [spaceId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "proposer",
+              t: "User",
+              a: '@relation("SuggestionProposer", fields: [proposerId], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "decidedBy",
+              t: "User?",
+              a: '@relation("SuggestionDecider", fields: [decidedById], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "revision", t: "RecipeRevision?", a: "", c: "", rel: true, enum: false, d: [] },
+          ],
+          attrs: ["@@index([recipeId, status])", "@@index([proposerId])"],
+          d: ["D04"],
+        },
+        {
+          name: "MealPlanSettings",
+          domain: "MODULE PLANNING [D02] [D11]",
+          doc: "Reglages du planning d'un espace [D11]. editRole = role minimal pour modifier les repas (remplace editableByMembers de la V1).",
+          fields: [
+            { n: "spaceId", t: "String", a: "@id", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "mealTimes",
+              t: "MealTime[]",
+              a: "@default([LUNCH, DINNER])",
+              c: "",
+              rel: false,
+              enum: true,
+              d: [],
+            },
+            {
+              n: "defaultServings",
+              t: "Int",
+              a: "@default(4)",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "editRole",
+              t: "SpaceRole",
+              a: "@default(MEMBER)",
+              c: "",
+              rel: false,
+              enum: true,
+              d: [],
+            },
+            {
+              n: "weekStartsOn",
+              t: "Weekday",
+              a: "@default(MON)",
+              c: "",
+              rel: false,
+              enum: true,
+              d: [],
+            },
+            {
+              n: "updatedAt",
+              t: "DateTime",
+              a: "@updatedAt",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "space",
+              t: "Space",
+              a: "@relation(fields: [spaceId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: [],
+          d: ["D11"],
+        },
+        {
+          name: "MealPlan",
+          domain: "MODULE PLANNING [D02] [D11]",
+          doc: "Planning d'un espace. Un seul ACTIVE par espace (index partiel), les autres archives.",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "spaceId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "startDate", t: "DateTime", a: "@db.Date", c: "", rel: false, enum: false, d: [] },
+            { n: "endDate", t: "DateTime", a: "@db.Date", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "status",
+              t: "MealPlanStatus",
+              a: "@default(ACTIVE)",
+              c: "",
+              rel: false,
+              enum: true,
+              d: [],
+            },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "updatedAt",
+              t: "DateTime",
+              a: "@updatedAt",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "space",
+              t: "Space",
+              a: "@relation(fields: [spaceId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "slots", t: "MealSlot[]", a: "", c: "", rel: true, enum: false, d: [] },
+          ],
+          attrs: ["@@index([spaceId, status])"],
+          d: [],
+        },
+        {
+          name: "MealSlot",
+          domain: "MODULE PLANNING [D02] [D11]",
+          doc: "",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "planId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "date", t: "DateTime", a: "@db.Date", c: "", rel: false, enum: false, d: [] },
+            { n: "mealTime", t: "MealTime", a: "", c: "", rel: false, enum: true, d: [] },
+            {
+              n: "kind",
+              t: "MealSlotKind",
+              a: "@default(EMPTY)",
+              c: "",
+              rel: false,
+              enum: true,
+              d: [],
+            },
+            { n: "recipeId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "text", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "comment", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "servings",
+              t: "Int?",
+              a: "",
+              c: "null = defaultServings de l'espace",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "disabled",
+              t: "Boolean",
+              a: "@default(false)",
+              c: "on ne mange pas ensemble",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "locked",
+              t: "Boolean",
+              a: "@default(false)",
+              c: "la generation ne le remplace pas",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "updatedById", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "updatedAt",
+              t: "DateTime",
+              a: "@updatedAt",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "plan",
+              t: "MealPlan",
+              a: "@relation(fields: [planId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "recipe",
+              t: "Recipe?",
+              a: "@relation(fields: [recipeId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "updatedBy",
+              t: "User?",
+              a: "@relation(fields: [updatedById], references: [id], onDelete: SetNull)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: [
+            "@@unique([planId, date, mealTime])",
+            '@@index([recipeId, date]) // compteurs "fois planifiee", "derniere fois" [D39]',
+          ],
+          d: [],
+        },
+        {
+          name: "MealIdea",
+          domain: "MODULE PLANNING [D02] [D11]",
+          doc: "Idee de repas, convertible en recette [F-MPL-4].",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "spaceId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "name", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "comment", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "recipeId",
+              t: "String?",
+              a: "",
+              c: "idee rattachee a une recette existante",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "convertedRecipeId",
+              t: "String?",
+              a: "",
+              c: "recette creee a partir de l'idee",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "createdById", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "updatedAt",
+              t: "DateTime",
+              a: "@updatedAt",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "deletedAt", t: "DateTime?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "space",
+              t: "Space",
+              a: "@relation(fields: [spaceId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "recipe",
+              t: "Recipe?",
+              a: '@relation("IdeaRecipe", fields: [recipeId], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "convertedRecipe",
+              t: "Recipe?",
+              a: '@relation("IdeaConverted", fields: [convertedRecipeId], references: [id])',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "createdBy",
+              t: "User?",
+              a: "@relation(fields: [createdById], references: [id], onDelete: SetNull)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@index([spaceId, deletedAt])"],
+          d: ["F-MPL-4"],
+        },
+        {
+          name: "MealGenerationProfile",
+          domain: "MODULE PLANNING [D02] [D11]",
+          doc: "Jeu de parametres de generation (V1 : MealGenerationParams), repris tel quel.",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "spaceId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "name", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "description", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "cooldownDays",
+              t: "Int",
+              a: "@default(3)",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "useIdeas",
+              t: "Boolean",
+              a: "@default(true)",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "isDefault",
+              t: "Boolean",
+              a: "@default(false)",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "updatedAt",
+              t: "DateTime",
+              a: "@updatedAt",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "deletedAt", t: "DateTime?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "space",
+              t: "Space",
+              a: "@relation(fields: [spaceId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "exclusions",
+              t: "MealSlotExclusion[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "rules", t: "MealGenerationRule[]", a: "", c: "", rel: true, enum: false, d: [] },
+            { n: "pins", t: "MealSlotPin[]", a: "", c: "", rel: true, enum: false, d: [] },
+          ],
+          attrs: ["@@index([spaceId, deletedAt])"],
+          d: [],
+        },
+        {
+          name: "MealSlotExclusion",
+          domain: "MODULE PLANNING [D02] [D11]",
+          doc: "",
+          fields: [
+            { n: "profileId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "weekday", t: "Weekday", a: "", c: "", rel: false, enum: true, d: [] },
+            { n: "mealTime", t: "MealTime", a: "", c: "", rel: false, enum: true, d: [] },
+            {
+              n: "profile",
+              t: "MealGenerationProfile",
+              a: "@relation(fields: [profileId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@id([profileId, weekday, mealTime])"],
+          d: [],
+        },
+        {
+          name: "MealGenerationRule",
+          domain: "MODULE PLANNING [D02] [D11]",
+          doc: "Regle de generation : sur un tag (global ou de l'espace) OU sur une recette, jamais les deux (CHECK SQL).",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "profileId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "tagId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "recipeId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "weight",
+              t: "Float",
+              a: "@default(1)",
+              c: "0 a 2",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "mealTime",
+              t: "MealTime?",
+              a: "",
+              c: "null = tous les repas",
+              rel: false,
+              enum: true,
+              d: [],
+            },
+            { n: "frequencyMin", t: "Int?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "frequencyMax", t: "Int?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "frequencyPer", t: "FrequencyPer?", a: "", c: "", rel: false, enum: true, d: [] },
+            { n: "tagCooldownDays", t: "Int?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "profile",
+              t: "MealGenerationProfile",
+              a: "@relation(fields: [profileId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "tag",
+              t: "Tag?",
+              a: "@relation(fields: [tagId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "recipe",
+              t: "Recipe?",
+              a: "@relation(fields: [recipeId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@index([profileId])"],
+          d: [],
+        },
+        {
+          name: "MealSlotPin",
+          domain: "MODULE PLANNING [D02] [D11]",
+          doc: "",
+          fields: [
+            { n: "profileId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "weekday", t: "Weekday", a: "", c: "", rel: false, enum: true, d: [] },
+            { n: "mealTime", t: "MealTime", a: "", c: "", rel: false, enum: true, d: [] },
+            { n: "tagId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "profile",
+              t: "MealGenerationProfile",
+              a: "@relation(fields: [profileId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "tag",
+              t: "Tag",
+              a: "@relation(fields: [tagId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@id([profileId, weekday, mealTime])"],
+          d: [],
+        },
+        {
+          name: "Notification",
+          domain: "SOCLE - NOTIFICATIONS, ACTIVITE, EXPORTS",
+          doc: "",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "userId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "spaceId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "moduleCode", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "type", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "category", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "actorId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "targetType", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "targetId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "data",
+              t: "Json?",
+              a: "",
+              c: "parametres du message traduit cote client [D34]",
+              rel: false,
+              enum: false,
+              d: ["D34"],
+            },
+            { n: "url", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "groupKey", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "readAt", t: "DateTime?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "user",
+              t: "User",
+              a: '@relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "actor",
+              t: "User?",
+              a: '@relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)',
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "space",
+              t: "Space?",
+              a: "@relation(fields: [spaceId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: [
+            "@@index([userId, readAt, createdAt])",
+            "@@index([userId, groupKey, createdAt])",
+            "@@index([createdAt])",
+          ],
+          d: [],
+        },
+        {
+          name: "NotificationPreference",
+          domain: "SOCLE - NOTIFICATIONS, ACTIVITE, EXPORTS",
+          doc: "Preference par categorie, globale (spaceId null) ou par espace. Unicite assuree par deux index partiels (voir fin de fichier).",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "userId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "spaceId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "category", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "enabled",
+              t: "Boolean",
+              a: "@default(true)",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "updatedAt",
+              t: "DateTime",
+              a: "@updatedAt",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "user",
+              t: "User",
+              a: "@relation(fields: [userId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "space",
+              t: "Space?",
+              a: "@relation(fields: [spaceId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@index([userId])"],
+          d: [],
+        },
+        {
+          name: "ActivityEvent",
+          domain: "SOCLE - NOTIFICATIONS, ACTIVITE, EXPORTS",
+          doc: "Fil d'activite d'un espace (dont \"X a exporte l'espace\" [D37]).",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "spaceId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "actorId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "moduleCode", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "type", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "targetType", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "targetId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "data", t: "Json?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "space",
+              t: "Space",
+              a: "@relation(fields: [spaceId], references: [id], onDelete: Cascade)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "actor",
+              t: "User?",
+              a: "@relation(fields: [actorId], references: [id], onDelete: SetNull)",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@index([spaceId, createdAt])"],
+          d: ["D37"],
+        },
+        {
+          name: "DataExport",
+          domain: "SOCLE - NOTIFICATIONS, ACTIVITE, EXPORTS",
+          doc: "Export de donnees [D37] : ses recettes, ou tout l'espace (OWNER, un par jour). L'archive est generee en tache de fond et stockee dans MinIO un temps limite.",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "scope", t: "ExportScope", a: "", c: "", rel: false, enum: true, d: [] },
+            { n: "requestedById", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "spaceId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "status",
+              t: "ExportStatus",
+              a: "@default(PENDING)",
+              c: "",
+              rel: false,
+              enum: true,
+              d: [],
+            },
+            { n: "fileKey", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "expiresAt", t: "DateTime?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "requestedBy",
+              t: "User",
+              a: "@relation(fields: [requestedById], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "space",
+              t: "Space?",
+              a: "@relation(fields: [spaceId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@index([spaceId, createdAt])", "@@index([requestedById, createdAt])"],
+          d: ["D37"],
+        },
+        {
+          name: "AdminUser",
+          domain: "PLATEFORME - ADMINISTRATION, CHANGELOG",
+          doc: "",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "email", t: "String", a: "@unique", c: "", rel: false, enum: false, d: [] },
+            { n: "username", t: "String", a: "@unique", c: "", rel: false, enum: false, d: [] },
+            { n: "password", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "totpSecret", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "totpEnabled",
+              t: "Boolean",
+              a: "@default(false)",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "updatedAt",
+              t: "DateTime",
+              a: "@updatedAt",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "lastLoginAt", t: "DateTime?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "moduleGrants", t: "SpaceModule[]", a: "", c: "", rel: true, enum: false, d: [] },
+            {
+              n: "requestsDecided",
+              t: "ModuleAccessRequest[]",
+              a: "",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+            { n: "auditLogs", t: "AdminAuditLog[]", a: "", c: "", rel: true, enum: false, d: [] },
+          ],
+          attrs: [],
+          d: [],
+        },
+        {
+          name: "AdminSession",
+          domain: "PLATEFORME - ADMINISTRATION, CHANGELOG",
+          doc: "",
+          fields: [
+            { n: "id", t: "String", a: "@id", c: "", rel: false, enum: false, d: [] },
+            { n: "sid", t: "String", a: "@unique", c: "", rel: false, enum: false, d: [] },
+            { n: "data", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "expiresAt", t: "DateTime", a: "", c: "", rel: false, enum: false, d: [] },
+          ],
+          attrs: ["@@index([expiresAt])"],
+          d: [],
+        },
+        {
+          name: "AdminAuditLog",
+          domain: "PLATEFORME - ADMINISTRATION, CHANGELOG",
+          doc: 'Journal d\'audit admin. action = cle texte ("module.granted", "ingredient.merged"...).',
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "adminId", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "action", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "targetType", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "targetId", t: "String?", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "data", t: "Json?", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "admin",
+              t: "AdminUser",
+              a: "@relation(fields: [adminId], references: [id])",
+              c: "",
+              rel: true,
+              enum: false,
+              d: [],
+            },
+          ],
+          attrs: ["@@index([adminId, createdAt])", "@@index([action, createdAt])"],
+          d: [],
+        },
+        {
+          name: "ChangelogEntry",
+          domain: "PLATEFORME - ADMINISTRATION, CHANGELOG",
+          doc: "",
+          fields: [
+            {
+              n: "id",
+              t: "String",
+              a: "@id @default(uuid())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "version", t: "String", a: "@unique", c: "", rel: false, enum: false, d: [] },
+            { n: "title", t: "String", a: "", c: "", rel: false, enum: false, d: [] },
+            { n: "content", t: "Json", a: "", c: "", rel: false, enum: false, d: [] },
+            {
+              n: "publishedAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "createdAt",
+              t: "DateTime",
+              a: "@default(now())",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            {
+              n: "updatedAt",
+              t: "DateTime",
+              a: "@updatedAt",
+              c: "",
+              rel: false,
+              enum: false,
+              d: [],
+            },
+            { n: "deletedAt", t: "DateTime?", a: "", c: "", rel: false, enum: false, d: [] },
+          ],
+          attrs: ["@@index([publishedAt])"],
+          d: [],
+        },
+      ],
+      enums: [
+        {
+          name: "Ambiance",
+          domain: "SOCLE - COMPTES",
+          values: [
+            ["BRAISE", ""],
+            ["SOUSBOIS", ""],
+            ["POTAGER", ""],
+          ],
+        },
+        {
+          name: "ColorMode",
+          domain: "SOCLE - COMPTES",
+          values: [
+            ["SYSTEM", ""],
+            ["LIGHT", ""],
+            ["DARK", ""],
+          ],
+        },
+        {
+          name: "Density",
+          domain: "SOCLE - COMPTES",
+          values: [
+            ["COMFORTABLE", ""],
+            ["COMPACT", ""],
+          ],
+        },
+        {
+          name: "AuthTokenKind",
+          domain: "SOCLE - COMPTES",
+          values: [
+            ["VERIFY_EMAIL", ""],
+            ["RESET_PASSWORD", ""],
+            ["TEMP_PASSWORD", "genere par un admin sans SMTP : 24 h, usage unique [D134]"],
+          ],
+        },
+        {
+          name: "SpaceKind",
+          domain: "SOCLE - ESPACES, MEMBRES, INVITATIONS",
+          values: [
+            ["PERSONAL", ""],
+            ["GROUP", ""],
+          ],
+        },
+        {
+          name: "SpaceRole",
+          domain: "SOCLE - ESPACES, MEMBRES, INVITATIONS",
+          values: [
+            ["MEMBER", ""],
+            ["MODERATOR", ""],
+            ["OWNER", ""],
+          ],
+        },
+        {
+          name: "InvitationStatus",
+          domain: "SOCLE - ESPACES, MEMBRES, INVITATIONS",
+          values: [
+            ["PENDING", ""],
+            ["ACCEPTED", ""],
+            ["DECLINED", ""],
+            ["CANCELLED", ""],
+          ],
+        },
+        {
+          name: "OwnershipTransferStatus",
+          domain: "SOCLE - ESPACES, MEMBRES, INVITATIONS",
+          values: [
+            ["PENDING", ""],
+            ["ACCEPTED", ""],
+            ["DECLINED", ""],
+            ["CANCELLED", ""],
+          ],
+        },
+        {
+          name: "ModuleStatus",
+          domain: "SOCLE - MODULES [D10] [D33] [D40]",
+          values: [
+            ["AVAILABLE", ""],
+            ["BETA", ""],
+            ["COMING_SOON", ""],
+            ["RETIRED", ""],
+          ],
+        },
+        {
+          name: "AccessRequestStatus",
+          domain: "SOCLE - MODULES [D10] [D33] [D40]",
+          values: [
+            ["PENDING", ""],
+            ["APPROVED", ""],
+            ["REJECTED", ""],
+            ["CANCELLED", ""],
+          ],
+        },
+        {
+          name: "UnitDimension",
+          domain: "REFERENTIELS (globaux, traduits) [D09] [D34] [D36]",
+          values: [
+            ["MASS", "base : gramme"],
+            ["VOLUME", "base : millilitre (les cuilleres sont des volumes)"],
+            ["COUNT", "piece, tranche, gousse..."],
+            ["NONE", '"a gout", "selon besoin" : pas de quantite convertible'],
+          ],
+        },
+        {
+          name: "IngredientStatus",
+          domain: "REFERENTIELS (globaux, traduits) [D09] [D34] [D36]",
+          values: [
+            ["ACTIVE", "verifie par l'admin"],
+            ["NEW", "cree a la volee, utilisable tout de suite, a revoir [D09]"],
+            [
+              "MERGED",
+              "fusionne (mergedIntoId) : synonyme propose a la saisie, remplace par la cible [D120]",
+            ],
+          ],
+        },
+        {
+          name: "TagScope",
+          domain: "REFERENTIELS (globaux, traduits) [D09] [D34] [D36]",
+          values: [
+            ["GLOBAL", "liste courte curee par l'admin, traduite [D34]"],
+            ["SPACE", "creee librement par les membres d'un espace [D08]"],
+          ],
+        },
+        {
+          name: "BlockKind",
+          domain: "MODULE RECETTES [D03] [D04] [D05] [D17] [D19] [D24] [D26] [D30] [D39]",
+          values: [
+            ["LOCAL", "ses propres ingredients et etapes"],
+            ["RECIPE", "lien vivant vers une autre recette [D24]"],
+          ],
+        },
+        {
+          name: "RevisionSource",
+          domain: "MODULE RECETTES [D03] [D04] [D05] [D17] [D19] [D24] [D26] [D30] [D39]",
+          values: [
+            ["CREATE", ""],
+            ["EDIT", ""],
+            ["SUGGESTION", "suggestion acceptee [D04]"],
+            ["RESTORE", ""],
+            ["IMPORT", ""],
+          ],
+        },
+        {
+          name: "ShareRequestStatus",
+          domain: "MODULE RECETTES [D03] [D04] [D05] [D17] [D19] [D24] [D26] [D30] [D39]",
+          values: [
+            ["PENDING", ""],
+            ["APPROVED", ""],
+            ["REJECTED", ""],
+            ["CANCELLED", ""],
+          ],
+        },
+        {
+          name: "SuggestionStatus",
+          domain: "MODULE RECETTES [D03] [D04] [D05] [D17] [D19] [D24] [D26] [D30] [D39]",
+          values: [
+            ["PENDING", ""],
+            ["ACCEPTED", "nouvelle revision creee"],
+            ["REJECTED", "rien n'est cree [D04]"],
+            ["WITHDRAWN", "retiree par son auteur"],
+            ["CONVERTED", "transformee en adaptation par son auteur [D04]"],
+          ],
+        },
+        {
+          name: "MealTime",
+          domain: "MODULE PLANNING [D02] [D11]",
+          values: [
+            ["BREAKFAST", ""],
+            ["LUNCH", ""],
+            ["SNACK", ""],
+            ["DINNER", ""],
+          ],
+        },
+        {
+          name: "Weekday",
+          domain: "MODULE PLANNING [D02] [D11]",
+          values: [
+            ["MON", ""],
+            ["TUE", ""],
+            ["WED", ""],
+            ["THU", ""],
+            ["FRI", ""],
+            ["SAT", ""],
+            ["SUN", ""],
+          ],
+        },
+        {
+          name: "MealPlanStatus",
+          domain: "MODULE PLANNING [D02] [D11]",
+          values: [
+            ["ACTIVE", ""],
+            ["ARCHIVED", ""],
+          ],
+        },
+        {
+          name: "MealSlotKind",
+          domain: "MODULE PLANNING [D02] [D11]",
+          values: [
+            ["EMPTY", ""],
+            ["RECIPE", ""],
+            ["TEXT", ""],
+          ],
+        },
+        {
+          name: "FrequencyPer",
+          domain: "MODULE PLANNING [D02] [D11]",
+          values: [
+            ["PER_WEEK", ""],
+            ["PER_PLAN", ""],
+          ],
+        },
+        {
+          name: "ExportScope",
+          domain: "SOCLE - NOTIFICATIONS, ACTIVITE, EXPORTS",
+          values: [
+            ["MY_RECIPES", ""],
+            ["SPACE", ""],
+          ],
+        },
+        {
+          name: "ExportStatus",
+          domain: "SOCLE - NOTIFICATIONS, ACTIVITE, EXPORTS",
+          values: [
+            ["PENDING", ""],
+            ["READY", ""],
+            ["FAILED", ""],
+            ["EXPIRED", ""],
+          ],
+        },
+      ],
+      constraints:
+        '1. Un seul OWNER actif par espace :\n   CREATE UNIQUE INDEX membership_one_owner ON "Membership"("spaceId")\n     WHERE role = \'OWNER\' AND "leftAt" IS NULL;\n2. Espace perso <=> personalUserId :\n   CHECK ((kind = \'PERSONAL\') = ("personalUserId" IS NOT NULL)) sur "Space".\n3. tintIndex entre 1 et 5 : CHECK ("tintIndex" BETWEEN 1 AND 5).\n4. Une invitation PENDING par (espace, invite) :\n   UNIQUE ("spaceId", "inviteeId") WHERE status = \'PENDING\'.\n5. Une demande d\'acces PENDING par (espace, module) :\n   UNIQUE ("spaceId", "moduleCode") WHERE status = \'PENDING\'.\n6. Tags globaux : slug unique quand spaceId est null ; et\n   CHECK ((scope = \'SPACE\') = ("spaceId" IS NOT NULL)).\n7. Bloc : CHECK ((kind = \'RECIPE\') = ("subRecipeId" IS NOT NULL AND "subQuantity" IS NOT NULL)).\n8. Regle de generation : CHECK (num_nonnulls("tagId", "recipeId") = 1).\n9. Un seul planning ACTIVE par espace : UNIQUE ("spaceId") WHERE status = \'ACTIVE\'.\n10. Preferences de notification :\n    UNIQUE ("userId", category) WHERE "spaceId" IS NULL ;\n    UNIQUE ("userId", "spaceId", category) WHERE "spaceId" IS NOT NULL.\n12. Une demande de partage PENDING par (recette, espace cible) :\n    UNIQUE ("recipeId", "targetSpaceId") WHERE status = \'PENDING\'.\n11. Slot : CHECK ((kind = \'RECIPE\') = ("recipeId" IS NOT NULL)).\n13. Une proposition de transfert de propriete PENDING par espace [D92] :\n    UNIQUE ("spaceId") WHERE status = \'PENDING\'.\n14. Ingredient fusionne [D120] : CHECK ((status = \'MERGED\') = ("mergedIntoId" IS NOT NULL)).\nRegles verifiees par l\'application (pas en SQL) : pas de boucle entre\nrecettes composees et 3 niveaux maximum [D24] ; un export d\'espace par jour\n[D37] ; duree d\'un lien d\'invitation de 1, 7 ou 30 jours [D94] ; le\ndestinataire d\'un transfert de propriete est un membre actif [D92] ; les\ncles de User.homeWidgets existent dans le registre et leur module est actif\n(sinon le widget est ignore) ; visibilite d\'une recette = espace d\'origine ou partage actif [D03] ;\na la purge d\'un espace, ses recettes partagees ailleurs sont rapatriees dans\nl\'espace perso de leur auteur (homeSpaceId) [D83].\n',
+    };
+    function esc(s) {
+      return String(s).replace(/[&<>"]/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+      });
+    }
+    var short = function (d) {
+      return d.replace(/^(SOCLE|MODULE|PLATEFORME) - /, "").replace(/ \[.*$/, "");
+    };
+    var nCons = (DATA.constraints.match(/^\d+\./gm) || []).length;
+    document.getElementById("facts").innerHTML = [
+      [DATA.models.length, "tables"],
+      [DATA.enums.length, "enumerations"],
+      [DATA.domains.length, "domaines"],
+      [nCons, "contraintes SQL en plus"],
+    ]
+      .map(function (f) {
+        return '<div class="fact"><b>' + f[0] + "</b><span>" + f[1] + "</span></div>";
+      })
+      .join("");
+    var state = { q: "", d: "all" };
+    try {
+      var s = JSON.parse(localStorage.getItem("fm-model-filter") || "null");
+      if (s) state = s;
+    } catch (e) {}
+    function chips() {
+      var items = [["all", "Tous"]].concat(
+        DATA.domains.map(function (d) {
+          return [d, short(d)];
+        })
+      );
+      document.getElementById("domains").innerHTML = items
+        .map(function (it) {
+          return (
+            '<button type="button" class="chip" data-d="' +
+            esc(it[0]) +
+            '" aria-pressed="' +
+            (state.d === it[0]) +
+            '">' +
+            esc(it[1]) +
+            "</button>"
+          );
+        })
+        .join("");
+    }
+    function card(m) {
+      var fields = m.fields
+        .map(function (f) {
+          var cls = f.rel ? " rel" : f.enum ? " enum" : "";
+          var a = f.a.replace(/@relation\([^)]*\)/, "@relation").trim();
+          return (
+            '<div class="f"><span class="fn">' +
+            esc(f.n) +
+            '</span><span class="ft' +
+            cls +
+            '">' +
+            esc(f.t) +
+            (a ? " " + esc(a) : "") +
+            "</span>" +
+            (f.c ? '<span class="fc">' + esc(f.c) + "</span>" : "") +
+            "</div>"
+          );
+        })
+        .join("");
+      var ds = m.d
+        .map(function (d) {
+          return '<span class="pill d">' + esc(d) + "</span>";
+        })
+        .join("");
+      return (
+        '<details class="model"><summary><span class="mhead"><span class="mname">' +
+        esc(m.name) +
+        '</span><span class="pill">' +
+        esc(short(m.domain)) +
+        "</span>" +
+        ds +
+        "</span>" +
+        (m.doc ? '<span class="mdoc">' + esc(m.doc) + "</span>" : "") +
+        '<span class="small">' +
+        m.fields.length +
+        " champs - toucher pour detailler</span></summary>" +
+        '<div class="fields">' +
+        fields +
+        "</div>" +
+        (m.attrs.length ? '<div class="attrs">' + m.attrs.map(esc).join("<br>") + "</div>" : "") +
+        "</details>"
+      );
+    }
+    function render() {
+      var q = state.q.toLowerCase();
+      var list = DATA.models.filter(function (m) {
+        if (state.d !== "all" && m.domain !== state.d) return false;
+        if (!q) return true;
+        return JSON.stringify(m).toLowerCase().indexOf(q) >= 0;
+      });
+      document.getElementById("cards").innerHTML =
+        list.map(card).join("") || '<p class="small">Aucune table ne correspond.</p>';
+      document.getElementById("count").textContent =
+        list.length + " / " + DATA.models.length + " tables";
+      chips();
+      try {
+        localStorage.setItem("fm-model-filter", JSON.stringify(state));
+      } catch (e) {}
+    }
+    document.getElementById("q").value = state.q;
+    document.getElementById("q").addEventListener("input", function (e) {
+      state.q = e.target.value;
+      render();
+    });
+    document.getElementById("domains").addEventListener("click", function (e) {
+      var b = e.target.closest("button");
+      if (!b) return;
+      state.d = b.getAttribute("data-d");
+      render();
+    });
+    document.getElementById("enumlist").innerHTML = DATA.enums
+      .map(function (e) {
+        return (
+          '<div class="enum"><b>' +
+          esc(e.name) +
+          "</b> <span>" +
+          e.values
+            .map(function (v) {
+              return esc(v[0]);
+            })
+            .join(" | ") +
+          "</span></div>"
+        );
+      })
+      .join("");
+    document.getElementById("cons").textContent = DATA.constraints;
+    render();
+  })();
+</script>

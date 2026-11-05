@@ -68,4 +68,36 @@ describe("useClickOutside", () => {
     // Should not crash but also should not call callback (ref.current is null)
     expect(callback).not.toHaveBeenCalled();
   });
+
+  it("should call callback when touching outside the ref element", () => {
+    const callback = vi.fn();
+    const ref = createRef<HTMLDivElement>();
+    const div = document.createElement("div");
+    document.body.appendChild(div);
+    Object.defineProperty(ref, "current", { value: div, writable: true });
+
+    renderHook(() => useClickOutside(ref, callback));
+
+    const event = new TouchEvent("touchstart", { bubbles: true });
+    document.body.dispatchEvent(event);
+
+    expect(callback).toHaveBeenCalled();
+    document.body.removeChild(div);
+  });
+
+  it("should not call callback when touching inside the ref element", () => {
+    const callback = vi.fn();
+    const ref = createRef<HTMLDivElement>();
+    const div = document.createElement("div");
+    document.body.appendChild(div);
+    Object.defineProperty(ref, "current", { value: div, writable: true });
+
+    renderHook(() => useClickOutside(ref, callback));
+
+    const event = new TouchEvent("touchstart", { bubbles: true });
+    div.dispatchEvent(event);
+
+    expect(callback).not.toHaveBeenCalled();
+    document.body.removeChild(div);
+  });
 });

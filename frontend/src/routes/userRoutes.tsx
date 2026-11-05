@@ -22,6 +22,8 @@ const CommunityEditPage = lazy(() => import("../pages/CommunityEditPage"));
 const InvitationsPage = lazy(() => import("../pages/InvitationsPage"));
 const NotificationsPage = lazy(() => import("../pages/NotificationsPage"));
 const ProfilePage = lazy(() => import("../pages/ProfilePage"));
+const ChangelogPage = lazy(() => import("../pages/ChangelogPage"));
+const MealPlanPage = lazy(() => import("../pages/MealPlanPage"));
 
 function ProtectedPage({ children }: { children: React.ReactNode }) {
   return (
@@ -157,6 +159,16 @@ const userRoutes = (
         </ProtectedPage>
       }
     />
+    <Route
+      path="/communities/:id/meal-plan"
+      element={
+        <ProtectedPage>
+          <LazyPage>
+            <MealPlanPage />
+          </LazyPage>
+        </ProtectedPage>
+      }
+    />
 
     {/* Profile */}
     <Route
@@ -189,6 +201,18 @@ const userRoutes = (
         <ProtectedPage>
           <LazyPage>
             <InvitationsPage />
+          </LazyPage>
+        </ProtectedPage>
+      }
+    />
+
+    {/* Changelog */}
+    <Route
+      path="/changelog"
+      element={
+        <ProtectedPage>
+          <LazyPage>
+            <ChangelogPage />
           </LazyPage>
         </ProtectedPage>
       }

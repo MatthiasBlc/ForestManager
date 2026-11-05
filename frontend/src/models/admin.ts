@@ -171,6 +171,44 @@ export interface AdminRecipeUpdateInput {
   restTime?: number | null;
 }
 
+// --------------- Admin Changelog Types ---------------
+
+export interface AdminChangelogEntry {
+  id: string;
+  version: string;
+  title: string;
+  content: {
+    features: { text: string }[];
+    improvements: { text: string }[];
+    fixes: { text: string }[];
+  };
+  publishedAt: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface AdminChangelogResponse {
+  data: AdminChangelogEntry[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+    hasMore: boolean;
+  };
+}
+
+export interface AdminChangelogInput {
+  version: string;
+  title: string;
+  content: {
+    features: { text: string }[];
+    improvements: { text: string }[];
+    fixes: { text: string }[];
+  };
+  publishedAt?: string;
+}
+
 // --------------- Dashboard Types ---------------
 
 export interface DashboardStats {

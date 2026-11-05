@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Saumon teriyaki et brocolis, bureau</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap">
+<style>body{margin:0} a{color:var(--accent-text)} a:hover{color:var(--ink)}</style>
+</helmet>
+<div class="fm-root" data-space="1" style="container-type: inline-size; min-height: 900px; display: flex; flex-wrap: wrap; align-items: stretch; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+  <x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{personal}}" active-id="f"></x-import>
+  <x-import component-from-global-scope="ForestUI.ModuleNav" space-name="Famille" subtitle="6 membres" items="{{nav}}" active-id="recipes"></x-import>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column;">
+    <x-import component-from-global-scope="ForestUI.TopBar" title="Recette" unread="{{unread}}" user="Matthias Bouloc"></x-import>
+    <main style="padding: 24px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; max-width: 1180px; width: 100%; box-sizing: border-box;">
+      <div class="fm-cq" style="flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 14px;">
+        <a href="Bureau-E-RECETTES.dc.html" style="font-size: 14px; color: var(--ink-muted);">← Recettes de Famille</a>
+        <div style="height: 220px; border-radius: 14px; background: linear-gradient(140deg, var(--accent-soft), var(--surface));" aria-hidden="true"></div>
+        <h1 style="margin: 0; font: 700 32px/38px var(--font-display);">Saumon teriyaki et brocolis</h1>
+        <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">par Matthias · révision 4</span>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+          <x-import component-from-global-scope="ForestUI.Stepper" label="Portions" default-value="{{two}}" unit="pers."></x-import>
+          <x-import component-from-global-scope="ForestUI.Badge" tone="second" icon="link">Composée</x-import>
+          <x-import component-from-global-scope="ForestUI.Badge" tone="accent">Rapide</x-import>
+          <span style="font-size: 14px; color: var(--ink-muted);">Préparation 15 min · cuisson 20 min</span>
+        </div>
+        <x-import component-from-global-scope="ForestUI.RecipeBlock" kind="linked" title="Sauce teriyaki" quantity="150 ml" factor="{{half}}" ingredients="{{sauce}}" steps="{{sauceSteps}}"></x-import>
+        <x-import component-from-global-scope="ForestUI.RecipeBlock" kind="local" title="Saumon et brocolis" ingredients="{{saumon}}" steps="{{saumonSteps}}"></x-import>
+        <x-import component-from-global-scope="ForestUI.RecipeBlock" kind="local" title="Assemblage" ingredients="{{assemblage}}" steps="{{assemblageSteps}}"></x-import>
+      </div>
+      <aside style="flex: 1 1 280px; display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 14px; background: var(--surface-raised); border: 1px solid var(--line);">
+          <x-import component-from-global-scope="ForestUI.Button" variant="primary" icon="chef-hat" block="{{yes}}">Mode cuisine</x-import>
+          <x-import component-from-global-scope="ForestUI.Button" icon="calendar" block="{{yes}}">Ajouter au planning</x-import>
+          <x-import component-from-global-scope="ForestUI.Button" icon="share" block="{{yes}}">Partager</x-import>
+          <x-import component-from-global-scope="ForestUI.Button" icon="pencil" block="{{yes}}">Modifier</x-import>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); font-size: 14px; line-height: 20px;">
+          <b style="font-size: 15px;">Dans tes espaces</b>
+          <span>Famille (origine) · TOM</span>
+          <b style="font-size: 15px; padding-top: 6px;">Au planning</b>
+          <span>Planifiée 6 fois · dernière fois le 28 octobre</span>
+          <b style="font-size: 15px; padding-top: 6px;">Adaptations</b>
+          <span>Aucune pour l'instant</span>
+          <a href="E-HISTORIQUE.dc.html" style="padding-top: 6px;">Voir les 4 révisions</a>
+        </div>
+      </aside>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      yes: true,
+      two: 2,
+      half: 0.5,
+      unread: 3,
+      personal: { id: 'me', name: 'Matthias' },
+      spaces: [
+        { id: 'foyer', name: 'Foyer', tint: 5 },
+        { id: 'f', name: 'Famille', tint: 1 },
+        { id: 'c', name: 'Colloc', tint: 2 },
+        { id: 't', name: 'TOM', tint: 3, unread: true },
+        { id: 'a', name: 'Amis', tint: 4 }
+      ],
+      nav: [
+        { id: 'recipes', label: 'Recettes', icon: 'book-open' },
+        { id: 'plan', label: 'Planning', icon: 'calendar' },
+        { id: 'members', label: 'Membres', icon: 'users' },
+        { id: 'settings', label: 'Réglages', icon: 'settings' }
+      ],
+      sauce: [
+        { quantity: 100, unit: 'ml', name: 'sauce soja' },
+        { quantity: 60, unit: 'ml', name: 'mirin' },
+        { quantity: 2, unit: 'c. à soupe', name: 'sucre' },
+        { quantity: 1, unit: 'c. à café', name: 'fécule de maïs' }
+      ],
+      sauceSteps: ['Mélanger soja, mirin et sucre.', 'Porter à frémissement, lier 2 min avec la fécule.'],
+      saumon: [
+        { quantity: 2, unit: 'pavés', name: 'saumon' },
+        { quantity: 400, unit: 'g', name: 'brocolis' }
+      ],
+      saumonSteps: ['Cuire les brocolis 6 min à la vapeur.', 'Saisir le saumon 3 min par face.'],
+      assemblage: [
+        { quantity: 1, unit: 'c. à soupe', name: 'sésame' },
+        { quantity: 0.5, unit: 'pièce', name: 'citron vert' }
+      ],
+      assemblageSteps: ['Napper le saumon de sauce.', 'Parsemer de sésame, finir avec un filet de citron vert.']
+    };
+  }
+}
+</script>
+</body>
+</html>

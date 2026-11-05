@@ -48,3 +48,21 @@ export function formatSteps(steps: RawStep[]) {
     instruction: s.instruction,
   }));
 }
+
+/**
+ * Transforme une relation avec deletedAt en { ...fields, isDeleted }.
+ * Pattern reutilise par mealPlan (slot.recipe), mealIdeas (idea.recipe),
+ * mealGenerationParams (rule.recipe).
+ */
+export function formatDeletedRelation<T extends Record<string, unknown>>(
+  relation: (T & { deletedAt: Date | null }) | null,
+  fields: (keyof T)[]
+): Record<string, unknown> | null {
+  if (!relation) return null;
+  const result: Record<string, unknown> = {};
+  for (const key of fields) {
+    result[key as string] = relation[key];
+  }
+  result.isDeleted = relation.deletedAt !== null;
+  return result;
+}

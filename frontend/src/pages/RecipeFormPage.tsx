@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { toastError } from "../utils/toastError";
 import { useForm } from "react-hook-form";
 import { FaArrowLeft, FaSave, FaFileImport } from "react-icons/fa";
 import APIManager, { RecipeInput } from "../network/api";
@@ -247,7 +248,7 @@ const RecipeFormPage = () => {
         navigate(`/recipes/${newRecipe.id}`);
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save recipe");
+      toastError(err, "Failed to save recipe");
     }
   };
 

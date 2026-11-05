@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Profil</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--ink);text-decoration:none}a:hover{color:var(--accent-text)}
+</style>
+</helmet>
+<div class="fm-root" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+<x-import component-from-global-scope="ForestUI.TopBar" title="Profil" on-back="{{noop}}"></x-import>
+<div style="flex-grow: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; padding: 20px 16px;">
+<div style="display: flex; align-items: center; gap: 14px;">
+<x-import component-from-global-scope="ForestUI.Avatar" name="Matthias" tint="{{one}}" size="{{sixtyFour}}"></x-import>
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column;">
+<b style="font-family: var(--font-display); font-size: 20px; line-height: 26px;">Matthias</b>
+<span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">matthias@exemple.fr</span>
+</div>
+<x-import component-from-global-scope="ForestUI.Button" variant="secondary" size="sm">Modifier</x-import>
+</div>
+<nav aria-label="Réglages du profil" style="display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface-raised); overflow: hidden;">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+<a href="{{r.href}}" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 14px; border-bottom: 1px solid var(--line);">
+<x-import component-from-global-scope="ForestUI.Icon" name="{{r.icon}}"></x-import>
+<span style="flex-grow: 1; font-size: 15px; line-height: 22px; font-weight: 600;">{{r.label}}</span>
+<span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">{{r.value}}</span>
+<x-import component-from-global-scope="ForestUI.Icon" name="chevron-right" size="{{sixteen}}"></x-import>
+</a>
+</sc-for>
+</nav>
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<x-import component-from-global-scope="ForestUI.Button" variant="secondary" block="{{yes}}">Se déconnecter</x-import>
+<a href="F-SUPPRIMER-COMPTE.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 44px; font-size: 14px; line-height: 20px; font-weight: 600; color: var(--danger-text);">Supprimer mon compte</a>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      noop: function () {},
+      yes: true, one: 1, sixtyFour: 64, sixteen: 16,
+      rows: [
+        { icon: 'sparkles', label: 'Apparence', value: 'Braise · système', href: 'E-APPARENCE.dc.html' },
+        { icon: 'bell', label: 'Notifications', value: '', href: 'E-NOTIF-PREFERENCES.dc.html' },
+        { icon: 'book-open', label: 'Exporter mes recettes', value: '42 recettes', href: 'F-EXPORT.dc.html' },
+        { icon: 'lock', label: 'Mot de passe', value: '', href: '#' },
+        { icon: 'home', label: 'Langue', value: 'Français', href: '#' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

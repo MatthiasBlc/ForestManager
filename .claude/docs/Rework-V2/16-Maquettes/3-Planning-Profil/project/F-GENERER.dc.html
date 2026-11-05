@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Générer le planning</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="fm-root" data-space="1" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+<x-import component-from-global-scope="ForestUI.TopBar" title="Planning" space="{{space}}" on-space="{{noop}}"></x-import>
+<div style="flex-grow: 1;"></div>
+<x-import component-from-global-scope="ForestUI.TabBar" items="{{tabs}}" active-id="plan"></x-import>
+<x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" contained="{{yes}}" title="Générer le planning" on-close="{{noop}}">
+<div style="display: flex; flex-direction: column; gap: 18px;">
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<span style="font-size: 14px; line-height: 20px; font-weight: 600;">Profil de génération</span>
+<x-import component-from-global-scope="ForestUI.OptionList" label="Profil de génération" options="{{profiles}}" default-value="classic"></x-import>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<span style="font-size: 14px; line-height: 20px; font-weight: 600;">Période</span>
+<x-import component-from-global-scope="ForestUI.SegmentedControl" label="Période" options="{{periods}}" default-value="week"></x-import>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: var(--radius-md); background: var(--surface); border: 1px solid var(--line);">
+<span style="display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 20px;"><x-import component-from-global-scope="ForestUI.Icon" name="lock" size="{{sixteen}}"></x-import>2 repas verrouillés restent en place</span>
+<span style="display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 20px;"><x-import component-from-global-scope="ForestUI.Icon" name="calendar" size="{{sixteen}}"></x-import>11 repas à proposer, du 3 au 8 novembre</span>
+</div>
+<x-import component-from-global-scope="ForestUI.Switch" label="Remplacer aussi les repas déjà prévus"></x-import>
+</div>
+<x-import component-from-global-scope="ForestUI.SheetFooter">
+<x-import component-from-global-scope="ForestUI.Button" variant="primary" icon="sparkles">Générer</x-import>
+</x-import>
+</x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      yes: true, sixteen: 16, noop: function () {},
+      periods: [{ value: 'week', label: 'Cette semaine' }, { value: 'next', label: 'La suivante' }, { value: 'all', label: 'Tout' }],
+      profiles: [
+        { value: 'classic', label: 'Semaine classique', hint: '4 règles · pas le jeudi midi', icon: 'calendar', badge: 'Par défaut' },
+        { value: 'summer', label: 'Été léger', hint: '2 règles · plus de salades', icon: 'sparkles' }
+      ],
+      space: { id: 'f', name: 'Famille', tint: 1 },
+      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }]
+    };
+  }
+}
+</script>
+</body>
+</html>
