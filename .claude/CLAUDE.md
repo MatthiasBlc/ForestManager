@@ -4,10 +4,10 @@ Plateforme d'espaces prives (famille, amis, colocs) organisee en modules. Module
 
 ## Etat actuel
 
-**Chantier en cours : Rework V2. CDC 1.0 valide le 2026-11-05 : phase de realisation (C1 et suivants).**
+**Chantier en cours : Rework V2. CDC 1.0 valide le 2026-11-05 : phase de realisation (C1 et suivants, plan de C1 valide).**
 Point de reprise : `.claude/docs/Rework-V2/README.md`, puis la premiere case non cochee de `4-Roadmap.md`.
 
-La V1 (code actuel) est figee : on ne la modifie que pour un correctif valide explicitement.
+La V1 est obsolete et n'est plus utilisee : elle est supprimee en C1.1 (reference : tag git `v1-final`). Les sections Stack et Commandes ci-dessous decrivent encore la V1 jusqu'a C1.2.
 
 ## Contexte de session
 

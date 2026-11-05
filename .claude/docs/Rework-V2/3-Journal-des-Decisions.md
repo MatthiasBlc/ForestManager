@@ -378,3 +378,26 @@ Points ouverts releves a la preparation de B9 (relecture croisee du CDC, du sche
   - **Statuts des documents de conception** : 12, 13, 15 et le schema ne portent plus de statut propre (PROPOSEE, BROUILLON...) mais renvoient au journal (un statut a un seul endroit). Les questions P1 a P7 de 12 sont marquees tranchees avec leur `D##` (P1 = D83, P2 = D85).
   - **D37** (export natif) et **D130** (selecteur d'espace mobile) : confirmes tels quels, definitifs.
   - **D12 et D14** : jamais ecrites, marquees non utilisees ; leurs sujets sont couverts par D41, D118 et D39.
+
+## Phase C1 - plan du socle (2026-11-05)
+
+Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 2026-11-05.
+
+### D143 - La V2 remplace la V1 des C1 - VALIDEE (2026-11-05)
+
+- **Constat** : le plan proposait de faire vivre la V2 a cote de la V1 (ports differents, V1 intacte jusqu'a C8). Le proprietaire indique que la V1 n'est plus utilisee et qu'elle est obsolete.
+- **Options** : (A) coexistence jusqu'a C8 ; (B) remplacement immediat.
+- **Choix** : B. Tag `v1-final` puis suppression du code et de l'infra V1 en C1.1 ; la V2 prend les noms courts des scripts et les ports d'origine. Les parties a reprendre plus tard se relisent depuis le tag. Plus aucun deploy jusqu'a C7 : les stacks V1 tournent sans etre redeployees.
+- **Consequence** : amende la strategie du CDC (S9, "code V1 supprime a la fin du chantier") et la regle "V1 figee" de `CLAUDE.md`.
+
+### D144 - C1 livre l'API seule - VALIDEE (2026-11-05)
+
+- **Choix** : C1 = API, package partage et squelette Vite vide. Les ecrans du socle arrivent en C2 avec le design system, pour n'ecrire aucun ecran jetable. Les tests d'integration prouvent C1.
+
+### D145 - PostgreSQL 17 - VALIDEE (2026-11-05)
+
+- **Choix** : la base repart de zero (D23), on passe de 15 a 17.
+
+### D146 - Stockage MinIO et avatars en C3 - VALIDEE (2026-11-05)
+
+- **Choix** : avatars d'utilisateur et d'espace livres en C3 avec les photos de recettes : un seul chantier stockage. C1 reste centre sur comptes, espaces, invitations et modules.

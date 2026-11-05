@@ -1,6 +1,6 @@
 # Roadmap - Rework V2
 
-La premiere case non cochee est le point de reprise. **Aucune ligne de code applicatif avant la fin de la phase B.**
+La premiere case non cochee est le point de reprise. Phase B terminee : le code est autorise.
 
 ## Phase A - Etude (en cours)
 
@@ -30,7 +30,18 @@ La premiere case non cochee est le point de reprise. **Aucune ligne de code appl
 
 ## Phase C - Realisation (detaillee a la fin de la phase B)
 
-- [ ] C1 Socle : monorepo, package partage, auth, espaces, membres, invitations
+- [ ] C1 Socle : monorepo, package partage, auth, espaces, membres, invitations (plan : `17-Plan-C1.md`)
+  - [x] C1.0 Plan de C1 valide (D143 a D146)
+  - [ ] C1.1 Monorepo et outillage (tag `v1-final`, suppression de la V1)
+  - [ ] C1.2 Docker V2 et commandes
+  - [ ] C1.3 Package partage (erreurs, permissions, schemas, contrat de module)
+  - [ ] C1.4 Squelette API, Prisma du socle, seed, harnais de test
+  - [ ] C1.5 Comptes et sessions
+  - [ ] C1.6 Espaces et membres
+  - [ ] C1.7 Invitations
+  - [ ] C1.8 Registre de modules
+  - [ ] C1.9 Suppression du compte
+  - [ ] C1.10 CI V2
 - [ ] C2 Design system et app shell
 - [ ] C3 Module recettes (+ revisions, partage, adaptation, suggestions, import)
 - [ ] C4 Referentiels et admin

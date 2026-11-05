@@ -258,7 +258,7 @@ Sans objet [D23] : la V1 n'a pas d'utilisateurs reels, la base et la stack seron
 
 ## 9. Strategie
 
-**Reecriture propre dans le meme depot [D25]** : monorepo neuf (`apps/api`, `apps/web`, `packages/shared`), nouveau schema et nouvelles migrations. Les parties solides de la V1 sont reprises a la main apres relecture : securite (helmet, CSRF, rate limiting, sessions), admin 2FA, import JSON-LD, algorithme de generation du planning, CI/CD. Le code V1 est supprime a la fin du chantier.
+**Reecriture propre dans le meme depot [D25]** : monorepo neuf (`apps/api`, `apps/web`, `packages/shared`), nouveau schema et nouvelles migrations. Les parties solides de la V1 sont reprises a la main apres relecture : securite (helmet, CSRF, rate limiting, sessions), admin 2FA, import JSON-LD, algorithme de generation du planning, CI/CD. Le code V1 est supprime des le debut de la realisation (C1.1), apres un tag `v1-final` qui sert de reference [D143].
 
 ## 10. Questions ouvertes
 
