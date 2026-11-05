@@ -1,6 +1,8 @@
 // Routes des comptes : /api/v1/auth/... et /api/v1/me/...
 import {
+  accountDeletionPreviewSchema,
   changePasswordBodySchema,
+  deleteAccountBodySchema,
   forgotPasswordBodySchema,
   loginBodySchema,
   meSchema,
@@ -17,6 +19,7 @@ import { currentUserId, requireAuth } from "../http/auth.ts";
 import { AppError } from "../http/errors.ts";
 import { createRateLimiter } from "../http/security.ts";
 import { handle, reply } from "../http/validate.ts";
+import * as deletion from "./deletion.ts";
 import * as accounts from "./service.ts";
 import {
   destroySession,
@@ -132,6 +135,28 @@ export function authRouter(ctx: Context, rateLimit: boolean): Router {
       const userId = currentUserId(req);
       await accounts.updatePreferences(ctx, userId, body);
       reply(res, meSchema, await accounts.getMe(ctx, userId));
+    })
+  );
+
+  // --- Suppression du compte [D20, D51, D116] ---
+
+  router.get("/me/deletion-preview", requireAuth, async (req, res) => {
+    reply(
+      res,
+      accountDeletionPreviewSchema,
+      await deletion.previewDeletion(ctx, currentUserId(req))
+    );
+  });
+
+  router.delete(
+    "/me",
+    requireAuth,
+    limit(15 * MINUTE, 10),
+    handle({ body: deleteAccountBodySchema }, async ({ body }, req, res) => {
+      await deletion.deleteAccount(ctx, currentUserId(req), body.password);
+      await destroySession(req);
+      res.clearCookie(SESSION_COOKIE, { path: "/" });
+      res.status(204).end();
     })
   );
 

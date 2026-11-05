@@ -104,7 +104,7 @@ export async function getSpace(
 
 // --- Creation, modification ---
 
-async function ownedGroupCount(db: Context["db"] | Tx, userId: string): Promise<number> {
+export async function ownedGroupCount(db: Context["db"] | Tx, userId: string): Promise<number> {
   return db.membership.count({
     where: { userId, role: "OWNER", leftAt: null, space: { kind: "GROUP", deletedAt: null } },
   });
@@ -154,7 +154,7 @@ export async function updateSpace(
 
 // --- Suppression, restauration, purge [D22] ---
 
-async function softDelete(tx: Tx, spaceId: string): Promise<void> {
+export async function softDelete(tx: Tx, spaceId: string): Promise<void> {
   const now = new Date();
   await tx.space.update({
     where: { id: spaceId },

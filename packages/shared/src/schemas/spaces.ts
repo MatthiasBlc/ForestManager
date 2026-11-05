@@ -180,3 +180,25 @@ export const invitationSchema = z.object({
   respondedAt: isoDateTimeSchema.nullable(),
 });
 export type Invitation = z.infer<typeof invitationSchema>;
+
+// --- Suppression du compte : consequences par espace [D51, D116] ---
+
+export const deletionOutcomeSchema = z.enum(["TRANSFERRED", "DELETED", "LEFT"]);
+
+export const accountDeletionPreviewSchema = z.object({
+  spaces: z.array(
+    z.object({
+      space: z.object({
+        id: uuidSchema,
+        name: z.string(),
+        tintIndex: z.number().int(),
+        avatarUrl: z.string().nullable(),
+      }),
+      role: spaceRoleSchema,
+      /** TRANSFERRED : `newOwner` herite ; DELETED : seul membre, espace supprime ; LEFT : simple depart. */
+      outcome: deletionOutcomeSchema,
+      newOwner: userSummarySchema.nullable(),
+    })
+  ),
+});
+export type AccountDeletionPreview = z.infer<typeof accountDeletionPreviewSchema>;
