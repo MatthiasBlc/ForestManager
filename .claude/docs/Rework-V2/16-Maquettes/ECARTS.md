@@ -57,12 +57,16 @@ Fait le 2026-11-04 (canevas Acces et espaces v36, Recettes v33, Planning et prof
 
 Rien de casse a l'affichage ; ecarts releves :
 
-- [ ] Recettes : fonds de F-PARTAGER, F-PARTAGER-Demande, F-DEMANDE-PARTAGE et F-ADAPTER encore avec l'ancien en-tete texte ("Famille - Recettes"), pas la TopBar [D130]
-- [ ] Recettes bureau : liens en bleu par defaut du navigateur (E-RECETTE "historique", E-COMPARER-ORIGINAL), peu lisibles
-- [ ] DS, QuantityInput trop serre sur mobile : noms d'ingredients tronques dans E-RECETTE-EDITION ("creme fraic", "gruyere rap")
-- [ ] DS, SegmentedControl : barre de defilement parasite quand il prend toute la largeur (E-PLANNING-semaine)
-- [ ] Planning : E-PROFILS-GENERATION mobile, le Stepper "Delai" deborde a droite
-- [ ] Profil : F-SUPPRIMER-COMPTE presente Colloc comme espace dont Matthias est membre, alors qu'il en est OWNER [D132]
-- [ ] Recherche bureau : la palette s'ouvre en haut a gauche au lieu d'etre centree ; espace invente "Grand-mere et cousins" (hors brief)
-- [ ] Teinte 5 "Cendre" (Foyer) : le bouton principal gris parait desactive (E-PLANNING-vide, F-CREER-PLANNING, E-SUGGESTION-EDITION, F-DEMANDE-PARTAGE) ; a trancher
-- [ ] Details : E-REJOINDRE annonce 5 membres pour Famille (6 au brief) ; Lea "Moderateur" en mobile, "Moderatrice" en bureau ; dates en format americain dans F-CREER-PLANNING (rendu du champ date natif)
+- [x] Recettes : fonds de F-PARTAGER, F-PARTAGER-Demande, F-DEMANDE-PARTAGE et F-ADAPTER encore avec l'ancien en-tete texte ("Famille - Recettes"), pas la TopBar [D130]
+- [x] Recettes bureau : liens en bleu par defaut du navigateur (E-RECETTE "historique", E-COMPARER-ORIGINAL), peu lisibles
+- [x] DS, QuantityInput trop serre sur mobile : noms d'ingredients tronques dans E-RECETTE-EDITION ("creme fraic", "gruyere rap")
+- [x] DS, SegmentedControl : barre de defilement parasite quand il prend toute la largeur (E-PLANNING-semaine)
+- [x] Planning : E-PROFILS-GENERATION mobile, le Stepper "Delai" deborde a droite
+- [x] Profil : F-SUPPRIMER-COMPTE presente Colloc comme espace dont Matthias est membre, alors qu'il en est OWNER [D132]
+- [x] Recherche bureau : la palette s'ouvre en haut a gauche au lieu d'etre centree ; espace invente "Grand-mere et cousins" (hors brief)
+- [x] Teinte 5 "Cendre" (Foyer) : le bouton principal gris parait desactive (E-PLANNING-vide, F-CREER-PLANNING, E-SUGGESTION-EDITION, F-DEMANDE-PARTAGE) ; a trancher
+- [x] Details : E-REJOINDRE annonce 5 membres pour Famille (6 au brief) ; Lea "Moderateur" en mobile, "Moderatrice" en bureau ; dates en format americain dans F-CREER-PLANNING (rendu du champ date natif)
+
+Corrige le 2026-11-04 (DS v10 ; Acces v37, Recettes v35, Planning v24, Admin v24).
+
+- [ ] Revoir dans Chrome les ecrans corriges (fonds des feuilles de partage, liens bureau, QuantityInput, Stepper du profil, palette bureau, dates, espace Foyer)
