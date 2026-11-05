@@ -1,0 +1,208 @@
+# CI et deploy V2 [D147] : reprise de .github/workflows/deploy.yml de la V1
+# (tag v1-final) avec les memes secrets, images, stacks Portainer et declencheurs.
+#
+#   push (toute branche)  -> verification + build des images (sans push)
+#   PR vers master        -> verification, images poussees, deploy preprod
+#   push sur master       -> verification, images poussees, deploy prod, tag
+#
+# Changements V2 : une seule verification, celle du poste (format, lint,
+# typecheck, audit, `npm test` dans docker/compose.test.yml) ; images du
+# monorepo (docker/*.Dockerfile) taguees `sha-<court>` (+ `latest` en prod) et
+# deployees par ce tag ; deploys serialises par environnement.
+# Rien ne part vers master avant C7 [D143].
+
+name: CI
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+on:
+  push:
+    branches: ["**"]
+    tags-ignore: ["**"]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
+jobs:
+  # ========================================
+  # Verification (identique au poste)
+  # ========================================
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # npm 10 (fourni avec Node 22) plante sur les peers de vitest.
+      - name: npm 11
+        run: npm install -g npm@11.21.1
+
+      - name: Install
+        run: npm ci
+
+      - name: Prisma client (typecheck)
+        run: npm exec --workspace=@fm/api -- prisma generate
+
+      - name: Format
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Security audit (production dependencies)
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Tests (docker/compose.test.yml)
+        run: npm test
+
+      - name: Stop test database
+        if: always()
+        run: npm run test:down
+
+  # ========================================
+  # Images (backend = API, frontend = nginx + SPA)
+  # ========================================
+  build:
+    runs-on: ubuntu-latest
+    needs: verify
+    strategy:
+      matrix:
+        include:
+          - image: backend
+            dockerfile: docker/api.Dockerfile
+          - image: frontend
+            dockerfile: docker/web.Dockerfile
+    env:
+      PUSH: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/master' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Tags
+        id: tags
+        run: |
+          BASE="${{ secrets.REGISTRY_URL }}/${{ secrets.IMAGE_NAME }}/${{ matrix.image }}"
+          TAGS="${BASE}:sha-${GITHUB_SHA::7}"
+          if [ "${GITHUB_REF}" = "refs/heads/master" ]; then TAGS="${TAGS},${BASE}:latest"; fi
+          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Login to registry
+        if: env.PUSH == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build (push on PR to master and on master)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          target: prod
+          push: ${{ env.PUSH == 'true' }}
+          tags: ${{ steps.tags.outputs.tags }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+  # ========================================
+  # Deploy preprod (PR vers master)
+  # ========================================
+  deploy-preprod:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'pull_request'
+    concurrency:
+      group: deploy-preprod
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Portainer (preprod)
+        run: TAG="sha-${GITHUB_SHA::7}" ./docker/deploy.sh
+        env:
+          DEPLOY_ENV: preprod
+          COMPOSE_FILE: docker/compose.preprod.yml
+          PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
+          PORTAINER_API: ${{ secrets.PORTAINER_API }}
+          STACK_ID: ${{ secrets.DEV_STACK_ID }}
+          ENDPOINT_ID: ${{ secrets.ENDPOINT_ID }}
+          REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
+          IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          ADMIN_SESSION_SECRET: ${{ secrets.ADMIN_SESSION_SECRET }}
+
+  # ========================================
+  # Deploy prod (push sur master)
+  # ========================================
+  deploy-prod:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    concurrency:
+      group: deploy-prod
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Portainer (production)
+        run: TAG="sha-${GITHUB_SHA::7}" ./docker/deploy.sh
+        env:
+          DEPLOY_ENV: production
+          COMPOSE_FILE: docker/compose.prod.yml
+          PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
+          PORTAINER_API: ${{ secrets.PORTAINER_API }}
+          STACK_ID: ${{ secrets.STACK_ID }}
+          ENDPOINT_ID: ${{ secrets.ENDPOINT_ID }}
+          REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
+          IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          ADMIN_SESSION_SECRET: ${{ secrets.ADMIN_SESSION_SECRET }}
+
+  # ========================================
+  # Tag de version apres la prod
+  # ========================================
+  # Le changelog en base (insere dans le conteneur par l'API Portainer en V1)
+  # revient en C6 avec le modele Changelog ; d'ici la, seul le tag est pose.
+  release-tag:
+    runs-on: ubuntu-latest
+    needs: deploy-prod
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Tag v<version de package.json>
+        run: |
+          VERSION="v$(jq -r .version package.json)"
+          if git rev-parse -q --verify "refs/tags/${VERSION}" >/dev/null; then
+            echo "Tag ${VERSION} already exists, nothing to do"
+            exit 0
+          fi
+          git tag "${VERSION}"
+          git push origin "${VERSION}"
+          echo "Tagged ${VERSION}"

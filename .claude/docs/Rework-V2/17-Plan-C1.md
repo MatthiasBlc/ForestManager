@@ -21,7 +21,7 @@ La V1 n'est plus utilisee : la V2 la remplace des C1, sans periode de coexistenc
 - **Avant de supprimer** : tag git `v1-final` sur le dernier commit V1. Les parties encore a reprendre plus tard (import JSON-LD en C3, generation du planning en C5, admin 2FA en C4) se relisent depuis ce tag (`git show v1-final:backend/src/...`).
 - **C1.1 supprime** `backend/`, `frontend/`, `scripts/`, `deploy_prod.sh`, les `docker-compose*.yml` racine et `.github/workflows/deploy.yml`. La V2 prend les noms courts (`npm run docker:up`, `npm test`...).
 - **Prod et preprod** : les stacks Portainer V1 continuent de tourner sans etre redeployees (plus aucun workflow de deploy jusqu'a C7). Rien ne part sur `master` avant C7.
-- **CI** : `v2-ci.yml` (lint, typecheck, tests) sur push `Developement` et PR ; le deploy (preprod au push sur `Developement` [D76], prod au merge sur `master`) est construit en C7 avec la nouvelle stack.
+- **CI** : `.github/workflows/ci.yml` (C1.10, D147) : verification sur tout push, preprod sur PR vers `master`, prod au push sur `master`. Rien ne part vers `master` avant C7.
 - `CLAUDE.md` (Etat actuel, Commandes, Stack) est mis a jour en C1.2, quand les nouvelles commandes existent.
 
 ## 3. Reprise de la V1 (relue depuis `v1-final` puis recopiee a la main)
