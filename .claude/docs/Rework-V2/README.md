@@ -36,10 +36,9 @@ Artefact en ligne : voir le lien dans la section "Reprise" ci-dessous. La copie 
 
 - Derniere session : 2026-11-05. Contexte remis a zero apres cette session : tout l'etat est ici et dans les fichiers cites.
 - Fait : etude (A), design system (B4), modele de donnees (B1), permissions (B2), parcours (B3), architecture (B6), tests (B8), maquettes (B5). Decisions D01 a D139 toutes tranchees (journal). CDC en 0.4 : les decisions D87 a D139 n'y sont pas encore reportees.
-- Prochaine etape : (1) revoir dans Chrome les ecrans corriges apres la revue du rendu (derniere case de `16-Maquettes/ECARTS.md`) ; (2) reporter D87 a D139 dans le CDC (version 0.5) ; (3) B9. Tout est publie et committe au 2026-11-05 : DS v10, Acces v37, Recettes v35, Planning v24, Admin v24.
-  1. ~~Design system~~ : fait et publie le 2026-11-04 (8 composants ajoutes, voir ECARTS).
-  2. ~~Maquettes~~ : faites et publiees le 2026-11-04 (4 canevas), points ouverts tranches (D132 a D138), DS en v9. Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact).
-  3. Reporter D87 a D138 dans le CDC (version 0.5), puis B9 : validation finale du CDC 1.0.
+- Prochaine etape : (1) reporter D87 a D139 dans le CDC (version 0.5) ; (2) B9 : validation finale du CDC 1.0. Maquettes revues dans Chrome le 2026-11-05 (B5b termine, voir `16-Maquettes/ECARTS.md`). Tout est publie et committe au 2026-11-05 : DS v10, Acces v39, Recettes v35, Planning v26, Admin v26.
+  - Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact) : relire l'artefact (action read sur l'URL), puis publier avec `root` = le dossier du canevas, `file_path` = un fichier modifie, `files` = les autres (`project/...`).
+  - Les numeros de version des canevas avancent aussi a la simple consultation : comparer le contenu en ligne au commit avant d'ecraser.
 - Methode : copie locale d'abord, puis publication ; commits en francais, autonomes, sans Co-Authored-By ; taches independantes en agents paralleles.
 - Artefacts :
   - Analyse V1 : https://claude.ai/artifact/2j7eohGZT8qonftWqb1wUw (`2-Analyse-V1.html`)

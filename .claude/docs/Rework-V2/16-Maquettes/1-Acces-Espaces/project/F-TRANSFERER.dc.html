@@ -21,10 +21,10 @@ body{margin:0}
 <div style="display: flex; flex-direction: column; gap: 14px;">
 <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">Choisis le membre qui deviendra propriétaire de Famille.</p>
 <x-import component-from-global-scope="ForestUI.OptionList" label="Nouveau propriétaire" options="{{members}}" default-value="lea"></x-import>
-<p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted);">Lea recevra une demande à accepter. Une fois acceptée, tu deviendras modérateur de Famille.</p>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted);">Léa recevra une demande à accepter. Une fois acceptée, tu deviendras modérateur de Famille.</p>
 </div>
 <x-import component-from-global-scope="ForestUI.SheetFooter">
-<x-import component-from-global-scope="ForestUI.Button" variant="primary">Proposer à Lea</x-import>
+<x-import component-from-global-scope="ForestUI.Button" variant="primary">Proposer à Léa</x-import>
 </x-import>
 </x-import>
 </div>
@@ -35,7 +35,7 @@ renderVals() {
 return {
 yes: true, noop: () => {},
 members: [
-{ value: 'lea', label: 'Lea', hint: 'Modératrice', avatar: 'Lea', tint: 5 },
+{ value: 'lea', label: 'Léa', hint: 'Modératrice', avatar: 'Léa', tint: 5 },
 { value: 'jeanne', label: 'Jeanne', hint: 'Membre', avatar: 'Jeanne', tint: 2 },
 { value: 'paul', label: 'Paul', hint: 'Membre', avatar: 'Paul', tint: 4 },
 { value: 'sam', label: 'Sam', hint: 'Membre', avatar: 'Sam', tint: 3 },

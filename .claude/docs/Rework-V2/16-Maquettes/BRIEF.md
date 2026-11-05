@@ -20,7 +20,7 @@ Quatre canevas Design, un par domaine, faits en parallele avec les memes convent
 - **Textes d'interface** : francais correct AVEC accents (c'est le texte que verront les utilisateurs ; la regle ASCII vaut pour le code et la documentation). Ton du design system : tutoiement, boutons a l'infinitif ("Nouvelle recette"), confirmations au participe passe, erreurs qui disent quoi corriger, pas d'emoji.
 - **Donnees d'exemple communes** (personnes fictives, toutes du meme cercle) :
   - Utilisateur courant : Matthias. Membres : Lea (sa compagne), Sam, Noe, Jeanne, Paul, Claire.
-  - Espaces : perso de Matthias ; Foyer (Matthias, Lea ; teinte 5) ; Famille (6 membres, teinte 1, OWNER Matthias) ; Colloc (3 membres, teinte 2, OWNER Matthias) ; TOM (11 membres, teinte 3, MODERATOR Matthias) ; Amis (5 membres, teinte 4).
+  - Espaces : perso de Matthias ; Foyer (2 membres, teinte 5, OWNER Matthias, avec Lea) ; Famille (6 membres, teinte 1, OWNER Matthias) ; Colloc (3 membres, teinte 2, OWNER Matthias) ; TOM (11 membres, teinte 3, MODERATOR Matthias) ; Amis (5 membres, teinte 4).
   - Recettes : Saumon teriyaki et brocolis (composee, 2 pers.), Sauce teriyaki (base, 300 ml), Poulet teriyaki et riz (4 pers.), Gratin de pates (Foyer, par Lea ; adaptee au beurre dans Colloc), Dahl de lentilles corail, Escalope milanaise et compotee de tomates cerises (composee), Compotee de tomates cerises (base), Tarte aux pommes.
   - Modules : Recettes (actif partout), Planning (accorde a Famille et Foyer), Courses (bientot), Listes de films (bientot).
 - **Etats a montrer au moins une fois par canevas** : vide, erreur, hors ligne (bandeau, D68) quand c'est pertinent.

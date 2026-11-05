@@ -69,4 +69,10 @@ Rien de casse a l'affichage ; ecarts releves :
 
 Corrige le 2026-11-04 (DS v10 ; Acces v37, Recettes v35, Planning v24, Admin v24).
 
-- [ ] Revoir dans Chrome les ecrans corriges (fonds des feuilles de partage, liens bureau, QuantityInput, Stepper du profil, palette bureau, dates, espace Foyer)
+- [x] Revoir dans Chrome les ecrans corriges (fonds des feuilles de partage, liens bureau, QuantityInput, Stepper du profil, palette bureau, dates, espace Foyer)
+
+Revu le 2026-11-05 : tout est corrige. Ecarts de donnees releves au passage et corriges (Acces v39, Planning v26, Admin v26) :
+
+- [x] F-SUPPRIMER-COMPTE : Famille transferee a "Sam, moderateur" alors que la seule moderatrice de Famille est Lea -> Lea
+- [x] Admin A09 : OWNER de Foyer (Lea) et de Colloc (Sam) -> Matthias ; A03 et A03b : demande de Planning pour Colloc faite par Matthias (seul l'OWNER demande un module, D33)
+- [x] Prenom "Lea" sans accent dans Acces et Admin -> "Léa" comme dans Recettes et Planning ; brief precise : Foyer a pour OWNER Matthias
