@@ -8,7 +8,10 @@ import {
   recipeParamsSchema,
   recipeSchema,
   recipeSpaceTagsBodySchema,
+  recipeRevisionSchema,
   recipeSummarySchema,
+  restoreRevisionBodySchema,
+  revisionParamsSchema,
   updateRecipeBodySchema,
   spaceTagParamsSchema,
   tagNameBodySchema,
@@ -26,11 +29,13 @@ import {
 } from "../../core/modules/guards.ts";
 import type { ApiModule } from "../../core/modules/registry.ts";
 import { listRecipes } from "./list.ts";
+import * as revisions from "./revisions.ts";
 import * as recipes from "./service.ts";
 import * as tags from "./tags.ts";
 
 const tagParamsSchema = spaceTagParamsSchema.pick({ tagId: true });
 const recipeIdSchema = recipeParamsSchema.pick({ recipeId: true });
+const revisionIdSchema = revisionParamsSchema.pick({ recipeId: true, number: true });
 
 function actorOf(req: Request): recipes.RecipeActor {
   return {
@@ -155,6 +160,35 @@ function recipesRouter(ctx: Context): Router {
       { params: recipeIdSchema, body: recipeSpaceTagsBodySchema },
       async ({ params, body }, req, res) => {
         const recipe = await recipes.setSpaceTags(ctx, actorOf(req), params.recipeId, body.tagIds);
+        reply(res, recipeSchema, recipe);
+      }
+    )
+  );
+
+  // --- Revisions [F-REC-8, D55] : restaurer = meme droit que modifier (service) ---
+
+  router.get(
+    "/:recipeId/revisions",
+    requirePermission("recipes.view"),
+    handle({ params: recipeIdSchema }, async ({ params }, req, res) => {
+      const data = await revisions.listRevisions(ctx, actorOf(req), params.recipeId);
+      reply(res, listSchema(recipeRevisionSchema), { data });
+    })
+  );
+
+  router.post(
+    "/:recipeId/revisions/:number/restore",
+    requirePermission("recipes.view"),
+    handle(
+      { params: revisionIdSchema, body: restoreRevisionBodySchema },
+      async ({ params, body }, req, res) => {
+        const recipe = await revisions.restoreRevision(
+          ctx,
+          actorOf(req),
+          params.recipeId,
+          params.number,
+          body.revision
+        );
         reply(res, recipeSchema, recipe);
       }
     )

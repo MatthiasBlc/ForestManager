@@ -164,6 +164,46 @@ export const recipeSchema = z.object({
 });
 export type Recipe = z.infer<typeof recipeSchema>;
 
+// --- Revisions [D05, D30, D55] ---
+
+export const REVISION_SOURCES = ["CREATE", "EDIT", "SUGGESTION", "RESTORE", "IMPORT"] as const;
+export type RevisionSource = (typeof REVISION_SOURCES)[number];
+
+/** Parties de la recette qui different de la revision precedente. */
+export const REVISION_CHANGES = [
+  "title",
+  "description",
+  "notes",
+  "source",
+  "yield",
+  "times",
+  "base",
+  "blocks",
+  "ingredients",
+  "steps",
+] as const;
+export type RevisionChange = (typeof REVISION_CHANGES)[number];
+
+export const recipeRevisionSchema = z.object({
+  number: z.number().int(),
+  source: z.enum(REVISION_SOURCES),
+  author: userSummarySchema,
+  createdAt: isoDateTimeSchema,
+  /** Vide pour la premiere revision. */
+  changes: z.array(z.enum(REVISION_CHANGES)),
+});
+export type RecipeRevision = z.infer<typeof recipeRevisionSchema>;
+
+export const revisionParamsSchema = recipeParamsSchema.extend({
+  number: z.coerce.number().int().min(1),
+});
+
+/** `revision` : revision courante vue par le client (verrou optimiste, D163). */
+export const restoreRevisionBodySchema = z.strictObject({
+  revision: z.number().int().min(1),
+});
+export type RestoreRevisionBody = z.infer<typeof restoreRevisionBodySchema>;
+
 // --- Liste ---
 
 export const RECIPE_SORTS = ["recent", "title", "time"] as const;

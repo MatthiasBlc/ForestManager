@@ -57,7 +57,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C3.0 Plan de C3 (D160 a D162, a relire par le proprietaire)
   - [x] C3.1 Referentiels minimaux et domaine pur
   - [x] C3.2 Recettes simples
-  - [ ] C3.3 Revisions
+  - [x] C3.3 Revisions
   - [ ] C3.4 Recettes composees
   - [ ] C3.5 Partage
   - [ ] C3.6 Adaptation et suggestions

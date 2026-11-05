@@ -1,8 +1,9 @@
-// Requetes du module Recettes : liste paginee, detail, referentiels.
+// Requetes du module Recettes : liste paginee, detail, historique, referentiels.
 import {
   ingredientSchema,
   listSchema,
   pageSchema,
+  recipeRevisionSchema,
   recipeSchema,
   recipeSummarySchema,
   tagSchema,
@@ -49,6 +50,20 @@ export function recipeQuery(spaceId: string, recipeId: string) {
   return queryOptions({
     queryKey: [...recipesKey(spaceId), "detail", recipeId],
     queryFn: () => api.get(`/spaces/${spaceId}/recipes/${recipeId}`, recipeSchema),
+  });
+}
+
+/** Sous la cle du detail : invalider le detail rafraichit aussi l'historique. */
+export function revisionsQuery(spaceId: string, recipeId: string) {
+  return queryOptions({
+    queryKey: [...recipeQuery(spaceId, recipeId).queryKey, "revisions"],
+    queryFn: async () =>
+      (
+        await api.get(
+          `/spaces/${spaceId}/recipes/${recipeId}/revisions`,
+          listSchema(recipeRevisionSchema)
+        )
+      ).data,
   });
 }
 

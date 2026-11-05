@@ -1,6 +1,6 @@
 // Recettes d'un espace (C3.2) : creer, lire, modifier, supprimer [D05, D57, D122].
 // Visibilite : espace d'origine ; le partage (C3.5) ajoutera les espaces de partage.
-import type { Recipe } from "@fm/shared";
+import type { Recipe, RevisionSource } from "@fm/shared";
 
 import type { Context } from "../../core/context.ts";
 import type { Prisma } from "../../core/db/client.ts";
@@ -57,7 +57,7 @@ async function rightsOf(
   return { edit: true, delete: !(await authorIsActiveMember(ctx, recipe)) };
 }
 
-async function findVisible(ctx: Context, actor: RecipeActor, recipeId: string) {
+export async function findVisible(ctx: Context, actor: RecipeActor, recipeId: string) {
   const row = await ctx.db.recipe.findFirst({
     where: { id: recipeId, ...visibleIn(actor.spaceId) },
     include: detailInclude(actor.spaceId),
@@ -115,15 +115,35 @@ export async function updateRecipe(
   recipeId: string,
   input: RecipeContent & { revision: number }
 ): Promise<Recipe> {
+  await findEditable(ctx, actor, recipeId);
+  await writeRevision(ctx, actor, recipeId, input, input.revision, "EDIT");
+  return getRecipe(ctx, actor, recipeId);
+}
+
+/** Recette visible que l'acteur peut modifier (sinon SPACE_002). */
+export async function findEditable(ctx: Context, actor: RecipeActor, recipeId: string) {
   const current = await findVisible(ctx, actor, recipeId);
   if (!(await rightsOf(ctx, actor, current)).edit) throw new AppError("SPACE_002");
-  const content = await resolveContent(ctx.db, input, actor.spaceId);
-  const number = input.revision + 1;
+  return current;
+}
 
+/**
+ * Remplace le contenu et ajoute la revision suivante. Verrou optimiste [D163] :
+ * `baseRevision` doit encore etre la revision courante, sinon RECIPE_004.
+ */
+export async function writeRevision(
+  ctx: Context,
+  actor: RecipeActor,
+  recipeId: string,
+  input: RecipeContent,
+  baseRevision: number,
+  source: RevisionSource
+): Promise<void> {
+  const content = await resolveContent(ctx.db, input, actor.spaceId);
+  const number = baseRevision + 1;
   await ctx.db.$transaction(async (tx) => {
-    // Verrou optimiste : la revision de depart doit encore etre la courante.
     const updated = await tx.recipe.updateMany({
-      where: { id: recipeId, deletedAt: null, currentRevision: input.revision },
+      where: { id: recipeId, deletedAt: null, currentRevision: baseRevision },
       data: { ...recipeColumns(content), currentRevision: number },
     });
     if (updated.count === 0) throw new AppError("RECIPE_004");
@@ -141,12 +161,11 @@ export async function updateRecipe(
           create: content.spaceTagIds.map((tagId) => ({ tagId, spaceId: actor.spaceId })),
         },
         revisions: {
-          create: { number, source: "EDIT", authorId: actor.userId, snapshot: snapshotOf(content) },
+          create: { number, source, authorId: actor.userId, snapshot: snapshotOf(content) },
         },
       },
     });
   });
-  return getRecipe(ctx, actor, recipeId);
 }
 
 /** Suppression masquee : la recette disparait de tous les espaces [F-REC-10]. */

@@ -1,10 +1,12 @@
 // Faux serveur du module Recettes (MSW) sur un espace groupe : referentiels,
-// liste, detail, creation, modification, suppression. Garde l'etat et les corps recus.
+// liste, detail, creation, modification, suppression, historique, restauration. Garde l'etat et les corps recus.
 import {
   errorBody,
   type CreateRecipeBody,
   type Ingredient,
   type Recipe,
+  type RecipeRevision,
+  type RestoreRevisionBody,
   type SpaceRole,
   type Tag,
   type UpdateRecipeBody,
@@ -26,10 +28,17 @@ const ingredient = (name: string): Ingredient => ({
 export function recipeServer({
   myRole = "MEMBER",
   recipes = [],
-}: { myRole?: SpaceRole; recipes?: Recipe[] } = {}) {
+  revisions = {},
+}: {
+  myRole?: SpaceRole;
+  recipes?: Recipe[];
+  /** Historique par recette, du plus recent au plus ancien. */
+  revisions?: Record<string, RecipeRevision[]>;
+} = {}) {
   const s = spaceServer({ myRole });
   const state = {
     recipes: [...recipes],
+    revisions: { ...revisions },
     ingredients: [ingredient("Pâtes"), ingredient("Pâtes fraîches"), ingredient("Crème fraîche")],
     globalTags: [
       { id: uuid(), scope: "GLOBAL", name: "Végétarien" },
@@ -142,6 +151,27 @@ export function recipeServer({
       const updated = fromBody(content, current);
       state.recipes = state.recipes.map((r) => (r.id === current.id ? updated : r));
       return HttpResponse.json(updated);
+    }),
+    http.get(`${base}/:recipeId/revisions`, ({ params }) => {
+      if (!find(params.recipeId)) return notFound();
+      return HttpResponse.json({ data: state.revisions[String(params.recipeId)] ?? [] });
+    }),
+    // Restaurer : la recette passe a la revision suivante, titre suffixe pour le reconnaitre.
+    http.post(`${base}/:recipeId/revisions/:number/restore`, async ({ params, request }) => {
+      const current = find(params.recipeId);
+      if (!current) return notFound();
+      const body = (await request.json()) as RestoreRevisionBody;
+      state.bodies.restore = { number: Number(params.number), ...body };
+      if (body.revision !== current.currentRevision) {
+        return HttpResponse.json(errorBody("RECIPE_004"), { status: 409 });
+      }
+      const restored = {
+        ...current,
+        title: `${current.title} (r${String(params.number)})`,
+        currentRevision: current.currentRevision + 1,
+      };
+      state.recipes = state.recipes.map((r) => (r.id === current.id ? restored : r));
+      return HttpResponse.json(restored);
     }),
     http.delete(`${base}/:recipeId`, ({ params }) => {
       if (!find(params.recipeId)) return notFound();

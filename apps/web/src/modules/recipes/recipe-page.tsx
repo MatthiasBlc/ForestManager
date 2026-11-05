@@ -133,16 +133,27 @@ function RecipeView({
               Modifier
             </Link>
           ) : null}
-          {recipe.can.delete ? (
-            <ActionMenu
-              label="Actions de la recette"
-              trigger={<IconButton icon="more" label="Plus d'actions" />}
-              items={[{ id: "delete", label: "Supprimer", icon: "trash", danger: true }]}
-              onSelect={() => {
-                setDeleteOpen(true);
-              }}
-            />
-          ) : null}
+          <ActionMenu
+            label="Actions de la recette"
+            trigger={<IconButton icon="more" label="Plus d'actions" />}
+            items={[
+              { id: "history", label: "Voir l'historique", icon: "clock" },
+              ...(recipe.can.delete
+                ? [
+                    {
+                      id: "delete" as const,
+                      label: "Supprimer",
+                      icon: "trash" as const,
+                      danger: true,
+                    },
+                  ]
+                : []),
+            ]}
+            onSelect={(id) => {
+              if (id === "delete") setDeleteOpen(true);
+              else void navigate(`/s/${spaceId}/recipes/${recipe.id}/history`);
+            }}
+          />
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Stepper

@@ -1,6 +1,7 @@
 // Routes du module Recettes, relatives a /s/:spaceId/recipes.
 import { Route, Routes } from "react-router";
 
+import { HistoryPage } from "./history-page.tsx";
 import { RecipeEditorPage } from "./recipe-editor-page.tsx";
 import { RecipePage } from "./recipe-page.tsx";
 import { RecipesPage } from "./recipes-page.tsx";
@@ -14,6 +15,7 @@ export default function RecipesRoutes() {
       <Route path="new" element={<RecipeEditorPage />} />
       <Route path=":recipeId" element={<RecipePage />} />
       <Route path=":recipeId/edit" element={<RecipeEditorPage />} />
+      <Route path=":recipeId/history" element={<HistoryPage />} />
     </Routes>
   );
 }

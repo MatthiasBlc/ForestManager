@@ -87,6 +87,8 @@ const DEFINITIONS = {
     status: 409,
     message: "La recette a été modifiée entre-temps : rechargez-la avant d'enregistrer.",
   },
+  RECIPE_005: { status: 409, message: "Cette révision est déjà la version actuelle." },
+  RECIPE_006: { status: 404, message: "Révision introuvable." },
 } as const satisfies Record<string, ErrorDefinition>;
 
 export type ErrorCode = keyof typeof DEFINITIONS;

@@ -6,6 +6,7 @@ import {
   memberSchema,
   meSchema,
   ownershipTransferSchema,
+  recipeRevisionSchema,
   recipeSchema,
   recipeSummarySchema,
   spaceDetailSchema,
@@ -16,6 +17,7 @@ import {
   type Member,
   type OwnershipTransfer,
   type Recipe,
+  type RecipeRevision,
   type RecipeSummary,
   type Unit,
   type SpaceDetail,
@@ -251,4 +253,15 @@ export function buildRecipe(over: Partial<Recipe> = {}): Recipe {
 
 export function toSummary(recipe: Recipe): RecipeSummary {
   return valid(recipeSummarySchema, { ...recipe, isComposed: false });
+}
+
+export function buildRevision(over: Partial<RecipeRevision> = {}): RecipeRevision {
+  return valid(recipeRevisionSchema, {
+    number: 1,
+    source: "CREATE",
+    author: { id: uuid(), username: "lea", avatarUrl: null },
+    createdAt: NOW,
+    changes: [],
+    ...over,
+  });
 }

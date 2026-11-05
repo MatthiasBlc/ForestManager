@@ -2,65 +2,19 @@
 // recherche, filtres, tri et pagination ; tags poses sur une recette.
 import { describe, expect, it } from "vitest";
 
-import { createTestApp, loginAs, type Client } from "./helpers/app.ts";
+import { createTestApp, loginAs } from "./helpers/app.ts";
 import { db } from "./helpers/db.ts";
 import { createUser } from "./helpers/factories.ts";
+import { createRecipe, ingredient, recipeBody, unitId } from "./helpers/recipes.ts";
 import { ACTORS, clientAs, expectPermission, groupFixture } from "./helpers/roles.ts";
 
 const app = createTestApp();
-
-async function unitId(code: string): Promise<string> {
-  return (await db.unit.findUniqueOrThrow({ where: { code } })).id;
-}
-
-async function ingredient(client: Client, name: string): Promise<string> {
-  return (await client.post("/ingredients", { name })).body.id as string;
-}
 
 async function globalTagId(name: string): Promise<string> {
   const tag = await db.tag.findFirstOrThrow({
     where: { scope: "GLOBAL", translations: { some: { name } } },
   });
   return tag.id;
-}
-
-/** Corps minimal valable, complete par `overrides`. */
-async function recipeBody(client: Client, overrides: Record<string, unknown> = {}) {
-  return {
-    title: "Gratin de pates",
-    yieldQuantity: 4,
-    prepMinutes: 15,
-    cookMinutes: 30,
-    blocks: [
-      {
-        kind: "LOCAL",
-        ingredients: [
-          {
-            ingredientId: await ingredient(client, "Pâtes"),
-            quantity: 500,
-            unitId: await unitId("g"),
-          },
-          {
-            ingredientId: await ingredient(client, "Sel"),
-            quantity: null,
-            unitId: await unitId("to-taste"),
-          },
-        ],
-        steps: ["Cuire les pates.", "Gratiner 20 min."],
-      },
-    ],
-    ...overrides,
-  };
-}
-
-async function createRecipe(
-  client: Client,
-  spaceId: string,
-  overrides: Record<string, unknown> = {}
-) {
-  const res = await client.post(`/spaces/${spaceId}/recipes`, await recipeBody(client, overrides));
-  if (res.status !== 201) throw new Error(`create failed: ${JSON.stringify(res.body)}`);
-  return res.body as { id: string; currentRevision: number };
 }
 
 describe("creer et lire une recette (F-REC-1, F-REC-4)", () => {

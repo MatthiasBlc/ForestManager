@@ -190,13 +190,17 @@ describe("detail d'une recette (E-RECETTE)", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
-  it("sans droit de modifier : ni Modifier ni Supprimer", async () => {
+  it("sans droit de modifier : ni Modifier ni Supprimer, l'historique reste", async () => {
     const recipe = buildRecipe({ can: { edit: false, delete: false } });
     const s = recipeServer({ recipes: [recipe] });
-    renderWithProviders(<App />, { route: `/s/${s.space.id}/recipes/${recipe.id}` });
+    const { user } = renderWithProviders(<App />, {
+      route: `/s/${s.space.id}/recipes/${recipe.id}`,
+    });
     await screen.findByRole("heading", { name: recipe.title });
     expect(screen.queryByRole("link", { name: "Modifier" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Plus d'actions" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Plus d'actions" }));
+    expect(await screen.findByRole("menuitem", { name: "Voir l'historique" })).toBeInTheDocument();
+    expect(screen.queryByRole("menuitem", { name: "Supprimer" })).not.toBeInTheDocument();
   });
 
   it("supprime apres confirmation et revient a la liste (F-REC-10)", async () => {
