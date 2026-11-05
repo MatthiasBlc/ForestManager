@@ -15,6 +15,17 @@ class ResizeObserverStub {
 if (!("ResizeObserver" in globalThis)) {
   Object.assign(globalThis, { ResizeObserver: ResizeObserverStub });
 }
+// Systeme en clair par defaut ; un test peut redefinir matchMedia.
+Object.defineProperty(window, "matchMedia", {
+  configurable: true,
+  writable: true,
+  value: (query: string) => ({
+    matches: false,
+    media: query,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+  }),
+});
 const proto = Element.prototype as unknown as Record<string, unknown>;
 for (const name of [
   "hasPointerCapture",
