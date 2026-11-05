@@ -55,7 +55,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C2.9 Coquille PWA
 - [ ] C3 Module recettes (plan : `19-Plan-C3.md`)
   - [x] C3.0 Plan de C3 (D160 a D162, a relire par le proprietaire)
-  - [ ] C3.1 Referentiels minimaux et domaine pur
+  - [x] C3.1 Referentiels minimaux et domaine pur
   - [ ] C3.2 Recettes simples
   - [ ] C3.3 Revisions
   - [ ] C3.4 Recettes composees

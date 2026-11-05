@@ -70,6 +70,8 @@ model User {
   moduleRequests       ModuleAccessRequest[]
   ownershipOffersSent  SpaceOwnershipTransfer[] @relation("TransferFrom")
   ownershipOffersRecv  SpaceOwnershipTransfer[] @relation("TransferTo")
+  ingredientsCreated   Ingredient[]
+  tagsCreated          Tag[]
 
   @@index([deletedAt])
 }
@@ -148,6 +150,7 @@ model Space {
   modules            SpaceModule[]
   moduleRequests     ModuleAccessRequest[]
   ownershipTransfers SpaceOwnershipTransfer[]
+  tags               Tag[]
 
   @@index([deletedAt])
   @@index([purgeAfter])
@@ -326,6 +329,159 @@ model ModuleAccessRequest {
 
   @@index([status, createdAt])
   @@index([spaceId])
+}
+
+// =============================================================================
+// 4. REFERENTIELS (globaux, traduits) [D09] [D34] [D36]
+// =============================================================================
+// C3 : tables, seed et usages par les recettes [D160] ; gestion admin en C4.
+
+enum UnitDimension {
+  MASS // base : gramme
+  VOLUME // base : millilitre (les cuilleres sont des volumes)
+  COUNT // piece, tranche, gousse...
+  NONE // "a gout", "selon besoin" : pas de quantite convertible
+}
+
+/// Unite de mesure. toBase = combien d'unites de base vaut 1 unite
+/// (1 kg = 1000 g, 1 c. a soupe = 15 ml). null pour COUNT et NONE.
+/// metric : unite metrique remplacable par une plus lisible (g <-> kg).
+model Unit {
+  id        String        @id @default(uuid())
+  code      String        @unique // "g", "kg", "ml", "tbsp", "piece"...
+  dimension UnitDimension
+  toBase    Float?
+  metric    Boolean       @default(false)
+  sortOrder Int           @default(0)
+
+  translations      UnitTranslation[]
+  ingredientWeights IngredientUnitWeight[]
+  defaultFor        Ingredient[]
+}
+
+model UnitTranslation {
+  unitId       String
+  locale       String
+  name         String // "cuillere a soupe"
+  namePlural   String?
+  abbreviation String // "c. a soupe"
+
+  unit Unit @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@id([unitId, locale])
+}
+
+/// Rayon du magasin (fruits et legumes, boucherie...) pour la liste de courses [D36].
+model Aisle {
+  id        String @id @default(uuid())
+  code      String @unique
+  sortOrder Int    @default(0)
+
+  translations AisleTranslation[]
+  ingredients  Ingredient[]
+}
+
+model AisleTranslation {
+  aisleId String
+  locale  String
+  name    String
+
+  aisle Aisle @relation(fields: [aisleId], references: [id], onDelete: Cascade)
+
+  @@id([aisleId, locale])
+}
+
+enum IngredientStatus {
+  ACTIVE // verifie par l'admin
+  NEW // cree a la volee, utilisable tout de suite, a revoir [D09]
+  MERGED // fusionne (mergedIntoId) : synonyme propose a la saisie, remplace par la cible [D120]
+}
+
+/// Ingredient du catalogue global. Utilisable des sa creation [D09].
+model Ingredient {
+  id            String           @id @default(uuid())
+  status        IngredientStatus @default(NEW)
+  defaultUnitId String?
+  aisleId       String? // rayon par defaut [D36]
+  mergedIntoId  String?
+  createdById   String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  defaultUnit  Unit?                   @relation(fields: [defaultUnitId], references: [id])
+  aisle        Aisle?                  @relation(fields: [aisleId], references: [id])
+  mergedInto   Ingredient?             @relation("IngredientMerge", fields: [mergedIntoId], references: [id])
+  mergedFrom   Ingredient[]            @relation("IngredientMerge")
+  createdBy    User?                   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  translations IngredientTranslation[]
+  unitWeights  IngredientUnitWeight[]
+
+  @@index([status])
+}
+
+/// Nom d'un ingredient dans une langue [D34]. normalized = minuscules, sans
+/// accents ni espaces superflus : sert a l'autocompletion et a l'unicite.
+model IngredientTranslation {
+  ingredientId String
+  locale       String
+  name         String
+  namePlural   String?
+  normalized   String
+
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+
+  @@id([ingredientId, locale])
+  @@unique([locale, normalized])
+}
+
+/// Poids d'une unite pour un ingredient donne (1 oeuf = 60 g) [D36].
+model IngredientUnitWeight {
+  ingredientId String
+  unitId       String
+  grams        Float
+
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  unit       Unit       @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@id([ingredientId, unitId])
+}
+
+enum TagScope {
+  GLOBAL // liste courte curee par l'admin, traduite [D34]
+  SPACE // creee librement par les membres d'un espace [D08]
+}
+
+/// Tag. Les tags d'espace ont un slug unique dans leur espace ; les tags
+/// globaux un slug unique (index partiel, voir la migration).
+model Tag {
+  id           String    @id @default(uuid())
+  scope        TagScope
+  spaceId      String? // renseigne seulement pour SPACE
+  name         String
+  slug         String // minuscules, sans accents
+  createdById  String?
+  mergedIntoId String?
+  createdAt    DateTime  @default(now())
+  deletedAt    DateTime?
+
+  space        Space?           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  createdBy    User?            @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  mergedInto   Tag?             @relation("TagMerge", fields: [mergedIntoId], references: [id])
+  mergedFrom   Tag[]            @relation("TagMerge")
+  translations TagTranslation[]
+
+  @@unique([spaceId, slug])
+  @@index([scope, deletedAt])
+}
+
+model TagTranslation {
+  tagId  String
+  locale String
+  name   String
+
+  tag Tag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([tagId, locale])
 }
 
 // =============================================================================

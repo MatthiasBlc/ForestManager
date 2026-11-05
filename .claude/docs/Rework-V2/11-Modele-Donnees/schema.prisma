@@ -377,6 +377,7 @@ model Unit {
   code      String        @unique // "g", "kg", "ml", "tbsp", "piece"...
   dimension UnitDimension
   toBase    Float?
+  metric    Boolean       @default(false) // unite metrique remplacable par une plus lisible (g <-> kg), C3.1
   sortOrder Int           @default(0)
 
   translations      UnitTranslation[]
@@ -497,7 +498,7 @@ model Tag {
   createdAt    DateTime  @default(now())
   deletedAt    DateTime?
 
-  space        Space?               @relation(fields: [spaceId], references: [id])
+  space        Space?               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
   createdBy    User?                @relation(fields: [createdById], references: [id], onDelete: SetNull)
   mergedInto   Tag?                 @relation("TagMerge", fields: [mergedIntoId], references: [id])
   mergedFrom   Tag[]                @relation("TagMerge")

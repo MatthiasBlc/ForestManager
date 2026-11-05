@@ -78,6 +78,11 @@ const DEFINITIONS = {
   MODULE_006: { status: 409, message: "Ce module ne peut pas être désactivé." },
   MODULE_007: { status: 404, message: "Demande d'accès introuvable." },
   MODULE_008: { status: 409, message: "Ce module est déjà accordé à cet espace." },
+
+  // --- Recettes et referentiels ---
+  RECIPE_001: { status: 404, message: "Recette introuvable." },
+  RECIPE_002: { status: 409, message: "Un tag porte déjà ce nom dans cet espace." },
+  RECIPE_003: { status: 404, message: "Tag introuvable." },
 } as const satisfies Record<string, ErrorDefinition>;
 
 export type ErrorCode = keyof typeof DEFINITIONS;

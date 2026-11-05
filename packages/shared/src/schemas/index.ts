@@ -3,3 +3,4 @@ export * from "./common.ts";
 export * from "./auth.ts";
 export * from "./spaces.ts";
 export * from "./modules.ts";
+export * from "./referentials.ts";

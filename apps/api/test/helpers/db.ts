@@ -7,7 +7,14 @@ export const testEnv = loadEnv();
 export const db: Db = createDb(testEnv.DATABASE_URL);
 
 /** Referentiels : remplis par le seed, jamais vides entre deux fichiers. */
-const KEPT_TABLES = new Set(["_prisma_migrations", "Module"]);
+const KEPT_TABLES = new Set([
+  "_prisma_migrations",
+  "Module",
+  "Unit",
+  "UnitTranslation",
+  "Aisle",
+  "AisleTranslation",
+]);
 
 /** Vide toutes les tables hors referentiels, puis rejoue le seed. */
 export async function resetDatabase(): Promise<void> {
