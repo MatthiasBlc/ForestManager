@@ -1,11 +1,11 @@
 # Plan C1 - Socle
 
-Statut : voir le journal (D143 a D146). Les sous-etapes sont des cases dans `4-Roadmap.md`.
+Statut : voir le journal (D143 a D147). Les sous-etapes sont des cases dans `4-Roadmap.md`.
 References : `14-Architecture.md` (cible), `11-Modele-Donnees/schema.prisma` (sections 1 a 3), `12-Permissions.md` (Compte, Espace perso, Espace groupe, Modules), `15-Plan-Tests.md` (Socle).
 
 ## 1. Perimetre
 
-**Dans C1** : monorepo, package partage, environnement Docker V2, squelette API (securite, erreurs, validation), comptes (inscription, connexion, sessions, emails optionnels, profil, suppression), espaces, membres et roles, transfert de propriete, suppression et restauration d'espace, invitations (lien et username), registre de modules cote API (catalogue, demande d'acces, activation), CI V2 sans deploy.
+**Dans C1** : monorepo, package partage, environnement Docker V2, squelette API (securite, erreurs, validation), comptes (inscription, connexion, sessions, emails optionnels, profil, suppression), espaces, membres et roles, transfert de propriete, suppression et restauration d'espace, invitations (lien et username), registre de modules cote API (catalogue, demande d'acces, activation), CI V2 reprise de la V1 (deploy preprod et prod ecrit, inactif avant C7) [D147].
 
 **Hors C1** (etape cible entre parentheses) :
 
@@ -108,14 +108,16 @@ Chaque sous-etape se termine par des tests verts dans Docker.
 
 - Anonymisation [D20], depart de tous les espaces, transfert automatique de propriete et plafond de 20 espaces possedes [D51], espace perso supprime. Les consequences par espace sont calculees par l'API (ecran D116 en C2) ; l'export propose arrive en C6.
 
-### C1.10 CI V2
+### C1.10 CI V2 [D147]
 
-- `.github/workflows/v2-ci.yml` : install, lint, typecheck, tests unitaires et d'integration (PostgreSQL de service), build des images sans push.
+- Reprise de `.github/workflows/deploy.yml`, `deploy_prod.sh` et des compose preprod et prod de la V1 (tag `v1-final`) : memes secrets, memes images, memes stacks Portainer, memes labels Traefik et reseaux externes (`proxy`, `minio-net`).
+- Verification : format, lint, typecheck, audit, tests dans `docker/compose.test.yml` (comme en local), build des images.
+- Deploy : PR vers `master` = preprod, push sur `master` = prod, puis changelog et tag. Rien ne part vers `master` avant C7 [D143].
 
 ## 5. Definition de fini de C1
 
 - Toutes les routes du socle couvertes en integration, un test par role (OWNER, MODERATOR, MEMBER, non-membre, anonyme) genere depuis la matrice.
-- `v2-ci.yml` vert sur `Developement`.
+- CI V2 verte sur la branche de travail.
 - Plus aucune trace de la V1 dans l'arbre (hors tag `v1-final`).
 - README du chantier et roadmap a jour.
 

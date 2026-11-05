@@ -401,3 +401,14 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
 ### D146 - Stockage MinIO et avatars en C3 - VALIDEE (2026-11-05)
 
 - **Choix** : avatars d'utilisateur et d'espace livres en C3 avec les photos de recettes : un seul chantier stockage. C1 reste centre sur comptes, espaces, invitations et modules.
+
+### D147 - CI et deploy V2 repris de la V1 : meme Portainer, memes stacks, Traefik - VALIDEE (2026-11-05)
+
+- **Constat** : le plan C1.10 ne prevoyait qu'une CI de verification. Le proprietaire demande de reprendre le processus de la V1 (`.github/workflows/deploy.yml`, `deploy_prod.sh`, `docker-compose.preprod.yml` et `.prod.yml` au tag `v1-final`) et de deployer sur le meme Portainer, idealement dans les memes stacks.
+- **Choix** : la V2 reprend la chaine V1 en l'ameliorant, sans en changer les points de contact :
+  - memes secrets GitHub (`REGISTRY_*`, `IMAGE_NAME`, `PORTAINER_URL`, `PORTAINER_API`, `STACK_ID`, `DEV_STACK_ID`, `ENDPOINT_ID`, `POSTGRES_*`, `SESSION_SECRET`, `ADMIN_SESSION_SECRET`), nouveaux secrets seulement si une fonction l'exige ;
+  - memes images (`<registre>/<IMAGE_NAME>/backend` et `/frontend`), memes noms de services et de conteneurs (`forestmanager-*`, `forestmanager-dev-*` en preprod), meme alias `forestmanager-backend` vise par le nginx du front ;
+  - memes stacks Portainer mises a jour par API (`deploy_prod.sh` : envsubst puis PUT de la stack), memes reseaux externes (`proxy` pour Traefik, `minio-net`), memes labels Traefik (entrypoint `https`, certresolver `cloudflare`, memes domaines) ;
+  - meme declenchement : PR vers `master` = preprod, push sur `master` = prod, changelog et tag apres la prod.
+- **Ameliorations prevues** : contexte de build monorepo (`docker/*.Dockerfile`), images taguees `sha-<court>` en plus de `latest` (B6), verification unique dans le conteneur de test (`docker/compose.test.yml`, identique en local et en CI), volume PostgreSQL neuf en 17 (remise a zero D23).
+- **Consequence** : C1.10 ecrit le workflow complet et les compose preprod et prod dans `docker/`. D143 tient toujours : rien ne se deploie avant C7, puisque rien ne part vers `master` avant.
