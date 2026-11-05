@@ -31,8 +31,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-forestmanager_dev}
       POSTGRES_DB: ${POSTGRES_DB:-forestmanager_db}
     volumes:
-      # Volume neuf pour PostgreSQL 17 (celui de la V1 contient des donnees 15).
-      - pgdata17:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     networks: [internal]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
@@ -85,4 +84,4 @@ networks:
   internal:
 
 volumes:
-  pgdata17:
+  postgres_data:

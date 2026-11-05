@@ -52,7 +52,7 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
   - API provisoire : `node apps/api/src/server.ts` (types effaces nativement par Node 22.18+, d'ou `erasableSyntaxOnly`), `GET /health` seulement.
   - A faire par le proprietaire : `git push origin v1-final` (pas de cle SSH dans la session).
 - C1.2 fait le 2026-11-05 : `docker/` (api et web en multi-etapes dev/prod, `compose.dev.yml`, `compose.test.yml`, nginx du front), scripts racine, `CLAUDE.md` a jour.
-  - Dev : node_modules vient de l'image (volume anonyme renouvele par `docker:up:build`), volume PostgreSQL 17 neuf `pgdata17` (l'ancien volume V1 `forestmanager_postgres_data` est intact sur l'hote).
+  - Dev : node_modules vient de l'image (volume anonyme renouvele par `docker:up:build`), volume `postgres_data` recree en PostgreSQL 17 (l'ancien volume V1 en 15 a ete supprime).
   - Tests : conteneur jetable `tests` (image dev de l'API) + PostgreSQL 17 en tmpfs, projet compose `forestmanager-test` force par `-p` (sinon `COMPOSE_PROJECT_NAME` du `.env` gagne). La CI de C1.10 lancera la meme commande.
   - Prod : API sans build, utilisateur `node`, tini ; front nginx (SPA, en-tetes de securite, cache long sur `/assets/`, proxy `/api/` vers `forestmanager-backend:3001` comme en V1). Images verifiees a la main ensemble.
   - Reste pour C1.4 : Prisma dans `apps/api`, extensions `pg_trgm` et `unaccent` dans la premiere migration, `migrate deploy` + seed au demarrage de l'image prod (comme en V1), variables d'env (`SESSION_SECRET`...) dans les compose.
