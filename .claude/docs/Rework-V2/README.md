@@ -48,7 +48,7 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
 - C1.1 fait le 2026-11-05 : V1 supprimee de l'arbre, workspaces `apps/api`, `apps/web`, `packages/shared`, `packages/test-utils`, TypeScript 6.0 strict, ESLint 9 flat (typescript-eslint strict type-checked), Vitest 5 en projets. Lint, typecheck, tests et build web verts dans `node:22-alpine`.
   - Versions : regle des deux semaines appliquee le 2026-11-05 (Vite 8.3.5, Vitest 5.0.5 car la 5.1.0 date du 2026-11-02, plugin React 6.1.2, typescript-eslint 8.72.0). ESLint reste en 9 comme prevu au plan (la 10 existe).
   - **npm 11 obligatoire** (`packageManager: npm@11.21.1`) : npm 10 (fourni avec Node 22) plante sur les peers de vitest (`Cannot read properties of null (reading 'edgesOut')`). Les Dockerfiles de C1.2 installent npm 11.
-  - Hook husky : il tourne sur le Node de l'hote (18 aujourd'hui), d'ou lint-staged 15.5.2 ; passer l'hote en Node 22 permettra de monter en 17.
+  - Node de l'hote : `.nvmrc` = 22 (meme version que les images Docker) ; le hook pre-commit charge cette version via nvm, quel que soit le Node par defaut de l'hote. lint-staged en 17.
   - API provisoire : `node apps/api/src/server.ts` (types effaces nativement par Node 22.18+, d'ou `erasableSyntaxOnly`), `GET /health` seulement.
   - A faire par le proprietaire : `git push origin v1-final` (pas de cle SSH dans la session).
 - Prochaine etape : C1.2 (Docker V2, commandes, mise a jour de `CLAUDE.md`).
