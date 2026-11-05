@@ -14,6 +14,7 @@ import type { Context } from "../context.ts";
 import type { Db } from "../db/client.ts";
 import { createMailer, type Mailer } from "../mail/mailer.ts";
 import { emptyHooks, type LifecycleHooks } from "../modules/hooks.ts";
+import { invitationsRouter } from "../spaces/invitations-routes.ts";
 import { spacesRouter } from "../spaces/routes.ts";
 import { errorHandler, notFoundHandler } from "./errors.ts";
 import { httpLogger } from "./logger.ts";
@@ -79,6 +80,7 @@ export function createApp(deps: AppDeps): express.Express {
   api.use(sessionMiddleware(deps.db, env.SESSION_SECRET, production));
   api.use(authRouter(ctx, rateLimit));
   api.use(spacesRouter(ctx));
+  api.use(invitationsRouter(ctx, rateLimit));
   app.use(API_PREFIX, api);
 
   app.use(notFoundHandler);

@@ -422,3 +422,13 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
 
 - **Constat** : un membre exclu ne revient que par invitation directe, jamais par un lien (D07, D53) ; un membre parti de lui-meme peut revenir par un lien. Le schema cible n'avait que `leftAt` et ne permettait pas de les distinguer.
 - **Choix** : colonne `excludedAt` sur `Membership`, renseignee a l'exclusion et effacee au retour. Au depart, le role revient a MEMBER et les propositions de transfert de propriete en cours qui le concernent sont annulees. Schema cible mis a jour.
+
+### D150 - Invitation par username : meme reponse que le compte existe ou non - VALIDEE (2026-11-05, realisation C1.7)
+
+- **Constat** : le parcours P02 affichait "Aucun compte avec ce nom" pour un username inconnu, ce qui permet de tester l'existence des comptes. Le plan C1.7 demande une reponse identique (D07, D50).
+- **Choix** : `POST /spaces/:id/invitations` repond toujours 202 sans corps (compte inconnu, supprime, deja membre ou deja invite). Rate limit de 30 invitations par heure. La liste des invitations en attente de l'espace (moderateurs) ne montre que les invitations reelles : fuite residuelle acceptee, limitee par le rate limit et reservee aux moderateurs. P02 mis a jour : message neutre "Si ce compte existe, il recevra l'invitation".
+- **Liens** : un code inconnu, expire, revoque, epuise ou d'un espace supprime repond pareil (SPACE_014). Rejoindre par un lien accepte l'invitation directe en attente pour le meme espace.
+
+### D151 - TDD par defaut en phase C - VALIDEE (2026-11-05, demande du proprietaire)
+
+- **Choix** : a partir de C1.8, chaque regle s'ecrit test d'abord (constate rouge), puis code, puis nettoyage. Exceptions : outillage, configuration, Docker, CI.

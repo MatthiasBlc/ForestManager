@@ -36,7 +36,7 @@ Conventions :
   2. Arrivee dans l'espace : SpaceRail montre la nouvelle icone active, l'interface prend la teinte. EmptyState du module Recettes avec deux actions : "Ajouter une recette" et "Inviter des membres".
   3. F-INVITER (D07), deux onglets SegmentedControl :
      - **Lien** : duree (SegmentedControl 1 jour / 7 jours / 30 jours), nombre d'usages (Stepper, illimite possible), Button "Creer le lien" puis "Copier le lien" (Toast "Lien copie"). Liste des liens actifs avec usages restants et ActionMenu "Revoquer".
-     - **Nom d'utilisateur** : Field nom exact (pas d'autocompletion globale), Button "Inviter". Erreur "Aucun compte avec ce nom" si inconnu.
+     - **Nom d'utilisateur** : Field nom exact (pas d'autocompletion globale), Button "Inviter". Message neutre "Si ce compte existe, il recevra l'invitation" dans tous les cas (D150).
   4. Desktop : F-INVITER aussi accessible depuis E-MEMBRES.
 - **Notifications** : invitation par nom -> la personne invitee recoit une notification "X t'invite dans Famille".
 - **Decisions** : D06, D07, D32, D33.

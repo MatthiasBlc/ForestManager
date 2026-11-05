@@ -140,6 +140,7 @@ export type InviteLink = z.infer<typeof inviteLinkSchema>;
 
 /** Reponse de creation : le code n'est montre qu'une fois. */
 export const createdInviteLinkSchema = inviteLinkSchema.extend({ code: inviteCodeSchema });
+export type CreatedInviteLink = z.infer<typeof createdInviteLinkSchema>;
 
 /** Apercu public d'un lien, avant de rejoindre (aucune donnee privee). */
 export const inviteLinkPreviewSchema = z.object({
