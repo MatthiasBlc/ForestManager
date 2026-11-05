@@ -7,11 +7,12 @@ import { createDb } from "./core/db/client.ts";
 import { createApp, createContext } from "./core/http/app.ts";
 import { createLogger } from "./core/http/logger.ts";
 import { purgeDeletedSpaces } from "./core/spaces/service.ts";
+import { MODULES } from "./modules/index.ts";
 
 const env = loadEnv();
 const logger = createLogger(env);
 const db = createDb(env.DATABASE_URL);
-const ctx = createContext({ env, db, logger });
+const ctx = createContext({ env, db, logger, modules: MODULES });
 const app = createApp(ctx);
 
 const server = app.listen(env.PORT, () => {

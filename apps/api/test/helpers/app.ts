@@ -6,6 +6,7 @@ import request from "supertest";
 import { createApp, type AppDeps } from "../../src/core/http/app.ts";
 import type { MailMessage, Mailer } from "../../src/core/mail/mailer.ts";
 import { CSRF_COOKIE, CSRF_HEADER } from "../../src/core/http/security.ts";
+import { MODULES } from "../../src/modules/index.ts";
 import { db, testEnv } from "./db.ts";
 
 export function createTestApp(overrides: Partial<AppDeps> = {}) {
@@ -14,6 +15,7 @@ export function createTestApp(overrides: Partial<AppDeps> = {}) {
     db,
     logger: pino({ level: "silent" }),
     rateLimit: false,
+    modules: MODULES,
     ...overrides,
   });
 }

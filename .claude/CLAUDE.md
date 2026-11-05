@@ -36,11 +36,12 @@ npm run prisma:migrate         # migrations (a partir de C1.4) ; prisma:studio s
 
 ## Conventions
 
+- **TDD par defaut** (D151) : ecrire le test, le lancer et le voir echouer, puis le code minimal, puis nettoyer. Exceptions : outillage, configuration, Docker, CI.
 - **Langue** : code 100% anglais. Commentaires et docs en francais.
 - **Accents** : aucun dans le code et les docs (ASCII only).
 - **IDs** : UUID v4. UUID "not found" en test : `00000000-0000-4000-8000-000000000000`.
 - **Soft delete** (`deletedAt`) sur les entites principales ; hard delete en cascade sur les pivots.
-- **Codes erreur** : constantes centralisees dans `backend/src/constants/errorCodes.ts`, jamais de string literal.
+- **Codes erreur** : constantes centralisees dans `packages/shared/src/errors/index.ts`, jamais de string literal.
 - **Seed** : idempotent (upsert only, jamais de truncate). Preprod et prod sont persistantes et le seed tourne a chaque deploy.
 - **Admin** : `AdminUser` isole des users, session dediee 30 min, 2FA TOTP obligatoire.
 
@@ -60,5 +61,5 @@ Tout est dans `.claude/docs/` (index : `.claude/docs/README.md`). Regles :
 - **Un compteur ou un statut a un seul endroit** ; ailleurs on renvoie, on ne recopie pas.
 - **Chantier termine** -> son dossier part dans `.claude/docs/Archive/` et n'est plus lu par defaut. Dans un chantier en cours, une etude terminee (conclusions reportees au CDC et au journal) va dans son sous-dossier `archive/`.
 - **V1** : code et docs retires de l'arbre, lisibles dans le tag git `v1-final` (`git show v1-final:<chemin>`).
-- Ne pas recopier ce que le code dit deja (arborescence, liste d'endpoints, schema) : lire le code (`backend/prisma/schema.prisma`, `backend/src/routes/`).
+- Ne pas recopier ce que le code dit deja (arborescence, liste d'endpoints, schema) : lire le code (`apps/api/prisma/schema.prisma`, les `routes.ts` de `apps/api/src/`).
 - Session interrompue : ecrire l'etat dans le `README.md` du chantier (section "Reprise").

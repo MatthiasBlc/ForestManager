@@ -6,6 +6,7 @@ import type { Env } from "./config/env.ts";
 import type { Db } from "./db/client.ts";
 import type { Mailer } from "./mail/mailer.ts";
 import type { LifecycleHooks } from "./modules/hooks.ts";
+import type { ApiModule } from "./modules/registry.ts";
 
 export interface Context {
   env: Env;
@@ -14,4 +15,6 @@ export interface Context {
   mailer: Mailer | null;
   hasher: PasswordHasher;
   hooks: LifecycleHooks;
+  /** Manifestes du registre (src/modules/index.ts), injectes. */
+  modules: readonly ApiModule[];
 }

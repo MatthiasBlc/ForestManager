@@ -13,9 +13,13 @@ import type { Env } from "../config/env.ts";
 import type { Context } from "../context.ts";
 import type { Db } from "../db/client.ts";
 import { createMailer, type Mailer } from "../mail/mailer.ts";
-import { emptyHooks, type LifecycleHooks } from "../modules/hooks.ts";
+import { requireModule } from "../modules/guards.ts";
+import type { LifecycleHooks } from "../modules/hooks.ts";
+import { assertValidModules, hooksFrom, type ApiModule } from "../modules/registry.ts";
+import { modulesRouter } from "../modules/routes.ts";
 import { invitationsRouter } from "../spaces/invitations-routes.ts";
 import { spacesRouter } from "../spaces/routes.ts";
+import { requireAuth } from "./auth.ts";
 import { errorHandler, notFoundHandler } from "./errors.ts";
 import { httpLogger } from "./logger.ts";
 import { csrfProtection, securityHeaders } from "./security.ts";
@@ -31,6 +35,8 @@ export interface AppDeps {
   mailer?: Mailer | null;
   hasher?: PasswordHasher;
   hooks?: LifecycleHooks;
+  /** Manifestes des modules (src/modules/index.ts) ; le socle ne les importe pas [D40]. */
+  modules: readonly ApiModule[];
 }
 
 /** Taille maximale d'un corps JSON (comme la V1). */
@@ -45,7 +51,8 @@ export function createContext(deps: AppDeps): Context {
     logger: deps.logger,
     mailer: deps.mailer === undefined ? createMailer(env) : deps.mailer,
     hasher: deps.hasher ?? createPasswordHasher(env.NODE_ENV === "test"),
-    hooks: deps.hooks ?? emptyHooks(),
+    hooks: deps.hooks ?? hooksFrom(deps.modules),
+    modules: deps.modules,
   };
 }
 
@@ -53,6 +60,7 @@ export function createApp(deps: AppDeps): express.Express {
   const { env } = deps;
   const production = env.NODE_ENV === "production";
   const rateLimit = deps.rateLimit ?? env.NODE_ENV !== "test";
+  assertValidModules(deps.modules);
   const ctx = createContext(deps);
   const app = express();
 
@@ -81,6 +89,14 @@ export function createApp(deps: AppDeps): express.Express {
   api.use(authRouter(ctx, rateLimit));
   api.use(spacesRouter(ctx));
   api.use(invitationsRouter(ctx, rateLimit));
+  api.use(modulesRouter(ctx));
+  // Routeurs des modules, chacun derriere sa garde [D33].
+  for (const module of ctx.modules) {
+    if (!module.router) continue;
+    const mount = Router({ mergeParams: true });
+    mount.use(requireAuth, requireModule(ctx, module), module.router(ctx));
+    api.use(`/spaces/:spaceId/${module.code}`, mount);
+  }
   app.use(API_PREFIX, api);
 
   app.use(notFoundHandler);

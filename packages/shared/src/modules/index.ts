@@ -19,6 +19,8 @@ export const DEFAULT_MODULE_CODE = "recipes";
 
 export interface ModuleDefinition {
   readonly code: ModuleCode;
+  /** Toujours actif : l'OWNER ne peut pas le desactiver (Recettes [D91]). */
+  readonly alwaysOn?: boolean;
   /** Cles prefixees par le code du module : `recipes.create`. */
   readonly permissions: Readonly<Record<string, ModulePermission>>;
   /** Types de notification declares (C6) : `recipes.suggestion.created`. */

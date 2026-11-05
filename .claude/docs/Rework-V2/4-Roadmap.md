@@ -39,7 +39,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C1.5 Comptes et sessions
   - [x] C1.6 Espaces et membres
   - [x] C1.7 Invitations
-  - [ ] C1.8 Registre de modules
+  - [x] C1.8 Registre de modules
   - [ ] C1.9 Suppression du compte
   - [ ] C1.10 CI V2 et deploy repris de la V1 (D147)
 - [ ] C2 Design system et app shell

@@ -432,3 +432,9 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
 ### D151 - TDD par defaut en phase C - VALIDEE (2026-11-05, demande du proprietaire)
 
 - **Choix** : a partir de C1.8, chaque regle s'ecrit test d'abord (constate rouge), puis code, puis nettoyage. Exceptions : outillage, configuration, Docker, CI.
+
+### D152 - Registre : statut initial declare par le manifeste, modules a venir declares - VALIDEE (2026-11-05, realisation C1.8)
+
+- **Constat** : l'architecture (S3.2) ajoutait tout code nouveau en `COMING_SOON`, alors que le seed creait Recettes en `AVAILABLE`. Retirer du catalogue un code absent du registre aurait aussi retire Planning et Courses, qui n'ont pas encore de code.
+- **Choix** : chaque manifeste API declare son entree de catalogue (`catalog.status` initial, `isDefault`, `sortOrder`). Le seed appelle `syncCatalog` : code nouveau -> statut declare ; code absent -> `RETIRED` (donnees conservees, D85) ; code revenu apres retrait -> statut declare. Le statut n'est jamais reecrit ensuite (il appartient au super admin). Planning et Courses ont des manifestes minimaux (`COMING_SOON`, aucune route). `alwaysOn` dans le contrat partage porte D91.
+- **Reporte** : la surcharge du role minimal d'une permission `configurable` (D58) attend les reglages de module (C5) ; `requirePermission` applique le role par defaut du manifeste.

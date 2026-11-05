@@ -325,6 +325,7 @@ describe("suppression, restauration, purge (D22)", () => {
       env: testEnv,
       db,
       logger: pino({ level: "silent" }),
+      modules: [],
       hooks: {
         onSpaceDeleted: [
           (_tx, id) => {
