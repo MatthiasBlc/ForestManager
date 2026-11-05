@@ -2,7 +2,7 @@
 // Les changements de chaque revision sont calcules en comparant son instantane
 // a celui de la revision precedente (rien de plus n'est stocke).
 import {
-  localBlockInputSchema,
+  blockInputSchema,
   type Recipe,
   type RecipeRevision,
   type RevisionChange,
@@ -12,7 +12,7 @@ import { z } from "zod";
 
 import type { Context } from "../../core/context.ts";
 import { AppError } from "../../core/http/errors.ts";
-import type { RecipeContent } from "./content.ts";
+import { linksOf, type RecipeContent } from "./content.ts";
 import {
   findEditable,
   findVisible,
@@ -34,7 +34,7 @@ const snapshotSchema = z.object({
     rest: z.number().nullable(),
   }),
   isBase: z.boolean(),
-  blocks: z.array(localBlockInputSchema),
+  blocks: z.array(blockInputSchema),
 });
 type Snapshot = z.infer<typeof snapshotSchema>;
 
@@ -47,9 +47,9 @@ const PARTS: Record<RevisionChange, (s: Snapshot) => unknown> = {
   yield: (s) => s.yield,
   times: (s) => s.times,
   base: (s) => s.isBase,
-  blocks: (s) => s.blocks.map((block) => block.title),
-  ingredients: (s) => s.blocks.map((block) => block.ingredients),
-  steps: (s) => s.blocks.map((block) => block.steps),
+  blocks: (s) => s.blocks.map((block) => (block.kind === "LOCAL" ? { title: block.title } : block)),
+  ingredients: (s) => s.blocks.map((block) => (block.kind === "LOCAL" ? block.ingredients : [])),
+  steps: (s) => s.blocks.map((block) => (block.kind === "LOCAL" ? block.steps : [])),
 };
 
 export function changesBetween(previous: Snapshot | null, next: Snapshot): RevisionChange[] {
@@ -133,6 +133,8 @@ export async function restoreRevision(
     spaceTagIds: current.spaceTags.map((link) => link.tag.id),
   };
   const content = contentOf(snapshotSchema.parse(row.snapshot), tags);
-  await writeRevision(ctx, actor, recipeId, content, baseRevision, "RESTORE");
+  // Les liens de la revision restauree etaient valables : ils sont gardes.
+  const keepLinks = new Set(linksOf(content.blocks));
+  await writeRevision(ctx, actor, recipeId, content, baseRevision, "RESTORE", keepLinks);
   return getRecipe(ctx, actor, recipeId);
 }

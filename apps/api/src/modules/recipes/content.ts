@@ -1,10 +1,11 @@
 // Contenu d'une recette : verification des references (ingredients, unites,
 // tags), ecriture des blocs, instantane de revision [D05, D30] et lecture.
-import type { LocalBlockInput, Recipe, RecipeBlock, Tag } from "@fm/shared";
+import type { BlockInput, LinkedBlock, LocalBlock, Recipe, RecipeBlock, Tag } from "@fm/shared";
 
 import type { Context } from "../../core/context.ts";
 import type { Prisma } from "../../core/db/client.ts";
 import { AppError } from "../../core/http/errors.ts";
+import type { LoadedLink } from "./composition.ts";
 
 export const LOCALE = "fr"; // francais seul en V2.0 [D34]
 
@@ -22,7 +23,7 @@ export interface RecipeContent {
   cookMinutes: number | null;
   restMinutes: number | null;
   isBase: boolean;
-  blocks: LocalBlockInput[];
+  blocks: BlockInput[];
   globalTagIds: string[];
   spaceTagIds: string[];
 }
@@ -51,16 +52,26 @@ export async function checkTags(
   if (found !== ids.length) throw invalid(path, "Tag inconnu");
 }
 
+/** Recettes liees par le contenu (blocs RECIPE). */
+export function linksOf(blocks: readonly BlockInput[]): string[] {
+  return blocks.flatMap((block) => (block.kind === "RECIPE" ? [block.recipeId] : []));
+}
+
 /**
  * Verifie les references du contenu et remplace les ingredients fusionnes par
  * leur cible [D120]. Renvoie le contenu normalise, pret a ecrire.
+ * Un nouveau lien doit viser une recette visible dans l'espace ; un lien deja
+ * present (`keepLinks`) est garde meme si sa recette est supprimee depuis.
  */
 export async function resolveContent(
   db: Tx,
   content: RecipeContent,
-  spaceId: string
+  spaceId: string,
+  keepLinks: ReadonlySet<string> = new Set()
 ): Promise<RecipeContent> {
-  const lines = content.blocks.flatMap((block) => block.ingredients);
+  const lines = content.blocks.flatMap((block) =>
+    block.kind === "LOCAL" ? block.ingredients : []
+  );
   const ingredientIds = [...new Set(lines.map((line) => line.ingredientId))];
   const ingredients = await db.ingredient.findMany({
     where: { id: { in: ingredientIds } },
@@ -71,7 +82,25 @@ export async function resolveContent(
   }
   const target = new Map(ingredients.map((row) => [row.id, row.mergedIntoId ?? row.id]));
 
-  const unitIds = new Set(lines.flatMap((line) => (line.unitId ? [line.unitId] : [])));
+  const linkIds = [...new Set(linksOf(content.blocks))];
+  const linked = await db.recipe.findMany({
+    where: { id: { in: linkIds } },
+    select: { id: true, homeSpaceId: true, deletedAt: true },
+  });
+  const usable = linked.filter(
+    (row) => keepLinks.has(row.id) || (row.homeSpaceId === spaceId && row.deletedAt === null)
+  );
+  if (usable.length !== linkIds.length) throw invalid("blocks", "Recette liee inconnue");
+
+  const unitIds = new Set(
+    content.blocks.flatMap((block) =>
+      block.kind === "LOCAL"
+        ? block.ingredients.flatMap((line) => (line.unitId ? [line.unitId] : []))
+        : block.unitId
+          ? [block.unitId]
+          : []
+    )
+  );
   if (content.yieldUnitId) unitIds.add(content.yieldUnitId);
   const units = await db.unit.count({ where: { id: { in: [...unitIds] } } });
   if (units !== unitIds.size) throw invalid("blocks", "Unite inconnue");
@@ -81,13 +110,17 @@ export async function resolveContent(
 
   return {
     ...content,
-    blocks: content.blocks.map((block) => ({
-      ...block,
-      ingredients: block.ingredients.map((line) => ({
-        ...line,
-        ingredientId: target.get(line.ingredientId) ?? line.ingredientId,
-      })),
-    })),
+    blocks: content.blocks.map((block) =>
+      block.kind === "LOCAL"
+        ? {
+            ...block,
+            ingredients: block.ingredients.map((line) => ({
+              ...line,
+              ingredientId: target.get(line.ingredientId) ?? line.ingredientId,
+            })),
+          }
+        : block
+    ),
   };
 }
 
@@ -108,24 +141,34 @@ export function recipeColumns(content: RecipeContent) {
 }
 
 /** Blocs en creation imbriquee (positions 0..n). */
-export function blocksCreate(blocks: LocalBlockInput[]) {
+export function blocksCreate(blocks: BlockInput[]) {
   return {
-    create: blocks.map((block, position) => ({
-      position,
-      kind: "LOCAL" as const,
-      title: block.title,
-      ingredients: {
-        create: block.ingredients.map((line, index) => ({
-          position: index,
-          ingredientId: line.ingredientId,
-          quantity: line.quantity,
-          unitId: line.unitId,
-          note: line.note,
-          optional: line.optional,
-        })),
-      },
-      steps: { create: block.steps.map((text, index) => ({ position: index, text })) },
-    })),
+    create: blocks.map((block, position) =>
+      block.kind === "RECIPE"
+        ? {
+            position,
+            kind: "RECIPE" as const,
+            subRecipeId: block.recipeId,
+            subQuantity: block.quantity,
+            subUnitId: block.unitId,
+          }
+        : {
+            position,
+            kind: "LOCAL" as const,
+            title: block.title,
+            ingredients: {
+              create: block.ingredients.map((line, index) => ({
+                position: index,
+                ingredientId: line.ingredientId,
+                quantity: line.quantity,
+                unitId: line.unitId,
+                note: line.note,
+                optional: line.optional,
+              })),
+            },
+            steps: { create: block.steps.map((text, index) => ({ position: index, text })) },
+          }
+    ),
   };
 }
 
@@ -139,12 +182,16 @@ export function snapshotOf(content: RecipeContent): Prisma.InputJsonObject {
     yield: { quantity: content.yieldQuantity, unitId: content.yieldUnitId },
     times: { prep: content.prepMinutes, cook: content.cookMinutes, rest: content.restMinutes },
     isBase: content.isBase,
-    blocks: content.blocks.map((block) => ({
-      kind: block.kind,
-      title: block.title,
-      ingredients: block.ingredients.map((line) => ({ ...line })),
-      steps: [...block.steps],
-    })),
+    blocks: content.blocks.map((block) =>
+      block.kind === "RECIPE"
+        ? { ...block }
+        : {
+            kind: block.kind,
+            title: block.title,
+            ingredients: block.ingredients.map((line) => ({ ...line })),
+            steps: [...block.steps],
+          }
+    ),
   };
 }
 
@@ -183,24 +230,24 @@ export function summaryInclude(spaceId: string) {
   } satisfies Prisma.RecipeInclude;
 }
 
-export function detailInclude(spaceId: string) {
-  return {
-    ...summaryInclude(spaceId),
-    blocks: {
+/** Blocs complets (detail et sous-recettes liees). */
+export const blockInclude = {
+  orderBy: { position: "asc" as const },
+  include: {
+    ingredients: {
       orderBy: { position: "asc" as const },
       include: {
-        ingredients: {
-          orderBy: { position: "asc" as const },
-          include: {
-            ingredient: {
-              select: { translations: { where: { locale: LOCALE } } },
-            },
-          },
+        ingredient: {
+          select: { translations: { where: { locale: LOCALE } } },
         },
-        steps: { orderBy: { position: "asc" as const }, select: { text: true } },
       },
     },
-  } satisfies Prisma.RecipeInclude;
+    steps: { orderBy: { position: "asc" as const }, select: { text: true } },
+  },
+} satisfies Prisma.Recipe$blocksArgs;
+
+export function detailInclude(spaceId: string) {
+  return { ...summaryInclude(spaceId), blocks: blockInclude } satisfies Prisma.RecipeInclude;
 }
 
 type SummaryRow = Prisma.RecipeGetPayload<{ include: ReturnType<typeof summaryInclude> }>;
@@ -239,7 +286,39 @@ export function toSummary(row: SummaryRow) {
   return { ...toSummaryBase(row), isComposed: row.blocks.length > 0 };
 }
 
-function toBlock(block: DetailRow["blocks"][number]): RecipeBlock {
+type BlockRow = DetailRow["blocks"][number];
+
+/** Bloc lie : sous-recette depliee si elle est visible ici (lien vivant). */
+function toLinkedBlock(block: BlockRow, links: ReadonlyMap<string, LoadedLink>): LinkedBlock {
+  const recipeId = block.subRecipeId ?? "";
+  const loaded = links.get(recipeId);
+  const status = loaded?.status ?? "DELETED";
+  return {
+    kind: "RECIPE",
+    recipeId,
+    quantity: block.subQuantity ?? 0,
+    unitId: block.subUnitId,
+    status,
+    recipe:
+      loaded && status === "AVAILABLE"
+        ? {
+            id: loaded.row.id,
+            title: loaded.row.title,
+            yieldQuantity: loaded.row.yieldQuantity,
+            yieldUnitId: loaded.row.yieldUnitId,
+            isBase: loaded.row.isBase,
+            blocks: loaded.row.blocks.map((sub) => toBlock(sub, links)),
+          }
+        : null,
+  };
+}
+
+function toBlock(block: BlockRow, links: ReadonlyMap<string, LoadedLink>): RecipeBlock {
+  if (block.kind === "RECIPE") return toLinkedBlock(block, links);
+  return toLocalBlock(block);
+}
+
+function toLocalBlock(block: BlockRow): LocalBlock {
   return {
     kind: "LOCAL",
     title: block.title,
@@ -259,7 +338,12 @@ function toBlock(block: DetailRow["blocks"][number]): RecipeBlock {
   };
 }
 
-export function toRecipe(row: DetailRow, can: Recipe["can"]): Recipe {
+export function toRecipe(
+  row: DetailRow,
+  can: Recipe["can"],
+  links: ReadonlyMap<string, LoadedLink>,
+  usedBy: number
+): Recipe {
   return {
     ...toSummaryBase(row),
     description: row.description,
@@ -270,7 +354,8 @@ export function toRecipe(row: DetailRow, can: Recipe["can"]): Recipe {
     restMinutes: row.restMinutes,
     currentRevision: row.currentRevision,
     createdAt: row.createdAt.toISOString(),
-    blocks: row.blocks.filter((block) => block.kind === "LOCAL").map(toBlock),
+    blocks: row.blocks.map((block) => toBlock(block, links)),
+    usedBy,
     can,
   };
 }

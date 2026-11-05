@@ -5,10 +5,12 @@ import type { Recipe, RevisionSource } from "@fm/shared";
 import type { Context } from "../../core/context.ts";
 import type { Prisma } from "../../core/db/client.ts";
 import { AppError } from "../../core/http/errors.ts";
+import { assertComposition, countUsedBy, loadLinks } from "./composition.ts";
 import {
   blocksCreate,
   checkTags,
   detailInclude,
+  linksOf,
   recipeColumns,
   resolveContent,
   snapshotOf,
@@ -72,7 +74,12 @@ export async function getRecipe(
   recipeId: string
 ): Promise<Recipe> {
   const row = await findVisible(ctx, actor, recipeId);
-  return toRecipe(row, await rightsOf(ctx, actor, row));
+  const [can, links, usedBy] = await Promise.all([
+    rightsOf(ctx, actor, row),
+    loadLinks(ctx.db, row.blocks, actor.spaceId),
+    countUsedBy(ctx.db, row.id),
+  ]);
+  return toRecipe(row, can, links, usedBy);
 }
 
 export async function createRecipe(
@@ -81,6 +88,7 @@ export async function createRecipe(
   input: RecipeContent
 ): Promise<Recipe> {
   const content = await resolveContent(ctx.db, input, actor.spaceId);
+  await assertComposition(ctx.db, null, linksOf(content.blocks));
   const id = await ctx.db.$transaction(async (tx) => {
     const recipe = await tx.recipe.create({
       data: {
@@ -115,8 +123,9 @@ export async function updateRecipe(
   recipeId: string,
   input: RecipeContent & { revision: number }
 ): Promise<Recipe> {
-  await findEditable(ctx, actor, recipeId);
-  await writeRevision(ctx, actor, recipeId, input, input.revision, "EDIT");
+  const current = await findEditable(ctx, actor, recipeId);
+  const keepLinks = new Set(current.blocks.flatMap((b) => (b.subRecipeId ? [b.subRecipeId] : [])));
+  await writeRevision(ctx, actor, recipeId, input, input.revision, "EDIT", keepLinks);
   return getRecipe(ctx, actor, recipeId);
 }
 
@@ -130,6 +139,7 @@ export async function findEditable(ctx: Context, actor: RecipeActor, recipeId: s
 /**
  * Remplace le contenu et ajoute la revision suivante. Verrou optimiste [D163] :
  * `baseRevision` doit encore etre la revision courante, sinon RECIPE_004.
+ * `keepLinks` : liens deja presents, gardes meme si leur recette n'est plus visible.
  */
 export async function writeRevision(
   ctx: Context,
@@ -137,9 +147,11 @@ export async function writeRevision(
   recipeId: string,
   input: RecipeContent,
   baseRevision: number,
-  source: RevisionSource
+  source: RevisionSource,
+  keepLinks: ReadonlySet<string>
 ): Promise<void> {
-  const content = await resolveContent(ctx.db, input, actor.spaceId);
+  const content = await resolveContent(ctx.db, input, actor.spaceId, keepLinks);
+  await assertComposition(ctx.db, recipeId, linksOf(content.blocks));
   const number = baseRevision + 1;
   await ctx.db.$transaction(async (tx) => {
     const updated = await tx.recipe.updateMany({

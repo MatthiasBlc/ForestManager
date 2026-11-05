@@ -58,7 +58,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C3.1 Referentiels minimaux et domaine pur
   - [x] C3.2 Recettes simples
   - [x] C3.3 Revisions
-  - [ ] C3.4 Recettes composees
+  - [x] C3.4 Recettes composees
   - [ ] C3.5 Partage
   - [ ] C3.6 Adaptation et suggestions
   - [ ] C3.7 Photos et avatars (MinIO)

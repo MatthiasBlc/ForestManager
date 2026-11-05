@@ -89,6 +89,11 @@ const DEFINITIONS = {
   },
   RECIPE_005: { status: 409, message: "Cette révision est déjà la version actuelle." },
   RECIPE_006: { status: 404, message: "Révision introuvable." },
+  RECIPE_007: { status: 409, message: "Une recette ne peut pas se contenir elle-même." },
+  RECIPE_008: {
+    status: 409,
+    message: "Trois niveaux de recettes liées au maximum (plat, sauce, fond).",
+  },
 } as const satisfies Record<string, ErrorDefinition>;
 
 export type ErrorCode = keyof typeof DEFINITIONS;

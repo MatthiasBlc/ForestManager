@@ -1,8 +1,9 @@
 // E-RECETTE-EDITION : creer ou modifier une recette (F-REC-1, F-REC-4, D102,
 // D104, D108, D136). En-tete en mode edition, brouillon garde sur l'appareil,
-// F-CONFIRMER avant de quitter sans enregistrer.
+// F-CONFIRMER avant de quitter sans enregistrer. Blocs lies (D24, D107).
 import {
   createRecipeBodySchema,
+  formatQuantity,
   ingredientSchema,
   recipeSchema,
   type Recipe,
@@ -23,7 +24,9 @@ import { Button, IconButton } from "../../ui/button.tsx";
 import { Chip, Stepper, Switch } from "../../ui/controls.tsx";
 import { Skeleton } from "../../ui/display.tsx";
 import { Field } from "../../ui/field.tsx";
+import { Icon } from "../../ui/icon.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
+import { AddBlockSheet, LinkRecipeSheet } from "./components/link-recipe-sheet.tsx";
 import { QuantityInput } from "./components/quantity-input.tsx";
 import {
   clearDraft,
@@ -39,11 +42,65 @@ import {
   readDraft,
   writeDraft,
   type Draft,
-  type DraftBlock,
   type DraftErrors,
+  type DraftLinkedBlock,
+  type DraftLocalBlock,
 } from "./draft.ts";
 import { RecipeNotFound } from "./recipe-page.tsx";
 import { globalTagsQuery, recipeQuery, recipesKey, spaceTagsQuery, unitsQuery } from "./queries.ts";
+
+/** Bloc lie : seule la quantite utilisee se modifie ici ; la recette liee vit a part. */
+function LinkedBlockEditor({
+  block,
+  index,
+  units,
+  error,
+  onChange,
+  onRemove,
+}: {
+  block: DraftLinkedBlock;
+  index: number;
+  units: readonly Unit[];
+  error?: string;
+  onChange: (block: DraftLinkedBlock) => void;
+  onRemove?: () => void;
+}) {
+  const unit = units.find((u) => u.id === block.unitId);
+  return (
+    <div
+      role="group"
+      aria-label={`Recette liée : ${block.title}`}
+      className="fm-block fm-block-linked"
+    >
+      <div className="fm-block-head">
+        <Icon name="link" />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="fm-block-kind">Recette liée</span>
+          <b>{block.title}</b>
+        </div>
+        {onRemove ? (
+          <IconButton icon="trash" label={`Retirer le bloc ${index + 1}`} onClick={onRemove} />
+        ) : null}
+      </div>
+      <div className="flex items-end gap-2 p-3">
+        <Field
+          label="Quantité utilisée"
+          className="w-40"
+          inputMode="decimal"
+          value={block.quantity}
+          error={error}
+          onChange={(e) => {
+            onChange({ ...block, quantity: e.target.value });
+          }}
+        />
+        <span className="pb-3 text-sm text-ink-muted">
+          {unit ? unit.abbreviation : "pers."}
+          {block.yieldQuantity !== null ? ` sur ${formatQuantity(block.yieldQuantity)}` : ""}
+        </span>
+      </div>
+    </div>
+  );
+}
 
 function BlockEditor({
   block,
@@ -54,12 +111,12 @@ function BlockEditor({
   onChange,
   onRemove,
 }: {
-  block: DraftBlock;
+  block: DraftLocalBlock;
   index: number;
   titled: boolean;
   units: readonly Unit[];
   errors: DraftErrors["lines"];
-  onChange: (block: DraftBlock) => void;
+  onChange: (block: DraftLocalBlock) => void;
   onRemove?: () => void;
 }) {
   const lineLabel = (i: number) =>
@@ -225,6 +282,8 @@ function Editor({
   const [failure, setFailure] = useState<string>();
   const [saving, setSaving] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [linkOpen, setLinkOpen] = useState(false);
 
   useEffect(() => {
     if (dirty) writeDraft(key, draft);
@@ -252,6 +311,7 @@ function Editor({
       // Ingredients saisis sans choisir de proposition : trouves ou crees (D09).
       const ids = new Map<string, string>();
       for (const block of draft.blocks) {
+        if (block.kind !== "LOCAL") continue;
         for (const line of block.lines) {
           if (line.ingredientId === null && line.name.trim()) {
             const ingredient = await api.post(
@@ -363,31 +423,43 @@ function Editor({
             />
           ))}
         </div>
-        {draft.blocks.map((block, index) => (
-          <BlockEditor
-            key={block.key}
-            block={block}
-            index={index}
-            titled={titled}
-            units={units}
-            errors={errors.lines}
-            onChange={(next) => {
-              update({ blocks: draft.blocks.map((b) => (b.key === block.key ? next : b)) });
-            }}
-            onRemove={
-              titled
-                ? () => {
-                    update({ blocks: draft.blocks.filter((b) => b.key !== block.key) });
-                  }
-                : undefined
-            }
-          />
-        ))}
+        {draft.blocks.map((block, index) => {
+          const replace = (next: DraftLocalBlock | DraftLinkedBlock) => {
+            update({ blocks: draft.blocks.map((b) => (b.key === block.key ? next : b)) });
+          };
+          const remove = titled
+            ? () => {
+                update({ blocks: draft.blocks.filter((b) => b.key !== block.key) });
+              }
+            : undefined;
+          return block.kind === "RECIPE" ? (
+            <LinkedBlockEditor
+              key={block.key}
+              block={block}
+              index={index}
+              units={units}
+              error={errors.lines[block.key]}
+              onChange={replace}
+              onRemove={remove}
+            />
+          ) : (
+            <BlockEditor
+              key={block.key}
+              block={block}
+              index={index}
+              titled={titled}
+              units={units}
+              errors={errors.lines}
+              onChange={replace}
+              onRemove={remove}
+            />
+          );
+        })}
         <Button
           icon="plus"
           block
           onClick={() => {
-            update({ blocks: [...draft.blocks, emptyBlock()] });
+            setAddOpen(true);
           }}
         >
           Ajouter un bloc
@@ -434,6 +506,33 @@ function Editor({
           }}
         />
       </div>
+      <AddBlockSheet
+        open={addOpen}
+        onClose={() => {
+          setAddOpen(false);
+        }}
+        onLocal={() => {
+          setAddOpen(false);
+          update({ blocks: [...draft.blocks, emptyBlock()] });
+        }}
+        onLink={() => {
+          setAddOpen(false);
+          setLinkOpen(true);
+        }}
+      />
+      <LinkRecipeSheet
+        open={linkOpen}
+        onClose={() => {
+          setLinkOpen(false);
+        }}
+        spaceId={spaceId}
+        currentRecipeId={recipe?.id}
+        units={units}
+        onLink={(block) => {
+          setLinkOpen(false);
+          update({ blocks: [...draft.blocks, { ...block, key: newKey() }] });
+        }}
+      />
       <Sheet
         open={confirmOpen}
         onClose={() => {

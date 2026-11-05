@@ -1,11 +1,13 @@
 // E-RECETTE : detail d'une recette (F-REC-1), portions avec mise a l'echelle,
-// ingredients a cocher, etapes ; modifier et supprimer selon les droits (D57).
-import type { Recipe, Unit } from "@fm/shared";
+// ingredients a cocher, etapes ; blocs lies deplies a l'echelle (D24) ;
+// modifier et supprimer selon les droits (D57).
+import { linkFactor, type LinkedBlock, type Recipe, type RecipeBlock, type Unit } from "@fm/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
 import { FormAlert } from "../../core/access/auth-layout.tsx";
+import { spaceQuery } from "../../core/session/queries.ts";
 import { PageChrome } from "../../core/shell/page-chrome.tsx";
 import { errorMessage } from "../../i18n/index.ts";
 import { api } from "../../lib/api.ts";
@@ -18,7 +20,8 @@ import { Icon } from "../../ui/icon.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { IngredientRow } from "./components/ingredient-row.tsx";
-import { formatMinutes, ingredientAmount } from "./format.ts";
+import { LINK_STATUS_TITLES } from "./draft.ts";
+import { formatMinutes, scaledAmount } from "./format.ts";
 import { recipeQuery, recipesKey, unitsQuery } from "./queries.ts";
 
 export function RecipeNotFound({ spaceId }: { spaceId: string }) {
@@ -71,6 +74,12 @@ function DeleteSheet({
   return (
     <Sheet open={open} onClose={onClose} title={`Supprimer « ${recipe.title} » ?`}>
       <p>La recette et son historique disparaissent pour tous les membres de l'espace.</p>
+      {recipe.usedBy > 0 ? (
+        <p>
+          Elle est utilisée dans {recipe.usedBy} {recipe.usedBy > 1 ? "recettes" : "recette"} :
+          leurs blocs afficheront « Recette supprimée ».
+        </p>
+      ) : null}
       <FormAlert message={failure} />
       <SheetFooter>
         <Button onClick={onClose}>Annuler</Button>
@@ -79,6 +88,171 @@ function DeleteSheet({
         </Button>
       </SheetFooter>
     </Sheet>
+  );
+}
+
+function LocalBlockView({
+  block,
+  label,
+  units,
+  scale,
+}: {
+  block: Extract<RecipeBlock, { kind: "LOCAL" }>;
+  label: string;
+  units: readonly Unit[];
+  scale: number;
+}) {
+  return (
+    <section className="fm-block" aria-label={block.title ?? label}>
+      <div className="fm-block-head">
+        <div className="flex min-w-0 flex-1 flex-col">
+          {block.title ? <span className="fm-block-kind">Bloc</span> : null}
+          <b>{block.title ?? "Ingrédients et étapes"}</b>
+        </div>
+      </div>
+      <BlockBody block={block} units={units} scale={scale} />
+    </section>
+  );
+}
+
+function BlockBody({
+  block,
+  units,
+  scale,
+}: {
+  block: Extract<RecipeBlock, { kind: "LOCAL" }>;
+  units: readonly Unit[];
+  scale: number;
+}) {
+  return (
+    <div className="fm-block-body">
+      <div>
+        {block.ingredients.map((line, i) => (
+          <IngredientRow
+            key={i}
+            amount={scaledAmount(line, units, scale)}
+            name={line.name}
+            note={line.note}
+          />
+        ))}
+      </div>
+      {block.steps.length > 0 ? (
+        <ol>
+          {block.steps.map((step, i) => (
+            <li key={i}>{step}</li>
+          ))}
+        </ol>
+      ) : null}
+    </div>
+  );
+}
+
+/** Bloc lie (lien vivant) : quantite utilisee, sous-recette repliable a l'echelle. */
+function LinkedBlockView({
+  block,
+  units,
+  scale,
+  spaceId,
+}: {
+  block: LinkedBlock;
+  units: readonly Unit[];
+  scale: number;
+  spaceId: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const { data: space } = useQuery(spaceQuery(spaceId));
+  const sub = block.recipe;
+  const title = sub?.title ?? LINK_STATUS_TITLES[block.status === "HIDDEN" ? "HIDDEN" : "DELETED"];
+  const unitOf = (id: string | null) => units.find((u) => u.id === id) ?? null;
+  const subScale = sub
+    ? scale *
+      linkFactor(
+        { quantity: block.quantity, unit: unitOf(block.unitId) },
+        { yieldQuantity: sub.yieldQuantity, yieldUnit: unitOf(sub.yieldUnitId) }
+      )
+    : 0;
+  return (
+    <section className="fm-block fm-block-linked" aria-label={title}>
+      <div className="fm-block-head">
+        <Icon name={sub ? "link" : "lock"} />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="fm-block-kind">Recette liée</span>
+          <b>{sub ? <Link to={`/s/${spaceId}/recipes/${sub.id}`}>{sub.title}</Link> : title}</b>
+        </div>
+        <span className="fm-block-qty">{scaledAmount(block, units, scale)}</span>
+        {sub ? (
+          <IconButton
+            icon={open ? "chevron-down" : "chevron-right"}
+            label={`${open ? "Replier" : "Déplier"} ${sub.title}`}
+            aria-expanded={open}
+            onClick={() => {
+              setOpen(!open);
+            }}
+          />
+        ) : null}
+      </div>
+      {!sub ? (
+        <div className="fm-block-body">
+          <p className="m-0 text-sm text-ink-muted">
+            {block.status === "HIDDEN"
+              ? `Cette recette liée n'est pas visible dans ${space?.name ?? "cet espace"} : ses ingrédients et ses étapes ne s'affichent pas ici.`
+              : "Cette recette liée a été supprimée : ses ingrédients et ses étapes ne s'affichent plus."}
+          </p>
+        </div>
+      ) : open ? (
+        <div className="fm-stack p-3">
+          {sub.blocks.map((child, i) =>
+            child.kind === "RECIPE" ? (
+              <LinkedBlockView
+                key={i}
+                block={child}
+                units={units}
+                scale={subScale}
+                spaceId={spaceId}
+              />
+            ) : sub.blocks.length > 1 || child.title ? (
+              <LocalBlockView
+                key={i}
+                block={child}
+                label={`${sub.title}, bloc ${i + 1}`}
+                units={units}
+                scale={subScale}
+              />
+            ) : (
+              <BlockBody key={i} block={child} units={units} scale={subScale} />
+            )
+          )}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function BlockView({
+  block,
+  index,
+  titled,
+  units,
+  scale,
+  spaceId,
+}: {
+  block: RecipeBlock;
+  index: number;
+  titled: boolean;
+  units: readonly Unit[];
+  scale: number;
+  spaceId: string;
+}) {
+  if (block.kind === "RECIPE") {
+    return <LinkedBlockView block={block} units={units} scale={scale} spaceId={spaceId} />;
+  }
+  return (
+    <LocalBlockView
+      block={block}
+      label={titled ? `Bloc ${index + 1}` : "Ingrédients et étapes"}
+      units={units}
+      scale={scale}
+    />
   );
 }
 
@@ -96,6 +270,7 @@ function RecipeView({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const yieldUnit = units.find((u) => u.id === recipe.yieldUnitId);
   const titled = recipe.blocks.length > 1;
+  const composed = recipe.blocks.some((block) => block.kind === "RECIPE");
 
   return (
     <>
@@ -171,9 +346,14 @@ function RecipeView({
             </span>
           ) : null}
         </div>
-        {recipe.isBase || recipe.tags.length > 0 ? (
+        {recipe.isBase || composed || recipe.tags.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {recipe.isBase ? <Badge tone="second">Base</Badge> : null}
+            {composed ? (
+              <Badge tone="second" icon="link">
+                Composée
+              </Badge>
+            ) : null}
             {recipe.tags.map((tag) => (
               <Badge key={tag.id} tone={tag.scope === "GLOBAL" ? "accent" : "neutral"}>
                 {tag.name}
@@ -182,37 +362,15 @@ function RecipeView({
           </div>
         ) : null}
         {recipe.blocks.map((block, index) => (
-          <section
+          <BlockView
             key={index}
-            className="fm-block"
-            aria-label={block.title ?? (titled ? `Bloc ${index + 1}` : "Ingrédients et étapes")}
-          >
-            <div className="fm-block-head">
-              <div className="flex min-w-0 flex-1 flex-col">
-                {block.title ? <span className="fm-block-kind">Bloc</span> : null}
-                <b>{block.title ?? "Ingrédients et étapes"}</b>
-              </div>
-            </div>
-            <div className="fm-block-body">
-              <div>
-                {block.ingredients.map((line, i) => (
-                  <IngredientRow
-                    key={i}
-                    amount={ingredientAmount(line, units, recipe.yieldQuantity, servings)}
-                    name={line.name}
-                    note={line.note}
-                  />
-                ))}
-              </div>
-              {block.steps.length > 0 ? (
-                <ol>
-                  {block.steps.map((step, i) => (
-                    <li key={i}>{step}</li>
-                  ))}
-                </ol>
-              ) : null}
-            </div>
-          </section>
+            block={block}
+            index={index}
+            titled={titled}
+            units={units}
+            scale={servings / recipe.yieldQuantity}
+            spaceId={spaceId}
+          />
         ))}
         {recipe.notes ? (
           <section className="fm-stack">

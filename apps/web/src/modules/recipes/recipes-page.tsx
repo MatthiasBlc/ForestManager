@@ -2,7 +2,7 @@
 // "Bases" et "Mes recettes" ; etats vide, chargement, erreur ; F-AJOUT-RECETTE.
 import type { RecipeSummary, Unit } from "@fm/shared";
 import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
 import { meQuery, spaceQuery } from "../../core/session/queries.ts";
@@ -15,6 +15,7 @@ import { Sheet } from "../../ui/sheet.tsx";
 import { RecipeCard, type CardBadge } from "./components/recipe-card.tsx";
 import { recipeMeta } from "./format.ts";
 import { globalTagsQuery, recipesQuery, spaceTagsQuery, unitsQuery } from "./queries.ts";
+import { useDebounced } from "./use-debounced.ts";
 
 function badgesOf(recipe: RecipeSummary): CardBadge[] {
   const badges: CardBadge[] = [];
@@ -76,19 +77,6 @@ function AddRecipeSheet({
       </div>
     </Sheet>
   );
-}
-
-function useDebounced(value: string, delay = 250): string {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebounced(value);
-    }, delay);
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [value, delay]);
-  return debounced;
 }
 
 function RecipeGrid({

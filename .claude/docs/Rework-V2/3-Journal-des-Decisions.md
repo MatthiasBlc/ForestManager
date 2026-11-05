@@ -489,3 +489,9 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
 
 - **Constat** : deux personnes peuvent modifier la meme recette en meme temps (auteur et moderateur, deux appareils). Sans controle, la seconde ecrase la premiere sans le savoir ; le bouton "Enregistrer la revision N" (D102) suppose deja de connaitre la revision de depart.
 - **Choix** : la modification envoie la revision sur laquelle elle a ete faite ; si la recette a avance entre-temps, l'API refuse (`RECIPE_004`, 409) et l'editeur propose de recharger, le brouillon local (D104) restant sur l'appareil. Les revisions (instantane CREATE puis EDIT) sont ecrites des C3.2 ; C3.3 ajoute l'historique et la restauration.
+
+### D164 - Liens de recettes composees : les liens deja presents survivent - VALIDEE (2026-11-05, realisation C3.4)
+
+- **Constat** : une sous-recette peut etre supprimee, ou ne plus etre visible dans l'espace du plat (partage retire, C3.5). Si l'enregistrement exigeait que chaque lien soit visible, le plat ne serait plus modifiable sans retirer le lien, et une restauration (D55) echouerait.
+- **Choix** : un **nouveau** lien doit viser une recette visible et non supprimee de l'espace ; un lien **deja present** dans la recette (ou dans la revision restauree) est garde tel quel. Le bloc s'affiche "Recette supprimee" ou "Recette non disponible" avec sa quantite. La quantite d'un lien garde son unite : si le rendement de la sous-recette change d'unite, elle est convertie dans la meme dimension, sinon le rapport direct des quantites s'applique (`linkFactor`). Supprimer une recette liee previent : "utilisee dans N recettes" (`usedBy`).
+- **Reporte** : recuperer le contenu d'une sous-recette supprimee en bloc local (etude 6) ; "Demander le partage" sur un bloc non disponible (C3.5).

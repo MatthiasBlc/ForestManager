@@ -1,15 +1,31 @@
 // Brouillon de l'editeur (D104) : etat du formulaire, conversion depuis une
 // recette et vers le corps de l'API, sauvegarde sur l'appareil.
-import type { CreateRecipeBody, Recipe } from "@fm/shared";
+import type { CreateRecipeBody, Recipe, RecipeBlock } from "@fm/shared";
 
 import type { IngredientLine } from "./components/quantity-input.tsx";
 
-export interface DraftBlock {
+export interface DraftLocalBlock {
+  kind: "LOCAL";
   key: string;
   title: string;
   lines: (IngredientLine & { key: string })[];
   steps: { key: string; text: string }[];
 }
+
+/** Lien vers une autre recette [D24] ; quantite dans son unite de rendement [D107]. */
+export interface DraftLinkedBlock {
+  kind: "RECIPE";
+  key: string;
+  recipeId: string;
+  /** Nom affiche (ou "Recette supprimee", "Recette non disponible"). */
+  title: string;
+  quantity: string;
+  unitId: string | null;
+  /** Rendement de la sous-recette, si elle est visible ("ml sur 300"). */
+  yieldQuantity: number | null;
+}
+
+export type DraftBlock = DraftLocalBlock | DraftLinkedBlock;
 
 export interface Draft {
   title: string;
@@ -31,13 +47,24 @@ export function newKey(): string {
   return crypto.randomUUID();
 }
 
-export function emptyLine(): DraftBlock["lines"][number] {
+export function emptyLine(): DraftLocalBlock["lines"][number] {
   return { key: newKey(), quantity: "", unitId: "", name: "", ingredientId: null };
 }
 
-export function emptyBlock(): DraftBlock {
-  return { key: newKey(), title: "", lines: [emptyLine()], steps: [{ key: newKey(), text: "" }] };
+export function emptyBlock(): DraftLocalBlock {
+  return {
+    kind: "LOCAL",
+    key: newKey(),
+    title: "",
+    lines: [emptyLine()],
+    steps: [{ key: newKey(), text: "" }],
+  };
 }
+
+export const LINK_STATUS_TITLES = {
+  HIDDEN: "Recette non disponible",
+  DELETED: "Recette supprimée",
+} as const;
 
 export function emptyDraft(): Draft {
   return {
@@ -73,21 +100,38 @@ export function draftFromRecipe(recipe: Recipe): Draft {
     isBase: recipe.isBase,
     globalTagIds: recipe.tags.filter((t) => t.scope === "GLOBAL").map((t) => t.id),
     spaceTagIds: recipe.tags.filter((t) => t.scope === "SPACE").map((t) => t.id),
-    blocks: recipe.blocks.map((block) => ({
+    blocks: recipe.blocks.map(draftBlockOf),
+  };
+}
+
+function draftBlockOf(block: RecipeBlock): DraftBlock {
+  if (block.kind === "RECIPE") {
+    return {
+      kind: "RECIPE",
       key: newKey(),
-      title: block.title ?? "",
-      lines: [
-        ...block.ingredients.map((line) => ({
-          key: newKey(),
-          quantity: quantityText(line.quantity),
-          unitId: line.unitId ?? "",
-          name: line.name,
-          ingredientId: line.ingredientId,
-        })),
-        emptyLine(),
-      ],
-      steps: [...block.steps.map((text) => ({ key: newKey(), text })), { key: newKey(), text: "" }],
-    })),
+      recipeId: block.recipeId,
+      title:
+        block.recipe?.title ?? LINK_STATUS_TITLES[block.status === "HIDDEN" ? "HIDDEN" : "DELETED"],
+      quantity: quantityText(block.quantity),
+      unitId: block.unitId,
+      yieldQuantity: block.recipe?.yieldQuantity ?? null,
+    };
+  }
+  return {
+    kind: "LOCAL",
+    key: newKey(),
+    title: block.title ?? "",
+    lines: [
+      ...block.ingredients.map((line) => ({
+        key: newKey(),
+        quantity: quantityText(line.quantity),
+        unitId: line.unitId ?? "",
+        name: line.name,
+        ingredientId: line.ingredientId,
+      })),
+      emptyLine(),
+    ],
+    steps: [...block.steps.map((text) => ({ key: newKey(), text })), { key: newKey(), text: "" }],
   };
 }
 
@@ -113,6 +157,13 @@ export function draftErrors(draft: Draft): DraftErrors {
   const errors: DraftErrors = { lines: {} };
   if (!draft.title.trim()) errors.title = "Donne un titre à la recette.";
   for (const block of draft.blocks) {
+    if (block.kind === "RECIPE") {
+      const quantity = parseQuantity(block.quantity);
+      if (quantity === null || Number.isNaN(quantity) || quantity === 0) {
+        errors.lines[block.key] = "Indique la quantité utilisée.";
+      }
+      continue;
+    }
     for (const line of block.lines) {
       if (!line.name.trim()) continue;
       const quantity = parseQuantity(line.quantity);
@@ -145,18 +196,27 @@ export function draftToBody(draft: Draft, ids: ReadonlyMap<string, string>): Cre
     isBase: draft.isBase,
     globalTagIds: draft.globalTagIds,
     spaceTagIds: draft.spaceTagIds,
-    blocks: draft.blocks.map((block) => ({
-      kind: "LOCAL" as const,
-      title: block.title.trim() || null,
-      ingredients: block.lines
-        .filter((line) => line.name.trim())
-        .map((line) => ({
-          ingredientId: line.ingredientId ?? ids.get(line.key) ?? "",
-          quantity: parseQuantity(line.quantity),
-          unitId: line.unitId || null,
-        })),
-      steps: block.steps.map((step) => step.text.trim()).filter(Boolean),
-    })),
+    blocks: draft.blocks.map((block) =>
+      block.kind === "RECIPE"
+        ? {
+            kind: "RECIPE" as const,
+            recipeId: block.recipeId,
+            quantity: parseQuantity(block.quantity) ?? 0,
+            unitId: block.unitId,
+          }
+        : {
+            kind: "LOCAL" as const,
+            title: block.title.trim() || null,
+            ingredients: block.lines
+              .filter((line) => line.name.trim())
+              .map((line) => ({
+                ingredientId: line.ingredientId ?? ids.get(line.key) ?? "",
+                quantity: parseQuantity(line.quantity),
+                unitId: line.unitId || null,
+              })),
+            steps: block.steps.map((step) => step.text.trim()).filter(Boolean),
+          }
+    ),
   };
 }
 
@@ -172,7 +232,13 @@ export function draftKey(spaceId: string, recipe?: { id: string; currentRevision
 export function readDraft(key: string): Draft | null {
   try {
     const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as Draft) : null;
+    if (!raw) return null;
+    const stored = JSON.parse(raw) as Omit<Draft, "blocks"> & { blocks: object[] };
+    // Brouillons d'avant C3.4 : blocs sans `kind`, tous locaux.
+    return {
+      ...stored,
+      blocks: stored.blocks.map((block) => ({ kind: "LOCAL", ...block }) as DraftBlock),
+    };
   } catch {
     return null;
   }

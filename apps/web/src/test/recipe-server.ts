@@ -5,6 +5,7 @@ import {
   type CreateRecipeBody,
   type Ingredient,
   type Recipe,
+  type RecipeBlock,
   type RecipeRevision,
   type RestoreRevisionBody,
   type SpaceRole,
@@ -52,6 +53,8 @@ export function recipeServer({
   const base = `/api/v1/spaces/${s.space.id}/recipes`;
   const self = { id: s.me.id, username: s.me.username, avatarUrl: null };
 
+  const find = (id: unknown) => state.recipes.find((r) => r.id === id);
+
   function fromBody(body: CreateRecipeBody, current?: Recipe): Recipe {
     const tags = [...state.globalTags, ...state.spaceTags].filter(
       (tag) =>
@@ -70,25 +73,43 @@ export function recipeServer({
       isBase: body.isBase ?? false,
       tags,
       currentRevision: (current?.currentRevision ?? 0) + 1,
-      blocks: body.blocks.map((block) => ({
-        kind: "LOCAL",
-        title: block.title ?? null,
-        steps: block.steps,
-        ingredients: block.ingredients.map((line) => ({
-          ingredientId: line.ingredientId,
-          name: state.ingredients.find((i) => i.id === line.ingredientId)?.name ?? "?",
-          namePlural: null,
-          quantity: line.quantity,
-          unitId: line.unitId,
-          note: line.note ?? null,
-          optional: line.optional ?? false,
-        })),
-      })),
+      blocks: body.blocks.map((block): RecipeBlock => {
+        if (block.kind === "RECIPE") {
+          const sub = find(block.recipeId);
+          return {
+            ...block,
+            status: sub ? "AVAILABLE" : "DELETED",
+            recipe: sub
+              ? {
+                  id: sub.id,
+                  title: sub.title,
+                  yieldQuantity: sub.yieldQuantity,
+                  yieldUnitId: sub.yieldUnitId,
+                  isBase: sub.isBase,
+                  blocks: sub.blocks,
+                }
+              : null,
+          };
+        }
+        return {
+          kind: "LOCAL",
+          title: block.title ?? null,
+          steps: block.steps,
+          ingredients: block.ingredients.map((line) => ({
+            ingredientId: line.ingredientId,
+            name: state.ingredients.find((i) => i.id === line.ingredientId)?.name ?? "?",
+            namePlural: null,
+            quantity: line.quantity,
+            unitId: line.unitId,
+            note: line.note ?? null,
+            optional: line.optional ?? false,
+          })),
+        };
+      }),
       can: current?.can ?? { edit: true, delete: true },
     });
   }
 
-  const find = (id: unknown) => state.recipes.find((r) => r.id === id);
   const notFound = () => HttpResponse.json(errorBody("RECIPE_001"), { status: 404 });
 
   server.use(

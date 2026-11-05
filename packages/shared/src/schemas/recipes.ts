@@ -71,6 +71,24 @@ export const localBlockInputSchema = z.strictObject({
 });
 export type LocalBlockInput = z.infer<typeof localBlockInputSchema>;
 
+/**
+ * Lien vivant vers une autre recette [D24] : quantite utilisee dans l'unite de
+ * rendement de la sous-recette [D107] (`unitId` null = portions).
+ */
+export const linkedBlockInputSchema = z.strictObject({
+  kind: z.literal("RECIPE"),
+  recipeId: uuidSchema,
+  quantity: z.number().positive().max(RECIPE_YIELD_MAX),
+  unitId: uuidSchema.nullable(),
+});
+export type LinkedBlockInput = z.infer<typeof linkedBlockInputSchema>;
+
+export const blockInputSchema = z.discriminatedUnion("kind", [
+  localBlockInputSchema,
+  linkedBlockInputSchema,
+]);
+export type BlockInput = z.infer<typeof blockInputSchema>;
+
 /** Contenu commun a la creation et a la modification. */
 const recipeContentShape = {
   title: z.string().trim().min(1).max(RECIPE_TITLE_MAX),
@@ -84,7 +102,7 @@ const recipeContentShape = {
   cookMinutes: minutesSchema,
   restMinutes: minutesSchema,
   isBase: z.boolean().default(false),
-  blocks: z.array(localBlockInputSchema).min(1).max(RECIPE_BLOCKS_MAX),
+  blocks: z.array(blockInputSchema).min(1).max(RECIPE_BLOCKS_MAX),
   /** Tags globaux : suivent la recette, memes droits que modifier [D19]. */
   globalTagIds: tagIdsSchema,
   /** Tags de l'espace courant [D19]. */
@@ -118,13 +136,65 @@ export const recipeIngredientSchema = z.object({
 });
 export type RecipeIngredient = z.infer<typeof recipeIngredientSchema>;
 
-export const recipeBlockSchema = z.object({
+export const localBlockSchema = z.object({
   kind: z.literal("LOCAL"),
   title: z.string().nullable(),
   ingredients: z.array(recipeIngredientSchema),
   steps: z.array(z.string()),
 });
-export type RecipeBlock = z.infer<typeof recipeBlockSchema>;
+export type LocalBlock = z.infer<typeof localBlockSchema>;
+
+/** AVAILABLE : visible ici ; HIDDEN : pas visible dans cet espace ; DELETED : supprimee. */
+export const LINK_STATUSES = ["AVAILABLE", "HIDDEN", "DELETED"] as const;
+export type LinkStatus = (typeof LINK_STATUSES)[number];
+
+/** Sous-recette telle qu'affichee dans le plat (version actuelle, lien vivant). */
+export interface LinkedRecipe {
+  id: string;
+  title: string;
+  yieldQuantity: number;
+  yieldUnitId: string | null;
+  isBase: boolean;
+  blocks: RecipeBlock[];
+}
+
+export interface LinkedBlock {
+  kind: "RECIPE";
+  recipeId: string;
+  /** Quantite utilisee, dans l'unite `unitId` (rendement de la sous-recette). */
+  quantity: number;
+  unitId: string | null;
+  status: LinkStatus;
+  /** null sauf si AVAILABLE. */
+  recipe: LinkedRecipe | null;
+}
+
+export type RecipeBlock = LocalBlock | LinkedBlock;
+
+const linkedRecipeSchema: z.ZodType<LinkedRecipe> = z.object({
+  id: uuidSchema,
+  title: z.string(),
+  yieldQuantity: z.number(),
+  yieldUnitId: uuidSchema.nullable(),
+  isBase: z.boolean(),
+  get blocks() {
+    return z.array(recipeBlockSchema);
+  },
+});
+
+export const linkedBlockSchema: z.ZodType<LinkedBlock> = z.object({
+  kind: z.literal("RECIPE"),
+  recipeId: uuidSchema,
+  quantity: z.number(),
+  unitId: uuidSchema.nullable(),
+  status: z.enum(LINK_STATUSES),
+  recipe: linkedRecipeSchema.nullable(),
+});
+
+export const recipeBlockSchema: z.ZodType<RecipeBlock> = z.union([
+  localBlockSchema,
+  linkedBlockSchema,
+]);
 
 const recipeBaseShape = {
   id: uuidSchema,
@@ -159,6 +229,8 @@ export const recipeSchema = z.object({
   currentRevision: z.number().int(),
   createdAt: isoDateTimeSchema,
   blocks: z.array(recipeBlockSchema),
+  /** Recettes non supprimees qui lient celle-ci (prevenir avant suppression). */
+  usedBy: z.number().int(),
   /** Droits de l'utilisateur courant sur cette recette, dans cet espace. */
   can: z.object({ edit: z.boolean(), delete: z.boolean() }),
 });

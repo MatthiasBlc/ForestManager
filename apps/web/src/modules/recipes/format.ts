@@ -38,8 +38,17 @@ export function ingredientAmount(
   yieldQuantity: number,
   servings: number
 ): string {
+  return scaledAmount(line, units, servings / yieldQuantity);
+}
+
+/** Quantite multipliee par `scale` (portions, part d'une sous-recette), lisible. */
+export function scaledAmount(
+  line: Pick<RecipeIngredient, "quantity" | "unitId">,
+  units: readonly Unit[],
+  scale: number
+): string {
   const unit = units.find((u) => u.id === line.unitId);
-  const scaled = scaleQuantity(line.quantity, yieldQuantity, servings);
+  const scaled = scaleQuantity(line.quantity, 1, scale);
   if (scaled === null) return unit ? unit.abbreviation : "";
   if (!unit) return formatQuantity(scaled, { fractions: true });
   if (unit.dimension === "NONE") return unit.abbreviation;

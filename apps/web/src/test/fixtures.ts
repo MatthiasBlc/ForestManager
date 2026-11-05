@@ -219,6 +219,7 @@ export function buildRecipe(over: Partial<Recipe> = {}): Recipe {
     restMinutes: null,
     currentRevision: 1,
     createdAt: NOW,
+    usedBy: 0,
     blocks: [
       {
         kind: "LOCAL",
