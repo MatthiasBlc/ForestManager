@@ -1,6 +1,6 @@
 # Forest Manager V2 - Cahier des charges
 
-**Version : 0.5 (conception B1 a B8 validee, maquettes comprises ; decisions D01 a D139 reportees, D41 a D79 par renvoi aux documents de conception ; reste la validation finale)** - 2026-11-05
+**Version : 0.5 (conception B1 a B8 validee, maquettes comprises ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception ; reste la validation finale)** - 2026-11-05
 Statut de chaque decision : voir `3-Journal-des-Decisions.md`. Une ligne marquee `[Dxx]` renvoie a sa decision.
 Les questions de la phase A sont au S10 (toutes repondues). Tant qu'une question touche une section, cette section n'est pas validable.
 
@@ -29,18 +29,17 @@ Principes directeurs :
 
 ## 2. Glossaire
 
-| Terme          | Definition V2                                                                                                                  |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| Espace (Space) | Conteneur de contenu et de membres. Type `PERSONAL` (1 par user, 1 seul membre) ou `GROUP` ("communaute" a l'ecran).           |
-| Membre         | Lien user <-> espace avec un role (S3).                                                                                        |
-| Module         | Brique fonctionnelle (Recettes, Planning, Courses...). Accordee a un espace par la plateforme, puis activee par l'OWNER [D33]. |
-| Recette        | Contenu cree par un auteur, rattache a un espace d'origine.                                                                    |
-| Partage        | Rendre une recette visible dans un autre espace **par reference** (pas de copie) [D03].                                        |
-| Adaptation     | Copie d'une recette dans un espace, liee a l'original ; modifiable sans toucher l'original [D17].                              |
-| Copie (fork)   | Duplication explicite d'une recette dans un espace, qui devient independante, avec trace de l'origine.                         |
-| Revision       | Etat date d'une recette. Chaque modification acceptee cree une revision [D05].                                                 |
-| Suggestion     | Modification proposee par un membre sur une recette dont il n'est pas l'auteur [D04].                                          |
-| Referentiels   | Tags, ingredients, unites. Partages par toute la plateforme ou propres a un espace.                                            |
+| Terme          | Definition V2                                                                                                                               |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Espace (Space) | Conteneur de contenu et de membres. Type `PERSONAL` (1 par user, 1 seul membre) ou `GROUP` ("communaute" a l'ecran).                        |
+| Membre         | Lien user <-> espace avec un role (S3).                                                                                                     |
+| Module         | Brique fonctionnelle (Recettes, Planning, Courses...). Accordee a un espace par la plateforme, puis activee par l'OWNER [D33].              |
+| Recette        | Contenu cree par un auteur, rattache a un espace d'origine.                                                                                 |
+| Partage        | Rendre une recette visible dans un autre espace **par reference** (pas de copie) [D03].                                                     |
+| Adaptation     | Copie d'une recette dans un espace, liee a l'original ; modifiable sans toucher l'original [D17]. Seule facon de copier une recette [D140]. |
+| Revision       | Etat date d'une recette. Chaque modification acceptee cree une revision [D05].                                                              |
+| Suggestion     | Modification proposee par un membre sur une recette dont il n'est pas l'auteur [D04].                                                       |
+| Referentiels   | Tags, ingredients, unites. Partages par toute la plateforme ou propres a un espace.                                                         |
 
 ## 3. Acteurs et roles
 
@@ -75,7 +74,7 @@ Un seul membre, OWNER. Pas d'invitation, pas de suggestions. Les modules qui ont
 
 ### 3.3 Administration plateforme
 
-`AdminUser` reste isole (session dediee, 2FA TOTP, audit log). Il gere : referentiels globaux, catalogue des modules, moderation de dernier recours (recettes, espaces), changelog. Il **n'est plus** un passage oblige pour qu'un user utilise un tag ou un ingredient [D08][D09]. Il **accorde les modules** aux espaces, sur demande de leur OWNER ou de sa propre initiative [D33].
+`AdminUser` reste isole (session dediee, 2FA TOTP, audit log). Il gere : referentiels globaux, catalogue des modules, moderation de dernier recours (recettes, espaces), changelog. Il ne modifie jamais une recette : lecture et actions de moderation seulement [D52][D122][D142]. Il **n'est plus** un passage oblige pour qu'un user utilise un tag ou un ingredient [D08][D09]. Il **accorde les modules** aux espaces, sur demande de leur OWNER ou de sa propre initiative [D33].
 
 ## 4. Perimetre fonctionnel
 
@@ -115,7 +114,7 @@ Cycle de vie [D03][D04][D05] :
 - F-REC-4 Creer une recette **dans un espace** (perso ou groupe). Elle a **un** espace d'origine et **un** auteur. Plus de double creation perso + communaute.
 - F-REC-5 **Partager** une recette dans d'autres espaces dont on est membre : la recette apparait dans ces espaces, c'est la meme recette (une seule source de verite, pas de synchronisation). Partager une recette composee partage ses sous-recettes, listees avant de valider [D26]. L'auteur partage directement ; un autre membre envoie une demande que l'auteur accepte, sauf si l'auteur a autorise les membres de cet espace a partager ses recettes [D81]. La demande s'ouvre en feuille depuis la notification, avec le reglage de confiance sur place [D101].
 - F-REC-6 **Adapter** une recette pour un espace ("chez nous on la fait au beurre") : nouvelle recette de cet espace, liee a l'original et a sa revision de depart (`adaptedFromId`). L'original n'est jamais modifie. L'adaptation signale quand l'original a change et offre un ecran "Comparer avec l'original" en lecture seule [D17] : "Original modifie", "Ce que ton espace a change" et l'action "Proposer a l'original" [D105].
-- F-REC-7 **Suggerer une modification** (membre non auteur) : diff lisible champ par champ. L'auteur (ou un moderateur si l'auteur n'est plus membre) accepte ou refuse. Accepter cree une revision. Refuser ne cree rien ; le suggereur peut, s'il le veut, transformer sa suggestion en copie personnelle.
+- F-REC-7 **Suggerer une modification** (membre non auteur) : diff lisible champ par champ. L'auteur (ou un moderateur si l'auteur n'est plus membre) accepte ou refuse. Accepter cree une revision. Refuser ne cree rien ; le suggereur peut, s'il le veut, transformer sa suggestion en adaptation [D140].
 - F-REC-8 **Historique des revisions** consultable, avec restauration (meme droit que modifier [D55]). Le bouton d'enregistrement annonce la revision creee ("Enregistrer la revision 5") [D102]. Quitter l'editeur sans enregistrer garde un brouillon sur l'appareil [D104].
 - F-REC-9 Retirer une recette d'un espace de partage (auteur ou moderateur de cet espace) sans la supprimer.
 - F-REC-10 Supprimer une recette (auteur ; MOD et OWNER de l'espace d'origine si l'auteur n'en est plus membre [D57]) : elle disparait de tous les espaces ou elle est partagee, apres confirmation listant ces espaces.
@@ -123,7 +122,7 @@ Cycle de vie [D03][D04][D05] :
 - F-REC-12 Vue cuisine : etapes en grand, ecran maintenu allume, cochage des ingredients. Sur mobile, le detail d'une recette a un en-tete avec retour et une seule action principale fixee en bas (Mode cuisine) [D100].
 - F-REC-13 Compteurs : nombre de fois planifiee, derniere fois cuisinee, nombre d'adaptations, espaces de partage. Pas de suivi des vues [D39].
 
-Ce que l'on supprime de la V1 : la recette perso jumelle creee automatiquement, la synchronisation des copies, la variante creee automatiquement au refus d'une proposition, la gestion "recette orpheline" (remplacee par la reprise par les moderateurs).
+Ce que l'on supprime de la V1 : la recette perso jumelle creee automatiquement, la synchronisation des copies, la copie independante (fork) [D140], la variante creee automatiquement au refus d'une proposition, la gestion "recette orpheline" (remplacee par la reprise par les moderateurs).
 
 ### 4.4 Referentiels (tags, ingredients, unites) [D08][D09]
 
@@ -162,6 +161,7 @@ Reprend la V1 (grille jours x repas, slots recette / texte libre / vide, verroui
 - F-SHP-1 Generer une liste depuis une periode du planning (agregation des ingredients, conversion d'unites, mise a l'echelle des portions). Pieces et grammes s'additionnent grace au poids par unite, sinon deux lignes [D126].
 - F-SHP-2 Articles libres, cocher "achete", archiver.
 - F-SHP-3 Regroupement par rayon, dans l'ordre du parcours en magasin (F-REF-5) [D125] ; magasin favori par ingredient.
+- F-SHP-4 Modifier la liste (generer, articles libres, cocher, archiver) : role minimal reglable par l'OWNER, MEMBER par defaut, comme le planning [D141].
 
 ### 4.8 Notifications et activite
 
@@ -248,7 +248,7 @@ Conserver l'acquis V1 (helmet, CSRF double submit, rate limiting, validation Zod
 
 ## 7. Modele de donnees cible
 
-Source de verite : `11-Modele-Donnees/schema.prisma` (contraintes SQL hors Prisma listees en fin de fichier). Presentation : `11-Modele-Donnees/Modele-Donnees.html`, generee par `generer-page.py` (artefact en ligne : lien dans le `README.md` du chantier). Le CDC ne recopie pas le schema.
+Source de verite : `11-Modele-Donnees/schema.prisma` (contraintes SQL hors Prisma listees en fin de fichier). Presentation : `11-Modele-Donnees/Modele-Donnees.html`, generee par `generer-page.py` (artefact en ligne : lien dans le `README.md` du chantier). Le CDC ne recopie pas le schema. Mis a jour en B9 avec les decisions des maquettes (D92, D94, D120, D131, D134, widgets d'accueil S5.2) [D142].
 
 Choix structurants : revisions en instantane JSON [D30][D42] ; tags d'espace portes par le couple recette + espace, tags globaux par la recette [D19] ; types de notification et d'activite en cles texte [D41] ; compteurs calcules, pas stockes [D43]. Detail des decisions de modelisation : D41 a D47.
 

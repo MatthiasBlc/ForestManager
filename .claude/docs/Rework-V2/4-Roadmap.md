@@ -32,7 +32,7 @@ La premiere case non cochee est le point de reprise. **Aucune ligne de code appl
 
 - [ ] C1 Socle : monorepo, package partage, auth, espaces, membres, invitations
 - [ ] C2 Design system et app shell
-- [ ] C3 Module recettes (+ revisions, partage, copie, suggestions, import)
+- [ ] C3 Module recettes (+ revisions, partage, adaptation, suggestions, import)
 - [ ] C4 Referentiels et admin
 - [ ] C5 Module planning + generation
 - [ ] C6 Notifications, activite, changelog

@@ -19,12 +19,12 @@ Une decision validee ne se modifie pas : on en ajoute une nouvelle qui l'amende.
 - **Constat V1** : "perso" = `communityId: null`. Toute la logique est dupliquee (routes `/recipes` et `/communities/:id/recipes`, regles d'acces separees) et les modules (planning) n'existent pas en perso.
 - **Choix** : un seul modele d'espace, perso et groupe ; les modules marchent partout. Question liee : Q01.
 
-### D03 - Une recette, une source de verite ; partage par reference - AMENDEE par D17
+### D03 - Une recette, une source de verite ; partage par reference - AMENDEE par D17, puis D140
 
 - **Constat V1** : creer une recette dans une communaute cree 2 recettes (perso + copie, `communityRecipeService.ts:47`) ; publier en cree N ; `syncLinkedRecipes` (`recipeService.ts:303`) recopie titre, etapes et ingredients mais pas les tags ni la suppression. Les forks et variantes ne sont pas synchronises. Resultat : l'utilisateur voit sa recette en double et ne sait pas laquelle il modifie.
 - **Choix** : la recette vit dans son espace d'origine ; elle est **partagee** (reference) dans d'autres espaces ; la **copie** est un geste explicite qui cree une recette independante.
 
-### D04 - Suggestions : refuser ne cree rien - VALIDEE (2026-11-03)
+### D04 - Suggestions : refuser ne cree rien - VALIDEE (2026-11-03), conversion en copie remplacee par D140
 
 - **Constat V1** : refuser une proposition cree automatiquement une variante au nom du proposeur (`proposalService.ts:277`). Le depart du createur fait auto-refuser ses propositions, donc cree des variantes en cascade (`orphanHandling.ts`). Seul le createur peut trancher (`proposals.ts:354`) : une recette dont l'auteur est parti accepte encore des propositions que personne ne pourra jamais traiter.
 - **Choix** : accepter -> nouvelle revision ; refuser -> rien ; le suggereur peut convertir en copie s'il le veut. Si l'auteur n'est plus membre, les moderateurs tranchent.
@@ -73,7 +73,7 @@ Une decision validee ne se modifie pas : on en ajoute une nouvelle qui l'amende.
 - **Constat V1** : daisyUI (themes `coffee` / `winter`), classes `forest-accent` utilisees mais definies nulle part (`routes/adminRoutes.tsx`), composants mobiles separes, 3 jeux d'icones possibles via react-icons.
 - **Choix** : CDC S5.3.
 
-_D11, D12 et D14 sont reserves (planning, notifications, analytics) : a ecrire quand les questions Q10 et suivantes seront tranchees._
+_D12 (notifications) et D14 (analytics) : non utilises. Leurs sujets sont couverts par D41 et D118 (notifications) et D39 (statistiques). D11 est ecrite plus bas (planning)._
 
 ### D17 - Adapter une recette a un espace sans toucher l'original - VALIDEE (2026-11-03), perimetre allege
 
@@ -197,7 +197,7 @@ _D11, D12 et D14 sont reserves (planning, notifications, analytics) : a ecrire q
 - L'OWNER exporte toutes les recettes de son espace : garantie de garder ses recettes si la plateforme s'arrete. Il ne recupere que ce que les membres voient deja, donc pas de module a accorder.
 - Transparence : l'export d'un espace apparait dans le fil d'activite ("X a exporte l'espace") ; un export d'espace par jour au maximum.
 - Formats : JSON (reimportable) et Markdown (lisible), photos dans une archive zip.
-- Choix fait par Claude sur demande du proprietaire, qui hesitait (natif ou accorde par le super admin) ; a revoir s'il le souhaite.
+- Choix fait par Claude sur demande du proprietaire, qui hesitait (natif ou accorde par le super admin). Confirme tel quel par le proprietaire le 2026-11-05 (D142) : definitif.
 
 ### D38 - Mobile first et gestes tactiles - VALIDEE (2026-11-03)
 
@@ -338,7 +338,7 @@ Le detail de chacune est dans le document qui l'a proposee ; ce journal porte le
 
 ### Arbitrages du 2026-11-04
 
-- **D130 - Selecteur d'espace mobile dans l'en-tete** - VALIDEE. Sur mobile, l'espace courant (avatar + nom) est un bouton de l'en-tete qui ouvre la liste des espaces en feuille (avatars, pastilles de nouveautes, "+"). Remplace la bande d'espaces en haut. Le rail vertical reste en bureau. Choix fait par Claude a la demande du proprietaire ("au plus solide"), reversible.
+- **D130 - Selecteur d'espace mobile dans l'en-tete** - VALIDEE. Sur mobile, l'espace courant (avatar + nom) est un bouton de l'en-tete qui ouvre la liste des espaces en feuille (avatars, pastilles de nouveautes, "+"). Remplace la bande d'espaces en haut. Le rail vertical reste en bureau. Choix fait par Claude a la demande du proprietaire ("au plus solide"), confirme tel quel le 2026-11-05 (D142) : definitif.
 - **D131 - Barre d'onglets mobile : 4 modules maximum puis "Plus"** - VALIDEE. "Plus" regroupe membres, reglages et modules au-dela du quatrieme, dans l'ordre choisi par l'OWNER ; moins de modules = moins d'onglets.
 
 ### Arbitrages apres B5b (2026-11-04)
@@ -351,3 +351,30 @@ Le detail de chacune est dans le document qui l'a proposee ; ce journal porte le
 - **D137 - RadioGroup avec apercu** - VALIDEE. Une option peut afficher un apercu en pastilles de couleur ; E-APPARENCE l'utilise pour le choix de l'ambiance.
 - **D138 - Pas de compteur d'etapes a la connexion admin** - VALIDEE. Le nombre d'etapes varie (2 ou 3 selon que la 2FA est deja configuree) : les titres suffisent.
 - **D139 - Teinte Cendre : le bouton principal n'est pas grise** - VALIDEE (2026-11-04, revue du rendu). En Braise, la teinte 5 est grise et un bouton plein gris parait desactive : les remplissages pleins (bouton principal, interrupteur, case, pastille) reprennent la teinte 1 de l'ambiance dans un espace Cendre ; la navigation et les elements actifs gardent Cendre.
+
+## Phase B9 - validation finale (2026-11-05)
+
+Points ouverts releves a la preparation de B9 (relecture croisee du CDC, du schema et des documents de conception), tranches par le proprietaire le 2026-11-05 : toutes les recommandations sont retenues.
+
+### D140 - Pas de copie independante : l'adaptation est la seule facon de copier une recette - VALIDEE (2026-11-05)
+
+- **Constat** : le CDC gardait une "Copie (fork)" independante (glossaire S2, F-REC-7, roadmap C3) et D04 laissait le suggereur "convertir en copie". Elle n'existe ni dans le schema, ni dans `12-Permissions.md`, ni dans les parcours ou les maquettes : partout, la seule copie est l'adaptation (D17), et 12 dit deja "transformer sa suggestion refusee en adaptation".
+- **Options** : (A) supprimer la copie independante ; (B) l'ajouter partout (schema, permissions, parcours, maquettes).
+- **Choix** : A. Deux gestes seulement, partager et adapter (principe "un seul chemin evident par action"). Une adaptation dont on ignore les mises a jour se comporte deja comme une copie (`5-Etude-Adaptations.md`, O1). Une suggestion refusee peut devenir une adaptation dans l'espace du suggereur.
+- **Consequence** : amende D03 (la "copie" explicite devient l'adaptation) et remplace la conversion en copie de D04. Retire du CDC (S2, F-REC-7) et de la roadmap (C3). Aucun changement de schema.
+
+### D141 - Liste de courses : role minimal reglable pour la modifier, MEMBER par defaut - VALIDEE (2026-11-05)
+
+- **Constat** : les droits de la liste de courses (V2.1) etaient seulement "proposes" dans `12-Permissions.md` (memes droits que modifier le planning), sans decision au journal.
+- **Options** : (A) role minimal reglable par l'OWNER, MEMBER par defaut, comme les repas du planning (D58) ; (B) droits fixes.
+- **Choix** : A. Un seul reglage `editRole` (MEMBER par defaut, l'OWNER peut restreindre) couvre generer depuis le planning, ajouter des articles libres, cocher et archiver. Il sera modelise avec le module en V2.1, sur le modele de `MealPlanSettings.editRole`.
+
+### D142 - Validation B9 : schema a jour des maquettes, super admin sans modification, statuts au journal, confirmations - VALIDEE (2026-11-05)
+
+- **Constat** : la preparation de B9 a releve cinq autres ecarts entre le CDC, le journal et les documents de conception.
+- **Choix**, point par point :
+  - **Schema** : `11-Modele-Donnees/schema.prisma` est mis a jour avant la 1.0 (pas en C1) avec les decisions B5 : proposition de transfert de propriete (`SpaceOwnershipTransfer`, D92) ; expiration obligatoire du lien d'invitation (`SpaceInviteLink.expiresAt` non nullable, D94) ; ingredient `MERGED` = synonyme propose a la saisie et remplace par la cible (D120) ; ordre des modules choisi par l'OWNER (`SpaceModule.sortOrder`, D131) ; mot de passe temporaire de 24 h a usage unique (`AuthTokenKind.TEMP_PASSWORD`, D134) ; choix et ordre des widgets d'accueil (`User.homeWidgets`, CDC S5.2).
+  - **Super admin** : il ne modifie jamais une recette. Lecture et actions de moderation seulement (masquer, retirer, supprimer, avec motif), conformement a D52 et D122. `12-Permissions` est corrige.
+  - **Statuts des documents de conception** : 12, 13, 15 et le schema ne portent plus de statut propre (PROPOSEE, BROUILLON...) mais renvoient au journal (un statut a un seul endroit). Les questions P1 a P7 de 12 sont marquees tranchees avec leur `D##` (P1 = D83, P2 = D85).
+  - **D37** (export natif) et **D130** (selecteur d'espace mobile) : confirmes tels quels, definitifs.
+  - **D12 et D14** : jamais ecrites, marquees non utilisees ; leurs sujets sont couverts par D41, D118 et D39.
