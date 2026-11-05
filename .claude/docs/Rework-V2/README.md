@@ -50,7 +50,7 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
   - **npm 11 obligatoire** (`packageManager: npm@11.21.1`) : npm 10 (fourni avec Node 22) plante sur les peers de vitest (`Cannot read properties of null (reading 'edgesOut')`). Les Dockerfiles de C1.2 installent npm 11.
   - Node de l'hote : `.nvmrc` = 22 (meme version que les images Docker) ; le hook pre-commit charge cette version via nvm, quel que soit le Node par defaut de l'hote. lint-staged en 17.
   - API provisoire : `node apps/api/src/server.ts` (types effaces nativement par Node 22.18+, d'ou `erasableSyntaxOnly`), `GET /health` seulement.
-  - A faire par le proprietaire : `git push origin v1-final` (pas de cle SSH dans la session).
+  - Tag `v1-final` present sur GitHub (verifie le 2026-11-05).
 - C1.2 fait le 2026-11-05 : `docker/` (api et web en multi-etapes dev/prod, `compose.dev.yml`, `compose.test.yml`, nginx du front), scripts racine, `CLAUDE.md` a jour.
   - Dev : node_modules vient de l'image (volume anonyme renouvele par `docker:up:build`), volume `postgres_data` recree en PostgreSQL 17 (l'ancien volume V1 en 15 a ete supprime).
   - Tests : conteneur jetable `tests` (image dev de l'API) + PostgreSQL 17 en tmpfs, projet compose `forestmanager-test` force par `-p` (sinon `COMPOSE_PROJECT_NAME` du `.env` gagne). La CI de C1.10 lancera la meme commande.
