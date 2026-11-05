@@ -1,6 +1,6 @@
 # Plan de tests V2
 
-Statut : **PROPOSE** (roadmap B8), en attente de validation. Decisions nouvelles D77 a D79 en fin de document ; architecture de reference : `14-Architecture.md`.
+Statut : voir le journal des decisions. Ce document a introduit D77 a D79 (fin de document) ; architecture de reference : `14-Architecture.md`.
 
 ## 1. Pyramide
 
@@ -141,7 +141,7 @@ La matrice des permissions est couverte a **100 % des couples route x role** par
 
 Une **feuille de recette** courte avant chaque mise en prod : installation sur un vrai iPhone et un vrai Android, gestes tactiles, mode cuisine (ecran allume), photo prise avec l'appareil, notifications temps reel entre deux appareils.
 
-## 11. Decisions proposees
+## 11. Decisions
 
 | #   | Decision                                                                                                                                                                                                                                                | Statut  |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
@@ -149,7 +149,9 @@ Une **feuille de recette** courte avant chaque mise en prod : installation sur u
 | D78 | CI bloquante : lint, typecheck, cles i18n, unitaires, integration, composants, E2E critiques, couverture, `npm audit` ; WebKit bloquant sur `master` seulement ; seuils 90 / 80 / 60 % (shared / api / web).                                            | VALIDEE |
 | D79 | Donnees de test : fabriques partagees dans `packages/test-utils`, seed des referentiels identique a la prod, scenarios E2E crees par une route reservee a l'environnement de test, fixtures d'import servies localement (aucun appel a Internet en CI). | VALIDEE |
 
-## 12. Questions pour le proprietaire
+## 12. Questions pour le proprietaire (tranchees)
+
+Toutes tranchees avec l'option recommandee, confirmee dans le journal (arbitrages du 2026-11-03, D77 et D78).
 
 - **Q-TEST-1 E2E en CI** : (a) parcours critiques a chaque push et PR [recommande, une quinzaine de parcours, quelques minutes] ; (b) seulement sur les PR vers `master` ; (c) la nuit uniquement.
 - **Q-TEST-2 Navigateurs** : (a) Chromium + WebKit (Safari iOS) [recommande, l'app est surtout utilisee sur telephone] ; (b) Chromium seul ; (c) Chromium, WebKit et Firefox.

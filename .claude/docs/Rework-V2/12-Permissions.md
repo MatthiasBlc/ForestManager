@@ -1,6 +1,6 @@
 # Matrice des permissions - Rework V2
 
-Statut : **PROPOSEE** (roadmap B2), 2026-11-03. Les regles reprennent les decisions validees (D01 a D40) ; ce qu'elles ne tranchent pas est propose en D50 a D59 et en questions P1 a P7.
+Statut : voir le journal des decisions. Les regles reprennent les decisions du journal ; ce document a introduit D50 a D59 et les questions P1 a P7, toutes tranchees depuis (references en fin de document).
 
 Les droits sont verifies **cote serveur a chaque requete**, a partir du role dans l'espace concerne ; l'interface ne fait que masquer ce qui est interdit.
 
@@ -39,7 +39,7 @@ Un meme utilisateur est MEM, MOD ou OWN selon l'espace. "Auteur" se cumule avec 
 | Voir le profil d'un autre utilisateur (username, avatar)                       |   -   | Cond. | Oui | Oui | Oui |  -  | Oui | D50               | Seulement s'il partage au moins un espace avec lui. Pas d'annuaire ni de recherche globale d'utilisateurs. |
 | Exporter ses propres recettes                                                  |   -   |  Soi  | Soi | Soi | Soi |  -  |  -  | D37               | Toutes les recettes dont il est l'auteur, quel que soit l'espace.                                          |
 | Supprimer son compte                                                           |   -   |  Soi  | Soi | Soi | Soi |  -  |  -  | F-ACC-5, D20, D51 | Recettes partagees conservees, auteur anonymise ; s'il est OWNER d'espaces, transfert automatique (D51).   |
-| Reinitialiser le mot de passe d'un utilisateur                                 |   -   |   -   |  -  |  -  |  -  |  -  | Oui | D21               | Utile sans SMTP ; l'utilisateur doit changer le mot de passe a la connexion suivante.                      |
+| Reinitialiser le mot de passe d'un utilisateur                                 |   -   |   -   |  -  |  -  |  -  |  -  | Oui | D21, D134         | Utile sans SMTP : mot de passe temporaire de 24 h a usage unique, a changer a la connexion (D134).         |
 
 ## Espace perso
 
@@ -55,7 +55,7 @@ Un meme utilisateur est MEM, MOD ou OWN selon l'espace. "Auteur" se cumule avec 
 
 | Action                                                           | VIS |  CON  | MEM | MOD |  OWN  |  ANC  |  ADM  | Source        | Note                                                                                                                                       |
 | ---------------------------------------------------------------- | :-: | :---: | :-: | :-: | :---: | :---: | :---: | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| Creer un espace groupe                                           |  -  |  Oui  | Oui | Oui |  Oui  |  Oui  |   -   | F-SPC-1, D51  | Tout utilisateur connecte. Il en devient OWNER. Plafond anti-abus propose : 20 espaces possedes.                                           |
+| Creer un espace groupe                                           |  -  |  Oui  | Oui | Oui |  Oui  |  Oui  |   -   | F-SPC-1, D51  | Tout utilisateur connecte. Il en devient OWNER. Plafond anti-abus : 20 espaces possedes.                                                   |
 | Voir le contenu de l'espace (modules actifs, recettes, planning) |  -  |   -   | Oui | Oui |  Oui  |   -   | Cond. | D03, D52      | Super admin : seulement pour une moderation motivee et tracee (D52).                                                                       |
 | Voir la liste des membres et leurs roles                         |  -  |   -   | Oui | Oui |  Oui  |   -   |  Oui  | F-SPC-4       |                                                                                                                                            |
 | Rejoindre par un lien d'invitation                               |  -  | Cond. |  -  |  -  |   -   | Cond. |   -   | D07           | Lien valide (non expire, non revoque, usages restants). Un membre exclu ne peut pas revenir par un lien, seulement par invitation directe. |
@@ -66,7 +66,7 @@ Un meme utilisateur est MEM, MOD ou OWN selon l'espace. "Auteur" se cumule avec 
 | Exclure un MEMBER                                                |  -  |   -   |  -  | Oui |  Oui  |   -   |   -   | D06, D53      |                                                                                                                                            |
 | Exclure un MODERATOR                                             |  -  |   -   |  -  |  -  |  Oui  |   -   |   -   | D53           | Un moderateur n'exclut jamais un autre moderateur.                                                                                         |
 | Promouvoir MEMBER -> MODERATOR, retrograder MODERATOR -> MEMBER  |  -  |   -   |  -  |  -  |  Oui  |   -   |   -   | D06           |                                                                                                                                            |
-| Transferer la propriete a un membre                              |  -  |   -   |  -  |  -  |  Oui  |   -   |   -   | D06           | Le nouvel OWNER doit accepter ; l'ancien devient MODERATOR.                                                                                |
+| Transferer la propriete a un membre                              |  -  |   -   |  -  |  -  |  Oui  |   -   |   -   | D06, D92      | Le nouvel OWNER doit accepter ; l'ancien devient MODERATOR.                                                                                |
 | Quitter l'espace                                                 |  -  |   -   | Soi | Soi | Cond. |   -   |   -   | D06, D22      | L'OWNER doit d'abord transferer la propriete. Le dernier membre qui part supprime l'espace (delai de 30 jours).                            |
 | Renommer, changer description, avatar et teinte                  |  -  |   -   |  -  | Oui |  Oui  |   -   |   -   | CDC S3.1      |                                                                                                                                            |
 | Supprimer l'espace (masque, restaurable 30 jours, puis purge)    |  -  |   -   |  -  |  -  |  Oui  |   -   |  Oui  | D22           | Membres prevenus. Super admin : moderation, avec motif.                                                                                    |
@@ -88,22 +88,22 @@ Un meme utilisateur est MEM, MOD ou OWN selon l'espace. "Auteur" se cumule avec 
 
 ## Recettes
 
-| Action                                                                                                               | VIS | CON |  MEM   |  MOD  |  OWN  |  ANC  |  ADM  | Source        | Note                                                                                                                                                                                                                                    |
-| -------------------------------------------------------------------------------------------------------------------- | :-: | :-: | :----: | :---: | :---: | :---: | :---: | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Voir une recette visible dans l'espace (origine ou partagee), son historique, ses compteurs                          |  -  |  -  |  Oui   |  Oui  |  Oui  |   -   | Cond. | D03, D05, D39 | Super admin : moderation motivee (D52).                                                                                                                                                                                                 |
-| Creer une recette dans l'espace, l'importer par URL ou par texte                                                     |  -  |  -  |  Oui   |  Oui  |  Oui  |   -   |   -   | F-REC-4, D28  | Dans l'espace perso : son OWNER.                                                                                                                                                                                                        |
-| Modifier une recette (cree une revision)                                                                             |  -  |  -  | Auteur |  Oui  |  Oui  |   -   |  Oui  | D05, D06, D57 | Recettes de l'espace d'origine : auteur, MOD et OWNER de l'espace d'origine. Les moderateurs d'un espace ou elle est seulement partagee ne la modifient pas.                                                                            |
-| Restaurer une revision anterieure                                                                                    |  -  |  -  | Auteur |  Oui  |  Oui  |   -   |   -   | D05, D55      | Memes droits que modifier.                                                                                                                                                                                                              |
-| Partager dans un autre espace (par reference)                                                                        |  -  |  -  | Cond.  | Cond. | Cond. |   -   |   -   | D03, D81      | Auteur : directement. Autre membre : demande acceptee par l'auteur, ou directement si l'auteur a autorise les membres de cet espace (D81). Etre membre des deux espaces. Auteur parti : les MOD / OWNER de l'espace d'origine decident. |
-| Accepter ou refuser une demande de partage de sa recette ; autoriser les membres d'un espace a partager ses recettes |  -  |  -  | Auteur | Cond. | Cond. |   -   |   -   | D81           | Auteur. MOD / OWNER de l'espace d'origine seulement si l'auteur n'en est plus membre.                                                                                                                                                   |
-| Retirer une recette d'un espace ou elle est partagee                                                                 |  -  |  -  | Auteur |  Oui  |  Oui  |   -   |  Oui  | F-REC-9       | Auteur, ou MOD / OWNER de cet espace de partage.                                                                                                                                                                                        |
-| Adapter pour un espace (copie liee a l'original)                                                                     |  -  |  -  |  Oui   |  Oui  |  Oui  |   -   |   -   | D17           | Il faut voir l'original et etre membre de l'espace cible. L'adaptation lui appartient.                                                                                                                                                  |
-| Comparer une adaptation avec l'original, marquer "vu"                                                                |  -  |  -  |  Oui   |  Oui  |  Oui  |   -   |   -   | D17           | Comparer : tout membre qui voit l'adaptation. Marquer vu : ceux qui peuvent modifier l'adaptation.                                                                                                                                      |
-| Supprimer une recette (disparait de tous les espaces)                                                                |  -  |  -  | Auteur |  Oui  |  Oui  |   -   |  Oui  | F-REC-10, D57 | Auteur. MOD / OWNER de l'espace d'origine seulement si l'auteur n'en est plus membre.                                                                                                                                                   |
-| Marquer une recette comme "base" (exclue de la generation)                                                           |  -  |  -  | Auteur |  Oui  |  Oui  |   -   |   -   | D24           | Memes droits que modifier.                                                                                                                                                                                                              |
-| Mode cuisine, cocher les ingredients, changer les portions affichees                                                 |  -  |  -  |  Oui   |  Oui  |  Oui  |   -   |   -   | F-REC-12      | Rien n'est enregistre sur la recette.                                                                                                                                                                                                   |
-| Recette d'un auteur parti : la reprendre (modifier, trancher, retirer, supprimer)                                    |  -  |  -  |   -    |  Oui  |  Oui  |   -   |   -   | D18, D57      | MOD et OWNER de l'espace d'origine.                                                                                                                                                                                                     |
-| Acceder a ses anciennes recettes apres avoir quitte l'espace                                                         |  -  |  -  |   -    |   -   |   -   | Cond. |   -   | D18, D59      | Non dans l'espace quitte ; il garde celles dont l'origine est un autre espace. S'il revient, il retrouve ses droits d'auteur (D59).                                                                                                     |
+| Action                                                                                                               | VIS | CON |  MEM   |  MOD  |  OWN  |  ANC  |  ADM  | Source              | Note                                                                                                                                                                                                                                    |
+| -------------------------------------------------------------------------------------------------------------------- | :-: | :-: | :----: | :---: | :---: | :---: | :---: | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Voir une recette visible dans l'espace (origine ou partagee), son historique, ses compteurs                          |  -  |  -  |  Oui   |  Oui  |  Oui  |   -   | Cond. | D03, D05, D39       | Super admin : moderation motivee (D52).                                                                                                                                                                                                 |
+| Creer une recette dans l'espace, l'importer par URL ou par texte                                                     |  -  |  -  |  Oui   |  Oui  |  Oui  |   -   |   -   | F-REC-4, D28        | Dans l'espace perso : son OWNER.                                                                                                                                                                                                        |
+| Modifier une recette (cree une revision)                                                                             |  -  |  -  | Auteur |  Oui  |  Oui  |   -   |   -   | D05, D06, D57, D122 | Recettes de l'espace d'origine : auteur, MOD et OWNER de l'espace d'origine. Les moderateurs d'un espace ou elle est seulement partagee ne la modifient pas. Super admin : jamais (lecture et moderation seulement, D52, D122).         |
+| Restaurer une revision anterieure                                                                                    |  -  |  -  | Auteur |  Oui  |  Oui  |   -   |   -   | D05, D55            | Memes droits que modifier.                                                                                                                                                                                                              |
+| Partager dans un autre espace (par reference)                                                                        |  -  |  -  | Cond.  | Cond. | Cond. |   -   |   -   | D03, D81            | Auteur : directement. Autre membre : demande acceptee par l'auteur, ou directement si l'auteur a autorise les membres de cet espace (D81). Etre membre des deux espaces. Auteur parti : les MOD / OWNER de l'espace d'origine decident. |
+| Accepter ou refuser une demande de partage de sa recette ; autoriser les membres d'un espace a partager ses recettes |  -  |  -  | Auteur | Cond. | Cond. |   -   |   -   | D81                 | Auteur. MOD / OWNER de l'espace d'origine seulement si l'auteur n'en est plus membre.                                                                                                                                                   |
+| Retirer une recette d'un espace ou elle est partagee                                                                 |  -  |  -  | Auteur |  Oui  |  Oui  |   -   |  Oui  | F-REC-9             | Auteur, ou MOD / OWNER de cet espace de partage. Super admin : moderation, avec motif (D52, D122).                                                                                                                                      |
+| Adapter pour un espace (copie liee a l'original)                                                                     |  -  |  -  |  Oui   |  Oui  |  Oui  |   -   |   -   | D17                 | Il faut voir l'original et etre membre de l'espace cible. L'adaptation lui appartient.                                                                                                                                                  |
+| Comparer une adaptation avec l'original, marquer "vu"                                                                |  -  |  -  |  Oui   |  Oui  |  Oui  |   -   |   -   | D17                 | Comparer : tout membre qui voit l'adaptation. Marquer vu : ceux qui peuvent modifier l'adaptation.                                                                                                                                      |
+| Supprimer une recette (disparait de tous les espaces)                                                                |  -  |  -  | Auteur |  Oui  |  Oui  |   -   |  Oui  | F-REC-10, D57       | Auteur. MOD / OWNER de l'espace d'origine seulement si l'auteur n'en est plus membre. Super admin : moderation, avec motif (D52, D122).                                                                                                 |
+| Marquer une recette comme "base" (exclue de la generation)                                                           |  -  |  -  | Auteur |  Oui  |  Oui  |   -   |   -   | D24                 | Memes droits que modifier.                                                                                                                                                                                                              |
+| Mode cuisine, cocher les ingredients, changer les portions affichees                                                 |  -  |  -  |  Oui   |  Oui  |  Oui  |   -   |   -   | F-REC-12            | Rien n'est enregistre sur la recette.                                                                                                                                                                                                   |
+| Recette d'un auteur parti : la reprendre (modifier, trancher, retirer, supprimer)                                    |  -  |  -  |   -    |  Oui  |  Oui  |   -   |   -   | D18, D57            | MOD et OWNER de l'espace d'origine.                                                                                                                                                                                                     |
+| Acceder a ses anciennes recettes apres avoir quitte l'espace                                                         |  -  |  -  |   -    |   -   |   -   | Cond. |   -   | D18, D59            | Non dans l'espace quitte ; il garde celles dont l'origine est un autre espace. S'il revient, il retrouve ses droits d'auteur (D59).                                                                                                     |
 
 ## Recettes composees
 
@@ -116,13 +116,13 @@ Un meme utilisateur est MEM, MOD ou OWN selon l'espace. "Auteur" se cumule avec 
 
 ## Suggestions
 
-| Action                                                 | VIS | CON |  MEM   |  MOD  |  OWN  | ANC | ADM | Source   | Note                                                                                  |
-| ------------------------------------------------------ | :-: | :-: | :----: | :---: | :---: | :-: | :-: | -------- | ------------------------------------------------------------------------------------- |
-| Suggerer une modification                              |  -  |  -  | Cond.  | Cond. | Cond. |  -  |  -  | D04      | Tout membre qui voit la recette, sauf son auteur.                                     |
-| Voir les suggestions d'une recette                     |  -  |  -  |  Oui   |  Oui  |  Oui  |  -  |  -  | D04      |                                                                                       |
-| Retirer sa propre suggestion en attente                |  -  |  -  |  Soi   |  Soi  |  Soi  |  -  |  -  | D04      |                                                                                       |
-| Accepter (nouvelle revision) ou refuser une suggestion |  -  |  -  | Auteur |  Oui  |  Oui  |  -  |  -  | D04, D18 | Auteur. MOD / OWNER de l'espace d'origine seulement si l'auteur n'en est plus membre. |
-| Transformer sa suggestion refusee en adaptation        |  -  |  -  |  Soi   |  Soi  |  Soi  |  -  |  -  | D04, D17 |                                                                                       |
+| Action                                                 | VIS | CON |  MEM   |  MOD  |  OWN  | ANC | ADM | Source         | Note                                                                                  |
+| ------------------------------------------------------ | :-: | :-: | :----: | :---: | :---: | :-: | :-: | -------------- | ------------------------------------------------------------------------------------- |
+| Suggerer une modification                              |  -  |  -  | Cond.  | Cond. | Cond. |  -  |  -  | D04            | Tout membre qui voit la recette, sauf son auteur.                                     |
+| Voir les suggestions d'une recette                     |  -  |  -  |  Oui   |  Oui  |  Oui  |  -  |  -  | D04            |                                                                                       |
+| Retirer sa propre suggestion en attente                |  -  |  -  |  Soi   |  Soi  |  Soi  |  -  |  -  | D04            |                                                                                       |
+| Accepter (nouvelle revision) ou refuser une suggestion |  -  |  -  | Auteur |  Oui  |  Oui  |  -  |  -  | D04, D18       | Auteur. MOD / OWNER de l'espace d'origine seulement si l'auteur n'en est plus membre. |
+| Transformer sa suggestion refusee en adaptation        |  -  |  -  |  Soi   |  Soi  |  Soi  |  -  |  -  | D04, D17, D140 | L'adaptation est la seule copie possible (D140).                                      |
 
 ## Tags
 
@@ -145,18 +145,18 @@ Un meme utilisateur est MEM, MOD ou OWN selon l'espace. "Auteur" se cumule avec 
 
 ## Planning
 
-| Action                                                                                 | VIS | CON |  MEM  | MOD | OWN | ANC | ADM | Source       | Note                                                |
-| -------------------------------------------------------------------------------------- | :-: | :-: | :---: | :-: | :-: | :-: | :-: | ------------ | --------------------------------------------------- |
-| Voir le planning, les archives, les idees de repas                                     |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | CDC S4.6     | Si le module est accorde et actif.                  |
-| Modifier un repas (recette, texte libre, portions, commentaire), echanger, verrouiller |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | F-MPL-3, D58 | Role minimal regle par l'OWNER ; MEMBER par defaut. |
-| Remplacer un repas par la generation (un seul repas)                                   |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | D58          | Memes droits que modifier un repas.                 |
-| Creer, archiver, supprimer un planning ; regler les repas de la journee                |  -  |  -  |   -   | Oui | Oui |  -  |  -  | D11, D58     |                                                     |
-| Gerer les jeux de parametres de generation (regles, exclusions, epinglages)            |  -  |  -  |   -   | Oui | Oui |  -  |  -  | D58          |                                                     |
-| Generer tout un planning                                                               |  -  |  -  |   -   | Oui | Oui |  -  |  -  | D58          | Les repas verrouilles ne bougent pas.               |
-| Ajouter une idee de repas                                                              |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | CDC S4.6     |                                                     |
-| Modifier, supprimer une idee                                                           |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | CDC S4.6     | Membre : seulement ses propres idees.               |
-| Convertir une idee en recette                                                          |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | F-MPL-4      | La recette creee a pour auteur celui qui convertit. |
-| Liste de courses (V2.1) : creer, cocher, archiver                                      |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | CDC S4.7     | Propose : memes droits que modifier le planning.    |
+| Action                                                                                 | VIS | CON |  MEM  | MOD | OWN | ANC | ADM | Source        | Note                                                                          |
+| -------------------------------------------------------------------------------------- | :-: | :-: | :---: | :-: | :-: | :-: | :-: | ------------- | ----------------------------------------------------------------------------- |
+| Voir le planning, les archives, les idees de repas                                     |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | CDC S4.6      | Si le module est accorde et actif.                                            |
+| Modifier un repas (recette, texte libre, portions, commentaire), echanger, verrouiller |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | F-MPL-3, D58  | Role minimal regle par l'OWNER ; MEMBER par defaut.                           |
+| Remplacer un repas par la generation (un seul repas)                                   |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | D58           | Memes droits que modifier un repas.                                           |
+| Creer, archiver, supprimer un planning ; regler les repas de la journee                |  -  |  -  |   -   | Oui | Oui |  -  |  -  | D11, D58      |                                                                               |
+| Gerer les jeux de parametres de generation (regles, exclusions, epinglages)            |  -  |  -  |   -   | Oui | Oui |  -  |  -  | D58           |                                                                               |
+| Generer tout un planning                                                               |  -  |  -  |   -   | Oui | Oui |  -  |  -  | D58           | Les repas verrouilles ne bougent pas.                                         |
+| Ajouter une idee de repas                                                              |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | CDC S4.6      |                                                                               |
+| Modifier, supprimer une idee                                                           |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | CDC S4.6      | Membre : seulement ses propres idees.                                         |
+| Convertir une idee en recette                                                          |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | F-MPL-4       | La recette creee a pour auteur celui qui convertit.                           |
+| Liste de courses (V2.1) : creer, cocher, archiver                                      |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | F-SHP-4, D141 | Role minimal regle par l'OWNER ; MEMBER par defaut, comme le planning (D141). |
 
 ## Notifications et activite
 
@@ -177,25 +177,25 @@ Un meme utilisateur est MEM, MOD ou OWN selon l'espace. "Auteur" se cumule avec 
 
 ## Cas limites
 
-| Situation                                                            | Regle proposee                                                                                                                                                                                                                        | Source   |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| Dernier OWNER qui veut partir                                        | Il doit transferer la propriete ou supprimer l'espace. S'il est le dernier membre, partir supprime l'espace (restaurable 30 jours).                                                                                                   | D06, D22 |
-| OWNER qui supprime son compte                                        | Transfert automatique au MODERATOR le plus ancien, sinon au MEMBER le plus ancien ; seul : espace supprime avec delai.                                                                                                                | D51      |
-| Auteur parti puis revenu                                             | Il retrouve ses droits d'auteur ; les modifications faites entre-temps par les moderateurs restent dans l'historique.                                                                                                                 | D57, D59 |
-| Membre exclu                                                         | Acces coupe immediatement (y compris temps reel) ; ses recettes restent, reprises par les moderateurs ; ses suggestions en attente sont annulees ; il ne revient que par invitation directe.                                          | D18, D53 |
-| Sous-recette liee non visible                                        | Le bloc affiche "recette non disponible" avec son nom ; pas de quantites depliees ; la liste de courses signale les ingredients manquants.                                                                                            | D24, D26 |
-| Recette composee retiree d'un espace                                 | On propose de retirer aussi les sous-recettes partagees automatiquement avec elle, si aucune autre recette de l'espace ne les utilise.                                                                                                | D26      |
-| Espace d'origine supprime alors que la recette est partagee ailleurs | Propose : la recette est rapatriee dans l'espace perso de son auteur, ses partages et adaptations restent. Si l'auteur n'existe plus : elle reste dans les espaces de partage, geree par leurs moderateurs. A trancher (question P1). | D22, P1  |
-| Original d'une adaptation supprime                                   | L'adaptation vit seule, le lien affiche "original supprime".                                                                                                                                                                          | D17      |
-| Module desactive ou retire avec des donnees                          | Donnees conservees et masquees ; reactivation ou nouvel acces = tout revient. Duree de conservation a trancher (question P2).                                                                                                         | D33, P2  |
-| Suggestion en attente quand la recette change                        | La suggestion reste basee sur sa revision ; le diff est recalcule sur la version courante et les conflits sont signales ; elle reste tranchable.                                                                                      | D04, D05 |
-| Changement de role pendant une action                                | Les droits sont verifies a chaque requete cote serveur ; l'interface se met a jour par le temps reel.                                                                                                                                 | CDC S6.2 |
-| Lien d'invitation utilise apres expiration ou revocation             | Refuse avec un message clair ; l'utilisateur peut demander un nouveau lien a un moderateur.                                                                                                                                           | D07      |
-| Compte supprime auteur de suggestions ou d'idees                     | Ses suggestions en attente sont annulees ; ses idees de repas restent, auteur anonymise.                                                                                                                                              | D20      |
+| Situation                                                            | Regle                                                                                                                                                                                             | Source   |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| Dernier OWNER qui veut partir                                        | Il doit transferer la propriete ou supprimer l'espace. S'il est le dernier membre, partir supprime l'espace (restaurable 30 jours).                                                               | D06, D22 |
+| OWNER qui supprime son compte                                        | Transfert automatique au MODERATOR le plus ancien, sinon au MEMBER le plus ancien ; seul : espace supprime avec delai.                                                                            | D51      |
+| Auteur parti puis revenu                                             | Il retrouve ses droits d'auteur ; les modifications faites entre-temps par les moderateurs restent dans l'historique.                                                                             | D57, D59 |
+| Membre exclu                                                         | Acces coupe immediatement (y compris temps reel) ; ses recettes restent, reprises par les moderateurs ; ses suggestions en attente sont annulees ; il ne revient que par invitation directe.      | D18, D53 |
+| Sous-recette liee non visible                                        | Le bloc affiche "recette non disponible" avec son nom ; pas de quantites depliees ; la liste de courses signale les ingredients manquants.                                                        | D24, D26 |
+| Recette composee retiree d'un espace                                 | On propose de retirer aussi les sous-recettes partagees automatiquement avec elle, si aucune autre recette de l'espace ne les utilise.                                                            | D26      |
+| Espace d'origine supprime alors que la recette est partagee ailleurs | La recette est rapatriee dans l'espace perso de son auteur, ses partages et adaptations restent. Si l'auteur n'existe plus : elle reste dans les espaces de partage, geree par leurs moderateurs. | D22, D83 |
+| Original d'une adaptation supprime                                   | L'adaptation vit seule, le lien affiche "original supprime".                                                                                                                                      | D17      |
+| Module desactive ou retire avec des donnees                          | Donnees conservees indefiniment et masquees ; reactivation ou nouvel acces = tout revient ; elles partent seulement avec l'espace.                                                                | D33, D85 |
+| Suggestion en attente quand la recette change                        | La suggestion reste basee sur sa revision ; le diff est recalcule sur la version courante et les conflits sont signales ; elle reste tranchable.                                                  | D04, D05 |
+| Changement de role pendant une action                                | Les droits sont verifies a chaque requete cote serveur ; l'interface se met a jour par le temps reel.                                                                                             | CDC S6.2 |
+| Lien d'invitation utilise apres expiration ou revocation             | Refuse avec un message clair ; l'utilisateur peut demander un nouveau lien a un moderateur.                                                                                                       | D07      |
+| Compte supprime auteur de suggestions ou d'idees                     | Ses suggestions en attente sont annulees ; ses idees de repas restent, auteur anonymise.                                                                                                          | D20      |
 
-## Decisions proposees
+## Decisions
 
-A reporter dans le journal des decisions une fois tranchees.
+Introduites par ce document, reportees dans le journal des decisions (qui porte leur statut).
 
 ### D50 - Pas d'annuaire d'utilisateurs - VALIDEE (2026-11-03)
 
@@ -237,9 +237,13 @@ A reporter dans le journal des decisions une fois tranchees.
 
 - Le lien auteur d'une recette n'est jamais casse (sauf compte supprime, anonymise) : un auteur qui revient retrouve ses droits d'auteur sur ses recettes de l'espace.
 
-## Questions pour le proprietaire
+## Questions pour le proprietaire (tranchees)
+
+Toutes tranchees : la decision retenue est indiquee apres chaque question.
 
 ### P1 - Espace d'origine supprime alors que ses recettes sont partagees ailleurs : que deviennent-elles ?
+
+- **Tranchee** : D83.
 
 - **Rapatriees dans l'espace perso de l'auteur** (recommande) : L'auteur garde son contenu, partages et adaptations restent.
 - Supprimees avec l'espace : Elles disparaissent de partout (restaurables 30 jours avec l'espace).
@@ -247,11 +251,15 @@ A reporter dans le journal des decisions une fois tranchees.
 
 ### P2 - Donnees d'un module desactive par l'OWNER ou retire par le super admin : combien de temps les garder ?
 
+- **Tranchee** : D85.
+
 - **Indefiniment, masquees** (recommande) : Reactiver redonne tout ; aucun risque de perte.
 - 12 mois, avec preavis : Purge apres 12 mois, l'OWNER est prevenu et peut exporter.
 - Supprimees a la desactivation : Apres confirmation forte de l'OWNER.
 
 ### P3 - Qui peut partager une recette dans un autre espace (D56) ?
+
+- **Tranchee** : D56, amendee par D81.
 
 - **L'auteur seulement** (recommande) : Les autres membres l'adaptent pour leur espace.
 - Aussi les MOD / OWNER de l'espace d'origine : Utile pour diffuser une recette du groupe.
@@ -259,22 +267,30 @@ A reporter dans le journal des decisions une fois tranchees.
 
 ### P4 - Catalogue des modules (D54) : qui le voit et qui demande ?
 
+- **Tranchee** : D54.
+
 - **Tous les membres le voient, l'OWNER demande** (recommande) : Les membres decouvrent les modules et peuvent en parler a l'OWNER.
 - L'OWNER seul : Comme ecrit dans D33.
 - Tout membre demande, l'OWNER valide avant envoi : Plus de demandes, une etape de plus.
 
 ### P5 - Role minimal par defaut pour modifier un repas du planning (D58) ?
 
+- **Tranchee** : D58.
+
 - **MEMBER** (recommande) : Tout le monde remplit le planning de la famille.
 - MODERATOR : Seuls les moderateurs l'organisent ; les membres proposent des idees.
 
 ### P6 - Acces du super admin au contenu des espaces (D52) ?
+
+- **Tranchee** : D52.
 
 - **Pour une moderation, avec motif et audit** (recommande) : Equilibre entre vie privee et capacite d'agir.
 - Libre, trace dans l'audit : Plus simple a operer, moins respectueux de la vie privee.
 - Aucun acces : Seulement les signalements et les metadonnees ; impossible de verifier un contenu.
 
 ### P7 - Suppression du compte d'un OWNER (D51) ?
+
+- **Tranchee** : D51.
 
 - **Transfert automatique au plus ancien moderateur** (recommande) : Les groupes continuent sans intervention.
 - Bloquee tant qu'il n'a pas transfere : Il doit choisir lui-meme un successeur pour chaque espace.

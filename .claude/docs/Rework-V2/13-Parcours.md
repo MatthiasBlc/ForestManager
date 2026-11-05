@@ -1,6 +1,6 @@
 # Parcours utilisateurs - Rework V2 (roadmap B3)
 
-Statut : **BROUILLON**, a valider. Decisions nouvelles proposees : D60 a D69 (section "Decisions proposees").
+Statut : voir le journal des decisions. Ce document a introduit D60 a D69 (section "Decisions").
 
 Conventions :
 
@@ -216,7 +216,7 @@ Conventions :
 
 ---
 
-## Decisions proposees
+## Decisions
 
 | #   | Decision                                                                                                                                                                                                             | Statut  |
 | --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
@@ -231,7 +231,9 @@ Conventions :
 | D68 | Hors ligne : bandeau permanent "Hors ligne", actions d'ecriture desactivees avec la raison, pas de file d'attente de modifications ; brouillon de recette conserve localement.                                       | VALIDEE |
 | D69 | Echanger deux repas : glisser-deposer en desktop ; sur mobile, ActionMenu "Echanger avec..." puis toucher le repas cible (pas de glisser-deposer tactile, conflit avec le defilement).                               | VALIDEE |
 
-## Questions pour le proprietaire
+## Questions pour le proprietaire (tranchees)
+
+Toutes tranchees : QP1 par D60, QP2 par D61, QP3 par D64, QP4 par D69, QP5 par D84 (l'ecran "Quitter" demande pour chaque recette).
 
 - **QP1 - Ecran d'ouverture** : (a) dernier espace et module visites (recommande, D60) ; (b) toujours l'accueil a widgets ; (c) toujours l'espace perso.
 - **QP2 - Accueil des nouveaux** : (a) ecran de bienvenue a 3 choix passables (recommande, D61) ; (b) visite guidee en plusieurs etapes ; (c) rien, arrivee directe dans l'espace perso vide.

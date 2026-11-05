@@ -341,7 +341,7 @@
 
 <div class="wrap">
   <header style="display: flex; flex-direction: column; gap: 8px">
-    <div class="eyebrow">Rework V2 - roadmap B2 - valide le 2026-11-03</div>
+    <div class="eyebrow">Rework V2 - roadmap B2 - statut : voir le journal des decisions</div>
     <h1>Qui peut faire quoi</h1>
     <p>
       La matrice des permissions de Forest Manager V2, module par module. Choisis un acteur pour
@@ -380,11 +380,11 @@
   </section>
   <section style="display: flex; flex-direction: column; gap: 12px">
     <h2>Decisions</h2>
-    <p class="small">Ce que les decisions validees ne tranchaient pas. Statut : proposee.</p>
+    <p class="small">Introduites par cette matrice. Statut : voir le journal des decisions.</p>
     <div class="cards" id="dec"></div>
   </section>
   <section style="display: flex; flex-direction: column; gap: 12px">
-    <h2>Questions pour toi</h2>
+    <h2>Questions (toutes tranchees)</h2>
     <div class="cards" id="qs"></div>
   </section>
 </div>
@@ -490,8 +490,8 @@
           m: "compte",
           a: "Reinitialiser le mot de passe d'un utilisateur",
           c: ["N", "N", "N", "N", "N", "N", "Y"],
-          ref: "D21",
-          n: "Utile sans SMTP ; l'utilisateur doit changer le mot de passe a la connexion suivante.",
+          ref: "D21, D134",
+          n: "Utile sans SMTP : mot de passe temporaire de 24 h a usage unique, a changer a la connexion (D134).",
         },
         {
           m: "perso",
@@ -533,7 +533,7 @@
           a: "Creer un espace groupe",
           c: ["N", "Y", "Y", "Y", "Y", "Y", "N"],
           ref: "F-SPC-1, D51",
-          n: "Tout utilisateur connecte. Il en devient OWNER. Plafond anti-abus propose : 20 espaces possedes.",
+          n: "Tout utilisateur connecte. Il en devient OWNER. Plafond anti-abus : 20 espaces possedes.",
         },
         {
           m: "groupe",
@@ -609,7 +609,7 @@
           m: "groupe",
           a: "Transferer la propriete a un membre",
           c: ["N", "N", "N", "N", "Y", "N", "N"],
-          ref: "D06",
+          ref: "D06, D92",
           n: "Le nouvel OWNER doit accepter ; l'ancien devient MODERATOR.",
         },
         {
@@ -720,9 +720,9 @@
         {
           m: "recettes",
           a: "Modifier une recette (cree une revision)",
-          c: ["N", "N", "A", "Y", "Y", "N", "Y"],
-          ref: "D05, D06, D57",
-          n: "Recettes de l'espace d'origine : auteur, MOD et OWNER de l'espace d'origine. Les moderateurs d'un espace ou elle est seulement partagee ne la modifient pas.",
+          c: ["N", "N", "A", "Y", "Y", "N", "N"],
+          ref: "D05, D06, D57, D122",
+          n: "Recettes de l'espace d'origine : auteur, MOD et OWNER de l'espace d'origine. Les moderateurs d'un espace ou elle est seulement partagee ne la modifient pas. Super admin : jamais (lecture et moderation seulement, D52, D122).",
         },
         {
           m: "recettes",
@@ -750,7 +750,7 @@
           a: "Retirer une recette d'un espace ou elle est partagee",
           c: ["N", "N", "A", "Y", "Y", "N", "Y"],
           ref: "F-REC-9",
-          n: "Auteur, ou MOD / OWNER de cet espace de partage.",
+          n: "Auteur, ou MOD / OWNER de cet espace de partage. Super admin : moderation, avec motif (D52, D122).",
         },
         {
           m: "recettes",
@@ -771,7 +771,7 @@
           a: "Supprimer une recette (disparait de tous les espaces)",
           c: ["N", "N", "A", "Y", "Y", "N", "Y"],
           ref: "F-REC-10, D57",
-          n: "Auteur. MOD / OWNER de l'espace d'origine seulement si l'auteur n'en est plus membre.",
+          n: "Auteur. MOD / OWNER de l'espace d'origine seulement si l'auteur n'en est plus membre. Super admin : moderation, avec motif (D52, D122).",
         },
         {
           m: "recettes",
@@ -861,8 +861,8 @@
           m: "suggestions",
           a: "Transformer sa suggestion refusee en adaptation",
           c: ["N", "N", "S", "S", "S", "N", "N"],
-          ref: "D04, D17",
-          n: "",
+          ref: "D04, D17, D140",
+          n: "L'adaptation est la seule copie possible (D140).",
         },
         {
           m: "tags",
@@ -994,8 +994,8 @@
           m: "planning",
           a: "Liste de courses (V2.1) : creer, cocher, archiver",
           c: ["N", "N", "C", "Y", "Y", "N", "N"],
-          ref: "CDC S4.7",
-          n: "Propose : memes droits que modifier le planning.",
+          ref: "F-SHP-4, D141",
+          n: "Role minimal regle par l'OWNER ; MEMBER par defaut, comme le planning (D141).",
         },
         {
           m: "notifs",
@@ -1080,8 +1080,8 @@
         ],
         [
           "Espace d'origine supprime alors que la recette est partagee ailleurs",
-          "Propose : la recette est rapatriee dans l'espace perso de son auteur, ses partages et adaptations restent. Si l'auteur n'existe plus : elle reste dans les espaces de partage, geree par leurs moderateurs. A trancher (question P1).",
-          "D22, P1",
+          "La recette est rapatriee dans l'espace perso de son auteur, ses partages et adaptations restent. Si l'auteur n'existe plus : elle reste dans les espaces de partage, geree par leurs moderateurs.",
+          "D22, D83",
         ],
         [
           "Original d'une adaptation supprime",
@@ -1090,8 +1090,8 @@
         ],
         [
           "Module desactive ou retire avec des donnees",
-          "Donnees conservees et masquees ; reactivation ou nouvel acces = tout revient. Duree de conservation a trancher (question P2).",
-          "D33, P2",
+          "Donnees conservees indefiniment et masquees ; reactivation ou nouvel acces = tout revient ; elles partent seulement avec l'espace.",
+          "D33, D85",
         ],
         [
           "Suggestion en attente quand la recette change",
@@ -1169,6 +1169,7 @@
       questions: [
         [
           "P1",
+          "D83",
           "Espace d'origine supprime alors que ses recettes sont partagees ailleurs : que deviennent-elles ?",
           [
             [
@@ -1190,6 +1191,7 @@
         ],
         [
           "P2",
+          "D85",
           "Donnees d'un module desactive par l'OWNER ou retire par le super admin : combien de temps les garder ?",
           [
             ["Indefiniment, masquees", "Reactiver redonne tout ; aucun risque de perte.", true],
@@ -1203,6 +1205,7 @@
         ],
         [
           "P3",
+          "D56, amendee par D81",
           "Qui peut partager une recette dans un autre espace (D56) ?",
           [
             ["L'auteur seulement", "Les autres membres l'adaptent pour leur espace.", true],
@@ -1220,6 +1223,7 @@
         ],
         [
           "P4",
+          "D54",
           "Catalogue des modules (D54) : qui le voit et qui demande ?",
           [
             [
@@ -1237,6 +1241,7 @@
         ],
         [
           "P5",
+          "D58",
           "Role minimal par defaut pour modifier un repas du planning (D58) ?",
           [
             ["MEMBER", "Tout le monde remplit le planning de la famille.", true],
@@ -1249,6 +1254,7 @@
         ],
         [
           "P6",
+          "D52",
           "Acces du super admin au contenu des espaces (D52) ?",
           [
             [
@@ -1270,6 +1276,7 @@
         ],
         [
           "P7",
+          "D51",
           "Suppression du compte d'un OWNER (D51) ?",
           [
             [
@@ -1444,7 +1451,7 @@
         return (
           '<div class="card"><span class="tag">' +
           d[0] +
-          " - validee</span><b>" +
+          "</span><b>" +
           esc(d[1]) +
           '</b><p class="small">' +
           esc(d[2]) +
@@ -1457,10 +1464,12 @@
         return (
           '<div class="card"><span class="tag">' +
           q[0] +
-          "</span><b>" +
+          " - tranchee : " +
           esc(q[1]) +
+          "</span><b>" +
+          esc(q[2]) +
           "</b>" +
-          q[2]
+          q[3]
             .map(function (o) {
               return (
                 '<div class="opt' +
