@@ -6,7 +6,7 @@ Refonte de Forest Manager : clarifier les concepts de la V1, refaire l'interface
 
 1. Ce README.
 2. `4-Roadmap.md` : la premiere case non cochee est le point de reprise.
-3. Le plan de l'etape en cours (`17-Plan-C1.md` pour C1).
+3. Le plan de l'etape en cours (`18-Plan-C2.md` pour C2 ; `17-Plan-C1.md` pour C1, termine).
 4. `1-CDC-V2.md` : S1 a S3 (vision, glossaire, roles) pour tout le monde, puis la section du module concerne.
 5. `3-Journal-des-Decisions.md` : seulement pour comprendre le pourquoi d'une regle (chercher le `D##`).
 
@@ -25,6 +25,7 @@ Refonte de Forest Manager : clarifier les concepts de la V1, refaire l'interface
 | `15-Plan-Tests.md`            | Plan de tests.                                                                                                |
 | `16-Maquettes/`               | 4 canevas de maquettes (copies locales) et `BRIEF.md` (conventions, donnees d'exemple).                       |
 | `17-Plan-C1.md`               | Plan de realisation du socle (C1) : perimetre, reprise de la V1, sous-etapes.                                 |
+| `18-Plan-C2.md`               | Plan de C2 : design system en code, app shell, ecrans du socle.                                               |
 | `archive/`                    | Etudes terminees (phase A et B5b) : leurs conclusions sont dans le CDC et le journal. Ne pas lire par defaut. |
 
 `archive/` contient : l'analyse de la V1 (`2-Analyse-V1.html`), les etudes adaptations (5) et recettes composees (6, 7), les directions visuelles (8), la revue du brainstorming (9), les ecarts des maquettes traites en B5b.
@@ -75,7 +76,8 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
   - Changelog en base apres la prod : en C6 avec le modele `Changelog` (seul le tag est pose d'ici la).
   - **A verifier** : premier passage de la CI sur GitHub (pas encore pousse au 2026-11-05).
 - **C1 termine le 2026-11-05.**
-- Prochaine etape : C2 (design system et app shell) ; plan a ecrire (`18-Plan-C2.md`).
+- Plan de C2 ecrit le 2026-11-05 (`18-Plan-C2.md`, D154 a D157), sans validation formelle : le proprietaire a demande d'avancer sans questions pendant cette session ; a relire.
+- Prochaine etape : C2.1 (outillage web).
 - Tout est publie et committe au 2026-11-05 : DS v10, Acces v39, Recettes v35, Planning v26, Admin v26, Permissions v5, Parcours v6, Modele de donnees v5. Maquettes revues dans Chrome le 2026-11-05 (B5b, voir `archive/16-Maquettes-ECARTS.md`).
   - Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact) : relire l'artefact (action read sur l'URL), puis publier avec `root` = le dossier du canevas, `file_path` = un fichier modifie, `files` = les autres (`project/...`).
   - Les numeros de version des artefacts avancent aussi a la simple consultation : comparer le contenu en ligne au commit avant d'ecraser.

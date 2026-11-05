@@ -443,3 +443,20 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
 
 - **Heritier (D51)** : MODERATOR le plus ancien, sinon MEMBER le plus ancien, en sautant ceux qui possedent deja 20 espaces. Si tous sont au plafond, le premier herite quand meme : le plafond freine la creation abusive, il ne doit pas faire disparaitre l'espace de ses membres.
 - **Anonymisation (D20)** : username `deleted-<id>` et email `deleted-<id>@invalid` (l'ancien username et l'ancien email redeviennent libres), mot de passe vide, jetons et sessions supprimes. Invitations, liens, transferts et demandes d'acces en cours a son nom sont annules. Espace perso supprime avec purge a la tache horaire suivante (les crochets des modules s'appliquent). Les espaces groupe deja supprimes qu'il possedait ne sont plus restaurables.
+
+### D154 - Perimetre de C2 : ecrans du socle complets, sans notifications ni Recettes - VALIDEE (2026-11-05, plan C2)
+
+- **Choix** : C2 livre l'outillage web, le design system en code, les themes, l'app shell, le registre web et tous les ecrans du socle branches sur l'API de C1, plus une coquille PWA. Notifications, Ctrl K et widgets complets en C6 ; persistance hors ligne et avatars en C3 ; E2E en C7. Detail : `18-Plan-C2.md`.
+
+### D155 - Composants : le design system porte en TSX avec son CSS, comportements Radix - VALIDEE (2026-11-05, plan C2)
+
+- **Constat** : le design system valide (B4) existe deja en composants React (`components/bundle.js`) et en CSS base sur les tokens (`bundle.css`), utilises par les maquettes. Repartir des primitives shadcn generiques obligerait a redessiner chaque composant pour retrouver ce rendu.
+- **Choix** : porter ces composants en TSX types dans `apps/web/src/ui` et `patterns`, garder leur CSS, et confier les comportements accessibles a Radix (Dialog, DropdownMenu, Toast, Switch, RadioGroup). Tailwind 4 (theme lu dans les tokens) pour la mise en page des ecrans. C'est la demarche shadcn de D16 (code possede, Radix, Tailwind, tokens) appliquee au design system valide.
+
+### D156 - Polices auto-hebergees - VALIDEE (2026-11-05, plan C2)
+
+- **Choix** : Sora, Manrope et IBM Plex Mono servies par l'application (`@fontsource`), au lieu de Google Fonts : CSP stricte, aucune requete vers un tiers.
+
+### D157 - Tests de composants : jsdom, MSW, reponses validees par les schemas partages - VALIDEE (2026-11-05, plan C2)
+
+- **Choix** : Vitest + jsdom + Testing Library + MSW. Les reponses mockees sont construites par des fabriques et validees contre les schemas Zod du partage ; axe-core verifie les ecrans ; chaque composant est rendu dans les six themes.

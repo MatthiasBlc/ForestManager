@@ -42,7 +42,17 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C1.8 Registre de modules
   - [x] C1.9 Suppression du compte
   - [x] C1.10 CI V2 et deploy repris de la V1 (D147)
-- [ ] C2 Design system et app shell
+- [ ] C2 Design system, app shell et ecrans du socle (plan : `18-Plan-C2.md`)
+  - [x] C2.0 Plan de C2 (D154 a D157)
+  - [ ] C2.1 Outillage web
+  - [ ] C2.2 Composants du design system
+  - [ ] C2.3 Themes et preferences
+  - [ ] C2.4 App shell et registre web
+  - [ ] C2.5 Acces
+  - [ ] C2.6 Espaces, invitations, membres
+  - [ ] C2.7 Modules
+  - [ ] C2.8 Profil, apparence, compte
+  - [ ] C2.9 Coquille PWA
 - [ ] C3 Module recettes (+ revisions, partage, adaptation, suggestions, import)
 - [ ] C4 Referentiels et admin
 - [ ] C5 Module planning + generation
