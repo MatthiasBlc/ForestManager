@@ -95,6 +95,7 @@ export const changePasswordBodySchema = z.strictObject({
   currentPassword: currentPasswordSchema,
   newPassword: passwordSchema,
 });
+export type ChangePasswordBody = z.infer<typeof changePasswordBodySchema>;
 
 export const updatePreferencesBodySchema = preferencesSchema
   .strict()

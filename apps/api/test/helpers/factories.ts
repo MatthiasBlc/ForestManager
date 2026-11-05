@@ -6,8 +6,8 @@ import { buildSpace, buildUser, type SpaceData, type UserData } from "@fm/test-u
 
 import { db } from "./db.ts";
 
-/** Hash du mot de passe de test ; remplace par un vrai hash argon2 en C1.5. */
-let passwordHash = "not-a-real-hash";
+/** Hash argon2 de TEST_PASSWORD, calcule une fois par fichier (setup.ts). */
+let passwordHash = "";
 export function setTestPasswordHash(hash: string): void {
   passwordHash = hash;
 }

@@ -4,6 +4,7 @@ import { pino } from "pino";
 import request from "supertest";
 
 import { createApp, type AppDeps } from "../../src/core/http/app.ts";
+import type { MailMessage, Mailer } from "../../src/core/mail/mailer.ts";
 import { CSRF_COOKIE, CSRF_HEADER } from "../../src/core/http/security.ts";
 import { db, testEnv } from "./db.ts";
 
@@ -48,5 +49,34 @@ export async function createClient(app = createTestApp()) {
     put: (path: string, body?: object) => agent.put(url(path)).set(CSRF_HEADER, csrf).send(body),
     delete: (path: string, body?: object) =>
       agent.delete(url(path)).set(CSRF_HEADER, csrf).send(body),
+  };
+}
+
+/** Client deja connecte avec ce compte (mot de passe de test). */
+export async function loginAs(user: { username: string; password: string }, app = createTestApp()) {
+  const client = await createClient(app);
+  const res = await client.post("/auth/login", {
+    identifier: user.username,
+    password: user.password,
+  });
+  if (res.status !== 200)
+    throw new Error(`login failed: ${res.status} ${JSON.stringify(res.body)}`);
+  return client;
+}
+
+/** Faux transport : garde les emails envoyes pour les tests. */
+export function fakeMailer(): Mailer & { sent: MailMessage[]; lastToken: () => string } {
+  const sent: MailMessage[] = [];
+  return {
+    sent,
+    send: (message) => {
+      sent.push(message);
+      return Promise.resolve();
+    },
+    lastToken: () => {
+      const match = /token=([A-Za-z0-9_-]+)/.exec(sent.at(-1)?.text ?? "");
+      if (!match?.[1]) throw new Error("no token in last mail");
+      return match[1];
+    },
   };
 }

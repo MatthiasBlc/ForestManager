@@ -1,6 +1,7 @@
 // Point d'entree : charge l'environnement, ouvre la base, demarre HTTP et
 // s'arrete proprement sur SIGTERM / SIGINT (docker stop).
 
+import { purgeExpiredSessions } from "./core/auth/session.ts";
 import { loadEnv } from "./core/config/env.ts";
 import { createDb } from "./core/db/client.ts";
 import { createApp } from "./core/http/app.ts";
@@ -14,6 +15,17 @@ const app = createApp({ env, db, logger });
 const server = app.listen(env.PORT, () => {
   logger.info({ port: env.PORT }, "API ready");
 });
+
+// Menage des sessions expirees, toutes les heures.
+const purge = setInterval(
+  () => {
+    purgeExpiredSessions(db).catch((error: unknown) => {
+      logger.error({ err: error }, "session purge failed");
+    });
+  },
+  60 * 60 * 1000
+);
+purge.unref();
 
 function shutdown(signal: string): void {
   logger.info({ signal }, "shutting down");

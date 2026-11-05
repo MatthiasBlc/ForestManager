@@ -106,8 +106,10 @@ model UserSession {
   sid       String   @unique
   data      String
   expiresAt DateTime
+  userId    String? // ferme toutes les sessions d'un compte (mot de passe change, suppression) [D148]
 
   @@index([expiresAt])
+  @@index([userId])
 }
 
 // =============================================================================

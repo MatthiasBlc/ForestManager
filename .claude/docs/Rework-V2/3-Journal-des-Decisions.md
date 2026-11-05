@@ -412,3 +412,8 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
   - meme declenchement : PR vers `master` = preprod, push sur `master` = prod, changelog et tag apres la prod.
 - **Ameliorations prevues** : contexte de build monorepo (`docker/*.Dockerfile`), images taguees `sha-<court>` en plus de `latest` (B6), verification unique dans le conteneur de test (`docker/compose.test.yml`, identique en local et en CI), volume PostgreSQL neuf en 17 (remise a zero D23).
 - **Consequence** : C1.10 ecrit le workflow complet et les compose preprod et prod dans `docker/`. D143 tient toujours : rien ne se deploie avant C7, puisque rien ne part vers `master` avant.
+
+### D148 - Store de sessions maison et colonne `UserSession.userId` - VALIDEE (2026-11-05, realisation C1.5)
+
+- **Constat** : changer de mot de passe doit fermer les autres sessions (F-ACC-4), la reinitialisation et la suppression du compte toutes ses sessions. Le schema cible ne reliait pas une session a son compte (donnees serialisees seulement), et la V1 dependait de `@quixo3/prisma-session-store`.
+- **Choix** : store express-session ecrit dans `core/auth/session.ts` sur la table `UserSession`, avec une colonne `userId` indexee (sans cle etrangere : les sessions d'un compte sont supprimees explicitement). Purge horaire des sessions expirees. Schema cible mis a jour.

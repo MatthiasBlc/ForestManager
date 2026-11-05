@@ -36,7 +36,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C1.2 Docker V2 et commandes
   - [x] C1.3 Package partage (erreurs, permissions, schemas, contrat de module)
   - [x] C1.4 Squelette API, Prisma du socle, seed, harnais de test
-  - [ ] C1.5 Comptes et sessions
+  - [x] C1.5 Comptes et sessions
   - [ ] C1.6 Espaces et membres
   - [ ] C1.7 Invitations
   - [ ] C1.8 Registre de modules

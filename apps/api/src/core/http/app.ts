@@ -6,8 +6,13 @@ import cors from "cors";
 import express, { Router } from "express";
 import type { Logger } from "pino";
 
+import { createPasswordHasher, type PasswordHasher } from "../auth/password.ts";
+import { authRouter } from "../auth/routes.ts";
+import { sessionMiddleware } from "../auth/session.ts";
 import type { Env } from "../config/env.ts";
+import type { Context } from "../context.ts";
 import type { Db } from "../db/client.ts";
+import { createMailer, type Mailer } from "../mail/mailer.ts";
 import { errorHandler, notFoundHandler } from "./errors.ts";
 import { httpLogger } from "./logger.ts";
 import { csrfProtection, securityHeaders } from "./security.ts";
@@ -19,6 +24,9 @@ export interface AppDeps {
   logger: Logger;
   /** Limitation de debit ; coupee par defaut en test. */
   rateLimit?: boolean;
+  /** Transport des emails ; par defaut celui de SMTP_URL (null sans SMTP). */
+  mailer?: Mailer | null;
+  hasher?: PasswordHasher;
 }
 
 /** Taille maximale d'un corps JSON (comme la V1). */
@@ -27,6 +35,14 @@ const JSON_LIMIT = "50kb";
 export function createApp(deps: AppDeps): express.Express {
   const { env } = deps;
   const production = env.NODE_ENV === "production";
+  const rateLimit = deps.rateLimit ?? env.NODE_ENV !== "test";
+  const ctx: Context = {
+    env,
+    db: deps.db,
+    logger: deps.logger,
+    mailer: deps.mailer === undefined ? createMailer(env) : deps.mailer,
+    hasher: deps.hasher ?? createPasswordHasher(env.NODE_ENV === "test"),
+  };
   const app = express();
 
   app.disable("x-powered-by");
@@ -48,8 +64,10 @@ export function createApp(deps: AppDeps): express.Express {
 
   const api = Router();
   api.get("/config", (_req, res) => {
-    reply(res, appConfigSchema, { features: { email: Boolean(env.SMTP_URL) } });
+    reply(res, appConfigSchema, { features: { email: ctx.mailer !== null } });
   });
+  api.use(sessionMiddleware(deps.db, env.SESSION_SECRET, production));
+  api.use(authRouter(ctx, rateLimit));
   app.use(API_PREFIX, api);
 
   app.use(notFoundHandler);
