@@ -26,6 +26,7 @@ Refonte de Forest Manager : clarifier les concepts de la V1, refaire l'interface
 | `16-Maquettes/`               | 4 canevas de maquettes (copies locales) et `BRIEF.md` (conventions, donnees d'exemple).                       |
 | `17-Plan-C1.md`               | Plan de realisation du socle (C1) : perimetre, reprise de la V1, sous-etapes.                                 |
 | `18-Plan-C2.md`               | Plan de C2 : design system en code, app shell, ecrans du socle.                                               |
+| `19-Plan-C3.md`               | Plan de C3 : module Recettes en tranches verticales.                                                          |
 | `archive/`                    | Etudes terminees (phase A et B5b) : leurs conclusions sont dans le CDC et le journal. Ne pas lire par defaut. |
 
 `archive/` contient : l'analyse de la V1 (`2-Analyse-V1.html`), les etudes adaptations (5) et recettes composees (6, 7), les directions visuelles (8), la revue du brainstorming (9), les ecarts des maquettes traites en B5b.
@@ -89,7 +90,8 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
 - C2.8 fait le 2026-11-05 (TDD) : `core/profile/` (profil, nom et email avec mot de passe actuel pour l'email, mot de passe, apparence appliquee et enregistree a chaque choix D115, suppression du compte avec consequences par espace D116, deconnexion), `core/home/` (salutation, invitations et transferts recus a accepter ou refuser). Plus aucune page d'attente dans le shell. Reportes : notifications et export dans le profil (C6), avatar (C3), widgets d'accueil (C3, C5, C6).
 - C2.9 fait le 2026-11-05 (TDD) : `pwa/` (bandeau hors ligne, bandeau "Nouvelle version disponible", enregistrement du service worker en production seulement), refus immediat des ecritures hors ligne (D159), `vite-plugin-pwa` 2.0.0 (manifeste, precache, icones provisoires dans `apps/web/public/`), type du manifeste dans nginx. Audit npm : 12 alertes faibles ou moderees dans les dependances de dev (typescript-eslint, workbox-build), aucune en production.
 - **C2 termine le 2026-11-05.** Reste a faire par le proprietaire : revue visuelle des ecrans (captures Chrome indisponibles pendant la session) et premier passage de la CI sur GitHub.
-- Prochaine etape : C3 (module Recettes) ; plan a ecrire (`19-Plan-C3.md`).
+- Plan de C3 ecrit le 2026-11-05 (`19-Plan-C3.md`, D160 a D162) : **a relire par le proprietaire** (comme le plan C2).
+- Prochaine etape : C3.1 (referentiels minimaux et domaine pur).
 - Tout est publie et committe au 2026-11-05 : DS v10, Acces v39, Recettes v35, Planning v26, Admin v26, Permissions v5, Parcours v6, Modele de donnees v5. Maquettes revues dans Chrome le 2026-11-05 (B5b, voir `archive/16-Maquettes-ECARTS.md`).
   - Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact) : relire l'artefact (action read sur l'URL), puis publier avec `root` = le dossier du canevas, `file_path` = un fichier modifie, `files` = les autres (`project/...`).
   - Les numeros de version des artefacts avancent aussi a la simple consultation : comparer le contenu en ligne au commit avant d'ecraser.

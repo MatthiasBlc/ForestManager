@@ -53,7 +53,17 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C2.7 Modules
   - [x] C2.8 Profil, apparence, compte
   - [x] C2.9 Coquille PWA
-- [ ] C3 Module recettes (+ revisions, partage, adaptation, suggestions, import)
+- [ ] C3 Module recettes (plan : `19-Plan-C3.md`)
+  - [x] C3.0 Plan de C3 (D160 a D162, a relire par le proprietaire)
+  - [ ] C3.1 Referentiels minimaux et domaine pur
+  - [ ] C3.2 Recettes simples
+  - [ ] C3.3 Revisions
+  - [ ] C3.4 Recettes composees
+  - [ ] C3.5 Partage
+  - [ ] C3.6 Adaptation et suggestions
+  - [ ] C3.7 Photos et avatars (MinIO)
+  - [ ] C3.8 Import
+  - [ ] C3.9 Mode cuisine et hors ligne
 - [ ] C4 Referentiels et admin
 - [ ] C5 Module planning + generation
 - [ ] C6 Notifications, activite, changelog

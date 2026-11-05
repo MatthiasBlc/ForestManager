@@ -470,3 +470,17 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
 
 - **Constat** : D106 demande des actions d'ecriture desactivees avec la raison quand on est hors ligne. En C2, aucune donnee n'est encore lisible hors ligne (la persistance TanStack Query arrive avec les recettes, C3).
 - **Choix** : en C2, un bandeau global annonce le hors ligne et le client API refuse toute ecriture sans reseau (`OFFLINE`, message clair, aucune file d'attente conforme a D35). La desactivation bouton par bouton se fait en C3, avec la persistance hors ligne et le badge des cartes. Service worker : coquille en precache (polices latines seulement), mise a jour proposee par un bandeau, jamais de reponse de l'API en cache ; icone provisoire (un "F" ambre sur fond Braise) en attendant un logo.
+
+### D160 - Referentiels minimaux livres avec les recettes (C3), gestion admin en C4 - VALIDEE (2026-11-05, plan C3)
+
+- **Constat** : la roadmap place les referentiels en C4 avec l'admin, mais une recette ne s'ecrit pas sans unites ni ingredients.
+- **Choix** : C3 livre les tables et le seed des unites, des rayons et des tags globaux, l'autocompletion et la creation a la volee des ingredients (D09), les tags d'espace et leur moderation par les moderateurs (D08). C4 ajoute la gestion par le super admin (fusion D120, traductions, poids par unite, ordre des rayons, tags globaux).
+
+### D161 - C3 en tranches verticales - VALIDEE (2026-11-05, plan C3)
+
+- **Choix** : chaque sous-etape de C3 livre l'API et les ecrans d'une meme fonction (au lieu de toute l'API puis tous les ecrans), pour montrer un resultat utilisable a chaque etape et valider le contrat partage au plus tot. Detail : `19-Plan-C3.md`.
+
+### D162 - Plan C3 ecrit sans validation formelle - EN ATTENTE DE RELECTURE (2026-11-05)
+
+- **Constat** : le proprietaire a demande de poursuivre C1, C2 et C3 sans questions pendant la session du 2026-11-05.
+- **Choix** : le plan C3 est ecrit et suivi ; le proprietaire le relit a la prochaine session (perimetre, decoupage, D160, D161). Meme chose pour le plan C2 (D154 a D157), deja realise.
