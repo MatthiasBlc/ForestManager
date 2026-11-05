@@ -32,7 +32,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
 
 - [ ] C1 Socle : monorepo, package partage, auth, espaces, membres, invitations (plan : `17-Plan-C1.md`)
   - [x] C1.0 Plan de C1 valide (D143 a D146)
-  - [ ] C1.1 Monorepo et outillage (suppression de la V1, tag `v1-final` deja pose)
+  - [x] C1.1 Monorepo et outillage (suppression de la V1, tag `v1-final` deja pose)
   - [ ] C1.2 Docker V2 et commandes
   - [ ] C1.3 Package partage (erreurs, permissions, schemas, contrat de module)
   - [ ] C1.4 Squelette API, Prisma du socle, seed, harnais de test

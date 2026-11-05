@@ -1,48 +1,55 @@
 {
   "name": "forestmanager",
-  "version": "1.0.0",
-  "description": "ForestManager - Full-stack web application",
+  "version": "2.0.0-dev",
+  "private": true,
+  "description": "Forest Manager - espaces prives organises en modules (recettes, planning, courses)",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "packageManager": "npm@11.21.1",
+  "engines": {
+    "node": ">=22.18"
+  },
   "scripts": {
-    "docker:up": "docker compose up",
-    "docker:up:d": "docker compose up -d",
-    "docker:up:build": "docker compose up -d --build && docker image prune -f",
-    "docker:down": "docker compose down",
-    "docker:build": "docker compose build && docker image prune -f",
-    "docker:logs": "docker compose logs -f",
-    "docker:logs:backend": "docker compose logs -f backend",
-    "docker:logs:frontend": "docker compose logs -f frontend",
-    "docker:restart": "docker compose restart",
-    "docker:clean": "docker compose down -v --remove-orphans",
-    "prisma:studio": "docker compose exec backend npx prisma studio",
-    "prisma:migrate": "docker compose exec backend npx prisma migrate dev",
-    "prisma:generate": "docker compose exec backend npx prisma generate",
-    "test": "npm run test:backend && npm run test:frontend",
-    "test:backend": "docker compose exec backend npm test",
-    "test:frontend": "docker compose exec frontend npm test",
-    "test:watch:backend": "docker compose exec backend npm run test:watch",
-    "test:watch:frontend": "docker compose exec frontend npm run test:watch",
-    "test:coverage": "npm run test:coverage:backend && npm run test:coverage:frontend",
-    "test:coverage:backend": "docker compose exec backend npm run test:coverage",
-    "test:coverage:frontend": "docker compose exec frontend npm run test:coverage",
-    "format": "npx prettier --write .",
-    "format:check": "npx prettier --check .",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test:unit": "vitest run",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "prepare": "husky"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/MatthiasBlc/ForestManager"
   },
-  "keywords": [],
   "author": "Matthias Bouloc",
   "license": "ISC",
   "lint-staged": {
-    "*.{ts,tsx,js,json,md,yml,yaml,css}": [
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{js,json,md,yml,yaml,css,html}": [
       "prettier --write"
     ]
   },
   "devDependencies": {
-    "husky": "^9.1.7",
-    "lint-staged": "^15.5.2",
-    "prettier": "^3.8.1"
+    "@eslint/js": "9.39.5",
+    "@types/node": "22.20.5",
+    "eslint": "9.39.5",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "eslint-plugin-react-refresh": "0.5.7",
+    "globals": "17.13.0",
+    "husky": "9.1.7",
+    "lint-staged": "15.5.2",
+    "prettier": "3.9.10",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.0",
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
   }
 }

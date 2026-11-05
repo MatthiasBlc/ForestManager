@@ -1,0 +1,16 @@
+{
+  "name": "@fm/shared",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Contrat partage API et web : schemas, erreurs, permissions, modules",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run"
+  }
+}

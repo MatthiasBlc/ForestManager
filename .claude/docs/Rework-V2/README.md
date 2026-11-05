@@ -45,7 +45,13 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
 - Fait aussi : decisions D01 a D142 (journal). Points ouverts B9 tranches le 2026-11-05 (D140 a D142) : copie independante supprimee, liste de courses a role minimal reglable, schema mis a jour avec les decisions des maquettes, super admin sans modification de recette, statuts des documents au journal, D37 et D130 definitifs, D12 et D14 non utilises.
 - CDC 1.0 valide par le proprietaire le 2026-11-05 (B9) : la phase d'etude est terminee, le code est autorise.
 - Plan de C1 valide le 2026-11-05 (`17-Plan-C1.md`, D143 a D146) : la V2 remplace la V1 des C1.1, API seule en C1, PostgreSQL 17, avatars en C3.
-- Prochaine etape : C1.1 (tag `v1-final`, suppression de la V1, monorepo), dans une session propre.
+- C1.1 fait le 2026-11-05 : V1 supprimee de l'arbre, workspaces `apps/api`, `apps/web`, `packages/shared`, `packages/test-utils`, TypeScript 6.0 strict, ESLint 9 flat (typescript-eslint strict type-checked), Vitest 5 en projets. Lint, typecheck, tests et build web verts dans `node:22-alpine`.
+  - Versions : regle des deux semaines appliquee le 2026-11-05 (Vite 8.3.5, Vitest 5.0.5 car la 5.1.0 date du 2026-11-02, plugin React 6.1.2, typescript-eslint 8.72.0). ESLint reste en 9 comme prevu au plan (la 10 existe).
+  - **npm 11 obligatoire** (`packageManager: npm@11.21.1`) : npm 10 (fourni avec Node 22) plante sur les peers de vitest (`Cannot read properties of null (reading 'edgesOut')`). Les Dockerfiles de C1.2 installent npm 11.
+  - Hook husky : il tourne sur le Node de l'hote (18 aujourd'hui), d'ou lint-staged 15.5.2 ; passer l'hote en Node 22 permettra de monter en 17.
+  - API provisoire : `node apps/api/src/server.ts` (types effaces nativement par Node 22.18+, d'ou `erasableSyntaxOnly`), `GET /health` seulement.
+  - A faire par le proprietaire : `git push origin v1-final` (pas de cle SSH dans la session).
+- Prochaine etape : C1.2 (Docker V2, commandes, mise a jour de `CLAUDE.md`).
 - Tout est publie et committe au 2026-11-05 : DS v10, Acces v39, Recettes v35, Planning v26, Admin v26, Permissions v5, Parcours v6, Modele de donnees v5. Maquettes revues dans Chrome le 2026-11-05 (B5b, voir `archive/16-Maquettes-ECARTS.md`).
   - Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact) : relire l'artefact (action read sur l'URL), puis publier avec `root` = le dossier du canevas, `file_path` = un fichier modifie, `files` = les autres (`project/...`).
   - Les numeros de version des artefacts avancent aussi a la simple consultation : comparer le contenu en ligne au commit avant d'ecraser.
