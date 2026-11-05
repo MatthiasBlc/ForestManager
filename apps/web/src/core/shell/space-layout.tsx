@@ -2,7 +2,16 @@
 // module, en-tete, onglets et "Plus", routes du socle et des modules.
 import { useQuery } from "@tanstack/react-query";
 import { Suspense, useEffect, useState, type ReactNode } from "react";
-import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router";
+import {
+  Link,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router";
 
 import { WEB_MODULES } from "../../modules/index.ts";
 import { AppShell } from "../../patterns/app-shell.tsx";
@@ -19,6 +28,10 @@ import { Icon } from "../../ui/icon.tsx";
 import { Sheet } from "../../ui/sheet.tsx";
 import { writeLastSpace } from "../session/last-space.ts";
 import { meQuery, spaceQuery, spacesQuery } from "../session/queries.ts";
+import { CreateSpaceSheet } from "../spaces/create-space-sheet.tsx";
+import { DeletedSpacePage } from "../spaces/deleted-space-page.tsx";
+import { MembersPage } from "../spaces/members-page.tsx";
+import { SettingsPage } from "../spaces/settings-page.tsx";
 import { buildNavigation } from "./navigation.ts";
 import { PendingPage } from "./pending-page.tsx";
 import { toVisual } from "./space-visual.ts";
@@ -76,7 +89,7 @@ function SpaceNotFound({ personalSpaceId }: { personalSpaceId: string }) {
   );
 }
 
-export function SpaceLayout({ onAddSpace }: { onAddSpace?: () => void }) {
+export function SpaceLayout() {
   const { spaceId = "" } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -85,6 +98,19 @@ export function SpaceLayout({ onAddSpace }: { onAddSpace?: () => void }) {
   const space = useQuery(spaceQuery(spaceId));
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [params, setParams] = useSearchParams();
+  const createOpen = params.get("create") === "1";
+  const setCreateOpen = (open: boolean) => {
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        if (open) next.set("create", "1");
+        else next.delete("create");
+        return next;
+      },
+      { replace: true }
+    );
+  };
 
   useSpaceTint(space.data?.tintIndex ?? null);
   useEffect(() => {
@@ -100,7 +126,7 @@ export function SpaceLayout({ onAddSpace }: { onAddSpace?: () => void }) {
   };
   const addSpace = () => {
     setSwitcherOpen(false);
-    onAddSpace?.();
+    setCreateOpen(true);
   };
 
   const rail = (
@@ -123,15 +149,27 @@ export function SpaceLayout({ onAddSpace }: { onAddSpace?: () => void }) {
       onAdd={addSpace}
     />
   );
+  const createSheet = <CreateSpaceSheet open={createOpen} onClose={() => setCreateOpen(false)} />;
   const user = me.data
     ? { name: me.data.username, to: "/profile", avatarUrl: me.data.avatarUrl }
     : undefined;
 
+  const deleted = spaces.data?.find((s) => s.id === spaceId && s.deletedAt);
+  if (space.isError && deleted) {
+    return (
+      <AppShell rail={rail} top={<TopBar title={deleted.name} user={user} />}>
+        <DeletedSpacePage space={deleted} />
+        {switcher}
+        {createSheet}
+      </AppShell>
+    );
+  }
   if (space.isError) {
     return (
       <AppShell rail={rail} top={<TopBar title="Espace introuvable" user={user} />}>
         <SpaceNotFound personalSpaceId={me.data?.personalSpaceId ?? ""} />
         {switcher}
+        {createSheet}
       </AppShell>
     );
   }
@@ -177,8 +215,8 @@ export function SpaceLayout({ onAddSpace }: { onAddSpace?: () => void }) {
       <Routes>
         <Route index element={<Navigate to={nav.items[0]?.to ?? "home"} replace />} />
         <Route path="home" element={<PendingPage title="Accueil" />} />
-        <Route path="members" element={<PendingPage title="Membres" />} />
-        <Route path="settings" element={<PendingPage title="Réglages" />} />
+        <Route path="members" element={<MembersPage space={space.data} />} />
+        <Route path="settings" element={<SettingsPage space={space.data} />} />
         {WEB_MODULES.map((module) => (
           <Route
             key={module.code}
@@ -212,6 +250,7 @@ export function SpaceLayout({ onAddSpace }: { onAddSpace?: () => void }) {
         />
       </Routes>
       {switcher}
+      {createSheet}
       <MoreSheet open={moreOpen} onClose={() => setMoreOpen(false)} items={nav.more} />
     </AppShell>
   );

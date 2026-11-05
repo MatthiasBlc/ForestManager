@@ -1,28 +1,10 @@
 // Applique les preferences d'affichage sur <html> [D32, D115] : theme
 // (ambiance + clair / sombre, ou celui du systeme), densite, taille du texte.
 import type { Preferences } from "@fm/shared";
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect } from "react";
 
+import { useSystemDark } from "./system-dark.ts";
 import { resolveTheme } from "./themes.ts";
-
-const DARK_QUERY = "(prefers-color-scheme: dark)";
-
-function subscribe(onChange: () => void): () => void {
-  const query = window.matchMedia(DARK_QUERY);
-  query.addEventListener("change", onChange);
-  return () => {
-    query.removeEventListener("change", onChange);
-  };
-}
-
-/** Le systeme est-il en sombre (suivi en direct). */
-function useSystemDark(): boolean {
-  return useSyncExternalStore(
-    subscribe,
-    () => window.matchMedia(DARK_QUERY).matches,
-    () => false
-  );
-}
 
 export function ThemeController({ preferences }: { preferences: Preferences | null }) {
   const systemDark = useSystemDark();

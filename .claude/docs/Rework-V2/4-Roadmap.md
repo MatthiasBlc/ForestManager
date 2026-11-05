@@ -49,7 +49,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C2.3 Themes et preferences
   - [x] C2.4 App shell et registre web
   - [x] C2.5 Acces
-  - [ ] C2.6 Espaces, invitations, membres
+  - [x] C2.6 Espaces, invitations, membres
   - [ ] C2.7 Modules
   - [ ] C2.8 Profil, apparence, compte
   - [ ] C2.9 Coquille PWA
