@@ -7,7 +7,7 @@ Plateforme d'espaces prives (famille, amis, colocs) organisee en modules. Module
 **Chantier en cours : Rework V2. CDC 1.0 valide le 2026-11-05 : phase de realisation (C1 et suivants, plan de C1 valide).**
 Point de reprise : `.claude/docs/Rework-V2/README.md`, puis la premiere case non cochee de `4-Roadmap.md`.
 
-La V1 est obsolete et n'est plus utilisee : elle est supprimee en C1.1 (reference : tag git `v1-final`). Les sections Stack et Commandes ci-dessous decrivent encore la V1 jusqu'a C1.2.
+La V1 est obsolete et supprimee de l'arbre (reference : tag git `v1-final`).
 
 ## Contexte de session
 
@@ -15,20 +15,23 @@ Des que le contexte depasse 30 a 40 % et qu'un point de reprise propre existe (t
 
 ## Stack
 
-React 18 + TS + Vite + Tailwind 3 + daisyUI | Node 22 + Express + TS + Zod | PostgreSQL 15 + Prisma 6 | Socket.IO | MinIO (S3) | Docker + GitHub Actions + Portainer
+Monorepo npm workspaces (npm 11) : `apps/api`, `apps/web`, `packages/shared`, `packages/test-utils`.
+Node 22 (types TS effaces nativement, pas de build API) + TypeScript 6 strict + Express 5 + Zod 4 | React 19 + Vite 8 | PostgreSQL 17 + Prisma (a partir de C1.4) | Vitest 5 | Docker + GitHub Actions + Portainer + Traefik.
+Cible complete et versions : `.claude/docs/Rework-V2/14-Architecture.md`.
 
 ## Commandes
 
-Tout tourne sous Docker. Ne jamais lancer les tests hors Docker (env vars absentes).
+Tout tourne sous Docker (`docker/`). Ne jamais lancer les tests hors Docker (env vars absentes). Lint, typecheck et format tournent sur l'hote (Node de `.nvmrc`).
 
 ```bash
-npm run docker:up:build        # demarrer en dev (front :3000, API :3001, MinIO :9001)
+npm run docker:up:build        # stack de dev (web :3000, API :3001) ; a relancer apres un changement de dependances
 npm run docker:logs            # logs
-npm test                       # backend + frontend
-npm run test:backend           # = docker compose exec backend npm test
-npm run test:frontend          # = docker compose exec frontend npm test
-docker compose exec backend npx prisma migrate dev   # migrations
-npm run prisma:studio          # GUI DB :5555
+npm run docker:down            # arreter (docker:clean supprime aussi la base de dev)
+npm test                       # tous les tests, dans docker/compose.test.yml (PostgreSQL de test en memoire)
+npm run test:api               # idem par projet : test:web, test:shared
+npm run test:down              # arreter la base de test
+npm run lint && npm run typecheck
+npm run prisma:migrate         # migrations (a partir de C1.4) ; prisma:studio sur :5555
 ```
 
 ## Conventions

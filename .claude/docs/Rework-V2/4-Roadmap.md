@@ -31,9 +31,9 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
 ## Phase C - Realisation (detaillee a la fin de la phase B)
 
 - [ ] C1 Socle : monorepo, package partage, auth, espaces, membres, invitations (plan : `17-Plan-C1.md`)
-  - [x] C1.0 Plan de C1 valide (D143 a D146)
+  - [x] C1.0 Plan de C1 valide (D143 a D146, D147 ajoutee en C1.2)
   - [x] C1.1 Monorepo et outillage (suppression de la V1, tag `v1-final` deja pose)
-  - [ ] C1.2 Docker V2 et commandes
+  - [x] C1.2 Docker V2 et commandes
   - [ ] C1.3 Package partage (erreurs, permissions, schemas, contrat de module)
   - [ ] C1.4 Squelette API, Prisma du socle, seed, harnais de test
   - [ ] C1.5 Comptes et sessions
@@ -41,7 +41,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [ ] C1.7 Invitations
   - [ ] C1.8 Registre de modules
   - [ ] C1.9 Suppression du compte
-  - [ ] C1.10 CI V2
+  - [ ] C1.10 CI V2 et deploy repris de la V1 (D147)
 - [ ] C2 Design system et app shell
 - [ ] C3 Module recettes (+ revisions, partage, adaptation, suggestions, import)
 - [ ] C4 Referentiels et admin

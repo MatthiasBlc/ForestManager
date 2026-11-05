@@ -1,0 +1,88 @@
+# Stack de developpement. Lancer depuis la racine via les scripts npm (docker:*),
+# qui passent --project-directory . : les chemins ci-dessous partent de la racine
+# et le .env racine est lu.
+#
+# node_modules vient de l'image (volume anonyme) : apres un changement de
+# dependances, `npm run docker:up:build` reconstruit et renouvelle ce volume.
+
+name: ${COMPOSE_PROJECT_NAME:-forestmanager}
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-app: &app
+  restart: unless-stopped
+  init: true
+  volumes:
+    - .:/app
+    - /app/node_modules
+  networks: [internal]
+  logging: *default-logging
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-forestmanager}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-forestmanager_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-forestmanager_db}
+    volumes:
+      # Volume neuf pour PostgreSQL 17 (celui de la V1 contient des donnees 15).
+      - pgdata17:/var/lib/postgresql/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    logging: *default-logging
+
+  api:
+    <<: *app
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+      target: dev
+    ports:
+      - "3001:3001"
+      - "5555:5555" # Prisma Studio
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-forestmanager}:${POSTGRES_PASSWORD:-forestmanager_dev}@postgres:5432/${POSTGRES_DB:-forestmanager_db}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  web:
+    <<: *app
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+      target: dev
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+networks:
+  internal:
+
+volumes:
+  pgdata17:

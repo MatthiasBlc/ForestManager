@@ -1,0 +1,43 @@
+# Tests (local et CI) : PostgreSQL de test en memoire + conteneur qui lance Vitest.
+# Independant de la stack de dev. Lancer depuis la racine via les scripts npm (test*).
+#
+#   npm test            tous les projets Vitest
+#   npm run test:api    projet @fm/api
+#   npm run test:down   arreter la base de test
+
+name: forestmanager-test # impose aussi par -p dans les scripts (sinon COMPOSE_PROJECT_NAME du .env gagne)
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: forestmanager_test
+    # Base jetable : durabilite coupee pour aller plus vite.
+    command: postgres -c fsync=off -c synchronous_commit=off -c full_page_writes=off
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test -d forestmanager_test"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  tests:
+    # Image de dev de l'API : elle contient les dependances de tout le monorepo.
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+      target: dev
+    init: true
+    environment:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://test:test@postgres:5432/forestmanager_test
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["npx", "vitest", "run"]

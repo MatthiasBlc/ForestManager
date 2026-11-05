@@ -51,7 +51,13 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
   - Node de l'hote : `.nvmrc` = 22 (meme version que les images Docker) ; le hook pre-commit charge cette version via nvm, quel que soit le Node par defaut de l'hote. lint-staged en 17.
   - API provisoire : `node apps/api/src/server.ts` (types effaces nativement par Node 22.18+, d'ou `erasableSyntaxOnly`), `GET /health` seulement.
   - A faire par le proprietaire : `git push origin v1-final` (pas de cle SSH dans la session).
-- Prochaine etape : C1.2 (Docker V2, commandes, mise a jour de `CLAUDE.md`).
+- C1.2 fait le 2026-11-05 : `docker/` (api et web en multi-etapes dev/prod, `compose.dev.yml`, `compose.test.yml`, nginx du front), scripts racine, `CLAUDE.md` a jour.
+  - Dev : node_modules vient de l'image (volume anonyme renouvele par `docker:up:build`), volume PostgreSQL 17 neuf `pgdata17` (l'ancien volume V1 `forestmanager_postgres_data` est intact sur l'hote).
+  - Tests : conteneur jetable `tests` (image dev de l'API) + PostgreSQL 17 en tmpfs, projet compose `forestmanager-test` force par `-p` (sinon `COMPOSE_PROJECT_NAME` du `.env` gagne). La CI de C1.10 lancera la meme commande.
+  - Prod : API sans build, utilisateur `node`, tini ; front nginx (SPA, en-tetes de securite, cache long sur `/assets/`, proxy `/api/` vers `forestmanager-backend:3001` comme en V1). Images verifiees a la main ensemble.
+  - Reste pour C1.4 : Prisma dans `apps/api`, extensions `pg_trgm` et `unaccent` dans la premiere migration, `migrate deploy` + seed au demarrage de l'image prod (comme en V1), variables d'env (`SESSION_SECRET`...) dans les compose.
+  - D147 (demande du proprietaire) : la CI et le deploy reprennent la V1 (memes secrets, images, stacks Portainer, Traefik). Ecrit en C1.10.
+- Prochaine etape : C1.3 (package partage).
 - Tout est publie et committe au 2026-11-05 : DS v10, Acces v39, Recettes v35, Planning v26, Admin v26, Permissions v5, Parcours v6, Modele de donnees v5. Maquettes revues dans Chrome le 2026-11-05 (B5b, voir `archive/16-Maquettes-ECARTS.md`).
   - Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact) : relire l'artefact (action read sur l'URL), puis publier avec `root` = le dossier du canevas, `file_path` = un fichier modifie, `files` = les autres (`project/...`).
   - Les numeros de version des artefacts avancent aussi a la simple consultation : comparer le contenu en ligne au commit avant d'ecraser.
