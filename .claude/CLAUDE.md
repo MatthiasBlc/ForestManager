@@ -55,6 +55,7 @@ Tout est dans `.claude/docs/` (index : `.claude/docs/README.md`). Regles :
 - **Roadmap** : cases `- [ ]` ; la premiere non cochee est le point de reprise. Cocher au fil de l'eau.
 - **Artefacts** : toujours ecrire la copie locale dans le dossier du chantier AVANT de publier (lisible hors ligne), puis publier depuis ce fichier.
 - **Un compteur ou un statut a un seul endroit** ; ailleurs on renvoie, on ne recopie pas.
-- **Chantier termine** -> son dossier part dans `.claude/docs/V1/` (ou `done/`) et n'est plus lu par defaut.
+- **Chantier termine** -> son dossier part dans `.claude/docs/Archive/` et n'est plus lu par defaut. Dans un chantier en cours, une etude terminee (conclusions reportees au CDC et au journal) va dans son sous-dossier `archive/`.
+- **V1** : code et docs retires de l'arbre, lisibles dans le tag git `v1-final` (`git show v1-final:<chemin>`).
 - Ne pas recopier ce que le code dit deja (arborescence, liste d'endpoints, schema) : lire le code (`backend/prisma/schema.prisma`, `backend/src/routes/`).
 - Session interrompue : ecrire l'etat dans le `README.md` du chantier (section "Reprise").

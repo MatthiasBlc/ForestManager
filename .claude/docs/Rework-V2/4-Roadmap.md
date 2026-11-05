@@ -6,7 +6,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
 
 - [x] A1 Lire l'application V1 (back, front, schema, infra, docs)
 - [x] A2 Ranger la documentation dans `.claude/docs/` (V1 archivee, chantier V2 ouvert)
-- [x] A3 Analyse V1 publiee en artefact (`2-Analyse-V1.html`)
+- [x] A3 Analyse V1 publiee en artefact (`archive/2-Analyse-V1.html`)
 - [x] A4 CDC V2 brouillon 0.1 (`1-CDC-V2.md`)
 - [x] A5 Journal des decisions ouvert (`3-Journal-des-Decisions.md`)
 - [x] A6 **Relecture par le proprietaire** : analyse, CDC, decisions D01 a D16
@@ -22,7 +22,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
 - [x] B4a Direction visuelle : Braise en signature, Sous-bois et Potager en alternatives
 - [x] B4 Design system : tokens, theme, accent d'espace, composants de base, app shell avec rail (artefact Design System) - valide le 2026-11-03 (ajustements possibles pendant les maquettes)
 - [x] B5 Maquettes des ecrans : 4 canevas, 85 artboards, decisions D90 a D131 validees
-- [x] B5b Traiter `16-Maquettes/ECARTS.md` : design system, ecrans manquants, mise a jour des maquettes
+- [x] B5b Traiter les ecarts des maquettes (`archive/16-Maquettes-ECARTS.md`) : design system, ecrans manquants, mise a jour des maquettes
 - [x] B6 Architecture technique (`14-Architecture.md`)
 - [x] B7 Plan de migration des donnees : sans objet (pas d'utilisateurs en V1, remise a zero)
 - [x] B8 Plan de tests (`15-Plan-Tests.md`)
@@ -32,7 +32,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
 
 - [ ] C1 Socle : monorepo, package partage, auth, espaces, membres, invitations (plan : `17-Plan-C1.md`)
   - [x] C1.0 Plan de C1 valide (D143 a D146)
-  - [ ] C1.1 Monorepo et outillage (tag `v1-final`, suppression de la V1)
+  - [ ] C1.1 Monorepo et outillage (suppression de la V1, tag `v1-final` deja pose)
   - [ ] C1.2 Docker V2 et commandes
   - [ ] C1.3 Package partage (erreurs, permissions, schemas, contrat de module)
   - [ ] C1.4 Squelette API, Prisma du socle, seed, harnais de test

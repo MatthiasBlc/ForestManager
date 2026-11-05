@@ -1,6 +1,6 @@
 # Revue du brainstorming pour la V2
 
-Revue du 2026-11-03 de `../0-Brainstorming.md` : pour chaque idee encore ouverte, est-elle deja couverte par la V2, et faut-il la decider **avant de coder** ?
+Revue du 2026-11-03 de `../../0-Brainstorming.md` : pour chaque idee encore ouverte, est-elle deja couverte par la V2, et faut-il la decider **avant de coder** ?
 
 **Statut : traitee le 2026-11-03** (decisions D34 a D40). Reste ouvert : le choix de l'outil de suivi d'erreurs, en conception technique (roadmap B6).
 

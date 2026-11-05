@@ -78,7 +78,7 @@ _D12 (notifications) et D14 (analytics) : non utilises. Leurs sujets sont couver
 ### D17 - Adapter une recette a un espace sans toucher l'original - VALIDEE (2026-11-03), perimetre allege
 
 - **Constat** : remarque du proprietaire (exemple creme / beurre). En V1, une proposition acceptee sur une recette publiee se propage a tous les espaces (`proposalService.ts:160-215`). D03 seul (partage par reference) ne permet pas a un espace d'adapter une recette.
-- **Etude** : `5-Etude-Adaptations.md` (options O1 a O4).
+- **Etude** : `archive/5-Etude-Adaptations.md` (options O1 a O4).
 - **Choix valide** : adaptation liee. Deux gestes : **partager** (meme recette) ou **adapter** (copie liee a l'original et a sa revision de depart).
 - **Perimetre V2.0 (allege)** : badge "l'original a change depuis votre adaptation" + ecran "Comparer avec l'original" en lecture seule. Pas de reprise ligne a ligne ni de remontee automatique : on reporte a la main, et on peut faire une suggestion classique a l'original.
 - **Pourquoi allege** : le besoin de depart (B adapte sans toucher A) ne demande qu'une copie liee. La reprise ligne a ligne exige des identifiants stables par ligne et une fusion a trois sources, pour un cas rare (une recette de famille change peu). Le modele de donnees est le meme : la version complete pourra venir sans migration.
@@ -113,7 +113,7 @@ _D12 (notifications) et D14 (analytics) : non utilises. Leurs sujets sont couver
 ### D24 - Recettes composees de blocs (locaux ou liens vers d'autres recettes) - VALIDEE (2026-11-03)
 
 - **Constat** : idee du proprietaire (escalope milanaise + compotee de tomates cerises ; sauce teriyaki reutilisee dans plusieurs plats). Rejoint la question des sections de recette.
-- **Etude** : `6-Etude-Recettes-Composees.md`.
+- **Etude** : `archive/6-Etude-Recettes-Composees.md`.
 - **Choix valide** : une recette = blocs ordonnes, locaux (ingredients + etapes) ou liens vers une autre recette avec une quantite exprimee dans le rendement de celle-ci ; **lien vivant** (le plat montre toujours la version actuelle de la sous-recette) ; blocs locaux et liens des la V2.0 ; pas de boucle, 3 niveaux maximum. Maquette : `7-Proposition-Recettes-Composees.html`.
 
 ### D25 - Strategie : reecriture propre dans le meme depot - VALIDEE (2026-11-03)
@@ -157,7 +157,7 @@ _D12 (notifications) et D14 (analytics) : non utilises. Leurs sujets sont couver
 - **Sous-bois** et **Potager** sont proposees en alternatives dans Profil > Apparence. Polices communes a toutes les ambiances ; seules les couleurs changent.
 - Mode par defaut : **suivre le systeme** (clair ou sombre). Braise est soignee dans les deux modes ; l'utilisateur peut forcer l'un ou l'autre.
 - Consequence : 6 palettes (3 ambiances x clair / sombre) a verifier dans la page `/design`, contrastes AA compris.
-- Maquette de comparaison : `8-Directions-Visuelles.html`.
+- Maquette de comparaison : `archive/8-Directions-Visuelles.html`.
 
 ### D33 - Modules accordes par la plateforme sur demande de l'OWNER - VALIDEE (2026-11-03)
 
@@ -360,7 +360,7 @@ Points ouverts releves a la preparation de B9 (relecture croisee du CDC, du sche
 
 - **Constat** : le CDC gardait une "Copie (fork)" independante (glossaire S2, F-REC-7, roadmap C3) et D04 laissait le suggereur "convertir en copie". Elle n'existe ni dans le schema, ni dans `12-Permissions.md`, ni dans les parcours ou les maquettes : partout, la seule copie est l'adaptation (D17), et 12 dit deja "transformer sa suggestion refusee en adaptation".
 - **Options** : (A) supprimer la copie independante ; (B) l'ajouter partout (schema, permissions, parcours, maquettes).
-- **Choix** : A. Deux gestes seulement, partager et adapter (principe "un seul chemin evident par action"). Une adaptation dont on ignore les mises a jour se comporte deja comme une copie (`5-Etude-Adaptations.md`, O1). Une suggestion refusee peut devenir une adaptation dans l'espace du suggereur.
+- **Choix** : A. Deux gestes seulement, partager et adapter (principe "un seul chemin evident par action"). Une adaptation dont on ignore les mises a jour se comporte deja comme une copie (`archive/5-Etude-Adaptations.md`, O1). Une suggestion refusee peut devenir une adaptation dans l'espace du suggereur.
 - **Consequence** : amende D03 (la "copie" explicite devient l'adaptation) et remplace la conversion en copie de D04. Retire du CDC (S2, F-REC-7) et de la roadmap (C3). Aucun changement de schema.
 
 ### D141 - Liste de courses : role minimal reglable pour la modifier, MEMBER par defaut - VALIDEE (2026-11-05)

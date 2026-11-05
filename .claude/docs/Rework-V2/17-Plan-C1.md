@@ -26,6 +26,8 @@ La V1 n'est plus utilisee : la V2 la remplace des C1, sans periode de coexistenc
 
 ## 3. Reprise de la V1 (relue depuis `v1-final` puis recopiee a la main)
 
+Regle pour toute la phase C : rien n'est recopie tel quel. Chaque partie reprise est relue avec un oeil performance, securite, optimisation et qualite, et ameliore au passage (demande du proprietaire, 2026-11-05). Les ameliorations notables sont signalees dans le message de commit.
+
 | V1                                                            | V2                                              | Changement                                                                       |
 | ------------------------------------------------------------- | ----------------------------------------------- | -------------------------------------------------------------------------------- |
 | `middleware/csrf.ts`, `security.ts`, `config/rateLimiter.ts`  | `core/http/`                                    | Express 5 ; rate limit ajoute sur inscription et mot de passe oublie.            |
@@ -45,7 +47,7 @@ Chaque sous-etape se termine par des tests verts dans Docker.
 
 ### C1.1 Monorepo et outillage
 
-- Tag `v1-final`, suppression du code et de l'infra V1 (section 2).
+- Suppression du code et de l'infra V1 (section 2). Le tag `v1-final` est deja pose (2026-11-05, avant le menage de la documentation) ; le pousser sur GitHub avec `git push origin v1-final`.
 - Workspaces `apps/api`, `apps/web` (squelette Vite + React 19 qui affiche une page vide), `packages/shared`, `packages/test-utils`.
 - `tsconfig.base.json` (TypeScript 6.0, strict, ESM), alias `@fm/shared` et `@fm/test-utils`.
 - ESLint 9 flat + typescript-eslint, Prettier (config racine existante), Vitest 5.
