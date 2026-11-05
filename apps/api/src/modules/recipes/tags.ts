@@ -79,7 +79,7 @@ export async function renameSpaceTag(
   }
 }
 
-/** Fusionne `tagId` dans `intoTagId` (les usages des recettes suivront en C3.2). */
+/** Fusionne `tagId` dans `intoTagId` : les recettes taguees passent sur la cible. */
 export async function mergeSpaceTag(
   ctx: Context,
   spaceId: string,
@@ -89,10 +89,20 @@ export async function mergeSpaceTag(
   if (tagId === intoTagId) throw new AppError("VALIDATION_001");
   await activeTag(ctx, spaceId, tagId);
   await activeTag(ctx, spaceId, intoTagId);
-  await ctx.db.tag.update({ where: { id: tagId }, data: { mergedIntoId: intoTagId } });
+  await ctx.db.$transaction([
+    ctx.db.$executeRaw`
+      INSERT INTO "RecipeSpaceTag" ("recipeId", "spaceId", "tagId")
+      SELECT "recipeId", "spaceId", ${intoTagId} FROM "RecipeSpaceTag" WHERE "tagId" = ${tagId}
+      ON CONFLICT DO NOTHING`,
+    ctx.db.recipeSpaceTag.deleteMany({ where: { tagId } }),
+    ctx.db.tag.update({ where: { id: tagId }, data: { mergedIntoId: intoTagId } }),
+  ]);
 }
 
 export async function deleteSpaceTag(ctx: Context, spaceId: string, tagId: string): Promise<void> {
   await activeTag(ctx, spaceId, tagId);
-  await ctx.db.tag.update({ where: { id: tagId }, data: { deletedAt: new Date() } });
+  await ctx.db.$transaction([
+    ctx.db.recipeSpaceTag.deleteMany({ where: { tagId } }),
+    ctx.db.tag.update({ where: { id: tagId }, data: { deletedAt: new Date() } }),
+  ]);
 }

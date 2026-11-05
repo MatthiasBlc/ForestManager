@@ -83,6 +83,10 @@ const DEFINITIONS = {
   RECIPE_001: { status: 404, message: "Recette introuvable." },
   RECIPE_002: { status: 409, message: "Un tag porte déjà ce nom dans cet espace." },
   RECIPE_003: { status: 404, message: "Tag introuvable." },
+  RECIPE_004: {
+    status: 409,
+    message: "La recette a été modifiée entre-temps : rechargez-la avant d'enregistrer.",
+  },
 } as const satisfies Record<string, ErrorDefinition>;
 
 export type ErrorCode = keyof typeof DEFINITIONS;

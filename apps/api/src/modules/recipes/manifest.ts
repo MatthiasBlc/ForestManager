@@ -1,31 +1,66 @@
 // Manifeste API du module Recettes [D33, D91]. Les routes se completent au fil de C3.
 import {
+  createRecipeBodySchema,
   listSchema,
   mergeTagBodySchema,
+  pageSchema,
+  recipeListQuerySchema,
+  recipeParamsSchema,
+  recipeSchema,
+  recipeSpaceTagsBodySchema,
+  recipeSummarySchema,
+  updateRecipeBodySchema,
   spaceTagParamsSchema,
   tagNameBodySchema,
   tagSchema,
 } from "@fm/shared";
-import { Router } from "express";
-import { z } from "zod";
+import { Router, type Request } from "express";
 
 import type { Context } from "../../core/context.ts";
 import { currentUserId } from "../../core/http/auth.ts";
 import { handle, reply } from "../../core/http/validate.ts";
-import { moduleRequest, requirePermission } from "../../core/modules/guards.ts";
+import {
+  hasModulePermission,
+  moduleRequest,
+  requirePermission,
+} from "../../core/modules/guards.ts";
 import type { ApiModule } from "../../core/modules/registry.ts";
+import { listRecipes } from "./list.ts";
+import * as recipes from "./service.ts";
 import * as tags from "./tags.ts";
 
 const tagParamsSchema = spaceTagParamsSchema.pick({ tagId: true });
+const recipeIdSchema = recipeParamsSchema.pick({ recipeId: true });
+
+function actorOf(req: Request): recipes.RecipeActor {
+  return {
+    userId: currentUserId(req),
+    spaceId: moduleRequest(req).access.space.id,
+    moderate: hasModulePermission(req, "recipes.moderate"),
+  };
+}
 
 function recipesRouter(ctx: Context): Router {
   const router = Router();
   const spaceOf = (req: Parameters<typeof moduleRequest>[0]) => moduleRequest(req).access.space.id;
 
-  // Provisoire (C3.2 le remplace) : liste vide.
-  router.get("/", requirePermission("recipes.view"), (_req, res) => {
-    reply(res, listSchema(z.unknown()), { data: [] });
-  });
+  // --- Recettes [F-REC-1, F-REC-4, F-REC-10, F-REC-11] ---
+
+  router.get(
+    "/",
+    requirePermission("recipes.view"),
+    handle({ query: recipeListQuerySchema }, async ({ query }, req, res) => {
+      reply(res, pageSchema(recipeSummarySchema), await listRecipes(ctx, spaceOf(req), query));
+    })
+  );
+
+  router.post(
+    "/",
+    requirePermission("recipes.create"),
+    handle({ body: createRecipeBodySchema }, async ({ body }, req, res) => {
+      reply(res, recipeSchema, await recipes.createRecipe(ctx, actorOf(req), body), 201);
+    })
+  );
 
   // --- Tags d'espace [D08, D19] ---
 
@@ -81,6 +116,48 @@ function recipesRouter(ctx: Context): Router {
       await tags.deleteSpaceTag(ctx, spaceOf(req), params.tagId);
       res.status(204).end();
     })
+  );
+
+  router.get(
+    "/:recipeId",
+    requirePermission("recipes.view"),
+    handle({ params: recipeIdSchema }, async ({ params }, req, res) => {
+      reply(res, recipeSchema, await recipes.getRecipe(ctx, actorOf(req), params.recipeId));
+    })
+  );
+
+  // Droits fins (auteur, moderateur de l'espace d'origine) verifies par le service.
+  router.put(
+    "/:recipeId",
+    requirePermission("recipes.view"),
+    handle(
+      { params: recipeIdSchema, body: updateRecipeBodySchema },
+      async ({ params, body }, req, res) => {
+        const recipe = await recipes.updateRecipe(ctx, actorOf(req), params.recipeId, body);
+        reply(res, recipeSchema, recipe);
+      }
+    )
+  );
+
+  router.delete(
+    "/:recipeId",
+    requirePermission("recipes.view"),
+    handle({ params: recipeIdSchema }, async ({ params }, req, res) => {
+      await recipes.deleteRecipe(ctx, actorOf(req), params.recipeId);
+      res.status(204).end();
+    })
+  );
+
+  router.put(
+    "/:recipeId/space-tags",
+    requirePermission("recipes.tags.create"),
+    handle(
+      { params: recipeIdSchema, body: recipeSpaceTagsBodySchema },
+      async ({ params, body }, req, res) => {
+        const recipe = await recipes.setSpaceTags(ctx, actorOf(req), params.recipeId, body.tagIds);
+        reply(res, recipeSchema, recipe);
+      }
+    )
   );
 
   return router;

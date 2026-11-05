@@ -484,3 +484,8 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
 
 - **Constat** : le proprietaire a demande de poursuivre C1, C2 et C3 sans questions pendant la session du 2026-11-05.
 - **Choix** : le plan C3 est ecrit et suivi ; le proprietaire le relit a la prochaine session (perimetre, decoupage, D160, D161). Meme chose pour le plan C2 (D154 a D157), deja realise.
+
+### D163 - Enregistrement d'une recette : verrou optimiste sur la revision - VALIDEE (2026-11-05, realisation C3.2)
+
+- **Constat** : deux personnes peuvent modifier la meme recette en meme temps (auteur et moderateur, deux appareils). Sans controle, la seconde ecrase la premiere sans le savoir ; le bouton "Enregistrer la revision N" (D102) suppose deja de connaitre la revision de depart.
+- **Choix** : la modification envoie la revision sur laquelle elle a ete faite ; si la recette a avance entre-temps, l'API refuse (`RECIPE_004`, 409) et l'editeur propose de recharger, le brouillon local (D104) restant sur l'appareil. Les revisions (instantane CREATE puis EDIT) sont ecrites des C3.2 ; C3.3 ajoute l'historique et la restauration.

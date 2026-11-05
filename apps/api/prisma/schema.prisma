@@ -72,6 +72,8 @@ model User {
   ownershipOffersRecv  SpaceOwnershipTransfer[] @relation("TransferTo")
   ingredientsCreated   Ingredient[]
   tagsCreated          Tag[]
+  recipesAuthored      Recipe[]                 @relation("RecipeAuthor")
+  recipeRevisions      RecipeRevision[]
 
   @@index([deletedAt])
 }
@@ -151,6 +153,8 @@ model Space {
   moduleRequests     ModuleAccessRequest[]
   ownershipTransfers SpaceOwnershipTransfer[]
   tags               Tag[]
+  recipes            Recipe[]                 @relation("RecipeHomeSpace")
+  recipeSpaceTags    RecipeSpaceTag[]
 
   @@index([deletedAt])
   @@index([purgeAfter])
@@ -357,6 +361,9 @@ model Unit {
   translations      UnitTranslation[]
   ingredientWeights IngredientUnitWeight[]
   defaultFor        Ingredient[]
+  recipeYields      Recipe[]               @relation("RecipeYieldUnit")
+  blockSubUnits     RecipeBlock[]          @relation("BlockSubUnit")
+  recipeIngredients RecipeIngredient[]
 }
 
 model UnitTranslation {
@@ -415,6 +422,7 @@ model Ingredient {
   createdBy    User?                   @relation(fields: [createdById], references: [id], onDelete: SetNull)
   translations IngredientTranslation[]
   unitWeights  IngredientUnitWeight[]
+  usedIn       RecipeIngredient[]
 
   @@index([status])
 }
@@ -432,6 +440,8 @@ model IngredientTranslation {
 
   @@id([ingredientId, locale])
   @@unique([locale, normalized])
+  // Autocompletion par ressemblance (pg_trgm) : declare ici pour que Prisma ne le supprime pas.
+  @@index([normalized(ops: raw("gin_trgm_ops"))], type: Gin, map: "IngredientTranslation_normalized_trgm_idx")
 }
 
 /// Poids d'une unite pour un ingredient donne (1 oeuf = 60 g) [D36].
@@ -468,6 +478,8 @@ model Tag {
   createdBy    User?            @relation(fields: [createdById], references: [id], onDelete: SetNull)
   mergedInto   Tag?             @relation("TagMerge", fields: [mergedIntoId], references: [id])
   mergedFrom   Tag[]            @relation("TagMerge")
+  recipes      RecipeGlobalTag[]
+  spaceRecipes RecipeSpaceTag[]
   translations TagTranslation[]
 
   @@unique([spaceId, slug])
@@ -482,6 +494,169 @@ model TagTranslation {
   tag Tag @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([tagId, locale])
+}
+
+// =============================================================================
+// 5. MODULE RECETTES [D03] [D04] [D05] [D17] [D19] [D24] [D26] [D30] [D39]
+// =============================================================================
+// C3.2 : recettes, blocs, revisions, tags. Partage (C3.5) et suggestions (C3.6)
+// ajoutent leurs tables et relations.
+
+/// Recette. Une seule source de verite : elle vit dans son espace d'origine
+/// (homeSpaceId) et apparait ailleurs par RecipeShare [D03] (C3.5).
+/// Rendement : yieldQuantity dans yieldUnit (null = portions) [D24].
+/// Adaptation (C3.6) : copie liee a l'original et a sa revision de depart [D17].
+/// Compteurs (fois planifiee, derniere fois cuisinee) calcules depuis MealSlot [D39].
+model Recipe {
+  id                  String    @id @default(uuid())
+  homeSpaceId         String
+  authorId            String
+  title               String
+  description         String?
+  notes               String?
+  sourceUrl           String?
+  imageKey            String?
+  yieldQuantity       Float     @default(4)
+  yieldUnitId         String?
+  prepMinutes         Int?
+  cookMinutes         Int?
+  restMinutes         Int?
+  isBase              Boolean   @default(false) // sauce, pate... : pas proposee seule au generateur [D24]
+  currentRevision     Int       @default(1)
+  adaptedFromId       String?
+  adaptedFromRevision Int?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime?
+
+  homeSpace   Space    @relation("RecipeHomeSpace", fields: [homeSpaceId], references: [id])
+  author      User     @relation("RecipeAuthor", fields: [authorId], references: [id])
+  yieldUnit   Unit?    @relation("RecipeYieldUnit", fields: [yieldUnitId], references: [id])
+  adaptedFrom Recipe?  @relation("RecipeAdaptation", fields: [adaptedFromId], references: [id])
+  adaptations Recipe[] @relation("RecipeAdaptation")
+
+  blocks     RecipeBlock[]     @relation("RecipeBlocks")
+  usedIn     RecipeBlock[]     @relation("BlockSubRecipe")
+  revisions  RecipeRevision[]
+  globalTags RecipeGlobalTag[]
+  spaceTags  RecipeSpaceTag[]
+
+  @@index([homeSpaceId, deletedAt])
+  @@index([authorId, deletedAt])
+  @@index([adaptedFromId])
+}
+
+enum BlockKind {
+  LOCAL // ses propres ingredients et etapes
+  RECIPE // lien vivant vers une autre recette [D24] (C3.4)
+}
+
+/// Bloc d'une recette. Une recette simple = un bloc LOCAL sans titre.
+/// RECIPE : subRecipeId + subQuantity dans l'unite de rendement de la
+/// sous-recette (subUnitId, null = portions). Pas de boucle, 3 niveaux maximum
+/// (verifie par l'application).
+model RecipeBlock {
+  id          String    @id @default(uuid())
+  recipeId    String
+  position    Int
+  kind        BlockKind
+  title       String?
+  subRecipeId String?
+  subQuantity Float?
+  subUnitId   String?
+
+  recipe    Recipe  @relation("RecipeBlocks", fields: [recipeId], references: [id], onDelete: Cascade)
+  subRecipe Recipe? @relation("BlockSubRecipe", fields: [subRecipeId], references: [id])
+  subUnit   Unit?   @relation("BlockSubUnit", fields: [subUnitId], references: [id])
+
+  ingredients RecipeIngredient[]
+  steps       RecipeStep[]
+
+  @@unique([recipeId, position])
+  @@index([subRecipeId])
+}
+
+model RecipeIngredient {
+  id           String  @id @default(uuid())
+  blockId      String
+  position     Int
+  ingredientId String
+  quantity     Float? // null = "a gout"
+  unitId       String?
+  note         String? // "finement hache"
+  optional     Boolean @default(false)
+
+  block      RecipeBlock @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  ingredient Ingredient  @relation(fields: [ingredientId], references: [id])
+  unit       Unit?       @relation(fields: [unitId], references: [id])
+
+  @@unique([blockId, position])
+  @@index([ingredientId])
+}
+
+model RecipeStep {
+  id       String @id @default(uuid())
+  blockId  String
+  position Int
+  text     String
+
+  block RecipeBlock @relation(fields: [blockId], references: [id], onDelete: Cascade)
+
+  @@unique([blockId, position])
+}
+
+enum RevisionSource {
+  CREATE
+  EDIT
+  SUGGESTION // suggestion acceptee [D04]
+  RESTORE
+  IMPORT
+}
+
+/// Instantane complet d'une recette a un moment donne [D05] [D30] :
+/// { title, yield, times, isBase, blocks: [{ kind, title, sub, ingredients, steps }] }.
+/// Les tags ne sont pas versionnes (propres a chaque espace [D19]).
+/// suggestionId arrive avec les suggestions (C3.6).
+model RecipeRevision {
+  id        String         @id @default(uuid())
+  recipeId  String
+  number    Int
+  snapshot  Json
+  source    RevisionSource
+  authorId  String
+  createdAt DateTime       @default(now())
+
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  author User   @relation(fields: [authorId], references: [id])
+
+  @@unique([recipeId, number])
+}
+
+/// Tag global attache a la recette elle-meme [D19].
+model RecipeGlobalTag {
+  recipeId String
+  tagId    String
+
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([recipeId, tagId])
+  @@index([tagId])
+}
+
+/// Tag d'espace attache a la recette DANS un espace [D19] : la meme recette
+/// partagee peut etre taguee differemment dans chaque espace.
+model RecipeSpaceTag {
+  recipeId String
+  spaceId  String
+  tagId    String
+
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  space  Space  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([recipeId, spaceId, tagId])
+  @@index([spaceId, tagId])
 }
 
 // =============================================================================

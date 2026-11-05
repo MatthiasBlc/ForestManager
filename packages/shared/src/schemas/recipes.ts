@@ -1,0 +1,191 @@
+// Module Recettes : contenu d'une recette, liste et filtres [D03, D05, D19, D24].
+// C3.2 : blocs LOCAL seulement ; les blocs RECIPE (lien vivant) arrivent en C3.4.
+import { z } from "zod";
+
+import { cursorQuerySchema, isoDateTimeSchema, userSummarySchema, uuidSchema } from "./common.ts";
+import { tagSchema } from "./referentials.ts";
+
+export const RECIPE_TITLE_MAX = 120;
+export const RECIPE_DESCRIPTION_MAX = 1000;
+export const RECIPE_NOTES_MAX = 5000;
+export const RECIPE_URL_MAX = 2000;
+export const RECIPE_STEP_MAX = 2000;
+export const RECIPE_INGREDIENT_NOTE_MAX = 120;
+export const RECIPE_BLOCK_TITLE_MAX = 80;
+export const RECIPE_BLOCKS_MAX = 20;
+export const RECIPE_LINES_MAX = 100;
+export const RECIPE_TAGS_MAX = 20;
+export const RECIPE_MINUTES_MAX = 10_000;
+export const RECIPE_YIELD_MAX = 10_000;
+
+/** Texte optionnel : vide ou blanc = absent (null). */
+function optionalText(max: number) {
+  return z
+    .string()
+    .trim()
+    .max(max)
+    .nullish()
+    .transform((value) => (value ? value : null));
+}
+
+const minutesSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(RECIPE_MINUTES_MAX)
+  .nullish()
+  .transform((v) => v ?? null);
+
+/** Lien http(s) seulement (pas de javascript:, data:...). */
+const sourceUrlSchema = z
+  .string()
+  .trim()
+  .max(RECIPE_URL_MAX)
+  .nullish()
+  .transform((value) => (value ? value : null))
+  .refine((value) => value === null || /^https?:\/\/[^\s]+$/i.test(value), {
+    message: "URL http(s) attendue",
+  });
+
+const tagIdsSchema = z
+  .array(uuidSchema)
+  .max(RECIPE_TAGS_MAX)
+  .default([])
+  .transform((ids) => [...new Set(ids)]);
+
+export const recipeIngredientInputSchema = z.strictObject({
+  ingredientId: uuidSchema,
+  /** null = "a gout" ou "selon besoin". */
+  quantity: z.number().positive().max(1_000_000).nullable(),
+  unitId: uuidSchema.nullable(),
+  note: optionalText(RECIPE_INGREDIENT_NOTE_MAX),
+  optional: z.boolean().default(false),
+});
+export type RecipeIngredientInput = z.infer<typeof recipeIngredientInputSchema>;
+
+export const localBlockInputSchema = z.strictObject({
+  kind: z.literal("LOCAL"),
+  title: optionalText(RECIPE_BLOCK_TITLE_MAX),
+  ingredients: z.array(recipeIngredientInputSchema).max(RECIPE_LINES_MAX),
+  steps: z.array(z.string().trim().min(1).max(RECIPE_STEP_MAX)).max(RECIPE_LINES_MAX),
+});
+export type LocalBlockInput = z.infer<typeof localBlockInputSchema>;
+
+/** Contenu commun a la creation et a la modification. */
+const recipeContentShape = {
+  title: z.string().trim().min(1).max(RECIPE_TITLE_MAX),
+  description: optionalText(RECIPE_DESCRIPTION_MAX),
+  notes: optionalText(RECIPE_NOTES_MAX),
+  sourceUrl: sourceUrlSchema,
+  yieldQuantity: z.number().positive().max(RECIPE_YIELD_MAX),
+  /** null = portions. */
+  yieldUnitId: uuidSchema.nullish().transform((v) => v ?? null),
+  prepMinutes: minutesSchema,
+  cookMinutes: minutesSchema,
+  restMinutes: minutesSchema,
+  isBase: z.boolean().default(false),
+  blocks: z.array(localBlockInputSchema).min(1).max(RECIPE_BLOCKS_MAX),
+  /** Tags globaux : suivent la recette, memes droits que modifier [D19]. */
+  globalTagIds: tagIdsSchema,
+  /** Tags de l'espace courant [D19]. */
+  spaceTagIds: tagIdsSchema,
+};
+
+export const createRecipeBodySchema = z.strictObject(recipeContentShape);
+export type CreateRecipeBody = z.input<typeof createRecipeBodySchema>;
+
+/** `revision` : revision sur laquelle l'edition est basee (refus si depassee). */
+export const updateRecipeBodySchema = z.strictObject({
+  ...recipeContentShape,
+  revision: z.number().int().min(1),
+});
+export type UpdateRecipeBody = z.input<typeof updateRecipeBodySchema>;
+
+export const recipeSpaceTagsBodySchema = z.strictObject({ tagIds: tagIdsSchema });
+
+export const recipeParamsSchema = z.strictObject({ spaceId: uuidSchema, recipeId: uuidSchema });
+
+// --- Sorties ---
+
+export const recipeIngredientSchema = z.object({
+  ingredientId: uuidSchema,
+  name: z.string(),
+  namePlural: z.string().nullable(),
+  quantity: z.number().nullable(),
+  unitId: uuidSchema.nullable(),
+  note: z.string().nullable(),
+  optional: z.boolean(),
+});
+export type RecipeIngredient = z.infer<typeof recipeIngredientSchema>;
+
+export const recipeBlockSchema = z.object({
+  kind: z.literal("LOCAL"),
+  title: z.string().nullable(),
+  ingredients: z.array(recipeIngredientSchema),
+  steps: z.array(z.string()),
+});
+export type RecipeBlock = z.infer<typeof recipeBlockSchema>;
+
+const recipeBaseShape = {
+  id: uuidSchema,
+  homeSpaceId: uuidSchema,
+  title: z.string(),
+  imageUrl: z.string().nullable(),
+  yieldQuantity: z.number(),
+  yieldUnitId: uuidSchema.nullable(),
+  /** Somme des temps renseignes ; null si aucun. */
+  totalMinutes: z.number().int().nullable(),
+  isBase: z.boolean(),
+  author: userSummarySchema,
+  tags: z.array(tagSchema),
+  updatedAt: isoDateTimeSchema,
+};
+
+export const recipeSummarySchema = z.object({
+  ...recipeBaseShape,
+  /** Au moins un bloc lie a une autre recette (C3.4). */
+  isComposed: z.boolean(),
+});
+export type RecipeSummary = z.infer<typeof recipeSummarySchema>;
+
+export const recipeSchema = z.object({
+  ...recipeBaseShape,
+  description: z.string().nullable(),
+  notes: z.string().nullable(),
+  sourceUrl: z.string().nullable(),
+  prepMinutes: z.number().int().nullable(),
+  cookMinutes: z.number().int().nullable(),
+  restMinutes: z.number().int().nullable(),
+  currentRevision: z.number().int(),
+  createdAt: isoDateTimeSchema,
+  blocks: z.array(recipeBlockSchema),
+  /** Droits de l'utilisateur courant sur cette recette, dans cet espace. */
+  can: z.object({ edit: z.boolean(), delete: z.boolean() }),
+});
+export type Recipe = z.infer<typeof recipeSchema>;
+
+// --- Liste ---
+
+export const RECIPE_SORTS = ["recent", "title", "time"] as const;
+export type RecipeSort = (typeof RECIPE_SORTS)[number];
+
+/** Liste d'UUID separes par des virgules dans la query string. */
+const uuidListSchema = z
+  .string()
+  .max(40 * RECIPE_TAGS_MAX)
+  .transform((value) => value.split(",").filter(Boolean))
+  .pipe(z.array(uuidSchema).max(RECIPE_TAGS_MAX));
+
+export const recipeListQuerySchema = cursorQuerySchema.extend({
+  q: z.string().trim().max(RECIPE_TITLE_MAX).optional(),
+  tagIds: uuidListSchema.optional(),
+  ingredientIds: uuidListSchema.optional(),
+  maxMinutes: z.coerce.number().int().min(1).max(RECIPE_MINUTES_MAX).optional(),
+  authorId: uuidSchema.optional(),
+  base: z
+    .enum(["true", "false"])
+    .transform((v) => v === "true")
+    .optional(),
+  sort: z.enum(RECIPE_SORTS).default("recent"),
+});
+export type RecipeListQuery = z.infer<typeof recipeListQuerySchema>;

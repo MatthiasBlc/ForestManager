@@ -54,19 +54,23 @@ function isCoreKey(key: string): key is CorePermissionKey {
   return Object.hasOwn(CORE_PERMISSIONS, key);
 }
 
+/** Vrai si l'utilisateur a cette permission du module courant (sans lever d'erreur). */
+export function hasModulePermission(req: Request, key: string): boolean {
+  const { access, module } = moduleRequest(req);
+  const permission = module.permissions[key];
+  if (!permission) throw new Error(`unknown permission "${key}" in module "${module.code}"`);
+  return isAllowed(modulePermissionDefinition(permission), {
+    authenticated: true,
+    space: { kind: access.space.kind, role: access.role },
+  });
+}
+
 /** Permission du module courant (role minimal du manifeste) ou du socle. */
 export function requirePermission(key: string): RequestHandler {
   return (req, _res, next) => {
     const { access, module } = moduleRequest(req);
-    const permission = module.permissions[key];
-    if (permission) {
-      const context = {
-        authenticated: true,
-        space: { kind: access.space.kind, role: access.role },
-      };
-      if (!isAllowed(modulePermissionDefinition(permission), context)) {
-        throw new AppError("SPACE_002");
-      }
+    if (module.permissions[key]) {
+      if (!hasModulePermission(req, key)) throw new AppError("SPACE_002");
     } else if (isCoreKey(key)) {
       authorize(access, key);
     } else {
