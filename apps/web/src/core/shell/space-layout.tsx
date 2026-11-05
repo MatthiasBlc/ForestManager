@@ -124,7 +124,7 @@ export function SpaceLayout({ onAddSpace }: { onAddSpace?: () => void }) {
     />
   );
   const user = me.data
-    ? { name: me.data.username, to: "/profil", avatarUrl: me.data.avatarUrl }
+    ? { name: me.data.username, to: "/profile", avatarUrl: me.data.avatarUrl }
     : undefined;
 
   if (space.isError) {

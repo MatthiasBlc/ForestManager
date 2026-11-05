@@ -11,7 +11,7 @@ export function RequireAuth() {
   if (me.isPending) return <Skeleton label="Chargement de la session" />;
   if (!me.data) {
     const next = `${location.pathname}${location.search}`;
-    return <Navigate to={`/connexion?next=${encodeURIComponent(next)}`} replace />;
+    return <Navigate to={`/login?next=${encodeURIComponent(next)}`} replace />;
   }
   return <Outlet />;
 }

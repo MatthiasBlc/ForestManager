@@ -1,11 +1,18 @@
-// Routes de l'application. Les ecrans publics (acces) arrivent en C2.5.
+// Routes de l'application.
 import { useQuery } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
-import { Route, Routes } from "react-router";
+import { Navigate, Route, Routes } from "react-router";
 
-import { HomeRedirect } from "../core/session/home-redirect.tsx";
+import { LoginPage } from "../core/access/login-page.tsx";
+import { ForgotPasswordPage, ResetPasswordPage } from "../core/access/password-pages.tsx";
+import { RegisterPage } from "../core/access/register-page.tsx";
+import { VerifyEmailPage } from "../core/access/verify-email-page.tsx";
+import { WelcomePage } from "../core/access/welcome-page.tsx";
+import { GuestOnly } from "../core/session/guest-only.tsx";
 import { meQuery } from "../core/session/queries.ts";
 import { RequireAuth } from "../core/session/require-auth.tsx";
+import { RootPage } from "../core/session/root-page.tsx";
+import { JoinPage } from "../core/spaces/join-page.tsx";
 import { SpaceLayout } from "../core/shell/space-layout.tsx";
 import { ThemeController } from "../theme/theme.tsx";
 import { ToastProvider } from "../ui/toast.tsx";
@@ -32,11 +39,20 @@ export function App() {
             </Suspense>
           }
         />
+        <Route path="/" element={<RootPage />} />
+        <Route element={<GuestOnly />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        </Route>
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/join/:code" element={<JoinPage />} />
         <Route element={<RequireAuth />}>
-          <Route path="/" element={<HomeRedirect />} />
+          <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/s/:spaceId/*" element={<SpaceLayout />} />
         </Route>
-        <Route path="*" element={<main className="fm-root p-4" />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </ToastProvider>
   );
