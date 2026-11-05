@@ -21,3 +21,17 @@
     bottom: var(--space-6);
   }
 }
+
+/* Taille du texte (Profil > Apparence, D158) : le design system est en px, on agrandit
+   l'interface entiere comme un zoom, les requetes de conteneur s'adaptent. */
+body {
+  zoom: var(--text-scale, 1);
+}
+
+/* Densite compacte (D158) : espacements resserres ; les cibles tactiles restent a 44px. */
+[data-density="compact"] {
+  --space-3: 10px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 20px;
+}

@@ -46,7 +46,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C2.0 Plan de C2 (D154 a D157)
   - [x] C2.1 Outillage web
   - [x] C2.2 Composants du design system
-  - [ ] C2.3 Themes et preferences
+  - [x] C2.3 Themes et preferences
   - [ ] C2.4 App shell et registre web
   - [ ] C2.5 Acces
   - [ ] C2.6 Espaces, invitations, membres

@@ -55,3 +55,13 @@ export function tintNames(theme: Theme): readonly string[] {
   const key = theme.split("-")[0];
   return Object.values(AMBIANCES).find((a) => a.key === key)?.tints ?? [];
 }
+
+/** Theme a appliquer : ambiance du profil (Braise avant connexion), mode choisi ou celui du systeme. */
+export function resolveTheme(
+  preferences: Pick<Preferences, "ambiance" | "colorMode"> | null,
+  systemDark: boolean
+): Theme {
+  const ambiance = preferences?.ambiance ?? "BRAISE";
+  const mode = preferences?.colorMode ?? "SYSTEM";
+  return themeOf(ambiance, mode === "SYSTEM" ? systemDark : mode === "DARK");
+}

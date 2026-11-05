@@ -460,3 +460,8 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
 ### D157 - Tests de composants : jsdom, MSW, reponses validees par les schemas partages - VALIDEE (2026-11-05, plan C2)
 
 - **Choix** : Vitest + jsdom + Testing Library + MSW. Les reponses mockees sont construites par des fabriques et validees contre les schemas Zod du partage ; axe-core verifie les ecrans ; chaque composant est rendu dans les six themes.
+
+### D158 - Taille du texte et densite cote application - VALIDEE (2026-11-05, realisation C2.3)
+
+- **Constat** : le design system est en px et ne prevoit ni densite ni taille du texte, alors que le profil les propose (F-ACC-4, `textScale` 90 a 130 %, `density`).
+- **Choix** : la taille du texte agrandit toute l'interface (`zoom` sur `body`, comme un zoom du navigateur : les requetes de conteneur s'adaptent) ; la densite compacte resserre les espacements (`--space-3` a `--space-6`) sans toucher aux cibles tactiles de 44px. Preferences posees sur `<html>` (`data-theme`, `data-density`, `--text-scale`), la teinte de l'espace aussi (`data-space`) pour que les portails (feuilles, menus) la recoivent.
