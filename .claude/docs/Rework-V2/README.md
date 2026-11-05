@@ -77,7 +77,8 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
   - **A verifier** : premier passage de la CI sur GitHub (pas encore pousse au 2026-11-05).
 - **C1 termine le 2026-11-05.**
 - Plan de C2 ecrit le 2026-11-05 (`18-Plan-C2.md`, D154 a D157), sans validation formelle : le proprietaire a demande d'avancer sans questions pendant cette session ; a relire.
-- Prochaine etape : C2.1 (outillage web).
+- C2.1 fait le 2026-11-05 : dependances web (versions dans `18-Plan-C2.md`), Tailwind 4 dont le theme lit les tokens, `tokens.css` et `ds.css` copies du design system, polices @fontsource (D156), client API (`lib/api.ts` : CSRF, erreurs `ApiRequestError`, reponses validees), resolver Zod maison (`lib/form.ts`, messages Zod en francais ; `@hookform/resolvers` ecarte pour un conflit de peers), i18next (`core`, `errors`), TanStack Query, Vitest jsdom + MSW 3 (`onUnhandledFrame: "error"`), proxy `/api` de Vite (`API_PROXY_TARGET`). Les caches Vite des conteneurs sont masques par un volume anonyme (`/app/apps/web/node_modules`) pour ne plus creer de dossier root sur l'hote.
+- Prochaine etape : C2.2 (composants du design system).
 - Tout est publie et committe au 2026-11-05 : DS v10, Acces v39, Recettes v35, Planning v26, Admin v26, Permissions v5, Parcours v6, Modele de donnees v5. Maquettes revues dans Chrome le 2026-11-05 (B5b, voir `archive/16-Maquettes-ECARTS.md`).
   - Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact) : relire l'artefact (action read sur l'URL), puis publier avec `root` = le dossier du canevas, `file_path` = un fichier modifie, `files` = les autres (`project/...`).
   - Les numeros de version des artefacts avancent aussi a la simple consultation : comparer le contenu en ligne au commit avant d'ecraser.

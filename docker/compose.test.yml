@@ -38,6 +38,8 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+      # Caches de Vite / Vitest ecrits par root : jamais dans l'arbre de l'hote.
+      - /app/apps/web/node_modules
     depends_on:
       postgres:
         condition: service_healthy

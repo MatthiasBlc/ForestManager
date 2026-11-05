@@ -19,6 +19,8 @@ x-app: &app
   volumes:
     - .:/app
     - /app/node_modules
+    # Cache de Vite ecrit par root : jamais dans l'arbre de l'hote.
+    - /app/apps/web/node_modules
   networks: [internal]
   logging: *default-logging
 
@@ -77,6 +79,7 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: development
+      API_PROXY_TARGET: http://api:3001
     healthcheck:
       test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:3000"]
       interval: 10s
