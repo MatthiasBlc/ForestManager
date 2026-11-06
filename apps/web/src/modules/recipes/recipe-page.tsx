@@ -23,6 +23,7 @@ import { IngredientRow } from "./components/ingredient-row.tsx";
 import { LINK_STATUS_TITLES } from "./draft.ts";
 import { formatMinutes, joinNames, scaledAmount } from "./format.ts";
 import { recipeQuery, recipesKey, unitsQuery } from "./queries.ts";
+import { AdaptedFromNotice, AdaptSheet } from "./adaptation.tsx";
 import { RemoveFromSpaceSheet, ShareSheet } from "./sharing.tsx";
 
 export function RecipeNotFound({ spaceId }: { spaceId: string }) {
@@ -272,7 +273,7 @@ function RecipeView({
   const navigate = useNavigate();
   const { data: space } = useQuery(spaceQuery(spaceId));
   const [servings, setServings] = useState(recipe.yieldQuantity);
-  const [sheet, setSheet] = useState<"delete" | "share" | "remove" | null>(null);
+  const [sheet, setSheet] = useState<"delete" | "share" | "remove" | "adapt" | null>(null);
   const spaceName = space?.name ?? "";
   const sharedHere = recipe.homeSpaceId !== spaceId;
   const close = () => {
@@ -309,6 +310,7 @@ function RecipeView({
               par {recipe.author.username}
               {sharedHere ? ` · ${recipe.homeSpace.name}` : ""} · révision {recipe.currentRevision}
             </span>
+            <AdaptedFromNotice spaceId={spaceId} recipe={recipe} />
           </div>
           {recipe.can.edit ? (
             <Link
@@ -324,6 +326,16 @@ function RecipeView({
             trigger={<IconButton icon="more" label="Plus d'actions" />}
             items={[
               { id: "share", label: "Partager dans un espace", icon: "share" },
+              { id: "adapt", label: "Adapter pour un espace", icon: "git-branch" },
+              ...(recipe.adaptedFrom && !recipe.adaptedFrom.deleted
+                ? [
+                    {
+                      id: "compare" as const,
+                      label: "Comparer avec l'original",
+                      icon: "copy" as const,
+                    },
+                  ]
+                : []),
               { id: "history", label: "Voir l'historique", icon: "clock" },
               ...(recipe.can.removeFromSpace && sharedHere
                 ? [{ id: "remove" as const, label: `Retirer de ${spaceName}`, icon: "x" as const }]
@@ -341,8 +353,9 @@ function RecipeView({
                 : []),
             ]}
             onSelect={(id) => {
-              if (id === "history") void navigate(`/s/${spaceId}/recipes/${recipe.id}/history`);
-              else setSheet(id);
+              if (id === "history" || id === "compare") {
+                void navigate(`/s/${spaceId}/recipes/${recipe.id}/${id}`);
+              } else setSheet(id);
             }}
           />
         </div>
@@ -402,6 +415,7 @@ function RecipeView({
       </article>
       <DeleteSheet spaceId={spaceId} recipe={recipe} open={sheet === "delete"} onClose={close} />
       <ShareSheet spaceId={spaceId} recipe={recipe} open={sheet === "share"} onClose={close} />
+      <AdaptSheet spaceId={spaceId} recipe={recipe} open={sheet === "adapt"} onClose={close} />
       <RemoveFromSpaceSheet
         spaceId={spaceId}
         spaceName={spaceName}

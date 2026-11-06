@@ -1,8 +1,12 @@
-// Affichage des recettes : portions, temps, quantites mises a l'echelle.
+// Affichage des recettes : portions, temps, quantites mises a l'echelle, differences lisibles.
 import {
   formatQuantity,
   scaleQuantity,
   simplify,
+  type ContentBlock,
+  type DiffEntry,
+  type DiffField,
+  type FieldValue,
   type RecipeIngredient,
   type Unit,
 } from "@fm/shared";
@@ -61,4 +65,79 @@ export function scaledAmount(
 export function joinNames(names: readonly string[]): string {
   if (names.length <= 1) return names.join("");
   return `${names.slice(0, -1).join(", ")} et ${names.at(-1) ?? ""}`;
+}
+
+const FIELD_LABELS: Record<DiffField, string> = {
+  title: "Titre",
+  description: "Description",
+  notes: "Notes",
+  source: "Source",
+  yield: "Portions",
+  prep: "Préparation",
+  cook: "Cuisson",
+  rest: "Repos",
+  base: "Recette de base",
+};
+
+const NONE = "—";
+
+function fieldText(value: FieldValue, units: readonly Unit[]): string {
+  if (value === null || value === "") return NONE;
+  if (typeof value === "object") {
+    return formatYield(
+      value.quantity,
+      units.find((u) => u.id === value.unitId)
+    );
+  }
+  if (typeof value === "boolean") return value ? "Oui" : "Non";
+  if (typeof value === "number") return formatMinutes(value);
+  return value;
+}
+
+function lineText(line: RecipeIngredient, units: readonly Unit[]): string {
+  const amount = scaledAmount(line, units, 1);
+  return [amount, line.name, line.note ? `(${line.note})` : ""].filter(Boolean).join(" ");
+}
+
+function blockText(block: ContentBlock | null, units: readonly Unit[]): string {
+  if (!block) return NONE;
+  if (block.kind === "LOCAL") return block.title ?? "Ingrédients et étapes";
+  const title = block.title ?? "Recette supprimée";
+  return `${scaledAmount(block, units, 1)} ${title}`.trim();
+}
+
+/** Ligne lisible d'une difference : libelle, avant, apres. */
+export function describeDiff(
+  entry: DiffEntry,
+  units: readonly Unit[]
+): { label: string; before: string; after: string } {
+  switch (entry.kind) {
+    case "field":
+      return {
+        label: FIELD_LABELS[entry.field],
+        before: fieldText(entry.before, units),
+        after: fieldText(entry.after, units),
+      };
+    case "ingredient":
+      return {
+        label: entry.blockTitle ? `Ingrédient (${entry.blockTitle})` : "Ingrédient",
+        before: entry.before ? lineText(entry.before, units) : NONE,
+        after: entry.after ? lineText(entry.after, units) : NONE,
+      };
+    case "step":
+      return {
+        label: entry.blockTitle ? `Étape (${entry.blockTitle})` : "Étape",
+        before: entry.before ?? NONE,
+        after: entry.after ?? NONE,
+      };
+    case "block":
+      return {
+        label:
+          entry.after?.kind === "RECIPE" || entry.before?.kind === "RECIPE"
+            ? "Recette liée"
+            : "Bloc",
+        before: blockText(entry.before, units),
+        after: blockText(entry.after, units),
+      };
+  }
 }

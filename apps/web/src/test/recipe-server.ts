@@ -7,6 +7,7 @@ import {
   type Ingredient,
   type Recipe,
   type RecipeBlock,
+  type RecipeComparison,
   type RecipeLeavePreview,
   type RecipeRevision,
   type RecipeSharing,
@@ -65,6 +66,8 @@ export function recipeServer({
     /** Reponse a une demande de partage (POST share-requests). */
     requestResult: "PENDING" as ShareStatus,
     leavePreview: { createdHere: 0, personalShared: [] } as RecipeLeavePreview,
+    /** Comparaison avec l'original, par adaptation (E-COMPARER-ORIGINAL). */
+    comparisons: {} as Record<string, RecipeComparison>,
     queries: [] as URLSearchParams[],
     bodies: {} as Record<string, unknown>,
     calls: [] as string[],
@@ -236,6 +239,51 @@ export function recipeServer({
 
   // Ajoutes apres coup : passent avant `${base}/:recipeId`.
   server.use(
+    // Detail dans n'importe quel espace (adaptation creee ailleurs) ; sinon handler suivant.
+    http.get("/api/v1/spaces/:spaceId/recipes/:recipeId", ({ params }) => {
+      const recipe = find(params.recipeId);
+      return recipe && recipe.homeSpaceId === params.spaceId
+        ? HttpResponse.json(recipe)
+        : undefined;
+    }),
+    http.post(`${base}/:recipeId/adapt`, async ({ params, request }) => {
+      const original = find(params.recipeId);
+      if (!original) return notFound();
+      const body = (await request.json()) as { targetSpaceId: string };
+      record("adapt", body);
+      const adaptation = buildRecipe({
+        ...original,
+        id: uuid(),
+        author: self,
+        homeSpaceId: body.targetSpaceId,
+        homeSpace: { id: body.targetSpaceId, name: "?" },
+        currentRevision: 1,
+        // Droits de l'auteur de l'adaptation, comme l'API.
+        can: { edit: true, delete: true, share: true, removeFromSpace: false },
+        adaptedFrom: {
+          id: original.id,
+          title: original.title,
+          author: original.author,
+          homeSpace: original.homeSpace,
+          deleted: false,
+          changed: false,
+        },
+      });
+      state.recipes.push(adaptation);
+      return HttpResponse.json(adaptation, { status: 201 });
+    }),
+    http.get(`${base}/:recipeId/compare`, ({ params }) => {
+      const comparison = state.comparisons[String(params.recipeId)];
+      return comparison
+        ? HttpResponse.json(comparison)
+        : HttpResponse.json(errorBody("RECIPE_011"), { status: 404 });
+    }),
+    http.post(`${base}/:recipeId/compare/seen`, ({ params }) => {
+      record(`seen:${String(params.recipeId)}`);
+      const recipe = find(params.recipeId);
+      if (recipe?.adaptedFrom) recipe.adaptedFrom = { ...recipe.adaptedFrom, changed: false };
+      return new HttpResponse(null, { status: 204 });
+    }),
     http.get("/api/v1/spaces/:spaceId/recipes/mine", ({ request }) => {
       state.queries.push(new URL(request.url).searchParams);
       const data = state.recipes.filter((r) => r.author.id === s.me.id).map(toSummary);

@@ -3,6 +3,7 @@ import {
   ingredientSchema,
   listSchema,
   pageSchema,
+  recipeComparisonSchema,
   recipeLeavePreviewSchema,
   recipeRevisionSchema,
   recipeSchema,
@@ -76,6 +77,14 @@ export function sharingQuery(spaceId: string, recipeId: string) {
   return queryOptions({
     queryKey: [...recipeQuery(spaceId, recipeId).queryKey, "sharing"],
     queryFn: () => api.get(`/spaces/${spaceId}/recipes/${recipeId}/sharing`, recipeSharingSchema),
+  });
+}
+
+export function comparisonQuery(spaceId: string, recipeId: string) {
+  return queryOptions({
+    queryKey: [...recipeQuery(spaceId, recipeId).queryKey, "compare"],
+    queryFn: () =>
+      api.get(`/spaces/${spaceId}/recipes/${recipeId}/compare`, recipeComparisonSchema),
   });
 }
 
