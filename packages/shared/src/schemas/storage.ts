@@ -5,13 +5,16 @@ import { z } from "zod";
 
 import { isoDateTimeSchema, uuidSchema } from "./common.ts";
 
-/** Taille maximale d'un fichier envoye (WebP, converti dans le navigateur). */
+/** Taille maximale d'un fichier envoye (WebP, ou JPEG sur Safari, converti dans le navigateur). */
 export const UPLOAD_MAX_BYTES = 2 * 1024 * 1024;
 
 /** Plus grand cote accepte, et celui vise par la conversion du navigateur. */
 export const IMAGE_MAX_SIDE = { photo: 2048, avatar: 512 } as const;
 
-/** Formulaire signe : `fields` puis le fichier (champ `file`) en multipart vers `url`. */
+/**
+ * Formulaire signe : `fields`, puis `Content-Type` (type du fichier converti),
+ * puis le fichier (champ `file`, en dernier) en multipart vers `url`.
+ */
 export const uploadTicketSchema = z.object({
   uploadId: uuidSchema,
   url: z.string(),

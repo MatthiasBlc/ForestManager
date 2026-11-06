@@ -1,13 +1,16 @@
 import { errorBody, type Me } from "@fm/shared";
 import { screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { App } from "../../app/App.tsx";
 import { buildMe, buildPersonalSpace, buildSpaceDetail } from "../../test/fixtures.ts";
 import { renderWithProviders } from "../../test/render.tsx";
 import { server } from "../../test/server.ts";
 import { mockSession } from "../../test/session.ts";
+import { mockUploads, photoFile, signedUrl } from "../../test/uploads.ts";
+
+vi.mock("../../lib/image.ts", () => import("../../test/fake-image.ts"));
 
 function profileServer() {
   let me: Me | null = buildMe({ username: "matthias", email: "matthias@exemple.fr" });
@@ -70,6 +73,44 @@ function profileServer() {
 }
 
 describe("profil (E-PROFIL)", () => {
+  it("change la photo de profil puis la retire (D167)", async () => {
+    const { account } = profileServer();
+    const { uploadIds } = mockUploads();
+    let avatarUrl: string | null = null;
+    const bodies: unknown[] = [];
+    server.use(
+      http.get("/api/v1/me", () => HttpResponse.json({ ...account, avatarUrl })),
+      http.put("/api/v1/me/avatar", async ({ request }) => {
+        bodies.push(await request.json());
+        avatarUrl = signedUrl("users/me/1.webp");
+        return HttpResponse.json({ url: avatarUrl });
+      }),
+      http.delete("/api/v1/me/avatar", () => {
+        avatarUrl = null;
+        return HttpResponse.json({ url: null });
+      })
+    );
+    const { user } = renderWithProviders(<App />, { route: "/profile" });
+    await user.upload(await screen.findByLabelText("Ajouter la photo"), photoFile());
+    await waitFor(() => {
+      expect(bodies).toEqual([{ uploadId: uploadIds[0] }]);
+    });
+    const avatar = screen.getAllByRole("img", { name: "matthias" })[0];
+    await waitFor(() => {
+      expect(avatar?.querySelector("img")).toHaveAttribute("src", signedUrl("users/me/1.webp"));
+    });
+
+    await user.click(screen.getByRole("button", { name: "Retirer la photo" }));
+    expect(await screen.findByRole("button", { name: "Ajouter la photo" })).toBeInTheDocument();
+  });
+
+  it("sans stockage configure, pas de choix de photo", async () => {
+    profileServer();
+    renderWithProviders(<App />, { route: "/profile" });
+    expect(await screen.findByRole("heading", { name: "matthias" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Ajouter la photo" })).not.toBeInTheDocument();
+  });
+
   it("montre le compte et se deconnecte", async () => {
     profileServer();
     const { user } = renderWithProviders(<App />, { route: "/profile" });

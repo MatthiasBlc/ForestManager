@@ -1,5 +1,5 @@
 // E-PROFIL, compte (username, email), mot de passe [F-ACC-4].
-import { meSchema } from "@fm/shared";
+import { imageResponseSchema, meSchema } from "@fm/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -7,6 +7,7 @@ import { Link } from "react-router";
 
 import { api } from "../../lib/api.ts";
 import { applyApiError } from "../../lib/form-errors.ts";
+import { ImagePicker } from "../../patterns/image-picker.tsx";
 import { AMBIANCES } from "../../theme/themes.ts";
 import { Button } from "../../ui/button.tsx";
 import { Avatar } from "../../ui/display.tsx";
@@ -54,6 +55,7 @@ function Row({
 
 export function ProfilePage() {
   const me = useQuery(meQuery);
+  const queryClient = useQueryClient();
   const logout = useLogout();
   if (!me.data) return null;
   const { preferences } = me.data;
@@ -61,9 +63,21 @@ export function ProfilePage() {
     <ProfileLayout title="Profil">
       <div className="flex items-center gap-4">
         <Avatar name={me.data.username} src={me.data.avatarUrl} size={64} />
-        <div>
+        <div className="fm-stack gap-1">
           <h1 className="font-display text-2xl font-bold">{me.data.username}</h1>
           <p className="text-ink-muted">{me.data.email}</p>
+          <ImagePicker
+            kind="avatar"
+            hasImage={me.data.avatarUrl !== null}
+            onUploaded={async (uploadId) => {
+              await api.put("/me/avatar", { uploadId }, imageResponseSchema);
+              await queryClient.invalidateQueries({ queryKey: ["me"] });
+            }}
+            onRemove={async () => {
+              await api.delete("/me/avatar", undefined, imageResponseSchema);
+              await queryClient.invalidateQueries({ queryKey: ["me"] });
+            }}
+          />
         </div>
       </div>
       <nav aria-label="Réglages du profil" className="fm-options">

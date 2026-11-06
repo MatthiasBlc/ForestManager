@@ -12,7 +12,7 @@ import { db, testEnv, testStorage } from "./helpers/db.ts";
 import { addMember, createSpace, createUser } from "./helpers/factories.ts";
 import { createRecipe, recipeBody } from "./helpers/recipes.ts";
 import { fetchImage, upload } from "./helpers/storage.ts";
-import { webpBytes } from "./helpers/webp.ts";
+import { webpBytes } from "./helpers/images.ts";
 
 const app = createTestApp();
 const PHOTO = webpBytes(1600, 1200);

@@ -21,7 +21,6 @@ import { presignGetUrl, signingHour } from "./sign.ts";
 const UPLOAD_TTL_SECONDS = 60;
 /** URL de lecture : signee a l'heure pile, valable 2 h (donc au moins 1 h). */
 const READ_TTL_SECONDS = 2 * 60 * 60;
-const CONTENT_TYPE = "image/webp";
 /** Cle unique par version : l'objet ne change jamais. */
 const CACHE_CONTROL = "private, max-age=86400, immutable";
 
@@ -37,7 +36,8 @@ export interface Storage {
   createUpload(userId: string): Promise<UploadTicket>;
   /** Contenu d'un objet, null s'il n'existe pas ou depasse `maxBytes`. */
   read(key: string, maxBytes: number): Promise<Buffer | null>;
-  put(key: string, body: Buffer): Promise<void>;
+  /** Le type vient du contenu verifie, jamais du navigateur. */
+  put(key: string, body: Buffer, contentType: string): Promise<void>;
   copy(from: string, to: string): Promise<void>;
   remove(keys: readonly string[]): Promise<void>;
   list(prefix?: string): AsyncIterable<StoredObject>;
@@ -47,7 +47,7 @@ export interface Storage {
 
 /** Cle d'un envoi en attente : l'identifiant seul ne suffit pas a prendre celui d'un autre. */
 export function pendingKey(userId: string, uploadId: string): string {
-  return `uploads/${userId}/${uploadId}.webp`;
+  return `uploads/${userId}/${uploadId}`;
 }
 
 function isMissing(error: unknown): boolean {
@@ -94,11 +94,11 @@ export function createStorage(env: Env): Storage | null {
       const { url, fields } = await createPresignedPost(publicClient, {
         Bucket: bucket,
         Key: pendingKey(userId, uploadId),
+        // Le navigateur ajoute Content-Type (image/webp, ou image/jpeg sur Safari).
         Conditions: [
           ["content-length-range", 1, UPLOAD_MAX_BYTES],
-          ["eq", "$Content-Type", CONTENT_TYPE],
+          ["starts-with", "$Content-Type", "image/"],
         ],
-        Fields: { "Content-Type": CONTENT_TYPE },
         Expires: UPLOAD_TTL_SECONDS,
       });
       return {
@@ -122,13 +122,13 @@ export function createStorage(env: Env): Storage | null {
       }
     },
 
-    async put(key, body) {
+    async put(key, body, contentType) {
       await client.send(
         new PutObjectCommand({
           Bucket: bucket,
           Key: key,
           Body: body,
-          ContentType: CONTENT_TYPE,
+          ContentType: contentType,
           CacheControl: CACHE_CONTROL,
         })
       );

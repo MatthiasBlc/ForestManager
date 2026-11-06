@@ -12,7 +12,7 @@ import { db, testEnv, testStorage } from "./helpers/db.ts";
 import { addMember, createSpace, createUser } from "./helpers/factories.ts";
 import { describePermissions } from "./helpers/roles.ts";
 import { fetchImage, postToStorage, upload } from "./helpers/storage.ts";
-import { webpBytes } from "./helpers/webp.ts";
+import { jpegBytes, webpBytes } from "./helpers/images.ts";
 
 const app = createTestApp();
 
@@ -93,6 +93,22 @@ describe("avatar du compte", () => {
     expect(await keysUnder(`users/${user.id}/`)).toEqual([]);
   });
 
+  it("accepte aussi un JPEG (Safari n'encode pas le WebP) et le sert comme tel", async () => {
+    const user = await createUser();
+    const client = await loginAs(user, app);
+    const file = jpegBytes(300, 200);
+    const ticket = uploadTicketSchema.parse((await client.post("/uploads")).body);
+    expect((await postToStorage(ticket, file, "image/jpeg")).ok).toBe(true);
+
+    const res = await client.put("/me/avatar", { uploadId: ticket.uploadId });
+    expect(res.status).toBe(200);
+    const served = await fetch(res.body.url as string);
+    expect(served.headers.get("content-type")).toBe("image/jpeg");
+    expect(Buffer.from(await served.arrayBuffer())).toEqual(file);
+    const row = await db.user.findUniqueOrThrow({ where: { id: user.id } });
+    expect(row.avatarKey).toMatch(/\.jpg$/);
+  });
+
   it("refuse un envoi inconnu, celui d'un autre, ou deja utilise", async () => {
     const [alice, bob] = await Promise.all([createUser(), createUser()]);
     const asAlice = await loginAs(alice, app);
@@ -113,7 +129,7 @@ describe("avatar du compte", () => {
   });
 
   it.each([
-    ["un fichier qui n'est pas un WebP", Buffer.from("<svg onload=alert(1)>")],
+    ["un fichier qui n'est ni un WebP ni un JPEG", Buffer.from("<svg onload=alert(1)>")],
     ["une image trop grande", webpBytes(IMAGE_MAX_SIDE.avatar + 1, 100)],
     ["une image vide", webpBytes(1, 0, "VP8")],
   ])("refuse %s et l'efface", async (_label, file) => {
@@ -199,7 +215,7 @@ describe("sweepStorage", () => {
 
     // Rien de recent n'est touche (un envoi peut etre en cours de rattachement).
     expect(await sweepStorage(ctx, new Date())).toBe(0);
-    expect(await keysUnder(`uploads/${user.id}/`)).toEqual([`uploads/${user.id}/${pending}.webp`]);
+    expect(await keysUnder(`uploads/${user.id}/`)).toEqual([`uploads/${user.id}/${pending}`]);
 
     const later = new Date(Date.now() + 2 * 60 * 60 * 1000);
     expect(await sweepStorage(ctx, later)).toBeGreaterThanOrEqual(2);

@@ -4,6 +4,7 @@
 // Mode suggestion (E-SUGGESTION-EDITION, D04) : sans tags, envoye a l'auteur.
 import {
   createRecipeBodySchema,
+  imageResponseSchema,
   formatQuantity,
   ingredientSchema,
   recipeSchema,
@@ -21,6 +22,7 @@ import { PageChrome } from "../../core/shell/page-chrome.tsx";
 import { spaceQuery } from "../../core/session/queries.ts";
 import { errorMessage } from "../../i18n/index.ts";
 import { api } from "../../lib/api.ts";
+import { ImagePicker } from "../../patterns/image-picker.tsx";
 import { TopBar } from "../../patterns/top-bar.tsx";
 import { Button, IconButton } from "../../ui/button.tsx";
 import { Chip, Stepper, Switch } from "../../ui/controls.tsx";
@@ -267,6 +269,74 @@ function TagPicker({
   );
 }
 
+/** Photo choisie pour une recette pas encore creee : rattachee a l'enregistrement. */
+interface PendingPhoto {
+  uploadId: string;
+  preview: string;
+}
+
+/**
+ * Photo hors revisions [D167] : sur une recette existante elle change tout de
+ * suite (meme si on quitte l'editeur) ; sur une nouvelle, a l'enregistrement.
+ */
+function PhotoField({
+  spaceId,
+  recipe,
+  pending,
+  onPending,
+}: {
+  spaceId: string;
+  recipe?: Recipe;
+  pending: PendingPhoto | null;
+  onPending: (photo: PendingPhoto | null) => void;
+}) {
+  const queryClient = useQueryClient();
+  const [imageUrl, setImageUrl] = useState(recipe?.imageUrl ?? null);
+  const shown = recipe ? imageUrl : (pending?.preview ?? null);
+
+  const saved = async (url: string | null) => {
+    if (!recipe) return;
+    setImageUrl(url);
+    queryClient.setQueryData(recipeQuery(spaceId, recipe.id).queryKey, (current) =>
+      current ? { ...current, imageUrl: url } : current
+    );
+    await queryClient.invalidateQueries({ queryKey: [...recipesKey(spaceId), "list"] });
+  };
+  const path = recipe ? `/spaces/${spaceId}/recipes/${recipe.id}/photo` : null;
+
+  return (
+    <div className="fm-stack gap-2">
+      {shown ? (
+        <img
+          src={shown}
+          alt="Photo de la recette"
+          className="h-[180px] w-full rounded-md object-cover"
+        />
+      ) : null}
+      <ImagePicker
+        kind="photo"
+        hasImage={shown !== null}
+        onUploaded={async (uploadId, file) => {
+          if (!path) {
+            onPending({ uploadId, preview: URL.createObjectURL(file) });
+            return;
+          }
+          const { url } = await api.put(path, { uploadId }, imageResponseSchema);
+          await saved(url);
+        }}
+        onRemove={async () => {
+          if (!path) {
+            onPending(null);
+            return;
+          }
+          await api.delete(path, undefined, imageResponseSchema);
+          await saved(null);
+        }}
+      />
+    </div>
+  );
+}
+
 function Editor({
   spaceId,
   spaceName,
@@ -299,6 +369,15 @@ function Editor({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
+  const [photo, setPhoto] = useState<PendingPhoto | null>(null);
+
+  // Apercu local d'une photo en attente : libere quand elle change ou a la sortie.
+  useEffect(
+    () => () => {
+      if (photo) URL.revokeObjectURL(photo.preview);
+    },
+    [photo]
+  );
 
   useEffect(() => {
     if (dirty) writeDraft(key, draft);
@@ -362,7 +441,7 @@ function Editor({
         back();
         return;
       }
-      const saved = recipe
+      let saved = recipe
         ? await api.put(
             `/spaces/${spaceId}/recipes/${recipe.id}`,
             { ...parsed.data, revision: recipe.currentRevision },
@@ -370,6 +449,20 @@ function Editor({
           )
         : await api.post(`/spaces/${spaceId}/recipes`, parsed.data, recipeSchema);
       clearDraft(key);
+      if (!recipe && photo) {
+        try {
+          const { url } = await api.put(
+            `/spaces/${spaceId}/recipes/${saved.id}/photo`,
+            { uploadId: photo.uploadId },
+            imageResponseSchema
+          );
+          saved = { ...saved, imageUrl: url };
+        } catch (error) {
+          toast(`Recette enregistrée, mais pas sa photo : ${errorMessage(error)}`, {
+            tone: "danger",
+          });
+        }
+      }
       queryClient.setQueryData(recipeQuery(spaceId, saved.id).queryKey, saved);
       await queryClient.invalidateQueries({ queryKey: [...recipesKey(spaceId), "list"] });
       void navigate(`/s/${spaceId}/recipes/${saved.id}`, { replace: true });
@@ -438,6 +531,9 @@ function Editor({
             />
           </>
         ) : null}
+        {suggest ? null : (
+          <PhotoField spaceId={spaceId} recipe={recipe} pending={photo} onPending={setPhoto} />
+        )}
         <Field
           label="Titre"
           value={draft.title}

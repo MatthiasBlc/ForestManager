@@ -3,7 +3,7 @@
 import { uploadTicketSchema, type UploadTicket } from "@fm/shared";
 
 import type { Client } from "./app.ts";
-import { webpBytes } from "./webp.ts";
+import { webpBytes } from "./images.ts";
 
 export async function postToStorage(
   ticket: UploadTicket,
@@ -11,9 +11,8 @@ export async function postToStorage(
   contentType = "image/webp"
 ): Promise<Response> {
   const form = new FormData();
-  for (const [name, value] of Object.entries(ticket.fields)) {
-    form.append(name, name === "Content-Type" ? contentType : value);
-  }
+  for (const [name, value] of Object.entries(ticket.fields)) form.append(name, value);
+  form.append("Content-Type", contentType);
   form.append("file", new Blob([new Uint8Array(file)], { type: contentType }));
   return fetch(ticket.url, { method: "POST", body: form });
 }

@@ -297,11 +297,19 @@ function RecipeView({
           />
         }
       />
-      <div
-        className="h-[150px]"
-        aria-hidden="true"
-        style={{ background: "linear-gradient(140deg, var(--accent-soft), var(--surface))" }}
-      />
+      {recipe.imageUrl ? (
+        <img
+          src={recipe.imageUrl}
+          alt="Photo de la recette"
+          className="mx-auto block h-[220px] w-full max-w-3xl object-cover sm:h-[300px] sm:rounded-b-lg"
+        />
+      ) : (
+        <div
+          className="h-[150px]"
+          aria-hidden="true"
+          style={{ background: "linear-gradient(140deg, var(--accent-soft), var(--surface))" }}
+        />
+      )}
       <article className="fm-stack mx-auto w-full max-w-3xl p-4" aria-labelledby="recipe-title">
         <div className="flex items-start gap-1">
           <div className="flex min-w-0 flex-1 flex-col gap-1">

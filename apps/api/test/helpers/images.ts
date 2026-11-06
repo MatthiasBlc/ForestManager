@@ -36,3 +36,16 @@ export function webpBytes(width: number, height: number, kind: WebpKind = "VP8")
   payload.writeUIntLE(height - 1, 7, 3);
   return riff("VP8X", payload);
 }
+
+/** Un JPEG minimal de la taille demandee : SOI, APP0, SOF0, EOI (Safari ne sait pas encoder en WebP). */
+export function jpegBytes(width: number, height: number): Buffer {
+  const app0 = Buffer.from("ffe000104a46494600010100000100010000", "hex");
+  const sof = Buffer.alloc(19);
+  sof.writeUInt16BE(0xffc0, 0);
+  sof.writeUInt16BE(17, 2);
+  sof.writeUInt8(8, 4);
+  sof.writeUInt16BE(height, 5);
+  sof.writeUInt16BE(width, 7);
+  sof.writeUInt8(3, 9);
+  return Buffer.concat([Buffer.from([0xff, 0xd8]), app0, sof, Buffer.from([0xff, 0xd9])]);
+}

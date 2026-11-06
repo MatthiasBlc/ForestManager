@@ -166,7 +166,7 @@ Recettes est un module comme les autres : son manifeste, ses routes, ses permiss
 ## 7. Stockage des images
 
 - MinIO (API S3) comme en V1 en preprod et prod, bucket prive ; RustFS (compatible S3) en dev, test et CI [D167].
-- Envoi direct du navigateur par **POST signe** (60 s, 2 Mo, `image/webp` imposes par le stockage) vers `uploads/<userId>/<uploadId>.webp`, apres conversion en WebP et redimensionnement cote client ; l'API verifie (signature WebP, dimensions) en rattachant l'envoi [D167].
+- Envoi direct du navigateur par **POST signe** (60 s, 2 Mo, `image/*` imposes par le stockage) vers `uploads/<userId>/<uploadId>`, apres conversion en WebP (JPEG sur Safari) et redimensionnement cote client ; l'API verifie (signature, dimensions) en rattachant l'envoi [D167].
 - Cles uniques par version : `recipes/<recipeId>/<uuid>.webp`, `users/<userId>/<uuid>.webp`, `spaces/<spaceId>/<uuid>.webp`.
 - Lecture par URLs signees courtes (date de signature arrondie a l'heure, valables 2 h : cache du navigateur) [D167].
 - Menage horaire : envois abandonnes et objets que la base ne reference plus ; photos des recettes supprimees depuis 30 jours [D22, D167].

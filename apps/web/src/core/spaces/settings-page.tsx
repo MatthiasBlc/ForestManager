@@ -1,6 +1,11 @@
 // E-REGLAGES-ESPACE : nom, description, couleur (perso : couleur seule), modules,
 // propriete et depart (F-TRANSFERER, F-QUITTER), suppression (F-SUPPRIMER-ESPACE, D93).
-import { spaceDetailSchema, updateSpaceBodySchema, type SpaceDetail } from "@fm/shared";
+import {
+  imageResponseSchema,
+  spaceDetailSchema,
+  updateSpaceBodySchema,
+  type SpaceDetail,
+} from "@fm/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Suspense, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -11,6 +16,8 @@ import { errorMessage } from "../../i18n/index.ts";
 import { WEB_MODULES } from "../../modules/index.ts";
 import { api } from "../../lib/api.ts";
 import { applyApiError } from "../../lib/form-errors.ts";
+import { ImagePicker } from "../../patterns/image-picker.tsx";
+import { SpaceIcon } from "../../patterns/space-icon.tsx";
 import { tintNames } from "../../theme/themes.ts";
 import { useTheme } from "../../theme/use-theme.ts";
 import { Button } from "../../ui/button.tsx";
@@ -22,6 +29,7 @@ import { useToast } from "../../ui/use-toast.ts";
 import { FormAlert } from "../access/auth-layout.tsx";
 import { meQuery } from "../session/queries.ts";
 import { canIn } from "./queries.ts";
+import { toVisual } from "../shell/space-visual.ts";
 import { TransferBanner, TransferSheet } from "./transfer.tsx";
 
 function SpaceForm({ space }: { space: SpaceDetail }) {
@@ -104,6 +112,33 @@ function SpaceForm({ space }: { space: SpaceDetail }) {
         </Button>
       </div>
     </form>
+  );
+}
+
+/** Photo de l'espace (perso compris, D02), changee tout de suite [D146, D167]. */
+function SpacePhoto({ space }: { space: SpaceDetail }) {
+  const queryClient = useQueryClient();
+  const refresh = async () => {
+    await queryClient.invalidateQueries({ queryKey: ["spaces"] });
+  };
+  const path = `/spaces/${space.id}/avatar`;
+  return (
+    <div className="flex items-center gap-4">
+      <SpaceIcon space={toVisual(space)} />
+      <ImagePicker
+        kind="avatar"
+        noun="la photo de l'espace"
+        hasImage={space.avatarUrl !== null}
+        onUploaded={async (uploadId) => {
+          await api.put(path, { uploadId }, imageResponseSchema);
+          await refresh();
+        }}
+        onRemove={async () => {
+          await api.delete(path, undefined, imageResponseSchema);
+          await refresh();
+        }}
+      />
+    </div>
   );
 }
 
@@ -255,7 +290,12 @@ export function SettingsPage({ space }: { space: SpaceDetail }) {
   return (
     <div className="fm-stack mx-auto w-full max-w-2xl p-4">
       <h1 className="font-display text-2xl font-bold">Réglages de {space.name}</h1>
-      {canIn(space, "space.update") ? <SpaceForm space={space} /> : null}
+      {canIn(space, "space.update") ? (
+        <>
+          <SpacePhoto space={space} />
+          <SpaceForm space={space} />
+        </>
+      ) : null}
 
       <section aria-labelledby="settings-modules" className="fm-stack border-t border-line pt-4">
         <h2 id="settings-modules" className="font-display text-lg font-bold">

@@ -1,12 +1,15 @@
 // Ecrans des recettes simples (C3.2) : liste, ajout, detail, edition, suppression.
 import { screen, waitFor, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../../app/App.tsx";
 import { axeViolations } from "../../test/axe.ts";
 import { buildRecipe, unitId } from "../../test/fixtures.ts";
 import { recipeServer } from "../../test/recipe-server.ts";
 import { renderWithProviders } from "../../test/render.tsx";
+import { mockUploads, photoFile } from "../../test/uploads.ts";
+
+vi.mock("../../lib/image.ts", () => import("../../test/fake-image.ts"));
 
 beforeEach(() => {
   localStorage.clear();
@@ -113,6 +116,43 @@ describe("editeur de recette (E-RECETTE-EDITION)", () => {
       ],
     });
     expect(drafts()).toEqual([]);
+  });
+
+  it("nouvelle recette : la photo choisie est rattachee apres l'enregistrement (D167)", async () => {
+    const s = recipeServer();
+    const { uploadIds } = mockUploads();
+    const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/recipes/new` });
+    await user.type(await screen.findByLabelText("Titre"), "Tarte");
+    await user.upload(screen.getByLabelText("Ajouter la photo"), photoFile());
+    expect(await screen.findByRole("img", { name: "Photo de la recette" })).toBeInTheDocument();
+    expect(s.recipes.calls.filter((c) => c.startsWith("photo"))).toEqual([]);
+
+    await user.type(screen.getByLabelText("Étape 1"), "Cuire.");
+    await user.click(screen.getByRole("button", { name: "Enregistrer" }));
+    expect(await screen.findByRole("heading", { name: "Tarte" })).toBeInTheDocument();
+    expect(s.recipes.bodies.photo).toEqual({ uploadId: uploadIds[0] });
+    expect(await screen.findByRole("img", { name: "Photo de la recette" })).toHaveAttribute(
+      "src",
+      expect.stringContaining("storage.test")
+    );
+  });
+
+  it("recette existante : la photo change et se retire tout de suite, sans revision", async () => {
+    const recipe = buildRecipe({ title: "Gratin" });
+    const s = recipeServer({ myRole: "OWNER", recipes: [recipe] });
+    mockUploads();
+    const { user } = renderWithProviders(<App />, {
+      route: `/s/${s.space.id}/recipes/${recipe.id}/edit`,
+    });
+    await user.upload(await screen.findByLabelText("Ajouter la photo"), photoFile());
+    await waitFor(() => {
+      expect(s.recipes.calls).toContain(`photo:${recipe.id}`);
+    });
+    await user.click(await screen.findByRole("button", { name: "Retirer la photo" }));
+    await waitFor(() => {
+      expect(s.recipes.calls).toContain(`photo-removed:${recipe.id}`);
+    });
+    expect(s.recipes.bodies.update).toBeUndefined();
   });
 
   it("un titre vide est signale sans appel a l'API", async () => {

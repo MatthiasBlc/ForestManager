@@ -6,6 +6,10 @@ import { VitePWA } from "vite-plugin-pwa";
 // En dev, /api part vers l'API (service `api` dans Docker, localhost sinon) :
 // meme origine que la prod (nginx), donc cookies et CSRF identiques.
 const apiTarget = process.env.API_PROXY_TARGET ?? "http://localhost:3001";
+// Photos [D167] : le bucket du stockage de dev (RustFS) passe aussi par ici, sans
+// changer l'hote (il fait partie de la signature des URLs) ni le chemin.
+const storageTarget = process.env.STORAGE_PROXY_TARGET;
+const storageBucket = process.env.STORAGE_BUCKET ?? "forestmanager-images-dev";
 
 export default defineConfig({
   // Hors de l'arbre dans les conteneurs (VITE_CACHE_DIR), pour ne rien y ecrire en root.
@@ -45,7 +49,7 @@ export default defineConfig({
         // Polices : alphabet latin seulement en precache (francais) ; les autres se chargent a la demande.
         globIgnores: ["**/*-{cyrillic,cyrillic-ext,greek,greek-ext,vietnamese}-*.woff2"],
         navigateFallback: "/index.html",
-        navigateFallbackDenylist: [/^\/api\//],
+        navigateFallbackDenylist: [/^\/api\//, /^\/forestmanager-images-/],
         cleanupOutdatedCaches: true,
       },
     }),
@@ -54,6 +58,11 @@ export default defineConfig({
     host: true,
     port: 3000,
     strictPort: true,
-    proxy: { "/api": { target: apiTarget, changeOrigin: false } },
+    proxy: {
+      "/api": { target: apiTarget, changeOrigin: false },
+      ...(storageTarget
+        ? { [`^/${storageBucket}(/|$)`]: { target: storageTarget, changeOrigin: false } }
+        : {}),
+    },
   },
 });

@@ -6,7 +6,7 @@ import { randomUUID } from "node:crypto";
 import type { Context } from "../context.ts";
 import { AppError } from "../http/errors.ts";
 import { pendingKey, type Storage } from "./storage.ts";
-import { readWebpSize } from "./webp.ts";
+import { IMAGE_CONTENT_TYPES, IMAGE_EXTENSIONS, readImageInfo } from "./image-format.ts";
 
 /** Un envoi ou une image orpheline n'est efface qu'apres ce delai (rattachement en cours). */
 const SWEEP_GRACE_MS = 60 * 60 * 1000;
@@ -24,7 +24,7 @@ export function imageUrl(ctx: Context, key: string | null | undefined): string |
 }
 
 /**
- * Verifie l'envoi en attente de cet utilisateur (WebP, dimensions) et le range
+ * Verifie l'envoi en attente de cet utilisateur (WebP ou JPEG, dimensions) et le range
  * sous `folder` avec une cle neuve. Le fichier refuse est efface.
  */
 export async function claimUpload(
@@ -39,21 +39,15 @@ export async function claimUpload(
   const file = await storage.read(source, UPLOAD_MAX_BYTES);
   if (!file) throw new AppError("STORAGE_002");
 
-  const size = readWebpSize(file);
+  const info = readImageInfo(file);
   const maxSide = IMAGE_MAX_SIDE[kind];
-  const valid =
-    size !== null &&
-    size.width >= 1 &&
-    size.height >= 1 &&
-    size.width <= maxSide &&
-    size.height <= maxSide;
-  if (!valid) {
+  if (!info || info.width < 1 || info.height < 1 || info.width > maxSide || info.height > maxSide) {
     await storage.remove([source]);
     throw new AppError("STORAGE_003");
   }
 
-  const key = `${folder}/${randomUUID()}.webp`;
-  await storage.put(key, file);
+  const key = `${folder}/${randomUUID()}.${IMAGE_EXTENSIONS[info.format]}`;
+  await storage.put(key, file, IMAGE_CONTENT_TYPES[info.format]);
   await storage.remove([source]);
   return key;
 }
@@ -61,7 +55,7 @@ export async function claimUpload(
 /** Copie une image sous un autre dossier (adaptation d'une recette). */
 export async function copyImage(ctx: Context, key: string, folder: string): Promise<string | null> {
   if (!ctx.storage) return null;
-  const target = `${folder}/${randomUUID()}.webp`;
+  const target = `${folder}/${randomUUID()}.${key.split(".").at(-1) ?? "webp"}`;
   await ctx.storage.copy(key, target);
   return target;
 }

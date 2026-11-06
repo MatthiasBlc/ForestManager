@@ -226,6 +226,25 @@ export function recipeServer({
       state.recipes = state.recipes.map((r) => (r.id === current.id ? restored : r));
       return HttpResponse.json(restored);
     }),
+    // Photo hors revisions [D167].
+    http.put(`${base}/:recipeId/photo`, async ({ params, request }) => {
+      if (!find(params.recipeId)) return notFound();
+      state.bodies.photo = await request.json();
+      state.calls.push(`photo:${String(params.recipeId)}`);
+      const url = `http://storage.test/bucket/recipes/${String(params.recipeId)}.webp?sig=1`;
+      state.recipes = state.recipes.map((r) =>
+        r.id === params.recipeId ? { ...r, imageUrl: url } : r
+      );
+      return HttpResponse.json({ url });
+    }),
+    http.delete(`${base}/:recipeId/photo`, ({ params }) => {
+      if (!find(params.recipeId)) return notFound();
+      state.calls.push(`photo-removed:${String(params.recipeId)}`);
+      state.recipes = state.recipes.map((r) =>
+        r.id === params.recipeId ? { ...r, imageUrl: null } : r
+      );
+      return HttpResponse.json({ url: null });
+    }),
     http.delete(`${base}/:recipeId`, ({ params }) => {
       if (!find(params.recipeId)) return notFound();
       state.calls.push(`delete:${String(params.recipeId)}`);
