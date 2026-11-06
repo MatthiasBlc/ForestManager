@@ -303,3 +303,49 @@ export function clearDraft(key: string): void {
     // idem
   }
 }
+
+export type SuggestionMark =
+  | { kind: "added" }
+  | { kind: "changed"; before?: { quantity: number | null; unitId: string | null } };
+
+/**
+ * E-SUGGESTION-EDITION : lignes et etapes modifiees ou ajoutees par rapport a la
+ * recette (`base`), par cle de `draft`. Blocs apparies par position, ingredients
+ * par ingredient (ou nom), etapes par position, comme le diff de l'API [D166].
+ */
+export function suggestionMarks(base: Draft, draft: Draft): Record<string, SuggestionMark> {
+  const marks: Record<string, SuggestionMark> = {};
+  const nameOf = (line: { name: string }) => line.name.trim().toLocaleLowerCase("fr");
+  draft.blocks.forEach((block, index) => {
+    if (block.kind !== "LOCAL") return;
+    const original = base.blocks[index];
+    const before = original?.kind === "LOCAL" ? original : null;
+    for (const line of block.lines) {
+      if (!line.name.trim()) continue;
+      const match = before?.lines.find((old) =>
+        line.ingredientId && old.ingredientId
+          ? old.ingredientId === line.ingredientId
+          : nameOf(old) === nameOf(line)
+      );
+      if (!match) marks[line.key] = { kind: "added" };
+      else if (
+        parseQuantity(match.quantity) !== parseQuantity(line.quantity) ||
+        match.unitId !== line.unitId
+      ) {
+        marks[line.key] = {
+          kind: "changed",
+          before: { quantity: parseQuantity(match.quantity), unitId: match.unitId || null },
+        };
+      }
+    }
+    const oldSteps = before?.steps.map((step) => step.text.trim()).filter(Boolean) ?? [];
+    block.steps
+      .filter((step) => step.text.trim())
+      .forEach((step, i) => {
+        const old = oldSteps[i];
+        if (old === undefined) marks[step.key] = { kind: "added" };
+        else if (old !== step.text.trim()) marks[step.key] = { kind: "changed" };
+      });
+  });
+  return marks;
+}

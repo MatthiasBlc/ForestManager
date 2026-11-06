@@ -27,7 +27,8 @@ import { ImagePicker } from "../../patterns/image-picker.tsx";
 import { TopBar } from "../../patterns/top-bar.tsx";
 import { Button, IconButton } from "../../ui/button.tsx";
 import { Chip, Stepper, Switch } from "../../ui/controls.tsx";
-import { Skeleton } from "../../ui/display.tsx";
+import { Badge, Skeleton } from "../../ui/display.tsx";
+import { cx } from "../../ui/cx.ts";
 import { Field } from "../../ui/field.tsx";
 import { Icon } from "../../ui/icon.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
@@ -47,12 +48,15 @@ import {
   hasErrors,
   newKey,
   readDraft,
+  suggestionMarks,
   writeDraft,
   type Draft,
   type DraftErrors,
   type DraftLinkedBlock,
   type DraftLocalBlock,
+  type SuggestionMark,
 } from "./draft.ts";
+import { scaledAmount } from "./format.ts";
 import { useOnline } from "../../pwa/use-online.ts";
 import { RecipeNotFound, RecipeUnavailable } from "./recipe-page.tsx";
 import {
@@ -118,12 +122,22 @@ function LinkedBlockEditor({
   );
 }
 
+function markOf(
+  mark: SuggestionMark | undefined,
+  units: readonly Unit[]
+): { kind: "changed" | "added"; before?: string } | undefined {
+  if (!mark) return undefined;
+  if (mark.kind === "added" || !mark.before) return { kind: mark.kind };
+  return { kind: "changed", before: scaledAmount(mark.before, units, 1) || "sans quantité" };
+}
+
 function BlockEditor({
   block,
   index,
   titled,
   units,
   errors,
+  marks,
   onChange,
   onRemove,
 }: {
@@ -132,6 +146,8 @@ function BlockEditor({
   titled: boolean;
   units: readonly Unit[];
   errors: DraftErrors["lines"];
+  /** Mode suggestion : marques par cle de ligne ou d'etape. */
+  marks: Record<string, SuggestionMark>;
   onChange: (block: DraftLocalBlock) => void;
   onRemove?: () => void;
 }) {
@@ -167,6 +183,7 @@ function BlockEditor({
               value={line}
               units={units}
               error={errors[line.key]}
+              mark={markOf(marks[line.key], units)}
               onChange={(value) => {
                 onChange({
                   ...block,
@@ -197,34 +214,51 @@ function BlockEditor({
       <section className="overflow-hidden rounded-md border border-line bg-surface-raised">
         <h2 className="bg-surface px-3 py-2 font-display text-base font-semibold">Étapes</h2>
         <div className="flex flex-col gap-2 p-3">
-          {block.steps.map((step, i) => (
-            <div key={step.key} className="flex items-start gap-2">
-              <Field
-                multiline
-                label={stepLabel(i)}
-                className="flex-1"
-                rows={2}
-                value={step.text}
-                onChange={(e) => {
-                  onChange({
-                    ...block,
-                    steps: block.steps.map((s) =>
-                      s.key === step.key ? { ...s, text: e.target.value } : s
-                    ),
-                  });
-                }}
-              />
-              {block.steps.length > 1 ? (
-                <IconButton
-                  icon="x"
-                  label={`Retirer ${stepLabel(i)}`}
-                  onClick={() => {
-                    onChange({ ...block, steps: block.steps.filter((s) => s.key !== step.key) });
+          {block.steps.map((step, i) => {
+            const mark = marks[step.key];
+            const markId = `mark-${step.key}`;
+            return (
+              <div
+                key={step.key}
+                className={cx("flex items-start gap-2", mark && `fm-mark-${mark.kind}`)}
+              >
+                <Field
+                  multiline
+                  label={stepLabel(i)}
+                  className="flex-1"
+                  rows={2}
+                  aria-describedby={mark ? markId : undefined}
+                  value={step.text}
+                  onChange={(e) => {
+                    onChange({
+                      ...block,
+                      steps: block.steps.map((s) =>
+                        s.key === step.key ? { ...s, text: e.target.value } : s
+                      ),
+                    });
                   }}
                 />
-              ) : null}
-            </div>
-          ))}
+                {mark ? (
+                  <span id={markId} className="fm-mark self-center">
+                    {mark.kind === "added" ? (
+                      <Badge tone="success">Ajouté</Badge>
+                    ) : (
+                      <Badge tone="warning">Modifié</Badge>
+                    )}
+                  </span>
+                ) : null}
+                {block.steps.length > 1 ? (
+                  <IconButton
+                    icon="x"
+                    label={`Retirer ${stepLabel(i)}`}
+                    onClick={() => {
+                      onChange({ ...block, steps: block.steps.filter((s) => s.key !== step.key) });
+                    }}
+                  />
+                ) : null}
+              </div>
+            );
+          })}
           <Button
             variant="ghost"
             icon="plus"
@@ -377,6 +411,9 @@ function Editor({
           : emptyDraft())
   );
   const [dirty, setDirty] = useState(restored !== null || imported !== undefined);
+  // Mode suggestion : ce que la suggestion change, ligne par ligne.
+  const [base] = useState(() => (suggest && recipe ? draftFromRecipe(recipe) : null));
+  const marks = base ? suggestionMarks(base, draft) : {};
   const toCheck = imported?.ingredients.filter((line) => line.check).length ?? 0;
   const [errors, setErrors] = useState<DraftErrors>({ lines: {} });
   const [failure, setFailure] = useState<string>();
@@ -636,6 +673,7 @@ function Editor({
               titled={titled}
               units={units}
               errors={errors.lines}
+              marks={marks}
               onChange={replace}
               onRemove={remove}
             />

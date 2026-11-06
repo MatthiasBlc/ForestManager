@@ -25,7 +25,10 @@ export function Field(props: FieldProps) {
   const generated = useId();
   const { label, hint, error, className, id = generated } = props;
   const hintId = `${id}-hint`;
-  const describedBy = error || hint ? hintId : undefined;
+  // Une description externe (marque, compteur) s'ajoute a l'aide.
+  const describedBy =
+    [error || hint ? hintId : null, props["aria-describedby"]].filter(Boolean).join(" ") ||
+    undefined;
   const control = (() => {
     if (props.multiline) {
       const { label: _l, hint: _h, error: _e, className: _c, multiline: _m, ...rest } = props;

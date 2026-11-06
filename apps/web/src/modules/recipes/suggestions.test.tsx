@@ -49,6 +49,51 @@ describe("rediger une suggestion (E-SUGGESTION-EDITION)", () => {
     ).toBeInTheDocument();
   });
 
+  it("marque les lignes modifiees et ajoutees par rapport a la recette", async () => {
+    const s = recipeServer();
+    const recipe = s.add({
+      title: "Gratin de pâtes",
+      author: lea,
+      can: { edit: false, delete: false, share: false },
+    });
+    const { user, container } = renderWithProviders(<App />, {
+      route: `/s/${s.space.id}/recipes/${recipe.id}/suggest`,
+    });
+    const first = await screen.findByRole("group", { name: "Ingrédient 1" });
+    expect(screen.queryByText("Modifié")).not.toBeInTheDocument();
+
+    const quantity = within(first).getByLabelText("Quantité");
+    await user.clear(quantity);
+    await user.type(quantity, "400");
+    expect(within(first).getByText("Modifié")).toBeInTheDocument();
+    expect(within(first).getByText("Avant : 500 g")).toBeInTheDocument();
+    expect(
+      within(screen.getByRole("group", { name: "Ingrédient 2" })).queryByText(/Modifié|Ajouté/)
+    ).not.toBeInTheDocument();
+
+    const third = screen.getByRole("group", { name: "Ingrédient 3" });
+    await user.type(within(third).getByLabelText("Quantité"), "1");
+    await user.type(within(third).getByLabelText("Ingrédient"), "Muscade");
+    expect(within(third).getByText("Ajouté")).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText("Étape 2"), " au four");
+    expect(screen.getByLabelText("Étape 2")).toHaveAccessibleDescription("Modifié");
+    await user.type(screen.getByLabelText("Étape 3"), "Servir.");
+    expect(screen.getByLabelText("Étape 3")).toHaveAccessibleDescription("Ajouté");
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("hors mode suggestion, aucune marque", async () => {
+    const s = recipeServer();
+    const recipe = s.add();
+    const { user } = renderWithProviders(<App />, {
+      route: `/s/${s.space.id}/recipes/${recipe.id}/edit`,
+    });
+    const first = await screen.findByRole("group", { name: "Ingrédient 1" });
+    await user.type(within(first).getByLabelText("Quantité"), "0");
+    expect(screen.queryByText("Modifié")).not.toBeInTheDocument();
+  });
+
   it("l'auteur ne suggere pas : il modifie", async () => {
     const s = recipeServer();
     const recipe = s.add();
@@ -86,9 +131,10 @@ describe("examiner une suggestion (E-SUGGESTION)", () => {
       expect(s.recipes.bodies.accept).toEqual({ revision: 1 });
     });
     expect(await screen.findByText("Suggestion acceptée : révision 2")).toBeInTheDocument();
-    expect(
-      await screen.findByRole("heading", { name: "Saumon teriyaki", level: 1 })
-    ).toBeInTheDocument();
+    // Le detail se rend deux fois (cache puis rechargement) : attendre le dernier.
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: "Saumon teriyaki", level: 1 })).toBeVisible();
+    });
   });
 
   it("recette changee depuis : revision de base et conflit signales", async () => {

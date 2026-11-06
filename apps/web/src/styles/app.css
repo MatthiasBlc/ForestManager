@@ -153,3 +153,24 @@ body,
   cursor: not-allowed;
   background: transparent;
 }
+
+/* E-SUGGESTION-EDITION : lignes et etapes modifiees ou ajoutees. */
+.fm-mark-changed,
+.fm-mark-added {
+  margin-inline: calc(-1 * var(--space-3));
+  padding: var(--space-1) var(--space-3);
+}
+.fm-mark-changed {
+  background: var(--warning-soft);
+}
+.fm-mark-added {
+  background: var(--success-soft);
+}
+.fm-mark {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+  color: var(--ink-muted);
+  font-size: 13px;
+}

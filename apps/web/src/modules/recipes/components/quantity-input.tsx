@@ -8,6 +8,7 @@ import { useEffect, useId, useState } from "react";
 
 import { cx } from "../../../ui/cx.ts";
 import { IconButton } from "../../../ui/button.tsx";
+import { Badge } from "../../../ui/display.tsx";
 import { Icon } from "../../../ui/icon.tsx";
 import { ingredientSearchQuery } from "../queries.ts";
 
@@ -44,6 +45,7 @@ export function QuantityInput({
   value,
   units,
   error,
+  mark,
   onChange,
   onRemove,
 }: {
@@ -51,6 +53,8 @@ export function QuantityInput({
   value: IngredientLine;
   units: readonly Unit[];
   error?: string;
+  /** Mode suggestion : ligne modifiee (avec la quantite d'avant) ou ajoutee. */
+  mark?: { kind: "changed" | "added"; before?: string };
   onChange: (value: IngredientLine) => void;
   onRemove?: () => void;
 }) {
@@ -84,7 +88,11 @@ export function QuantityInput({
   };
 
   return (
-    <div className={cx("fm-qty", error && "fm-field-error")} role="group" aria-label={label}>
+    <div
+      className={cx("fm-qty", error && "fm-field-error", mark && `fm-mark-${mark.kind}`)}
+      role="group"
+      aria-label={label}
+    >
       <div className="fm-qty-row">
         <input
           className="fm-input fm-qty-num"
@@ -172,6 +180,16 @@ export function QuantityInput({
         </div>
         {onRemove ? <IconButton icon="x" label={`Retirer ${label}`} onClick={onRemove} /> : null}
       </div>
+      {mark ? (
+        <div className="fm-mark">
+          {mark.kind === "added" ? (
+            <Badge tone="success">Ajouté</Badge>
+          ) : (
+            <Badge tone="warning">Modifié</Badge>
+          )}
+          {mark.before !== undefined ? <small>Avant : {mark.before}</small> : null}
+        </div>
+      ) : null}
       {error ? <span className="fm-hint">{error}</span> : null}
     </div>
   );
