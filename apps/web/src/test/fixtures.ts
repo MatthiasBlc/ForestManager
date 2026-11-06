@@ -192,7 +192,7 @@ export const UNITS: Unit[] = [
 ].map((unit, index) => ({
   ...unit,
   dimension: unit.dimension as Unit["dimension"],
-  namePlural: "namePlural" in unit ? unit.namePlural : null,
+  namePlural: "namePlural" in unit ? (unit.namePlural ?? null) : null,
   id: `00000000-0000-4000-8000-0000000a${index.toString(16).padStart(4, "0")}`,
 }));
 
