@@ -19,13 +19,14 @@ import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { ConvertSuggestionSheet, DiffTable } from "./adaptation.tsx";
 import {
+  recipeFailure,
   recipeQuery,
   recipesKey,
   suggestionQuery,
   suggestionsToDecideQuery,
   unitsQuery,
 } from "./queries.ts";
-import { RecipeNotFound } from "./recipe-page.tsx";
+import { RecipeUnavailable } from "./recipe-page.tsx";
 
 const STATUS_TEXT: Record<Suggestion["status"], string> = {
   PENDING: "",
@@ -139,7 +140,12 @@ export function SuggestionPage() {
   });
 
   const chrome = <PageChrome top={<TopBar title="Suggestion" onBack={back} />} />;
-  if (query.isError) return <RecipeNotFound spaceId={spaceId} />;
+  const failure = recipeFailure(query);
+  if (failure) {
+    return (
+      <RecipeUnavailable spaceId={spaceId} failure={failure} onRetry={() => void query.refetch()} />
+    );
+  }
   if (!query.data || !units.data) {
     return (
       <>

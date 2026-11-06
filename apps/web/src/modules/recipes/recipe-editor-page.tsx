@@ -54,12 +54,13 @@ import {
   type DraftLocalBlock,
 } from "./draft.ts";
 import { useOnline } from "../../pwa/use-online.ts";
-import { RecipeNotFound } from "./recipe-page.tsx";
+import { RecipeNotFound, RecipeUnavailable } from "./recipe-page.tsx";
 import {
   globalTagsQuery,
+  recipeFailure,
   recipeQuery,
-  recipeSuggestionsQuery,
   recipesKey,
+  recipeSuggestionsQuery,
   spaceTagsQuery,
   unitsQuery,
 } from "./queries.ts";
@@ -760,7 +761,16 @@ export function RecipeEditorPage({ suggest = false }: { suggest?: boolean }) {
   const imported = recipeId
     ? undefined
     : (location.state as { imported?: ImportedRecipe } | null)?.imported;
-  if (recipeId && recipe.isError) return <RecipeNotFound spaceId={spaceId} />;
+  const failure = recipeId ? recipeFailure(recipe) : null;
+  if (failure) {
+    return (
+      <RecipeUnavailable
+        spaceId={spaceId}
+        failure={failure}
+        onRetry={() => void recipe.refetch()}
+      />
+    );
+  }
   if (!space.data || !units.data || (recipeId && !recipe.data)) return <Skeleton />;
   // Modifier : le droit de modifier ; suggerer : tout membre sauf l'auteur (API, RECIPE_012).
   if (recipe.data && !suggest && !recipe.data.can.edit) return <RecipeNotFound spaceId={spaceId} />;

@@ -15,8 +15,8 @@ import { Sheet } from "../../ui/sheet.tsx";
 import { IngredientRow } from "./components/ingredient-row.tsx";
 import { cookIngredientGroups, cookSteps, type CookLine } from "./cook.ts";
 import { formatYield } from "./format.ts";
-import { recipeQuery, unitsQuery } from "./queries.ts";
-import { NotOffline, RecipeNotFound } from "./recipe-page.tsx";
+import { recipeFailure, recipeQuery, unitsQuery } from "./queries.ts";
+import { NotOffline, RecipeUnavailable } from "./recipe-page.tsx";
 
 const LABEL = "text-xs font-semibold tracking-[.04em] text-ink-muted uppercase";
 
@@ -197,7 +197,16 @@ export function CookPage() {
   const [params] = useSearchParams();
   const recipe = useQuery(recipeQuery(spaceId, recipeId));
   const units = useQuery(unitsQuery);
-  if (recipe.isError) return <RecipeNotFound spaceId={spaceId} />;
+  const failure = recipeFailure(recipe);
+  if (failure) {
+    return (
+      <RecipeUnavailable
+        spaceId={spaceId}
+        failure={failure}
+        onRetry={() => void recipe.refetch()}
+      />
+    );
+  }
   if (!recipe.data && recipe.fetchStatus === "paused") return <NotOffline spaceId={spaceId} />;
   if (!recipe.data || !units.data) return <Skeleton />;
   const asked = Number(params.get("servings"));

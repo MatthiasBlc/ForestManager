@@ -1,12 +1,14 @@
 // Recettes hors ligne (C3.9, D106) : recettes deja ouvertes lisibles, badge sur les
 // cartes, ecritures desactivees (pas masquees).
 import { act, screen, within } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { App } from "../../app/App.tsx";
 import { buildRecipe } from "../../test/fixtures.ts";
 import { recipeServer } from "../../test/recipe-server.ts";
 import { renderWithProviders } from "../../test/render.tsx";
+import { server } from "../../test/server.ts";
 
 function setOnline(online: boolean) {
   Object.defineProperty(navigator, "onLine", { configurable: true, get: () => online });
@@ -114,5 +116,42 @@ describe("detail hors ligne", () => {
     expect(
       await screen.findByRole("heading", { name: "Pas encore disponible hors ligne" })
     ).toBeInTheDocument();
+  });
+});
+
+describe("serveur injoignable alors que le navigateur se dit en ligne", () => {
+  it("une recette deja chargee reste affichee", async () => {
+    const recipe = buildRecipe({ title: "Dahl de lentilles" });
+    const s = recipeServer({ recipes: [recipe] });
+    const { client } = renderWithProviders(<App />, {
+      route: `/s/${s.space.id}/recipes/${recipe.id}`,
+    });
+    await screen.findByRole("heading", { name: "Dahl de lentilles" });
+    server.use(http.get("/api/v1/spaces/:spaceId/recipes/:recipeId", () => HttpResponse.error()));
+    await act(() => client.refetchQueries({ type: "active" }));
+    expect(screen.getByRole("heading", { name: "Dahl de lentilles" })).toBeInTheDocument();
+    expect(screen.queryByText("Recette introuvable")).not.toBeInTheDocument();
+  });
+
+  it("une recette jamais chargee : le dit et propose de reessayer", async () => {
+    const recipe = buildRecipe({ title: "Dahl de lentilles" });
+    const s = recipeServer({ recipes: [recipe] });
+    server.use(http.get("/api/v1/spaces/:spaceId/recipes/:recipeId", () => HttpResponse.error()));
+    renderWithProviders(<App />, { route: `/s/${s.space.id}/recipes/${recipe.id}` });
+    expect(
+      await screen.findByRole("heading", { name: "Impossible de charger la recette" })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Réessayer" })).toBeInTheDocument();
+  });
+
+  it("une liste deja chargee reste affichee", async () => {
+    const recipe = buildRecipe({ title: "Dahl de lentilles" });
+    const s = recipeServer({ recipes: [recipe] });
+    const { client } = renderWithProviders(<App />, { route: `/s/${s.space.id}/recipes` });
+    await screen.findByRole("article", { name: "Dahl de lentilles" });
+    server.use(http.get("/api/v1/spaces/:spaceId/recipes", () => HttpResponse.error()));
+    await act(() => client.refetchQueries({ type: "active" }));
+    expect(screen.getByRole("article", { name: "Dahl de lentilles" })).toBeInTheDocument();
+    expect(screen.queryByText("Impossible de charger les recettes")).not.toBeInTheDocument();
   });
 });

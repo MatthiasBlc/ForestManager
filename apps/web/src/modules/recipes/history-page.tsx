@@ -13,8 +13,8 @@ import { TopBar } from "../../patterns/top-bar.tsx";
 import { Button } from "../../ui/button.tsx";
 import { Badge, Skeleton } from "../../ui/display.tsx";
 import { useToast } from "../../ui/use-toast.ts";
-import { recipeQuery, recipesKey, revisionsQuery } from "./queries.ts";
-import { RecipeNotFound } from "./recipe-page.tsx";
+import { recipeFailure, recipeQuery, recipesKey, revisionsQuery } from "./queries.ts";
+import { RecipeUnavailable } from "./recipe-page.tsx";
 
 const SOURCE_LABELS: Record<RevisionSource, (name: string) => string> = {
   CREATE: (name) => `Créée par ${name}`,
@@ -145,7 +145,16 @@ export function HistoryPage() {
   const { spaceId = "", recipeId = "" } = useParams();
   const recipe = useQuery(recipeQuery(spaceId, recipeId));
   const revisions = useQuery(revisionsQuery(spaceId, recipeId));
-  if (recipe.isError) return <RecipeNotFound spaceId={spaceId} />;
+  const failure = recipeFailure(recipe);
+  if (failure) {
+    return (
+      <RecipeUnavailable
+        spaceId={spaceId}
+        failure={failure}
+        onRetry={() => void recipe.refetch()}
+      />
+    );
+  }
   if (!recipe.data || !revisions.data) return <Skeleton />;
   return <HistoryView spaceId={spaceId} recipe={recipe.data} revisions={revisions.data} />;
 }

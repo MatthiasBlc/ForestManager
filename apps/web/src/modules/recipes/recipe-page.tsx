@@ -24,7 +24,13 @@ import { IngredientRow } from "./components/ingredient-row.tsx";
 import { LINK_STATUS_TITLES } from "./draft.ts";
 import { cookSteps } from "./cook.ts";
 import { formatMinutes, joinNames, scaledAmount } from "./format.ts";
-import { recipeQuery, recipesKey, unitsQuery } from "./queries.ts";
+import {
+  recipeFailure,
+  recipeQuery,
+  recipesKey,
+  unitsQuery,
+  type RecipeFailure,
+} from "./queries.ts";
 import { AdaptedFromNotice, AdaptSheet } from "./adaptation.tsx";
 import { RecipeSuggestionsBanner } from "./suggestions.tsx";
 import { RemoveFromSpaceSheet, ShareSheet } from "./sharing.tsx";
@@ -42,6 +48,30 @@ export function RecipeNotFound({ spaceId }: { spaceId: string }) {
         }
       >
         Elle a été supprimée, ou elle n'est pas visible dans cet espace.
+      </EmptyState>
+    </div>
+  );
+}
+
+/** Ecran d'une page de recette en echec (voir `recipeFailure`). */
+export function RecipeUnavailable({
+  spaceId,
+  failure,
+  onRetry,
+}: {
+  spaceId: string;
+  failure: RecipeFailure;
+  onRetry: () => void;
+}) {
+  if (failure === "gone") return <RecipeNotFound spaceId={spaceId} />;
+  return (
+    <div className="p-4">
+      <EmptyState
+        icon="wifi-off"
+        title="Impossible de charger la recette"
+        action={<Button onClick={onRetry}>Réessayer</Button>}
+      >
+        Connexion impossible. Vérifie ton réseau.
       </EmptyState>
     </div>
   );
@@ -499,7 +529,16 @@ export function RecipePage() {
   const { spaceId = "", recipeId = "" } = useParams();
   const recipe = useQuery(recipeQuery(spaceId, recipeId));
   const units = useQuery(unitsQuery);
-  if (recipe.isError) return <RecipeNotFound spaceId={spaceId} />;
+  const failure = recipeFailure(recipe);
+  if (failure) {
+    return (
+      <RecipeUnavailable
+        spaceId={spaceId}
+        failure={failure}
+        onRetry={() => void recipe.refetch()}
+      />
+    );
+  }
   if (!recipe.data && recipe.fetchStatus === "paused") return <NotOffline spaceId={spaceId} />;
   if (!recipe.data || !units.data) return <Skeleton />;
   return (

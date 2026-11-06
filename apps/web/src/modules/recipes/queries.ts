@@ -18,7 +18,7 @@ import {
 } from "@fm/shared";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
-import { api } from "../../lib/api.ts";
+import { api, isNetworkError } from "../../lib/api.ts";
 
 export interface RecipeFilters {
   q?: string;
@@ -175,4 +175,20 @@ export function ingredientSearchQuery(term: string) {
     enabled: term.trim().length > 0,
     staleTime: 60_000,
   });
+}
+
+export type RecipeFailure = "gone" | "network";
+
+/**
+ * Echec d'une page de recette, ou null s'il faut afficher les donnees : une erreur
+ * reseau garde la version deja chargee (D169), une erreur de l'API vaut "introuvable".
+ */
+export function recipeFailure(query: {
+  isError: boolean;
+  error: unknown;
+  data: unknown;
+}): RecipeFailure | null {
+  if (!query.isError) return null;
+  if (!isNetworkError(query.error)) return "gone";
+  return query.data === undefined ? "network" : null;
 }

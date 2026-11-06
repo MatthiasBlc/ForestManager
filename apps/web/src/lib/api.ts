@@ -22,6 +22,11 @@ export class ApiRequestError extends Error {
   }
 }
 
+/** Serveur injoignable (pas une reponse de l'API) : les donnees deja chargees restent valables. */
+export function isNetworkError(error: unknown): boolean {
+  return error instanceof ApiRequestError && error.code === "NETWORK";
+}
+
 function readCsrfCookie(): string | undefined {
   for (const part of document.cookie.split(";")) {
     const [name, ...rest] = part.trim().split("=");

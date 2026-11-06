@@ -20,6 +20,7 @@ import { Link, useNavigate, useParams } from "react-router";
 
 import { meQuery, spaceQuery, spacesQuery } from "../../core/session/queries.ts";
 import { errorMessage } from "../../i18n/index.ts";
+import { isNetworkError } from "../../lib/api.ts";
 import { useOnline } from "../../pwa/use-online.ts";
 import { useWriteGuard } from "../../pwa/use-write-guard.ts";
 import { Button } from "../../ui/button.tsx";
@@ -276,7 +277,7 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
           />
         </>
       );
-  } else if (list.isError) {
+  } else if (list.isError && !(list.data && isNetworkError(list.error))) {
     content = (
       <EmptyState
         icon="triangle-alert"

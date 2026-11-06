@@ -15,8 +15,8 @@ import { Button } from "../../ui/button.tsx";
 import { Skeleton } from "../../ui/display.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { DiffTable } from "./adaptation.tsx";
-import { comparisonQuery, recipeQuery, recipesKey, unitsQuery } from "./queries.ts";
-import { RecipeNotFound } from "./recipe-page.tsx";
+import { comparisonQuery, recipeFailure, recipeQuery, recipesKey, unitsQuery } from "./queries.ts";
+import { RecipeUnavailable } from "./recipe-page.tsx";
 
 const day = (iso: string) =>
   new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
@@ -44,7 +44,16 @@ export function ComparePage() {
   });
 
   const chrome = <PageChrome top={<TopBar title="Comparer" onBack={back} />} />;
-  if (comparison.isError) return <RecipeNotFound spaceId={spaceId} />;
+  const failure = recipeFailure(comparison);
+  if (failure) {
+    return (
+      <RecipeUnavailable
+        spaceId={spaceId}
+        failure={failure}
+        onRetry={() => void comparison.refetch()}
+      />
+    );
+  }
   if (!comparison.data || !units.data || !recipe.data) {
     return (
       <>
