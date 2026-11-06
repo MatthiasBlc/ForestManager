@@ -346,6 +346,11 @@ function looksLikeIngredient(line: string): boolean {
   return BULLET.test(line) || (/^\d|^[½¼¾⅓]/u.test(line) && !NUMBERED_STEP.test(line));
 }
 
+/** "sel, poivre" : courte, sans ponctuation finale (une etape est une phrase). */
+function looksLikeBareIngredient(line: string): boolean {
+  return !/[.!?:;]$/u.test(line) && line.split(/\s+/u).length <= 4;
+}
+
 export function parseRecipeText(text: string): ImportedRecipe {
   const recipe: ImportedRecipe = {
     title: null,
@@ -393,9 +398,18 @@ export function parseRecipeText(text: string): ImportedRecipe {
       recipe.title = line;
       continue;
     }
+    // Sans section : une ligne courte qui suit des ingredients, avant toute etape
+    // ("sel, poivre") ; sans quantite, sa virgule separe une liste, pas une note.
+    const inIngredientList = recipe.ingredients.length > 0 && recipe.steps.length === 0;
+    const bare =
+      section === "auto" &&
+      !looksLikeIngredient(line) &&
+      inIngredientList &&
+      looksLikeBareIngredient(line);
     const isIngredient =
       section === "ingredients" || (section === "auto" && looksLikeIngredient(line));
-    if (isIngredient) recipe.ingredients.push(parseIngredientLine(line));
+    if (bare) recipe.ingredients.push({ ...parseIngredientLine(line), name: line, note: null });
+    else if (isIngredient) recipe.ingredients.push(parseIngredientLine(line));
     else recipe.steps.push(line.replace(BULLET, ""));
   }
   return finish(recipe);

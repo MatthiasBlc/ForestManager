@@ -206,6 +206,33 @@ Préparation
     expect(recipe.steps).toEqual(["Tout mélanger dans un bol.", "Servir aussitôt."]);
   });
 
+  it("sans sections : une ligne courte sans quantite apres des ingredients en est un", () => {
+    const recipe = parseRecipeText(`Gratin de Jeanne
+500 g de pâtes
+40 cl de crème
+150 g de gruyère râpé
+1 gousse d'ail
+sel, poivre
+Cuire les pâtes al dente.
+Frotter le plat avec l'ail
+Mélanger et gratiner 20 min.`);
+    expect(recipe.ingredients.map((i) => i.name)).toEqual([
+      "pâtes",
+      "crème",
+      "gruyère râpé",
+      "ail",
+      "sel, poivre",
+    ]);
+    // Sans quantite, la virgule separe une liste, pas une note ("oignon, emince").
+    expect(recipe.ingredients.at(-1)).toMatchObject({ quantity: null, note: null, check: true });
+    // Une fois les etapes commencees, une ligne courte reste une etape.
+    expect(recipe.steps).toEqual([
+      "Cuire les pâtes al dente.",
+      "Frotter le plat avec l'ail",
+      "Mélanger et gratiner 20 min.",
+    ]);
+  });
+
   it("ignore les separateurs ; texte vide = recette vide", () => {
     expect(parseRecipeText("Salade\n-----\n~~~\n").title).toBe("Salade");
     expect(parseRecipeText("  \n ")).toMatchObject({ title: null, ingredients: [], steps: [] });

@@ -62,12 +62,7 @@ export function ImportUrlSheet({
   };
 
   return (
-    <Sheet
-      open={open}
-      onClose={onClose}
-      title="Importer depuis un lien"
-      description="Les sites de recettes courants (Marmiton, HelloFresh, la plupart des blogs) sont lus automatiquement."
-    >
+    <Sheet open={open} onClose={onClose} title="Importer depuis un lien">
       <form
         className="fm-stack"
         noValidate
@@ -86,6 +81,10 @@ export function ImportUrlSheet({
             setUrl(event.target.value);
           }}
         />
+        <p className="text-sm text-ink-muted">
+          Les sites de recettes courants (Marmiton, HelloFresh, la plupart des blogs) sont lus
+          automatiquement.
+        </p>
         <FormAlert message={error} />
         <SheetFooter>
           {error ? (
