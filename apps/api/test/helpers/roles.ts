@@ -2,7 +2,13 @@
 // pour chaque route, un test par acteur (anonyme, non-membre, MEMBER,
 // MODERATOR, OWNER). Le resultat attendu vient de `can()`, elle-meme testee
 // contre la matrice recopiee de 12-Permissions.md.
-import { can, type CorePermissionKey, type SpaceRole } from "@fm/shared";
+import {
+  CORE_PERMISSIONS,
+  isAllowed,
+  type CorePermissionKey,
+  type PermissionDefinition,
+  type SpaceRole,
+} from "@fm/shared";
 import type { Response } from "supertest";
 import { describe, expect, it } from "vitest";
 
@@ -51,8 +57,16 @@ export async function clientAs(
 }
 
 export function isAllowedFor(actor: TestActor, key: CorePermissionKey): boolean {
+  return allowedFor(actor, CORE_PERMISSIONS[key]);
+}
+
+/** Verdict d'une permission (du socle ou d'un module) pour cet acteur, dans un espace groupe. */
+export function allowedFor(actor: TestActor, definition: PermissionDefinition): boolean {
   const role: SpaceRole | null = actor === "anonymous" || actor === "outsider" ? null : actor;
-  return can({ authenticated: actor !== "anonymous", space: { kind: "GROUP", role } }, key);
+  return isAllowed(definition, {
+    authenticated: actor !== "anonymous",
+    space: { kind: "GROUP", role },
+  });
 }
 
 /** Verifie la reponse d'un acteur : refus attendu selon son cas, ou passage du controle de droits. */

@@ -74,9 +74,16 @@ export function hasModulePermission(req: Request, key: string): boolean {
   });
 }
 
+const declared = new WeakMap<object, string>();
+
+/** Cle verifiee par une garde requirePermission (tests de permissions generes). */
+export function permissionOf(handler: unknown): string | undefined {
+  return typeof handler === "function" ? declared.get(handler) : undefined;
+}
+
 /** Permission du module courant (role minimal du manifeste) ou du socle. */
 export function requirePermission(key: string): RequestHandler {
-  return (req, _res, next) => {
+  const guard: RequestHandler = (req, _res, next) => {
     const { access, module } = moduleRequest(req);
     if (module.permissions[key]) {
       if (!hasModulePermission(req, key)) throw new AppError("SPACE_002");
@@ -87,4 +94,6 @@ export function requirePermission(key: string): RequestHandler {
     }
     next();
   };
+  declared.set(guard, key);
+  return guard;
 }
