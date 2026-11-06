@@ -36,6 +36,33 @@ describe("creer un espace (F-CREER-ESPACE)", () => {
     expect(await screen.findByText("Espace créé")).toBeInTheDocument();
   });
 
+  it("photo choisie avant la creation, rattachee au nouvel espace (D146, D167)", async () => {
+    const s = spaceServer();
+    const { uploadIds } = mockUploads();
+    const created = buildSpaceDetail({ name: "Colloc" });
+    const bodies: unknown[] = [];
+    server.use(
+      http.post("/api/v1/spaces", () => HttpResponse.json(created, { status: 201 })),
+      http.get(`/api/v1/spaces/${created.id}`, () => HttpResponse.json(created)),
+      http.put(`/api/v1/spaces/${created.id}/avatar`, async ({ request }) => {
+        bodies.push(await request.json());
+        return HttpResponse.json({ url: signedUrl("spaces/2.webp") });
+      })
+    );
+    const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/recipes` });
+    await user.click(await screen.findByRole("button", { name: "Créer ou rejoindre un espace" }));
+    const sheet = screen.getByRole("dialog", { name: "Créer un espace" });
+    await user.upload(within(sheet).getByLabelText("Ajouter la photo"), photoFile());
+    expect(await within(sheet).findByRole("button", { name: "Retirer la photo" })).toBeEnabled();
+    expect(bodies).toEqual([]);
+    await user.type(within(sheet).getByLabelText("Nom de l'espace"), "Colloc");
+    await user.click(within(sheet).getByRole("button", { name: "Créer l'espace" }));
+    await waitFor(() => {
+      expect(bodies).toEqual([{ uploadId: uploadIds[0] }]);
+    });
+    expect(await screen.findByText("Espace créé")).toBeInTheDocument();
+  });
+
   it("le lien de bienvenue ouvre la creation (?create=1)", async () => {
     const s = spaceServer();
     renderWithProviders(<App />, { route: `/s/${s.personal.id}/home?create=1` });
