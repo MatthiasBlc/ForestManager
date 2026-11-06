@@ -21,6 +21,7 @@ import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { IngredientRow } from "./components/ingredient-row.tsx";
 import { LINK_STATUS_TITLES } from "./draft.ts";
+import { cookSteps } from "./cook.ts";
 import { formatMinutes, joinNames, scaledAmount } from "./format.ts";
 import { recipeQuery, recipesKey, unitsQuery } from "./queries.ts";
 import { AdaptedFromNotice, AdaptSheet } from "./adaptation.tsx";
@@ -284,6 +285,10 @@ function RecipeView({
   const yieldUnit = units.find((u) => u.id === recipe.yieldUnitId);
   const titled = recipe.blocks.length > 1;
   const composed = recipe.blocks.some((block) => block.kind === "RECIPE");
+  const cookTo =
+    cookSteps(recipe, units, 1).length > 0
+      ? `/s/${spaceId}/recipes/${recipe.id}/cook?servings=${servings}`
+      : null;
 
   return (
     <>
@@ -295,6 +300,16 @@ function RecipeView({
               void navigate(`/s/${spaceId}/recipes`);
             }}
           />
+        }
+        bottom={
+          cookTo ? (
+            <div className="fm-page-bar fm-mobile-only flex border-t border-line bg-surface px-4 py-3">
+              <Link to={cookTo} className="fm-btn fm-btn-primary fm-btn-block">
+                <Icon name="chef-hat" />
+                Mode cuisine
+              </Link>
+            </div>
+          ) : undefined
         }
       />
       {recipe.imageUrl ? (
@@ -321,6 +336,12 @@ function RecipeView({
               {sharedHere ? ` · ${recipe.homeSpace.name}` : ""} · révision {recipe.currentRevision}
             </span>
           </div>
+          {cookTo ? (
+            <Link to={cookTo} className="fm-btn fm-btn-primary fm-btn-sm fm-wide-only">
+              <Icon name="chef-hat" />
+              Mode cuisine
+            </Link>
+          ) : null}
           {recipe.can.edit ? (
             <Link
               to={`/s/${spaceId}/recipes/${recipe.id}/edit`}

@@ -8,14 +8,21 @@ export function IngredientRow({
   amount,
   name,
   note,
+  checked: controlled,
+  onCheckedChange,
 }: {
   amount: string;
   name: string;
   note?: string | null;
+  /** Pilote de l'exterieur (mode cuisine : la feuille et l'etape partagent les cases). */
+  checked?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
 }) {
-  const [checked, setChecked] = useState(false);
+  const [own, setOwn] = useState(false);
+  const checked = controlled ?? own;
   const toggle = () => {
-    setChecked((value) => !value);
+    if (onCheckedChange) onCheckedChange(!checked);
+    else setOwn(!checked);
   };
   return (
     <div

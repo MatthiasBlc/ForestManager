@@ -86,3 +86,42 @@ body,
 .fm-block-body ol {
   list-style: decimal;
 }
+
+/* Barres propres a une page (PageChrome, D100) : `fm-page-top` prend la place de
+   l'en-tete du shell, `fm-page-bar` celle des onglets ; en bureau la barre reste,
+   sous le contenu (mode cuisine). `fm-mobile-only` / `fm-wide-only` : un seul des
+   deux emplacements d'une action est visible (Mode cuisine du detail). */
+.fm-shell-grid > * > .fm-page-top {
+  grid-area: top;
+}
+.fm-shell-grid > * > .fm-page-bar {
+  grid-area: tabbar;
+}
+.fm-wide-only {
+  display: none !important;
+}
+@container (min-width: 768px) {
+  .fm-shell-grid:has(> * > .fm-page-bar:not(.fm-mobile-only)) {
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: "rail top" "rail main" "rail tabbar";
+  }
+  .fm-shell-grid > * > .fm-page-bar {
+    grid-column: -2 / -1;
+    grid-row: 3;
+  }
+  .fm-shell-grid > * > .fm-page-top {
+    grid-column: -2 / -1;
+    grid-row: 1;
+  }
+  .fm-mobile-only {
+    display: none !important;
+  }
+  .fm-wide-only {
+    display: inline-flex !important;
+  }
+}
+@container (min-width: 1024px) {
+  .fm-shell-grid:has(> * > .fm-page-bar:not(.fm-mobile-only)) {
+    grid-template-areas: "rail nav top" "rail nav main" "rail nav tabbar";
+  }
+}
