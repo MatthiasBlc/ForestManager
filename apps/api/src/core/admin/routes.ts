@@ -16,6 +16,7 @@ import { createRateLimiter } from "../http/security.ts";
 import { handle, reply } from "../http/validate.ts";
 import { authenticateAdmin, completeLogin, loginStep } from "./accounts.ts";
 import { audit } from "./audit.ts";
+import { adminModulesRouter } from "./modules-routes.ts";
 import {
   ADMIN_COOKIE_PATH,
   ADMIN_PENDING_TTL_MS,
@@ -111,6 +112,8 @@ export function adminRouter(ctx: Context, rateLimit: boolean): Router {
   router.get("/me", async (req, res) => {
     reply(res, adminMeSchema, await adminMe(ctx, req));
   });
+
+  router.use(adminModulesRouter(ctx));
 
   // Une route admin inconnue ne tombe jamais dans l'API des utilisateurs.
   router.use(() => {

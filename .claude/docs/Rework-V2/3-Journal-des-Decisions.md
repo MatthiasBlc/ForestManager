@@ -583,3 +583,13 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
   - **Code TOTP** : tolerance d'un pas (30 s) ; un code deja accepte est refuse (`AdminUser.totpLastStep`, ecrit sous condition en SQL) ; 3 codes faux ferment la tentative (retour au mot de passe). Rate limit : 5 mots de passe et 10 codes par 15 min.
   - **Audit** : connexions (`auth.login`, `auth.totp-enabled`, `auth.totp-failed`, `auth.totp-locked`, `auth.logout`) avec l'IP. La categorie d'une entree se deduit du prefixe de l'action (`auditCategory` dans `packages/shared`) ; une action sans categorie est refusee. Trigger en base qui refuse UPDATE et DELETE sur `AdminAuditLog` [D128].
   - **Premier compte** : script `apps/api/src/scripts/create-admin.ts` (`npm run admin:create`), dans `src/` pour etre present dans l'image de prod ; meme politique de mot de passe que les utilisateurs, argon2id.
+
+### D175 - Modules cote admin : regles de realisation - VALIDEE (2026-11-06, realisation C4.2)
+
+- **Constat** : le plan C4 fixe la file des demandes et le catalogue, sans dire ce que deviennent une demande en attente quand l'admin accorde d'office, ni l'etat "active" d'un module retire puis rendu.
+- **Choix** :
+  - **Accorder** (demande ou d'office) : l'acces est rendu sans activer le module ; l'OWNER l'active. Accorder d'office accepte la demande en attente du meme espace.
+  - **Retirer** : `revokedAt` seulement ; le choix "active" de l'OWNER est garde et revient avec l'acces (D85).
+  - **Module par defaut** (Recettes) : ni statut modifiable, ni acces retirable (`ADMIN_007`).
+  - **Refus** : motif obligatoire (500 caracteres), lu par l'OWNER dans les modules de son espace ; la notification viendra en C6 (D172). Une demande deja traitee ou annulee repond `ADMIN_006`.
+  - **Recherche d'espace** pour accorder : `GET /admin/spaces/lookup` (espaces groupe actifs, nom et OWNER, 10 resultats), reprise par la liste des espaces en C4.5.

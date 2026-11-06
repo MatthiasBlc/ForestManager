@@ -7,6 +7,8 @@ import { Skeleton } from "../../ui/display.tsx";
 import { AdminDashboardPage } from "./admin-dashboard-page.tsx";
 import { AdminLayout } from "./admin-layout.tsx";
 import { AdminLoginPage } from "./admin-login-page.tsx";
+import { ModuleRequestsPage } from "./module-requests-page.tsx";
+import { ModulesCatalogPage } from "./modules-catalog-page.tsx";
 import { adminMeQuery } from "./queries.ts";
 
 export function AdminApp() {
@@ -17,6 +19,8 @@ export function AdminApp() {
     <Routes>
       <Route element={<AdminLayout me={me.data} />}>
         <Route index element={<AdminDashboardPage />} />
+        <Route path="requests" element={<ModuleRequestsPage />} />
+        <Route path="modules" element={<ModulesCatalogPage />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Route>
     </Routes>

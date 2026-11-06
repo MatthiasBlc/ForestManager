@@ -2,7 +2,7 @@
 // et menu en feuille sur mobile (A02m), compte et duree restante de la session.
 // Chaque sous-etape de C4 ajoute ses entrees a ADMIN_NAV.
 import type { AdminMe } from "@fm/shared";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { NavLink, Outlet } from "react-router";
 
@@ -11,16 +11,26 @@ import { Button, IconButton } from "../../ui/button.tsx";
 import { cx } from "../../ui/cx.ts";
 import { Icon, type IconName } from "../../ui/icon.tsx";
 import { Sheet } from "../../ui/sheet.tsx";
+import { moduleRequestsQuery } from "./module-queries.ts";
 import { adminMeQuery, minutesLeft } from "./queries.ts";
 
 interface NavEntry {
   to: string;
   label: string;
   icon: IconName;
+  /** Compteur "a traiter" affiche sur l'entree. */
+  count?: "requests";
 }
 
 const ADMIN_NAV: readonly { label: string; items: readonly NavEntry[] }[] = [
   { label: "Pilotage", items: [{ to: "/admin", label: "Tableau de bord", icon: "home" }] },
+  {
+    label: "Modules",
+    items: [
+      { to: "/admin/requests", label: "Demandes d'accès", icon: "check", count: "requests" },
+      { to: "/admin/modules", label: "Catalogue", icon: "sparkles" },
+    ],
+  },
 ];
 
 /** Minutes restantes, recalculees toutes les 15 s ; a zero, la session est relue. */
@@ -43,6 +53,8 @@ function useMinutesLeft(me: AdminMe): number {
 }
 
 function AdminNavLinks({ onNavigate }: { onNavigate?: () => void }) {
+  const requests = useQuery(moduleRequestsQuery);
+  const counts = { requests: requests.data?.pending.length ?? 0 };
   return (
     <nav aria-label="Administration" className="flex flex-col gap-5">
       {ADMIN_NAV.map((group) => (
@@ -54,7 +66,7 @@ function AdminNavLinks({ onNavigate }: { onNavigate?: () => void }) {
             <NavLink
               key={item.to}
               to={item.to}
-              end
+              end={item.to === "/admin"}
               onClick={onNavigate}
               className={({ isActive }) =>
                 cx(
@@ -65,6 +77,11 @@ function AdminNavLinks({ onNavigate }: { onNavigate?: () => void }) {
             >
               <Icon name={item.icon} />
               <span className="flex-1">{item.label}</span>
+              {item.count && counts[item.count] > 0 ? (
+                <span className="min-w-[22px] rounded-full bg-accent px-1.5 text-center text-xs leading-[22px] font-bold text-on-accent">
+                  {counts[item.count]}
+                </span>
+              ) : null}
             </NavLink>
           ))}
         </div>

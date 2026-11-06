@@ -67,7 +67,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
 - [ ] C4 Referentiels et admin (plan : `20-Plan-C4.md`)
   - [x] C4.0 Plan de C4 (D170 a D173)
   - [x] C4.1 Compte admin, 2FA, audit, shell
-  - [ ] C4.2 Modules : demandes et catalogue
+  - [x] C4.2 Modules : demandes et catalogue
   - [ ] C4.3 Referentiels
   - [ ] C4.4 Utilisateurs
   - [ ] C4.5 Espaces et moderation

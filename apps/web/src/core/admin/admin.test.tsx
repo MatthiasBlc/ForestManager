@@ -25,6 +25,7 @@ function adminServer({ totpEnabled = true, loggedIn = false } = {}) {
       HttpResponse.json({ features: { email: true, uploads: false } })
     ),
     http.get("/api/v1/me", () => HttpResponse.json(errorBody("AUTH_001"), { status: 401 })),
+    http.get("/api/v1/admin/module-requests", () => HttpResponse.json({ pending: [], recent: [] })),
     http.get("/api/v1/admin/me", () =>
       me ? HttpResponse.json(me) : HttpResponse.json(errorBody("ADMIN_002"), { status: 401 })
     ),

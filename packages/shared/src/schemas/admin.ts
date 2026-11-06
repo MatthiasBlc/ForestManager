@@ -3,8 +3,10 @@
 
 import { z } from "zod";
 
-import { isoDateTimeSchema, uuidSchema } from "./common.ts";
+import { moduleStatusSchema } from "../modules/index.ts";
 import { EMAIL_MAX, PASSWORD_MAX } from "./auth.ts";
+import { isoDateTimeSchema, uuidSchema } from "./common.ts";
+import { accessRequestStatusSchema } from "./modules.ts";
 
 /** Duree d'une session admin, non glissante (CDC S3.3). */
 export const ADMIN_SESSION_MINUTES = 30;
@@ -88,3 +90,80 @@ export function auditCategory(action: string): AuditCategory {
   if (!category) throw new Error(`unknown audit action: ${action}`);
   return category;
 }
+
+// --- Modules : demandes d'acces et catalogue (C4.2) [D33, D85] ---
+
+/** Espace tel que l'admin le voit dans une liste : nom et teinte, jamais le contenu. */
+export const adminSpaceRefSchema = z.object({
+  id: uuidSchema,
+  name: z.string(),
+  tintIndex: z.number().int(),
+});
+export type AdminSpaceRef = z.infer<typeof adminSpaceRefSchema>;
+
+export const adminModuleRequestSchema = z.object({
+  id: uuidSchema,
+  moduleCode: z.string(),
+  status: accessRequestStatusSchema,
+  message: z.string().nullable(),
+  decisionNote: z.string().nullable(),
+  createdAt: isoDateTimeSchema,
+  decidedAt: isoDateTimeSchema.nullable(),
+  space: adminSpaceRefSchema,
+  requestedBy: z.object({ username: z.string() }),
+});
+export type AdminModuleRequest = z.infer<typeof adminModuleRequestSchema>;
+
+export const adminModuleRequestsSchema = z.object({
+  pending: z.array(adminModuleRequestSchema),
+  /** Demandes traitees recemment (les plus recentes d'abord). */
+  recent: z.array(adminModuleRequestSchema),
+});
+
+export const MODULE_DECISION_NOTE_MAX = 500;
+/** Refus : motif obligatoire, montre a l'OWNER [D124]. */
+export const rejectModuleRequestBodySchema = z.strictObject({
+  note: z.string().trim().min(1).max(MODULE_DECISION_NOTE_MAX),
+});
+
+export const adminModuleSchema = z.object({
+  code: z.string(),
+  status: moduleStatusSchema,
+  isDefault: z.boolean(),
+  sortOrder: z.number().int(),
+  /** Espaces ayant acces (non retire). */
+  grantedCount: z.number().int(),
+  /** Parmi eux, ceux ou l'OWNER l'a active. */
+  enabledCount: z.number().int(),
+  pendingCount: z.number().int(),
+});
+export type AdminModule = z.infer<typeof adminModuleSchema>;
+
+export const setModuleStatusBodySchema = z.strictObject({ status: moduleStatusSchema });
+
+export const adminModuleGrantSchema = z.object({
+  space: adminSpaceRefSchema,
+  grantedAt: isoDateTimeSchema,
+  /** Accorde par un admin (sur demande ou d'office) ; null = module par defaut. */
+  byAdmin: z.boolean(),
+  enabled: z.boolean(),
+});
+export type AdminModuleGrant = z.infer<typeof adminModuleGrantSchema>;
+
+export const grantModuleBodySchema = z.strictObject({ spaceId: uuidSchema });
+
+/** Pagination par offset, reservee a l'admin (14-Architecture). */
+export const offsetQuerySchema = z.strictObject({
+  offset: z.coerce.number().int().min(0).default(0),
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+});
+
+export function offsetPageSchema<T extends z.ZodType>(item: T) {
+  return z.object({ data: z.array(item), total: z.number().int() });
+}
+
+export const spaceLookupQuerySchema = z.strictObject({
+  query: z.string().trim().min(1).max(60),
+});
+export const spaceLookupItemSchema = adminSpaceRefSchema.extend({ ownerUsername: z.string() });
+export type SpaceLookupItem = z.infer<typeof spaceLookupItemSchema>;

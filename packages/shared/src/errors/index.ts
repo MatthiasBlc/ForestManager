@@ -121,6 +121,11 @@ const DEFINITIONS = {
     message: "Trop de codes incorrects. Recommencez la connexion.",
   },
   ADMIN_005: { status: 409, message: "Ce compte administrateur existe déjà." },
+  ADMIN_006: { status: 404, message: "Demande introuvable ou déjà traitée." },
+  ADMIN_007: {
+    status: 409,
+    message: "Le module fourni à chaque espace ne peut pas être modifié ni retiré.",
+  },
 } as const satisfies Record<string, ErrorDefinition>;
 
 export type ErrorCode = keyof typeof DEFINITIONS;
