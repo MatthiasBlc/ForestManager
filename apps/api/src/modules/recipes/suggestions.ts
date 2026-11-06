@@ -116,7 +116,7 @@ const user = (row: { id: string; username: string }) => ({
 function toSummary(row: SuggestionRow): SuggestionSummary {
   return {
     id: row.id,
-    recipe: { id: row.recipe.id, title: row.recipe.title },
+    recipe: { id: row.recipe.id, title: row.recipe.title, homeSpaceId: row.recipe.homeSpaceId },
     proposer: user(row.proposer),
     message: row.message,
     status: row.status,

@@ -47,6 +47,7 @@ export function mockEmptyRecipes(): void {
     http.get("/api/v1/spaces/:spaceId/recipes/share-requests", () =>
       HttpResponse.json({ data: [] })
     ),
+    http.get("/api/v1/spaces/:spaceId/recipes/suggestions", () => HttpResponse.json({ data: [] })),
     http.get("/api/v1/spaces/:spaceId/recipes/mine", () =>
       HttpResponse.json({ data: [], nextCursor: null })
     ),

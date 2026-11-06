@@ -13,6 +13,7 @@ import {
   type RecipeSharing,
   type RestoreRevisionBody,
   type ShareRequest,
+  type Suggestion,
   type ShareStatus,
   type SpaceDetail,
   type SpaceRole,
@@ -21,7 +22,14 @@ import {
 } from "@fm/shared";
 import { http, HttpResponse } from "msw";
 
-import { buildRecipe, toSummary, UNITS, uuid, type RecipeOverrides } from "./fixtures.ts";
+import {
+  buildRecipe,
+  buildSuggestion,
+  toSummary,
+  UNITS,
+  uuid,
+  type RecipeOverrides,
+} from "./fixtures.ts";
 import { server } from "./server.ts";
 import { spaceServer } from "./space-server.ts";
 
@@ -68,6 +76,7 @@ export function recipeServer({
     leavePreview: { createdHere: 0, personalShared: [] } as RecipeLeavePreview,
     /** Comparaison avec l'original, par adaptation (E-COMPARER-ORIGINAL). */
     comparisons: {} as Record<string, RecipeComparison>,
+    suggestions: [] as Suggestion[],
     queries: [] as URLSearchParams[],
     bodies: {} as Record<string, unknown>,
     calls: [] as string[],
@@ -231,6 +240,15 @@ export function recipeServer({
     withIt: [],
     ...state.sharing[recipe.id],
   });
+  const summary = ({
+    currentRevision: _c,
+    proposed: _p,
+    current: _cu,
+    result: _r,
+    conflicts: _co,
+    can: _can,
+    ...rest
+  }: Suggestion) => rest;
   const record = (name: string, body?: unknown) => {
     // Meme journal que le faux serveur d'espace : l'ordre des appels se lit d'un coup.
     s.state.calls.push(name);
@@ -246,6 +264,78 @@ export function recipeServer({
         ? HttpResponse.json(recipe)
         : undefined;
     }),
+    http.get("/api/v1/spaces/:spaceId/recipes/suggestions", () =>
+      HttpResponse.json({
+        data: state.suggestions.filter((x) => x.status === "PENDING" && x.can.decide).map(summary),
+      })
+    ),
+    http.get(`${base}/:recipeId/suggestions`, ({ params }) =>
+      HttpResponse.json({
+        data: state.suggestions
+          .filter((x) => x.recipe.id === params.recipeId)
+          .filter((x) => x.status === "PENDING" || x.proposer.id === s.me.id)
+          .map(summary),
+      })
+    ),
+    http.post(`${base}/:recipeId/suggestions`, async ({ params, request }) => {
+      const recipe = find(params.recipeId);
+      if (!recipe) return notFound();
+      const body = (await request.json()) as Record<string, unknown>;
+      record("suggest", body);
+      const created = buildSuggestion(recipe, {
+        proposer: self,
+        can: { decide: false, withdraw: true, convert: false },
+      });
+      state.suggestions.push(created);
+      return HttpResponse.json(summary(created), { status: 201 });
+    }),
+    http.get(`${base}/:recipeId/suggestions/:suggestionId`, ({ params }) => {
+      const found = state.suggestions.find((x) => x.id === params.suggestionId);
+      return found
+        ? HttpResponse.json(found)
+        : HttpResponse.json(errorBody("RECIPE_014"), { status: 404 });
+    }),
+    http.post(
+      `${base}/:recipeId/suggestions/:suggestionId/:action`,
+      async ({ params, request }) => {
+        const found = state.suggestions.find((x) => x.id === params.suggestionId);
+        if (!found) return HttpResponse.json(errorBody("RECIPE_014"), { status: 404 });
+        const action = String(params.action);
+        const text = await request.text();
+        record(action, text ? JSON.parse(text) : {});
+        const status = {
+          accept: "ACCEPTED",
+          reject: "REJECTED",
+          withdraw: "WITHDRAWN",
+          convert: "CONVERTED",
+        }[action];
+        if (status) found.status = status as Suggestion["status"];
+        const recipe = find(params.recipeId);
+        if (action === "accept" && recipe) {
+          const updated = {
+            ...recipe,
+            cookMinutes: 40,
+            currentRevision: recipe.currentRevision + 1,
+          };
+          state.recipes = state.recipes.map((r) => (r.id === recipe.id ? updated : r));
+          return HttpResponse.json(updated);
+        }
+        if (action === "convert" && recipe) {
+          const { targetSpaceId } = JSON.parse(text) as { targetSpaceId: string };
+          const adaptation = buildRecipe({
+            ...recipe,
+            id: uuid(),
+            author: self,
+            homeSpaceId: targetSpaceId,
+            homeSpace: { id: targetSpaceId, name: "?" },
+            can: { edit: true, delete: true, share: true, removeFromSpace: false },
+          });
+          state.recipes.push(adaptation);
+          return HttpResponse.json(adaptation, { status: 201 });
+        }
+        return new HttpResponse(null, { status: 204 });
+      }
+    ),
     http.post(`${base}/:recipeId/adapt`, async ({ params, request }) => {
       const original = find(params.recipeId);
       if (!original) return notFound();

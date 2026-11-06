@@ -6,6 +6,7 @@ import { HistoryPage } from "./history-page.tsx";
 import { RecipeEditorPage } from "./recipe-editor-page.tsx";
 import { RecipePage } from "./recipe-page.tsx";
 import { RecipesPage } from "./recipes-page.tsx";
+import { SuggestionPage } from "./suggestion-page.tsx";
 
 export default function RecipesRoutes() {
   return (
@@ -18,6 +19,8 @@ export default function RecipesRoutes() {
       <Route path=":recipeId/edit" element={<RecipeEditorPage />} />
       <Route path=":recipeId/history" element={<HistoryPage />} />
       <Route path=":recipeId/compare" element={<ComparePage />} />
+      <Route path=":recipeId/suggest" element={<RecipeEditorPage suggest />} />
+      <Route path=":recipeId/suggestions/:suggestionId" element={<SuggestionPage />} />
     </Routes>
   );
 }

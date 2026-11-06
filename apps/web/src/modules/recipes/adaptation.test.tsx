@@ -1,11 +1,11 @@
 // Adaptation (C3.6) : F-ADAPTER, badge "Original modifie", E-COMPARER-ORIGINAL [D17, D105].
-import type { Recipe, RecipeComparison, RecipeContentView } from "@fm/shared";
+import type { RecipeComparison } from "@fm/shared";
 import { screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { App } from "../../app/App.tsx";
 import { axeViolations } from "../../test/axe.ts";
-import { buildSpaceDetail, unitId, uuid } from "../../test/fixtures.ts";
+import { buildSpaceDetail, contentView, unitId, uuid } from "../../test/fixtures.ts";
 import { recipeServer } from "../../test/recipe-server.ts";
 import { renderWithProviders } from "../../test/render.tsx";
 
@@ -15,23 +15,6 @@ beforeEach(() => {
 
 const lea = { id: uuid(), username: "lea", avatarUrl: null };
 const foyer = { id: uuid(), name: "Foyer" };
-
-function view(recipe: Recipe, over: Partial<RecipeContentView> = {}): RecipeContentView {
-  return {
-    title: recipe.title,
-    description: recipe.description,
-    notes: recipe.notes,
-    sourceUrl: recipe.sourceUrl,
-    yieldQuantity: recipe.yieldQuantity,
-    yieldUnitId: recipe.yieldUnitId,
-    prepMinutes: recipe.prepMinutes,
-    cookMinutes: recipe.cookMinutes,
-    restMinutes: recipe.restMinutes,
-    isBase: recipe.isBase,
-    blocks: recipe.blocks.flatMap((block) => (block.kind === "LOCAL" ? [block] : [])),
-    ...over,
-  };
-}
 
 describe("adapter pour un espace (F-ADAPTER)", () => {
   it("choisir l'espace, creer l'adaptation et ouvrir l'editeur", async () => {
@@ -80,7 +63,7 @@ describe("adaptation et original (E-COMPARER-ORIGINAL)", () => {
   it("badge Original modifie, comparaison en deux parties, marquer comme vu", async () => {
     const s = recipeServer();
     const recipe = adaptation(s, true);
-    const base = view(recipe, { title: "Gratin de pâtes", cookMinutes: 25 });
+    const base = contentView(recipe, { title: "Gratin de pâtes", cookMinutes: 25 });
     const butter = {
       ingredientId: uuid(),
       name: "Beurre",

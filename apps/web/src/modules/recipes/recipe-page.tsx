@@ -7,7 +7,7 @@ import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
 import { FormAlert } from "../../core/access/auth-layout.tsx";
-import { spaceQuery } from "../../core/session/queries.ts";
+import { meQuery, spaceQuery } from "../../core/session/queries.ts";
 import { PageChrome } from "../../core/shell/page-chrome.tsx";
 import { errorMessage } from "../../i18n/index.ts";
 import { api } from "../../lib/api.ts";
@@ -24,6 +24,7 @@ import { LINK_STATUS_TITLES } from "./draft.ts";
 import { formatMinutes, joinNames, scaledAmount } from "./format.ts";
 import { recipeQuery, recipesKey, unitsQuery } from "./queries.ts";
 import { AdaptedFromNotice, AdaptSheet } from "./adaptation.tsx";
+import { RecipeSuggestionsBanner } from "./suggestions.tsx";
 import { RemoveFromSpaceSheet, ShareSheet } from "./sharing.tsx";
 
 export function RecipeNotFound({ spaceId }: { spaceId: string }) {
@@ -272,6 +273,7 @@ function RecipeView({
 }) {
   const navigate = useNavigate();
   const { data: space } = useQuery(spaceQuery(spaceId));
+  const { data: me } = useQuery(meQuery);
   const [servings, setServings] = useState(recipe.yieldQuantity);
   const [sheet, setSheet] = useState<"delete" | "share" | "remove" | "adapt" | null>(null);
   const spaceName = space?.name ?? "";
@@ -311,6 +313,7 @@ function RecipeView({
               {sharedHere ? ` · ${recipe.homeSpace.name}` : ""} · révision {recipe.currentRevision}
             </span>
             <AdaptedFromNotice spaceId={spaceId} recipe={recipe} />
+            <RecipeSuggestionsBanner spaceId={spaceId} recipeId={recipe.id} />
           </div>
           {recipe.can.edit ? (
             <Link
@@ -326,6 +329,15 @@ function RecipeView({
             trigger={<IconButton icon="more" label="Plus d'actions" />}
             items={[
               { id: "share", label: "Partager dans un espace", icon: "share" },
+              ...(me && recipe.author.id !== me.id
+                ? [
+                    {
+                      id: "suggest" as const,
+                      label: "Suggérer une modification",
+                      icon: "pencil" as const,
+                    },
+                  ]
+                : []),
               { id: "adapt", label: "Adapter pour un espace", icon: "git-branch" },
               ...(recipe.adaptedFrom && !recipe.adaptedFrom.deleted
                 ? [
@@ -353,7 +365,7 @@ function RecipeView({
                 : []),
             ]}
             onSelect={(id) => {
-              if (id === "history" || id === "compare") {
+              if (id === "history" || id === "compare" || id === "suggest") {
                 void navigate(`/s/${spaceId}/recipes/${recipe.id}/${id}`);
               } else setSheet(id);
             }}

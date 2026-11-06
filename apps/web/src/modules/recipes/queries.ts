@@ -10,6 +10,8 @@ import {
   recipeSharingSchema,
   recipeSummarySchema,
   shareRequestSchema,
+  suggestionSchema,
+  suggestionSummarySchema,
   tagSchema,
   unitSchema,
   type RecipeSort,
@@ -85,6 +87,41 @@ export function comparisonQuery(spaceId: string, recipeId: string) {
     queryKey: [...recipeQuery(spaceId, recipeId).queryKey, "compare"],
     queryFn: () =>
       api.get(`/spaces/${spaceId}/recipes/${recipeId}/compare`, recipeComparisonSchema),
+  });
+}
+
+/** Sous la cle du detail : accepter une suggestion rafraichit aussi la liste. */
+export function recipeSuggestionsQuery(spaceId: string, recipeId: string) {
+  return queryOptions({
+    queryKey: [...recipeQuery(spaceId, recipeId).queryKey, "suggestions"],
+    queryFn: async () =>
+      (
+        await api.get(
+          `/spaces/${spaceId}/recipes/${recipeId}/suggestions`,
+          listSchema(suggestionSummarySchema)
+        )
+      ).data,
+  });
+}
+
+export function suggestionQuery(spaceId: string, recipeId: string, suggestionId: string) {
+  return queryOptions({
+    queryKey: [...recipeSuggestionsQuery(spaceId, recipeId).queryKey, suggestionId],
+    queryFn: () =>
+      api.get(
+        `/spaces/${spaceId}/recipes/${recipeId}/suggestions/${suggestionId}`,
+        suggestionSchema
+      ),
+  });
+}
+
+/** Bandeau [D166] : suggestions que l'utilisateur tranche dans cet espace. */
+export function suggestionsToDecideQuery(spaceId: string) {
+  return queryOptions({
+    queryKey: [...recipesKey(spaceId), "suggestions"],
+    queryFn: async () =>
+      (await api.get(`/spaces/${spaceId}/recipes/suggestions`, listSchema(suggestionSummarySchema)))
+        .data,
   });
 }
 

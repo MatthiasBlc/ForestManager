@@ -494,7 +494,8 @@ export const suggestionParamsSchema = recipeParamsSchema.extend({ suggestionId: 
 
 export const suggestionSummarySchema = z.object({
   id: uuidSchema,
-  recipe: z.object({ id: uuidSchema, title: z.string() }),
+  /** homeSpaceId : ouvrir la suggestion depuis "Mes recettes". */
+  recipe: z.object({ id: uuidSchema, title: z.string(), homeSpaceId: uuidSchema }),
   proposer: userSummarySchema,
   message: z.string().nullable(),
   status: z.enum(SUGGESTION_STATUSES),

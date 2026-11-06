@@ -1,6 +1,7 @@
 // Fabriques de reponses de l'API pour MSW [D157] : chaque objet est valide contre
 // le schema partage au moment de sa construction (une derive du contrat casse le test).
 import {
+  suggestionSchema,
   catalogModuleSchema,
   invitationSchema,
   memberSchema,
@@ -17,11 +18,13 @@ import {
   type Member,
   type OwnershipTransfer,
   type Recipe,
+  type RecipeContentView,
   type RecipeRevision,
   type RecipeSummary,
   type Unit,
   type SpaceDetail,
   type SpaceSummary,
+  type Suggestion,
 } from "@fm/shared";
 import type { z } from "zod";
 
@@ -271,6 +274,53 @@ export function buildRevision(over: Partial<RecipeRevision> = {}): RecipeRevisio
     author: { id: uuid(), username: "lea", avatarUrl: null },
     createdAt: NOW,
     changes: [],
+    ...over,
+  });
+}
+
+/** Contenu lisible d'une recette (comparaison, suggestion). */
+export function contentView(
+  recipe: Recipe,
+  over: Partial<RecipeContentView> = {}
+): RecipeContentView {
+  return {
+    title: recipe.title,
+    description: recipe.description,
+    notes: recipe.notes,
+    sourceUrl: recipe.sourceUrl,
+    yieldQuantity: recipe.yieldQuantity,
+    yieldUnitId: recipe.yieldUnitId,
+    prepMinutes: recipe.prepMinutes,
+    cookMinutes: recipe.cookMinutes,
+    restMinutes: recipe.restMinutes,
+    isBase: recipe.isBase,
+    blocks: recipe.blocks.flatMap((block) => (block.kind === "LOCAL" ? [block] : [])),
+    ...over,
+  };
+}
+
+/** Suggestion en attente sur `recipe` : la cuisson passe a 40 min par defaut. */
+export function buildSuggestion(recipe: Recipe, over: Partial<Suggestion> = {}): Suggestion {
+  const current = contentView(recipe);
+  const proposed = contentView(recipe, { cookMinutes: 40 });
+  return valid(suggestionSchema, {
+    id: uuid(),
+    recipe: { id: recipe.id, title: recipe.title, homeSpaceId: recipe.homeSpaceId },
+    proposer: { id: uuid(), username: "sam", avatarUrl: null },
+    message: "Le saumon reste cru à cœur en 30 minutes.",
+    status: "PENDING",
+    baseRevision: recipe.currentRevision,
+    createdAt: NOW,
+    decidedAt: null,
+    decidedBy: null,
+    decisionMessage: null,
+    convertedRecipeId: null,
+    currentRevision: recipe.currentRevision,
+    proposed,
+    current,
+    result: proposed,
+    conflicts: [],
+    can: { decide: true, withdraw: false, convert: false },
     ...over,
   });
 }

@@ -61,7 +61,7 @@ describe("proposer une suggestion (E-SUGGESTION-EDITION)", () => {
     const res = await suggest(w);
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({
-      recipe: { id: w.recipe.id, title: "Saumon teriyaki" },
+      recipe: { id: w.recipe.id, title: "Saumon teriyaki", homeSpaceId: w.foyer.id },
       proposer: { id: w.matthias.id },
       status: "PENDING",
       baseRevision: 1,

@@ -1,8 +1,9 @@
 // Adaptation [D17, D140, D166] : F-ADAPTER (copie liee dans un de ses espaces),
-// lien vers l'original sur le detail, tableau de differences (comparaison, suggestions).
+// suggestion refusee transformee en adaptation, lien vers l'original sur le detail,
+// tableau de differences (comparaison, suggestions).
 import { recipeSchema, type DiffEntry, type Recipe, type Unit } from "@fm/shared";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router";
 
 import { FormAlert } from "../../core/access/auth-layout.tsx";
@@ -16,6 +17,76 @@ import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { describeDiff } from "./format.ts";
 
+/** Choix de l'espace puis creation d'une adaptation (F-ADAPTER, suggestion refusee). */
+function AdaptationSheet({
+  title,
+  submitLabel,
+  defaultSpaceId,
+  open,
+  onClose,
+  create,
+  openEditor,
+  children,
+}: {
+  title: string;
+  submitLabel: string;
+  defaultSpaceId: string;
+  open: boolean;
+  onClose: () => void;
+  create: (targetSpaceId: string) => Promise<Recipe>;
+  /** Ouvrir l'editeur de l'adaptation creee (sinon son detail). */
+  openEditor: boolean;
+  children: ReactNode;
+}) {
+  const navigate = useNavigate();
+  const toast = useToast();
+  const spaces = useQuery(spacesQuery);
+  const targets = (spaces.data ?? []).filter((space) => !space.deletedAt);
+  const [target, setTarget] = useState<string>();
+  const chosen =
+    targets.find((space) => space.id === target) ??
+    targets.find((space) => space.id === defaultSpaceId) ??
+    targets[0];
+  const adapt = useMutation({
+    mutationFn: create,
+    onSuccess: (created) => {
+      const name = targets.find((space) => space.id === created.homeSpaceId)?.name ?? "";
+      toast(`Adaptation créée dans ${name}`, { tone: "success" });
+      onClose();
+      const path = `/s/${created.homeSpaceId}/recipes/${created.id}`;
+      void navigate(openEditor ? `${path}/edit` : path);
+    },
+  });
+  return (
+    <Sheet open={open} onClose={onClose} title={title}>
+      <div className="fm-stack">
+        {children}
+        {chosen ? (
+          <SegmentedControl
+            label="Espace de l'adaptation"
+            options={targets.map((space) => ({ value: space.id, label: space.name }))}
+            value={chosen.id}
+            onChange={setTarget}
+          />
+        ) : null}
+        <FormAlert message={adapt.isError ? errorMessage(adapt.error) : undefined} />
+        <SheetFooter>
+          <Button
+            variant="primary"
+            block
+            disabled={!chosen || adapt.isPending}
+            onClick={() => {
+              if (chosen) adapt.mutate(chosen.id);
+            }}
+          >
+            {submitLabel}
+          </Button>
+        </SheetFooter>
+      </div>
+    </Sheet>
+  );
+}
+
 export function AdaptSheet({
   spaceId,
   recipe,
@@ -27,63 +98,70 @@ export function AdaptSheet({
   open: boolean;
   onClose: () => void;
 }) {
-  const navigate = useNavigate();
-  const toast = useToast();
-  const spaces = useQuery(spacesQuery);
-  const targets = (spaces.data ?? []).filter((space) => !space.deletedAt);
-  const [target, setTarget] = useState<string>();
-  const chosen =
-    targets.find((space) => space.id === target) ?? targets.find((s) => s.id === spaceId);
-  const adapt = useMutation({
-    mutationFn: (targetSpaceId: string) =>
-      api.post(`/spaces/${spaceId}/recipes/${recipe.id}/adapt`, { targetSpaceId }, recipeSchema),
-    onSuccess: (created) => {
-      const name = targets.find((space) => space.id === created.homeSpaceId)?.name ?? "";
-      toast(`Adaptation créée dans ${name}`, { tone: "success" });
-      onClose();
-      void navigate(`/s/${created.homeSpaceId}/recipes/${created.id}/edit`);
-    },
-  });
   const author = recipe.author.username;
   return (
-    <Sheet open={open} onClose={onClose} title="Adapter pour un espace">
-      <div className="fm-stack">
-        <span className="flex flex-col">
-          <b>{recipe.title}</b>
-          <small className="text-ink-muted">
-            par {author} · {recipe.homeSpace.name}
-          </small>
-        </span>
-        <p className="m-0">
-          Crée ta version de la recette. L'original de {author} n'est jamais modifié.
-        </p>
-        {chosen ? (
-          <SegmentedControl
-            label="Espace de l'adaptation"
-            options={targets.map((space) => ({ value: space.id, label: space.name }))}
-            value={chosen.id}
-            onChange={setTarget}
-          />
-        ) : null}
+    <AdaptationSheet
+      title="Adapter pour un espace"
+      submitLabel="Créer et modifier l'adaptation"
+      defaultSpaceId={spaceId}
+      open={open}
+      onClose={onClose}
+      openEditor
+      create={(targetSpaceId) =>
+        api.post(`/spaces/${spaceId}/recipes/${recipe.id}/adapt`, { targetSpaceId }, recipeSchema)
+      }
+    >
+      <span className="flex flex-col">
+        <b>{recipe.title}</b>
         <small className="text-ink-muted">
-          Elle reste liée à l'original : si {author} modifie sa recette, tu verras « Original
-          modifié » et tu pourras comparer.
+          par {author} · {recipe.homeSpace.name}
         </small>
-        <FormAlert message={adapt.isError ? errorMessage(adapt.error) : undefined} />
-        <SheetFooter>
-          <Button
-            variant="primary"
-            block
-            disabled={!chosen || adapt.isPending}
-            onClick={() => {
-              if (chosen) adapt.mutate(chosen.id);
-            }}
-          >
-            Créer et modifier l'adaptation
-          </Button>
-        </SheetFooter>
-      </div>
-    </Sheet>
+      </span>
+      <p className="m-0">
+        Crée ta version de la recette. L'original de {author} n'est jamais modifié.
+      </p>
+      <small className="text-ink-muted">
+        Elle reste liée à l'original : si {author} modifie sa recette, tu verras « Original modifié
+        » et tu pourras comparer.
+      </small>
+    </AdaptationSheet>
+  );
+}
+
+/** E-SUGGESTION-Refusee : la suggestion refusee devient une adaptation (D140). */
+export function ConvertSuggestionSheet({
+  spaceId,
+  recipeId,
+  suggestionId,
+  open,
+  onClose,
+}: {
+  spaceId: string;
+  recipeId: string;
+  suggestionId: string;
+  open: boolean;
+  onClose: () => void;
+}) {
+  return (
+    <AdaptationSheet
+      title="En faire mon adaptation"
+      submitLabel="Créer l'adaptation"
+      defaultSpaceId={spaceId}
+      open={open}
+      onClose={onClose}
+      openEditor={false}
+      create={(targetSpaceId) =>
+        api.post(
+          `/spaces/${spaceId}/recipes/${recipeId}/suggestions/${suggestionId}/convert`,
+          { targetSpaceId },
+          recipeSchema
+        )
+      }
+    >
+      <p className="m-0">
+        Ta version, avec tes changements, dans un de tes espaces. Elle reste liée à l'original.
+      </p>
+    </AdaptationSheet>
   );
 }
 

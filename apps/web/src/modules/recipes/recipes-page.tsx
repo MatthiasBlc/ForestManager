@@ -17,6 +17,7 @@ import { RecipeCard, type CardBadge } from "./components/recipe-card.tsx";
 import { recipeMeta } from "./format.ts";
 import { globalTagsQuery, recipesQuery, spaceTagsQuery, unitsQuery } from "./queries.ts";
 import { ShareRequestsBanner } from "./sharing.tsx";
+import { SuggestionsToDecideBanner } from "./suggestions.tsx";
 import { useDebounced } from "./use-debounced.ts";
 
 /**
@@ -236,7 +237,12 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
           Nouvelle recette
         </Button>
       </div>
-      {mine || space.data?.kind === "GROUP" ? <ShareRequestsBanner spaceId={spaceId} /> : null}
+      {mine || space.data?.kind === "GROUP" ? (
+        <>
+          <ShareRequestsBanner spaceId={spaceId} />
+          <SuggestionsToDecideBanner spaceId={spaceId} />
+        </>
+      ) : null}
       <div className="flex items-center gap-2">
         <input
           type="search"

@@ -1,11 +1,13 @@
 // E-RECETTE-EDITION : creer ou modifier une recette (F-REC-1, F-REC-4, D102,
 // D104, D108, D136). En-tete en mode edition, brouillon garde sur l'appareil,
 // F-CONFIRMER avant de quitter sans enregistrer. Blocs lies (D24, D107).
+// Mode suggestion (E-SUGGESTION-EDITION, D04) : sans tags, envoye a l'auteur.
 import {
   createRecipeBodySchema,
   formatQuantity,
   ingredientSchema,
   recipeSchema,
+  suggestionSummarySchema,
   type Recipe,
   type Tag,
   type Unit,
@@ -26,6 +28,7 @@ import { Skeleton } from "../../ui/display.tsx";
 import { Field } from "../../ui/field.tsx";
 import { Icon } from "../../ui/icon.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
+import { useToast } from "../../ui/use-toast.ts";
 import { AddBlockSheet, LinkRecipeSheet } from "./components/link-recipe-sheet.tsx";
 import { QuantityInput } from "./components/quantity-input.tsx";
 import {
@@ -47,7 +50,14 @@ import {
   type DraftLocalBlock,
 } from "./draft.ts";
 import { RecipeNotFound } from "./recipe-page.tsx";
-import { globalTagsQuery, recipeQuery, recipesKey, spaceTagsQuery, unitsQuery } from "./queries.ts";
+import {
+  globalTagsQuery,
+  recipeQuery,
+  recipeSuggestionsQuery,
+  recipesKey,
+  spaceTagsQuery,
+  unitsQuery,
+} from "./queries.ts";
 
 /** Bloc lie : seule la quantite utilisee se modifie ici ; la recette liee vit a part. */
 function LinkedBlockEditor({
@@ -262,17 +272,22 @@ function Editor({
   spaceName,
   recipe,
   units,
+  suggest = false,
 }: {
   spaceId: string;
   spaceName: string;
   recipe?: Recipe;
   units: readonly Unit[];
+  /** E-SUGGESTION-EDITION : les changements partent en suggestion a l'auteur [D04]. */
+  suggest?: boolean;
 }) {
+  const toast = useToast();
+  const [message, setMessage] = useState("");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const globalTags = useQuery(globalTagsQuery);
   const spaceTags = useQuery(spaceTagsQuery(spaceId));
-  const key = draftKey(spaceId, recipe);
+  const key = `${draftKey(spaceId, recipe)}${suggest ? ":suggest" : ""}`;
   const [restored] = useState(() => readDraft(key));
   const [draft, setDraft] = useState<Draft>(
     () => restored ?? (recipe ? draftFromRecipe(recipe) : emptyDraft())
@@ -328,6 +343,25 @@ function Editor({
         setFailure("Certains champs sont invalides : vérifie les temps, le lien et les étapes.");
         return;
       }
+      if (suggest && recipe) {
+        const { globalTagIds: _global, spaceTagIds: _space, ...content } = parsed.data;
+        await api.post(
+          `/spaces/${spaceId}/recipes/${recipe.id}/suggestions`,
+          {
+            ...content,
+            revision: recipe.currentRevision,
+            ...(message.trim() ? { message: message.trim() } : {}),
+          },
+          suggestionSummarySchema
+        );
+        clearDraft(key);
+        await queryClient.invalidateQueries({
+          queryKey: recipeSuggestionsQuery(spaceId, recipe.id).queryKey,
+        });
+        toast(`Suggestion envoyée à ${recipe.author.username}`, { tone: "success" });
+        back();
+        return;
+      }
       const saved = recipe
         ? await api.put(
             `/spaces/${spaceId}/recipes/${recipe.id}`,
@@ -354,13 +388,23 @@ function Editor({
       <PageChrome
         top={
           <TopBar
-            title={recipe ? "Modifier la recette" : "Nouvelle recette"}
+            title={
+              suggest
+                ? "Suggérer une modification"
+                : recipe
+                  ? "Modifier la recette"
+                  : "Nouvelle recette"
+            }
             onCancel={() => {
               if (dirty) setConfirmOpen(true);
               else back();
             }}
             action={
-              recipe ? `Enregistrer la révision ${recipe.currentRevision + 1}` : "Enregistrer"
+              suggest
+                ? "Envoyer la suggestion"
+                : recipe
+                  ? `Enregistrer la révision ${recipe.currentRevision + 1}`
+                  : "Enregistrer"
             }
             actionDisabled={saving}
             onAction={() => void save()}
@@ -379,6 +423,21 @@ function Editor({
           </p>
         ) : null}
         <FormAlert message={failure} />
+        {suggest && recipe ? (
+          <>
+            <p role="status" className="m-0 rounded-md bg-accent-soft px-3 py-2 text-accent-text">
+              Mode suggestion : {recipe.author.username} verra tes changements et décidera.
+            </p>
+            <Field
+              label={`Un mot pour ${recipe.author.username} (facultatif)`}
+              maxLength={280}
+              value={message}
+              onChange={(e) => {
+                setMessage(e.target.value);
+              }}
+            />
+          </>
+        ) : null}
         <Field
           label="Titre"
           value={draft.title}
@@ -464,22 +523,26 @@ function Editor({
         >
           Ajouter un bloc
         </Button>
-        <TagPicker
-          label="Tags"
-          tags={globalTags.data ?? []}
-          selected={draft.globalTagIds}
-          onChange={(ids) => {
-            update({ globalTagIds: ids });
-          }}
-        />
-        <TagPicker
-          label={`Tags de ${spaceName}`}
-          tags={spaceTags.data ?? []}
-          selected={draft.spaceTagIds}
-          onChange={(ids) => {
-            update({ spaceTagIds: ids });
-          }}
-        />
+        {suggest ? null : (
+          <>
+            <TagPicker
+              label="Tags"
+              tags={globalTags.data ?? []}
+              selected={draft.globalTagIds}
+              onChange={(ids) => {
+                update({ globalTagIds: ids });
+              }}
+            />
+            <TagPicker
+              label={`Tags de ${spaceName}`}
+              tags={spaceTags.data ?? []}
+              selected={draft.spaceTagIds}
+              onChange={(ids) => {
+                update({ spaceTagIds: ids });
+              }}
+            />
+          </>
+        )}
         <Switch
           label="Recette de base (sauce, pâte…) : pas proposée seule au planning"
           checked={draft.isBase}
@@ -564,14 +627,15 @@ function Editor({
   );
 }
 
-export function RecipeEditorPage() {
+export function RecipeEditorPage({ suggest = false }: { suggest?: boolean }) {
   const { spaceId = "", recipeId } = useParams();
   const space = useQuery(spaceQuery(spaceId));
   const units = useQuery(unitsQuery);
   const recipe = useQuery({ ...recipeQuery(spaceId, recipeId ?? ""), enabled: !!recipeId });
   if (recipeId && recipe.isError) return <RecipeNotFound spaceId={spaceId} />;
   if (!space.data || !units.data || (recipeId && !recipe.data)) return <Skeleton />;
-  if (recipe.data && !recipe.data.can.edit) return <RecipeNotFound spaceId={spaceId} />;
+  // Modifier : le droit de modifier ; suggerer : tout membre sauf l'auteur (API, RECIPE_012).
+  if (recipe.data && !suggest && !recipe.data.can.edit) return <RecipeNotFound spaceId={spaceId} />;
   return (
     <Editor
       key={recipe.data ? `${recipe.data.id}@${recipe.data.currentRevision}` : "new"}
@@ -579,6 +643,7 @@ export function RecipeEditorPage() {
       spaceName={space.data.name}
       recipe={recipe.data}
       units={units.data}
+      suggest={suggest}
     />
   );
 }
