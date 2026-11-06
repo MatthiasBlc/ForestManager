@@ -11,9 +11,18 @@ import {
   type Unit,
 } from "@fm/shared";
 
+/**
+ * Libelle de l'unite pour cette quantite : "c. a soupe", "g" ; une unite sans
+ * abreviation propre (piece, tranche, gousse) passe au pluriel a partir de 2.
+ */
+export function unitLabel(unit: Unit, quantity: number): string {
+  const plain = unit.abbreviation === unit.name;
+  return plain && quantity >= 2 && unit.namePlural ? unit.namePlural : unit.abbreviation;
+}
+
 /** "4 pers." ou "300 ml" (rendement dans une unite). */
 export function formatYield(quantity: number, unit: Unit | undefined): string {
-  return `${formatQuantity(quantity)} ${unit ? unit.abbreviation : "pers."}`;
+  return `${formatQuantity(quantity)} ${unit ? unitLabel(unit, quantity) : "pers."}`;
 }
 
 /** "45 min", "1 h", "1 h 15". */
@@ -58,7 +67,8 @@ export function scaledAmount(
   if (unit.dimension === "NONE") return unit.abbreviation;
   const readable = simplify(scaled, unit, units);
   const shown = units.find((u) => u.code === readable.unit.code) ?? unit;
-  return `${formatQuantity(readable.quantity, { fractions: !shown.metric })} ${shown.abbreviation}`;
+  const label = unitLabel(shown, readable.quantity);
+  return `${formatQuantity(readable.quantity, { fractions: !shown.metric })} ${label}`;
 }
 
 /** "Amis", "Amis et TOM", "Amis, TOM et Colloc". */

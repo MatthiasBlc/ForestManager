@@ -23,7 +23,7 @@ import { useToast } from "../../ui/use-toast.ts";
 import { IngredientRow } from "./components/ingredient-row.tsx";
 import { LINK_STATUS_TITLES } from "./draft.ts";
 import { cookSteps } from "./cook.ts";
-import { formatMinutes, joinNames, scaledAmount } from "./format.ts";
+import { formatMinutes, joinNames, scaledAmount, unitLabel } from "./format.ts";
 import {
   recipeFailure,
   recipeQuery,
@@ -463,7 +463,7 @@ function RecipeView({
             value={servings}
             min={1}
             max={Math.max(100, recipe.yieldQuantity)}
-            unit={yieldUnit ? yieldUnit.abbreviation : "pers."}
+            unit={yieldUnit ? unitLabel(yieldUnit, servings) : "pers."}
             onChange={setServings}
           />
           {recipe.totalMinutes !== null ? (
