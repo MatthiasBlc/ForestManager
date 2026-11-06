@@ -1,13 +1,27 @@
 // E-RECETTES : recettes de l'espace (F-REC-11) avec recherche, filtres par tag,
 // "Bases" ; "Mes recettes" de tous les espaces (D82) ; recettes partagees ;
 // bandeau des demandes de partage ; etats vide, chargement, erreur ; F-AJOUT-RECETTE.
-import type { RecipeSummary, SpaceSummary, Unit } from "@fm/shared";
-import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+  normalizeName,
+  type Recipe,
+  type RecipeSummary,
+  type SpaceSummary,
+  type Unit,
+} from "@fm/shared";
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
-import { spaceQuery, spacesQuery } from "../../core/session/queries.ts";
+import { meQuery, spaceQuery, spacesQuery } from "../../core/session/queries.ts";
 import { errorMessage } from "../../i18n/index.ts";
+import { useOnline } from "../../pwa/use-online.ts";
+import { useWriteGuard } from "../../pwa/use-write-guard.ts";
 import { Button } from "../../ui/button.tsx";
 import { Chip } from "../../ui/controls.tsx";
 import { EmptyState, Skeleton } from "../../ui/display.tsx";
@@ -16,7 +30,13 @@ import { Sheet } from "../../ui/sheet.tsx";
 import { RecipeCard, type CardBadge } from "./components/recipe-card.tsx";
 import { recipeMeta } from "./format.ts";
 import { ImportTextSheet, ImportUrlSheet, type ImportSheet } from "./import-sheets.tsx";
-import { globalTagsQuery, recipesQuery, spaceTagsQuery, unitsQuery } from "./queries.ts";
+import {
+  globalTagsQuery,
+  recipesKey,
+  recipesQuery,
+  spaceTagsQuery,
+  unitsQuery,
+} from "./queries.ts";
 import { ShareRequestsBanner } from "./sharing.tsx";
 import { SuggestionsToDecideBanner } from "./suggestions.tsx";
 import { useDebounced } from "./use-debounced.ts";
@@ -123,6 +143,37 @@ function AddRecipeSheet({
   );
 }
 
+/** Recette lue sur l'appareil, avec l'espace ou elle a ete ouverte (pour la rouvrir hors ligne). */
+interface OfflineRecipe {
+  spaceId: string;
+  recipe: Recipe;
+}
+
+/**
+ * Hors ligne [D35] : recettes ouvertes sur cet appareil, celles de l'espace, ou
+ * toutes celles de l'utilisateur pour "Mes recettes".
+ */
+function offlineRecipes(
+  client: QueryClient,
+  spaceId: string,
+  mine: boolean,
+  meId: string | undefined
+): OfflineRecipe[] {
+  const found = new Map<string, OfflineRecipe>();
+  const prefix = mine ? ["spaces"] : [...recipesKey(spaceId), "detail"];
+  for (const [key, recipe] of client.getQueriesData<Recipe>({ queryKey: prefix })) {
+    const [, keySpace, module, kind] = key;
+    if (key.length !== 5 || module !== "recipes" || kind !== "detail" || !recipe) continue;
+    if (typeof keySpace !== "string" || (mine && recipe.author.id !== meId)) continue;
+    if (!found.has(recipe.id)) found.set(recipe.id, { spaceId: keySpace, recipe });
+  }
+  return [...found.values()].sort((a, b) => a.recipe.title.localeCompare(b.recipe.title, "fr"));
+}
+
+function toSummary(recipe: Recipe): RecipeSummary {
+  return { ...recipe, isComposed: recipe.blocks.some((block) => block.kind === "RECIPE") };
+}
+
 function RecipeGrid({
   recipes,
   units,
@@ -168,6 +219,10 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
   const [addOpen, setAddOpen] = useState(false);
   const [importSheet, setImportSheet] = useState<ImportSheet>(null);
   const q = useDebounced(search.trim());
+  const online = useOnline();
+  const guard = useWriteGuard();
+  const queryClient = useQueryClient();
+  const me = useQuery(meQuery);
   const list = useInfiniteQuery({
     ...recipesQuery(spaceId, { q, tagIds, base: baseOnly, mine }),
     // Pendant une recherche, la liste precedente reste affichee (pas de clignotement).
@@ -187,7 +242,41 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
   };
 
   let content;
-  if (list.isError) {
+  if (!online) {
+    const term = normalizeName(q);
+    const available = offlineRecipes(queryClient, spaceId, mine, me.data?.id);
+    const shown = available.filter(
+      ({ recipe }) =>
+        (!term || normalizeName(recipe.title).includes(term)) &&
+        (!baseOnly || recipe.isBase) &&
+        tagIds.every((id) => recipe.tags.some((tag) => tag.id === id))
+    );
+    content =
+      available.length === 0 ? (
+        <EmptyState icon="wifi-off" title="Aucune recette disponible hors ligne">
+          Les recettes ouvertes avec le réseau restent lisibles ici pendant 14 jours.
+        </EmptyState>
+      ) : (
+        <>
+          <p className="m-0 text-sm text-ink-muted">
+            Disponibles hors ligne : {available.length}{" "}
+            {available.length > 1 ? "recettes ouvertes" : "recette ouverte"} récemment.
+          </p>
+          <RecipeGrid
+            recipes={shown.map(({ recipe }) => toSummary(recipe))}
+            units={units.data ?? []}
+            badges={(recipe) => [
+              ...badgesOf(recipe, spaceId, mine, spaces.data ?? []),
+              { label: "Hors ligne", tone: "warning" },
+            ]}
+            onOpen={(recipe) => {
+              const where = available.find((item) => item.recipe.id === recipe.id);
+              void navigate(`/s/${where?.spaceId ?? spaceId}/recipes/${recipe.id}`);
+            }}
+          />
+        </>
+      );
+  } else if (list.isError) {
     content = (
       <EmptyState
         icon="triangle-alert"
@@ -261,7 +350,13 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
         <h1 className="sr-only m-0 flex-1 font-display text-2xl font-bold md:not-sr-only">
           {mine ? "Mes recettes" : "Recettes"}
         </h1>
-        <Button variant="primary" icon="plus" className="flex-1 md:flex-none" onClick={add}>
+        <Button
+          variant="primary"
+          icon="plus"
+          className="flex-1 md:flex-none"
+          onClick={add}
+          {...guard}
+        >
           Nouvelle recette
         </Button>
       </div>

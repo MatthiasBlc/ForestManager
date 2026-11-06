@@ -7,14 +7,17 @@ import { BrowserRouter } from "react-router";
 
 import { App } from "./app/App.tsx";
 import { Providers } from "./app/providers.tsx";
+import { offlinePersistOptions } from "./lib/offline-cache.ts";
 import { createQueryClient } from "./lib/query.ts";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Element #root introuvable");
 
+const client = createQueryClient();
+
 createRoot(root).render(
   <StrictMode>
-    <Providers client={createQueryClient()}>
+    <Providers client={client} persist={offlinePersistOptions(client)}>
       <BrowserRouter>
         <App />
       </BrowserRouter>

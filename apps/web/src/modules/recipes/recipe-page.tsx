@@ -11,6 +11,7 @@ import { meQuery, spaceQuery } from "../../core/session/queries.ts";
 import { PageChrome } from "../../core/shell/page-chrome.tsx";
 import { errorMessage } from "../../i18n/index.ts";
 import { api } from "../../lib/api.ts";
+import { useWriteGuard } from "../../pwa/use-write-guard.ts";
 import { TopBar } from "../../patterns/top-bar.tsx";
 import { ActionMenu } from "../../ui/action-menu.tsx";
 import { Button, IconButton } from "../../ui/button.tsx";
@@ -41,6 +42,25 @@ export function RecipeNotFound({ spaceId }: { spaceId: string }) {
         }
       >
         Elle a été supprimée, ou elle n'est pas visible dans cet espace.
+      </EmptyState>
+    </div>
+  );
+}
+
+/** Hors ligne, une recette jamais ouverte sur cet appareil n'est pas lisible (D35). */
+export function NotOffline({ spaceId }: { spaceId: string }) {
+  return (
+    <div className="p-4">
+      <EmptyState
+        icon="wifi-off"
+        title="Pas encore disponible hors ligne"
+        action={
+          <Link to={`/s/${spaceId}/recipes`} className="fm-btn fm-btn-secondary">
+            Retour aux recettes
+          </Link>
+        }
+      >
+        Seules les recettes déjà ouvertes sur cet appareil se consultent sans réseau.
       </EmptyState>
     </div>
   );
@@ -275,6 +295,7 @@ function RecipeView({
   const navigate = useNavigate();
   const { data: space } = useQuery(spaceQuery(spaceId));
   const { data: me } = useQuery(meQuery);
+  const guard = useWriteGuard();
   const [servings, setServings] = useState(recipe.yieldQuantity);
   const [sheet, setSheet] = useState<"delete" | "share" | "remove" | "adapt" | null>(null);
   const spaceName = space?.name ?? "";
@@ -342,7 +363,11 @@ function RecipeView({
               Mode cuisine
             </Link>
           ) : null}
-          {recipe.can.edit ? (
+          {recipe.can.edit && guard.disabled ? (
+            <Button size="sm" icon="pencil" {...guard}>
+              Modifier
+            </Button>
+          ) : recipe.can.edit ? (
             <Link
               to={`/s/${spaceId}/recipes/${recipe.id}/edit`}
               className="fm-btn fm-btn-secondary fm-btn-sm"
@@ -391,6 +416,8 @@ function RecipeView({
                   ]
                 : []),
             ]}
+            disabled={guard.disabled}
+            // Hors ligne : tout le menu ecrit ou lit ce qui n'est pas sur l'appareil.
             onSelect={(id) => {
               if (id === "history" || id === "compare" || id === "suggest") {
                 void navigate(`/s/${spaceId}/recipes/${recipe.id}/${id}`);
@@ -473,6 +500,7 @@ export function RecipePage() {
   const recipe = useQuery(recipeQuery(spaceId, recipeId));
   const units = useQuery(unitsQuery);
   if (recipe.isError) return <RecipeNotFound spaceId={spaceId} />;
+  if (!recipe.data && recipe.fetchStatus === "paused") return <NotOffline spaceId={spaceId} />;
   if (!recipe.data || !units.data) return <Skeleton />;
   return (
     <RecipeView key={recipe.data.id} spaceId={spaceId} recipe={recipe.data} units={units.data} />

@@ -22,6 +22,8 @@ export interface ActionMenuProps<Id extends string> {
   /** Ouverture pilotee (appui long). */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** Desactive toutes les actions (hors ligne, D106) : elles restent visibles. */
+  disabled?: boolean;
 }
 
 export function ActionMenu<Id extends string>({
@@ -31,6 +33,7 @@ export function ActionMenu<Id extends string>({
   onSelect,
   open,
   onOpenChange,
+  disabled,
 }: ActionMenuProps<Id>) {
   return (
     <DropdownMenu.Root open={open} onOpenChange={onOpenChange}>
@@ -52,7 +55,7 @@ export function ActionMenu<Id extends string>({
               <DropdownMenu.Item
                 key={item.id}
                 asChild
-                disabled={item.disabled}
+                disabled={disabled || item.disabled}
                 onSelect={() => {
                   onSelect(item.id);
                 }}

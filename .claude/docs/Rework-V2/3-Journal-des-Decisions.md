@@ -545,3 +545,12 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
   - **Anti-SSRF** (`apps/api/src/core/net/page-fetcher.ts`) : http et https seulement, 5 redirections, a chaque saut toutes les adresses du nom doivent etre publiques (privees, locales, partagees, link-local, metadata, reservees, multicast, IPv6 locales et mappees refusees) et la connexion se fait sur l'adresse verifiee (pas de rebinding DNS) ; 10 s au total, 3 Mo apres decompression ; 20 imports par 15 min.
   - **Unite inconnue** (pot, brin, feuille...) : le mot reste dans le nom de l'ingredient, a corriger a la relecture.
   - **Reporte** : photo de la page importee (lecture d'image distante, a voir avec le menage du stockage).
+
+### D169 - Hors ligne : cache persistant limite et relu par schema - VALIDEE (2026-11-06, realisation C3.9)
+
+- **Constat** : D35 et D106 demandent les recettes deja ouvertes lisibles sans reseau, sans dire quoi garder sur l'appareil ni comment survivre a une nouvelle version de l'application.
+- **Choix** :
+  - **Ce qui est garde** (IndexedDB, 14 jours) : session, configuration, espaces, unites et le detail de chaque recette ouverte. Pas les listes (filtrees et paginees), ni l'historique, ni les recherches : hors ligne, la liste d'un espace montre les recettes ouvertes sur l'appareil ("Disponibles hors ligne : N recettes ouvertes recemment", badge "Hors ligne"), filtrees sur place.
+  - **Relecture par schema** : chaque donnee relue repasse par son schema Zod ; une forme perimee est ecartee, sans numero de version a tenir a jour.
+  - **Vidage** : deconnexion, connexion et suppression du compte vident le client, donc l'appareil.
+  - **Ecritures** : desactivees, pas masquees, et reliees au bandeau qui donne la raison (`useWriteGuard`, `aria-describedby`) ; menu du detail desactive en entier ; le client API les refuse de toute facon (D159). Mode cuisine disponible hors ligne.

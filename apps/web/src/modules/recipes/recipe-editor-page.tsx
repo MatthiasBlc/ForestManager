@@ -53,6 +53,7 @@ import {
   type DraftLinkedBlock,
   type DraftLocalBlock,
 } from "./draft.ts";
+import { useOnline } from "../../pwa/use-online.ts";
 import { RecipeNotFound } from "./recipe-page.tsx";
 import {
   globalTagsQuery,
@@ -379,6 +380,7 @@ function Editor({
   const [errors, setErrors] = useState<DraftErrors>({ lines: {} });
   const [failure, setFailure] = useState<string>();
   const [saving, setSaving] = useState(false);
+  const online = useOnline();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
@@ -516,7 +518,8 @@ function Editor({
                   ? `Enregistrer la révision ${recipe.currentRevision + 1}`
                   : "Enregistrer"
             }
-            actionDisabled={saving}
+            // Hors ligne : le brouillon reste sur l'appareil, l'envoi attend le reseau (D106).
+            actionDisabled={saving || !online}
             onAction={() => void save()}
           />
         }
