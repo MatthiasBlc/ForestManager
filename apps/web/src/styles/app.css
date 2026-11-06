@@ -100,6 +100,13 @@ body,
 .fm-wide-only {
   display: none !important;
 }
+/* Sur mobile, une page a en-tete propre masque le rail (comme D130). */
+@container (max-width: 767.98px) {
+  .fm-shell-grid:has(> * > .fm-page-top) > .fm-rail,
+  .fm-shell-grid:has(> * > .fm-page-top) > * > .fm-rail {
+    display: none;
+  }
+}
 @container (min-width: 768px) {
   .fm-shell-grid:has(> * > .fm-page-bar:not(.fm-mobile-only)) {
     grid-template-rows: auto minmax(0, 1fr) auto;
