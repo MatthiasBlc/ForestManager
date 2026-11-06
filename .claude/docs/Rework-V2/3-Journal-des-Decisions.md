@@ -495,3 +495,15 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
 - **Constat** : une sous-recette peut etre supprimee, ou ne plus etre visible dans l'espace du plat (partage retire, C3.5). Si l'enregistrement exigeait que chaque lien soit visible, le plat ne serait plus modifiable sans retirer le lien, et une restauration (D55) echouerait.
 - **Choix** : un **nouveau** lien doit viser une recette visible et non supprimee de l'espace ; un lien **deja present** dans la recette (ou dans la revision restauree) est garde tel quel. Le bloc s'affiche "Recette supprimee" ou "Recette non disponible" avec sa quantite. La quantite d'un lien garde son unite : si le rendement de la sous-recette change d'unite, elle est convertie dans la meme dimension, sinon le rapport direct des quantites s'applique (`linkFactor`). Supprimer une recette liee previent : "utilisee dans N recettes" (`usedBy`).
 - **Reporte** : recuperer le contenu d'une sous-recette supprimee en bloc local (etude 6) ; "Demander le partage" sur un bloc non disponible (C3.5).
+
+### D165 - Partage des recettes : regles de realisation - VALIDEE (2026-11-06, realisation C3.5)
+
+- **Constat** : D03, D26, D81, D83 et D84 laissent des cas ouverts : origine d'une recette dont l'auteur n'existe plus, portee de la confiance, place des demandes sans notifications (C6), message de la maquette F-PARTAGER-Demande absent du schema, depart d'un membre alors que le socle ne connait pas les modules (D40).
+- **Choix** (selecteur du 2026-11-05 pour les trois premiers points) :
+  - **Purge de l'origine** : une recette partagee ailleurs, ou liee par une recette gardee, part dans l'espace perso de son auteur ; sans auteur, son **plus ancien espace de partage** devient son origine et ses moderateurs la gerent (D18). Les autres recettes de l'espace sont effacees.
+  - **Demandes** : un **bandeau** "N demandes de partage" en tete de "Mes recettes" (espace perso : toutes celles de l'auteur) et de la liste d'un groupe (recettes nees dans ce groupe, pour ses moderateurs quand l'auteur est parti). Il ouvre F-DEMANDE-PARTAGE.
+  - **Message** : "Un mot pour l'auteur", 280 caracteres, facultatif (`RecipeShareRequest.message`).
+  - **Confiance** : elle porte sur l'espace ou le demandeur voit la recette (`sourceSpaceId`) ; le reglage se fait dans la feuille de la demande (D101) et tombe quand l'auteur quitte cet espace.
+  - **Partage direct** par l'auteur (s'il est encore membre de l'origine) ou, auteur parti, par les MOD et OWNER de l'origine. L'auteur modifie, supprime et retire aussi depuis un espace de partage.
+  - **Sous-recettes** (D26) : seules celles du meme auteur partent avec le plat ; retirer le plat retire celles partagees avec lui si aucune autre recette de l'espace ne les utilise.
+  - **Depart** (D84) : le module Recettes fournit l'apercu (recettes creees ici, recettes perso partagees ici) ; l'ecran retire les partages choisis avant le depart. Rien n'est retire d'office, ni a l'exclusion.

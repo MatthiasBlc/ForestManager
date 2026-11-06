@@ -74,6 +74,11 @@ model User {
   tagsCreated          Tag[]
   recipesAuthored      Recipe[]                 @relation("RecipeAuthor")
   recipeRevisions      RecipeRevision[]
+  sharesMade           RecipeShare[]            @relation("ShareSharedBy")
+  sharesRemoved        RecipeShare[]            @relation("ShareRemovedBy")
+  sharesApproved       RecipeShare[]            @relation("ShareApprovedBy")
+  shareRequests        RecipeShareRequest[]     @relation("ShareRequester")
+  shareRequestsDecided RecipeShareRequest[]     @relation("ShareRequestDecider")
 
   @@index([deletedAt])
 }
@@ -155,6 +160,9 @@ model Space {
   tags               Tag[]
   recipes            Recipe[]                 @relation("RecipeHomeSpace")
   recipeSpaceTags    RecipeSpaceTag[]
+  shares             RecipeShare[]
+  shareRequestsIn    RecipeShareRequest[]     @relation("ShareRequestTarget")
+  shareRequestsFrom  RecipeShareRequest[]     @relation("ShareRequestSource")
 
   @@index([deletedAt])
   @@index([purgeAfter])
@@ -474,10 +482,10 @@ model Tag {
   createdAt    DateTime  @default(now())
   deletedAt    DateTime?
 
-  space        Space?           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  createdBy    User?            @relation(fields: [createdById], references: [id], onDelete: SetNull)
-  mergedInto   Tag?             @relation("TagMerge", fields: [mergedIntoId], references: [id])
-  mergedFrom   Tag[]            @relation("TagMerge")
+  space        Space?            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  createdBy    User?             @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  mergedInto   Tag?              @relation("TagMerge", fields: [mergedIntoId], references: [id])
+  mergedFrom   Tag[]             @relation("TagMerge")
   recipes      RecipeGlobalTag[]
   spaceRecipes RecipeSpaceTag[]
   translations TagTranslation[]
@@ -535,11 +543,14 @@ model Recipe {
   adaptedFrom Recipe?  @relation("RecipeAdaptation", fields: [adaptedFromId], references: [id])
   adaptations Recipe[] @relation("RecipeAdaptation")
 
-  blocks     RecipeBlock[]     @relation("RecipeBlocks")
-  usedIn     RecipeBlock[]     @relation("BlockSubRecipe")
-  revisions  RecipeRevision[]
-  globalTags RecipeGlobalTag[]
-  spaceTags  RecipeSpaceTag[]
+  blocks        RecipeBlock[]        @relation("RecipeBlocks")
+  usedIn        RecipeBlock[]        @relation("BlockSubRecipe")
+  revisions     RecipeRevision[]
+  globalTags    RecipeGlobalTag[]
+  spaceTags     RecipeSpaceTag[]
+  shares        RecipeShare[]        @relation("ShareRecipe")
+  sharedVia     RecipeShare[]        @relation("ShareVia")
+  shareRequests RecipeShareRequest[]
 
   @@index([homeSpaceId, deletedAt])
   @@index([authorId, deletedAt])
@@ -657,6 +668,66 @@ model RecipeSpaceTag {
 
   @@id([recipeId, spaceId, tagId])
   @@index([spaceId, tagId])
+}
+
+/// Partage par reference d'une recette dans un autre espace [D03].
+/// Partager une recette composee partage aussi ses sous-recettes du meme auteur
+/// (viaRecipeId) [D26]. Retirer d'un espace = removedAt ; repartager reactive la ligne.
+model RecipeShare {
+  id           String    @id @default(uuid())
+  recipeId     String
+  spaceId      String
+  sharedById   String
+  sharedAt     DateTime  @default(now())
+  viaRecipeId  String? // partagee automatiquement avec cette recette composee [D26]
+  approvedById String? // decideur d'une demande acceptee [D81]
+  removedAt    DateTime?
+  removedById  String?
+
+  recipe     Recipe  @relation("ShareRecipe", fields: [recipeId], references: [id], onDelete: Cascade)
+  space      Space   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  via        Recipe? @relation("ShareVia", fields: [viaRecipeId], references: [id], onDelete: SetNull)
+  sharedBy   User    @relation("ShareSharedBy", fields: [sharedById], references: [id])
+  removedBy  User?   @relation("ShareRemovedBy", fields: [removedById], references: [id])
+  approvedBy User?   @relation("ShareApprovedBy", fields: [approvedById], references: [id])
+
+  @@unique([recipeId, spaceId])
+  @@index([spaceId, removedAt])
+}
+
+enum ShareRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+/// Demande de partage d'une recette dont on n'est pas l'auteur [D81] : le
+/// demandeur la voit dans sourceSpace et est membre de targetSpace ; l'auteur
+/// (ou les moderateurs de l'espace d'origine si l'auteur est parti) accepte ou refuse.
+/// Si l'auteur fait confiance aux membres de sourceSpace (Membership.allowMembersToShare),
+/// le partage est immediat et aucune demande n'est creee.
+/// Une seule PENDING par (recette, espace cible) : index partiel (migration).
+model RecipeShareRequest {
+  id            String             @id @default(uuid())
+  recipeId      String
+  sourceSpaceId String
+  targetSpaceId String
+  requesterId   String
+  message       String? // "Un mot pour Lea", 280 caracteres [D165]
+  status        ShareRequestStatus @default(PENDING)
+  decidedById   String?
+  decidedAt     DateTime?
+  createdAt     DateTime           @default(now())
+
+  recipe      Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  sourceSpace Space  @relation("ShareRequestSource", fields: [sourceSpaceId], references: [id], onDelete: Cascade)
+  targetSpace Space  @relation("ShareRequestTarget", fields: [targetSpaceId], references: [id], onDelete: Cascade)
+  requester   User   @relation("ShareRequester", fields: [requesterId], references: [id])
+  decidedBy   User?  @relation("ShareRequestDecider", fields: [decidedById], references: [id])
+
+  @@index([recipeId, status])
+  @@index([targetSpaceId, status])
 }
 
 // =============================================================================

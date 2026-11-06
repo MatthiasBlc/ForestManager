@@ -63,6 +63,7 @@ export function recipeServer({
     return buildRecipe({
       ...(current ?? { id: uuid(), author: self }),
       homeSpaceId: s.space.id,
+      homeSpace: { id: s.space.id, name: s.space.name },
       title: body.title,
       yieldQuantity: body.yieldQuantity,
       prepMinutes: body.prepMinutes ?? null,
@@ -106,7 +107,7 @@ export function recipeServer({
           })),
         };
       }),
-      can: current?.can ?? { edit: true, delete: true },
+      ...(current ? { can: current.can } : {}),
     });
   }
 

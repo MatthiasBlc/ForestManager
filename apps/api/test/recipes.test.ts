@@ -225,7 +225,12 @@ describe("modifier une recette (D05, D57, D122)", () => {
     );
     const moderator = await loginAs(f.moderator, app);
     const read = await moderator.get(path);
-    expect(read.body.can).toEqual({ edit: true, delete: false });
+    expect(read.body.can).toEqual({
+      edit: true,
+      delete: false,
+      share: false,
+      removeFromSpace: false,
+    });
     expect((await moderator.put(path, await recipeBody(moderator, { revision: 1 }))).status).toBe(
       200
     );
@@ -257,7 +262,12 @@ describe("supprimer une recette (F-REC-10, D57)", () => {
       where: { spaceId_userId: { spaceId: f.spaceId, userId: f.member.id } },
       data: { leftAt: new Date() },
     });
-    expect((await moderator.get(path)).body.can).toEqual({ edit: true, delete: true });
+    expect((await moderator.get(path)).body.can).toEqual({
+      edit: true,
+      delete: true,
+      share: true,
+      removeFromSpace: false,
+    });
     expect((await moderator.delete(path)).status).toBe(204);
   });
 });

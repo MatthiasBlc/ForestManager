@@ -166,7 +166,8 @@ model Space {
   moduleRequests     ModuleAccessRequest[]
   homeRecipes        Recipe[]                 @relation("RecipeHomeSpace")
   shares             RecipeShare[]
-  shareRequests      RecipeShareRequest[]
+  shareRequestsIn    RecipeShareRequest[]     @relation("ShareRequestTarget")
+  shareRequestsFrom  RecipeShareRequest[]     @relation("ShareRequestSource")
   spaceTags          Tag[]
   recipeSpaceTags    RecipeSpaceTag[]
   suggestions        RecipeSuggestion[]
@@ -699,22 +700,26 @@ enum ShareRequestStatus {
 }
 
 /// Demande de partage d'une recette dont on n'est pas l'auteur [D81] : le
-/// demandeur est membre de l'espace ou il la voit et de l'espace cible ; l'auteur
+/// demandeur la voit dans sourceSpace et est membre de l'espace cible ; l'auteur
 /// (ou les moderateurs de l'espace d'origine si l'auteur est parti) accepte ou refuse.
-/// Si l'auteur a coche allowMembersToShare, le partage est immediat et aucune
-/// demande n'est creee. Une seule PENDING par (recette, espace cible) : index partiel.
+/// Si l'auteur fait confiance aux membres de sourceSpace (allowMembersToShare), le
+/// partage est immediat et aucune demande n'est creee [D165].
+/// Une seule PENDING par (recette, espace cible) : index partiel.
 model RecipeShareRequest {
   id            String             @id @default(uuid())
   recipeId      String
+  sourceSpaceId String
   targetSpaceId String
   requesterId   String
+  message       String? // "Un mot pour l'auteur", 280 caracteres [D165]
   status        ShareRequestStatus @default(PENDING)
   decidedById   String?
   decidedAt     DateTime?
   createdAt     DateTime           @default(now())
 
   recipe      Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  targetSpace Space  @relation(fields: [targetSpaceId], references: [id])
+  sourceSpace Space  @relation("ShareRequestSource", fields: [sourceSpaceId], references: [id])
+  targetSpace Space  @relation("ShareRequestTarget", fields: [targetSpaceId], references: [id])
   requester   User   @relation("ShareRequester", fields: [requesterId], references: [id])
   decidedBy   User?  @relation("ShareRequestDecider", fields: [decidedById], references: [id])
 

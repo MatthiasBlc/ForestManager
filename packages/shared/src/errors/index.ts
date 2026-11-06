@@ -94,6 +94,8 @@ const DEFINITIONS = {
     status: 409,
     message: "Trois niveaux de recettes liées au maximum (plat, sauce, fond).",
   },
+  RECIPE_009: { status: 409, message: "Cette recette est déjà visible dans cet espace." },
+  RECIPE_010: { status: 404, message: "Demande de partage introuvable ou déjà traitée." },
 } as const satisfies Record<string, ErrorDefinition>;
 
 export type ErrorCode = keyof typeof DEFINITIONS;

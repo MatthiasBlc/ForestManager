@@ -1,5 +1,5 @@
 // Recettes d'un espace (C3.2) : creer, lire, modifier, supprimer [D05, D57, D122].
-// Visibilite : espace d'origine ; le partage (C3.5) ajoutera les espaces de partage.
+// Visibilite : espace d'origine et espaces de partage actifs [D03].
 import type { Recipe, RevisionSource } from "@fm/shared";
 
 import type { Context } from "../../core/context.ts";
@@ -16,6 +16,7 @@ import {
   snapshotOf,
   toRecipe,
   type RecipeContent,
+  type ShareInfo,
 } from "./content.ts";
 
 /** Qui agit, dans quel espace, avec quels droits de module. */
@@ -26,37 +27,84 @@ export interface RecipeActor {
   moderate: boolean;
 }
 
-/** Recettes visibles dans un espace [D03]. */
+/** Recettes visibles dans un espace : origine ou partage actif [D03]. */
 export function visibleIn(spaceId: string): Prisma.RecipeWhereInput {
-  return { homeSpaceId: spaceId, deletedAt: null };
+  return {
+    deletedAt: null,
+    OR: [{ homeSpaceId: spaceId }, { shares: { some: { spaceId, removedAt: null } } }],
+  };
 }
 
-interface RightsRow {
+export interface RightsRow {
   homeSpaceId: string;
   authorId: string;
 }
 
-async function authorIsActiveMember(ctx: Context, recipe: RightsRow): Promise<boolean> {
-  const membership = await ctx.db.membership.findUnique({
-    where: { spaceId_userId: { spaceId: recipe.homeSpaceId, userId: recipe.authorId } },
+type Db = Context["db"] | Prisma.TransactionClient;
+
+export async function isActiveMember(db: Db, spaceId: string, userId: string): Promise<boolean> {
+  const membership = await db.membership.findUnique({
+    where: { spaceId_userId: { spaceId, userId } },
     select: { leftAt: true },
   });
   return membership !== null && membership.leftAt === null;
 }
 
+/** L'auteur est encore membre de l'espace d'origine ; sinon les moderateurs reprennent [D18]. */
+export function authorIsActiveMember(db: Db, recipe: RightsRow): Promise<boolean> {
+  return isActiveMember(db, recipe.homeSpaceId, recipe.authorId);
+}
+
 /**
- * Modifier : auteur, MOD et OWNER de l'espace d'origine (D57, D122).
- * Supprimer : auteur ; MOD et OWNER de l'espace d'origine si l'auteur en est parti.
+ * Modifier : auteur, MOD et OWNER de l'espace d'origine (D57, D122) ; l'auteur
+ * le fait aussi depuis un espace de partage.
+ * Supprimer et partager directement : auteur ; MOD et OWNER de l'espace d'origine
+ * si l'auteur en est parti (D18, D81).
+ * Retirer d'un espace de partage : auteur, MOD et OWNER de cet espace (F-REC-9).
  */
-async function rightsOf(
+export async function rightsOf(
   ctx: Context,
   actor: RecipeActor,
   recipe: RightsRow
 ): Promise<Recipe["can"]> {
-  if (recipe.homeSpaceId !== actor.spaceId) return { edit: false, delete: false };
-  if (recipe.authorId === actor.userId) return { edit: true, delete: true };
-  if (!actor.moderate) return { edit: false, delete: false };
-  return { edit: true, delete: !(await authorIsActiveMember(ctx, recipe)) };
+  const atHome = recipe.homeSpaceId === actor.spaceId;
+  const isAuthor = recipe.authorId === actor.userId;
+  const authorActive = await authorIsActiveMember(ctx.db, recipe);
+  if (isAuthor && authorActive) {
+    return { edit: true, delete: true, share: true, removeFromSpace: !atHome };
+  }
+  if (atHome && actor.moderate) {
+    return { edit: true, delete: !authorActive, share: !authorActive, removeFromSpace: false };
+  }
+  return {
+    edit: false,
+    delete: false,
+    share: false,
+    removeFromSpace: !atHome && (actor.moderate || isAuthor),
+  };
+}
+
+/** Partages actifs ; noms des espaces dont l'utilisateur est membre. */
+async function shareInfo(ctx: Context, actor: RecipeActor, recipeId: string): Promise<ShareInfo> {
+  const rows = await ctx.db.recipeShare.findMany({
+    where: { recipeId, removedAt: null, space: { deletedAt: null } },
+    orderBy: { sharedAt: "asc" },
+    select: {
+      space: {
+        select: {
+          id: true,
+          name: true,
+          memberships: { where: { userId: actor.userId, leftAt: null }, select: { id: true } },
+        },
+      },
+    },
+  });
+  return {
+    shareCount: rows.length,
+    sharedIn: rows
+      .filter((row) => row.space.memberships.length > 0)
+      .map((row) => ({ id: row.space.id, name: row.space.name })),
+  };
 }
 
 export async function findVisible(ctx: Context, actor: RecipeActor, recipeId: string) {
@@ -74,12 +122,13 @@ export async function getRecipe(
   recipeId: string
 ): Promise<Recipe> {
   const row = await findVisible(ctx, actor, recipeId);
-  const [can, links, usedBy] = await Promise.all([
+  const [can, links, usedBy, shares] = await Promise.all([
     rightsOf(ctx, actor, row),
     loadLinks(ctx.db, row.blocks, actor.spaceId),
     countUsedBy(ctx.db, row.id),
+    shareInfo(ctx, actor, row.id),
   ]);
-  return toRecipe(row, can, links, usedBy);
+  return toRecipe(row, can, links, usedBy, shares);
 }
 
 export async function createRecipe(

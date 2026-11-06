@@ -79,8 +79,21 @@ function decodeCursor(raw: string, sort: SortSpec): Cursor {
   ]);
 }
 
-function filters(spaceId: string, query: RecipeListQuery): Prisma.Sql[] {
-  const where = [Prisma.sql`r."homeSpaceId" = ${spaceId}`, Prisma.sql`r."deletedAt" IS NULL`];
+/** Recettes visibles dans un espace : origine ou partage actif [D03]. */
+export function visibleInSql(spaceId: string): Prisma.Sql {
+  return Prisma.sql`(r."homeSpaceId" = ${spaceId} OR EXISTS (SELECT 1 FROM "RecipeShare" sh
+    WHERE sh."recipeId" = r.id AND sh."spaceId" = ${spaceId} AND sh."removedAt" IS NULL))`;
+}
+
+/** "Mes recettes" [D82] : recettes de l'auteur dans les espaces dont il est membre actif. */
+export function authoredBySql(userId: string): Prisma.Sql {
+  return Prisma.sql`(r."authorId" = ${userId} AND r."homeSpaceId" IN (SELECT m."spaceId"
+    FROM "Membership" m JOIN "Space" s ON s.id = m."spaceId"
+    WHERE m."userId" = ${userId} AND m."leftAt" IS NULL AND s."deletedAt" IS NULL))`;
+}
+
+function filters(scope: Prisma.Sql, spaceId: string, query: RecipeListQuery): Prisma.Sql[] {
+  const where = [scope, Prisma.sql`r."deletedAt" IS NULL`];
   const text = query.q ? normalizeName(query.q) : "";
   if (text) {
     const like = `%${text.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
@@ -103,13 +116,18 @@ function filters(spaceId: string, query: RecipeListQuery): Prisma.Sql[] {
   return where;
 }
 
+/**
+ * `scope` : recettes candidates (par defaut celles visibles dans l'espace) ;
+ * les tags d'espace lus et filtres sont ceux de `spaceId` [D19].
+ */
 export async function listRecipes(
   ctx: Context,
   spaceId: string,
-  query: RecipeListQuery
+  query: RecipeListQuery,
+  scope: Prisma.Sql = visibleInSql(spaceId)
 ): Promise<{ data: RecipeSummary[]; nextCursor: string | null }> {
   const sort = SORTS[query.sort];
-  const where = filters(spaceId, query);
+  const where = filters(scope, spaceId, query);
   if (query.cursor) {
     const cursor = decodeCursor(query.cursor, sort);
     where.push(

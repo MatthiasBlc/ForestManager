@@ -1,6 +1,14 @@
 // Manifeste API du module Recettes [D33, D91]. Les routes se completent au fil de C3.
 import {
+  approveShareRequestBodySchema,
   createRecipeBodySchema,
+  recipeLeavePreviewSchema,
+  recipeSharesBodySchema,
+  recipeSharingSchema,
+  shareRequestBodySchema,
+  shareRequestParamsSchema,
+  shareRequestResultSchema,
+  shareRequestSchema,
   listSchema,
   mergeTagBodySchema,
   pageSchema,
@@ -28,13 +36,16 @@ import {
   requirePermission,
 } from "../../core/modules/guards.ts";
 import type { ApiModule } from "../../core/modules/registry.ts";
-import { listRecipes } from "./list.ts";
+import { authoredBySql, listRecipes } from "./list.ts";
+import { RECIPE_PERMISSIONS } from "./permissions.ts";
 import * as revisions from "./revisions.ts";
 import * as recipes from "./service.ts";
+import * as sharing from "./sharing.ts";
 import * as tags from "./tags.ts";
 
 const tagParamsSchema = spaceTagParamsSchema.pick({ tagId: true });
 const recipeIdSchema = recipeParamsSchema.pick({ recipeId: true });
+const requestIdSchema = shareRequestParamsSchema.pick({ requestId: true });
 const revisionIdSchema = revisionParamsSchema.pick({ recipeId: true, number: true });
 
 function actorOf(req: Request): recipes.RecipeActor {
@@ -66,6 +77,54 @@ function recipesRouter(ctx: Context): Router {
       reply(res, recipeSchema, await recipes.createRecipe(ctx, actorOf(req), body), 201);
     })
   );
+
+  // "Mes recettes" [D82] : recettes de l'utilisateur dans tous ses espaces.
+  router.get(
+    "/mine",
+    requirePermission("recipes.view"),
+    handle({ query: recipeListQuerySchema }, async ({ query }, req, res) => {
+      const page = await listRecipes(ctx, spaceOf(req), query, authoredBySql(currentUserId(req)));
+      reply(res, pageSchema(recipeSummarySchema), page);
+    })
+  );
+
+  // --- Partage [D03, D81, D84] : droits fins verifies par le service ---
+
+  router.get("/share-requests", requirePermission("recipes.view"), async (req, res) => {
+    const personal = moduleRequest(req).access.space.kind === "PERSONAL";
+    const data = await sharing.listShareRequests(ctx, actorOf(req), personal);
+    reply(res, listSchema(shareRequestSchema), { data });
+  });
+
+  router.post(
+    "/share-requests/:requestId/approve",
+    requirePermission("recipes.view"),
+    handle(
+      { params: requestIdSchema, body: approveShareRequestBodySchema },
+      async ({ params, body }, req, res) => {
+        await sharing.decideShareRequest(ctx, currentUserId(req), params.requestId, {
+          approve: true,
+          trustMembers: body.trustMembers,
+        });
+        res.status(204).end();
+      }
+    )
+  );
+
+  router.post(
+    "/share-requests/:requestId/reject",
+    requirePermission("recipes.view"),
+    handle({ params: requestIdSchema }, async ({ params }, req, res) => {
+      await sharing.decideShareRequest(ctx, currentUserId(req), params.requestId, {
+        approve: false,
+      });
+      res.status(204).end();
+    })
+  );
+
+  router.get("/leave-preview", requirePermission("recipes.view"), async (req, res) => {
+    reply(res, recipeLeavePreviewSchema, await sharing.leavePreview(ctx, actorOf(req)));
+  });
 
   // --- Tags d'espace [D08, D19] ---
 
@@ -165,6 +224,52 @@ function recipesRouter(ctx: Context): Router {
     )
   );
 
+  router.get(
+    "/:recipeId/sharing",
+    requirePermission("recipes.view"),
+    handle({ params: recipeIdSchema }, async ({ params }, req, res) => {
+      reply(res, recipeSharingSchema, await sharing.getSharing(ctx, actorOf(req), params.recipeId));
+    })
+  );
+
+  router.put(
+    "/:recipeId/shares",
+    requirePermission("recipes.view"),
+    handle(
+      { params: recipeIdSchema, body: recipeSharesBodySchema },
+      async ({ params, body }, req, res) => {
+        const result = await sharing.setShares(ctx, actorOf(req), params.recipeId, body.spaceIds);
+        reply(res, recipeSharingSchema, result);
+      }
+    )
+  );
+
+  router.post(
+    "/:recipeId/share-requests",
+    requirePermission("recipes.view"),
+    handle(
+      { params: recipeIdSchema, body: shareRequestBodySchema },
+      async ({ params, body }, req, res) => {
+        const { status, created } = await sharing.requestShare(
+          ctx,
+          actorOf(req),
+          params.recipeId,
+          body
+        );
+        reply(res, shareRequestResultSchema, { status }, created ? 201 : 200);
+      }
+    )
+  );
+
+  router.delete(
+    "/:recipeId/share",
+    requirePermission("recipes.view"),
+    handle({ params: recipeIdSchema }, async ({ params }, req, res) => {
+      await sharing.removeFromSpace(ctx, actorOf(req), params.recipeId);
+      res.status(204).end();
+    })
+  );
+
   // --- Revisions [F-REC-8, D55] : restaurer = meme droit que modifier (service) ---
 
   router.get(
@@ -201,13 +306,8 @@ export const recipesModule: ApiModule = {
   code: "recipes",
   alwaysOn: true,
   catalog: { status: "AVAILABLE", isDefault: true, sortOrder: 1 },
-  // Matrice B2 (12-Permissions.md, Recettes et Tags) : roles minimaux par defaut.
-  permissions: {
-    "recipes.view": { minRole: "MEMBER" },
-    "recipes.create": { minRole: "MEMBER" },
-    "recipes.moderate": { minRole: "MODERATOR" },
-    "recipes.tags.create": { minRole: "MEMBER" },
-    "recipes.tags.moderate": { minRole: "MODERATOR" },
-  },
+  permissions: RECIPE_PERMISSIONS,
   router: recipesRouter,
+  onMemberLeft: sharing.onMemberLeft,
+  onSpaceDeleted: sharing.onSpaceDeleted,
 };

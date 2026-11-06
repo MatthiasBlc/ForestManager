@@ -196,6 +196,12 @@ export const recipeBlockSchema: z.ZodType<RecipeBlock> = z.union([
   linkedBlockSchema,
 ]);
 
+/** Espace designe par son nom (origine, partage). */
+export const spaceRefSchema = z.object({ id: uuidSchema, name: z.string() });
+export type SpaceRef = z.infer<typeof spaceRefSchema>;
+
+const MAX_SHARE_TARGETS = 50;
+
 const recipeBaseShape = {
   id: uuidSchema,
   homeSpaceId: uuidSchema,
@@ -231,8 +237,21 @@ export const recipeSchema = z.object({
   blocks: z.array(recipeBlockSchema),
   /** Recettes non supprimees qui lient celle-ci (prevenir avant suppression). */
   usedBy: z.number().int(),
+  /** Espace d'origine (affiche "par Lea - Foyer" dans un espace de partage). */
+  homeSpace: spaceRefSchema,
+  /** Nombre d'espaces de partage actifs [F-REC-13]. */
+  shareCount: z.number().int(),
+  /** Espaces de partage dont l'utilisateur courant est membre (confirmation de suppression). */
+  sharedIn: z.array(spaceRefSchema),
   /** Droits de l'utilisateur courant sur cette recette, dans cet espace. */
-  can: z.object({ edit: z.boolean(), delete: z.boolean() }),
+  can: z.object({
+    edit: z.boolean(),
+    delete: z.boolean(),
+    /** Partager directement (auteur, ou moderateurs de l'origine si l'auteur est parti) [D81]. */
+    share: z.boolean(),
+    /** Retirer de cet espace de partage (auteur, MOD et OWNER de cet espace) [F-REC-9]. */
+    removeFromSpace: z.boolean(),
+  }),
 });
 export type Recipe = z.infer<typeof recipeSchema>;
 
@@ -301,3 +320,70 @@ export const recipeListQuerySchema = cursorQuerySchema.extend({
   sort: z.enum(RECIPE_SORTS).default("recent"),
 });
 export type RecipeListQuery = z.infer<typeof recipeListQuerySchema>;
+
+// --- Partage [D03, D26, D81, D82, D84] ---
+
+export const SHARE_STATUSES = ["SHARED", "PENDING"] as const;
+export type ShareStatus = (typeof SHARE_STATUSES)[number];
+export const SHARE_REQUEST_MESSAGE_MAX = 280;
+
+/** Etat du partage vu par l'utilisateur courant (F-PARTAGER). */
+export const recipeSharingSchema = z.object({
+  homeSpace: spaceRefSchema,
+  /** true : cases a cocher ; false : demande a l'auteur (F-PARTAGER-Demande). */
+  canShare: z.boolean(),
+  /** Espaces de l'utilisateur (hors origine) ou la recette est partagee ou demandee. */
+  spaces: z.array(z.object({ spaceId: uuidSchema, status: z.enum(SHARE_STATUSES) })),
+  /** Sous-recettes : partagees avec le plat si elles sont du meme auteur [D26]. */
+  withIt: z.array(z.object({ id: uuidSchema, title: z.string(), included: z.boolean() })),
+});
+export type RecipeSharing = z.infer<typeof recipeSharingSchema>;
+
+/** Espaces ou la recette doit etre partagee ; les autres espaces de l'utilisateur sont retires. */
+export const recipeSharesBodySchema = z.strictObject({
+  spaceIds: z.array(uuidSchema).max(MAX_SHARE_TARGETS),
+});
+export type RecipeSharesBody = z.infer<typeof recipeSharesBodySchema>;
+
+export const shareRequestBodySchema = z.strictObject({
+  targetSpaceId: uuidSchema,
+  message: z.string().trim().max(SHARE_REQUEST_MESSAGE_MAX).optional(),
+});
+export type ShareRequestBody = z.infer<typeof shareRequestBodySchema>;
+
+/** SHARED : partage immediat (confiance de l'auteur ou droit de partager) [D81]. */
+export const shareRequestResultSchema = z.object({ status: z.enum(SHARE_STATUSES) });
+
+export const shareRequestSchema = z.object({
+  id: uuidSchema,
+  recipe: z.object({ id: uuidSchema, title: z.string() }),
+  homeSpace: spaceRefSchema,
+  /** Espace ou le demandeur voit la recette (portee du reglage de confiance). */
+  sourceSpace: spaceRefSchema,
+  targetSpace: spaceRefSchema.extend({ memberCount: z.number().int() }),
+  requester: userSummarySchema,
+  message: z.string().nullable(),
+  createdAt: isoDateTimeSchema,
+  /** Confiance actuelle de l'auteur dans sourceSpace ; null si le decideur n'est pas l'auteur. */
+  trust: z.boolean().nullable(),
+});
+export type ShareRequest = z.infer<typeof shareRequestSchema>;
+
+export const shareRequestParamsSchema = z.strictObject({
+  spaceId: uuidSchema,
+  requestId: uuidSchema,
+});
+
+/** `trustMembers` : autoriser les membres de sourceSpace a partager sans demander [D101]. */
+export const approveShareRequestBodySchema = z.strictObject({
+  trustMembers: z.boolean().optional(),
+});
+
+/** Avant de quitter un espace (F-QUITTER, D84). */
+export const recipeLeavePreviewSchema = z.object({
+  /** Recettes creees dans cet espace : elles y restent (D18). */
+  createdHere: z.number().int(),
+  /** Recettes de l'espace perso partagees ici : laisser ou retirer, au choix. */
+  personalShared: z.array(z.object({ id: uuidSchema, title: z.string() })),
+});
+export type RecipeLeavePreview = z.infer<typeof recipeLeavePreviewSchema>;

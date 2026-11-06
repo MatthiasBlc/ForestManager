@@ -70,18 +70,21 @@ export async function assertComposition(
   if (error === "DEPTH") throw new AppError("RECIPE_008");
 }
 
-const linkedSelect = {
-  id: true,
-  title: true,
-  yieldQuantity: true,
-  yieldUnitId: true,
-  isBase: true,
-  homeSpaceId: true,
-  deletedAt: true,
-  blocks: blockInclude,
-} satisfies Prisma.RecipeSelect;
+function linkedSelect(spaceId: string) {
+  return {
+    id: true,
+    title: true,
+    yieldQuantity: true,
+    yieldUnitId: true,
+    isBase: true,
+    homeSpaceId: true,
+    deletedAt: true,
+    blocks: blockInclude,
+    shares: { where: { spaceId, removedAt: null }, select: { id: true } },
+  } satisfies Prisma.RecipeSelect;
+}
 
-export type LinkedRow = Prisma.RecipeGetPayload<{ select: typeof linkedSelect }>;
+export type LinkedRow = Prisma.RecipeGetPayload<{ select: ReturnType<typeof linkedSelect> }>;
 
 /** Sous-recette chargee, avec son statut vu depuis l'espace courant. */
 export interface LoadedLink {
@@ -89,10 +92,10 @@ export interface LoadedLink {
   row: LinkedRow;
 }
 
-/** Statut d'une sous-recette vue depuis `spaceId` (C3.5 ajoutera les espaces de partage). */
+/** Statut d'une sous-recette vue depuis `spaceId` : origine ou partage actif [D03]. */
 function statusIn(row: LinkedRow, spaceId: string): LinkStatus {
   if (row.deletedAt) return "DELETED";
-  return row.homeSpaceId === spaceId ? "AVAILABLE" : "HIDDEN";
+  return row.homeSpaceId === spaceId || row.shares.length > 0 ? "AVAILABLE" : "HIDDEN";
 }
 
 /** Charge les sous-recettes liees par `blocks`, niveau par niveau (lien vivant). */
@@ -106,7 +109,7 @@ export async function loadLinks(
   for (let level = 1; level < MAX_RECIPE_LEVELS && ids.length > 0; level += 1) {
     const rows = await db.recipe.findMany({
       where: { id: { in: [...new Set(ids)].filter((id) => !loaded.has(id)) } },
-      select: linkedSelect,
+      select: linkedSelect(spaceId),
     });
     ids = [];
     for (const row of rows) {

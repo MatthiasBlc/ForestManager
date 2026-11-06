@@ -85,10 +85,17 @@ export async function resolveContent(
   const linkIds = [...new Set(linksOf(content.blocks))];
   const linked = await db.recipe.findMany({
     where: { id: { in: linkIds } },
-    select: { id: true, homeSpaceId: true, deletedAt: true },
+    select: {
+      id: true,
+      homeSpaceId: true,
+      deletedAt: true,
+      shares: { where: { spaceId, removedAt: null }, select: { id: true } },
+    },
   });
   const usable = linked.filter(
-    (row) => keepLinks.has(row.id) || (row.homeSpaceId === spaceId && row.deletedAt === null)
+    (row) =>
+      keepLinks.has(row.id) ||
+      (row.deletedAt === null && (row.homeSpaceId === spaceId || row.shares.length > 0))
   );
   if (usable.length !== linkIds.length) throw invalid("blocks", "Recette liee inconnue");
 
@@ -247,7 +254,11 @@ export const blockInclude = {
 } satisfies Prisma.Recipe$blocksArgs;
 
 export function detailInclude(spaceId: string) {
-  return { ...summaryInclude(spaceId), blocks: blockInclude } satisfies Prisma.RecipeInclude;
+  return {
+    ...summaryInclude(spaceId),
+    blocks: blockInclude,
+    homeSpace: { select: { id: true, name: true } },
+  } satisfies Prisma.RecipeInclude;
 }
 
 type SummaryRow = Prisma.RecipeGetPayload<{ include: ReturnType<typeof summaryInclude> }>;
@@ -338,11 +349,18 @@ function toLocalBlock(block: BlockRow): LocalBlock {
   };
 }
 
+/** Partages de la recette vus par l'utilisateur courant. */
+export interface ShareInfo {
+  shareCount: number;
+  sharedIn: Recipe["sharedIn"];
+}
+
 export function toRecipe(
   row: DetailRow,
   can: Recipe["can"],
   links: ReadonlyMap<string, LoadedLink>,
-  usedBy: number
+  usedBy: number,
+  shares: ShareInfo
 ): Recipe {
   return {
     ...toSummaryBase(row),
@@ -356,6 +374,8 @@ export function toRecipe(
     createdAt: row.createdAt.toISOString(),
     blocks: row.blocks.map((block) => toBlock(block, links)),
     usedBy,
+    homeSpace: row.homeSpace,
+    ...shares,
     can,
   };
 }

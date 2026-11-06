@@ -198,10 +198,16 @@ export function unitId(code: string): string {
   return unit.id;
 }
 
-export function buildRecipe(over: Partial<Recipe> = {}): Recipe {
+type RecipeOverrides = Partial<Omit<Recipe, "can">> & { can?: Partial<Recipe["can"]> };
+
+export function buildRecipe({ can, ...over }: RecipeOverrides = {}): Recipe {
+  const homeSpaceId = over.homeSpaceId ?? uuid();
   return valid(recipeSchema, {
     id: uuid(),
-    homeSpaceId: uuid(),
+    homeSpaceId,
+    homeSpace: { id: homeSpaceId, name: "Foyer" },
+    shareCount: 0,
+    sharedIn: [],
     title: "Gratin de pâtes",
     imageUrl: null,
     yieldQuantity: 4,
@@ -247,8 +253,8 @@ export function buildRecipe(over: Partial<Recipe> = {}): Recipe {
         steps: ["Cuire les pâtes.", "Gratiner 20 min."],
       },
     ],
-    can: { edit: true, delete: true },
     ...over,
+    can: { edit: true, delete: true, share: true, removeFromSpace: false, ...can },
   });
 }
 
