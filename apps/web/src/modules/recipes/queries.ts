@@ -1,11 +1,14 @@
-// Requetes du module Recettes : liste paginee, detail, historique, referentiels.
+// Requetes du module Recettes : liste paginee, detail, historique, partage, referentiels.
 import {
   ingredientSchema,
   listSchema,
   pageSchema,
+  recipeLeavePreviewSchema,
   recipeRevisionSchema,
   recipeSchema,
+  recipeSharingSchema,
   recipeSummarySchema,
+  shareRequestSchema,
   tagSchema,
   unitSchema,
   type RecipeSort,
@@ -18,8 +21,9 @@ export interface RecipeFilters {
   q?: string;
   tagIds?: string[];
   base?: boolean;
-  authorId?: string;
   sort?: RecipeSort;
+  /** "Mes recettes" [D82] : recettes de l'utilisateur dans tous ses espaces. */
+  mine?: boolean;
 }
 
 const recipePage = pageSchema(recipeSummarySchema);
@@ -31,16 +35,16 @@ export function recipesQuery(spaceId: string, filters: RecipeFilters) {
   if (filters.q) params.set("q", filters.q);
   if (filters.tagIds?.length) params.set("tagIds", filters.tagIds.join(","));
   if (filters.base) params.set("base", "true");
-  if (filters.authorId) params.set("authorId", filters.authorId);
   if (filters.sort && filters.sort !== "recent") params.set("sort", filters.sort);
+  const path = `/spaces/${spaceId}/recipes${filters.mine ? "/mine" : ""}`;
   return infiniteQueryOptions({
-    queryKey: [...recipesKey(spaceId), "list", params.toString()],
+    queryKey: [...recipesKey(spaceId), "list", filters.mine ? "mine" : "space", params.toString()],
     initialPageParam: null as string | null,
     queryFn: async ({ pageParam }) => {
       const page = new URLSearchParams(params);
       if (pageParam) page.set("cursor", pageParam);
       const query = page.toString();
-      return api.get(`/spaces/${spaceId}/recipes${query ? `?${query}` : ""}`, recipePage);
+      return api.get(`${path}${query ? `?${query}` : ""}`, recipePage);
     },
     getNextPageParam: (last) => last.nextCursor,
   });
@@ -64,6 +68,31 @@ export function revisionsQuery(spaceId: string, recipeId: string) {
           listSchema(recipeRevisionSchema)
         )
       ).data,
+  });
+}
+
+/** Sous la cle du detail : invalider le detail rafraichit aussi le partage. */
+export function sharingQuery(spaceId: string, recipeId: string) {
+  return queryOptions({
+    queryKey: [...recipeQuery(spaceId, recipeId).queryKey, "sharing"],
+    queryFn: () => api.get(`/spaces/${spaceId}/recipes/${recipeId}/sharing`, recipeSharingSchema),
+  });
+}
+
+export function shareRequestsQuery(spaceId: string) {
+  return queryOptions({
+    queryKey: [...recipesKey(spaceId), "share-requests"],
+    queryFn: async () =>
+      (await api.get(`/spaces/${spaceId}/recipes/share-requests`, listSchema(shareRequestSchema)))
+        .data,
+  });
+}
+
+export function leavePreviewQuery(spaceId: string) {
+  return queryOptions({
+    queryKey: [...recipesKey(spaceId), "leave-preview"],
+    queryFn: () => api.get(`/spaces/${spaceId}/recipes/leave-preview`, recipeLeavePreviewSchema),
+    staleTime: 0,
   });
 }
 

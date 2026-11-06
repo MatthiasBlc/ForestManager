@@ -1,6 +1,6 @@
 // E-RECETTE : detail d'une recette (F-REC-1), portions avec mise a l'echelle,
 // ingredients a cocher, etapes ; blocs lies deplies a l'echelle (D24) ;
-// modifier et supprimer selon les droits (D57).
+// modifier, partager, retirer et supprimer selon les droits (D57, D81, F-REC-9).
 import { linkFactor, type LinkedBlock, type Recipe, type RecipeBlock, type Unit } from "@fm/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -21,8 +21,9 @@ import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { IngredientRow } from "./components/ingredient-row.tsx";
 import { LINK_STATUS_TITLES } from "./draft.ts";
-import { formatMinutes, scaledAmount } from "./format.ts";
+import { formatMinutes, joinNames, scaledAmount } from "./format.ts";
 import { recipeQuery, recipesKey, unitsQuery } from "./queries.ts";
+import { RemoveFromSpaceSheet, ShareSheet } from "./sharing.tsx";
 
 export function RecipeNotFound({ spaceId }: { spaceId: string }) {
   return (
@@ -74,6 +75,9 @@ function DeleteSheet({
   return (
     <Sheet open={open} onClose={onClose} title={`Supprimer « ${recipe.title} » ?`}>
       <p>La recette et son historique disparaissent pour tous les membres de l'espace.</p>
+      {recipe.sharedIn.length > 0 ? (
+        <p>Elle disparaît aussi de {joinNames(recipe.sharedIn.map((space) => space.name))}.</p>
+      ) : null}
       {recipe.usedBy > 0 ? (
         <p>
           Elle est utilisée dans {recipe.usedBy} {recipe.usedBy > 1 ? "recettes" : "recette"} :
@@ -266,8 +270,14 @@ function RecipeView({
   units: readonly Unit[];
 }) {
   const navigate = useNavigate();
+  const { data: space } = useQuery(spaceQuery(spaceId));
   const [servings, setServings] = useState(recipe.yieldQuantity);
-  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [sheet, setSheet] = useState<"delete" | "share" | "remove" | null>(null);
+  const spaceName = space?.name ?? "";
+  const sharedHere = recipe.homeSpaceId !== spaceId;
+  const close = () => {
+    setSheet(null);
+  };
   const yieldUnit = units.find((u) => u.id === recipe.yieldUnitId);
   const titled = recipe.blocks.length > 1;
   const composed = recipe.blocks.some((block) => block.kind === "RECIPE");
@@ -296,7 +306,8 @@ function RecipeView({
               {recipe.title}
             </h1>
             <span className="text-sm text-ink-muted">
-              par {recipe.author.username} · révision {recipe.currentRevision}
+              par {recipe.author.username}
+              {sharedHere ? ` · ${recipe.homeSpace.name}` : ""} · révision {recipe.currentRevision}
             </span>
           </div>
           {recipe.can.edit ? (
@@ -312,9 +323,14 @@ function RecipeView({
             label="Actions de la recette"
             trigger={<IconButton icon="more" label="Plus d'actions" />}
             items={[
+              { id: "share", label: "Partager dans un espace", icon: "share" },
               { id: "history", label: "Voir l'historique", icon: "clock" },
+              ...(recipe.can.removeFromSpace && sharedHere
+                ? [{ id: "remove" as const, label: `Retirer de ${spaceName}`, icon: "x" as const }]
+                : []),
               ...(recipe.can.delete
                 ? [
+                    "-" as const,
                     {
                       id: "delete" as const,
                       label: "Supprimer",
@@ -325,8 +341,8 @@ function RecipeView({
                 : []),
             ]}
             onSelect={(id) => {
-              if (id === "delete") setDeleteOpen(true);
-              else void navigate(`/s/${spaceId}/recipes/${recipe.id}/history`);
+              if (id === "history") void navigate(`/s/${spaceId}/recipes/${recipe.id}/history`);
+              else setSheet(id);
             }}
           />
         </div>
@@ -384,13 +400,14 @@ function RecipeView({
           </a>
         ) : null}
       </article>
-      <DeleteSheet
+      <DeleteSheet spaceId={spaceId} recipe={recipe} open={sheet === "delete"} onClose={close} />
+      <ShareSheet spaceId={spaceId} recipe={recipe} open={sheet === "share"} onClose={close} />
+      <RemoveFromSpaceSheet
         spaceId={spaceId}
+        spaceName={spaceName}
         recipe={recipe}
-        open={deleteOpen}
-        onClose={() => {
-          setDeleteOpen(false);
-        }}
+        open={sheet === "remove"}
+        onClose={close}
       />
     </>
   );

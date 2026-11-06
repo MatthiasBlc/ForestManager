@@ -38,12 +38,21 @@ export function mockSession({ me = buildMe(), spaces, email = true }: SessionOpt
   return { me, spaces: all };
 }
 
-/** Module Recettes vide : referentiels et liste vide dans tout espace. */
+/** Module Recettes vide : referentiels, liste, demandes et apercu de depart vides dans tout espace. */
 export function mockEmptyRecipes(): void {
   server.use(
     http.get("/api/v1/units", () => HttpResponse.json({ data: UNITS })),
     http.get("/api/v1/tags", () => HttpResponse.json({ data: [] })),
     http.get("/api/v1/spaces/:spaceId/recipes/tags", () => HttpResponse.json({ data: [] })),
+    http.get("/api/v1/spaces/:spaceId/recipes/share-requests", () =>
+      HttpResponse.json({ data: [] })
+    ),
+    http.get("/api/v1/spaces/:spaceId/recipes/mine", () =>
+      HttpResponse.json({ data: [], nextCursor: null })
+    ),
+    http.get("/api/v1/spaces/:spaceId/recipes/leave-preview", () =>
+      HttpResponse.json({ createdHere: 0, personalShared: [] })
+    ),
     http.get("/api/v1/spaces/:spaceId/recipes", () =>
       HttpResponse.json({ data: [], nextCursor: null })
     )

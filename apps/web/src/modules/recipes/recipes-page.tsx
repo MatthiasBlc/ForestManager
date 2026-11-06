@@ -1,11 +1,12 @@
 // E-RECETTES : recettes de l'espace (F-REC-11) avec recherche, filtres par tag,
-// "Bases" et "Mes recettes" ; etats vide, chargement, erreur ; F-AJOUT-RECETTE.
-import type { RecipeSummary, Unit } from "@fm/shared";
+// "Bases" ; "Mes recettes" de tous les espaces (D82) ; recettes partagees ;
+// bandeau des demandes de partage ; etats vide, chargement, erreur ; F-AJOUT-RECETTE.
+import type { RecipeSummary, SpaceSummary, Unit } from "@fm/shared";
 import { keepPreviousData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
-import { meQuery, spaceQuery } from "../../core/session/queries.ts";
+import { spaceQuery, spacesQuery } from "../../core/session/queries.ts";
 import { errorMessage } from "../../i18n/index.ts";
 import { Button } from "../../ui/button.tsx";
 import { Chip } from "../../ui/controls.tsx";
@@ -15,10 +16,25 @@ import { Sheet } from "../../ui/sheet.tsx";
 import { RecipeCard, type CardBadge } from "./components/recipe-card.tsx";
 import { recipeMeta } from "./format.ts";
 import { globalTagsQuery, recipesQuery, spaceTagsQuery, unitsQuery } from "./queries.ts";
+import { ShareRequestsBanner } from "./sharing.tsx";
 import { useDebounced } from "./use-debounced.ts";
 
-function badgesOf(recipe: RecipeSummary): CardBadge[] {
+/**
+ * Hors de son espace d'origine : "Partagee" dans un espace de partage, nom de
+ * l'origine dans "Mes recettes".
+ */
+function badgesOf(
+  recipe: RecipeSummary,
+  spaceId: string,
+  mine: boolean,
+  spaces: readonly SpaceSummary[]
+): CardBadge[] {
   const badges: CardBadge[] = [];
+  if (recipe.homeSpaceId !== spaceId) {
+    const home = spaces.find((space) => space.id === recipe.homeSpaceId);
+    if (!mine) badges.push({ label: "Partagée", tone: "accent", icon: "share" });
+    else if (home) badges.push({ label: home.name, tone: "neutral" });
+  }
   if (recipe.isComposed) badges.push({ label: "Composée", tone: "second", icon: "link" });
   if (recipe.isBase) badges.push({ label: "Base", tone: "second" });
   return badges;
@@ -82,11 +98,13 @@ function AddRecipeSheet({
 function RecipeGrid({
   recipes,
   units,
+  badges,
   onOpen,
 }: {
   recipes: readonly RecipeSummary[];
   units: readonly Unit[];
-  onOpen: (id: string) => void;
+  badges: (recipe: RecipeSummary) => CardBadge[];
+  onOpen: (recipe: RecipeSummary) => void;
 }) {
   return (
     <div className="fm-cq">
@@ -97,9 +115,9 @@ function RecipeGrid({
             title={recipe.title}
             meta={recipeMeta(recipe, units)}
             image={recipe.imageUrl}
-            badges={badgesOf(recipe)}
+            badges={badges(recipe)}
             onOpen={() => {
-              onOpen(recipe.id);
+              onOpen(recipe);
             }}
           />
         ))}
@@ -112,7 +130,7 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
   const { spaceId = "" } = useParams();
   const navigate = useNavigate();
   const space = useQuery(spaceQuery(spaceId));
-  const me = useQuery(meQuery);
+  const spaces = useQuery(spacesQuery);
   const units = useQuery(unitsQuery);
   const globalTags = useQuery(globalTagsQuery);
   const spaceTags = useQuery(spaceTagsQuery(spaceId));
@@ -121,10 +139,8 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
   const [baseOnly, setBaseOnly] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const q = useDebounced(search.trim());
-  const authorId = mine ? me.data?.id : undefined;
   const list = useInfiniteQuery({
-    ...recipesQuery(spaceId, { q, tagIds, base: baseOnly, authorId }),
-    enabled: !mine || authorId !== undefined,
+    ...recipesQuery(spaceId, { q, tagIds, base: baseOnly, mine }),
     // Pendant une recherche, la liste precedente reste affichee (pas de clignotement).
     placeholderData: keepPreviousData,
   });
@@ -133,8 +149,9 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
   const filtered = q !== "" || tagIds.length > 0 || baseOnly;
   const recipes = list.data?.pages.flatMap((page) => page.data) ?? [];
   const tags = [...(globalTags.data ?? []), ...(spaceTags.data ?? [])];
-  const open = (id: string) => {
-    void navigate(`/s/${spaceId}/recipes/${id}`);
+  // "Mes recettes" ouvre chaque recette dans son espace d'origine.
+  const open = (recipe: RecipeSummary) => {
+    void navigate(`/s/${mine ? recipe.homeSpaceId : spaceId}/recipes/${recipe.id}`);
   };
   const add = () => {
     setAddOpen(true);
@@ -190,7 +207,12 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
   } else {
     content = (
       <>
-        <RecipeGrid recipes={recipes} units={units.data} onOpen={open} />
+        <RecipeGrid
+          recipes={recipes}
+          units={units.data}
+          badges={(recipe) => badgesOf(recipe, spaceId, mine, spaces.data ?? [])}
+          onOpen={open}
+        />
         {list.hasNextPage ? (
           <Button
             className="self-center"
@@ -214,6 +236,7 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
           Nouvelle recette
         </Button>
       </div>
+      {mine || space.data?.kind === "GROUP" ? <ShareRequestsBanner spaceId={spaceId} /> : null}
       <div className="flex items-center gap-2">
         <input
           type="search"

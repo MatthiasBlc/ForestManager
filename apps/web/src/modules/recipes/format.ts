@@ -56,3 +56,9 @@ export function scaledAmount(
   const shown = units.find((u) => u.code === readable.unit.code) ?? unit;
   return `${formatQuantity(readable.quantity, { fractions: !shown.metric })} ${shown.abbreviation}`;
 }
+
+/** "Amis", "Amis et TOM", "Amis, TOM et Colloc". */
+export function joinNames(names: readonly string[]): string {
+  if (names.length <= 1) return names.join("");
+  return `${names.slice(0, -1).join(", ")} et ${names.at(-1) ?? ""}`;
+}

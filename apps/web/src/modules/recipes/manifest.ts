@@ -1,4 +1,4 @@
-// Manifeste web du module Recettes : navigation et routes (ecrans en C3).
+// Manifeste web du module Recettes : navigation, routes et section de F-QUITTER (D84).
 import { lazy } from "react";
 
 import type { WebModule } from "../../app/registry.ts";
@@ -12,4 +12,5 @@ export const recipesModule: WebModule = {
       : []),
   ],
   Routes: lazy(() => import("./routes.tsx")),
+  LeaveSection: lazy(() => import("./leave-section.tsx")),
 };

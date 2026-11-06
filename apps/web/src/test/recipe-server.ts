@@ -1,20 +1,26 @@
 // Faux serveur du module Recettes (MSW) sur un espace groupe : referentiels,
-// liste, detail, creation, modification, suppression, historique, restauration. Garde l'etat et les corps recus.
+// liste, detail, creation, modification, suppression, historique, restauration,
+// partage (F-PARTAGER, demandes, "Mes recettes", depart). Garde l'etat et les corps recus.
 import {
   errorBody,
   type CreateRecipeBody,
   type Ingredient,
   type Recipe,
   type RecipeBlock,
+  type RecipeLeavePreview,
   type RecipeRevision,
+  type RecipeSharing,
   type RestoreRevisionBody,
+  type ShareRequest,
+  type ShareStatus,
+  type SpaceDetail,
   type SpaceRole,
   type Tag,
   type UpdateRecipeBody,
 } from "@fm/shared";
 import { http, HttpResponse } from "msw";
 
-import { buildRecipe, toSummary, UNITS, uuid } from "./fixtures.ts";
+import { buildRecipe, toSummary, UNITS, uuid, type RecipeOverrides } from "./fixtures.ts";
 import { server } from "./server.ts";
 import { spaceServer } from "./space-server.ts";
 
@@ -30,15 +36,22 @@ export function recipeServer({
   myRole = "MEMBER",
   recipes = [],
   revisions = {},
+  extraSpaces = [],
 }: {
   myRole?: SpaceRole;
   recipes?: Recipe[];
   /** Historique par recette, du plus recent au plus ancien. */
   revisions?: Record<string, RecipeRevision[]>;
+  extraSpaces?: SpaceDetail[];
 } = {}) {
-  const s = spaceServer({ myRole });
+  const s = spaceServer({ myRole, extraSpaces });
   const state = {
-    recipes: [...recipes],
+    // Recettes donnees : nees dans l'espace groupe (une autre origine passe par `add`).
+    recipes: recipes.map((r) => ({
+      ...r,
+      homeSpaceId: s.space.id,
+      homeSpace: { id: s.space.id, name: s.space.name },
+    })),
     revisions: { ...revisions },
     ingredients: [ingredient("Pâtes"), ingredient("Pâtes fraîches"), ingredient("Crème fraîche")],
     globalTags: [
@@ -46,6 +59,12 @@ export function recipeServer({
       { id: uuid(), scope: "GLOBAL", name: "Rapide" },
     ] as Tag[],
     spaceTags: [{ id: uuid(), scope: "SPACE", name: "Plat du dimanche" }] as Tag[],
+    /** Etat du partage par recette ; par defaut, aucun partage. */
+    sharing: {} as Record<string, Partial<RecipeSharing>>,
+    shareRequests: [] as ShareRequest[],
+    /** Reponse a une demande de partage (POST share-requests). */
+    requestResult: "PENDING" as ShareStatus,
+    leavePreview: { createdHere: 0, personalShared: [] } as RecipeLeavePreview,
     queries: [] as URLSearchParams[],
     bodies: {} as Record<string, unknown>,
     calls: [] as string[],
@@ -202,5 +221,81 @@ export function recipeServer({
       return new HttpResponse(null, { status: 204 });
     })
   );
-  return { ...s, recipes: state, base };
+  const sharingOf = (recipe: Recipe): RecipeSharing => ({
+    homeSpace: recipe.homeSpace,
+    canShare: recipe.can.share,
+    spaces: [],
+    withIt: [],
+    ...state.sharing[recipe.id],
+  });
+  const record = (name: string, body?: unknown) => {
+    // Meme journal que le faux serveur d'espace : l'ordre des appels se lit d'un coup.
+    s.state.calls.push(name);
+    if (body !== undefined) state.bodies[name] = body;
+  };
+
+  // Ajoutes apres coup : passent avant `${base}/:recipeId`.
+  server.use(
+    http.get("/api/v1/spaces/:spaceId/recipes/mine", ({ request }) => {
+      state.queries.push(new URL(request.url).searchParams);
+      const data = state.recipes.filter((r) => r.author.id === s.me.id).map(toSummary);
+      return HttpResponse.json({ data, nextCursor: null });
+    }),
+    http.get("/api/v1/spaces/:spaceId/recipes/share-requests", () =>
+      HttpResponse.json({ data: state.shareRequests })
+    ),
+    http.post(
+      "/api/v1/spaces/:spaceId/recipes/share-requests/:requestId/:decision",
+      async ({ params, request }) => {
+        const decision = String(params.decision);
+        const text = await request.text();
+        record(`${decision}:${String(params.requestId)}`, text ? JSON.parse(text) : {});
+        state.shareRequests = state.shareRequests.filter((r) => r.id !== params.requestId);
+        return new HttpResponse(null, { status: 204 });
+      }
+    ),
+    http.get(`${base}/leave-preview`, () => HttpResponse.json(state.leavePreview)),
+    http.get(`${base}/:recipeId/sharing`, ({ params }) => {
+      const recipe = find(params.recipeId);
+      return recipe ? HttpResponse.json(sharingOf(recipe)) : notFound();
+    }),
+    http.put(`${base}/:recipeId/shares`, async ({ params, request }) => {
+      const recipe = find(params.recipeId);
+      if (!recipe) return notFound();
+      const body = (await request.json()) as { spaceIds: string[] };
+      record("shares", body);
+      state.sharing[recipe.id] = {
+        ...state.sharing[recipe.id],
+        spaces: body.spaceIds.map((spaceId) => ({ spaceId, status: "SHARED" as const })),
+      };
+      return HttpResponse.json(sharingOf(recipe));
+    }),
+    http.post(`${base}/:recipeId/share-requests`, async ({ params, request }) => {
+      if (!find(params.recipeId)) return notFound();
+      record("shareRequest", await request.json());
+      return HttpResponse.json({ status: state.requestResult }, { status: 201 });
+    }),
+    http.delete(`${base}/:recipeId/share`, ({ params }) => {
+      if (!find(params.recipeId)) return notFound();
+      record(`unshare:${String(params.recipeId)}`);
+      state.recipes = state.recipes.filter((r) => r.id !== params.recipeId);
+      return new HttpResponse(null, { status: 204 });
+    })
+  );
+
+  /** Ajoute une recette de l'utilisateur courant, nee dans l'espace groupe par defaut. */
+  function add(over: RecipeOverrides = {}): Recipe {
+    const homeSpaceId = over.homeSpaceId ?? s.space.id;
+    const home =
+      homeSpaceId === s.space.id
+        ? { id: s.space.id, name: s.space.name }
+        : homeSpaceId === s.personal.id
+          ? { id: s.personal.id, name: s.personal.name }
+          : { id: homeSpaceId, name: "Foyer" };
+    const recipe = buildRecipe({ author: self, homeSpace: home, ...over, homeSpaceId });
+    state.recipes.push(recipe);
+    return recipe;
+  }
+
+  return { ...s, recipes: state, base, add };
 }

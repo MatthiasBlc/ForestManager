@@ -2,11 +2,13 @@
 // propriete et depart (F-TRANSFERER, F-QUITTER), suppression (F-SUPPRIMER-ESPACE, D93).
 import { spaceDetailSchema, updateSpaceBodySchema, type SpaceDetail } from "@fm/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 
+import type { LeaveSectionProps } from "../../app/registry.ts";
 import { errorMessage } from "../../i18n/index.ts";
+import { WEB_MODULES } from "../../modules/index.ts";
 import { api } from "../../lib/api.ts";
 import { applyApiError } from "../../lib/form-errors.ts";
 import { tintNames } from "../../theme/themes.ts";
@@ -120,8 +122,29 @@ function LeaveSheet({
   const queryClient = useQueryClient();
   const toast = useToast();
   const me = useQuery(meQuery);
+  // Sections des modules actifs (D84) : chacune peut preparer le depart (retraits).
+  const sections = WEB_MODULES.filter(
+    (module) => module.LeaveSection && space.modules.some((m) => m.code === module.code)
+  );
+  // Retraits a faire avant le depart, et un rappel stable par module (deps des effets).
+  const [prepares] = useState(() => new Map<string, () => Promise<void>>());
+  const [callbacks] = useState(() => new Map<string, LeaveSectionProps["onPrepare"]>());
+  const onPrepareFor = (code: string) => {
+    let callback = callbacks.get(code);
+    if (!callback) {
+      callback = (prepare) => {
+        if (prepare) prepares.set(code, prepare);
+        else prepares.delete(code);
+      };
+      callbacks.set(code, callback);
+    }
+    return callback;
+  };
   const leave = useMutation({
-    mutationFn: () => api.post(`/spaces/${space.id}/leave`, { confirmDeletion: alone }),
+    mutationFn: async () => {
+      if (!alone) for (const prepare of prepares.values()) await prepare();
+      await api.post(`/spaces/${space.id}/leave`, { confirmDeletion: alone });
+    },
     onSuccess: async () => {
       queryClient.removeQueries({ queryKey: ["spaces", space.id] });
       await queryClient.invalidateQueries({ queryKey: ["spaces"], exact: true });
@@ -140,10 +163,21 @@ function LeaveSheet({
         ) : (
           <>
             <p>Tu ne verras plus les recettes ni l'activité de {space.name}.</p>
-            <p className="text-ink-muted">
-              Les recettes que tu as créées y restent ; les modérateurs en prennent soin. Tu pourras
-              revenir avec une nouvelle invitation.
-            </p>
+            <Suspense fallback={null}>
+              {open
+                ? sections.map(({ code, LeaveSection }) =>
+                    LeaveSection ? (
+                      <LeaveSection
+                        key={code}
+                        spaceId={space.id}
+                        spaceName={space.name}
+                        onPrepare={onPrepareFor(code)}
+                      />
+                    ) : null
+                  )
+                : null}
+            </Suspense>
+            <p className="text-ink-muted">Tu pourras revenir avec une nouvelle invitation.</p>
           </>
         )}
         <FormAlert message={leave.isError ? errorMessage(leave.error) : undefined} />

@@ -198,7 +198,7 @@ export function unitId(code: string): string {
   return unit.id;
 }
 
-type RecipeOverrides = Partial<Omit<Recipe, "can">> & { can?: Partial<Recipe["can"]> };
+export type RecipeOverrides = Partial<Omit<Recipe, "can">> & { can?: Partial<Recipe["can"]> };
 
 export function buildRecipe({ can, ...over }: RecipeOverrides = {}): Recipe {
   const homeSpaceId = over.homeSpaceId ?? uuid();
