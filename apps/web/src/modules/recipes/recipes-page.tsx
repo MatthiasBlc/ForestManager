@@ -15,6 +15,7 @@ import { Icon, type IconName } from "../../ui/icon.tsx";
 import { Sheet } from "../../ui/sheet.tsx";
 import { RecipeCard, type CardBadge } from "./components/recipe-card.tsx";
 import { recipeMeta } from "./format.ts";
+import { ImportTextSheet, ImportUrlSheet, type ImportSheet } from "./import-sheets.tsx";
 import { globalTagsQuery, recipesQuery, spaceTagsQuery, unitsQuery } from "./queries.ts";
 import { ShareRequestsBanner } from "./sharing.tsx";
 import { SuggestionsToDecideBanner } from "./suggestions.tsx";
@@ -44,23 +45,41 @@ function badgesOf(
 function AddRecipeSheet({
   open,
   onClose,
+  onImport,
   spaceId,
   spaceName,
 }: {
   open: boolean;
   onClose: () => void;
+  onImport: (sheet: Exclude<ImportSheet, null>) => void;
   spaceId: string;
   spaceName: string;
 }) {
-  const choices: { to?: string; icon: IconName; title: string; text: string }[] = [
+  const choices: {
+    to?: string;
+    sheet?: Exclude<ImportSheet, null>;
+    icon: IconName;
+    title: string;
+    text: string;
+  }[] = [
     {
       to: `/s/${spaceId}/recipes/new`,
       icon: "pencil",
       title: "Saisir",
       text: "Écrire la recette toi-même",
     },
-    { icon: "link", title: "Importer un lien", text: "Une page de recette sur le web (bientôt)" },
-    { icon: "book-open", title: "Coller un texte", text: "Depuis un mail, une note (bientôt)" },
+    {
+      sheet: "url",
+      icon: "link",
+      title: "Importer un lien",
+      text: "Une page de recette sur le web",
+    },
+    {
+      sheet: "text",
+      icon: "book-open",
+      title: "Coller un texte",
+      text: "Depuis un mail, une note, un PDF",
+    },
   ];
   return (
     <Sheet open={open} onClose={onClose} title={`Nouvelle recette dans ${spaceName}`}>
@@ -83,9 +102,17 @@ function AddRecipeSheet({
               <Icon name="chevron-right" className="fm-option-go" />
             </Link>
           ) : (
-            <div key={choice.title} className="fm-option opacity-60" aria-disabled="true">
+            <button
+              key={choice.title}
+              type="button"
+              className="fm-option w-full text-left"
+              onClick={() => {
+                if (choice.sheet) onImport(choice.sheet);
+              }}
+            >
               {content}
-            </div>
+              <Icon name="chevron-right" className="fm-option-go" />
+            </button>
           );
         })}
         <small className="text-ink-muted">
@@ -139,6 +166,7 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
   const [tagIds, setTagIds] = useState<string[]>([]);
   const [baseOnly, setBaseOnly] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
+  const [importSheet, setImportSheet] = useState<ImportSheet>(null);
   const q = useDebounced(search.trim());
   const list = useInfiniteQuery({
     ...recipesQuery(spaceId, { q, tagIds, base: baseOnly, mine }),
@@ -287,8 +315,29 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
         onClose={() => {
           setAddOpen(false);
         }}
+        onImport={(sheet) => {
+          setAddOpen(false);
+          setImportSheet(sheet);
+        }}
         spaceId={spaceId}
         spaceName={spaceName}
+      />
+      <ImportUrlSheet
+        open={importSheet === "url"}
+        onClose={() => {
+          setImportSheet(null);
+        }}
+        onPasteText={() => {
+          setImportSheet("text");
+        }}
+        spaceId={spaceId}
+      />
+      <ImportTextSheet
+        open={importSheet === "text"}
+        onClose={() => {
+          setImportSheet(null);
+        }}
+        spaceId={spaceId}
       />
     </div>
   );

@@ -535,3 +535,13 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
   - **Menage** par balayage horaire : les envois en attente de plus d'une heure, et tout objet que la base ne reference plus (compte supprime, espace purge, image remplacee) et vieux de plus d'une heure. Les recettes supprimees depuis plus de 30 jours perdent leur photo.
   - **Stockage facultatif** (comme les emails, D21) : sans variables `MINIO_*`, `features.uploads` vaut false et le front masque les choix de photo.
   - **Serveur de dev, de test et de CI : RustFS** (`rustfs/rustfs`, compatible S3, licence Apache 2). La preprod et la prod gardent le MinIO deja installe (D147). En dev, le bucket est servi par le proxy de Vite (meme origine, pas de CORS).
+
+### D168 - Import de recettes : regles de realisation - VALIDEE (2026-11-06, realisation C3.8)
+
+- **Constat** : le plan C3 fixe l'import par lien (JSON-LD, anti-SSRF) et par texte colle, sans dire ou vit l'analyse, ce que devient une recette importee avant relecture, ni quoi faire des unites absentes du referentiel.
+- **Choix** :
+  - **Analyse partagee** (`packages/shared/src/recipes/import.ts`) : lignes d'ingredients (unites francaises vers les codes du referentiel, dl converti en cl, "a gout" vers `to-taste`, detail apres la virgule en note), JSON-LD (`@graph`, tableaux, `mainEntity`, sections d'etapes, HTML et entites), texte colle. Le texte est analyse sur l'appareil, sans appel a l'API ; seule la lecture d'une page passe par l'API.
+  - **Rien n'est enregistre a l'import** : l'API renvoie la recette lue, l'editeur s'ouvre pre-rempli (bandeau "Recette importee", nombre de quantites a verifier) ; l'enregistrement cree la revision 1 de source `IMPORT`.
+  - **Anti-SSRF** (`apps/api/src/core/net/page-fetcher.ts`) : http et https seulement, 5 redirections, a chaque saut toutes les adresses du nom doivent etre publiques (privees, locales, partagees, link-local, metadata, reservees, multicast, IPv6 locales et mappees refusees) et la connexion se fait sur l'adresse verifiee (pas de rebinding DNS) ; 10 s au total, 3 Mo apres decompression ; 20 imports par 15 min.
+  - **Unite inconnue** (pot, brin, feuille...) : le mot reste dans le nom de l'ingredient, a corriger a la relecture.
+  - **Reporte** : photo de la page importee (lecture d'image distante, a voir avec le menage du stockage).

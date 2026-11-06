@@ -1,6 +1,6 @@
 // Brouillon de l'editeur (D104) : etat du formulaire, conversion depuis une
 // recette et vers le corps de l'API, sauvegarde sur l'appareil.
-import type { CreateRecipeBody, Recipe, RecipeBlock } from "@fm/shared";
+import type { CreateRecipeBody, ImportedRecipe, Recipe, RecipeBlock, Unit } from "@fm/shared";
 
 import type { IngredientLine } from "./components/quantity-input.tsx";
 
@@ -8,7 +8,8 @@ export interface DraftLocalBlock {
   kind: "LOCAL";
   key: string;
   title: string;
-  lines: (IngredientLine & { key: string })[];
+  /** `note` et `optional` ne sont pas edites ici, mais gardes tels quels. */
+  lines: (IngredientLine & { key: string; note?: string | null; optional?: boolean })[];
   steps: { key: string; text: string }[];
 }
 
@@ -128,10 +129,51 @@ function draftBlockOf(block: RecipeBlock): DraftBlock {
         unitId: line.unitId ?? "",
         name: line.name,
         ingredientId: line.ingredientId,
+        note: line.note,
+        optional: line.optional,
       })),
       emptyLine(),
     ],
     steps: [...block.steps.map((text) => ({ key: newKey(), text })), { key: newKey(), text: "" }],
+  };
+}
+
+/**
+ * Recette importee (lien ou texte, C3.8) -> brouillon a relire. Les unites
+ * passent par leur code ; les ingredients restent a choisir ou a creer (D09).
+ */
+export function draftFromImport(imported: ImportedRecipe, units: readonly Unit[]): Draft {
+  const unitOf = new Map(units.map((unit) => [unit.code, unit.id]));
+  const draft = emptyDraft();
+  const block = draft.blocks[0] as DraftLocalBlock;
+  return {
+    ...draft,
+    title: imported.title ?? "",
+    yieldQuantity: imported.yieldQuantity ?? draft.yieldQuantity,
+    prepMinutes: minutesText(imported.prepMinutes),
+    cookMinutes: minutesText(imported.cookMinutes),
+    restMinutes: minutesText(imported.restMinutes),
+    sourceUrl: imported.sourceUrl ?? "",
+    blocks: [
+      {
+        ...block,
+        lines: [
+          ...imported.ingredients.map((line) => ({
+            key: newKey(),
+            quantity: quantityText(line.quantity),
+            unitId: (line.unitCode && unitOf.get(line.unitCode)) ?? "",
+            name: line.name,
+            ingredientId: null,
+            note: line.note,
+          })),
+          emptyLine(),
+        ],
+        steps: [
+          ...imported.steps.map((text) => ({ key: newKey(), text })),
+          { key: newKey(), text: "" },
+        ],
+      },
+    ],
   };
 }
 
@@ -213,6 +255,8 @@ export function draftToBody(draft: Draft, ids: ReadonlyMap<string, string>): Cre
                 ingredientId: line.ingredientId ?? ids.get(line.key) ?? "",
                 quantity: parseQuantity(line.quantity),
                 unitId: line.unitId || null,
+                note: line.note ?? null,
+                optional: line.optional ?? false,
               })),
             steps: block.steps.map((step) => step.text.trim()).filter(Boolean),
           }

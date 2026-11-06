@@ -182,7 +182,9 @@ export async function createRecipe(
   ctx: Context,
   actor: RecipeActor,
   input: RecipeContent,
-  adaptation?: AdaptationSource
+  adaptation?: AdaptationSource,
+  /** IMPORT : recette relue apres un import (C3.8). */
+  source: "CREATE" | "IMPORT" = "CREATE"
 ): Promise<Recipe> {
   const content = await resolveContent(ctx.db, input, actor.spaceId, adaptation?.keepLinks);
   await assertComposition(ctx.db, null, linksOf(content.blocks));
@@ -203,7 +205,7 @@ export async function createRecipe(
         revisions: {
           create: {
             number: 1,
-            source: "CREATE",
+            source,
             authorId: actor.userId,
             snapshot: snapshotOf(content),
           },

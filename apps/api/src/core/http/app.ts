@@ -21,6 +21,7 @@ import { referentialsRouter } from "../../referentials/routes.ts";
 import { invitationsRouter } from "../spaces/invitations-routes.ts";
 import { storageRouter } from "../storage/routes.ts";
 import { createStorage, type Storage } from "../storage/storage.ts";
+import { createPageFetcher, type PageFetcher } from "../net/page-fetcher.ts";
 import { spacesRouter } from "../spaces/routes.ts";
 import { requireAuth } from "./auth.ts";
 import { errorHandler, notFoundHandler } from "./errors.ts";
@@ -38,6 +39,8 @@ export interface AppDeps {
   mailer?: Mailer | null;
   /** Stockage des photos ; par defaut celui des variables MINIO_* (null sans). */
   storage?: Storage | null;
+  /** Lecture des pages web ; les tests autorisent leur serveur local. */
+  fetchPage?: PageFetcher;
   hasher?: PasswordHasher;
   hooks?: LifecycleHooks;
   /** Manifestes des modules (src/modules/index.ts) ; le socle ne les importe pas [D40]. */
@@ -56,6 +59,7 @@ export function createContext(deps: AppDeps): Context {
     logger: deps.logger,
     mailer: deps.mailer === undefined ? createMailer(env) : deps.mailer,
     storage: deps.storage === undefined ? createStorage(env) : deps.storage,
+    fetchPage: deps.fetchPage ?? createPageFetcher(),
     hasher: deps.hasher ?? createPasswordHasher(env.NODE_ENV === "test"),
     hooks: deps.hooks ?? hooksFrom(deps.modules),
     modules: deps.modules,

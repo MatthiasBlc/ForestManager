@@ -25,6 +25,8 @@ import {
   recipeParamsSchema,
   recipeSchema,
   recipeSpaceTagsBodySchema,
+  importRecipeBodySchema,
+  importedRecipeSchema,
   attachImageBodySchema,
   imageResponseSchema,
   recipeRevisionSchema,
@@ -49,6 +51,8 @@ import {
 import type { ApiModule } from "../../core/modules/registry.ts";
 import * as adaptation from "./adaptation.ts";
 import { authoredBySql, listRecipes } from "./list.ts";
+import { createRateLimiter } from "../../core/http/security.ts";
+import { importFromUrl } from "./import.ts";
 import * as photos from "./photos.ts";
 import { RECIPE_PERMISSIONS } from "./permissions.ts";
 import * as revisions from "./revisions.ts";
@@ -85,11 +89,24 @@ function recipesRouter(ctx: Context): Router {
     })
   );
 
+  // Import par lien (C3.8) : renvoie la recette lue, sans l'enregistrer.
+  router.post(
+    "/import",
+    requirePermission("recipes.create"),
+    createRateLimiter(ctx.env.NODE_ENV !== "test", { windowMs: 15 * 60 * 1000, limit: 20 }),
+    handle({ body: importRecipeBodySchema }, async ({ body }, _req, res) => {
+      reply(res, importedRecipeSchema, await importFromUrl(ctx, body.url));
+    })
+  );
+
   router.post(
     "/",
     requirePermission("recipes.create"),
     handle({ body: createRecipeBodySchema }, async ({ body }, req, res) => {
-      reply(res, recipeSchema, await recipes.createRecipe(ctx, actorOf(req), body), 201);
+      const { imported, ...content } = body;
+      const source = imported ? "IMPORT" : "CREATE";
+      const recipe = await recipes.createRecipe(ctx, actorOf(req), content, undefined, source);
+      reply(res, recipeSchema, recipe, 201);
     })
   );
 

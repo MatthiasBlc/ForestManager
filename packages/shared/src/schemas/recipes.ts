@@ -109,7 +109,11 @@ const recipeContentShape = {
   spaceTagIds: tagIdsSchema,
 };
 
-export const createRecipeBodySchema = z.strictObject(recipeContentShape);
+export const createRecipeBodySchema = z.strictObject({
+  ...recipeContentShape,
+  /** Recette relue apres un import (lien ou texte) : revision IMPORT (C3.8). */
+  imported: z.boolean().optional(),
+});
 export type CreateRecipeBody = z.input<typeof createRecipeBodySchema>;
 
 /** `revision` : revision sur laquelle l'edition est basee (refus si depassee). */
@@ -527,3 +531,32 @@ export const suggestionSchema = suggestionSummarySchema.extend({
   can: z.object({ decide: z.boolean(), withdraw: z.boolean(), convert: z.boolean() }),
 });
 export type Suggestion = z.infer<typeof suggestionSchema>;
+
+// --- Import (C3.8) ---
+
+/** Lien d'une page de recette a importer (http ou https seulement). */
+export const importRecipeBodySchema = z.strictObject({
+  url: z.url({ protocol: /^https?$/ }).max(RECIPE_URL_MAX),
+});
+export type ImportRecipeBody = z.infer<typeof importRecipeBodySchema>;
+
+/** Recette lue sur une page, a relire dans l'editeur avant tout enregistrement. */
+export const importedRecipeSchema = z.object({
+  title: z.string().nullable(),
+  yieldQuantity: z.number().nullable(),
+  prepMinutes: z.number().int().nullable(),
+  cookMinutes: z.number().int().nullable(),
+  restMinutes: z.number().int().nullable(),
+  sourceUrl: z.string().nullable(),
+  ingredients: z.array(
+    z.object({
+      raw: z.string(),
+      quantity: z.number().nullable(),
+      unitCode: z.string().nullable(),
+      name: z.string(),
+      note: z.string().nullable(),
+      check: z.boolean(),
+    })
+  ),
+  steps: z.array(z.string()),
+});

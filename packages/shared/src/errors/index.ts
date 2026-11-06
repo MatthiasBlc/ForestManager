@@ -108,6 +108,9 @@ const DEFINITIONS = {
   },
   RECIPE_013: { status: 409, message: "Tu as déjà une suggestion en attente sur cette recette." },
   RECIPE_014: { status: 404, message: "Suggestion introuvable ou déjà traitée." },
+  RECIPE_015: { status: 400, message: "Ce lien ne peut pas être importé." },
+  RECIPE_016: { status: 422, message: "Cette page est injoignable ou trop lourde." },
+  RECIPE_017: { status: 422, message: "Aucune recette trouvée sur cette page." },
 } as const satisfies Record<string, ErrorDefinition>;
 
 export type ErrorCode = keyof typeof DEFINITIONS;

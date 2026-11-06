@@ -57,6 +57,7 @@ Tranches verticales : chaque sous-etape livre l'API, le partage (schemas, permis
 
 - Par URL : JSON-LD Recipe, anti-SSRF a chaque redirection (5 max, resolution DNS, refus des IP privees, locales, link-local et metadata), delai et taille bornes, rate limit. Par texte colle : analyse simple (titre, ingredients, etapes) a relire avant enregistrement. Revision IMPORT.
 - Web : F-IMPORT-URL, F-IMPORT-TEXTE (cas HelloFresh de la V1 dans les tests).
+- Realisation : D168.
 
 ### C3.9 Mode cuisine et hors ligne
 

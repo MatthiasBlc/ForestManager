@@ -62,7 +62,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C3.5 Partage
   - [x] C3.6 Adaptation et suggestions
   - [x] C3.7 Photos et avatars (MinIO)
-  - [ ] C3.8 Import
+  - [x] C3.8 Import
   - [ ] C3.9 Mode cuisine et hors ligne
 - [ ] C4 Referentiels et admin
 - [ ] C5 Module planning + generation

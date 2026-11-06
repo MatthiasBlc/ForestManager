@@ -9,13 +9,14 @@ import {
   ingredientSchema,
   recipeSchema,
   suggestionSummarySchema,
+  type ImportedRecipe,
   type Recipe,
   type Tag,
   type Unit,
 } from "@fm/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 
 import { FormAlert } from "../../core/access/auth-layout.tsx";
 import { PageChrome } from "../../core/shell/page-chrome.tsx";
@@ -36,6 +37,7 @@ import { QuantityInput } from "./components/quantity-input.tsx";
 import {
   clearDraft,
   draftErrors,
+  draftFromImport,
   draftFromRecipe,
   draftKey,
   draftToBody,
@@ -343,11 +345,14 @@ function Editor({
   recipe,
   units,
   suggest = false,
+  imported,
 }: {
   spaceId: string;
   spaceName: string;
   recipe?: Recipe;
   units: readonly Unit[];
+  /** Recette lue par un import (C3.8) : pre-remplit une nouvelle recette. */
+  imported?: ImportedRecipe;
   /** E-SUGGESTION-EDITION : les changements partent en suggestion a l'auteur [D04]. */
   suggest?: boolean;
 }) {
@@ -358,11 +363,19 @@ function Editor({
   const globalTags = useQuery(globalTagsQuery);
   const spaceTags = useQuery(spaceTagsQuery(spaceId));
   const key = `${draftKey(spaceId, recipe)}${suggest ? ":suggest" : ""}`;
-  const [restored] = useState(() => readDraft(key));
+  // Un import remplace le brouillon garde d'une nouvelle recette.
+  const [restored] = useState(() => (imported ? null : readDraft(key)));
   const [draft, setDraft] = useState<Draft>(
-    () => restored ?? (recipe ? draftFromRecipe(recipe) : emptyDraft())
+    () =>
+      restored ??
+      (recipe
+        ? draftFromRecipe(recipe)
+        : imported
+          ? draftFromImport(imported, units)
+          : emptyDraft())
   );
-  const [dirty, setDirty] = useState(restored !== null);
+  const [dirty, setDirty] = useState(restored !== null || imported !== undefined);
+  const toCheck = imported?.ingredients.filter((line) => line.check).length ?? 0;
   const [errors, setErrors] = useState<DraftErrors>({ lines: {} });
   const [failure, setFailure] = useState<string>();
   const [saving, setSaving] = useState(false);
@@ -447,7 +460,11 @@ function Editor({
             { ...parsed.data, revision: recipe.currentRevision },
             recipeSchema
           )
-        : await api.post(`/spaces/${spaceId}/recipes`, parsed.data, recipeSchema);
+        : await api.post(
+            `/spaces/${spaceId}/recipes`,
+            imported ? { ...parsed.data, imported: true } : parsed.data,
+            recipeSchema
+          );
       clearDraft(key);
       if (!recipe && photo) {
         try {
@@ -513,6 +530,14 @@ function Editor({
             <span>
               <b>Brouillon restauré.</b> Tes modifications non enregistrées sont revenues.
             </span>
+          </p>
+        ) : null}
+        {imported && !recipe ? (
+          <p role="status" className="m-0 rounded-md bg-accent-soft px-3 py-2 text-accent-text">
+            <b>Recette importée.</b> Vérifie tout avant d'enregistrer
+            {toCheck > 0
+              ? ` : ${String(toCheck)} ${toCheck > 1 ? "quantités" : "quantité"} à vérifier.`
+              : "."}
           </p>
         ) : null}
         <FormAlert message={failure} />
@@ -728,6 +753,10 @@ export function RecipeEditorPage({ suggest = false }: { suggest?: boolean }) {
   const space = useQuery(spaceQuery(spaceId));
   const units = useQuery(unitsQuery);
   const recipe = useQuery({ ...recipeQuery(spaceId, recipeId ?? ""), enabled: !!recipeId });
+  const location = useLocation();
+  const imported = recipeId
+    ? undefined
+    : (location.state as { imported?: ImportedRecipe } | null)?.imported;
   if (recipeId && recipe.isError) return <RecipeNotFound spaceId={spaceId} />;
   if (!space.data || !units.data || (recipeId && !recipe.data)) return <Skeleton />;
   // Modifier : le droit de modifier ; suggerer : tout membre sauf l'auteur (API, RECIPE_012).
@@ -740,6 +769,7 @@ export function RecipeEditorPage({ suggest = false }: { suggest?: boolean }) {
       recipe={recipe.data}
       units={units.data}
       suggest={suggest}
+      imported={imported}
     />
   );
 }
