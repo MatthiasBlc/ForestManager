@@ -68,5 +68,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
 - [ ] C5 Module planning + generation
 - [ ] C6 Notifications, activite, changelog
 - [ ] C7 E2E complets, preprod, remise a zero de la base et de la stack de prod
+  - [ ] A faire par le proprietaire avant le premier deploy preprod (a revoir ensemble) : secrets GitHub `MINIO_ACCESS_KEY` et `MINIO_SECRET_KEY` (exiges par `docker/deploy.sh`) [D167]
 - [ ] C8 Mise en prod V2
+  - [ ] A faire par le proprietaire (a revoir ensemble) : retirer la lecture publique des buckets V1 `forestmanager-images-preprod` / `-prod` (`mc anonymous set none`) [D167]
 - [ ] C9 Module liste de courses (V2.1)
