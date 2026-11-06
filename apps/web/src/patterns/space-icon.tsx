@@ -20,11 +20,19 @@ export function SpaceGlyph({ space }: { space: SpaceVisual }) {
   );
 }
 
-/** Icone statique (decorative) : le libelle est porte par l'element parent. */
-export function SpaceIcon({ space }: { space: SpaceVisual }) {
+/**
+ * Icone statique (decorative) : le libelle est porte par l'element parent.
+ * `lg` : vignette a cote du choix de la photo (F-CREER-ESPACE, reglages).
+ */
+export function SpaceIcon({ space, size }: { space: SpaceVisual; size?: "lg" }) {
   return (
     <span
-      className={cx("fm-space", "fm-space-static", space.deleting && "fm-space-deleting")}
+      className={cx(
+        "fm-space",
+        "fm-space-static",
+        size === "lg" && "fm-space-lg",
+        space.deleting && "fm-space-deleting"
+      )}
       style={tintStyle(space.tint)}
       aria-hidden="true"
     >

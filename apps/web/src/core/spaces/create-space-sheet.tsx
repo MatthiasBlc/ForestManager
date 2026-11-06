@@ -81,6 +81,7 @@ export function CreateSpaceSheet({ open, onClose }: { open: boolean; onClose: ()
         <div className="flex items-center gap-4">
           <SpaceIcon
             space={{ id: "new", name: name || "?", tint: tintIndex, image: photo?.preview }}
+            size="lg"
           />
           <ImagePicker
             kind="avatar"

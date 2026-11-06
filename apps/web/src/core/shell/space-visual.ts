@@ -2,6 +2,7 @@
 import type { SpaceSummary } from "@fm/shared";
 
 import type { SpaceVisual } from "../../patterns/space-label.ts";
+import { plural } from "../../lib/plural.ts";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -15,6 +16,6 @@ export function toVisual(space: SpaceSummary): SpaceVisual {
     tint: space.tintIndex,
     image: space.avatarUrl,
     deleting: space.deletedAt && daysLeft !== null ? { daysLeft } : null,
-    hint: space.kind === "GROUP" ? `${space.memberCount} membres` : "Espace perso",
+    hint: space.kind === "GROUP" ? plural(space.memberCount, "membre", "membres") : "Espace perso",
   };
 }

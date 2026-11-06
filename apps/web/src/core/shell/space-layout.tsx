@@ -38,6 +38,7 @@ import { buildNavigation } from "./navigation.ts";
 import { ChromeProvider } from "./page-chrome.tsx";
 import { useChromeSlots } from "./use-chrome-slots.tsx";
 import { toVisual } from "./space-visual.ts";
+import { plural } from "../../lib/plural.ts";
 
 /** Entree active : celle dont le chemin couvre le mieux l'adresse courante. */
 function activeItem(items: readonly NavItem[], pathname: string): NavItem | undefined {
@@ -200,7 +201,9 @@ export function SpaceLayout() {
         <ModuleNav
           spaceName={space.data.name}
           subtitle={
-            space.data.kind === "GROUP" ? `${space.data.memberCount} membres` : "Espace perso"
+            space.data.kind === "GROUP"
+              ? plural(space.data.memberCount, "membre", "membres")
+              : "Espace perso"
           }
           items={nav.items}
           activeId={active?.id}

@@ -16,6 +16,7 @@ import { api } from "../../lib/api.ts";
 import { Button } from "../../ui/button.tsx";
 import { Field } from "../../ui/field.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
+import { plural } from "../../lib/plural.ts";
 
 export type ImportSheet = "url" | "text" | null;
 
@@ -100,9 +101,6 @@ export function ImportUrlSheet({
     </Sheet>
   );
 }
-
-const plural = (count: number, one: string, many: string) =>
-  `${String(count)} ${count > 1 ? many : one}`;
 
 export function ImportTextSheet({
   open,

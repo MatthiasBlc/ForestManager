@@ -87,6 +87,14 @@ body,
   list-style: decimal;
 }
 
+/* Vignette d'espace a cote du choix de la photo (F-CREER-ESPACE, reglages). */
+.fm-space.fm-space-lg {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-lg);
+  font-size: 26px;
+}
+
 /* Barres propres a une page (PageChrome, D100) : `fm-page-top` prend la place de
    l'en-tete du shell, `fm-page-bar` celle des onglets ; en bureau la barre reste,
    sous le contenu (mode cuisine). `fm-mobile-only` / `fm-wide-only` : un seul des

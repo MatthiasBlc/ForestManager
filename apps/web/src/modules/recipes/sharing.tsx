@@ -356,8 +356,10 @@ function ShareRequestSheet({
             <Avatar name={req.requester.username} size={36} />
             <p className="m-0 flex-1">
               {req.requester.username} voudrait partager <b>{req.recipe.title}</b> (
-              {req.homeSpace.name}) dans <b>{req.targetSpace.name}</b>, ses{" "}
-              {req.targetSpace.memberCount} membres la verront.
+              {req.homeSpace.name}) dans <b>{req.targetSpace.name}</b>,{" "}
+              {req.targetSpace.memberCount > 1
+                ? `ses ${String(req.targetSpace.memberCount)} membres la verront.`
+                : "son seul membre la verra."}
             </p>
           </div>
           {req.message ? <blockquote className="m-0 italic">« {req.message} »</blockquote> : null}

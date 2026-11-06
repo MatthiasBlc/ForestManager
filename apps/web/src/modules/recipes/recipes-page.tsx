@@ -319,7 +319,9 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
         }
       >
         {space.data?.kind === "GROUP"
-          ? `Ajoute une recette : les ${space.data.memberCount} membres la verront ici.`
+          ? space.data.memberCount > 1
+            ? `Ajoute une recette : les ${String(space.data.memberCount)} membres la verront ici.`
+            : "Ajoute une recette : les membres que tu inviteras la verront ici."
           : "Ajoute ta première recette : elle reste privée tant que tu ne la partages pas."}
       </EmptyState>
     );

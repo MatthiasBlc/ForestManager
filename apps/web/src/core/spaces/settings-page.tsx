@@ -124,7 +124,7 @@ function SpacePhoto({ space }: { space: SpaceDetail }) {
   const path = `/spaces/${space.id}/avatar`;
   return (
     <div className="flex items-center gap-4">
-      <SpaceIcon space={toVisual(space)} />
+      <SpaceIcon space={toVisual(space)} size="lg" />
       <ImagePicker
         kind="avatar"
         noun="la photo de l'espace"
@@ -254,7 +254,9 @@ function DeleteSheet({
     <Sheet open={open} onClose={onClose} title={`Supprimer ${space.name}`}>
       <div className="fm-stack">
         <p>
-          {space.name} disparaît pour ses {space.memberCount} membres.
+          {space.memberCount > 1
+            ? `${space.name} disparaît pour ses ${String(space.memberCount)} membres.`
+            : `${space.name} disparaît.`}
         </p>
         <p className="text-ink-muted">
           Tu peux le restaurer pendant 30 jours. Ensuite, tout est effacé.
