@@ -64,3 +64,5 @@ export function checkComposition(
   };
   return above(rootId, new Set()) + 1 + below > MAX_RECIPE_LEVELS ? "DEPTH" : null;
 }
+
+export * from "./diff.ts";

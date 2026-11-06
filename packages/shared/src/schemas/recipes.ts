@@ -243,6 +243,21 @@ export const recipeSchema = z.object({
   shareCount: z.number().int(),
   /** Espaces de partage dont l'utilisateur courant est membre (confirmation de suppression). */
   sharedIn: z.array(spaceRefSchema),
+  /** Adaptation : original lie [D17] ; null pour une recette qui n'en est pas une. */
+  adaptedFrom: z
+    .object({
+      id: uuidSchema,
+      title: z.string(),
+      author: userSummarySchema,
+      homeSpace: spaceRefSchema,
+      /** Original supprime : l'adaptation vit seule. */
+      deleted: z.boolean(),
+      /** L'original a change depuis la derniere revision vue ("Original modifie"). */
+      changed: z.boolean(),
+    })
+    .nullable(),
+  /** Adaptations non supprimees de cette recette [F-REC-13]. */
+  adaptationCount: z.number().int(),
   /** Droits de l'utilisateur courant sur cette recette, dans cet espace. */
   can: z.object({
     edit: z.boolean(),
@@ -387,3 +402,57 @@ export const recipeLeavePreviewSchema = z.object({
   personalShared: z.array(z.object({ id: uuidSchema, title: z.string() })),
 });
 export type RecipeLeavePreview = z.infer<typeof recipeLeavePreviewSchema>;
+
+// --- Adaptation [D17, D105, D140] ---
+
+/** Espace ou creer l'adaptation : tout espace ou l'utilisateur peut creer une recette. */
+export const adaptRecipeBodySchema = z.strictObject({ targetSpaceId: uuidSchema });
+export type AdaptRecipeBody = z.infer<typeof adaptRecipeBodySchema>;
+
+const contentLinkSchema = z.object({
+  kind: z.literal("RECIPE"),
+  recipeId: uuidSchema,
+  /** null si la recette liee est supprimee. */
+  title: z.string().nullable(),
+  quantity: z.number(),
+  unitId: uuidSchema.nullable(),
+});
+
+/** Contenu versionne lisible (forme de `RecipeContentView`, recipes/diff.ts). */
+export const recipeContentViewSchema = z.object({
+  title: z.string(),
+  description: z.string().nullable(),
+  notes: z.string().nullable(),
+  sourceUrl: z.string().nullable(),
+  yieldQuantity: z.number(),
+  yieldUnitId: uuidSchema.nullable(),
+  prepMinutes: z.number().int().nullable(),
+  cookMinutes: z.number().int().nullable(),
+  restMinutes: z.number().int().nullable(),
+  isBase: z.boolean(),
+  blocks: z.array(z.union([localBlockSchema, contentLinkSchema])),
+});
+
+/** E-COMPARER-ORIGINAL : les trois contenus ; le web calcule les differences. */
+export const recipeComparisonSchema = z.object({
+  original: z.object({
+    id: uuidSchema,
+    title: z.string(),
+    author: userSummarySchema,
+    homeSpace: spaceRefSchema,
+    deleted: z.boolean(),
+    currentRevision: z.number().int(),
+    /** Derniere modification depuis la revision vue ; null si rien n'a change. */
+    lastChange: z.object({ at: isoDateTimeSchema, by: userSummarySchema }).nullable(),
+  }),
+  /** Revision de l'original avec laquelle l'adaptation est alignee. */
+  baseRevision: z.number().int(),
+  /** Original a `baseRevision`. */
+  base: recipeContentViewSchema,
+  /** Original actuel ; null s'il est supprime. */
+  current: recipeContentViewSchema.nullable(),
+  adaptation: recipeContentViewSchema,
+  /** "Marquer comme vu" : qui peut modifier l'adaptation. */
+  canMarkSeen: z.boolean(),
+});
+export type RecipeComparison = z.infer<typeof recipeComparisonSchema>;

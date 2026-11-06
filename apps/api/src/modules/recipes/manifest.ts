@@ -1,6 +1,8 @@
 // Manifeste API du module Recettes [D33, D91]. Les routes se completent au fil de C3.
 import {
+  adaptRecipeBodySchema,
   approveShareRequestBodySchema,
+  recipeComparisonSchema,
   createRecipeBodySchema,
   recipeLeavePreviewSchema,
   recipeSharesBodySchema,
@@ -36,6 +38,7 @@ import {
   requirePermission,
 } from "../../core/modules/guards.ts";
 import type { ApiModule } from "../../core/modules/registry.ts";
+import * as adaptation from "./adaptation.ts";
 import { authoredBySql, listRecipes } from "./list.ts";
 import { RECIPE_PERMISSIONS } from "./permissions.ts";
 import * as revisions from "./revisions.ts";
@@ -297,6 +300,43 @@ function recipesRouter(ctx: Context): Router {
         reply(res, recipeSchema, recipe);
       }
     )
+  );
+
+  // --- Adaptation [D17, D105, D140] : droits dans l'espace cible verifies par le service ---
+
+  router.post(
+    "/:recipeId/adapt",
+    requirePermission("recipes.view"),
+    handle(
+      { params: recipeIdSchema, body: adaptRecipeBodySchema },
+      async ({ params, body }, req, res) => {
+        const recipe = await adaptation.adaptRecipe(
+          ctx,
+          actorOf(req),
+          params.recipeId,
+          body.targetSpaceId
+        );
+        reply(res, recipeSchema, recipe, 201);
+      }
+    )
+  );
+
+  router.get(
+    "/:recipeId/compare",
+    requirePermission("recipes.view"),
+    handle({ params: recipeIdSchema }, async ({ params }, req, res) => {
+      const comparison = await adaptation.compareWithOriginal(ctx, actorOf(req), params.recipeId);
+      reply(res, recipeComparisonSchema, comparison);
+    })
+  );
+
+  router.post(
+    "/:recipeId/compare/seen",
+    requirePermission("recipes.view"),
+    handle({ params: recipeIdSchema }, async ({ params }, req, res) => {
+      await adaptation.markOriginalSeen(ctx, actorOf(req), params.recipeId);
+      res.status(204).end();
+    })
   );
 
   return router;

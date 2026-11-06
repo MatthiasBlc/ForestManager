@@ -22,7 +22,7 @@ import {
 } from "./service.ts";
 
 /** Forme de `snapshotOf` (content.ts), relue a la lecture. */
-const snapshotSchema = z.object({
+export const snapshotSchema = z.object({
   title: z.string(),
   description: z.string().nullable(),
   notes: z.string().nullable(),
@@ -36,7 +36,7 @@ const snapshotSchema = z.object({
   isBase: z.boolean(),
   blocks: z.array(blockInputSchema),
 });
-type Snapshot = z.infer<typeof snapshotSchema>;
+export type Snapshot = z.infer<typeof snapshotSchema>;
 
 /** Ce que l'on compare pour chaque type de changement, dans l'ordre affiche. */
 const PARTS: Record<RevisionChange, (s: Snapshot) => unknown> = {
@@ -93,7 +93,10 @@ export async function listRevisions(
   return revisions.reverse();
 }
 
-function contentOf(snapshot: Snapshot, tags: Pick<RecipeContent, "globalTagIds" | "spaceTagIds">) {
+export function contentOf(
+  snapshot: Snapshot,
+  tags: Pick<RecipeContent, "globalTagIds" | "spaceTagIds">
+) {
   return {
     title: snapshot.title,
     description: snapshot.description,

@@ -29,22 +29,31 @@ export function moduleRequest(req: Request): ModuleRequest {
   return value;
 }
 
+/** Module accorde, active et ouvert (AVAILABLE ou BETA) dans l'espace [D33]. */
+export async function isModuleActive(
+  db: Context["db"],
+  spaceId: string,
+  moduleCode: string
+): Promise<boolean> {
+  const active = await db.spaceModule.count({
+    where: {
+      spaceId,
+      moduleCode,
+      enabled: true,
+      revokedAt: null,
+      module: { status: { in: ["AVAILABLE", "BETA"] } },
+    },
+  });
+  return active > 0;
+}
+
 export function requireModule(ctx: Context, module: ApiModule): RequestHandler {
   return async (req, _res, next) => {
     const parsed = uuidSchema.safeParse(req.params.spaceId);
     if (!parsed.success) throw new AppError("VALIDATION_001");
     const spaceId = parsed.data;
     const access = await loadAccess(ctx.db, spaceId, currentUserId(req));
-    const active = await ctx.db.spaceModule.count({
-      where: {
-        spaceId,
-        moduleCode: module.code,
-        enabled: true,
-        revokedAt: null,
-        module: { status: { in: ["AVAILABLE", "BETA"] } },
-      },
-    });
-    if (active === 0) throw new AppError("MODULE_001");
+    if (!(await isModuleActive(ctx.db, spaceId, module.code))) throw new AppError("MODULE_001");
     state.set(req, { access, module });
     next();
   };

@@ -355,12 +355,15 @@ export interface ShareInfo {
   sharedIn: Recipe["sharedIn"];
 }
 
+/** Partages et adaptation, calcules a part du detail. */
+export type RecipeLinksInfo = ShareInfo & Pick<Recipe, "adaptedFrom" | "adaptationCount">;
+
 export function toRecipe(
   row: DetailRow,
   can: Recipe["can"],
   links: ReadonlyMap<string, LoadedLink>,
   usedBy: number,
-  shares: ShareInfo
+  extra: RecipeLinksInfo
 ): Recipe {
   return {
     ...toSummaryBase(row),
@@ -375,7 +378,7 @@ export function toRecipe(
     blocks: row.blocks.map((block) => toBlock(block, links)),
     usedBy,
     homeSpace: row.homeSpace,
-    ...shares,
+    ...extra,
     can,
   };
 }

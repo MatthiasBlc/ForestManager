@@ -84,6 +84,42 @@ export async function rightsOf(
   };
 }
 
+/** Original lie [D17] et nombre d'adaptations [F-REC-13]. */
+async function adaptationInfo(
+  db: Db,
+  row: { id: string; adaptedFromId: string | null; adaptedFromRevision: number | null }
+): Promise<Pick<Recipe, "adaptedFrom" | "adaptationCount">> {
+  const [adaptationCount, original] = await Promise.all([
+    db.recipe.count({ where: { adaptedFromId: row.id, deletedAt: null } }),
+    row.adaptedFromId
+      ? db.recipe.findUnique({
+          where: { id: row.adaptedFromId },
+          select: {
+            id: true,
+            title: true,
+            currentRevision: true,
+            deletedAt: true,
+            author: { select: { id: true, username: true } },
+            homeSpace: { select: { id: true, name: true } },
+          },
+        })
+      : null,
+  ]);
+  if (!original) return { adaptedFrom: null, adaptationCount };
+  const deleted = original.deletedAt !== null;
+  return {
+    adaptationCount,
+    adaptedFrom: {
+      id: original.id,
+      title: original.title,
+      author: { id: original.author.id, username: original.author.username, avatarUrl: null },
+      homeSpace: original.homeSpace,
+      deleted,
+      changed: !deleted && original.currentRevision > (row.adaptedFromRevision ?? 0),
+    },
+  };
+}
+
 /** Partages actifs ; noms des espaces dont l'utilisateur est membre. */
 async function shareInfo(ctx: Context, actor: RecipeActor, recipeId: string): Promise<ShareInfo> {
   const rows = await ctx.db.recipeShare.findMany({
@@ -122,21 +158,30 @@ export async function getRecipe(
   recipeId: string
 ): Promise<Recipe> {
   const row = await findVisible(ctx, actor, recipeId);
-  const [can, links, usedBy, shares] = await Promise.all([
+  const [can, links, usedBy, shares, adaptation] = await Promise.all([
     rightsOf(ctx, actor, row),
     loadLinks(ctx.db, row.blocks, actor.spaceId),
     countUsedBy(ctx.db, row.id),
     shareInfo(ctx, actor, row.id),
+    adaptationInfo(ctx.db, row),
   ]);
-  return toRecipe(row, can, links, usedBy, shares);
+  return toRecipe(row, can, links, usedBy, { ...shares, ...adaptation });
+}
+
+/** Adaptation [D17] : original, revision de depart, liens de l'original gardes. */
+export interface AdaptationSource {
+  adaptedFromId: string;
+  adaptedFromRevision: number;
+  keepLinks: ReadonlySet<string>;
 }
 
 export async function createRecipe(
   ctx: Context,
   actor: RecipeActor,
-  input: RecipeContent
+  input: RecipeContent,
+  adaptation?: AdaptationSource
 ): Promise<Recipe> {
-  const content = await resolveContent(ctx.db, input, actor.spaceId);
+  const content = await resolveContent(ctx.db, input, actor.spaceId, adaptation?.keepLinks);
   await assertComposition(ctx.db, null, linksOf(content.blocks));
   const id = await ctx.db.$transaction(async (tx) => {
     const recipe = await tx.recipe.create({
@@ -145,6 +190,8 @@ export async function createRecipe(
         homeSpaceId: actor.spaceId,
         authorId: actor.userId,
         currentRevision: 1,
+        adaptedFromId: adaptation?.adaptedFromId ?? null,
+        adaptedFromRevision: adaptation?.adaptedFromRevision ?? null,
         blocks: blocksCreate(content.blocks),
         globalTags: { create: content.globalTagIds.map((tagId) => ({ tagId })) },
         spaceTags: {

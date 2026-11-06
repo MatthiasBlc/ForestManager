@@ -507,3 +507,13 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
   - **Partage direct** par l'auteur (s'il est encore membre de l'origine) ou, auteur parti, par les MOD et OWNER de l'origine. L'auteur modifie, supprime et retire aussi depuis un espace de partage.
   - **Sous-recettes** (D26) : seules celles du meme auteur partent avec le plat ; retirer le plat retire celles partagees avec lui si aucune autre recette de l'espace ne les utilise.
   - **Depart** (D84) : le module Recettes fournit l'apercu (recettes creees ici, recettes perso partagees ici) ; l'ecran retire les partages choisis avant le depart. Rien n'est retire d'office, ni a l'exclusion.
+
+### D166 - Adaptation et suggestions : regles de realisation - VALIDEE (2026-11-06, realisation C3.6)
+
+- **Constat** : D04, D17, D105 et D140 laissent ouverts l'espace cible d'une adaptation, le mot du refus montre par la maquette E-SUGGESTION-Refusee (absent du schema), l'endroit ou le decideur trouve les suggestions avant les notifications (C6) et ce que voit un membre de l'espace de l'adaptation qui ne voit pas l'original.
+- **Choix** (selecteur du 2026-11-06 pour les trois premiers points) :
+  - **Cibles** : tout espace ou l'utilisateur peut creer une recette (module actif, `recipes.create`), y compris l'espace courant et l'espace perso : l'adaptation est la seule copie (D140).
+  - **Refus** : un mot facultatif du decideur (280 caracteres, `RecipeSuggestion.decisionMessage`), montre au suggereur.
+  - **Suggestions en attente** : bandeau "N suggestions a examiner" sur "Mes recettes" et la liste d'un groupe (comme D165), et bandeau sur le detail de la recette.
+  - **Contenu adapte** : contenu de la revision actuelle de l'original, ses tags globaux (pas ses tags d'espace, D19), ses liens gardes meme non visibles dans l'espace cible (D164). Revision 1 `CREATE` a l'auteur de l'adaptation.
+  - **Comparer** : lisible par tout membre qui voit l'adaptation, meme sans voir l'original (l'adaptation en est deja une copie). L'API renvoie l'original a la revision vue, l'original actuel et l'adaptation ; les differences se calculent dans `packages/shared` (`diffContents`), partagees avec les suggestions. "Marquer comme vu" : qui peut modifier l'adaptation. Original supprime : plus de badge, comparaison avec la seule revision vue.

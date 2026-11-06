@@ -208,6 +208,8 @@ export function buildRecipe({ can, ...over }: RecipeOverrides = {}): Recipe {
     homeSpace: { id: homeSpaceId, name: "Foyer" },
     shareCount: 0,
     sharedIn: [],
+    adaptedFrom: null,
+    adaptationCount: 0,
     title: "Gratin de pâtes",
     imageUrl: null,
     yieldQuantity: 4,
