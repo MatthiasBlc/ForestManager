@@ -759,6 +759,7 @@ enum SuggestionStatus {
   REJECTED // rien n'est cree [D04]
   WITHDRAWN // retiree par son auteur
   CONVERTED // transformee en adaptation par son auteur [D04]
+  CANCELLED // auteur parti ou exclu de l'espace de la suggestion [D166]
 }
 
 /// Suggestion de modification [D04]. proposed = instantane complet propose
@@ -775,6 +776,7 @@ model RecipeSuggestion {
   status            SuggestionStatus @default(PENDING)
   decidedById       String?
   decidedAt         DateTime?
+  decisionMessage   String? // mot facultatif du refus [D166]
   convertedRecipeId String?
   createdAt         DateTime         @default(now())
 

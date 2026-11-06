@@ -456,3 +456,73 @@ export const recipeComparisonSchema = z.object({
   canMarkSeen: z.boolean(),
 });
 export type RecipeComparison = z.infer<typeof recipeComparisonSchema>;
+
+// --- Suggestions [D04, D140, D166] ---
+
+export const SUGGESTION_STATUSES = [
+  "PENDING",
+  "ACCEPTED",
+  "REJECTED",
+  "WITHDRAWN",
+  "CONVERTED",
+  "CANCELLED",
+] as const;
+export type SuggestionStatus = (typeof SUGGESTION_STATUSES)[number];
+export const SUGGESTION_MESSAGE_MAX = 280;
+
+const {
+  globalTagIds: _globalTagIds,
+  spaceTagIds: _spaceTagIds,
+  ...suggestedShape
+} = recipeContentShape;
+const suggestionMessageSchema = z.string().trim().max(SUGGESTION_MESSAGE_MAX).optional();
+
+/** Contenu complet propose (sans tags, non versionnes) et revision de depart. */
+export const createSuggestionBodySchema = z.strictObject({
+  ...suggestedShape,
+  revision: z.number().int().min(1),
+  message: suggestionMessageSchema,
+});
+export type CreateSuggestionBody = z.input<typeof createSuggestionBodySchema>;
+
+/** `revision` : revision courante vue par le decideur (verrou optimiste, D163). */
+export const acceptSuggestionBodySchema = z.strictObject({ revision: z.number().int().min(1) });
+export const rejectSuggestionBodySchema = z.strictObject({ message: suggestionMessageSchema });
+export const convertSuggestionBodySchema = adaptRecipeBodySchema;
+
+export const suggestionParamsSchema = recipeParamsSchema.extend({ suggestionId: uuidSchema });
+
+export const suggestionSummarySchema = z.object({
+  id: uuidSchema,
+  recipe: z.object({ id: uuidSchema, title: z.string() }),
+  proposer: userSummarySchema,
+  message: z.string().nullable(),
+  status: z.enum(SUGGESTION_STATUSES),
+  baseRevision: z.number().int(),
+  createdAt: isoDateTimeSchema,
+  decidedAt: isoDateTimeSchema.nullable(),
+  decidedBy: userSummarySchema.nullable(),
+  /** Mot du decideur au refus [D166]. */
+  decisionMessage: z.string().nullable(),
+  /** Adaptation creee depuis la suggestion refusee. */
+  convertedRecipeId: uuidSchema.nullable(),
+});
+export type SuggestionSummary = z.infer<typeof suggestionSummarySchema>;
+
+/**
+ * Partie de la recette changee a la fois par la suggestion et depuis sa revision
+ * de depart : un champ (DIFF_FIELDS), `block:<n>` ou `blocks` (structure des blocs).
+ */
+export const suggestionConflictSchema = z.string();
+
+/** E-SUGGESTION : effet de l'acceptation sur la version actuelle. */
+export const suggestionSchema = suggestionSummarySchema.extend({
+  currentRevision: z.number().int(),
+  proposed: recipeContentViewSchema,
+  current: recipeContentViewSchema,
+  /** Version actuelle avec les changements de la suggestion (ce qu'accepter enregistre). */
+  result: recipeContentViewSchema,
+  conflicts: z.array(suggestionConflictSchema),
+  can: z.object({ decide: z.boolean(), withdraw: z.boolean(), convert: z.boolean() }),
+});
+export type Suggestion = z.infer<typeof suggestionSchema>;

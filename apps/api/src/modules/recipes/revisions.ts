@@ -52,6 +52,18 @@ const PARTS: Record<RevisionChange, (s: Snapshot) => unknown> = {
   steps: (s) => s.blocks.map((block) => (block.kind === "LOCAL" ? block.steps : [])),
 };
 
+export async function snapshotAt(
+  db: Context["db"],
+  recipeId: string,
+  number: number
+): Promise<Snapshot> {
+  const row = await db.recipeRevision.findUniqueOrThrow({
+    where: { recipeId_number: { recipeId, number } },
+    select: { snapshot: true },
+  });
+  return snapshotSchema.parse(row.snapshot);
+}
+
 export function changesBetween(previous: Snapshot | null, next: Snapshot): RevisionChange[] {
   if (!previous) return [];
   return (Object.keys(PARTS) as RevisionChange[]).filter(

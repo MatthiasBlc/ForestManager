@@ -1,6 +1,13 @@
 // Manifeste API du module Recettes [D33, D91]. Les routes se completent au fil de C3.
 import {
+  acceptSuggestionBodySchema,
   adaptRecipeBodySchema,
+  convertSuggestionBodySchema,
+  createSuggestionBodySchema,
+  rejectSuggestionBodySchema,
+  suggestionParamsSchema,
+  suggestionSchema,
+  suggestionSummarySchema,
   approveShareRequestBodySchema,
   recipeComparisonSchema,
   createRecipeBodySchema,
@@ -44,11 +51,13 @@ import { RECIPE_PERMISSIONS } from "./permissions.ts";
 import * as revisions from "./revisions.ts";
 import * as recipes from "./service.ts";
 import * as sharing from "./sharing.ts";
+import * as suggestions from "./suggestions.ts";
 import * as tags from "./tags.ts";
 
 const tagParamsSchema = spaceTagParamsSchema.pick({ tagId: true });
 const recipeIdSchema = recipeParamsSchema.pick({ recipeId: true });
 const requestIdSchema = shareRequestParamsSchema.pick({ requestId: true });
+const suggestionIdSchema = suggestionParamsSchema.pick({ recipeId: true, suggestionId: true });
 const revisionIdSchema = revisionParamsSchema.pick({ recipeId: true, number: true });
 
 function actorOf(req: Request): recipes.RecipeActor {
@@ -124,6 +133,13 @@ function recipesRouter(ctx: Context): Router {
       res.status(204).end();
     })
   );
+
+  // Bandeau des suggestions a trancher [D166].
+  router.get("/suggestions", requirePermission("recipes.view"), async (req, res) => {
+    const personal = moduleRequest(req).access.space.kind === "PERSONAL";
+    const data = await suggestions.listSuggestionsToDecide(ctx, actorOf(req), personal);
+    reply(res, listSchema(suggestionSummarySchema), { data });
+  });
 
   router.get("/leave-preview", requirePermission("recipes.view"), async (req, res) => {
     reply(res, recipeLeavePreviewSchema, await sharing.leavePreview(ctx, actorOf(req)));
@@ -298,6 +314,111 @@ function recipesRouter(ctx: Context): Router {
           body.revision
         );
         reply(res, recipeSchema, recipe);
+      }
+    )
+  );
+
+  // --- Suggestions [D04, D140, D166] : decideur et suggereur verifies par le service ---
+
+  router.get(
+    "/:recipeId/suggestions",
+    requirePermission("recipes.view"),
+    handle({ params: recipeIdSchema }, async ({ params }, req, res) => {
+      const data = await suggestions.listRecipeSuggestions(ctx, actorOf(req), params.recipeId);
+      reply(res, listSchema(suggestionSummarySchema), { data });
+    })
+  );
+
+  router.post(
+    "/:recipeId/suggestions",
+    requirePermission("recipes.view"),
+    handle(
+      { params: recipeIdSchema, body: createSuggestionBodySchema },
+      async ({ params, body }, req, res) => {
+        const created = await suggestions.createSuggestion(
+          ctx,
+          actorOf(req),
+          params.recipeId,
+          body
+        );
+        reply(res, suggestionSummarySchema, created, 201);
+      }
+    )
+  );
+
+  router.get(
+    "/:recipeId/suggestions/:suggestionId",
+    requirePermission("recipes.view"),
+    handle({ params: suggestionIdSchema }, async ({ params }, req, res) => {
+      const suggestion = await suggestions.getSuggestion(
+        ctx,
+        actorOf(req),
+        params.recipeId,
+        params.suggestionId
+      );
+      reply(res, suggestionSchema, suggestion);
+    })
+  );
+
+  router.post(
+    "/:recipeId/suggestions/:suggestionId/accept",
+    requirePermission("recipes.view"),
+    handle(
+      { params: suggestionIdSchema, body: acceptSuggestionBodySchema },
+      async ({ params, body }, req, res) => {
+        const recipe = await suggestions.acceptSuggestion(
+          ctx,
+          actorOf(req),
+          params.recipeId,
+          params.suggestionId,
+          body.revision
+        );
+        reply(res, recipeSchema, recipe);
+      }
+    )
+  );
+
+  router.post(
+    "/:recipeId/suggestions/:suggestionId/reject",
+    requirePermission("recipes.view"),
+    handle(
+      { params: suggestionIdSchema, body: rejectSuggestionBodySchema },
+      async ({ params, body }, req, res) => {
+        await suggestions.rejectSuggestion(
+          ctx,
+          actorOf(req),
+          params.recipeId,
+          params.suggestionId,
+          body.message
+        );
+        res.status(204).end();
+      }
+    )
+  );
+
+  router.post(
+    "/:recipeId/suggestions/:suggestionId/withdraw",
+    requirePermission("recipes.view"),
+    handle({ params: suggestionIdSchema }, async ({ params }, req, res) => {
+      await suggestions.withdrawSuggestion(ctx, actorOf(req), params.recipeId, params.suggestionId);
+      res.status(204).end();
+    })
+  );
+
+  router.post(
+    "/:recipeId/suggestions/:suggestionId/convert",
+    requirePermission("recipes.view"),
+    handle(
+      { params: suggestionIdSchema, body: convertSuggestionBodySchema },
+      async ({ params, body }, req, res) => {
+        const recipe = await suggestions.convertSuggestion(
+          ctx,
+          actorOf(req),
+          params.recipeId,
+          params.suggestionId,
+          body.targetSpaceId
+        );
+        reply(res, recipeSchema, recipe, 201);
       }
     )
   );

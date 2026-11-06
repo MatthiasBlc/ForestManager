@@ -54,7 +54,7 @@ async function isVisibleIn(db: Db, recipe: ShareableRow, spaceId: string): Promi
  * Qui tranche pour cette recette [D81, D18] : l'auteur s'il est encore membre de
  * l'espace d'origine, sinon les MOD et OWNER de cet espace.
  */
-async function decision(db: Db, recipe: RightsRow, userId: string) {
+export async function decision(db: Db, recipe: RightsRow, userId: string) {
   const authorActive = await authorIsActiveMember(db, recipe);
   if (authorActive) return { decides: recipe.authorId === userId, asAuthor: true };
   const membership = await db.membership.findUnique({
@@ -465,7 +465,7 @@ export async function leavePreview(ctx: Context, actor: RecipeActor): Promise<Re
 // --- Crochets du cycle de vie ---
 
 /**
- * Depart d'un membre : ses demandes liees a cet espace tombent et sa confiance
+ * Depart d'un membre : ses demandes et suggestions liees a cet espace tombent et sa confiance
  * dans cet espace est oubliee. Ses recettes et ses partages restent [D18, D84].
  */
 export async function onMemberLeft(
@@ -479,6 +479,11 @@ export async function onMemberLeft(
       status: "PENDING",
       OR: [{ targetSpaceId: spaceId }, { sourceSpaceId: spaceId }],
     },
+    data: { status: "CANCELLED", decidedAt: new Date() },
+  });
+  // Ses suggestions faites dans cet espace tombent (12-Permissions, membre exclu).
+  await tx.recipeSuggestion.updateMany({
+    where: { proposerId: userId, spaceId, status: "PENDING" },
     data: { status: "CANCELLED", decidedAt: new Date() },
   });
   await tx.membership.updateMany({

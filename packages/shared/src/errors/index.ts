@@ -97,6 +97,12 @@ const DEFINITIONS = {
   RECIPE_009: { status: 409, message: "Cette recette est déjà visible dans cet espace." },
   RECIPE_010: { status: 404, message: "Demande de partage introuvable ou déjà traitée." },
   RECIPE_011: { status: 404, message: "Cette recette n'est pas une adaptation." },
+  RECIPE_012: {
+    status: 403,
+    message: "Tu es l'auteur de cette recette : modifie-la directement.",
+  },
+  RECIPE_013: { status: 409, message: "Tu as déjà une suggestion en attente sur cette recette." },
+  RECIPE_014: { status: 404, message: "Suggestion introuvable ou déjà traitée." },
 } as const satisfies Record<string, ErrorDefinition>;
 
 export type ErrorCode = keyof typeof DEFINITIONS;

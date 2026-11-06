@@ -244,7 +244,14 @@ export async function writeRevision(
   input: RecipeContent,
   baseRevision: number,
   source: RevisionSource,
-  keepLinks: ReadonlySet<string>
+  keepLinks: ReadonlySet<string>,
+  options: {
+    /** Auteur de la revision (le suggereur pour une suggestion acceptee). */
+    authorId?: string;
+    suggestionId?: string;
+    /** Etape de plus dans la meme transaction (cloturer la suggestion). */
+    inTransaction?: (tx: Prisma.TransactionClient) => Promise<void>;
+  } = {}
 ): Promise<void> {
   const content = await resolveContent(ctx.db, input, actor.spaceId, keepLinks);
   await assertComposition(ctx.db, recipeId, linksOf(content.blocks));
@@ -269,10 +276,17 @@ export async function writeRevision(
           create: content.spaceTagIds.map((tagId) => ({ tagId, spaceId: actor.spaceId })),
         },
         revisions: {
-          create: { number, source, authorId: actor.userId, snapshot: snapshotOf(content) },
+          create: {
+            number,
+            source,
+            authorId: options.authorId ?? actor.userId,
+            suggestionId: options.suggestionId ?? null,
+            snapshot: snapshotOf(content),
+          },
         },
       },
     });
+    await options.inTransaction?.(tx);
   });
 }
 

@@ -79,6 +79,8 @@ model User {
   sharesApproved       RecipeShare[]            @relation("ShareApprovedBy")
   shareRequests        RecipeShareRequest[]     @relation("ShareRequester")
   shareRequestsDecided RecipeShareRequest[]     @relation("ShareRequestDecider")
+  suggestions          RecipeSuggestion[]       @relation("SuggestionProposer")
+  suggestionsDecided   RecipeSuggestion[]       @relation("SuggestionDecider")
 
   @@index([deletedAt])
 }
@@ -163,6 +165,7 @@ model Space {
   shares             RecipeShare[]
   shareRequestsIn    RecipeShareRequest[]     @relation("ShareRequestTarget")
   shareRequestsFrom  RecipeShareRequest[]     @relation("ShareRequestSource")
+  suggestions        RecipeSuggestion[]
 
   @@index([deletedAt])
   @@index([purgeAfter])
@@ -551,6 +554,7 @@ model Recipe {
   shares        RecipeShare[]        @relation("ShareRecipe")
   sharedVia     RecipeShare[]        @relation("ShareVia")
   shareRequests RecipeShareRequest[]
+  suggestions   RecipeSuggestion[]
 
   @@index([homeSpaceId, deletedAt])
   @@index([authorId, deletedAt])
@@ -627,18 +631,19 @@ enum RevisionSource {
 /// Instantane complet d'une recette a un moment donne [D05] [D30] :
 /// { title, yield, times, isBase, blocks: [{ kind, title, sub, ingredients, steps }] }.
 /// Les tags ne sont pas versionnes (propres a chaque espace [D19]).
-/// suggestionId arrive avec les suggestions (C3.6).
 model RecipeRevision {
-  id        String         @id @default(uuid())
-  recipeId  String
-  number    Int
-  snapshot  Json
-  source    RevisionSource
-  authorId  String
-  createdAt DateTime       @default(now())
+  id           String         @id @default(uuid())
+  recipeId     String
+  number       Int
+  snapshot     Json
+  source       RevisionSource
+  authorId     String
+  suggestionId String?        @unique
+  createdAt    DateTime       @default(now())
 
-  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
-  author User   @relation(fields: [authorId], references: [id])
+  recipe     Recipe            @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  author     User              @relation(fields: [authorId], references: [id])
+  suggestion RecipeSuggestion? @relation(fields: [suggestionId], references: [id])
 
   @@unique([recipeId, number])
 }
@@ -747,4 +752,46 @@ model AdminUser {
 
   moduleGrants    SpaceModule[]
   requestsDecided ModuleAccessRequest[]
+}
+
+// =============================================================================
+// Suggestions (C3.6) [D04, D140, D166]
+// =============================================================================
+
+enum SuggestionStatus {
+  PENDING
+  ACCEPTED // nouvelle revision creee
+  REJECTED // rien n'est cree [D04]
+  WITHDRAWN // retiree par son auteur
+  CONVERTED // transformee en adaptation par son auteur [D140]
+  CANCELLED // auteur parti ou exclu de l'espace de la suggestion
+}
+
+/// Suggestion de modification [D04]. proposed = instantane complet propose
+/// (meme forme que RecipeRevision.snapshot) ; le diff se calcule contre
+/// baseRevision. spaceId = espace ou la suggestion a ete faite.
+/// decisionMessage = mot facultatif du decideur au refus [D166].
+model RecipeSuggestion {
+  id                String           @id @default(uuid())
+  recipeId          String
+  spaceId           String
+  proposerId        String
+  baseRevision      Int
+  proposed          Json
+  message           String?
+  status            SuggestionStatus @default(PENDING)
+  decidedById       String?
+  decidedAt         DateTime?
+  decisionMessage   String?
+  convertedRecipeId String?
+  createdAt         DateTime         @default(now())
+
+  recipe    Recipe          @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  space     Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  proposer  User            @relation("SuggestionProposer", fields: [proposerId], references: [id])
+  decidedBy User?           @relation("SuggestionDecider", fields: [decidedById], references: [id])
+  revision  RecipeRevision?
+
+  @@index([recipeId, status])
+  @@index([proposerId])
 }

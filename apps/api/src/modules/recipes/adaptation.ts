@@ -16,21 +16,17 @@ import { isModuleActive } from "../../core/modules/guards.ts";
 import { loadAccess } from "../../core/spaces/access.ts";
 import { LOCALE, linksOf } from "./content.ts";
 import { canModerate, RECIPE_PERMISSIONS } from "./permissions.ts";
-import { contentOf, snapshotSchema, type Snapshot } from "./revisions.ts";
+import { contentOf, snapshotAt, type Snapshot } from "./revisions.ts";
 import { createRecipe, findEditable, findVisible, rightsOf, type RecipeActor } from "./service.ts";
 
 type Db = Context["db"];
 
-async function snapshotAt(db: Db, recipeId: string, number: number): Promise<Snapshot> {
-  const row = await db.recipeRevision.findUniqueOrThrow({
-    where: { recipeId_number: { recipeId, number } },
-    select: { snapshot: true },
-  });
-  return snapshotSchema.parse(row.snapshot);
-}
-
 /** Acteur dans l'espace cible : membre actif, module actif, droit de creer. */
-async function targetActor(ctx: Context, userId: string, spaceId: string): Promise<RecipeActor> {
+export async function targetActor(
+  ctx: Context,
+  userId: string,
+  spaceId: string
+): Promise<RecipeActor> {
   const access = await loadAccess(ctx.db, spaceId, userId);
   if (!(await isModuleActive(ctx.db, spaceId, "recipes"))) throw new AppError("MODULE_001");
   const space = { kind: access.space.kind, role: access.role };
@@ -65,7 +61,10 @@ export async function adaptRecipe(
 }
 
 /** Instantanes rendus lisibles : noms des ingredients, titres des recettes liees. */
-async function viewsOf(db: Db, snapshots: readonly Snapshot[]): Promise<RecipeContentView[]> {
+export async function viewsOf(
+  db: Db,
+  snapshots: readonly Snapshot[]
+): Promise<RecipeContentView[]> {
   const blocks = snapshots.flatMap((s) => s.blocks);
   const ingredientIds = new Set(
     blocks.flatMap((b) => (b.kind === "LOCAL" ? b.ingredients.map((l) => l.ingredientId) : []))
