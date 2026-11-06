@@ -24,6 +24,9 @@ import { ToastProvider } from "../ui/toast.tsx";
 // Service worker seulement dans le build de production (pas en dev ni en test).
 const PwaUpdater = import.meta.env.PROD ? lazy(() => import("../pwa/pwa-updater.tsx")) : null;
 
+// Administration chargee a part : jamais telechargee par les utilisateurs [D170].
+const AdminApp = lazy(() => import("../core/admin/admin-app.tsx"));
+
 const DesignPage = lazy(() =>
   import("../core/design/design-page.tsx").then((m) => ({ default: m.DesignPage }))
 );
@@ -49,6 +52,14 @@ export function App() {
           element={
             <Suspense fallback={null}>
               <DesignPage />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/admin/*"
+          element={
+            <Suspense fallback={null}>
+              <AdminApp />
             </Suspense>
           }
         />
