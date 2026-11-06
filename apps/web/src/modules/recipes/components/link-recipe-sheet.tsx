@@ -2,7 +2,7 @@
 // recette ; bases proposees d'abord, quantite dans l'unite de rendement de la
 // recette liee [D24, D107].
 import { formatQuantity, type RecipeSummary, type Unit } from "@fm/shared";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { Button } from "../../../ui/button.tsx";
@@ -83,7 +83,12 @@ export function LinkRecipeSheet({
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [quantity, setQuantity] = useState("");
   const q = useDebounced(search.trim());
-  const list = useInfiniteQuery({ ...recipesQuery(spaceId, { q }), enabled: open });
+  // Resultats precedents gardes pendant la recherche suivante (pas de liste vide a chaque touche).
+  const list = useInfiniteQuery({
+    ...recipesQuery(spaceId, { q }),
+    enabled: open,
+    placeholderData: keepPreviousData,
+  });
   const results = basesFirst(list.data?.pages.flatMap((page) => page.data) ?? []);
   const selected = results.find((r) => r.id === selectedId);
   const unit = units.find((u) => u.id === selected?.yieldUnitId);

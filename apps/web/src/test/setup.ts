@@ -1,10 +1,14 @@
 // Setup des tests de composants [D157] : matchers jest-dom, MSW, nettoyage.
 import "@testing-library/jest-dom/vitest";
 
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
 import { afterAll, afterEach, beforeAll } from "vitest";
 
 import { server } from "./server.ts";
+
+// Premier rendu d'un module charge a la demande : 1 s ne suffit pas quand les
+// fichiers de tests tournent en parallele.
+configure({ asyncUtilTimeout: 3000 });
 
 // API absentes de jsdom dont Radix a besoin (positionnement, pointeur).
 class ResizeObserverStub {

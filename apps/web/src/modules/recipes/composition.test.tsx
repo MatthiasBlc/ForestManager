@@ -130,6 +130,7 @@ describe("lier une recette dans l'editeur (F-AJOUT-BLOC, F-LIER-RECETTE)", () =>
     await user.type(within(sheet).getByLabelText("Rechercher dans tes espaces"), "teri");
     const list = within(sheet).getByRole("listbox", { name: "Recettes trouvées" });
     await waitFor(() => {
+      expect(s.recipes.queries.at(-1)?.get("q")).toBe("teri");
       expect(within(list).getAllByRole("option")).toHaveLength(3);
     });
     const options = within(list).getAllByRole("option");
