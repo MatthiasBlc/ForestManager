@@ -574,3 +574,12 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
 ### D173 - C4 en tranches verticales - VALIDEE (2026-11-06, plan C4)
 
 - **Choix** : comme C3 (D161), chaque sous-etape de C4 livre l'API et les ecrans d'une meme fonction : compte admin et shell, modules, referentiels, utilisateurs, espaces et moderation, journal et reglages. Detail : `20-Plan-C4.md`.
+
+### D174 - Connexion admin : regles de realisation - VALIDEE (2026-11-06, realisation C4.1)
+
+- **Constat** : le CDC et `14-Architecture.md` fixent une session admin isolee de 30 min non glissante avec 2FA TOTP, sans dire comment l'isoler de la session des utilisateurs, ni comment traiter le rejeu d'un code ou la creation du premier compte.
+- **Choix** :
+  - **Session isolee** : routeur `/api/v1/admin` monte avant la session des utilisateurs, cookie `fm.admin.sid` (httpOnly, SameSite strict, chemin `/api/v1/admin`), table `AdminSession`. Un compte utilisateur n'ouvre rien cote admin, et l'inverse. L'etape mot de passe ouvre une session d'attente de 5 min ; le code valide ouvre une session neuve de 30 min que les requetes ne prolongent jamais.
+  - **Code TOTP** : tolerance d'un pas (30 s) ; un code deja accepte est refuse (`AdminUser.totpLastStep`, ecrit sous condition en SQL) ; 3 codes faux ferment la tentative (retour au mot de passe). Rate limit : 5 mots de passe et 10 codes par 15 min.
+  - **Audit** : connexions (`auth.login`, `auth.totp-enabled`, `auth.totp-failed`, `auth.totp-locked`, `auth.logout`) avec l'IP. La categorie d'une entree se deduit du prefixe de l'action (`auditCategory` dans `packages/shared`) ; une action sans categorie est refusee. Trigger en base qui refuse UPDATE et DELETE sur `AdminAuditLog` [D128].
+  - **Premier compte** : script `apps/api/src/scripts/create-admin.ts` (`npm run admin:create`), dans `src/` pour etre present dans l'image de prod ; meme politique de mot de passe que les utilisateurs, argon2id.

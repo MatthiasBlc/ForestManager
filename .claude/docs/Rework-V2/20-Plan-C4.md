@@ -20,7 +20,7 @@ Tranches verticales, comme C3 (D161) : chaque sous-etape livre l'API (`apps/api/
 ### C4.1 Compte admin, 2FA, audit, shell
 
 - Migration : `AdminUser` complet, `AdminSession`, `AdminAuditLog` (schema cible, section 8). Le journal refuse `UPDATE` et `DELETE` au niveau de la base (trigger), en plus de l'absence de route [D128].
-- Script `apps/api/scripts/create-admin.ts` (reprise de `createAdmin.ts` V1) lance dans le conteneur ; pas de creation par l'API ni par le seed.
+- Script `apps/api/src/scripts/create-admin.ts` (reprise de `createAdmin.ts` V1, D174) lance dans le conteneur ; pas de creation par l'API ni par le seed.
 - Connexion : identifiant et mot de passe, puis configuration de la 2FA a la premiere connexion (secret TOTP, QR code, cle a saisir, code de confirmation) ou code TOTP ensuite (otplib). Session admin dans un cookie distinct de celui des utilisateurs, store maison comme D148, 30 min non glissantes, CSRF, rate limit renforce. Un compte utilisateur ne donne aucun droit admin, et l'inverse.
 - `requireAdmin` et `audit(action, cible, donnees)` dans une meme transaction que l'action ; categories du journal tirees de la cle d'action (`module.*`, `ingredient.*`, `moderation.*`...).
 - Web : routes `/admin` chargees dans un bundle a part (lazy) de la meme SPA [D170], A01, A01a, A01b (sans compteur d'etapes, D138), AdminNav (bureau) et en-tete mobile avec la duree restante de la session, tableau de bord A02 vide qui se remplit au fil des tranches.

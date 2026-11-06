@@ -1,6 +1,7 @@
 // Point d'entree : charge l'environnement, ouvre la base, demarre HTTP, lance
 // les taches horaires et s'arrete proprement sur SIGTERM / SIGINT (docker stop).
 
+import { purgeExpiredAdminSessions } from "./core/admin/session.ts";
 import { purgeExpiredSessions } from "./core/auth/session.ts";
 import { loadEnv } from "./core/config/env.ts";
 import { createDb } from "./core/db/client.ts";
@@ -30,7 +31,7 @@ const server = app.listen(env.PORT, () => {
 // Taches horaires : sessions expirees, espaces supprimes depuis plus de 30 jours [D22],
 // puis menage du stockage (apres la purge, qui libere des images) [D167].
 async function hourlyJobs(): Promise<void> {
-  const sessions = await purgeExpiredSessions(db);
+  const sessions = (await purgeExpiredSessions(db)) + (await purgeExpiredAdminSessions(db));
   const spaces = await purgeDeletedSpaces(ctx);
   const files = await sweepStorage(ctx);
   if (sessions + spaces + files > 0) logger.info({ sessions, spaces, files }, "purge done");

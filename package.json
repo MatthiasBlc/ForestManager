@@ -30,7 +30,8 @@
     "prisma:studio": "docker compose --project-directory . -f docker/compose.dev.yml exec api npm exec --workspace=@fm/api -- prisma studio --port 5555 --browser none",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "admin:create": "docker compose --project-directory . -f docker/compose.dev.yml exec api npm run admin:create -w @fm/api"
   },
   "repository": {
     "type": "git",

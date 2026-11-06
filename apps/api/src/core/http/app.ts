@@ -6,6 +6,7 @@ import cors from "cors";
 import express, { Router } from "express";
 import type { Logger } from "pino";
 
+import { adminRouter } from "../admin/routes.ts";
 import { createPasswordHasher, type PasswordHasher } from "../auth/password.ts";
 import { authRouter } from "../auth/routes.ts";
 import { sessionMiddleware } from "../auth/session.ts";
@@ -97,6 +98,8 @@ export function createApp(deps: AppDeps): express.Express {
       features: { email: ctx.mailer !== null, uploads: ctx.storage !== null },
     });
   });
+  // Admin avant la session des utilisateurs : cookie et table distincts [D174].
+  api.use("/admin", adminRouter(ctx, rateLimit));
   api.use(sessionMiddleware(deps.db, env.SESSION_SECRET, production));
   api.use(authRouter(ctx, rateLimit));
   api.use(storageRouter(ctx, rateLimit));

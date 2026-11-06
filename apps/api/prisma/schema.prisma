@@ -749,9 +749,40 @@ model AdminUser {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   lastLoginAt DateTime?
+  /// Dernier pas de temps TOTP accepte : un code ne sert qu'une fois (rejeu refuse) [D174].
+  totpLastStep Int?
 
   moduleGrants    SpaceModule[]
   requestsDecided ModuleAccessRequest[]
+  auditLogs       AdminAuditLog[]
+}
+
+/// Sessions admin, isolees de celles des utilisateurs : 30 min non glissantes [D174].
+model AdminSession {
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}
+
+/// Journal d'audit admin. action = cle texte ("auth.login", "ingredient.merged"...).
+/// Ni UPDATE ni DELETE : un trigger les refuse en base [D128].
+model AdminAuditLog {
+  id         String   @id @default(uuid())
+  adminId    String
+  action     String
+  targetType String?
+  targetId   String?
+  data       Json?
+  createdAt  DateTime @default(now())
+
+  admin AdminUser @relation(fields: [adminId], references: [id])
+
+  @@index([adminId, createdAt])
+  @@index([action, createdAt])
+  @@index([createdAt])
 }
 
 // =============================================================================

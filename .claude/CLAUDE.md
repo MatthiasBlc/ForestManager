@@ -32,6 +32,7 @@ npm run test:api               # idem par projet : test:web, test:shared
 npm run test:down              # arreter la base de test
 npm run lint && npm run typecheck
 npm run prisma:migrate         # migrations (a partir de C1.4) ; prisma:studio sur :5555
+npm run admin:create           # compte super admin dans la stack de dev (2FA a la premiere connexion)
 ```
 
 ## Conventions

@@ -251,7 +251,7 @@ Relevees sur le registre npm le 2026-11-03. A reverifier au demarrage du code ; 
 | helmet / express-rate-limit | 8.3.x / 8.7.x                                 |                                                                                              |
 | @aws-sdk/client-s3          | 3.x recent                                    | MinIO.                                                                                       |
 | nodemailer                  | 10.x                                          | Emails optionnels.                                                                           |
-| otplib                      | 13.6.x                                        | 2FA admin.                                                                                   |
+| otplib                      | 13.5.x                                        | 2FA admin.                                                                                   |
 | vitest                      | 5.1.x                                         |                                                                                              |
 | @playwright/test            | 1.64.x                                        | + `@axe-core/playwright` 4.14.x.                                                             |
 | msw                         | 3.0.x                                         | Mocks reseau des tests de composants.                                                        |

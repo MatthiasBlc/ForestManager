@@ -111,6 +111,16 @@ const DEFINITIONS = {
   RECIPE_015: { status: 400, message: "Ce lien ne peut pas être importé." },
   RECIPE_016: { status: 422, message: "Cette page est injoignable ou trop lourde." },
   RECIPE_017: { status: 422, message: "Aucune recette trouvée sur cette page." },
+
+  // --- Administration de la plateforme ---
+  ADMIN_001: { status: 401, message: "Identifiants incorrects." },
+  ADMIN_002: { status: 401, message: "Connexion administrateur requise." },
+  ADMIN_003: { status: 401, message: "Code de vérification incorrect." },
+  ADMIN_004: {
+    status: 429,
+    message: "Trop de codes incorrects. Recommencez la connexion.",
+  },
+  ADMIN_005: { status: 409, message: "Ce compte administrateur existe déjà." },
 } as const satisfies Record<string, ErrorDefinition>;
 
 export type ErrorCode = keyof typeof DEFINITIONS;

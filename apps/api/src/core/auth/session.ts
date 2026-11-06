@@ -11,6 +11,11 @@ import type { Db } from "../db/client.ts";
 declare module "express-session" {
   interface SessionData {
     userId?: string;
+    /** Session admin (cookie distinct) [D174]. */
+    adminId?: string;
+    /** Code TOTP valide : la session admin est complete. */
+    adminVerified?: boolean;
+    totpAttempts?: number;
   }
 }
 
@@ -25,20 +30,46 @@ function expiresAt(data: session.SessionData): Date {
   return new Date(Date.now() + (data.cookie.maxAge ?? SESSION_TTL_MS));
 }
 
-export class DbSessionStore extends session.Store {
-  private readonly db: Db;
+/** Acces a une table de sessions (utilisateurs ou admins) [D174]. */
+export interface SessionRows {
+  find(sid: string): Promise<{ data: string; expiresAt: Date } | null>;
+  save(sid: string, data: string, expiresAt: Date, session: session.SessionData): Promise<unknown>;
+  remove(sid: string): Promise<unknown>;
+  extend(sid: string, expiresAt: Date): Promise<unknown>;
+}
 
-  constructor(db: Db) {
+/** Sessions des utilisateurs : la colonne userId ferme toutes celles d'un compte. */
+export function userSessionRows(db: Db): SessionRows {
+  return {
+    find: (sid) => db.userSession.findUnique({ where: { sid } }),
+    save: (sid, data, expires, value) => {
+      const values = { data, expiresAt: expires, userId: value.userId ?? null };
+      return db.userSession.upsert({
+        where: { sid },
+        create: { id: sid, sid, ...values },
+        update: values,
+      });
+    },
+    remove: (sid) => db.userSession.deleteMany({ where: { sid } }),
+    extend: (sid, expires) =>
+      db.userSession.updateMany({ where: { sid }, data: { expiresAt: expires } }),
+  };
+}
+
+export class DbSessionStore extends session.Store {
+  private readonly rows: SessionRows;
+
+  constructor(rows: SessionRows) {
     super();
-    this.db = db;
+    this.rows = rows;
   }
 
   override get(
     sid: string,
     callback: (error: unknown, data?: session.SessionData | null) => void
   ): void {
-    this.db.userSession
-      .findUnique({ where: { sid } })
+    this.rows
+      .find(sid)
       .then((row) => {
         if (!row || row.expiresAt.getTime() <= Date.now()) {
           callback(null, null);
@@ -50,27 +81,22 @@ export class DbSessionStore extends session.Store {
   }
 
   override set(sid: string, data: session.SessionData, callback?: Callback): void {
-    const values = {
-      data: JSON.stringify(data),
-      expiresAt: expiresAt(data),
-      userId: data.userId ?? null,
-    };
-    this.db.userSession
-      .upsert({ where: { sid }, create: { id: sid, sid, ...values }, update: values })
+    this.rows
+      .save(sid, JSON.stringify(data), expiresAt(data), data)
       .then(() => callback?.())
       .catch((error: unknown) => callback?.(error));
   }
 
   override destroy(sid: string, callback?: Callback): void {
-    this.db.userSession
-      .deleteMany({ where: { sid } })
+    this.rows
+      .remove(sid)
       .then(() => callback?.())
       .catch((error: unknown) => callback?.(error));
   }
 
   override touch(sid: string, data: session.SessionData, callback?: Callback): void {
-    this.db.userSession
-      .updateMany({ where: { sid }, data: { expiresAt: expiresAt(data) } })
+    this.rows
+      .extend(sid, expiresAt(data))
       .then(() => callback?.())
       .catch((error: unknown) => callback?.(error));
   }
@@ -80,7 +106,7 @@ export function sessionMiddleware(db: Db, secret: string, secure: boolean): Requ
   return session({
     name: SESSION_COOKIE,
     secret,
-    store: new DbSessionStore(db),
+    store: new DbSessionStore(userSessionRows(db)),
     resave: false,
     saveUninitialized: false,
     // Glissant : chaque reponse repousse l'expiration de la duree choisie.

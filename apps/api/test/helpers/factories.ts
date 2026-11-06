@@ -8,6 +8,10 @@ import { db } from "./db.ts";
 
 /** Hash argon2 de TEST_PASSWORD, calcule une fois par fichier (setup.ts). */
 let passwordHash = "";
+/** Hash argon2 du mot de passe de test (calcule une fois par fichier, setup.ts). */
+export function testPasswordHash(): string {
+  return passwordHash;
+}
 export function setTestPasswordHash(hash: string): void {
   passwordHash = hash;
 }
