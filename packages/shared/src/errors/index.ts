@@ -69,6 +69,11 @@ const DEFINITIONS = {
   SPACE_018: { status: 404, message: "Lien d'invitation introuvable." },
   SPACE_019: { status: 409, message: "Vous ne pouvez pas faire cette action sur vous-même." },
 
+  // --- Stockage des photos et avatars [D167] ---
+  STORAGE_001: { status: 503, message: "L'envoi de photos n'est pas disponible." },
+  STORAGE_002: { status: 404, message: "Photo introuvable : envoie-la de nouveau." },
+  STORAGE_003: { status: 400, message: "Ce fichier n'est pas une image valide." },
+
   // --- Modules ---
   MODULE_001: { status: 403, message: "Ce module n'est pas actif dans cet espace." },
   MODULE_002: { status: 404, message: "Module introuvable." },

@@ -57,6 +57,7 @@ export async function adaptRecipe(
     adaptedFromId: original.id,
     adaptedFromRevision: original.currentRevision,
     keepLinks: new Set(linksOf(content.blocks)),
+    imageKey: original.imageKey,
   });
 }
 

@@ -19,6 +19,8 @@ import { assertValidModules, hooksFrom, type ApiModule } from "../modules/regist
 import { modulesRouter } from "../modules/routes.ts";
 import { referentialsRouter } from "../../referentials/routes.ts";
 import { invitationsRouter } from "../spaces/invitations-routes.ts";
+import { storageRouter } from "../storage/routes.ts";
+import { createStorage, type Storage } from "../storage/storage.ts";
 import { spacesRouter } from "../spaces/routes.ts";
 import { requireAuth } from "./auth.ts";
 import { errorHandler, notFoundHandler } from "./errors.ts";
@@ -34,6 +36,8 @@ export interface AppDeps {
   rateLimit?: boolean;
   /** Transport des emails ; par defaut celui de SMTP_URL (null sans SMTP). */
   mailer?: Mailer | null;
+  /** Stockage des photos ; par defaut celui des variables MINIO_* (null sans). */
+  storage?: Storage | null;
   hasher?: PasswordHasher;
   hooks?: LifecycleHooks;
   /** Manifestes des modules (src/modules/index.ts) ; le socle ne les importe pas [D40]. */
@@ -51,6 +55,7 @@ export function createContext(deps: AppDeps): Context {
     db: deps.db,
     logger: deps.logger,
     mailer: deps.mailer === undefined ? createMailer(env) : deps.mailer,
+    storage: deps.storage === undefined ? createStorage(env) : deps.storage,
     hasher: deps.hasher ?? createPasswordHasher(env.NODE_ENV === "test"),
     hooks: deps.hooks ?? hooksFrom(deps.modules),
     modules: deps.modules,
@@ -84,10 +89,13 @@ export function createApp(deps: AppDeps): express.Express {
 
   const api = Router();
   api.get("/config", (_req, res) => {
-    reply(res, appConfigSchema, { features: { email: ctx.mailer !== null } });
+    reply(res, appConfigSchema, {
+      features: { email: ctx.mailer !== null, uploads: ctx.storage !== null },
+    });
   });
   api.use(sessionMiddleware(deps.db, env.SESSION_SECRET, production));
   api.use(authRouter(ctx, rateLimit));
+  api.use(storageRouter(ctx, rateLimit));
   api.use(spacesRouter(ctx));
   api.use(invitationsRouter(ctx, rateLimit));
   api.use(modulesRouter(ctx));

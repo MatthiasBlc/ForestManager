@@ -1,6 +1,6 @@
 // Crochets du cycle de vie appeles par le socle et fournis par les modules
 // (remplis par le registre, C1.8). Le socle ne connait aucun module [D40].
-import type { Prisma } from "../db/client.ts";
+import type { Db, Prisma } from "../db/client.ts";
 
 export type MemberLeftReason = "LEFT" | "EXCLUDED" | "ACCOUNT_DELETED";
 
@@ -12,8 +12,13 @@ export interface LifecycleHooks {
     tx: Prisma.TransactionClient,
     event: { spaceId: string; userId: string; reason: MemberLeftReason }
   ) => Promise<void>)[];
+  /**
+   * Menage du stockage [D167] : cles d'images encore utilisees par le module
+   * (il peut d'abord liberer les plus anciennes, ex. recettes supprimees).
+   */
+  storageKeys: ((db: Db, now: Date) => Promise<string[]>)[];
 }
 
 export function emptyHooks(): LifecycleHooks {
-  return { onSpaceDeleted: [], onMemberLeft: [] };
+  return { onSpaceDeleted: [], onMemberLeft: [], storageKeys: [] };
 }

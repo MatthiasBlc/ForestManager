@@ -8,9 +8,13 @@ import { api, ApiRequestError } from "./api.ts";
 
 describe("client API", () => {
   it("lit une reponse et la valide contre son schema", async () => {
-    server.use(http.get("/api/v1/config", () => HttpResponse.json({ features: { email: true } })));
+    server.use(
+      http.get("/api/v1/config", () =>
+        HttpResponse.json({ features: { email: true, uploads: true } })
+      )
+    );
     await expect(api.get("/config", appConfigSchema)).resolves.toEqual({
-      features: { email: true },
+      features: { email: true, uploads: true },
     });
   });
 
@@ -47,7 +51,7 @@ describe("client API", () => {
       http.get("/api/v1/config", () => {
         calls.push("config");
         document.cookie = "XSRF-TOKEN=neuf; path=/";
-        return HttpResponse.json({ features: { email: false } });
+        return HttpResponse.json({ features: { email: false, uploads: false } });
       }),
       http.post("/api/v1/auth/logout", ({ request }) => {
         calls.push(`logout:${request.headers.get("x-xsrf-token") ?? ""}`);

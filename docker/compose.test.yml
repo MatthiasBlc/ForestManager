@@ -24,6 +24,20 @@ services:
       timeout: 5s
       retries: 15
 
+  # Stockage S3 jetable [D167] (RustFS : les images MinIO ne sont plus publiques).
+  s3:
+    image: rustfs/rustfs:1.0.3
+    environment:
+      RUSTFS_ACCESS_KEY: test-access-key
+      RUSTFS_SECRET_KEY: test-secret-key-not-for-production
+    tmpfs:
+      - /data:uid=10001,gid=10001
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://127.0.0.1:9000/health"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
   tests:
     # Image de dev de l'API : elle contient les dependances de tout le monorepo.
     build:
@@ -35,6 +49,11 @@ services:
       NODE_ENV: test
       DATABASE_URL: postgresql://test:test@postgres:5432/forestmanager_test
       SESSION_SECRET: test-session-secret-not-for-production
+      MINIO_ENDPOINT: s3
+      MINIO_ACCESS_KEY: test-access-key
+      MINIO_SECRET_KEY: test-secret-key-not-for-production
+      MINIO_BUCKET: forestmanager-images-test
+      MINIO_PUBLIC_URL: http://s3:9000
       # Cache de Vite hors de l'arbre monte (sinon dossiers root sur l'hote).
       VITE_CACHE_DIR: /tmp/vite
     volumes:
@@ -42,6 +61,8 @@ services:
       - /app/node_modules
     depends_on:
       postgres:
+        condition: service_healthy
+      s3:
         condition: service_healthy
     entrypoint: ["sh", "docker/test-entrypoint.sh"]
     command: ["npx", "vitest", "run", "--configLoader", "runner"]

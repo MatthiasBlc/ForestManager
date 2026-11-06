@@ -181,6 +181,7 @@ describe("suppression du compte (D20, D51)", () => {
             return Promise.resolve();
           },
         ],
+        storageKeys: [],
       },
     });
     const client = await loginAs(s.user, hookedApp);

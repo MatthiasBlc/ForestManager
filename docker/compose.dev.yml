@@ -40,6 +40,26 @@ services:
       retries: 10
     logging: *default-logging
 
+  # Stockage S3 des photos [D167] : RustFS (les images MinIO ne sont plus
+  # publiques). Le navigateur passe par le proxy de Vite (meme origine).
+  s3:
+    image: rustfs/rustfs:1.0.3
+    restart: unless-stopped
+    environment:
+      RUSTFS_ACCESS_KEY: ${MINIO_ACCESS_KEY:-forestmanager}
+      RUSTFS_SECRET_KEY: ${MINIO_SECRET_KEY:-forestmanager_dev_secret}
+    ports:
+      - "9001:9001" # console
+    volumes:
+      - s3_data:/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://127.0.0.1:9000/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    logging: *default-logging
+
   api:
     <<: *app
     build:
@@ -57,8 +77,15 @@ services:
       CORS_ORIGIN: ${CORS_ORIGIN:-}
       APP_URL: http://localhost:3000
       SMTP_URL: ${SMTP_URL:-}
+      MINIO_ENDPOINT: s3
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-forestmanager}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-forestmanager_dev_secret}
+      MINIO_BUCKET: forestmanager-images-dev
+      MINIO_PUBLIC_URL: http://localhost:3000
     depends_on:
       postgres:
+        condition: service_healthy
+      s3:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:3001/health"]
@@ -78,6 +105,8 @@ services:
     environment:
       NODE_ENV: development
       API_PROXY_TARGET: http://api:3001
+      STORAGE_PROXY_TARGET: http://s3:9000
+      STORAGE_BUCKET: forestmanager-images-dev
       VITE_CACHE_DIR: /tmp/vite
     healthcheck:
       test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:3000"]
@@ -91,3 +120,4 @@ networks:
 
 volumes:
   postgres_data:
+  s3_data:

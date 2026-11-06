@@ -7,6 +7,7 @@ import { MAX_OWNED_SPACES, type AccountDeletionPreview } from "@fm/shared";
 import type { Context } from "../context.ts";
 import { Prisma } from "../db/client.ts";
 import { AppError } from "../http/errors.ts";
+import { imageUrl } from "../storage/images.ts";
 import { endMembership, ownedGroupCount, softDelete } from "../spaces/service.ts";
 import { destroyUserSessions } from "./session.ts";
 
@@ -22,7 +23,7 @@ type Plan = AccountDeletionPreview["spaces"][number];
 async function findSuccessor(db: Tx, spaceId: string, ownerId: string) {
   const candidates = await db.membership.findMany({
     where: { spaceId, leftAt: null, NOT: { userId: ownerId } },
-    select: { role: true, user: { select: { id: true, username: true } } },
+    select: { role: true, user: { select: { id: true, username: true, avatarKey: true } } },
     orderBy: { joinedAt: "asc" },
   });
   const ordered = [
@@ -35,20 +36,35 @@ async function findSuccessor(db: Tx, spaceId: string, ownerId: string) {
   return ordered[0]?.user ?? null;
 }
 
-async function plan(db: Tx, userId: string): Promise<Plan[]> {
+/** `url` : URL d'une image (aucune pendant la suppression elle-meme). */
+async function plan(
+  db: Tx,
+  userId: string,
+  url: (key: string | null) => string | null = () => null
+): Promise<Plan[]> {
   const memberships = await db.membership.findMany({
     where: { userId, leftAt: null, space: { kind: "GROUP", deletedAt: null } },
-    select: { role: true, space: { select: { id: true, name: true, tintIndex: true } } },
+    select: {
+      role: true,
+      space: { select: { id: true, name: true, tintIndex: true, avatarKey: true } },
+    },
     orderBy: { space: { name: "asc" } },
   });
   const plans: Plan[] = [];
   for (const { role, space } of memberships) {
     const successor = role === "OWNER" ? await findSuccessor(db, space.id, userId) : null;
     plans.push({
-      space: { ...space, avatarUrl: null },
+      space: {
+        id: space.id,
+        name: space.name,
+        tintIndex: space.tintIndex,
+        avatarUrl: url(space.avatarKey),
+      },
       role,
       outcome: role !== "OWNER" ? "LEFT" : successor ? "TRANSFERRED" : "DELETED",
-      newOwner: successor ? { ...successor, avatarUrl: null } : null,
+      newOwner: successor
+        ? { id: successor.id, username: successor.username, avatarUrl: url(successor.avatarKey) }
+        : null,
     });
   }
   return plans;
@@ -58,7 +74,7 @@ export async function previewDeletion(
   ctx: Context,
   userId: string
 ): Promise<AccountDeletionPreview> {
-  return { spaces: await plan(ctx.db, userId) };
+  return { spaces: await plan(ctx.db, userId, (key) => imageUrl(ctx, key)) };
 }
 
 export async function deleteAccount(ctx: Context, userId: string, password: string): Promise<void> {

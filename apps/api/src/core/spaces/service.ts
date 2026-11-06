@@ -17,6 +17,7 @@ import type { Prisma } from "../db/client.ts";
 import { AppError } from "../http/errors.ts";
 import type { MemberLeftReason } from "../modules/hooks.ts";
 import { authorize, loadAccess, requireSpacePermission } from "./access.ts";
+import { imageUrl, toUserSummary } from "../storage/images.ts";
 import { grantDefaultModules } from "./defaults.ts";
 
 type Tx = Prisma.TransactionClient;
@@ -30,6 +31,7 @@ const summarySelect = {
   name: true,
   description: true,
   tintIndex: true,
+  avatarKey: true,
   createdAt: true,
   deletedAt: true,
   purgeAfter: true,
@@ -38,14 +40,14 @@ const summarySelect = {
 
 type SummaryRow = Prisma.SpaceGetPayload<{ select: typeof summarySelect }>;
 
-function toSummary(row: SummaryRow, myRole: SpaceSummary["myRole"]): SpaceSummary {
+function toSummary(ctx: Context, row: SummaryRow, myRole: SpaceSummary["myRole"]): SpaceSummary {
   return {
     id: row.id,
     kind: row.kind,
     name: row.name,
     description: row.description,
     tintIndex: row.tintIndex,
-    avatarUrl: null, // avatars en C3 [D146]
+    avatarUrl: imageUrl(ctx, row.avatarKey),
     myRole,
     memberCount: row._count.memberships,
     createdAt: row.createdAt.toISOString(),
@@ -68,7 +70,7 @@ export async function listSpaces(ctx: Context, userId: string): Promise<SpaceSum
     select: { role: true, space: { select: summarySelect } },
   });
   return memberships
-    .map((m) => toSummary(m.space, m.role))
+    .map((m) => toSummary(ctx, m.space, m.role))
     .sort((a, b) =>
       a.kind === b.kind ? a.name.localeCompare(b.name) : a.kind === "PERSONAL" ? -1 : 1
     );
@@ -99,7 +101,7 @@ export async function getSpace(
     where: { id: spaceId },
     select: summarySelect,
   });
-  return { ...toSummary(row, access.role), modules: await activeModules(ctx.db, spaceId) };
+  return { ...toSummary(ctx, row, access.role), modules: await activeModules(ctx.db, spaceId) };
 }
 
 // --- Creation, modification ---
@@ -218,10 +220,12 @@ export async function purgeDeletedSpaces(ctx: Context): Promise<number> {
 
 // --- Membres ---
 
-const userSummary = { select: { id: true, username: true, deletedAt: true } } as const;
+const userSummary = {
+  select: { id: true, username: true, avatarKey: true, deletedAt: true },
+} as const;
 
-function toUser(user: { id: string; username: string }) {
-  return { id: user.id, username: user.username, avatarUrl: null };
+function toUser(ctx: Context, user: { id: string; username: string; avatarKey: string | null }) {
+  return toUserSummary(ctx, user);
 }
 
 export async function listMembers(
@@ -239,7 +243,7 @@ export async function listMembers(
   return rows
     .sort((a, b) => rank[a.role] - rank[b.role])
     .map((row) => ({
-      user: toUser(row.user),
+      user: toUser(ctx, row.user),
       role: row.role,
       joinedAt: row.joinedAt.toISOString(),
     }));
@@ -343,12 +347,12 @@ const transferSelect = {
 
 type TransferRow = Prisma.SpaceOwnershipTransferGetPayload<{ select: typeof transferSelect }>;
 
-function toTransfer(row: TransferRow): OwnershipTransfer {
+function toTransfer(ctx: Context, row: TransferRow): OwnershipTransfer {
   return {
     id: row.id,
     spaceId: row.spaceId,
-    fromUser: toUser(row.fromUser),
-    toUser: toUser(row.toUser),
+    fromUser: toUser(ctx, row.fromUser),
+    toUser: toUser(ctx, row.toUser),
     status: row.status,
     createdAt: row.createdAt.toISOString(),
     respondedAt: row.respondedAt?.toISOString() ?? null,
@@ -366,7 +370,7 @@ export async function pendingTransfer(
     where: { spaceId, status: "PENDING" },
     select: transferSelect,
   });
-  return row ? toTransfer(row) : null;
+  return row ? toTransfer(ctx, row) : null;
 }
 
 /** Transferts recus en attente (pour l'ecran des invitations, avant les notifications de C6). */
@@ -379,7 +383,7 @@ export async function myPendingTransfers(
     select: transferSelect,
     orderBy: { createdAt: "desc" },
   });
-  return rows.map(toTransfer);
+  return rows.map((row) => toTransfer(ctx, row));
 }
 
 export async function proposeTransfer(
@@ -400,7 +404,7 @@ export async function proposeTransfer(
       data: { spaceId, fromUserId: ownerId, toUserId },
       select: transferSelect,
     });
-    return toTransfer(row);
+    return toTransfer(ctx, row);
   } catch (error) {
     // Index partiel : une seule proposition en attente par espace (requetes concurrentes).
     if (typeof error === "object" && error !== null && "code" in error && error.code === "P2002") {

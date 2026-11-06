@@ -334,6 +334,7 @@ describe("suppression, restauration, purge (D22)", () => {
           },
         ],
         onMemberLeft: [],
+        storageKeys: [],
       },
     });
     expect(await purgeDeletedSpaces(ctx)).toBe(1);

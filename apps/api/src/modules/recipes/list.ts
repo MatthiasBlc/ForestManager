@@ -156,7 +156,7 @@ export async function listRecipes(
   const byId = new Map(recipes.map((recipe) => [recipe.id, recipe]));
   const data = page.flatMap((row) => {
     const recipe = byId.get(row.id);
-    return recipe ? [toSummary(recipe)] : [];
+    return recipe ? [toSummary(ctx, recipe)] : [];
   });
   return { data, nextCursor };
 }

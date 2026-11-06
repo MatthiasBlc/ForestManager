@@ -25,6 +25,8 @@ import {
   recipeParamsSchema,
   recipeSchema,
   recipeSpaceTagsBodySchema,
+  attachImageBodySchema,
+  imageResponseSchema,
   recipeRevisionSchema,
   recipeSummarySchema,
   restoreRevisionBodySchema,
@@ -47,6 +49,7 @@ import {
 import type { ApiModule } from "../../core/modules/registry.ts";
 import * as adaptation from "./adaptation.ts";
 import { authoredBySql, listRecipes } from "./list.ts";
+import * as photos from "./photos.ts";
 import { RECIPE_PERMISSIONS } from "./permissions.ts";
 import * as revisions from "./revisions.ts";
 import * as recipes from "./service.ts";
@@ -228,6 +231,28 @@ function recipesRouter(ctx: Context): Router {
     handle({ params: recipeIdSchema }, async ({ params }, req, res) => {
       await recipes.deleteRecipe(ctx, actorOf(req), params.recipeId);
       res.status(204).end();
+    })
+  );
+
+  // Photo hors revisions, meme droit que modifier [D167].
+  router.put(
+    "/:recipeId/photo",
+    requirePermission("recipes.view"),
+    handle(
+      { params: recipeIdSchema, body: attachImageBodySchema },
+      async ({ params, body }, req, res) => {
+        const url = await photos.setPhoto(ctx, actorOf(req), params.recipeId, body.uploadId);
+        reply(res, imageResponseSchema, { url });
+      }
+    )
+  );
+
+  router.delete(
+    "/:recipeId/photo",
+    requirePermission("recipes.view"),
+    handle({ params: recipeIdSchema }, async ({ params }, req, res) => {
+      await photos.removePhoto(ctx, actorOf(req), params.recipeId);
+      reply(res, imageResponseSchema, { url: null });
     })
   );
 
@@ -471,4 +496,5 @@ export const recipesModule: ApiModule = {
   router: recipesRouter,
   onMemberLeft: sharing.onMemberLeft,
   onSpaceDeleted: sharing.onSpaceDeleted,
+  storageKeys: photos.storageKeys,
 };

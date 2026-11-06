@@ -7,6 +7,7 @@ import { createDb } from "./core/db/client.ts";
 import { createApp, createContext } from "./core/http/app.ts";
 import { createLogger } from "./core/http/logger.ts";
 import { purgeDeletedSpaces } from "./core/spaces/service.ts";
+import { sweepStorage } from "./core/storage/images.ts";
 import { MODULES } from "./modules/index.ts";
 
 const env = loadEnv();
@@ -15,15 +16,24 @@ const db = createDb(env.DATABASE_URL);
 const ctx = createContext({ env, db, logger, modules: MODULES });
 const app = createApp(ctx);
 
+// En dev, le bucket du stockage local est cree au besoin (en preprod et prod il existe deja).
+if (ctx.storage && env.NODE_ENV !== "production") {
+  ctx.storage.ensureBucket().catch((error: unknown) => {
+    logger.error({ err: error }, "storage bucket unavailable");
+  });
+}
+
 const server = app.listen(env.PORT, () => {
   logger.info({ port: env.PORT }, "API ready");
 });
 
-// Taches horaires : sessions expirees, espaces supprimes depuis plus de 30 jours [D22].
+// Taches horaires : sessions expirees, espaces supprimes depuis plus de 30 jours [D22],
+// puis menage du stockage (apres la purge, qui libere des images) [D167].
 async function hourlyJobs(): Promise<void> {
   const sessions = await purgeExpiredSessions(db);
   const spaces = await purgeDeletedSpaces(ctx);
-  if (sessions + spaces > 0) logger.info({ sessions, spaces }, "purge done");
+  const files = await sweepStorage(ctx);
+  if (sessions + spaces + files > 0) logger.info({ sessions, spaces, files }, "purge done");
 }
 const jobs = setInterval(
   () => {

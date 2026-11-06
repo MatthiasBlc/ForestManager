@@ -10,13 +10,20 @@ export interface SessionOptions {
   me?: Me | null;
   spaces?: SpaceDetail[];
   email?: boolean;
+  /** Envoi de photos [D167] : coupe par defaut (aucun choix de photo affiche). */
+  uploads?: boolean;
 }
 
 /** Installe une session ; renvoie l'utilisateur et ses espaces (perso en premier). */
-export function mockSession({ me = buildMe(), spaces, email = true }: SessionOptions = {}) {
+export function mockSession({
+  me = buildMe(),
+  spaces,
+  email = true,
+  uploads = false,
+}: SessionOptions = {}) {
   const all = me ? (spaces ?? [buildPersonalSpace(me)]) : [];
   server.use(
-    http.get("/api/v1/config", () => HttpResponse.json({ features: { email } })),
+    http.get("/api/v1/config", () => HttpResponse.json({ features: { email, uploads } })),
     http.get("/api/v1/me", () =>
       me ? HttpResponse.json(me) : HttpResponse.json(errorBody("AUTH_001"), { status: 401 })
     ),

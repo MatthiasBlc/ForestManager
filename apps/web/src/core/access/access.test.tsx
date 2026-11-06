@@ -16,7 +16,7 @@ function loggedOut({ email = true }: { email?: boolean } = {}) {
   const bodies: Record<string, unknown> = {};
   mockEmptyRecipes();
   server.use(
-    http.get("/api/v1/config", () => HttpResponse.json({ features: { email } })),
+    http.get("/api/v1/config", () => HttpResponse.json({ features: { email, uploads: false } })),
     http.get("/api/v1/me", () =>
       me ? HttpResponse.json(me) : HttpResponse.json(errorBody("AUTH_001"), { status: 401 })
     ),

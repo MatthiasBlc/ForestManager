@@ -165,10 +165,11 @@ Recettes est un module comme les autres : son manifeste, ses routes, ses permiss
 
 ## 7. Stockage des images
 
-- MinIO (API S3) comme en V1 : upload direct du navigateur par URL presignee PUT (60 s), conversion en WebP et redimensionnement cote client puis verification cote serveur (type, taille, dimensions).
-- Cles : `spaces/<spaceId>/avatar.webp`, `recipes/<recipeId>/cover.webp`, `users/<userId>/avatar.webp`.
-- Lecture par URLs publiques du bucket ou presignees courtes selon la confidentialite retenue (proposition : presignees, car les espaces sont prives).
-- Job de nettoyage des orphelins et purge des espaces supprimes apres 30 jours [D22].
+- MinIO (API S3) comme en V1 en preprod et prod, bucket prive ; RustFS (compatible S3) en dev, test et CI [D167].
+- Envoi direct du navigateur par **POST signe** (60 s, 2 Mo, `image/webp` imposes par le stockage) vers `uploads/<userId>/<uploadId>.webp`, apres conversion en WebP et redimensionnement cote client ; l'API verifie (signature WebP, dimensions) en rattachant l'envoi [D167].
+- Cles uniques par version : `recipes/<recipeId>/<uuid>.webp`, `users/<userId>/<uuid>.webp`, `spaces/<spaceId>/<uuid>.webp`.
+- Lecture par URLs signees courtes (date de signature arrondie a l'heure, valables 2 h : cache du navigateur) [D167].
+- Menage horaire : envois abandonnes et objets que la base ne reference plus ; photos des recettes supprimees depuis 30 jours [D22, D167].
 
 ## 8. Internationalisation [D34, D73]
 
@@ -273,4 +274,4 @@ Relevees sur le registre npm le 2026-11-03. A reverifier au demarrage du code ; 
 - **Q-ARCH-1 Suivi d'erreurs** : (a) Bugsink auto-heberge, un conteneur [recommande] ; (b) Sentry SaaS offre gratuite ; (c) GlitchTip auto-heberge ; (d) rien en V2.0, journaux pino seulement.
 - **Q-ARCH-2 Framework HTTP** : (a) Express 5, continuite avec la V1 [recommande] ; (b) Fastify (plus rapide, validation de schemas native) ; (c) Hono (leger, moderne).
 - **Q-ARCH-3 Versions majeures** : (a) prendre les dernieres stables compatibles entre elles (TypeScript 6.0, Prisma 7, React 19, Express 5) [recommande] ; (b) attendre les toutes dernieres majeures (TypeScript 7, Prisma 8) quitte a decaler le demarrage.
-- **Q-ARCH-4 Images des espaces prives** : (a) URLs presignees courtes [recommande, contenu prive] ; (b) bucket public avec chemins non devinables (plus simple, cache plus efficace).
+- **Q-ARCH-4 Images des espaces prives** : (a) URLs presignees courtes [recommande, contenu prive] ; (b) bucket public avec chemins non devinables (plus simple, cache plus efficace). Tranche : (a), avec signature arrondie a l'heure pour le cache [D167].

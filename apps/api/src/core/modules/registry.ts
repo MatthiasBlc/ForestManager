@@ -25,6 +25,7 @@ export interface ApiModule extends ModuleDefinition {
   readonly router?: (ctx: Context) => Router;
   readonly onSpaceDeleted?: LifecycleHooks["onSpaceDeleted"][number];
   readonly onMemberLeft?: LifecycleHooks["onMemberLeft"][number];
+  readonly storageKeys?: LifecycleHooks["storageKeys"][number];
 }
 
 /** Segments deja pris par le socle sous /spaces/:spaceId. */
@@ -52,6 +53,7 @@ export function hooksFrom(modules: readonly ApiModule[]): LifecycleHooks {
   return {
     onSpaceDeleted: modules.flatMap((m) => (m.onSpaceDeleted ? [m.onSpaceDeleted] : [])),
     onMemberLeft: modules.flatMap((m) => (m.onMemberLeft ? [m.onMemberLeft] : [])),
+    storageKeys: modules.flatMap((m) => (m.storageKeys ? [m.storageKeys] : [])),
   };
 }
 

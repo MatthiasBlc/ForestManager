@@ -5,6 +5,7 @@ import type { Recipe, RevisionSource } from "@fm/shared";
 import type { Context } from "../../core/context.ts";
 import type { Prisma } from "../../core/db/client.ts";
 import { AppError } from "../../core/http/errors.ts";
+import { copyImage } from "../../core/storage/images.ts";
 import { assertComposition, countUsedBy, loadLinks } from "./composition.ts";
 import {
   blocksCreate,
@@ -165,7 +166,7 @@ export async function getRecipe(
     shareInfo(ctx, actor, row.id),
     adaptationInfo(ctx.db, row),
   ]);
-  return toRecipe(row, can, links, usedBy, { ...shares, ...adaptation });
+  return toRecipe(ctx, row, can, links, usedBy, { ...shares, ...adaptation });
 }
 
 /** Adaptation [D17] : original, revision de depart, liens de l'original gardes. */
@@ -173,6 +174,8 @@ export interface AdaptationSource {
   adaptedFromId: string;
   adaptedFromRevision: number;
   keepLinks: ReadonlySet<string>;
+  /** Photo de l'original, copiee sur l'adaptation [D167]. */
+  imageKey?: string | null;
 }
 
 export async function createRecipe(
@@ -210,6 +213,10 @@ export async function createRecipe(
     });
     return recipe.id;
   });
+  if (adaptation?.imageKey) {
+    const imageKey = await copyImage(ctx, adaptation.imageKey, `recipes/${id}`);
+    if (imageKey) await ctx.db.recipe.update({ where: { id }, data: { imageKey } });
+  }
   return getRecipe(ctx, actor, id);
 }
 

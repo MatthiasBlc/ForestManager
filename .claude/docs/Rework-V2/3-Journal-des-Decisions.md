@@ -521,3 +521,16 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
   - **Annulation** : statut `CANCELLED` (ajoute au schema cible) quand le suggereur quitte ou est exclu de l'espace ou il a suggere.
   - **Transformer en adaptation** : seulement une suggestion refusee, par son auteur, vers un de ses espaces ; adaptation liee a la revision de depart de la suggestion.
   - **Comparer** : lisible par tout membre qui voit l'adaptation, meme sans voir l'original (l'adaptation en est deja une copie). L'API renvoie l'original a la revision vue, l'original actuel et l'adaptation ; les differences se calculent dans `packages/shared` (`diffContents`), partagees avec les suggestions. "Marquer comme vu" : qui peut modifier l'adaptation. Original supprime : plus de badge, comparaison avec la seule revision vue.
+
+### D167 - Photos et avatars : stockage S3 - VALIDEE (2026-11-06, realisation C3.7)
+
+- **Constat** : le plan C3 prevoit une URL presignee PUT de 60 s ; une URL PUT ne borne pas la taille du fichier. Q-ARCH-4 est tranche (liens signes de courte duree), mais un lien signe nouveau a chaque reponse empeche le navigateur de garder l'image en cache. Les images MinIO ne sont plus telechargeables publiquement (Docker Hub et quay.io refusent en 2026-11) : impossible d'en lancer une neuve en dev, en test ou en CI. La photo et les revisions (D13) ne sont pas reliees.
+- **Choix** (selecteur du 2026-11-06 pour les trois premiers points) :
+  - **Bucket** : celui de la V1 (`forestmanager-images-preprod` / `-prod`) rendu **prive** (lecture publique retiree a la main avant la mise en prod V2) ; les images V1 restantes ne sont plus lisibles.
+  - **Photo hors revisions** : changer ou retirer la photo est immediat, sans revision ; restaurer une revision garde la photo actuelle ; une suggestion ne propose pas de photo ; une adaptation copie la photo de l'original. Droit : celui de modifier la recette.
+  - **Envoi par POST signe** (60 s) au lieu de PUT : le stockage refuse un fichier de plus de 2 Mo ou d'un autre type que `image/webp`. Le fichier arrive dans une zone d'attente `uploads/<userId>/<uploadId>.webp`, puis l'API le verifie (signature WebP, dimensions bornees) en l'attachant et le copie a sa place.
+  - **Cles uniques par version** : `recipes/<recipeId>/<uuid>.webp`, `users/<userId>/<uuid>.webp`, `spaces/<spaceId>/<uuid>.webp` ; l'ancienne image est effacee apres le changement.
+  - **Lecture** : URL signee GET dont la date de signature est arrondie a l'heure (valable 2 h) : la meme URL pendant une heure, donc le cache du navigateur sert.
+  - **Menage** par balayage horaire : les envois en attente de plus d'une heure, et tout objet que la base ne reference plus (compte supprime, espace purge, image remplacee) et vieux de plus d'une heure. Les recettes supprimees depuis plus de 30 jours perdent leur photo.
+  - **Stockage facultatif** (comme les emails, D21) : sans variables `MINIO_*`, `features.uploads` vaut false et le front masque les choix de photo.
+  - **Serveur de dev, de test et de CI : RustFS** (`rustfs/rustfs`, compatible S3, licence Apache 2). La preprod et la prod gardent le MinIO deja installe (D147). En dev, le bucket est servi par le proxy de Vite (meme origine, pas de CORS).

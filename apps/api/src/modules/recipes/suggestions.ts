@@ -368,6 +368,7 @@ export async function convertSuggestion(
     adaptedFromId: recipe.id,
     adaptedFromRevision: row.baseRevision,
     keepLinks: new Set(linksOf(content.blocks)),
+    imageKey: recipe.imageKey,
   });
   await close(ctx.db, row.id, "REJECTED", {
     status: "CONVERTED",

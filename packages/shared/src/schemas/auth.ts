@@ -121,6 +121,7 @@ export const meSchema = z.object({
 export type Me = z.infer<typeof meSchema>;
 
 export const appConfigSchema = z.object({
-  features: z.object({ email: z.boolean() }),
+  /** Emails [D21] et envoi de photos [D167] : facultatifs selon la configuration. */
+  features: z.object({ email: z.boolean(), uploads: z.boolean() }),
 });
 export type AppConfig = z.infer<typeof appConfigSchema>;

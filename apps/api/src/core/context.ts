@@ -7,12 +7,15 @@ import type { Db } from "./db/client.ts";
 import type { Mailer } from "./mail/mailer.ts";
 import type { LifecycleHooks } from "./modules/hooks.ts";
 import type { ApiModule } from "./modules/registry.ts";
+import type { Storage } from "./storage/storage.ts";
 
 export interface Context {
   env: Env;
   db: Db;
   logger: Logger;
   mailer: Mailer | null;
+  /** Photos et avatars ; null sans variables MINIO_* [D167]. */
+  storage: Storage | null;
   hasher: PasswordHasher;
   hooks: LifecycleHooks;
   /** Manifestes du registre (src/modules/index.ts), injectes. */

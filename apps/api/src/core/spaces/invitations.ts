@@ -18,15 +18,16 @@ import { hashToken } from "../auth/tokens.ts";
 import type { Context } from "../context.ts";
 import type { Prisma } from "../db/client.ts";
 import { AppError } from "../http/errors.ts";
+import { imageUrl, toUserSummary } from "../storage/images.ts";
 import { requireSpacePermission } from "./access.ts";
 
 type Tx = Prisma.TransactionClient;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-const userSummary = { select: { id: true, username: true } } as const;
+const userSummary = { select: { id: true, username: true, avatarKey: true } } as const;
 
-function toUser(user: { id: string; username: string }) {
-  return { id: user.id, username: user.username, avatarUrl: null };
+function toUser(ctx: Context, user: { id: string; username: string; avatarKey: string | null }) {
+  return toUserSummary(ctx, user);
 }
 
 // --- Rejoindre (commun aux liens et aux invitations) ---
@@ -70,10 +71,10 @@ const linkSelect = {
 
 type LinkRow = Prisma.SpaceInviteLinkGetPayload<{ select: typeof linkSelect }>;
 
-function toLink(row: LinkRow): InviteLink {
+function toLink(ctx: Context, row: LinkRow): InviteLink {
   return {
     id: row.id,
-    createdBy: toUser(row.createdBy),
+    createdBy: toUser(ctx, row.createdBy),
     expiresAt: row.expiresAt.toISOString(),
     maxUses: row.maxUses,
     useCount: row.useCount,
@@ -94,7 +95,9 @@ export async function listInviteLinks(
     select: linkSelect,
     orderBy: { createdAt: "desc" },
   });
-  return rows.filter((row) => row.maxUses === null || row.useCount < row.maxUses).map(toLink);
+  return rows
+    .filter((row) => row.maxUses === null || row.useCount < row.maxUses)
+    .map((row) => toLink(ctx, row));
 }
 
 /** Cree un lien ; le code (128 bits) n'est renvoye qu'ici, seul son hash est stocke. */
@@ -116,7 +119,7 @@ export async function createInviteLink(
     },
     select: linkSelect,
   });
-  return { ...toLink(row), code };
+  return { ...toLink(ctx, row), code };
 }
 
 export async function revokeInviteLink(
@@ -171,6 +174,7 @@ export async function previewInviteLink(ctx: Context, code: string): Promise<Inv
     select: {
       name: true,
       tintIndex: true,
+      avatarKey: true,
       _count: { select: { memberships: { where: { leftAt: null } } } },
     },
   });
@@ -178,7 +182,7 @@ export async function previewInviteLink(ctx: Context, code: string): Promise<Inv
     space: {
       name: space.name,
       tintIndex: space.tintIndex,
-      avatarUrl: null, // avatars en C3 [D146]
+      avatarUrl: imageUrl(ctx, space.avatarKey),
       memberCount: space._count.memberships,
     },
     expiresAt: link.expiresAt.toISOString(),
@@ -213,19 +217,24 @@ const invitationSelect = {
   status: true,
   createdAt: true,
   respondedAt: true,
-  space: { select: { id: true, name: true, tintIndex: true } },
+  space: { select: { id: true, name: true, tintIndex: true, avatarKey: true } },
   inviter: userSummary,
   invitee: userSummary,
 } as const;
 
 type InvitationRow = Prisma.SpaceInvitationGetPayload<{ select: typeof invitationSelect }>;
 
-function toInvitation(row: InvitationRow): Invitation {
+function toInvitation(ctx: Context, row: InvitationRow): Invitation {
   return {
     id: row.id,
-    space: { ...row.space, avatarUrl: null },
-    inviter: toUser(row.inviter),
-    invitee: toUser(row.invitee),
+    space: {
+      id: row.space.id,
+      name: row.space.name,
+      tintIndex: row.space.tintIndex,
+      avatarUrl: imageUrl(ctx, row.space.avatarKey),
+    },
+    inviter: toUser(ctx, row.inviter),
+    invitee: toUser(ctx, row.invitee),
     status: row.status,
     createdAt: row.createdAt.toISOString(),
     respondedAt: row.respondedAt?.toISOString() ?? null,
@@ -273,7 +282,7 @@ export async function listSpaceInvitations(
     select: invitationSelect,
     orderBy: { createdAt: "desc" },
   });
-  return rows.map(toInvitation);
+  return rows.map((row) => toInvitation(ctx, row));
 }
 
 export async function cancelInvitation(
@@ -302,7 +311,7 @@ export async function myInvitations(ctx: Context, userId: string): Promise<Invit
     select: invitationSelect,
     orderBy: { createdAt: "desc" },
   });
-  return rows.map(toInvitation);
+  return rows.map((row) => toInvitation(ctx, row));
 }
 
 /** Accepter (renvoie l'espace) ou refuser ; seul l'invite voit son invitation. */

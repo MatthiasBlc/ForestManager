@@ -5,6 +5,7 @@ import type { BlockInput, LinkedBlock, LocalBlock, Recipe, RecipeBlock, Tag } fr
 import type { Context } from "../../core/context.ts";
 import type { Prisma } from "../../core/db/client.ts";
 import { AppError } from "../../core/http/errors.ts";
+import { imageUrl, toUserSummary } from "../../core/storage/images.ts";
 import type { LoadedLink } from "./composition.ts";
 
 export const LOCALE = "fr"; // francais seul en V2.0 [D34]
@@ -227,7 +228,7 @@ const tagInclude = {
 /** Relations communes a la liste et au detail ; tags d'espace de cet espace seulement. */
 export function summaryInclude(spaceId: string) {
   return {
-    author: { select: { id: true, username: true } },
+    author: { select: { id: true, username: true, avatarKey: true } },
     globalTags: { select: { tag: tagInclude } },
     spaceTags: {
       where: { spaceId, tag: { deletedAt: null, mergedIntoId: null } },
@@ -274,17 +275,17 @@ function byName(a: Tag, b: Tag): number {
   return a.name.localeCompare(b.name, "fr");
 }
 
-export function toSummaryBase(row: SummaryRow | DetailRow) {
+export function toSummaryBase(ctx: Context, row: SummaryRow | DetailRow) {
   return {
     id: row.id,
     homeSpaceId: row.homeSpaceId,
     title: row.title,
-    imageUrl: null, // photos en C3.7 [D146]
+    imageUrl: imageUrl(ctx, row.imageKey),
     yieldQuantity: row.yieldQuantity,
     yieldUnitId: row.yieldUnitId,
     totalMinutes: totalMinutes(row),
     isBase: row.isBase,
-    author: { id: row.author.id, username: row.author.username, avatarUrl: null },
+    author: toUserSummary(ctx, row.author),
     tags: [
       ...row.globalTags.map((link) => toTag(link.tag)).sort(byName),
       ...row.spaceTags.map((link) => toTag(link.tag)).sort(byName),
@@ -293,8 +294,8 @@ export function toSummaryBase(row: SummaryRow | DetailRow) {
   };
 }
 
-export function toSummary(row: SummaryRow) {
-  return { ...toSummaryBase(row), isComposed: row.blocks.length > 0 };
+export function toSummary(ctx: Context, row: SummaryRow) {
+  return { ...toSummaryBase(ctx, row), isComposed: row.blocks.length > 0 };
 }
 
 type BlockRow = DetailRow["blocks"][number];
@@ -359,6 +360,7 @@ export interface ShareInfo {
 export type RecipeLinksInfo = ShareInfo & Pick<Recipe, "adaptedFrom" | "adaptationCount">;
 
 export function toRecipe(
+  ctx: Context,
   row: DetailRow,
   can: Recipe["can"],
   links: ReadonlyMap<string, LoadedLink>,
@@ -366,7 +368,7 @@ export function toRecipe(
   extra: RecipeLinksInfo
 ): Recipe {
   return {
-    ...toSummaryBase(row),
+    ...toSummaryBase(ctx, row),
     description: row.description,
     notes: row.notes,
     sourceUrl: row.sourceUrl,

@@ -51,6 +51,7 @@ Tranches verticales : chaque sous-etape livre l'API, le partage (schemas, permis
 
 - `core/storage/` : URL presignee PUT courte (60 s), verification serveur (type, taille, dimensions), lecture par URL presignee courte (espaces prives), nettoyage des orphelins. Conversion WebP et redimensionnement dans le navigateur.
 - Photo de recette, avatar d'utilisateur et d'espace (D146) ; reseau `minio-net` deja present dans les compose (D147).
+- Realisation (D167) : POST signe au lieu de PUT, photo hors revisions, bucket V1 rendu prive, RustFS en dev et test.
 
 ### C3.8 Import
 

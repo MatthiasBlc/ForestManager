@@ -11,6 +11,7 @@ import type {
 
 import type { Context } from "../context.ts";
 import { AppError } from "../http/errors.ts";
+import { imageUrl } from "../storage/images.ts";
 import { resetPasswordMail, verifyEmailMail, type MailMessage } from "../mail/mailer.ts";
 import { grantDefaultModules } from "../spaces/defaults.ts";
 import { assertStrongPassword } from "./password.ts";
@@ -91,7 +92,7 @@ export async function getMe(ctx: Context, userId: string): Promise<Me> {
     email: user.email,
     username: user.username,
     emailVerified: user.emailVerifiedAt !== null,
-    avatarUrl: null, // avatars en C3 [D146]
+    avatarUrl: imageUrl(ctx, user.avatarKey),
     personalSpaceId: space.id,
     preferences: {
       ambiance: user.ambiance,

@@ -54,6 +54,12 @@ services:
       - ADMIN_SESSION_SECRET=${ADMIN_SESSION_SECRET}
       - APP_URL=https://forestmanager.matthias-bouloc.fr
       - TRUST_PROXY=1
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - MINIO_BUCKET=forestmanager-images-prod
+      - MINIO_PUBLIC_URL=https://s3.matthias-bouloc.fr
       - NODE_OPTIONS=--max-old-space-size=1024
     networks:
       - internal

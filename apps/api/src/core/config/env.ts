@@ -20,7 +20,32 @@ const envSchema = z
     /** Nombre de proxys devant l'API (Traefik en preprod et prod). */
     TRUST_PROXY: z.coerce.number().int().min(0).default(0),
     LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).optional(),
+    /**
+     * Stockage S3 des photos et avatars [D146, D167] : MinIO en preprod et prod
+     * (noms de la V1, D147), RustFS en dev et test. Facultatif : sans
+     * MINIO_ENDPOINT, `features.uploads` vaut false.
+     */
+    MINIO_ENDPOINT: z.string().optional(),
+    MINIO_PORT: z.coerce.number().int().min(1).max(65535).default(9000),
+    MINIO_USE_SSL: z.stringbool().default(false),
+    MINIO_ACCESS_KEY: z.string().optional(),
+    MINIO_SECRET_KEY: z.string().optional(),
+    MINIO_BUCKET: z.string().optional(),
+    /** URL vue par le navigateur (envoi et lecture), sans le bucket. */
+    MINIO_PUBLIC_URL: z.url().optional(),
   })
+  .refine(
+    (env) =>
+      !env.MINIO_ENDPOINT ||
+      Boolean(
+        env.MINIO_ACCESS_KEY && env.MINIO_SECRET_KEY && env.MINIO_BUCKET && env.MINIO_PUBLIC_URL
+      ),
+    {
+      message:
+        "MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET and MINIO_PUBLIC_URL are required with MINIO_ENDPOINT",
+      path: ["MINIO_ENDPOINT"],
+    }
+  )
   .refine((env) => env.NODE_ENV !== "production" || env.SESSION_SECRET.length >= 32, {
     message: "SESSION_SECRET must be at least 32 characters in production",
     path: ["SESSION_SECRET"],
