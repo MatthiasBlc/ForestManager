@@ -2,15 +2,12 @@
 // ingredients a cocher, etapes ; blocs lies deplies a l'echelle (D24) ;
 // modifier, partager, retirer et supprimer selon les droits (D57, D81, F-REC-9).
 import { linkFactor, type LinkedBlock, type Recipe, type RecipeBlock, type Unit } from "@fm/shared";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
-import { FormAlert } from "../../core/access/auth-layout.tsx";
-import { meQuery, spaceQuery } from "../../core/session/queries.ts";
+import { spaceQuery } from "../../core/session/queries.ts";
 import { PageChrome } from "../../core/shell/page-chrome.tsx";
-import { errorMessage } from "../../i18n/index.ts";
-import { api } from "../../lib/api.ts";
 import { useWriteGuard } from "../../pwa/use-write-guard.ts";
 import { TopBar } from "../../patterns/top-bar.tsx";
 import { ActionMenu } from "../../ui/action-menu.tsx";
@@ -18,22 +15,14 @@ import { Button, IconButton } from "../../ui/button.tsx";
 import { Stepper } from "../../ui/controls.tsx";
 import { Badge, EmptyState, Skeleton } from "../../ui/display.tsx";
 import { Icon } from "../../ui/icon.tsx";
-import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
-import { useToast } from "../../ui/use-toast.ts";
 import { IngredientRow } from "./components/ingredient-row.tsx";
 import { LINK_STATUS_TITLES } from "./draft.ts";
 import { cookSteps } from "./cook.ts";
-import { formatMinutes, joinNames, scaledAmount, unitLabel } from "./format.ts";
-import {
-  recipeFailure,
-  recipeQuery,
-  recipesKey,
-  unitsQuery,
-  type RecipeFailure,
-} from "./queries.ts";
-import { AdaptedFromNotice, AdaptSheet } from "./adaptation.tsx";
+import { formatMinutes, scaledAmount, unitLabel } from "./format.ts";
+import { recipeFailure, recipeQuery, unitsQuery, type RecipeFailure } from "./queries.ts";
+import { AdaptedFromNotice } from "./adaptation.tsx";
+import { useRecipeActions } from "./use-recipe-actions.tsx";
 import { RecipeSuggestionsBanner } from "./suggestions.tsx";
-import { RemoveFromSpaceSheet, ShareSheet } from "./sharing.tsx";
 
 export function RecipeNotFound({ spaceId }: { spaceId: string }) {
   return (
@@ -93,58 +82,6 @@ export function NotOffline({ spaceId }: { spaceId: string }) {
         Seules les recettes déjà ouvertes sur cet appareil se consultent sans réseau.
       </EmptyState>
     </div>
-  );
-}
-
-function DeleteSheet({
-  spaceId,
-  recipe,
-  open,
-  onClose,
-}: {
-  spaceId: string;
-  recipe: Recipe;
-  open: boolean;
-  onClose: () => void;
-}) {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const toast = useToast();
-  const [failure, setFailure] = useState<string>();
-  const [pending, setPending] = useState(false);
-  const confirm = async () => {
-    setPending(true);
-    try {
-      await api.delete(`/spaces/${spaceId}/recipes/${recipe.id}`);
-      queryClient.removeQueries({ queryKey: recipeQuery(spaceId, recipe.id).queryKey });
-      await queryClient.invalidateQueries({ queryKey: [...recipesKey(spaceId), "list"] });
-      toast("Recette supprimée", { tone: "success" });
-      void navigate(`/s/${spaceId}/recipes`, { replace: true });
-    } catch (error) {
-      setFailure(errorMessage(error));
-      setPending(false);
-    }
-  };
-  return (
-    <Sheet open={open} onClose={onClose} title={`Supprimer « ${recipe.title} » ?`}>
-      <p>La recette et son historique disparaissent pour tous les membres de l'espace.</p>
-      {recipe.sharedIn.length > 0 ? (
-        <p>Elle disparaît aussi de {joinNames(recipe.sharedIn.map((space) => space.name))}.</p>
-      ) : null}
-      {recipe.usedBy > 0 ? (
-        <p>
-          Elle est utilisée dans {recipe.usedBy} {recipe.usedBy > 1 ? "recettes" : "recette"} :
-          leurs blocs afficheront « Recette supprimée ».
-        </p>
-      ) : null}
-      <FormAlert message={failure} />
-      <SheetFooter>
-        <Button onClick={onClose}>Annuler</Button>
-        <Button variant="danger" disabled={pending} onClick={() => void confirm()}>
-          Supprimer
-        </Button>
-      </SheetFooter>
-    </Sheet>
   );
 }
 
@@ -323,16 +260,16 @@ function RecipeView({
   units: readonly Unit[];
 }) {
   const navigate = useNavigate();
-  const { data: space } = useQuery(spaceQuery(spaceId));
-  const { data: me } = useQuery(meQuery);
   const guard = useWriteGuard();
   const [servings, setServings] = useState(recipe.yieldQuantity);
-  const [sheet, setSheet] = useState<"delete" | "share" | "remove" | "adapt" | null>(null);
-  const spaceName = space?.name ?? "";
+  const actions = useRecipeActions({
+    spaceId,
+    recipe,
+    onGone: () => {
+      void navigate(`/s/${spaceId}/recipes`, { replace: true });
+    },
+  });
   const sharedHere = recipe.homeSpaceId !== spaceId;
-  const close = () => {
-    setSheet(null);
-  };
   const yieldUnit = units.find((u) => u.id === recipe.yieldUnitId);
   const titled = recipe.blocks.length > 1;
   const composed = recipe.blocks.some((block) => block.kind === "RECIPE");
@@ -409,50 +346,10 @@ function RecipeView({
           <ActionMenu
             label="Actions de la recette"
             trigger={<IconButton icon="more" label="Plus d'actions" />}
-            items={[
-              { id: "share", label: "Partager dans un espace", icon: "share" },
-              ...(me && recipe.author.id !== me.id
-                ? [
-                    {
-                      id: "suggest" as const,
-                      label: "Suggérer une modification",
-                      icon: "pencil" as const,
-                    },
-                  ]
-                : []),
-              { id: "adapt", label: "Adapter pour un espace", icon: "git-branch" },
-              ...(recipe.adaptedFrom && !recipe.adaptedFrom.deleted
-                ? [
-                    {
-                      id: "compare" as const,
-                      label: "Comparer avec l'original",
-                      icon: "copy" as const,
-                    },
-                  ]
-                : []),
-              { id: "history", label: "Voir l'historique", icon: "clock" },
-              ...(recipe.can.removeFromSpace && sharedHere
-                ? [{ id: "remove" as const, label: `Retirer de ${spaceName}`, icon: "x" as const }]
-                : []),
-              ...(recipe.can.delete
-                ? [
-                    "-" as const,
-                    {
-                      id: "delete" as const,
-                      label: "Supprimer",
-                      icon: "trash" as const,
-                      danger: true,
-                    },
-                  ]
-                : []),
-            ]}
+            items={actions.items}
             disabled={guard.disabled}
             // Hors ligne : tout le menu ecrit ou lit ce qui n'est pas sur l'appareil.
-            onSelect={(id) => {
-              if (id === "history" || id === "compare" || id === "suggest") {
-                void navigate(`/s/${spaceId}/recipes/${recipe.id}/${id}`);
-              } else setSheet(id);
-            }}
+            onSelect={actions.select}
           />
         </div>
         <AdaptedFromNotice spaceId={spaceId} recipe={recipe} />
@@ -511,16 +408,7 @@ function RecipeView({
           </a>
         ) : null}
       </article>
-      <DeleteSheet spaceId={spaceId} recipe={recipe} open={sheet === "delete"} onClose={close} />
-      <ShareSheet spaceId={spaceId} recipe={recipe} open={sheet === "share"} onClose={close} />
-      <AdaptSheet spaceId={spaceId} recipe={recipe} open={sheet === "adapt"} onClose={close} />
-      <RemoveFromSpaceSheet
-        spaceId={spaceId}
-        spaceName={spaceName}
-        recipe={recipe}
-        open={sheet === "remove"}
-        onClose={close}
-      />
+      {actions.sheets}
     </>
   );
 }

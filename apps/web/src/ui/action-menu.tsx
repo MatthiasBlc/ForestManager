@@ -72,3 +72,34 @@ export function ActionMenu<Id extends string>({
     </DropdownMenu.Root>
   );
 }
+
+/** Memes actions en liste, dans une feuille (appui long sur une carte, F-ACTIONS). */
+export function ActionList<Id extends string>({
+  label,
+  items,
+  onSelect,
+  disabled,
+}: Omit<ActionMenuProps<Id>, "trigger" | "open" | "onOpenChange">) {
+  return (
+    <div className="fm-menu fm-menu-flat" role="group" aria-label={label}>
+      {items.map((item, index) =>
+        item === "-" ? (
+          <hr key={`sep-${index}`} />
+        ) : (
+          <button
+            key={item.id}
+            type="button"
+            className={item.danger ? "fm-danger" : undefined}
+            disabled={disabled || item.disabled}
+            onClick={() => {
+              onSelect(item.id);
+            }}
+          >
+            {item.icon ? <Icon name={item.icon} /> : null}
+            {item.label}
+          </button>
+        )
+      )}
+    </div>
+  );
+}

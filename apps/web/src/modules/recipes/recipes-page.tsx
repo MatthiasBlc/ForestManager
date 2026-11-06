@@ -38,6 +38,7 @@ import {
   spaceTagsQuery,
   unitsQuery,
 } from "./queries.ts";
+import { RecipeActionsSheet } from "./recipe-actions-sheet.tsx";
 import { ShareRequestsBanner } from "./sharing.tsx";
 import { SuggestionsToDecideBanner } from "./suggestions.tsx";
 import { useDebounced } from "./use-debounced.ts";
@@ -180,11 +181,13 @@ function RecipeGrid({
   units,
   badges,
   onOpen,
+  onActions,
 }: {
   recipes: readonly RecipeSummary[];
   units: readonly Unit[];
   badges: (recipe: RecipeSummary) => CardBadge[];
   onOpen: (recipe: RecipeSummary) => void;
+  onActions: (recipe: RecipeSummary) => void;
 }) {
   return (
     <div className="fm-cq">
@@ -198,6 +201,9 @@ function RecipeGrid({
             badges={badges(recipe)}
             onOpen={() => {
               onOpen(recipe);
+            }}
+            onActions={() => {
+              onActions(recipe);
             }}
           />
         ))}
@@ -219,6 +225,7 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
   const [baseOnly, setBaseOnly] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const [importSheet, setImportSheet] = useState<ImportSheet>(null);
+  const [actionsFor, setActionsFor] = useState<{ spaceId: string; recipe: RecipeSummary }>();
   const q = useDebounced(search.trim());
   const online = useOnline();
   const guard = useWriteGuard();
@@ -240,6 +247,9 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
   };
   const add = () => {
     setAddOpen(true);
+  };
+  const showActions = (recipe: RecipeSummary) => {
+    setActionsFor({ spaceId: mine ? recipe.homeSpaceId : spaceId, recipe });
   };
 
   let content;
@@ -273,6 +283,10 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
             onOpen={(recipe) => {
               const where = available.find((item) => item.recipe.id === recipe.id);
               void navigate(`/s/${where?.spaceId ?? spaceId}/recipes/${recipe.id}`);
+            }}
+            onActions={(recipe) => {
+              const where = available.find((item) => item.recipe.id === recipe.id);
+              setActionsFor({ spaceId: where?.spaceId ?? spaceId, recipe });
             }}
           />
         </>
@@ -333,6 +347,7 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
           units={units.data}
           badges={(recipe) => badgesOf(recipe, spaceId, mine, spaces.data ?? [])}
           onOpen={open}
+          onActions={showActions}
         />
         {list.hasNextPage ? (
           <Button
@@ -437,6 +452,21 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
         }}
         spaceId={spaceId}
       />
+      {actionsFor ? (
+        <RecipeActionsSheet
+          key={actionsFor.recipe.id}
+          spaceId={actionsFor.spaceId}
+          recipeId={actionsFor.recipe.id}
+          title={actionsFor.recipe.title}
+          onClose={() => {
+            setActionsFor(undefined);
+          }}
+          // Supprimee ou retiree : la liste affichee (ici ou "Mes recettes") se recharge.
+          onGone={() =>
+            void queryClient.invalidateQueries({ queryKey: [...recipesKey(spaceId), "list"] })
+          }
+        />
+      ) : null}
     </div>
   );
 }

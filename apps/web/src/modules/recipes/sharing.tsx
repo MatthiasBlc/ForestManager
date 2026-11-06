@@ -9,7 +9,6 @@ import {
 } from "@fm/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
-import { useNavigate } from "react-router";
 
 import { FormAlert } from "../../core/access/auth-layout.tsx";
 import { spacesQuery } from "../../core/session/queries.ts";
@@ -282,14 +281,16 @@ export function RemoveFromSpaceSheet({
   recipe,
   open,
   onClose,
+  onDone,
 }: {
   spaceId: string;
   spaceName: string;
   recipe: Recipe;
   open: boolean;
   onClose: () => void;
+  /** Apres le retrait : la recette n'est plus visible ici. */
+  onDone: () => void;
 }) {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const toast = useToast();
   const remove = useMutation({
@@ -298,7 +299,7 @@ export function RemoveFromSpaceSheet({
       queryClient.removeQueries({ queryKey: recipeQuery(spaceId, recipe.id).queryKey });
       await queryClient.invalidateQueries({ queryKey: [...recipesKey(spaceId), "list"] });
       toast(`Recette retirée de ${spaceName}`, { tone: "success" });
-      void navigate(`/s/${spaceId}/recipes`, { replace: true });
+      onDone();
     },
   });
   return (
