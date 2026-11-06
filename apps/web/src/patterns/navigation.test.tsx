@@ -111,4 +111,21 @@ describe("TopBar", () => {
     expect(onCancel).toHaveBeenCalledOnce();
     expect(onAction).toHaveBeenCalledOnce();
   });
+
+  it("mode edition : libelles courts en mobile, nom complet pour l'accessibilite", () => {
+    render(
+      <TopBar
+        title="Suggérer une modification"
+        titleShort="Suggestion"
+        onCancel={vi.fn()}
+        action="Envoyer la suggestion"
+        actionShort="Envoyer"
+      />
+    );
+    const button = screen.getByRole("button", { name: "Envoyer la suggestion" });
+    expect(within(button).getByText("Envoyer")).toHaveClass("fm-mobile-only");
+    expect(within(button).getByText("Envoyer la suggestion")).toHaveClass("fm-wide-only");
+    expect(screen.getByText("Suggestion")).toHaveClass("fm-mobile-only");
+    expect(screen.getByText("Suggérer une modification")).toHaveClass("fm-wide-only");
+  });
 });

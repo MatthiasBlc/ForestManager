@@ -508,6 +508,7 @@ function Editor({
                   ? "Modifier la recette"
                   : "Nouvelle recette"
             }
+            titleShort={suggest ? "Suggestion" : undefined}
             onCancel={() => {
               if (dirty) setConfirmOpen(true);
               else back();
@@ -519,6 +520,7 @@ function Editor({
                   ? `Enregistrer la révision ${recipe.currentRevision + 1}`
                   : "Enregistrer"
             }
+            actionShort={suggest ? "Envoyer" : recipe ? "Enregistrer" : undefined}
             // Hors ligne : le brouillon reste sur l'appareil, l'envoi attend le reseau (D106).
             actionDisabled={saving || !online}
             onAction={() => void save()}

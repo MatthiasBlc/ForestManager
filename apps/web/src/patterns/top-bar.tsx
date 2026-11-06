@@ -24,11 +24,26 @@ interface ViewProps {
 
 interface EditProps {
   title: string;
+  /** Titre affiche en mobile a la place de `title` (maquettes mobiles). */
+  titleShort?: string;
   onCancel: () => void;
   cancelLabel?: string;
   action?: string;
+  /** Libelle affiche en mobile ; `action` reste le nom accessible. */
+  actionShort?: string;
   actionDisabled?: boolean;
   onAction?: () => void;
+}
+
+/** Libelle court en mobile, complet en bureau (deux elements, un seul visible). */
+function Responsive({ label, short }: { label: string; short: string | undefined }) {
+  if (!short) return <>{label}</>;
+  return (
+    <>
+      <span className="fm-mobile-only">{short}</span>
+      <span className="fm-wide-only">{label}</span>
+    </>
+  );
 }
 
 export function TopBar(props: ViewProps | EditProps) {
@@ -38,15 +53,18 @@ export function TopBar(props: ViewProps | EditProps) {
         <Button variant="ghost" size="sm" onClick={props.onCancel}>
           {props.cancelLabel ?? "Annuler"}
         </Button>
-        <span className="fm-top-title fm-top-edit-title">{props.title}</span>
+        <span className="fm-top-title fm-top-edit-title">
+          <Responsive label={props.title} short={props.titleShort} />
+        </span>
         {props.action ? (
           <Button
             variant="primary"
             size="sm"
             disabled={props.actionDisabled}
             onClick={props.onAction}
+            aria-label={props.actionShort ? props.action : undefined}
           >
-            {props.action}
+            <Responsive label={props.action} short={props.actionShort} />
           </Button>
         ) : null}
       </header>
