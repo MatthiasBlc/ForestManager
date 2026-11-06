@@ -102,7 +102,7 @@ describe("adaptation et original (E-COMPARER-ORIGINAL)", () => {
     expect(
       await screen.findByText(/Adaptée de Gratin de pâtes · lea \(Foyer\)/)
     ).toBeInTheDocument();
-    await user.click(screen.getByRole("link", { name: "Comparer avec l'original" }));
+    await user.click(screen.getByRole("link", { name: /Original modifié/ }));
 
     const changed = await screen.findByRole("region", { name: "Original modifié" });
     expect(within(changed).getByText(/le 2 novembre, par lea/)).toBeInTheDocument();
@@ -125,9 +125,7 @@ describe("adaptation et original (E-COMPARER-ORIGINAL)", () => {
     expect(
       await screen.findByRole("heading", { name: "Gratin au beurre", level: 1 })
     ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("link", { name: "Comparer avec l'original" })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Original modifié/ })).not.toBeInTheDocument();
   });
 
   it("original supprime : l'adaptation vit seule", async () => {

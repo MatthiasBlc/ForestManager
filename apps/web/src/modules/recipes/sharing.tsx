@@ -19,6 +19,7 @@ import { Button } from "../../ui/button.tsx";
 import { SegmentedControl, Switch } from "../../ui/controls.tsx";
 import { Avatar, Skeleton } from "../../ui/display.tsx";
 import { Field } from "../../ui/field.tsx";
+import { Icon } from "../../ui/icon.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { joinNames } from "./format.ts";
@@ -52,6 +53,9 @@ function DirectShare({
     (sharing.data?.spaces ?? []).filter((s) => s.status === "SHARED").map((s) => s.spaceId)
   );
   const current = checked ?? shared;
+  const pending = new Set(
+    (sharing.data?.spaces ?? []).filter((s) => s.status === "PENDING").map((s) => s.spaceId)
+  );
   const home = sharing.data?.homeSpace.id ?? recipe.homeSpaceId;
   const all = (spaces.data ?? []).filter((s) => !s.deletedAt);
   const origin = all.find((s) => s.id === home);
@@ -102,6 +106,9 @@ function DirectShare({
                 setChecked(next);
               }}
             />
+            {pending.has(space.id) && !current.has(space.id) ? (
+              <small className="block text-ink-muted">Demande de partage en attente</small>
+            ) : null}
           </span>
         </SpaceRow>
       ))}
@@ -404,6 +411,9 @@ export function ShareRequestsBanner({ spaceId }: { spaceId: string }) {
             setOpenId(first.id);
           }}
         >
+          <span className="fm-option-icon">
+            <Icon name="share" />
+          </span>
           <span className="fm-option-text">
             <b>
               {list.length} demande{list.length > 1 ? "s" : ""} de partage
@@ -413,6 +423,7 @@ export function ShareRequestsBanner({ spaceId }: { spaceId: string }) {
               {first.targetSpace.name}
             </small>
           </span>
+          <Icon name="chevron-right" className="fm-option-go" />
         </button>
       ) : null}
       <ShareRequestSheet

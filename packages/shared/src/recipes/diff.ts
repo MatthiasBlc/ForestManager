@@ -61,6 +61,8 @@ export type DiffEntry =
       kind: "step";
       block: number;
       blockTitle: string | null;
+      /** Position de l'etape dans le bloc (0 pour la premiere). */
+      step: number;
       before: string | null;
       after: string | null;
     };
@@ -120,7 +122,7 @@ function diffSteps(
   for (let i = 0; i < Math.max(before.length, after.length); i++) {
     const a = before[i] ?? null;
     const b = after[i] ?? null;
-    if (a !== b) entries.push({ kind: "step", block, blockTitle, before: a, after: b });
+    if (a !== b) entries.push({ kind: "step", block, blockTitle, step: i, before: a, after: b });
   }
   return entries;
 }

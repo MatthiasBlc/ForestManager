@@ -43,7 +43,7 @@ export function ComparePage() {
     },
   });
 
-  const chrome = <PageChrome top={<TopBar title="Comparer avec l'original" onBack={back} />} />;
+  const chrome = <PageChrome top={<TopBar title="Comparer" onBack={back} />} />;
   if (comparison.isError) return <RecipeNotFound spaceId={spaceId} />;
   if (!comparison.data || !units.data || !recipe.data) {
     return (

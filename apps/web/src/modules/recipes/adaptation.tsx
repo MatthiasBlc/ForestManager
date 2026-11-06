@@ -27,6 +27,7 @@ function AdaptationSheet({
   create,
   openEditor,
   children,
+  note,
 }: {
   title: string;
   submitLabel: string;
@@ -37,6 +38,8 @@ function AdaptationSheet({
   /** Ouvrir l'editeur de l'adaptation creee (sinon son detail). */
   openEditor: boolean;
   children: ReactNode;
+  /** Sous le choix de l'espace. */
+  note?: ReactNode;
 }) {
   const navigate = useNavigate();
   const toast = useToast();
@@ -50,7 +53,8 @@ function AdaptationSheet({
   const adapt = useMutation({
     mutationFn: create,
     onSuccess: (created) => {
-      const name = targets.find((space) => space.id === created.homeSpaceId)?.name ?? "";
+      const home = targets.find((space) => space.id === created.homeSpaceId);
+      const name = home?.kind === "PERSONAL" ? "ton espace perso" : (home?.name ?? "");
       toast(`Adaptation créée dans ${name}`, { tone: "success" });
       onClose();
       const path = `/s/${created.homeSpaceId}/recipes/${created.id}`;
@@ -64,11 +68,15 @@ function AdaptationSheet({
         {chosen ? (
           <SegmentedControl
             label="Espace de l'adaptation"
-            options={targets.map((space) => ({ value: space.id, label: space.name }))}
+            options={targets.map((space) => ({
+              value: space.id,
+              label: space.kind === "PERSONAL" ? "Espace perso" : space.name,
+            }))}
             value={chosen.id}
             onChange={setTarget}
           />
         ) : null}
+        {note}
         <FormAlert message={adapt.isError ? errorMessage(adapt.error) : undefined} />
         <SheetFooter>
           <Button
@@ -107,6 +115,12 @@ export function AdaptSheet({
       open={open}
       onClose={onClose}
       openEditor
+      note={
+        <small className="text-ink-muted">
+          Elle reste liée à l'original : si {author} modifie sa recette, tu verras « Original
+          modifié » et tu pourras comparer.
+        </small>
+      }
       create={(targetSpaceId) =>
         api.post(`/spaces/${spaceId}/recipes/${recipe.id}/adapt`, { targetSpaceId }, recipeSchema)
       }
@@ -120,10 +134,6 @@ export function AdaptSheet({
       <p className="m-0">
         Crée ta version de la recette. L'original de {author} n'est jamais modifié.
       </p>
-      <small className="text-ink-muted">
-        Elle reste liée à l'original : si {author} modifie sa recette, tu verras « Original modifié
-        » et tu pourras comparer.
-      </small>
     </AdaptationSheet>
   );
 }
@@ -176,20 +186,19 @@ export function AdaptedFromNotice({ spaceId, recipe }: { spaceId: string; recipe
         {from.deleted ? " · Original supprimé" : ""}
       </span>
       {from.changed ? (
-        <div className="fm-option" role="status">
+        <Link to={`/s/${spaceId}/recipes/${recipe.id}/compare`} className="fm-option">
           <span className="fm-option-icon">
             <Icon name="refresh" />
           </span>
           <span className="fm-option-text">
             <b>Original modifié</b>
             <small>
-              {from.author.username} a changé sa recette depuis ton adaptation.{" "}
-              <Link to={`/s/${spaceId}/recipes/${recipe.id}/compare`}>
-                Comparer avec l'original
-              </Link>
+              {from.author.username} a changé sa recette depuis ton adaptation : comparer avec
+              l'original.
             </small>
           </span>
-        </div>
+          <Icon name="chevron-right" className="fm-option-go" />
+        </Link>
       ) : null}
     </div>
   );
@@ -211,11 +220,11 @@ export function DiffTable({
   conflicts?: (entry: DiffEntry) => boolean;
 }) {
   return (
-    <table className="w-full border-collapse text-sm">
+    <table className="w-full table-fixed border-collapse text-sm">
       <caption className="sr-only">{caption}</caption>
       <thead>
         <tr className="text-left text-ink-muted">
-          <th scope="col" className="py-1 font-normal">
+          <th scope="col" className="w-1/4 py-1 font-normal">
             <span className="sr-only">Partie</span>
           </th>
           <th scope="col" className="py-1 font-normal">
@@ -238,8 +247,8 @@ export function DiffTable({
                   <small className="block text-danger-text">Changé des deux côtés</small>
                 ) : null}
               </th>
-              <td className="py-2 pr-2 text-ink-muted">{before}</td>
-              <td className="py-2">{after}</td>
+              <td className="py-2 pr-2 break-words text-ink-muted">{before}</td>
+              <td className="py-2 break-words">{after}</td>
             </tr>
           );
         })}

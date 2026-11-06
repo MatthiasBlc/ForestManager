@@ -312,8 +312,6 @@ function RecipeView({
               par {recipe.author.username}
               {sharedHere ? ` · ${recipe.homeSpace.name}` : ""} · révision {recipe.currentRevision}
             </span>
-            <AdaptedFromNotice spaceId={spaceId} recipe={recipe} />
-            <RecipeSuggestionsBanner spaceId={spaceId} recipeId={recipe.id} />
           </div>
           {recipe.can.edit ? (
             <Link
@@ -371,6 +369,8 @@ function RecipeView({
             }}
           />
         </div>
+        <AdaptedFromNotice spaceId={spaceId} recipe={recipe} />
+        <RecipeSuggestionsBanner spaceId={spaceId} recipeId={recipe.id} />
         <div className="flex flex-wrap items-center gap-3">
           <Stepper
             label="Portions"

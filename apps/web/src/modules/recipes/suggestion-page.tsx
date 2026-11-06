@@ -234,16 +234,18 @@ export function SuggestionPage() {
               Accepter la suggestion
             </Button>
           </div>
-        ) : s.can.withdraw ? (
+        ) : s.status === "PENDING" ? (
           <>
             <p className="m-0 text-ink-muted">
               En attente de la décision de {recipe.data?.author.username ?? "l'auteur"}.
             </p>
-            <div>
-              <Button disabled={act.isPending} onClick={() => act.mutate({ kind: "withdraw" })}>
-                Retirer ma suggestion
-              </Button>
-            </div>
+            {s.can.withdraw ? (
+              <div>
+                <Button disabled={act.isPending} onClick={() => act.mutate({ kind: "withdraw" })}>
+                  Retirer ma suggestion
+                </Button>
+              </div>
+            ) : null}
           </>
         ) : null}
       </article>

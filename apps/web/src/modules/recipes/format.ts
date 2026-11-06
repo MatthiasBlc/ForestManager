@@ -126,7 +126,7 @@ export function describeDiff(
       };
     case "step":
       return {
-        label: entry.blockTitle ? `Étape (${entry.blockTitle})` : "Étape",
+        label: `Étape ${String(entry.step + 1)}${entry.blockTitle ? ` (${entry.blockTitle})` : ""}`,
         before: entry.before ?? NONE,
         after: entry.after ?? NONE,
       };

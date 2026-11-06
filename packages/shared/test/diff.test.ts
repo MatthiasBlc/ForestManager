@@ -115,8 +115,15 @@ describe("diffContents", () => {
     if (block?.kind !== "LOCAL") throw new Error("bloc local attendu");
     block.steps = ["Cuire les pâtes.", "Gratiner 20 min.", "Servir."];
     expect(diffContents(content(), after)).toEqual([
-      { kind: "step", block: 0, blockTitle: null, before: "Gratiner.", after: "Gratiner 20 min." },
-      { kind: "step", block: 0, blockTitle: null, before: null, after: "Servir." },
+      {
+        kind: "step",
+        block: 0,
+        blockTitle: null,
+        step: 1,
+        before: "Gratiner.",
+        after: "Gratiner 20 min.",
+      },
+      { kind: "step", block: 0, blockTitle: null, step: 2, before: null, after: "Servir." },
     ]);
   });
 
