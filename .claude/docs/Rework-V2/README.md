@@ -6,7 +6,7 @@ Refonte de Forest Manager : clarifier les concepts de la V1, refaire l'interface
 
 1. Ce README.
 2. `4-Roadmap.md` : la premiere case non cochee est le point de reprise.
-3. Le plan de l'etape en cours (`20-Plan-C4.md` pour C4 quand il existe ; `17-Plan-C1.md`, `18-Plan-C2.md` et `19-Plan-C3.md` pour C1 a C3, termines).
+3. Le plan de l'etape en cours (`20-Plan-C4.md` pour C4 ; `17-Plan-C1.md`, `18-Plan-C2.md` et `19-Plan-C3.md` pour C1 a C3, termines).
 4. `1-CDC-V2.md` : S1 a S3 (vision, glossaire, roles) pour tout le monde, puis la section du module concerne.
 5. `3-Journal-des-Decisions.md` : seulement pour comprendre le pourquoi d'une regle (chercher le `D##`).
 
@@ -27,6 +27,7 @@ Refonte de Forest Manager : clarifier les concepts de la V1, refaire l'interface
 | `17-Plan-C1.md`               | Plan de realisation du socle (C1) : perimetre, reprise de la V1, sous-etapes.                                 |
 | `18-Plan-C2.md`               | Plan de C2 : design system en code, app shell, ecrans du socle.                                               |
 | `19-Plan-C3.md`               | Plan de C3 : module Recettes en tranches verticales.                                                          |
+| `20-Plan-C4.md`               | Plan de C4 : referentiels et administration en tranches verticales.                                           |
 | `archive/`                    | Etudes terminees (phase A et B5b) : leurs conclusions sont dans le CDC et le journal. Ne pas lire par defaut. |
 
 `archive/` contient : l'analyse de la V1 (`2-Analyse-V1.html`), les etudes adaptations (5) et recettes composees (6, 7), les directions visuelles (8), la revue du brainstorming (9), les ecarts des maquettes traites en B5b.
@@ -131,7 +132,8 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
 - Revue visuelle de fin de C3 dans Chrome le 2026-11-06 (bureau, et mobile par une iframe de 390 px sur la meme origine : la fenetre ne se redimensionne pas), compte de demo `revue_*` cree par l'API. Revus : detail compose et sous-recette depliee, historique, F-IMPORT-URL (erreur et repli), F-IMPORT-TEXTE et editeur pre-rempli, editeur et detail avec photo (image injectee dans le champ fichier), F-CREER-ESPACE avec photo puis reglages. Corrige (TDD sauf le visuel) : unites sans abreviation au pluriel ("3 pieces", `unitLabel`), texte d'aide visible de F-IMPORT-URL, import par texte qui lit "sel, poivre" comme ingredient a verifier (ligne courte apres des ingredients), en-tete de l'editeur raccourci en mobile (`actionShort` / `titleShort` de TopBar : "Enregistrer", "Suggestion" / "Envoyer"), "1 membre" (`lib/plural.ts`) et phrases pour un espace d'un seul membre, vignette d'espace de 64 px (`SpaceIcon size="lg"`).
 - Reports de C3 faits le 2026-11-06 (TDD) : F-ACTIONS (appui long, clic droit, touche Menu ou Maj+F10 sur une carte -> feuille `RecipeActionsSheet` avec les actions du "..." du detail plus "Modifier" ; actions et feuilles communes dans `use-recipe-actions.tsx`, `ActionList` dans `ui/action-menu.tsx` ; supprimer ou retirer depuis la liste y reste, "Mes recettes" compris ; "Ajouter au planning" de la maquette viendra en C5) et marques "Modifie" / "Ajoute" de l'editeur en mode suggestion (`suggestionMarks` dans `draft.ts`, quantite d'avant sur un ingredient modifie, etapes reliees a leur marque par `aria-describedby`). Verifie dans Chrome en bureau sur un compte de demo `moi_*` membre de l'espace de `lea_*`.
 - **C3 termine le 2026-11-06.** Restent hors C3 : premier passage de la CI (C7), page du modele de donnees a republier, piste du badge "Adaptee" sur les cartes.
-- **Prochaine etape : planifier C4** (referentiels et admin) dans `20-Plan-C4.md`, a faire relire par le proprietaire.
+- Plan de C4 valide le 2026-11-06 (`20-Plan-C4.md`, D170 a D173) : admin dans la meme SPA sous `/admin` charge a part, changelog en C6, OWNER prevenu d'une moderation en C6 (audit en C4), tranches verticales.
+- **Prochaine etape : C4.1** (compte admin, 2FA, audit, shell).
 - Tout est publie et committe au 2026-11-05 : DS v10, Acces v39, Recettes v35, Planning v26, Admin v26, Permissions v5, Parcours v6, Modele de donnees v5. Page du modele de donnees regeneree localement le 2026-11-06 (D165) : **a republier**. Maquettes revues dans Chrome le 2026-11-05 (B5b, voir `archive/16-Maquettes-ECARTS.md`).
   - Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact) : relire l'artefact (action read sur l'URL), puis publier avec `root` = le dossier du canevas, `file_path` = un fichier modifie, `files` = les autres (`project/...`).
   - Les numeros de version des artefacts avancent aussi a la simple consultation : comparer le contenu en ligne au commit avant d'ecraser.

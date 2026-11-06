@@ -554,3 +554,23 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
   - **Relecture par schema** : chaque donnee relue repasse par son schema Zod ; une forme perimee est ecartee, sans numero de version a tenir a jour.
   - **Vidage** : deconnexion, connexion et suppression du compte vident le client, donc l'appareil.
   - **Ecritures** : desactivees, pas masquees, et reliees au bandeau qui donne la raison (`useWriteGuard`, `aria-describedby`) ; menu du detail desactive en entier ; le client API les refuse de toute facon (D159). Mode cuisine disponible hors ligne.
+
+### D170 - Administration dans la meme SPA, sous /admin, chargee a part - VALIDEE (2026-11-06, plan C4)
+
+- **Constat** : les maquettes A01 a A13 decrivent une interface admin a part entiere ; elle peut vivre dans `apps/web` ou dans une application separee.
+- **Options** : meme SPA avec des routes `/admin` chargees dans un bundle separe ; workspace `apps/admin` avec son build et son image.
+- **Choix** : meme SPA (comme la V1), routes `/admin` chargees a la demande, shell AdminNav, session admin dans un cookie distinct. Un seul build, un seul nginx, design system reutilise directement ; l'isolation est portee par l'API (session et `requireAdmin`), pas par le deploiement.
+
+### D171 - Changelog en C6 - VALIDEE (2026-11-06, plan C4)
+
+- **Choix** : l'ecran admin A10, la page utilisateur et la generation par la CI restent en C6 comme le prevoit la roadmap. C4 n'affiche pas d'entree "Changelog" dans la navigation admin.
+
+### D172 - Acces de moderation : audit en C4, OWNER prevenu en C6 - VALIDEE (2026-11-06, plan C4)
+
+- **Constat** : D121 demande que l'OWNER soit informe, avec le motif, quand un admin ouvre son espace ; les notifications n'existent qu'a partir de C6.
+- **Options** : audit seul en C4 et notification en C6 ; bandeau provisoire dans l'espace en C4.
+- **Choix** : C4 enregistre l'acces et son motif dans le journal d'audit et pose un point d'accroche ; C6 y branche la notification. Une case sous C6 dans la roadmap evite l'oubli.
+
+### D173 - C4 en tranches verticales - VALIDEE (2026-11-06, plan C4)
+
+- **Choix** : comme C3 (D161), chaque sous-etape de C4 livre l'API et les ecrans d'une meme fonction : compte admin et shell, modules, referentiels, utilisateurs, espaces et moderation, journal et reglages. Detail : `20-Plan-C4.md`.

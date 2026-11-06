@@ -64,9 +64,18 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C3.7 Photos et avatars (MinIO)
   - [x] C3.8 Import
   - [x] C3.9 Mode cuisine et hors ligne
-- [ ] C4 Referentiels et admin
+- [ ] C4 Referentiels et admin (plan : `20-Plan-C4.md`)
+  - [x] C4.0 Plan de C4 (D170 a D173)
+  - [ ] C4.1 Compte admin, 2FA, audit, shell
+  - [ ] C4.2 Modules : demandes et catalogue
+  - [ ] C4.3 Referentiels
+  - [ ] C4.4 Utilisateurs
+  - [ ] C4.5 Espaces et moderation
+  - [ ] C4.6 Journal d'audit, reglages, tableau de bord
 - [ ] C5 Module planning + generation
 - [ ] C6 Notifications, activite, changelog
+  - [ ] Changelog : ecran admin A10, page utilisateur, generation par la CI [D171]
+  - [ ] Notifications posees en C4 : OWNER prevenu d'un acces de moderation avec son motif [D172, D121], decision sur une demande de module, nouvelle demande pour l'admin (P09)
 - [ ] C7 E2E complets, preprod, remise a zero de la base et de la stack de prod
   - [ ] Premier passage de la CI sur GitHub (reporte depuis C1.10 et la cloture de C3, decision du proprietaire du 2026-11-06)
   - [ ] A faire par le proprietaire avant le premier deploy preprod (a revoir ensemble) : secrets GitHub `MINIO_ACCESS_KEY` et `MINIO_SECRET_KEY` (exiges par `docker/deploy.sh`) [D167]
