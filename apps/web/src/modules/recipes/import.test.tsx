@@ -68,10 +68,8 @@ describe("importer un lien (F-IMPORT-URL)", () => {
     const { user, sheet } = await openAddSheet(s.space.id);
     await user.click(within(sheet).getByRole("button", { name: /Importer un lien/ }));
     const dialog = await screen.findByRole("dialog", { name: "Importer depuis un lien" });
-    await user.type(
-      within(dialog).getByLabelText("Lien de la recette"),
-      "https://exemple.fr/curry"
-    );
+    await user.click(within(dialog).getByLabelText("Lien de la recette"));
+    await user.paste("https://exemple.fr/curry");
     await user.click(within(dialog).getByRole("button", { name: "Importer" }));
 
     expect(await screen.findByLabelText("Titre")).toHaveValue("Curry d'aubergine");
@@ -113,7 +111,8 @@ describe("importer un lien (F-IMPORT-URL)", () => {
     const { user, sheet } = await openAddSheet(s.space.id);
     await user.click(within(sheet).getByRole("button", { name: /Importer un lien/ }));
     const dialog = await screen.findByRole("dialog", { name: "Importer depuis un lien" });
-    await user.type(within(dialog).getByLabelText("Lien de la recette"), "https://exemple.fr/x");
+    await user.click(within(dialog).getByLabelText("Lien de la recette"));
+    await user.paste("https://exemple.fr/x");
     await user.click(within(dialog).getByRole("button", { name: "Importer" }));
     expect(await within(dialog).findByRole("alert")).toHaveTextContent(
       "Aucune recette trouvée sur cette page."

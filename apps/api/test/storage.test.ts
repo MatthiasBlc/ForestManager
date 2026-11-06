@@ -7,6 +7,7 @@ import { describe, expect, it } from "vitest";
 import { createContext } from "../src/core/http/app.ts";
 import { sweepStorage } from "../src/core/storage/images.ts";
 import { MODULES } from "../src/modules/index.ts";
+import { createStorage, type Storage } from "../src/core/storage/storage.ts";
 import { createClient, createTestApp, loginAs } from "./helpers/app.ts";
 import { db, testEnv, testStorage } from "./helpers/db.ts";
 import { addMember, createSpace, createUser } from "./helpers/factories.ts";
@@ -16,9 +17,9 @@ import { jpegBytes, webpBytes } from "./helpers/images.ts";
 
 const app = createTestApp();
 
-async function keysUnder(prefix: string): Promise<string[]> {
+async function keysUnder(prefix: string, storage: Storage = testStorage): Promise<string[]> {
   const keys: string[] = [];
-  for await (const object of testStorage.list(prefix)) keys.push(object.key);
+  for await (const object of storage.list(prefix)) keys.push(object.key);
   return keys;
 }
 
@@ -195,9 +196,15 @@ describe("avatar d'un espace", () => {
 
 describe("sweepStorage", () => {
   it("efface les envois abandonnes et les images que la base ne reference plus", async () => {
+    // Bucket neuf : celui des tests garde les fichiers des executions precedentes
+    // (le conteneur de stockage survit a la base videe).
+    const storage = createStorage({ ...testEnv, MINIO_BUCKET: `fm-sweep-${String(Date.now())}` });
+    if (!storage) throw new Error("storage");
+    await storage.ensureBucket();
+    const isolated = createTestApp({ storage });
     const [user, gone] = await Promise.all([createUser(), createUser()]);
-    const client = await loginAs(user, app);
-    const asGone = await loginAs(gone, app);
+    const client = await loginAs(user, isolated);
+    const asGone = await loginAs(gone, isolated);
     await client.put("/me/avatar", { uploadId: await upload(client) });
     await asGone.put("/me/avatar", { uploadId: await upload(asGone) });
     const pending = await upload(client);
@@ -210,17 +217,17 @@ describe("sweepStorage", () => {
       db,
       logger: pino({ level: "silent" }),
       modules: MODULES,
-      storage: testStorage,
+      storage,
     });
 
     // Rien de recent n'est touche (un envoi peut etre en cours de rattachement).
     expect(await sweepStorage(ctx, new Date())).toBe(0);
-    expect(await keysUnder(`uploads/${user.id}/`)).toEqual([`uploads/${user.id}/${pending}`]);
+    expect(await keysUnder(`uploads/${user.id}/`, storage)).toEqual([
+      `uploads/${user.id}/${pending}`,
+    ]);
 
     const later = new Date(Date.now() + 2 * 60 * 60 * 1000);
-    expect(await sweepStorage(ctx, later)).toBeGreaterThanOrEqual(2);
-    expect(await keysUnder(`uploads/${user.id}/`)).toEqual([]);
-    expect(await keysUnder(`users/${gone.id}/`)).toEqual([]);
-    expect(await keysUnder(`users/${user.id}/`)).toEqual([kept]);
+    expect(await sweepStorage(ctx, later)).toBe(2);
+    expect(await keysUnder("", storage)).toEqual([kept]);
   });
 });

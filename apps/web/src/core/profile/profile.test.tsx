@@ -210,7 +210,8 @@ describe("supprimer le compte (F-SUPPRIMER-COMPTE, D116)", () => {
     await user.type(screen.getByLabelText("Mot de passe"), "actuel-correct");
     await user.click(screen.getByRole("button", { name: "Supprimer définitivement mon compte" }));
     expect(await screen.findByText("Ton compte a été supprimé")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Se connecter" })).toBeInTheDocument();
+    // Le toast s'affiche tout de suite ; la navigation vers l'accueil est une transition.
+    expect(await screen.findByRole("link", { name: "Se connecter" })).toBeInTheDocument();
     expect(bodies.delete).toEqual({ password: "actuel-correct" });
   });
 });
