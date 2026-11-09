@@ -38,6 +38,12 @@ export function buildNavigation(
     icon: "users",
     to: `${base}/members`,
   };
+  const activity: NavItem = {
+    id: "activity",
+    label: "Activité",
+    icon: "history",
+    to: `${base}/activity`,
+  };
   const settings: NavItem = {
     id: "settings",
     label: "Réglages",
@@ -46,7 +52,7 @@ export function buildNavigation(
   };
 
   const primary = space.kind === "PERSONAL" ? [home, ...moduleItems] : moduleItems;
-  const secondary = space.kind === "PERSONAL" ? [settings] : [members, settings];
+  const secondary = space.kind === "PERSONAL" ? [settings] : [members, activity, settings];
   const tabs = primary.slice(0, TAB_MAX);
   return {
     items: [...primary, ...secondary],

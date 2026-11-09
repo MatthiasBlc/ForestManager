@@ -28,6 +28,7 @@ import { Icon } from "../../ui/icon.tsx";
 import { Sheet } from "../../ui/sheet.tsx";
 import { writeLastSpace } from "../session/last-space.ts";
 import { meQuery, spaceQuery, spacesQuery } from "../session/queries.ts";
+import { ActivityPage } from "../activity/activity-page.tsx";
 import { HomePage } from "../home/home-page.tsx";
 import { unreadCountQuery } from "../notifications/queries.ts";
 import { ModulesPage } from "../modules/modules-page.tsx";
@@ -240,6 +241,7 @@ export function SpaceLayout() {
           <Route index element={<Navigate to={nav.items[0]?.to ?? "home"} replace />} />
           <Route path="home" element={<HomePage />} />
           <Route path="members" element={<MembersPage space={space.data} />} />
+          <Route path="activity" element={<ActivityPage space={space.data} />} />
           <Route path="settings" element={<SettingsPage space={space.data} />} />
           <Route path="modules" element={<ModulesPage space={space.data} />} />
           {WEB_MODULES.map((module) => (

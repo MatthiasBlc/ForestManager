@@ -14,7 +14,7 @@ describe("buildNavigation", () => {
     expect(nav.items.find((i) => i.id === "mine")?.to).toBe(`/s/${space.id}/recipes/mine`);
   });
 
-  it("groupe : modules actifs dans l'ordre, puis Membres et Reglages ; modules sans code web ignores", () => {
+  it("groupe : modules actifs dans l'ordre, puis Membres, Activite et Reglages ; modules sans code web ignores", () => {
     const space = buildSpaceDetail({
       modules: [
         { code: "inconnu", sortOrder: 0 },
@@ -22,9 +22,9 @@ describe("buildNavigation", () => {
       ],
     });
     const nav = buildNavigation(space, WEB_MODULES);
-    expect(nav.items.map((i) => i.id)).toEqual(["recipes", "members", "settings"]);
+    expect(nav.items.map((i) => i.id)).toEqual(["recipes", "members", "activity", "settings"]);
     expect(nav.tabs.map((i) => i.id)).toEqual(["recipes"]);
-    expect(nav.more.map((i) => i.id)).toEqual(["members", "settings"]);
+    expect(nav.more.map((i) => i.id)).toEqual(["members", "activity", "settings"]);
   });
 
   it("au-dela de 4 modules, le reste passe dans Plus (D131)", () => {
@@ -39,6 +39,6 @@ describe("buildNavigation", () => {
     });
     const nav = buildNavigation(space, modules);
     expect(nav.tabs.map((i) => i.id)).toEqual(["m1", "m2", "m3", "m4"]);
-    expect(nav.more.map((i) => i.id)).toEqual(["m5", "members", "settings"]);
+    expect(nav.more.map((i) => i.id)).toEqual(["m5", "members", "activity", "settings"]);
   });
 });

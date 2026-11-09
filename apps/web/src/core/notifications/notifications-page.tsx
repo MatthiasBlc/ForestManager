@@ -144,10 +144,10 @@ export function NotificationsPage() {
           ) : notifications.length === 0 ? (
             <EmptyState icon="bell" title="Aucune notification pour l'instant." />
           ) : (
-            groups(notifications).map((group) => (
-              <section key={group.title} aria-labelledby={`notif-${group.title}`}>
+            groups(notifications).map((group, index) => (
+              <section key={group.title} aria-labelledby={`notif-${String(index)}`}>
                 <h2
-                  id={`notif-${group.title}`}
+                  id={`notif-${String(index)}`}
                   className="px-4 pt-4 pb-1.5 text-xs font-semibold tracking-[0.04em] text-ink-muted uppercase"
                 >
                   {group.title}

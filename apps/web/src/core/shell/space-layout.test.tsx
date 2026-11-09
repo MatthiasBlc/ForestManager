@@ -42,7 +42,7 @@ describe("shell d'un espace", () => {
       within(nav)
         .getAllByRole("link")
         .map((l) => l.textContent)
-    ).toEqual(["Recettes", "Membres", "Réglages"]);
+    ).toEqual(["Recettes", "Membres", "Activité", "Réglages"]);
     expect(within(nav).getByRole("link", { name: "Recettes" })).toHaveAttribute(
       "aria-current",
       "page"
@@ -83,7 +83,7 @@ describe("shell d'un espace", () => {
       within(sheet)
         .getAllByRole("link")
         .map((l) => l.textContent)
-    ).toEqual(["Membres", "Réglages"]);
+    ).toEqual(["Membres", "Activité", "Réglages"]);
   });
 
   it("le bouton d'espace (mobile) ouvre la liste des espaces", async () => {

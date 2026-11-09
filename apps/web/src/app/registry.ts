@@ -1,7 +1,7 @@
 // Registre web des modules [D71] : un manifeste par module, liste statique dans
 // `modules/index.ts`. Le shell ne connait aucun module : il lit leurs entrees de
 // navigation et monte leurs routes sous /s/:spaceId/<code>/*.
-import type { Notification, SpaceKind } from "@fm/shared";
+import type { ActivityEvent, Notification, SpaceKind } from "@fm/shared";
 import type { ComponentType, LazyExoticComponent } from "react";
 
 import type { IconName } from "../ui/icon.tsx";
@@ -45,6 +45,12 @@ export type NotificationRenderer = (
   env: NotificationEnv
 ) => NotificationView;
 
+/** Ligne du fil d'activite : texte apres le nom de l'acteur, et ecran a ouvrir. */
+export type ActivityRenderer = (
+  event: ActivityEvent,
+  spaceId: string
+) => { text: string; to: string | null };
+
 export interface WebModule {
   /** Meme code que l'API et la base. */
   code: string;
@@ -58,4 +64,6 @@ export interface WebModule {
   notificationCategories?: Readonly<Record<string, NotificationCategoryLabel>>;
   /** Messages des types de notification du module (traduits ici, D34). */
   notifications?: Readonly<Record<string, NotificationRenderer>>;
+  /** Messages des evenements du fil d'activite du module. */
+  activity?: Readonly<Record<string, ActivityRenderer>>;
 }
