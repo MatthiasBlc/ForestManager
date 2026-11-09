@@ -39,7 +39,8 @@ export function mockSession({
         : HttpResponse.json(errorBody("SPACE_001"), { status: 404 });
     }),
     http.get("/api/v1/me/invitations", () => HttpResponse.json({ data: [] })),
-    http.get("/api/v1/me/transfers", () => HttpResponse.json({ data: [] }))
+    http.get("/api/v1/me/transfers", () => HttpResponse.json({ data: [] })),
+    http.get("/api/v1/me/notifications/unread-count", () => HttpResponse.json({ count: 0 }))
   );
   mockEmptyRecipes();
   return { me, spaces: all };

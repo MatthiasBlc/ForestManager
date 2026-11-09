@@ -1,4 +1,4 @@
-// TopBar : bouton d'espace (mobile) ou titre, recherche et notifications (C6),
+// TopBar : bouton d'espace (mobile) ou titre, recherche (C6b) et notifications,
 // profil. Mode edition (D136) : Annuler, titre, action principale.
 import { Link } from "react-router";
 
@@ -13,7 +13,7 @@ interface ViewProps {
   space?: SpaceVisual;
   onSpace?: () => void;
   onBack?: () => void;
-  /** Recherche et notifications arrivent en C6 : sans rappel, rien n'est affiche. */
+  /** Recherche (C6b) et notifications (C6.1) : sans rappel, rien n'est affiche. */
   onSearch?: () => void;
   onNotifications?: () => void;
   unread?: number;
@@ -109,7 +109,12 @@ export function TopBar(props: ViewProps | EditProps) {
         </>
       ) : null}
       {onNotifications ? (
-        <IconButton icon="bell" label="Notifications" count={unread} onClick={onNotifications} />
+        <IconButton
+          icon="bell"
+          label={unread ? `Notifications, ${String(unread)} non lues` : "Notifications"}
+          count={unread}
+          onClick={onNotifications}
+        />
       ) : null}
       {user ? (
         <Link to={user.to} aria-label={`Profil de ${user.name}`} className="rounded-full">

@@ -26,6 +26,7 @@ function loggedOut({ email = true }: { email?: boolean } = {}) {
       })
     ),
     http.get("/api/v1/spaces/:id", () => HttpResponse.json(buildPersonalSpace(account))),
+    http.get("/api/v1/me/notifications/unread-count", () => HttpResponse.json({ count: 0 })),
     http.post("/api/v1/auth/login", async ({ request }) => {
       bodies.login = await request.json();
       const { password } = bodies.login as { password: string };

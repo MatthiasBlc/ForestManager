@@ -29,6 +29,7 @@ import { Sheet } from "../../ui/sheet.tsx";
 import { writeLastSpace } from "../session/last-space.ts";
 import { meQuery, spaceQuery, spacesQuery } from "../session/queries.ts";
 import { HomePage } from "../home/home-page.tsx";
+import { unreadCountQuery } from "../notifications/queries.ts";
 import { ModulesPage } from "../modules/modules-page.tsx";
 import { CreateSpaceSheet } from "../spaces/create-space-sheet.tsx";
 import { DeletedSpacePage } from "../spaces/deleted-space-page.tsx";
@@ -158,6 +159,7 @@ export function SpaceLayout() {
   const user = me.data
     ? { name: me.data.username, to: "/profile", avatarUrl: me.data.avatarUrl }
     : undefined;
+  const unread = useQuery({ ...unreadCountQuery, enabled: Boolean(me.data) });
 
   const deleted = spaces.data?.find((s) => s.id === spaceId && s.deletedAt);
   if (space.isError && deleted) {
@@ -216,6 +218,8 @@ export function SpaceLayout() {
               title={active?.label}
               space={current}
               onSpace={() => setSwitcherOpen(true)}
+              onNotifications={() => void navigate("/notifications")}
+              unread={unread.data}
               user={user}
             />
           )}

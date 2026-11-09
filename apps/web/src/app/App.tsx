@@ -8,6 +8,8 @@ import { ForgotPasswordPage, ResetPasswordPage } from "../core/access/password-p
 import { RegisterPage } from "../core/access/register-page.tsx";
 import { VerifyEmailPage } from "../core/access/verify-email-page.tsx";
 import { WelcomePage } from "../core/access/welcome-page.tsx";
+import { NotificationsPage } from "../core/notifications/notifications-page.tsx";
+import { NotificationPreferencesPage } from "../core/notifications/preferences-page.tsx";
 import { AppearancePage } from "../core/profile/appearance-page.tsx";
 import { DeleteAccountPage } from "../core/profile/delete-account-page.tsx";
 import { AccountPage, PasswordPage, ProfilePage } from "../core/profile/profile-pages.tsx";
@@ -81,6 +83,8 @@ export function App() {
             <Route path="/profile/account" element={<AccountPage />} />
             <Route path="/profile/password" element={<PasswordPage />} />
             <Route path="/profile/appearance" element={<AppearancePage />} />
+            <Route path="/profile/notifications" element={<NotificationPreferencesPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/profile/delete" element={<DeleteAccountPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

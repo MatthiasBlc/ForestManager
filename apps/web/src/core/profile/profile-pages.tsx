@@ -88,6 +88,7 @@ export function ProfilePage() {
           value={`${AMBIANCES[preferences.ambiance].label} · ${MODE_LABELS[preferences.colorMode]}`}
           to="/profile/appearance"
         />
+        <Row icon="bell" label="Notifications" to="/profile/notifications" />
         <Row icon="lock" label="Mot de passe" to="/profile/password" />
         <Row icon="home" label="Langue" value="Français" />
       </nav>

@@ -13,4 +13,11 @@ export const recipesModule: WebModule = {
   ],
   Routes: lazy(() => import("./routes.tsx")),
   LeaveSection: lazy(() => import("./leave-section.tsx")),
+  notificationCategories: {
+    "recipes.sharing": {
+      label: "Suggestions et partages",
+      hint: "Sur tes recettes : suggestions, demandes de partage",
+    },
+    "recipes.new": { label: "Nouvelles recettes", hint: "Ajoutées dans tes espaces" },
+  },
 };

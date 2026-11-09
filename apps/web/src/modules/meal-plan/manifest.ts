@@ -7,4 +7,10 @@ export const mealPlanModule: WebModule = {
   code: "meal-plan",
   nav: () => [{ id: "meal-plan", label: "Planning", icon: "calendar", path: "meal-plan" }],
   Routes: lazy(() => import("./routes.tsx")),
+  notificationCategories: {
+    "meal-plan.planning": {
+      label: "Planning",
+      hint: "Planning généré, repas modifié par quelqu'un d'autre",
+    },
+  },
 };

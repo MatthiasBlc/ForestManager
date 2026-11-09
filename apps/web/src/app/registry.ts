@@ -1,7 +1,7 @@
 // Registre web des modules [D71] : un manifeste par module, liste statique dans
 // `modules/index.ts`. Le shell ne connait aucun module : il lit leurs entrees de
 // navigation et monte leurs routes sous /s/:spaceId/<code>/*.
-import type { SpaceKind } from "@fm/shared";
+import type { Notification, SpaceKind } from "@fm/shared";
 import type { ComponentType, LazyExoticComponent } from "react";
 
 import type { IconName } from "../ui/icon.tsx";
@@ -22,6 +22,29 @@ export interface LeaveSectionProps {
   onPrepare: (prepare: (() => Promise<void>) | null) => void;
 }
 
+/** Libelle d'une categorie de notification dans les preferences (E-NOTIF-PREFERENCES). */
+export interface NotificationCategoryLabel {
+  label: string;
+  hint: string;
+}
+
+/** Message d'une notification : texte apres le nom de l'acteur, et ecran a ouvrir. */
+export interface NotificationView {
+  text: string;
+  /** Faux : pas de nom d'acteur devant le texte (avis de la plateforme). */
+  actor?: boolean;
+  to: string | null;
+}
+
+export interface NotificationEnv {
+  personalSpaceId: string;
+}
+
+export type NotificationRenderer = (
+  notification: Notification,
+  env: NotificationEnv
+) => NotificationView;
+
 export interface WebModule {
   /** Meme code que l'API et la base. */
   code: string;
@@ -31,4 +54,8 @@ export interface WebModule {
   Routes: LazyExoticComponent<ComponentType>;
   /** Section facultative de F-QUITTER, quand le module est actif dans l'espace. */
   LeaveSection?: LazyExoticComponent<ComponentType<LeaveSectionProps>>;
+  /** Libelles des categories de notification declarees par le module (API). */
+  notificationCategories?: Readonly<Record<string, NotificationCategoryLabel>>;
+  /** Messages des types de notification du module (traduits ici, D34). */
+  notifications?: Readonly<Record<string, NotificationRenderer>>;
 }
