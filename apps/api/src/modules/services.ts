@@ -12,6 +12,14 @@ export interface CatalogRecipe {
   imageUrl: string | null;
 }
 
+/** Recette proposable par la generation. */
+export interface PoolRecipeInfo {
+  id: string;
+  title: string;
+  isBase: boolean;
+  tagIds: string[];
+}
+
 /** Fourni par Recettes : recettes visibles dans un espace (origine ou partage actif). */
 export interface RecipeCatalog {
   /**
@@ -23,6 +31,11 @@ export interface RecipeCatalog {
     viewerId: string,
     ids: readonly string[]
   ): Promise<Map<string, CatalogRecipe>>;
+  /**
+   * Pool de la generation [D184] : recettes visibles dans l'espace, non supprimees,
+   * non masquees (pour personne), avec leurs tags globaux et ceux de cet espace.
+   */
+  pool(spaceId: string): Promise<PoolRecipeInfo[]>;
   /** Recette non supprimee, nee dans l'espace et ecrite par cet auteur (idee convertie, D182). */
   isAuthoredIn(spaceId: string, authorId: string, recipeId: string): Promise<boolean>;
 }

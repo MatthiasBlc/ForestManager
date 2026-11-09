@@ -20,6 +20,25 @@ export function recipeCatalog(ctx: Context): RecipeCatalog {
         ])
       );
     },
+    async pool(spaceId) {
+      const rows = await ctx.db.recipe.findMany({
+        where: { ...visibleIn(spaceId), hiddenAt: null },
+        select: {
+          id: true,
+          title: true,
+          isBase: true,
+          globalTags: { select: { tagId: true } },
+          spaceTags: { where: { spaceId }, select: { tagId: true } },
+        },
+        orderBy: { id: "asc" },
+      });
+      return rows.map((row) => ({
+        id: row.id,
+        title: row.title,
+        isBase: row.isBase,
+        tagIds: [...row.globalTags, ...row.spaceTags].map((link) => link.tagId),
+      }));
+    },
     async isAuthoredIn(spaceId, authorId, recipeId) {
       const recipe = await ctx.db.recipe.findFirst({
         where: { id: recipeId, homeSpaceId: spaceId, authorId, deletedAt: null },

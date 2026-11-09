@@ -129,6 +129,7 @@ const DEFINITIONS = {
   },
   MEAL_007: { status: 409, message: "Nombre maximal de profils atteint pour cet espace." },
   MEAL_008: { status: 409, message: "Nombre maximal de règles atteint pour ce profil." },
+  MEAL_009: { status: 409, message: "Ce repas est verrouillé." },
 
   // --- Administration de la plateforme ---
   ADMIN_001: { status: 401, message: "Identifiants incorrects." },

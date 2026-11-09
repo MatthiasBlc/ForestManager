@@ -339,3 +339,122 @@ export const generationProfileSchema = generationProfileSummarySchema.extend({
   grid: z.array(gridCellSchema),
 });
 export type GenerationProfile = z.infer<typeof generationProfileSchema>;
+
+// --- Generation [D110, D113, D184] ---
+
+/** Apercu d'une generation : rien n'est ecrit [D110]. */
+export const generateBodySchema = z
+  .strictObject({
+    profileId: z.uuid(),
+    from: planDateSchema,
+    to: planDateSchema,
+    /** Remplacer les repas non verrouilles ; sinon seulement les cases vides. */
+    replace: z.boolean().default(false),
+  })
+  .refine(({ from, to }) => {
+    const days = periodDays(from, to);
+    return days >= 1 && days <= MAX_PERIOD_DAYS;
+  }, "period must span 1 to 31 days");
+export type GenerateBody = z.input<typeof generateBodySchema>;
+
+const namedTagSchema = z.object({ id: z.uuid(), name: z.string() });
+
+/** Pourquoi une case reste vide [D113] : la premiere contrainte qui a vide le choix. */
+export const emptyReasonSchema = z.discriminatedUnion("code", [
+  z.object({ code: z.literal("NO_RECIPE") }),
+  z.object({ code: z.literal("PIN"), tag: namedTagSchema }),
+  z.object({ code: z.literal("FREQUENCY_MAX"), tags: z.array(namedTagSchema) }),
+  z.object({ code: z.literal("COOLDOWN"), days: z.int() }),
+  z.object({ code: z.literal("TAG_COOLDOWN"), tags: z.array(namedTagSchema) }),
+  z.object({ code: z.literal("WEIGHT_ZERO") }),
+]);
+export type EmptyReason = z.infer<typeof emptyReasonSchema>;
+
+export const proposedPickSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("RECIPE"), recipe: z.object({ id: z.uuid(), title: z.string() }) }),
+  z.object({ kind: z.literal("IDEA"), idea: z.object({ id: z.uuid(), name: z.string() }) }),
+]);
+export type ProposedPick = z.infer<typeof proposedPickSchema>;
+
+export const proposalSchema = z.object({
+  date: planDateSchema,
+  mealTime: mealTimeSchema,
+  pick: proposedPickSchema.nullable(),
+  reason: emptyReasonSchema.nullable(),
+  /** Etat de la case au tirage (`updatedAt`, null si vide) : "Garder" n'ecrase pas une case modifiee depuis. */
+  seenUpdatedAt: z.iso.datetime().nullable(),
+});
+export type Proposal = z.infer<typeof proposalSchema>;
+
+export const generationWarningSchema = z.discriminatedUnion("code", [
+  z.object({
+    code: z.literal("MIN_NOT_MET"),
+    tag: namedTagSchema,
+    required: z.int(),
+    actual: z.int(),
+    from: planDateSchema,
+    to: planDateSchema,
+  }),
+  z.object({
+    code: z.literal("MAX_EXCEEDED"),
+    tag: namedTagSchema,
+    max: z.int(),
+    actual: z.int(),
+    from: planDateSchema,
+    to: planDateSchema,
+  }),
+]);
+export type GenerationWarning = z.infer<typeof generationWarningSchema>;
+
+export const generationPreviewSchema = z.object({
+  profile: z.object({ id: z.uuid(), name: z.string() }),
+  from: planDateSchema,
+  to: planDateSchema,
+  replace: z.boolean(),
+  proposals: z.array(proposalSchema),
+  skipped: z.object({
+    excluded: z.int(),
+    locked: z.int(),
+    kept: z.int(),
+    skippedMeals: z.int(),
+  }),
+  warnings: z.array(generationWarningSchema),
+});
+export type GenerationPreview = z.infer<typeof generationPreviewSchema>;
+
+/** "Garder ce planning" : les propositions retenues, avec l'etat vu au tirage. */
+export const applyGenerationBodySchema = z.strictObject({
+  cells: z
+    .array(
+      z.strictObject({
+        date: planDateSchema,
+        mealTime: mealTimeSchema,
+        pick: z.discriminatedUnion("kind", [
+          z.strictObject({ kind: z.literal("RECIPE"), recipeId: z.uuid() }),
+          z.strictObject({ kind: z.literal("IDEA"), ideaId: z.uuid() }),
+        ]),
+        seenUpdatedAt: z.iso.datetime().nullable(),
+      })
+    )
+    .min(1)
+    .max(MAX_PERIOD_DAYS * MEAL_TIMES.length)
+    .refine(
+      (cells) => new Set(cells.map((c) => `${c.date}/${c.mealTime}`)).size === cells.length,
+      "one proposal per cell"
+    ),
+});
+export type ApplyGenerationBody = z.infer<typeof applyGenerationBodySchema>;
+
+export const applyGenerationResultSchema = z.object({
+  data: z.array(mealSchema),
+  /** Cases modifiees par un membre depuis le tirage (ou recette, idee disparue) : non ecrasees. */
+  conflicts: z.array(mealCellSchema),
+});
+export type ApplyGenerationResult = z.infer<typeof applyGenerationResultSchema>;
+
+/** "Proposer un autre repas" : le repas ecrit, ou la raison s'il n'y a rien a proposer. */
+export const suggestMealResultSchema = z.object({
+  meal: mealSchema.nullable(),
+  reason: emptyReasonSchema.nullable(),
+});
+export type SuggestMealResult = z.infer<typeof suggestMealResultSchema>;

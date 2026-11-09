@@ -1,6 +1,11 @@
 // Manifeste API du module Planning [D180 a D184] : calendrier continu, idees,
 // profils et generation. Statut "bientot" jusqu'a la cloture de C5.
 import {
+  applyGenerationBodySchema,
+  applyGenerationResultSchema,
+  generateBodySchema,
+  generationPreviewSchema,
+  suggestMealResultSchema,
   convertMealIdeaBodySchema,
   createGenerationProfileBodySchema,
   deleteGenerationProfileBodySchema,
@@ -36,6 +41,7 @@ import {
 } from "../../core/modules/guards.ts";
 import type { ApiModule } from "../../core/modules/registry.ts";
 import { provide } from "../services.ts";
+import { applyGeneration, previewGeneration, suggestMeal } from "./generation.ts";
 import { convertIdea, createIdea, deleteIdea, listIdeas, updateIdea } from "./ideas.ts";
 import { clearMeal, listMeals, putMeal, recipeStats, swapMeals } from "./meals.ts";
 import { MEAL_PLAN_PERMISSIONS } from "./permissions.ts";
@@ -127,12 +133,41 @@ function mealPlanRouter(ctx: Context): Router {
     )
   );
 
+  // "Proposer un autre repas" : meme droit que modifier un repas [D58].
+  router.post(
+    "/meals/:date/:mealTime/suggest",
+    requirePermission("meal-plan.edit"),
+    handle({ params: cellParamsSchema }, async ({ params }, req, res) => {
+      const result = await suggestMeal(ctx, spaceOf(req), currentUserId(req), params);
+      reply(res, suggestMealResultSchema, result);
+    })
+  );
+
   router.delete(
     "/meals/:date/:mealTime",
     requirePermission("meal-plan.edit"),
     handle({ params: cellParamsSchema }, async ({ params }, req, res) => {
       await clearMeal(ctx, spaceOf(req), params);
       res.status(204).end();
+    })
+  );
+
+  // --- Generation [D110, D113, D184] : moderateurs et OWNER ---
+
+  router.post(
+    "/generate",
+    requirePermission("meal-plan.manage"),
+    handle({ body: generateBodySchema }, async ({ body }, req, res) => {
+      reply(res, generationPreviewSchema, await previewGeneration(ctx, spaceOf(req), body));
+    })
+  );
+
+  router.post(
+    "/generate/apply",
+    requirePermission("meal-plan.manage"),
+    handle({ body: applyGenerationBodySchema }, async ({ body }, req, res) => {
+      const result = await applyGeneration(ctx, spaceOf(req), currentUserId(req), body);
+      reply(res, applyGenerationResultSchema, result);
     })
   );
 

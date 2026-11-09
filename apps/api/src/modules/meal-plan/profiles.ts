@@ -25,6 +25,7 @@ import type { Context } from "../../core/context.ts";
 import { Prisma, type Db } from "../../core/db/client.ts";
 import { AppError } from "../../core/http/errors.ts";
 import { requiredService } from "../services.ts";
+import type { ProfileInput, ProfileRule } from "./domain/generate.ts";
 
 type Tx = Parameters<Parameters<Db["$transaction"]>[0]>[0];
 type CreateInput = z.output<typeof createGenerationProfileBodySchema>;
@@ -466,4 +467,92 @@ export async function putGrid(
     });
     await tx.mealSlotPin.createMany({ data: pins });
   });
+}
+
+// --- Profil resolu pour la generation [D184] ---
+
+export interface ResolvedProfile {
+  id: string;
+  name: string;
+  input: ProfileInput;
+}
+
+/** Profil par defaut de l'espace (cree d'office au besoin) [D183]. */
+export async function defaultProfileId(db: Db, spaceId: string): Promise<string> {
+  await ensureProfiles(db, spaceId);
+  const profile = await db.mealGenerationProfile.findFirst({
+    where: { spaceId, isDefault: true, ...live },
+    select: { id: true },
+  });
+  if (!profile) throw new AppError("MEAL_003");
+  return profile.id;
+}
+
+/**
+ * Regles actives seulement : un tag fusionne suit sa cible, un tag supprime
+ * endort sa regle ou son epinglage ; une regle de recette dort si la recette
+ * n'est plus dans le pool.
+ */
+export async function resolveProfile(
+  db: Db,
+  spaceId: string,
+  profileId: string,
+  poolIds: ReadonlySet<string>
+): Promise<ResolvedProfile> {
+  const profile = await findProfile(db, spaceId, profileId);
+  const [rules, exclusions, pins] = await Promise.all([
+    db.mealGenerationRule.findMany({
+      where: { profileId },
+      orderBy: [{ position: "asc" }, { id: "asc" }],
+    }),
+    db.mealSlotExclusion.findMany({ where: { profileId } }),
+    db.mealSlotPin.findMany({ where: { profileId } }),
+  ]);
+  const tags = await loadTags(db, [
+    ...rules.flatMap((rule) => (rule.tagId ? [rule.tagId] : [])),
+    ...pins.map((pin) => pin.tagId),
+  ]);
+  const liveTag = (id: string) => {
+    const tag = resolveTag(tags, id);
+    return tag.status === "ACTIVE" ? tag.id : null;
+  };
+  const active: ProfileRule[] = rules.flatMap((rule): ProfileRule[] => {
+    const tagId = rule.tagId ? liveTag(rule.tagId) : null;
+    if (rule.tagId && !tagId) return [];
+    if (rule.recipeId && !poolIds.has(rule.recipeId)) return [];
+    return [
+      {
+        id: rule.id,
+        tagId,
+        recipeId: rule.recipeId,
+        weight: rule.weight,
+        mealTime: rule.mealTime,
+        frequencyMin: rule.frequencyMin,
+        frequencyMax: rule.frequencyMax,
+        frequencyPer: rule.frequencyPer,
+        tagCooldownDays: rule.tagCooldownDays,
+      },
+    ];
+  });
+  return {
+    id: profile.id,
+    name: profile.name,
+    input: {
+      cooldownDays: profile.cooldownDays,
+      useIdeas: profile.useIdeas,
+      rules: active,
+      exclusions: exclusions.map(pick),
+      pins: pins.flatMap((pin) => {
+        const tagId = liveTag(pin.tagId);
+        return tagId ? [{ ...pick(pin), tagId }] : [];
+      }),
+    },
+  };
+}
+
+/** Noms des tags (pour le rapport), fusions suivies. */
+export async function tagNames(db: Db, ids: Iterable<string>): Promise<Map<string, string>> {
+  const unique = [...new Set(ids)];
+  const tags = await loadTags(db, unique);
+  return new Map(unique.map((id) => [id, resolveTag(tags, id).name]));
 }

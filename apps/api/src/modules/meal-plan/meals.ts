@@ -23,7 +23,7 @@ export function todayIso(now = new Date()): string {
   return toIsoDate(now);
 }
 
-const mealSelect = {
+export const mealSelect = {
   date: true,
   mealTime: true,
   kind: true,
@@ -36,7 +36,7 @@ const mealSelect = {
   updatedBy: { select: { id: true, username: true } },
 } as const;
 
-type MealRow = Prisma.MealSlotGetPayload<{ select: typeof mealSelect }>;
+export type MealRow = Prisma.MealSlotGetPayload<{ select: typeof mealSelect }>;
 
 /** Contenu deplace par un echange : tout sauf la case. */
 type MealContent = Pick<
@@ -44,11 +44,11 @@ type MealContent = Pick<
   "kind" | "recipeId" | "text" | "comment" | "servings" | "locked"
 >;
 
-const cellWhere = (spaceId: string, cell: MealCell) => ({
+export const cellWhere = (spaceId: string, cell: MealCell) => ({
   spaceId_date_mealTime: { spaceId, date: toDbDate(cell.date), mealTime: cell.mealTime },
 });
 
-async function present(
+export async function present(
   ctx: Context,
   spaceId: string,
   viewerId: string,
@@ -73,7 +73,7 @@ async function present(
   });
 }
 
-async function assertPlanned(ctx: Context, spaceId: string, cells: readonly MealCell[]) {
+export async function assertPlanned(ctx: Context, spaceId: string, cells: readonly MealCell[]) {
   const { mealTimes } = await readSettings(ctx.db, spaceId);
   if (cells.some((cell) => !mealTimes.includes(cell.mealTime))) throw new AppError("MEAL_001");
 }
