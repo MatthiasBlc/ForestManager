@@ -47,6 +47,7 @@ export function buildMe(over: Partial<Me> = {}): Me {
     email: "matthias@exemple.fr",
     username: "matthias",
     emailVerified: true,
+    mustChoosePassword: false,
     avatarUrl: null,
     personalSpaceId: uuid(),
     preferences: {

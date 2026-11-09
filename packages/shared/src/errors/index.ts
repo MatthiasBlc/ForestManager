@@ -38,6 +38,11 @@ const DEFINITIONS = {
   AUTH_011: { status: 403, message: "Vous devez choisir un nouveau mot de passe." },
   AUTH_012: { status: 404, message: "Utilisateur introuvable." },
   AUTH_013: { status: 409, message: "Cette adresse email est déjà vérifiée." },
+  AUTH_014: {
+    status: 409,
+    message:
+      "Ce mot de passe temporaire n'est plus valable. Demandez-en un nouveau à l'administrateur.",
+  },
 
   // --- Espaces, membres, invitations ---
   SPACE_001: { status: 404, message: "Espace introuvable." },

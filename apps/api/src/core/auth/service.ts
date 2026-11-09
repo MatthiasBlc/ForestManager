@@ -80,7 +80,7 @@ async function sendVerification(ctx: Context, user: Pick<UserRow, "id" | "email"
   await sendMail(ctx, verifyEmailMail(user.email, user.username, url));
 }
 
-export async function getMe(ctx: Context, userId: string): Promise<Me> {
+export async function getMe(ctx: Context, userId: string, mustChoosePassword = false): Promise<Me> {
   const user = await findActiveUser(ctx, userId);
   const space = await ctx.db.space.findUnique({
     where: { personalUserId: user.id },
@@ -102,6 +102,7 @@ export async function getMe(ctx: Context, userId: string): Promise<Me> {
       locale: user.locale as Me["preferences"]["locale"],
     },
     createdAt: user.createdAt.toISOString(),
+    mustChoosePassword,
   };
 }
 
@@ -135,12 +136,16 @@ export async function register(ctx: Context, body: RegisterBody): Promise<string
   }
 }
 
-/** Identifiants valides -> id du compte ; sinon AUTH_002, sans dire lequel est faux. */
+/**
+ * Identifiants valides -> id du compte ; sinon AUTH_002, sans dire lequel est faux.
+ * Un mot de passe temporaire valable [D134] ouvre aussi le compte, en renvoyant
+ * son jeton : la session ne servira qu'a choisir un nouveau mot de passe.
+ */
 export async function authenticate(
   ctx: Context,
   identifier: string,
   password: string
-): Promise<string> {
+): Promise<{ userId: string; temporaryTokenId: string | null }> {
   const user = identifier.includes("@")
     ? await ctx.db.user.findFirst({ where: { email: identifier.toLowerCase(), deletedAt: null } })
     : await findByUsername(ctx, identifier);
@@ -148,9 +153,56 @@ export async function authenticate(
     await ctx.hasher.burn(password);
     throw new AppError("AUTH_002");
   }
-  if (!(await ctx.hasher.verify(user.passwordHash, password))) throw new AppError("AUTH_002");
+  let temporaryTokenId: string | null = null;
+  if (!(await ctx.hasher.verify(user.passwordHash, password))) {
+    temporaryTokenId = await matchTemporaryPassword(ctx, user.id, password);
+    if (!temporaryTokenId) throw new AppError("AUTH_002");
+  }
   await ctx.db.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
-  return user.id;
+  return { userId: user.id, temporaryTokenId };
+}
+
+/** Jeton TEMP_PASSWORD valable dont le hash correspond, ou null. */
+async function matchTemporaryPassword(
+  ctx: Context,
+  userId: string,
+  password: string
+): Promise<string | null> {
+  const tokens = await ctx.db.authToken.findMany({
+    where: { userId, kind: "TEMP_PASSWORD", usedAt: null, expiresAt: { gt: new Date() } },
+  });
+  for (const token of tokens) {
+    if (await ctx.hasher.verify(token.tokenHash, password)) return token.id;
+  }
+  return null;
+}
+
+/**
+ * Remplace le mot de passe apres une connexion par un mot de passe temporaire
+ * [D134] : le temporaire est consomme, l'ancien ne vaut plus, les autres
+ * sessions sont fermees. AUTH_014 si le temporaire n'est plus valable.
+ */
+export async function choosePassword(
+  ctx: Context,
+  userId: string,
+  tokenId: string | undefined,
+  password: string,
+  currentSid: string
+): Promise<void> {
+  if (!tokenId) throw new AppError("AUTH_014");
+  const user = await findActiveUser(ctx, userId);
+  assertStrongPassword(password, [user.username, emailLocalPart(user.email)]);
+  const passwordHash = await ctx.hasher.hash(password);
+  const used = await ctx.db.$transaction(async (tx) => {
+    const { count } = await tx.authToken.updateMany({
+      where: { id: tokenId, userId, usedAt: null, expiresAt: { gt: new Date() } },
+      data: { usedAt: new Date() },
+    });
+    if (count === 1) await tx.user.update({ where: { id: userId }, data: { passwordHash } });
+    return count === 1;
+  });
+  if (!used) throw new AppError("AUTH_014");
+  await destroyUserSessions(ctx.db, userId, currentSid);
 }
 
 export async function updateProfile(

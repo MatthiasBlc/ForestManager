@@ -117,8 +117,12 @@ export const meSchema = z.object({
   personalSpaceId: uuidSchema,
   preferences: preferencesSchema,
   createdAt: isoDateTimeSchema,
+  /** Connecte avec un mot de passe temporaire : il doit en choisir un avant tout [D134]. */
+  mustChoosePassword: z.boolean(),
 });
 export type Me = z.infer<typeof meSchema>;
+
+export const choosePasswordBodySchema = z.strictObject({ password: passwordSchema });
 
 export const appConfigSchema = z.object({
   /** Emails [D21] et envoi de photos [D167] : facultatifs selon la configuration. */

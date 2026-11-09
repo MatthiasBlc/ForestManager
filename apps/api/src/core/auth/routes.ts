@@ -2,6 +2,7 @@
 import {
   accountDeletionPreviewSchema,
   changePasswordBodySchema,
+  choosePasswordBodySchema,
   deleteAccountBodySchema,
   forgotPasswordBodySchema,
   loginBodySchema,
@@ -15,7 +16,7 @@ import {
 import { Router, type Request } from "express";
 
 import type { Context } from "../context.ts";
-import { currentUserId, requireAuth } from "../http/auth.ts";
+import { currentUserId, requireAuth, requireSession } from "../http/auth.ts";
 import { AppError } from "../http/errors.ts";
 import { createRateLimiter } from "../http/security.ts";
 import { handle, reply } from "../http/validate.ts";
@@ -58,9 +59,15 @@ export function authRouter(ctx: Context, rateLimit: boolean): Router {
     "/auth/login",
     limit(15 * MINUTE, 10),
     handle({ body: loginBodySchema }, async ({ body }, req, res) => {
-      const userId = await accounts.authenticate(ctx, body.identifier, body.password);
-      await openSession(req, userId, body.rememberMe);
-      reply(res, meSchema, await accounts.getMe(ctx, userId));
+      const { userId, temporaryTokenId } = await accounts.authenticate(
+        ctx,
+        body.identifier,
+        body.password
+      );
+      // Session restreinte : courte, sans "rester connecte" [D134].
+      await openSession(req, userId, temporaryTokenId ? false : body.rememberMe);
+      if (temporaryTokenId) req.session.passwordChoice = temporaryTokenId;
+      reply(res, meSchema, await accounts.getMe(ctx, userId, temporaryTokenId !== null));
     })
   );
 
@@ -104,9 +111,37 @@ export function authRouter(ctx: Context, rateLimit: boolean): Router {
 
   // --- Profil ---
 
-  router.get("/me", requireAuth, async (req, res) => {
-    reply(res, meSchema, await accounts.getMe(ctx, currentUserId(req)));
+  router.get("/me", requireSession, async (req, res) => {
+    const mustChoose = req.session.passwordChoice !== undefined;
+    reply(res, meSchema, await accounts.getMe(ctx, currentUserId(req), mustChoose));
   });
+
+  router.post(
+    "/auth/choose-password",
+    requireSession,
+    limit(15 * MINUTE, 10),
+    handle({ body: choosePasswordBodySchema }, async ({ body }, req, res) => {
+      const userId = currentUserId(req);
+      try {
+        await accounts.choosePassword(
+          ctx,
+          userId,
+          req.session.passwordChoice,
+          body.password,
+          req.sessionID
+        );
+      } catch (error) {
+        // Temporaire perime : la session restreinte ne sert plus a rien.
+        if (error instanceof AppError && error.code === "AUTH_014" && req.session.passwordChoice) {
+          await destroySession(req);
+          res.clearCookie(SESSION_COOKIE, { path: "/" });
+        }
+        throw error;
+      }
+      await openSession(req, userId, false);
+      reply(res, meSchema, await accounts.getMe(ctx, userId));
+    })
+  );
 
   router.patch(
     "/me",

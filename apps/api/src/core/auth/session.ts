@@ -11,6 +11,11 @@ import type { Db } from "../db/client.ts";
 declare module "express-session" {
   interface SessionData {
     userId?: string;
+    /**
+     * Connecte avec un mot de passe temporaire (id du jeton) : la session ne sert
+     * qu'a choisir un nouveau mot de passe [D134].
+     */
+    passwordChoice?: string;
     /** Session admin (cookie distinct) [D174]. */
     adminId?: string;
     /** Code TOTP valide : la session admin est complete. */
