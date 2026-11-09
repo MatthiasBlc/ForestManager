@@ -177,7 +177,7 @@ export async function openModeration(
       action: "moderation.opened",
       targetType: "space",
       targetId: spaceId,
-      data: { reason: body.reason, note: body.note },
+      data: { name: space.name, reason: body.reason, note: body.note },
     });
     return access;
   });
@@ -200,6 +200,7 @@ export async function closeModeration(
   spaceId: string
 ): Promise<void> {
   await requireAccess(ctx, adminId, spaceId);
+  const space = await ctx.db.space.findUniqueOrThrow({ where: { id: spaceId } });
   await ctx.db.$transaction(async (tx) => {
     await tx.moderationAccess.updateMany({
       where: { adminId, spaceId, expiresAt: { gt: new Date() } },
@@ -210,6 +211,7 @@ export async function closeModeration(
       action: "moderation.closed",
       targetType: "space",
       targetId: spaceId,
+      data: { name: space.name },
     });
   });
 }
@@ -339,7 +341,7 @@ export async function deleteSpaceByModeration(
       action: "space.deleted",
       targetType: "space",
       targetId: spaceId,
-      data: { note },
+      data: { name: space.name, note },
     });
   });
 }

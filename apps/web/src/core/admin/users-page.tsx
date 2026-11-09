@@ -164,7 +164,7 @@ export function UsersPage() {
       ) : null}
       <div className="flex flex-wrap items-end gap-4">
         <Field
-          className="min-w-64 flex-1"
+          className="min-w-0 flex-[1_1_16rem]"
           label="Rechercher"
           placeholder="Nom d'utilisateur ou e-mail"
           value={search}
@@ -174,15 +174,18 @@ export function UsersPage() {
             setLimit(PAGE);
           }}
         />
-        <SegmentedControl
-          label="Filtrer les comptes"
-          options={FILTERS}
-          value={filter}
-          onChange={(value) => {
-            setFilter(value);
-            setLimit(PAGE);
-          }}
-        />
+        {/* min-w-0 : le filtre defile sur lui-meme au lieu d'elargir la page (mobile). */}
+        <div className="max-w-full min-w-0">
+          <SegmentedControl
+            label="Filtrer les comptes"
+            options={FILTERS}
+            value={filter}
+            onChange={(value) => {
+              setFilter(value);
+              setLimit(PAGE);
+            }}
+          />
+        </div>
       </div>
       {users.isPending ? (
         <Skeleton label="Chargement des comptes" />

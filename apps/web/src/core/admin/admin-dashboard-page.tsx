@@ -223,7 +223,7 @@ export function AdminDashboardPage() {
                 <ul className="m-0 flex list-none flex-col gap-2 rounded-lg border border-line bg-surface-raised p-4">
                   {data.recent.map((entry) => (
                     <li key={entry.id} className="flex gap-3 text-sm">
-                      <span className="w-28 shrink-0 text-ink-muted">
+                      <span className="shrink-0 whitespace-nowrap text-ink-muted">
                         {whenLabel(entry.createdAt)}
                       </span>
                       <span>

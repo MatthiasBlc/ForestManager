@@ -165,7 +165,7 @@ export function SpacesPage() {
       </div>
       <div className="flex flex-wrap items-end gap-4">
         <Field
-          className="min-w-64 flex-1"
+          className="min-w-0 flex-[1_1_16rem]"
           label="Rechercher un espace"
           placeholder="Nom de l'espace ou de son OWNER"
           value={search}
@@ -174,12 +174,15 @@ export function SpacesPage() {
             setSearch(event.target.value);
           }}
         />
-        <SegmentedControl
-          label="Filtrer les espaces"
-          options={filters}
-          value={filter}
-          onChange={setFilter}
-        />
+        {/* min-w-0 : le filtre defile sur lui-meme au lieu d'elargir la page (mobile). */}
+        <div className="max-w-full min-w-0">
+          <SegmentedControl
+            label="Filtrer les espaces"
+            options={filters}
+            value={filter}
+            onChange={setFilter}
+          />
+        </div>
       </div>
       {spaces.isPending ? (
         <Skeleton label="Chargement des espaces" />

@@ -176,7 +176,10 @@ body,
 }
 
 /* Tableaux de l'administration (A03, A04, A11...) : lignes separees, en-tete discret. */
+/* position: relative : les libelles masques (.fm-sr) restent dans le tableau, qui
+   defile seul sur mobile, au lieu d'elargir la page. */
 .fm-table {
+  position: relative;
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
@@ -189,6 +192,13 @@ body,
   color: var(--ink-muted);
   border-bottom: 1px solid var(--line);
   white-space: nowrap;
+}
+/* En-tete de ligne (nom du tag, de l'espace...) : texte normal, pas le gris des colonnes. */
+.fm-table tbody th {
+  padding: 10px 12px;
+  color: var(--ink);
+  white-space: normal;
+  vertical-align: middle;
 }
 .fm-table td {
   padding: 10px 12px;

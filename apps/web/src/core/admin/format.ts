@@ -102,6 +102,9 @@ export function auditTarget(entry: {
   data: Record<string, unknown> | null;
 }): string {
   const data = entry.data ?? {};
+  if (entry.action.endsWith(".merged") && text(data.name) && text(data.intoName)) {
+    return `${String(data.name)} → ${String(data.intoName)}`;
+  }
   const named =
     text(data.name) ??
     text(data.username) ??

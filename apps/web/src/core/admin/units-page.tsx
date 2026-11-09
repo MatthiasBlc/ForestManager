@@ -271,7 +271,7 @@ function UnitForm({ unit, onClose }: { unit: AdminUnit | null; onClose: () => vo
         {lang === "français" ? "Français" : "Anglais (facultatif)"}
       </legend>
       <Field
-        label={`Nom en ${lang}`}
+        label={`Nom (${lang === "français" ? "fr" : "en"})`}
         value={value.name}
         maxLength={40}
         onChange={(event) => {
@@ -279,7 +279,7 @@ function UnitForm({ unit, onClose }: { unit: AdminUnit | null; onClose: () => vo
         }}
       />
       <Field
-        label={`Pluriel en ${lang}`}
+        label={`Pluriel (${lang === "français" ? "fr" : "en"})`}
         value={value.namePlural}
         maxLength={40}
         onChange={(event) => {
@@ -287,7 +287,7 @@ function UnitForm({ unit, onClose }: { unit: AdminUnit | null; onClose: () => vo
         }}
       />
       <Field
-        label={`Abréviation en ${lang}`}
+        label={`Abréviation (${lang === "français" ? "fr" : "en"})`}
         value={value.abbreviation}
         maxLength={20}
         onChange={(event) => {

@@ -64,7 +64,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C3.7 Photos et avatars (MinIO)
   - [x] C3.8 Import
   - [x] C3.9 Mode cuisine et hors ligne
-- [ ] C4 Referentiels et admin (plan : `20-Plan-C4.md`)
+- [x] C4 Referentiels et admin (plan : `20-Plan-C4.md`)
   - [x] C4.0 Plan de C4 (D170 a D173)
   - [x] C4.1 Compte admin, 2FA, audit, shell
   - [x] C4.2 Modules : demandes et catalogue
@@ -72,7 +72,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C4.4 Utilisateurs
   - [x] C4.5 Espaces et moderation
   - [x] C4.6 Journal d'audit, reglages, tableau de bord
-  - [ ] Revue visuelle de C4 dans Chrome (A01 a A13 hors A10, bureau et mobile), puis cloture
+  - [x] Revue visuelle de C4 dans Chrome (A01 a A13 hors A10, bureau et mobile), puis cloture
 - [ ] C5 Module planning + generation
 - [ ] C6 Notifications, activite, changelog
   - [ ] Changelog : ecran admin A10, page utilisateur, generation par la CI [D171]

@@ -349,6 +349,11 @@ export async function mergeIngredient(
       throw new AppError("ADMIN_010");
     }
     const recipeCount = await tx.recipe.count({ where: usedInRecipes(id) });
+    const names = await tx.ingredientTranslation.findMany({
+      where: { ingredientId: { in: [id, intoId] }, locale: FR },
+    });
+    const nameOf = (ingredientId: string) =>
+      names.find((n) => n.ingredientId === ingredientId)?.name ?? "";
     await tx.recipeIngredient.updateMany({
       where: { ingredientId: id },
       data: { ingredientId: intoId },
@@ -360,7 +365,7 @@ export async function mergeIngredient(
       action: "ingredient.merged",
       targetType: "ingredient",
       targetId: id,
-      data: { intoId, recipeCount },
+      data: { intoId, recipeCount, name: nameOf(id), intoName: nameOf(intoId) },
     });
   });
   return getIngredient(ctx, intoId);
@@ -717,7 +722,7 @@ export async function mergeTag(
 ): Promise<AdminTag> {
   await ctx.db.$transaction(async (tx) => {
     if (id === intoId) throw new AppError("ADMIN_010");
-    await liveTag(tx, id);
+    const source = await liveTag(tx, id);
     const target = await tx.tag.findFirst({ where: { id: intoId, ...liveGlobal } });
     if (!target) throw new AppError("ADMIN_010");
     const links = await tx.recipeGlobalTag.findMany({ where: { tagId: id } });
@@ -732,7 +737,7 @@ export async function mergeTag(
       action: "tag.merged",
       targetType: "tag",
       targetId: id,
-      data: { intoId, recipeCount: links.length },
+      data: { intoId, recipeCount: links.length, name: source.name, intoName: target.name },
     });
   });
   return tagById(ctx, intoId);

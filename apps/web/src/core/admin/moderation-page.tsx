@@ -13,7 +13,7 @@ import {
   type Unit,
 } from "@fm/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
 import { errorMessage } from "../../i18n/index.ts";
@@ -258,6 +258,15 @@ function ModerationView({ view }: { view: ModerationSpace }) {
   const { space, access, recipes } = view;
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [action, setAction] = useState<Action | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setNow(Date.now());
+    }, 15_000);
+    return () => {
+      window.clearInterval(timer);
+    };
+  }, []);
   const selected = recipes.find((r) => r.id === selectedId) ?? null;
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["admin", "moderation"] });
   const close = useMutation({
@@ -316,7 +325,7 @@ function ModerationView({ view }: { view: ModerationSpace }) {
         role="status"
         className="flex flex-col gap-1 rounded-md bg-accent-soft px-4 py-3 text-sm"
       >
-        <b>Lecture seule, encore {minutesLeft(access.expiresAt)} min.</b>
+        <b>Lecture seule, encore {minutesLeft(access.expiresAt, now)} min.</b>
         <span>
           Motif : {REASON_LABELS[access.reason]}, « {access.note} ». Chaque action est enregistrée
           dans le journal d&apos;audit.

@@ -176,7 +176,7 @@ export async function dashboard(ctx: Context): Promise<AdminDashboard> {
       ctx.db.space.count({ where: { kind: "PERSONAL", deletedAt: null } }),
       ctx.db.recipe.count({ where: { deletedAt: null } }),
       ctx.db.module.findMany({
-        where: { isDefault: false },
+        where: { isDefault: false, status: { in: ["AVAILABLE", "BETA"] } },
         orderBy: { sortOrder: "asc" },
         select: {
           code: true,

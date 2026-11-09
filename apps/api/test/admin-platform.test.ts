@@ -110,7 +110,11 @@ describe("tableau de bord (A02, D129)", () => {
       },
     });
 
+    // Seuls les modules proposes (disponibles ou beta) ont leur chiffre.
+    const before = await db.module.findUniqueOrThrow({ where: { code: "meal-plan" } });
+    await db.module.update({ where: { code: "meal-plan" }, data: { status: "BETA" } });
     const res = await client.get("/admin/dashboard");
+    await db.module.update({ where: { code: "meal-plan" }, data: { status: before.status } });
     expect(res.status).toBe(200);
     expect(res.body.newIngredients.count).toBeGreaterThanOrEqual(1);
     expect(res.body.newIngredients.duplicates).toContain("poireaux");
@@ -119,7 +123,9 @@ describe("tableau de bord (A02, D129)", () => {
     );
     expect(res.body.platform.users).toBeGreaterThanOrEqual(1);
     expect(res.body.platform.personalSpaces).toBeGreaterThanOrEqual(1);
-    expect(res.body.platform.modules.map((m: { code: string }) => m.code)).toContain("meal-plan");
+    const codes = res.body.platform.modules.map((m: { code: string }) => m.code);
+    expect(codes).toContain("meal-plan");
+    expect(codes).not.toContain("shopping");
     expect(res.body.services.storage).toBe(true);
     expect(res.body.version).toMatch(/^\d+\.\d+\.\d+/);
     expect(res.body.recent[0]).toMatchObject({ action: "ingredient.created" });

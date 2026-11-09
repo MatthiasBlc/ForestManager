@@ -153,7 +153,9 @@ export function AdminLayout({ me }: { me: AdminMe }) {
   };
 
   return (
-    <div className="fm-root flex min-h-full bg-bg text-ink">
+    // shrink-0 : #root est une colonne flex de hauteur fixe ; sans lui, la racine
+    // retrecit a l'ecran et la navigation (sticky) defile avec la page.
+    <div className="fm-root flex min-h-full shrink-0 bg-bg text-ink">
       <aside className="sticky top-0 hidden h-dvh w-62 shrink-0 flex-col gap-5 border-r border-line bg-surface px-3 py-5 md:flex">
         <div className="flex items-center gap-2.5 px-2">
           <Brand />
