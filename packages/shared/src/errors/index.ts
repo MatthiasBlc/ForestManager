@@ -120,6 +120,15 @@ const DEFINITIONS = {
   // --- Planning ---
   MEAL_001: { status: 409, message: "Ce repas n'est pas planifié dans cet espace." },
   MEAL_002: { status: 404, message: "Idée de repas introuvable." },
+  MEAL_003: { status: 404, message: "Profil de génération introuvable." },
+  MEAL_004: { status: 404, message: "Règle introuvable." },
+  MEAL_005: { status: 409, message: "Un espace garde toujours au moins un profil de génération." },
+  MEAL_006: {
+    status: 409,
+    message: "Choisissez le profil qui devient le profil par défaut avant de supprimer celui-ci.",
+  },
+  MEAL_007: { status: 409, message: "Nombre maximal de profils atteint pour cet espace." },
+  MEAL_008: { status: 409, message: "Nombre maximal de règles atteint pour ce profil." },
 
   // --- Administration de la plateforme ---
   ADMIN_001: { status: 401, message: "Identifiants incorrects." },

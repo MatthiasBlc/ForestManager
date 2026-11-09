@@ -160,3 +160,182 @@ export type MealIdea = z.infer<typeof mealIdeaSchema>;
 /** Recette enregistree depuis l'idee : creee par le lecteur dans cet espace. */
 export const convertMealIdeaBodySchema = z.strictObject({ recipeId: z.uuid() });
 export type ConvertMealIdeaBody = z.infer<typeof convertMealIdeaBodySchema>;
+
+// --- Profils de generation [D113, D114, D183, D184] ---
+
+export const PROFILE_NAME_MAX = 60;
+export const PROFILE_DESCRIPTION_MAX = 300;
+export const MAX_PROFILES = 20;
+export const MAX_RULES = 30;
+/** Delai entre deux fois la meme recette, ou deux recettes d'un meme tag (jours). */
+export const MAX_COOLDOWN_DAYS = 30;
+/** Une frequence porte au plus sur une periode de 31 jours a deux repas. */
+export const MAX_FREQUENCY = 62;
+
+/** Poids en cinq paliers [D184] : Jamais, Moins souvent, Normal, Plus souvent, Beaucoup plus. */
+export const WEIGHT_STEPS = [0, 0.5, 1, 1.5, 2] as const;
+
+/** Poids de 0 a 2 par pas de 0,05 (jauge 0 a 200 % du mode avance). */
+export const ruleWeightSchema = z
+  .number()
+  .min(0)
+  .max(2)
+  .refine((weight) => Math.abs(weight * 20 - Math.round(weight * 20)) < 1e-9, "step of 0.05");
+
+export const FREQUENCY_PERS = ["PER_WEEK", "PER_PERIOD"] as const;
+export const frequencyPerSchema = z.enum(FREQUENCY_PERS);
+export type FrequencyPer = z.infer<typeof frequencyPerSchema>;
+
+const profileNameSchema = z.string().trim().min(1).max(PROFILE_NAME_MAX);
+/** Absente : inchangee ; vide ou null : effacee. */
+const profileDescriptionSchema = z
+  .string()
+  .trim()
+  .max(PROFILE_DESCRIPTION_MAX)
+  .nullable()
+  .optional()
+  .transform((text) => (text === undefined ? undefined : text || null));
+
+export const createGenerationProfileBodySchema = z.strictObject({
+  name: profileNameSchema,
+  description: profileDescriptionSchema,
+});
+export type CreateGenerationProfileBody = z.input<typeof createGenerationProfileBodySchema>;
+
+export const updateGenerationProfileBodySchema = z.strictObject({
+  name: profileNameSchema.optional(),
+  description: profileDescriptionSchema,
+  cooldownDays: z.int().min(0).max(MAX_COOLDOWN_DAYS).optional(),
+  useIdeas: z.boolean().optional(),
+  /** Devenir le profil par defaut ; l'ancien cesse de l'etre [D183]. */
+  isDefault: z.literal(true).optional(),
+});
+export type UpdateGenerationProfileBody = z.input<typeof updateGenerationProfileBodySchema>;
+
+/** Supprimer le profil par defaut : designer celui qui le remplace [D183]. */
+export const deleteGenerationProfileBodySchema = z.strictObject({ defaultId: z.uuid().optional() });
+
+const ruleTargetBodySchema = z.discriminatedUnion("kind", [
+  z.strictObject({ kind: z.literal("TAG"), tagId: z.uuid() }),
+  z.strictObject({ kind: z.literal("RECIPE"), recipeId: z.uuid() }),
+]);
+
+const frequencySchema = z.int().min(1).max(MAX_FREQUENCY).nullable().default(null);
+
+/**
+ * Regle sur un tag ou une recette. Frequences et delai de tag : regles de tag
+ * seulement. Une frequence sans periode compte par semaine (comme la V1).
+ */
+export const ruleBodySchema = z
+  .strictObject({
+    target: ruleTargetBodySchema,
+    weight: ruleWeightSchema.default(1),
+    /** null : midi et soir. */
+    mealTime: mealTimeSchema.nullable().default(null),
+    frequencyMin: frequencySchema,
+    frequencyMax: frequencySchema,
+    frequencyPer: frequencyPerSchema.nullable().default(null),
+    tagCooldownDays: z.int().min(1).max(MAX_COOLDOWN_DAYS).nullable().default(null),
+  })
+  .refine(
+    (rule) =>
+      rule.target.kind === "TAG" ||
+      (rule.frequencyMin === null && rule.frequencyMax === null && rule.tagCooldownDays === null),
+    "frequency and tag cooldown apply to tag rules only"
+  )
+  .refine(
+    (rule) =>
+      rule.frequencyMin === null ||
+      rule.frequencyMax === null ||
+      rule.frequencyMin <= rule.frequencyMax,
+    "frequencyMin must not exceed frequencyMax"
+  )
+  .transform((rule) => {
+    const bounded = rule.frequencyMin !== null || rule.frequencyMax !== null;
+    return { ...rule, frequencyPer: bounded ? (rule.frequencyPer ?? "PER_WEEK") : null };
+  });
+export type RuleBody = z.input<typeof ruleBodySchema>;
+
+/** Tag tel que le voit un profil : un tag fusionne suit sa cible ; supprime, la regle dort [D184]. */
+export const ruleTagSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  status: z.enum(["ACTIVE", "DELETED"]),
+});
+export type RuleTag = z.infer<typeof ruleTagSchema>;
+
+export const ruleSchema = z.object({
+  id: z.uuid(),
+  target: z.discriminatedUnion("kind", [
+    z.object({ kind: z.literal("TAG"), tag: ruleTagSchema }),
+    z.object({
+      kind: z.literal("RECIPE"),
+      recipe: z.object({
+        id: z.uuid(),
+        /** null : recette plus visible dans l'espace (la regle dort). */
+        title: z.string().nullable(),
+      }),
+    }),
+  ]),
+  weight: z.number(),
+  mealTime: mealTimeSchema.nullable(),
+  frequencyMin: z.int().nullable(),
+  frequencyMax: z.int().nullable(),
+  frequencyPer: frequencyPerSchema.nullable(),
+  tagCooldownDays: z.int().nullable(),
+});
+export type Rule = z.infer<typeof ruleSchema>;
+
+/** Case de la grille jours x repas [D114] ; une case absente est generee. */
+export const gridCellSchema = z.discriminatedUnion("state", [
+  z.object({ weekday: weekdaySchema, mealTime: mealTimeSchema, state: z.literal("EXCLUDED") }),
+  z.object({
+    weekday: weekdaySchema,
+    mealTime: mealTimeSchema,
+    state: z.literal("PINNED"),
+    tag: ruleTagSchema,
+  }),
+]);
+export type GridCell = z.infer<typeof gridCellSchema>;
+
+export const putGridBodySchema = z.strictObject({
+  cells: z
+    .array(
+      z.discriminatedUnion("state", [
+        z.strictObject({
+          weekday: weekdaySchema,
+          mealTime: mealTimeSchema,
+          state: z.literal("EXCLUDED"),
+        }),
+        z.strictObject({
+          weekday: weekdaySchema,
+          mealTime: mealTimeSchema,
+          state: z.literal("PINNED"),
+          tagId: z.uuid(),
+        }),
+      ])
+    )
+    .max(WEEKDAYS.length * MEAL_TIMES.length)
+    .refine(
+      (cells) => new Set(cells.map((c) => `${c.weekday}/${c.mealTime}`)).size === cells.length,
+      "one state per cell"
+    ),
+});
+export type PutGridBody = z.infer<typeof putGridBodySchema>;
+
+export const generationProfileSummarySchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  description: z.string().nullable(),
+  isDefault: z.boolean(),
+  ruleCount: z.int(),
+});
+export type GenerationProfileSummary = z.infer<typeof generationProfileSummarySchema>;
+
+export const generationProfileSchema = generationProfileSummarySchema.extend({
+  cooldownDays: z.int(),
+  useIdeas: z.boolean(),
+  rules: z.array(ruleSchema),
+  grid: z.array(gridCellSchema),
+});
+export type GenerationProfile = z.infer<typeof generationProfileSchema>;

@@ -4,8 +4,10 @@
 import type { ConvertMealIdeaBody, MealIdea, mealIdeaBodySchema } from "@fm/shared";
 import type { z } from "zod";
 
+import type { Context } from "../../core/context.ts";
 import type { Db, Prisma } from "../../core/db/client.ts";
 import { AppError } from "../../core/http/errors.ts";
+import { requiredService } from "../services.ts";
 
 type IdeaInput = z.output<typeof mealIdeaBodySchema>;
 
@@ -107,19 +109,18 @@ export async function deleteIdea(
  * dans cet espace (il en est l'auteur, D182) ; l'idee est alors retiree.
  */
 export async function convertIdea(
-  db: Db,
+  ctx: Context,
   spaceId: string,
   ideaId: string,
   viewer: IdeaViewer,
   body: ConvertMealIdeaBody
 ): Promise<void> {
-  await findIdea(db, spaceId, ideaId);
-  const recipe = await db.recipe.findFirst({
-    where: { id: body.recipeId, homeSpaceId: spaceId, authorId: viewer.id, deletedAt: null },
-    select: { id: true },
-  });
-  if (!recipe) throw new AppError("RECIPE_001");
-  await retire(db, ideaId);
+  await findIdea(ctx.db, spaceId, ideaId);
+  const catalog = requiredService(ctx, "recipes.catalog");
+  if (!(await catalog.isAuthoredIn(spaceId, viewer.id, body.recipeId))) {
+    throw new AppError("RECIPE_001");
+  }
+  await retire(ctx.db, ideaId);
 }
 
 async function retire(db: Db, ideaId: string): Promise<void> {

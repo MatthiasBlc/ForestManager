@@ -20,5 +20,12 @@ export function recipeCatalog(ctx: Context): RecipeCatalog {
         ])
       );
     },
+    async isAuthoredIn(spaceId, authorId, recipeId) {
+      const recipe = await ctx.db.recipe.findFirst({
+        where: { id: recipeId, homeSpaceId: spaceId, authorId, deletedAt: null },
+        select: { id: true },
+      });
+      return recipe !== null;
+    },
   };
 }

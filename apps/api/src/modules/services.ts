@@ -23,6 +23,8 @@ export interface RecipeCatalog {
     viewerId: string,
     ids: readonly string[]
   ): Promise<Map<string, CatalogRecipe>>;
+  /** Recette non supprimee, nee dans l'espace et ecrite par cet auteur (idee convertie, D182). */
+  isAuthoredIn(spaceId: string, authorId: string, recipeId: string): Promise<boolean>;
 }
 
 /** Compteurs du planning sur une recette [D39]. */

@@ -2,6 +2,14 @@
 // profils et generation. Statut "bientot" jusqu'a la cloture de C5.
 import {
   convertMealIdeaBodySchema,
+  createGenerationProfileBodySchema,
+  deleteGenerationProfileBodySchema,
+  generationProfileSchema,
+  generationProfileSummarySchema,
+  putGridBodySchema,
+  ruleBodySchema,
+  ruleSchema,
+  updateGenerationProfileBodySchema,
   listSchema,
   mealIdeaBodySchema,
   mealIdeaSchema,
@@ -31,11 +39,26 @@ import { provide } from "../services.ts";
 import { convertIdea, createIdea, deleteIdea, listIdeas, updateIdea } from "./ideas.ts";
 import { clearMeal, listMeals, putMeal, recipeStats, swapMeals } from "./meals.ts";
 import { MEAL_PLAN_PERMISSIONS } from "./permissions.ts";
+import {
+  addRule,
+  createProfile,
+  deleteProfile,
+  deleteRule,
+  duplicateProfile,
+  listProfiles,
+  putGrid,
+  readProfile,
+  readRule,
+  updateProfile,
+  updateRule,
+} from "./profiles.ts";
 import { readSettings, saveSettings, toSettings } from "./settings.ts";
 
 /** Case du calendrier dans l'URL : `/meals/2026-11-10/DINNER`. */
 const cellParamsSchema = z.object({ date: planDateSchema, mealTime: mealTimeSchema });
 const ideaParamsSchema = z.object({ ideaId: z.uuid() });
+const profileParamsSchema = z.object({ profileId: z.uuid() });
+const ruleParamsSchema = z.object({ profileId: z.uuid(), ruleId: z.uuid() });
 
 function rightsOf(req: Request) {
   return {
@@ -161,10 +184,124 @@ function mealPlanRouter(ctx: Context): Router {
     handle(
       { params: ideaParamsSchema, body: convertMealIdeaBodySchema },
       async ({ params, body }, req, res) => {
-        await convertIdea(ctx.db, spaceOf(req), params.ideaId, viewerOf(req), body);
+        await convertIdea(ctx, spaceOf(req), params.ideaId, viewerOf(req), body);
         res.status(204).end();
       }
     )
+  );
+
+  // --- Profils de generation [D58, D114, D183, D184] : moderateurs et OWNER ---
+
+  const manage = requirePermission("meal-plan.manage");
+  const profile = (req: Request, profileId: string) =>
+    readProfile(ctx, spaceOf(req), currentUserId(req), profileId);
+
+  router.get("/profiles", manage, async (req, res) => {
+    const data = await listProfiles(ctx.db, spaceOf(req));
+    reply(res, listSchema(generationProfileSummarySchema), { data });
+  });
+
+  router.post(
+    "/profiles",
+    manage,
+    handle({ body: createGenerationProfileBodySchema }, async ({ body }, req, res) => {
+      const id = await createProfile(ctx.db, spaceOf(req), body);
+      reply(res, generationProfileSchema, await profile(req, id), 201);
+    })
+  );
+
+  router.get(
+    "/profiles/:profileId",
+    manage,
+    handle({ params: profileParamsSchema }, async ({ params }, req, res) => {
+      reply(res, generationProfileSchema, await profile(req, params.profileId));
+    })
+  );
+
+  router.patch(
+    "/profiles/:profileId",
+    manage,
+    handle(
+      { params: profileParamsSchema, body: updateGenerationProfileBodySchema },
+      async ({ params, body }, req, res) => {
+        await updateProfile(ctx.db, spaceOf(req), params.profileId, body);
+        reply(res, generationProfileSchema, await profile(req, params.profileId));
+      }
+    )
+  );
+
+  router.delete(
+    "/profiles/:profileId",
+    manage,
+    handle(
+      { params: profileParamsSchema, body: deleteGenerationProfileBodySchema },
+      async ({ params, body }, req, res) => {
+        await deleteProfile(ctx.db, spaceOf(req), params.profileId, body.defaultId);
+        res.status(204).end();
+      }
+    )
+  );
+
+  router.post(
+    "/profiles/:profileId/duplicate",
+    manage,
+    handle({ params: profileParamsSchema }, async ({ params }, req, res) => {
+      const id = await duplicateProfile(ctx.db, spaceOf(req), params.profileId);
+      reply(res, generationProfileSchema, await profile(req, id), 201);
+    })
+  );
+
+  router.put(
+    "/profiles/:profileId/grid",
+    manage,
+    handle(
+      { params: profileParamsSchema, body: putGridBodySchema },
+      async ({ params, body }, req, res) => {
+        await putGrid(ctx.db, spaceOf(req), params.profileId, body);
+        reply(res, generationProfileSchema, await profile(req, params.profileId));
+      }
+    )
+  );
+
+  router.post(
+    "/profiles/:profileId/rules",
+    manage,
+    handle(
+      { params: profileParamsSchema, body: ruleBodySchema },
+      async ({ params, body }, req, res) => {
+        const viewerId = currentUserId(req);
+        const id = await addRule(ctx, spaceOf(req), viewerId, params.profileId, body);
+        reply(
+          res,
+          ruleSchema,
+          await readRule(ctx, spaceOf(req), viewerId, params.profileId, id),
+          201
+        );
+      }
+    )
+  );
+
+  router.put(
+    "/profiles/:profileId/rules/:ruleId",
+    manage,
+    handle(
+      { params: ruleParamsSchema, body: ruleBodySchema },
+      async ({ params, body }, req, res) => {
+        const viewerId = currentUserId(req);
+        const { profileId, ruleId } = params;
+        await updateRule(ctx, spaceOf(req), viewerId, profileId, ruleId, body);
+        reply(res, ruleSchema, await readRule(ctx, spaceOf(req), viewerId, profileId, ruleId));
+      }
+    )
+  );
+
+  router.delete(
+    "/profiles/:profileId/rules/:ruleId",
+    manage,
+    handle({ params: ruleParamsSchema }, async ({ params }, req, res) => {
+      await deleteRule(ctx.db, spaceOf(req), params.profileId, params.ruleId);
+      res.status(204).end();
+    })
   );
 
   return router;
