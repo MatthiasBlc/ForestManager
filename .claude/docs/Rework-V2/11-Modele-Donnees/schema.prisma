@@ -964,6 +964,7 @@ model Notification {
   data       Json? // parametres du message traduit cote client [D34]
   url        String?
   groupKey   String?
+  count      Int       @default(1) // evenements regroupes sur 24 h [D190]
   readAt     DateTime?
   createdAt  DateTime  @default(now())
 
