@@ -21,6 +21,7 @@ import { AppError } from "../../core/http/errors.ts";
 import { targetActor, viewsOf } from "./adaptation.ts";
 import { linksOf, resolveContent, snapshotOf } from "./content.ts";
 import { contentOf, snapshotAt, snapshotSchema, type Snapshot } from "./revisions.ts";
+import { suggestionCreated, suggestionDecided } from "./events.ts";
 import { decision } from "./sharing.ts";
 import {
   createRecipe,
@@ -258,12 +259,14 @@ export async function createSuggestion(
     });
     // Relu a part : un create qui relit ses relations lance des requetes paralleles
     // dans sa transaction implicite (avertissement de pg).
-    return toSummary(
+    const summary = toSummary(
       await ctx.db.recipeSuggestion.findUniqueOrThrow({
         where: { id: row.id },
         select: suggestionSelect,
       })
     );
+    await suggestionCreated(ctx, recipe, row.id, actor.userId);
+    return summary;
   } catch (error) {
     // Index partiel : une seule suggestion en attente par personne et par recette.
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
@@ -316,6 +319,7 @@ export async function acceptSuggestion(
         decidedAt: new Date(),
       }),
   });
+  await suggestionDecided(ctx, row, recipe, true, actor.userId);
   return getRecipe(ctx, actor, recipeId);
 }
 
@@ -326,7 +330,7 @@ export async function rejectSuggestion(
   suggestionId: string,
   message: string | undefined
 ): Promise<void> {
-  const { row, decides } = await findSuggestion(ctx, actor, recipeId, suggestionId);
+  const { recipe, row, decides } = await findSuggestion(ctx, actor, recipeId, suggestionId);
   if (!decides) throw new AppError("SPACE_002");
   await close(ctx.db, row.id, "PENDING", {
     status: "REJECTED",
@@ -334,6 +338,7 @@ export async function rejectSuggestion(
     decidedAt: new Date(),
     decisionMessage: message || null,
   });
+  await suggestionDecided(ctx, row, recipe, false, actor.userId, message);
 }
 
 export async function withdrawSuggestion(

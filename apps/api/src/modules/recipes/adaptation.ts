@@ -12,6 +12,7 @@ import {
 
 import type { Context } from "../../core/context.ts";
 import { AppError } from "../../core/http/errors.ts";
+import { recipeAdapted } from "./events.ts";
 import { isModuleActive } from "../../core/modules/guards.ts";
 import { loadAccess } from "../../core/spaces/access.ts";
 import { LOCALE, linksOf } from "./content.ts";
@@ -53,12 +54,14 @@ export async function adaptRecipe(
     globalTagIds: original.globalTags.map((link) => link.tag.id),
     spaceTagIds: [],
   });
-  return createRecipe(ctx, target, content, {
+  const adapted = await createRecipe(ctx, target, content, {
     adaptedFromId: original.id,
     adaptedFromRevision: original.currentRevision,
     keepLinks: new Set(linksOf(content.blocks)),
     imageKey: original.imageKey,
   });
+  await recipeAdapted(ctx, original, targetSpaceId, actor.userId);
+  return adapted;
 }
 
 /** Instantanes rendus lisibles : noms des ingredients, titres des recettes liees. */

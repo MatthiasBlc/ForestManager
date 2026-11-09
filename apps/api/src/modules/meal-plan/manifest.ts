@@ -44,6 +44,7 @@ import { provide } from "../services.ts";
 import { applyGeneration, previewGeneration, suggestMeal } from "./generation.ts";
 import { convertIdea, createIdea, deleteIdea, listIdeas, updateIdea } from "./ideas.ts";
 import { clearMeal, listMeals, putMeal, recipeStats, swapMeals } from "./meals.ts";
+import { mealChanged, planGenerated } from "./events.ts";
 import { MEAL_PLAN_PERMISSIONS } from "./permissions.ts";
 import {
   addRule,
@@ -118,6 +119,7 @@ function mealPlanRouter(ctx: Context): Router {
     requirePermission("meal-plan.edit"),
     handle({ body: swapMealsBodySchema }, async ({ body }, req, res) => {
       const data = await swapMeals(ctx, spaceOf(req), currentUserId(req), body);
+      await mealChanged(ctx, spaceOf(req), currentUserId(req));
       reply(res, listSchema(mealSchema), { data });
     })
   );
@@ -128,7 +130,9 @@ function mealPlanRouter(ctx: Context): Router {
     handle(
       { params: cellParamsSchema, body: putMealBodySchema },
       async ({ params, body }, req, res) => {
-        reply(res, mealSchema, await putMeal(ctx, spaceOf(req), currentUserId(req), params, body));
+        const meal = await putMeal(ctx, spaceOf(req), currentUserId(req), params, body);
+        await mealChanged(ctx, spaceOf(req), currentUserId(req));
+        reply(res, mealSchema, meal);
       }
     )
   );
@@ -148,6 +152,7 @@ function mealPlanRouter(ctx: Context): Router {
     requirePermission("meal-plan.edit"),
     handle({ params: cellParamsSchema }, async ({ params }, req, res) => {
       await clearMeal(ctx, spaceOf(req), params);
+      await mealChanged(ctx, spaceOf(req), currentUserId(req));
       res.status(204).end();
     })
   );
@@ -167,6 +172,12 @@ function mealPlanRouter(ctx: Context): Router {
     requirePermission("meal-plan.manage"),
     handle({ body: applyGenerationBodySchema }, async ({ body }, req, res) => {
       const result = await applyGeneration(ctx, spaceOf(req), currentUserId(req), body);
+      await planGenerated(
+        ctx,
+        spaceOf(req),
+        currentUserId(req),
+        result.data.map((meal) => meal.date)
+      );
       reply(res, applyGenerationResultSchema, result);
     })
   );

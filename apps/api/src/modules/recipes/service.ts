@@ -8,6 +8,7 @@ import { AppError } from "../../core/http/errors.ts";
 import { copyImage } from "../../core/storage/images.ts";
 import { optionalService } from "../services.ts";
 import { assertComposition, countUsedBy, loadLinks } from "./composition.ts";
+import { recipeCreated } from "./events.ts";
 import {
   blocksCreate,
   checkTags,
@@ -233,6 +234,12 @@ export async function createRecipe(
     const imageKey = await copyImage(ctx, adaptation.imageKey, `recipes/${id}`);
     if (imageKey) await ctx.db.recipe.update({ where: { id }, data: { imageKey } });
   }
+  await recipeCreated(ctx, {
+    id,
+    title: content.title,
+    authorId: actor.userId,
+    homeSpaceId: actor.spaceId,
+  });
   return getRecipe(ctx, actor, id);
 }
 

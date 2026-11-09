@@ -14,6 +14,7 @@ import {
 import type { Context } from "../../core/context.ts";
 import { Prisma } from "../../core/db/client.ts";
 import { AppError } from "../../core/http/errors.ts";
+import { recipeShared, shareDecided, shareRequested } from "./events.ts";
 import type { MemberLeftReason } from "../../core/modules/hooks.ts";
 import { canModerate } from "./permissions.ts";
 import {
@@ -217,7 +218,8 @@ export async function setShares(
   const mine = new Set(await mySpaceIds(ctx.db, actor.userId));
   if ([...wanted].some((id) => !mine.has(id))) throw new AppError("SPACE_001");
 
-  await ctx.db.$transaction(async (tx) => {
+  const added = await ctx.db.$transaction(async (tx) => {
+    const into: string[] = [];
     for (const spaceId of mine) {
       if (spaceId === recipe.homeSpaceId) continue;
       const visible = await isVisibleIn(tx, recipe, spaceId);
@@ -226,11 +228,14 @@ export async function setShares(
           sharedById: actor.userId,
           approvedById: null,
         });
+        into.push(spaceId);
       } else if (!wanted.has(spaceId) && visible) {
         await unshareFrom(tx, recipe.id, spaceId, actor.userId);
       }
     }
+    return into;
   });
+  for (const spaceId of added) await recipeShared(ctx, recipe, spaceId, actor.userId);
   return getSharing(ctx, actor, recipeId);
 }
 
@@ -281,6 +286,7 @@ export async function requestShare(
         approvedById: decides ? actor.userId : null,
       })
     );
+    await recipeShared(ctx, recipe, target, actor.userId);
     return { status: "SHARED", created: true };
   }
 
@@ -304,6 +310,7 @@ export async function requestShare(
     }
     throw error;
   }
+  await shareRequested(ctx, recipe, target, actor.userId);
   return { status: "PENDING", created: true };
 }
 
@@ -401,7 +408,7 @@ export async function decideShareRequest(
       targetSpaceId: true,
       requesterId: true,
       targetSpace: { select: { deletedAt: true } },
-      recipe: { select: { id: true, authorId: true, homeSpaceId: true } },
+      recipe: { select: { id: true, title: true, authorId: true, homeSpaceId: true } },
     },
   });
   if (!request) throw new AppError("RECIPE_010");
@@ -416,6 +423,7 @@ export async function decideShareRequest(
 
   if (!choice.approve) {
     await close("REJECTED");
+    await shareDecided(ctx, request, request.recipe, false, userId);
     return;
   }
   const stillThere =
@@ -425,8 +433,9 @@ export async function decideShareRequest(
     await close("CANCELLED");
     throw new AppError("RECIPE_010");
   }
-  await ctx.db.$transaction(async (tx) => {
-    if (!(await isVisibleIn(tx, request.recipe, request.targetSpaceId))) {
+  const shared = await ctx.db.$transaction(async (tx) => {
+    const visible = await isVisibleIn(tx, request.recipe, request.targetSpaceId);
+    if (!visible) {
       await shareInto(tx, request.recipe, request.targetSpaceId, {
         sharedById: request.requesterId,
         approvedById: userId,
@@ -439,7 +448,12 @@ export async function decideShareRequest(
         data: { allowMembersToShare: choice.trustMembers },
       });
     }
+    return !visible;
   });
+  await shareDecided(ctx, request, request.recipe, true, userId);
+  if (shared) {
+    await recipeShared(ctx, request.recipe, request.targetSpaceId, request.requesterId);
+  }
 }
 
 // --- Depart et "Mes recettes" [D82, D84] ---
