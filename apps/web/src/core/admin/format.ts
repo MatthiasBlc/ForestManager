@@ -28,3 +28,11 @@ export function agoLabel(iso: string, now = new Date()): string {
   if (days === 1) return "hier";
   return `il y a ${String(days)} jours`;
 }
+
+/** Nombre saisi a la francaise ("14,8") ; null si vide ou invalide. */
+export function parseDecimal(value: string): number | null {
+  const text = value.trim().replace(",", ".");
+  if (text === "") return null;
+  const number = Number(text);
+  return Number.isFinite(number) ? number : null;
+}

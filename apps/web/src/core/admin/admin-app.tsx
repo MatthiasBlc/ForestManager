@@ -7,9 +7,13 @@ import { Skeleton } from "../../ui/display.tsx";
 import { AdminDashboardPage } from "./admin-dashboard-page.tsx";
 import { AdminLayout } from "./admin-layout.tsx";
 import { AdminLoginPage } from "./admin-login-page.tsx";
+import { AislesPage } from "./aisles-page.tsx";
+import { IngredientsPage } from "./ingredients-page.tsx";
 import { ModuleRequestsPage } from "./module-requests-page.tsx";
 import { ModulesCatalogPage } from "./modules-catalog-page.tsx";
 import { adminMeQuery } from "./queries.ts";
+import { TagsPage } from "./tags-page.tsx";
+import { UnitsPage } from "./units-page.tsx";
 
 export function AdminApp() {
   const me = useQuery(adminMeQuery);
@@ -21,6 +25,10 @@ export function AdminApp() {
         <Route index element={<AdminDashboardPage />} />
         <Route path="requests" element={<ModuleRequestsPage />} />
         <Route path="modules" element={<ModulesCatalogPage />} />
+        <Route path="ingredients" element={<IngredientsPage />} />
+        <Route path="units" element={<UnitsPage />} />
+        <Route path="aisles" element={<AislesPage />} />
+        <Route path="tags" element={<TagsPage />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Route>
     </Routes>

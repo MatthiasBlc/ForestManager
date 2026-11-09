@@ -593,3 +593,16 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
   - **Module par defaut** (Recettes) : ni statut modifiable, ni acces retirable (`ADMIN_007`).
   - **Refus** : motif obligatoire (500 caracteres), lu par l'OWNER dans les modules de son espace ; la notification viendra en C6 (D172). Une demande deja traitee ou annulee repond `ADMIN_006`.
   - **Recherche d'espace** pour accorder : `GET /admin/spaces/lookup` (espaces groupe actifs, nom et OWNER, 10 resultats), reprise par la liste des espaces en C4.5.
+
+### D176 - Referentiels cote admin : regles de realisation - VALIDEE (2026-11-09, realisation C4.3)
+
+- **Constat** : le plan C4 fixe les ecrans A05 a A08 et la fusion D120, sans dire ce que garde la cible d'une fusion, quand un nouveau est un "doublon probable", ni comment renommer un tag global sans que le seed le recree.
+- **Choix** :
+  - **Doublon probable** : nouvel ingredient dont le nom francais ressemble (pg_trgm, similarite >= 0,45) a celui d'un ingredient verifie. Le detail propose les 5 ingredients les plus proches comme cibles de fusion, plus une recherche.
+  - **Fusion d'ingredients** : la cible garde ses propres attributs (rien n'est copie du fusionne : rayon, unite, poids, anglais) ; les synonymes du fusionne passent a la cible (un seul niveau de synonymes). La recherche de l'admin trouve un ingredient par ses synonymes.
+  - **Ajout par l'admin** : l'ingredient est cree verifie (ACTIVE). "Marquer comme verifie" enregistre le formulaire et verifie dans le meme appel.
+  - **Poids par unite** (D46) : seulement pour les unites de pieces (COUNT) ; masses et volumes se convertissent deja. Un champ par unite de pieces, vide = pas de poids.
+  - **Codes stables** : le code d'une unite, d'un rayon (tire du nom a la creation) et le slug d'un tag global ne changent plus ; renommer ne touche que les noms. Le seed retrouve donc tout et ne recree ni un tag renomme ni un tag supprime.
+  - **Tags globaux** : nom unique sans casse ni accents parmi les tags vivants (`ADMIN_009`) ; fusionner deplace les recettes et masque le tag (`mergedIntoId`, `deletedAt`) ; supprimer le retire de toutes les recettes.
+  - **Rayons** : l'ordre s'enregistre en entier (`PUT /admin/aisles/order`, chaque rayon une fois, `ADMIN_012`) ; les boutons Monter / Descendre l'envoient.
+  - **Testeur d'addition** (A06) : `addQuantities` de `packages/shared/src/units/` (masses et volumes par la base puis unite la plus lisible, pieces en grammes avec le poids de l'ingredient, sinon une ligne par unite), le calcul que reprendra la liste de courses.

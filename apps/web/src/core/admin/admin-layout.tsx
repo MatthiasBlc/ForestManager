@@ -31,6 +31,15 @@ const ADMIN_NAV: readonly { label: string; items: readonly NavEntry[] }[] = [
       { to: "/admin/modules", label: "Catalogue", icon: "sparkles" },
     ],
   },
+  {
+    label: "Référentiels",
+    items: [
+      { to: "/admin/ingredients", label: "Ingrédients", icon: "chef-hat" },
+      { to: "/admin/units", label: "Unités", icon: "ruler" },
+      { to: "/admin/aisles", label: "Rayons", icon: "shopping-basket" },
+      { to: "/admin/tags", label: "Tags globaux", icon: "tag" },
+    ],
+  },
 ];
 
 /** Minutes restantes, recalculees toutes les 15 s ; a zero, la session est relue. */
