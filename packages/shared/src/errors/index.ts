@@ -142,6 +142,15 @@ const DEFINITIONS = {
     message: "Rayon ou unité invalide (le poids par unité ne vaut que pour les pièces).",
   },
   ADMIN_012: { status: 422, message: "L'ordre doit contenir chaque rayon une seule fois." },
+  ADMIN_013: {
+    status: 403,
+    message: "Accès de modération requis : ouvrez-le avec un motif (30 minutes, lecture seule).",
+  },
+  ADMIN_014: { status: 409, message: "Cette recette n'est pas partagée dans cet espace." },
+  ADMIN_015: {
+    status: 409,
+    message: "Cet espace n'est pas en suppression ou ne peut plus être restauré.",
+  },
 } as const satisfies Record<string, ErrorDefinition>;
 
 export type ErrorCode = keyof typeof DEFINITIONS;

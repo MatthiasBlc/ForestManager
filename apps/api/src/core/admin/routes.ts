@@ -18,6 +18,7 @@ import { authenticateAdmin, completeLogin, loginStep } from "./accounts.ts";
 import { audit } from "./audit.ts";
 import { adminModulesRouter } from "./modules-routes.ts";
 import { adminReferentialsRouter } from "./referentials-routes.ts";
+import { adminSpacesRouter } from "./spaces-routes.ts";
 import { adminUsersRouter } from "./users-routes.ts";
 import {
   ADMIN_COOKIE_PATH,
@@ -118,6 +119,7 @@ export function adminRouter(ctx: Context, rateLimit: boolean): Router {
   router.use(adminModulesRouter(ctx));
   router.use(adminReferentialsRouter(ctx));
   router.use(adminUsersRouter(ctx));
+  router.use(adminSpacesRouter(ctx));
 
   // Une route admin inconnue ne tombe jamais dans l'API des utilisateurs.
   router.use(() => {

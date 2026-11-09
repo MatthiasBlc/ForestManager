@@ -9,3 +9,4 @@ export * from "./storage.ts";
 export * from "./admin.ts";
 export * from "./admin-referentials.ts";
 export * from "./admin-users.ts";
+export * from "./admin-spaces.ts";

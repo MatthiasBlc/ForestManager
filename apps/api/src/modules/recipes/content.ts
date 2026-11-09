@@ -381,6 +381,7 @@ export function toRecipe(
     usedBy,
     homeSpace: row.homeSpace,
     ...extra,
+    hidden: row.hiddenAt ? { reason: row.hiddenReason ?? "" } : null,
     can,
   };
 }

@@ -215,6 +215,7 @@ export function buildRecipe({ can, ...over }: RecipeOverrides = {}): Recipe {
     sharedIn: [],
     adaptedFrom: null,
     adaptationCount: 0,
+    hidden: null,
     title: "Gratin de pâtes",
     imageUrl: null,
     yieldQuantity: 4,

@@ -262,6 +262,8 @@ export const recipeSchema = z.object({
     .nullable(),
   /** Adaptations non supprimees de cette recette [F-REC-13]. */
   adaptationCount: z.number().int(),
+  /** Masquee par la moderation [D178] : seul son auteur la voit encore, avec le motif. */
+  hidden: z.object({ reason: z.string() }).nullable(),
   /** Droits de l'utilisateur courant sur cette recette, dans cet espace. */
   can: z.object({
     edit: z.boolean(),

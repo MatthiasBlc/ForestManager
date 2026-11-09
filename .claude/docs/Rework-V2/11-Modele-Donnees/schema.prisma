@@ -171,6 +171,7 @@ model Space {
   spaceTags          Tag[]
   recipeSpaceTags    RecipeSpaceTag[]
   suggestions        RecipeSuggestion[]
+  moderationAccesses ModerationAccess[]
   mealSettings       MealPlanSettings?
   mealPlans          MealPlan[]
   mealIdeas          MealIdea[]
@@ -556,6 +557,9 @@ model Recipe {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
   deletedAt           DateTime?
+  /// Masquee par la moderation [D122, D178] : invisible pour tous sauf son auteur, qui voit le motif.
+  hiddenAt            DateTime?
+  hiddenReason        String?
 
   homeSpace   Space    @relation("RecipeHomeSpace", fields: [homeSpaceId], references: [id])
   author      User     @relation("RecipeAuthor", fields: [authorId], references: [id])
@@ -1082,6 +1086,7 @@ model AdminUser {
   moduleGrants    SpaceModule[]
   requestsDecided ModuleAccessRequest[]
   auditLogs       AdminAuditLog[]
+  moderationAccesses ModerationAccess[]
 }
 
 model AdminSession {
@@ -1107,6 +1112,31 @@ model AdminAuditLog {
 
   @@index([adminId, createdAt])
   @@index([action, createdAt])
+}
+
+enum ModerationReason {
+  MEMBER_REPORT // signalement d'un membre
+  OWNER_REQUEST // demande de l'OWNER
+  EXTERNAL_REPORT // contenu illicite signale hors de l'application
+  OTHER
+}
+
+/// Acces de moderation d'un admin a un espace [D52, D121, D122, D178] : lecture
+/// seule pendant 30 minutes, motif obligatoire. C6 y branche la notification de l'OWNER.
+model ModerationAccess {
+  id        String           @id @default(uuid())
+  adminId   String
+  spaceId   String
+  reason    ModerationReason
+  note      String
+  openedAt  DateTime         @default(now())
+  expiresAt DateTime
+
+  admin AdminUser @relation(fields: [adminId], references: [id])
+  space Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([adminId, spaceId, expiresAt])
+  @@index([spaceId, openedAt])
 }
 
 model ChangelogEntry {

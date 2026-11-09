@@ -26,6 +26,13 @@ export interface RecipeActor {
   spaceId: string;
   /** Permission `recipes.moderate` dans cet espace (MOD, OWNER, OWNER du perso). */
   moderate: boolean;
+  /** Voit aussi les recettes masquees par la moderation (vue de moderation de l'admin). */
+  seesHidden?: boolean;
+}
+
+/** Recette masquee par la moderation [D178] : seul son auteur la voit encore. */
+export function notHiddenFrom(userId: string): Prisma.RecipeWhereInput {
+  return { OR: [{ hiddenAt: null }, { authorId: userId }] };
 }
 
 /** Recettes visibles dans un espace : origine ou partage actif [D03]. */
@@ -146,7 +153,11 @@ async function shareInfo(ctx: Context, actor: RecipeActor, recipeId: string): Pr
 
 export async function findVisible(ctx: Context, actor: RecipeActor, recipeId: string) {
   const row = await ctx.db.recipe.findFirst({
-    where: { id: recipeId, ...visibleIn(actor.spaceId) },
+    where: {
+      id: recipeId,
+      ...visibleIn(actor.spaceId),
+      ...(actor.seesHidden ? {} : { AND: [notHiddenFrom(actor.userId)] }),
+    },
     include: detailInclude(actor.spaceId),
   });
   if (!row) throw new AppError("RECIPE_001");

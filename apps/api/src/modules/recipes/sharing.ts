@@ -133,11 +133,12 @@ async function shareInto(
  * Retire `recipeId` de `spaceId`, ainsi que les sous-recettes partagees avec elle
  * qu'aucune autre recette visible dans l'espace n'utilise [12-Permissions, D26].
  */
-async function unshareFrom(
+/** Retire la recette (et les sous-recettes emportees) d'un espace ; `userId` null = moderation. */
+export async function unshareFrom(
   tx: Tx,
   recipeId: string,
   spaceId: string,
-  userId: string
+  userId: string | null
 ): Promise<void> {
   const removed = { removedAt: new Date(), removedById: userId };
   await tx.recipeShare.updateMany({ where: { recipeId, ...activeShare(spaceId) }, data: removed });

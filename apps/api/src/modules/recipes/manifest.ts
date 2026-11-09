@@ -85,7 +85,11 @@ function recipesRouter(ctx: Context): Router {
     "/",
     requirePermission("recipes.view"),
     handle({ query: recipeListQuerySchema }, async ({ query }, req, res) => {
-      reply(res, pageSchema(recipeSummarySchema), await listRecipes(ctx, spaceOf(req), query));
+      reply(
+        res,
+        pageSchema(recipeSummarySchema),
+        await listRecipes(ctx, spaceOf(req), currentUserId(req), query)
+      );
     })
   );
 
@@ -115,7 +119,8 @@ function recipesRouter(ctx: Context): Router {
     "/mine",
     requirePermission("recipes.view"),
     handle({ query: recipeListQuerySchema }, async ({ query }, req, res) => {
-      const page = await listRecipes(ctx, spaceOf(req), query, authoredBySql(currentUserId(req)));
+      const userId = currentUserId(req);
+      const page = await listRecipes(ctx, spaceOf(req), userId, query, authoredBySql(userId));
       reply(res, pageSchema(recipeSummarySchema), page);
     })
   );
