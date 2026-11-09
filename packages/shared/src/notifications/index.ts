@@ -136,3 +136,18 @@ export const updateSpaceNotificationPreferencesBodySchema = z.strictObject({
 });
 
 export const notificationSpaceParamsSchema = z.strictObject({ spaceId: uuidSchema });
+
+// --- Fil d'activite d'un espace (F-SPC-7) ---
+
+export const activityEventSchema = z.object({
+  id: uuidSchema,
+  type: z.string(),
+  moduleCode: z.string().nullable(),
+  /** null si le compte a ete supprime. */
+  actor: userSummarySchema.nullable(),
+  targetType: z.string().nullable(),
+  targetId: z.string().nullable(),
+  data: z.record(z.string(), z.unknown()).nullable(),
+  createdAt: isoDateTimeSchema,
+});
+export type ActivityEvent = z.infer<typeof activityEventSchema>;

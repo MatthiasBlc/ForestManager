@@ -58,6 +58,7 @@ const RESERVED_CODES = new Set([
   "invitations",
   "restore",
   "leave",
+  "activity",
 ]);
 
 /** Leve une erreur si un manifeste est invalide (l'API ne demarre pas). */

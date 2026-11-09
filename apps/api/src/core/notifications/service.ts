@@ -12,6 +12,7 @@ import {
 
 import type { Context } from "../context.ts";
 import type { Db, Prisma } from "../db/client.ts";
+import { afterDateCursor, decodeDateCursor, encodeDateCursor } from "../http/cursor.ts";
 import { AppError } from "../http/errors.ts";
 import type { ApiModule } from "../modules/registry.ts";
 import { loadAccess } from "../spaces/access.ts";
@@ -141,44 +142,15 @@ function visibleWhere(userId: string): Prisma.NotificationWhereInput {
   };
 }
 
-function encodeCursor(createdAt: Date, id: string): string {
-  return Buffer.from(JSON.stringify([createdAt.toISOString(), id])).toString("base64url");
-}
-
-function decodeCursor(raw: string): { createdAt: Date; id: string } {
-  try {
-    const parsed: unknown = JSON.parse(Buffer.from(raw, "base64url").toString("utf8"));
-    if (Array.isArray(parsed) && typeof parsed[0] === "string" && typeof parsed[1] === "string") {
-      const createdAt = new Date(parsed[0]);
-      if (!Number.isNaN(createdAt.getTime())) return { createdAt, id: parsed[1] };
-    }
-  } catch {
-    // curseur illisible : refuse ci-dessous
-  }
-  throw new AppError("VALIDATION_001", [
-    { location: "query", path: "cursor", code: "custom", message: "Curseur invalide" },
-  ]);
-}
-
 export async function listNotifications(
   ctx: Context,
   userId: string,
   query: CursorQuery
 ): Promise<{ data: Notification[]; nextCursor: string | null }> {
-  const cursor = query.cursor ? decodeCursor(query.cursor) : null;
+  const cursor = query.cursor ? decodeDateCursor(query.cursor) : null;
   const rows = await ctx.db.notification.findMany({
     where: {
-      AND: [
-        visibleWhere(userId),
-        cursor
-          ? {
-              OR: [
-                { createdAt: { lt: cursor.createdAt } },
-                { createdAt: cursor.createdAt, id: { lt: cursor.id } },
-              ],
-            }
-          : {},
-      ],
+      AND: [visibleWhere(userId), afterDateCursor(cursor)],
     },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     take: query.limit + 1,
@@ -211,7 +183,8 @@ export async function listNotifications(
       readAt: row.readAt?.toISOString() ?? null,
       createdAt: row.createdAt.toISOString(),
     })),
-    nextCursor: rows.length > query.limit && last ? encodeCursor(last.createdAt, last.id) : null,
+    nextCursor:
+      rows.length > query.limit && last ? encodeDateCursor(last.createdAt, last.id) : null,
   };
 }
 
