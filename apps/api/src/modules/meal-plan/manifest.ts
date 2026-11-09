@@ -1,7 +1,10 @@
 // Manifeste API du module Planning [D180 a D184] : calendrier continu, idees,
 // profils et generation. Statut "bientot" jusqu'a la cloture de C5.
 import {
+  convertMealIdeaBodySchema,
   listSchema,
+  mealIdeaBodySchema,
+  mealIdeaSchema,
   mealSchema,
   mealsQuerySchema,
   mealPlanSettingsSchema,
@@ -25,12 +28,14 @@ import {
 } from "../../core/modules/guards.ts";
 import type { ApiModule } from "../../core/modules/registry.ts";
 import { provide } from "../services.ts";
+import { convertIdea, createIdea, deleteIdea, listIdeas, updateIdea } from "./ideas.ts";
 import { clearMeal, listMeals, putMeal, recipeStats, swapMeals } from "./meals.ts";
 import { MEAL_PLAN_PERMISSIONS } from "./permissions.ts";
 import { readSettings, saveSettings, toSettings } from "./settings.ts";
 
 /** Case du calendrier dans l'URL : `/meals/2026-11-10/DINNER`. */
 const cellParamsSchema = z.object({ date: planDateSchema, mealTime: mealTimeSchema });
+const ideaParamsSchema = z.object({ ideaId: z.uuid() });
 
 function rightsOf(req: Request) {
   return {
@@ -106,6 +111,60 @@ function mealPlanRouter(ctx: Context): Router {
       await clearMeal(ctx, spaceOf(req), params);
       res.status(204).end();
     })
+  );
+
+  // --- Idees de repas [D182] ---
+
+  const viewerOf = (req: Request) => ({
+    id: currentUserId(req),
+    moderate: hasModulePermission(req, "meal-plan.ideas.moderate"),
+  });
+
+  router.get("/ideas", requirePermission("meal-plan.view"), async (req, res) => {
+    const data = await listIdeas(ctx.db, spaceOf(req), viewerOf(req));
+    reply(res, listSchema(mealIdeaSchema), { data });
+  });
+
+  router.post(
+    "/ideas",
+    requirePermission("meal-plan.ideas.create"),
+    handle({ body: mealIdeaBodySchema }, async ({ body }, req, res) => {
+      const idea = await createIdea(ctx.db, spaceOf(req), viewerOf(req), body);
+      reply(res, mealIdeaSchema, idea, 201);
+    })
+  );
+
+  router.put(
+    "/ideas/:ideaId",
+    requirePermission("meal-plan.ideas.create"),
+    handle(
+      { params: ideaParamsSchema, body: mealIdeaBodySchema },
+      async ({ params, body }, req, res) => {
+        const idea = await updateIdea(ctx.db, spaceOf(req), params.ideaId, viewerOf(req), body);
+        reply(res, mealIdeaSchema, idea);
+      }
+    )
+  );
+
+  router.delete(
+    "/ideas/:ideaId",
+    requirePermission("meal-plan.ideas.create"),
+    handle({ params: ideaParamsSchema }, async ({ params }, req, res) => {
+      await deleteIdea(ctx.db, spaceOf(req), params.ideaId, viewerOf(req));
+      res.status(204).end();
+    })
+  );
+
+  router.post(
+    "/ideas/:ideaId/convert",
+    requirePermission("meal-plan.ideas.create"),
+    handle(
+      { params: ideaParamsSchema, body: convertMealIdeaBodySchema },
+      async ({ params, body }, req, res) => {
+        await convertIdea(ctx.db, spaceOf(req), params.ideaId, viewerOf(req), body);
+        res.status(204).end();
+      }
+    )
   );
 
   return router;

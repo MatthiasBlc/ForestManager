@@ -119,6 +119,7 @@ const DEFINITIONS = {
 
   // --- Planning ---
   MEAL_001: { status: 409, message: "Ce repas n'est pas planifié dans cet espace." },
+  MEAL_002: { status: 404, message: "Idée de repas introuvable." },
 
   // --- Administration de la plateforme ---
   ADMIN_001: { status: 401, message: "Identifiants incorrects." },

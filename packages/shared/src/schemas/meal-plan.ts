@@ -126,3 +126,37 @@ export const mealSchema = z.object({
   updatedAt: z.iso.datetime(),
 });
 export type Meal = z.infer<typeof mealSchema>;
+
+// --- Idees de repas [D182] ---
+
+/** Le nom devient le titre de la recette a la conversion : meme limite. */
+export const MEAL_IDEA_NAME_MAX = 120;
+
+export const mealIdeaBodySchema = z.strictObject({
+  name: z.string().trim().min(1).max(MEAL_IDEA_NAME_MAX),
+  /** Vide = pas de commentaire. */
+  comment: z
+    .string()
+    .trim()
+    .max(MEAL_COMMENT_MAX)
+    .nullable()
+    .optional()
+    .transform((comment) => comment || null),
+});
+export type MealIdeaBody = z.input<typeof mealIdeaBodySchema>;
+
+export const mealIdeaSchema = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  comment: z.string().nullable(),
+  /** null : compte supprime [D20]. */
+  author: z.object({ id: z.uuid(), username: z.string() }).nullable(),
+  createdAt: z.iso.datetime(),
+  /** Auteur ou moderateurs ; transformer en recette est ouvert a tout membre. */
+  can: z.object({ edit: z.boolean(), delete: z.boolean() }),
+});
+export type MealIdea = z.infer<typeof mealIdeaSchema>;
+
+/** Recette enregistree depuis l'idee : creee par le lecteur dans cet espace. */
+export const convertMealIdeaBodySchema = z.strictObject({ recipeId: z.uuid() });
+export type ConvertMealIdeaBody = z.infer<typeof convertMealIdeaBodySchema>;
