@@ -18,6 +18,7 @@ import { requireModule } from "../modules/guards.ts";
 import type { LifecycleHooks } from "../modules/hooks.ts";
 import { assertValidModules, hooksFrom, type ApiModule } from "../modules/registry.ts";
 import { modulesRouter } from "../modules/routes.ts";
+import { notificationsRouter } from "../notifications/routes.ts";
 import { referentialsRouter } from "../../referentials/routes.ts";
 import { invitationsRouter } from "../spaces/invitations-routes.ts";
 import { storageRouter } from "../storage/routes.ts";
@@ -106,6 +107,7 @@ export function createApp(deps: AppDeps): express.Express {
   api.use(spacesRouter(ctx));
   api.use(invitationsRouter(ctx, rateLimit));
   api.use(modulesRouter(ctx));
+  api.use(notificationsRouter(ctx));
   api.use(referentialsRouter(ctx, rateLimit));
   // Routeurs des modules, chacun derriere sa garde [D33].
   for (const module of ctx.modules) {

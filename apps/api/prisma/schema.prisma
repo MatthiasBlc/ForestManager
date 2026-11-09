@@ -83,6 +83,10 @@ model User {
   suggestionsDecided   RecipeSuggestion[]       @relation("SuggestionDecider")
   mealSlotsUpdated     MealSlot[]
   mealIdeas            MealIdea[]
+  notifications        Notification[]           @relation("NotificationRecipient")
+  notificationsActed   Notification[]           @relation("NotificationActor")
+  notificationPrefs    NotificationPreference[]
+  activities           ActivityEvent[]
 
   @@index([deletedAt])
 }
@@ -173,6 +177,9 @@ model Space {
   mealSlots          MealSlot[]
   mealIdeas          MealIdea[]
   generationProfiles MealGenerationProfile[]
+  notifications      Notification[]
+  notificationPrefs  NotificationPreference[]
+  activities         ActivityEvent[]
 
   @@index([deletedAt])
   @@index([purgeAfter])
@@ -1017,4 +1024,72 @@ model MealSlotPin {
   tag     Tag                   @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([profileId, weekday, mealTime])
+}
+
+// =============================================================================
+// Notifications et activite (C6.1) [D41, D118, D190]
+// =============================================================================
+// Types et categories : cles texte declarees par le socle et les modules
+// (@fm/shared notifications), validees au demarrage. Pas d'enum en base.
+
+/// Notification d'un utilisateur. `count` : evenements regroupes par `groupKey`
+/// sur 24 h tant qu'elle n'est pas lue ("Sam et 2 autres") [D190].
+model Notification {
+  id         String    @id @default(uuid())
+  userId     String
+  spaceId    String?
+  moduleCode String?
+  type       String
+  category   String
+  actorId    String?
+  targetType String?
+  targetId   String?
+  data       Json? // parametres du message traduit cote client [D34]
+  url        String?
+  groupKey   String?
+  count      Int       @default(1)
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  user  User   @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor User?  @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  space Space? @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+  @@index([userId, groupKey, createdAt])
+  @@index([createdAt])
+}
+
+/// Preference par categorie, globale (spaceId null) ou par espace [D118].
+/// Unicite par deux index partiels (migration).
+model NotificationPreference {
+  id        String   @id @default(uuid())
+  userId    String
+  spaceId   String?
+  category  String
+  enabled   Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  space Space? @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Fil d'activite d'un espace (F-SPC-7).
+model ActivityEvent {
+  id         String   @id @default(uuid())
+  spaceId    String
+  actorId    String?
+  moduleCode String?
+  type       String
+  targetType String?
+  targetId   String?
+  data       Json?
+  createdAt  DateTime @default(now())
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([spaceId, createdAt])
 }

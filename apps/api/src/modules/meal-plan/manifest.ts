@@ -346,6 +346,13 @@ export const mealPlanModule: ApiModule = {
   code: "meal-plan",
   catalog: { status: "AVAILABLE", sortOrder: 2 },
   permissions: MEAL_PLAN_PERMISSIONS,
+  // Notifications et activite (C6.5) [D41].
+  notificationCategories: { "meal-plan.planning": {} },
+  notificationTypes: {
+    "meal-plan.plan.generated": { category: "meal-plan.planning" },
+    "meal-plan.meal.changed": { category: "meal-plan.planning" },
+  },
+  activityTypes: ["meal-plan.plan.generated"],
   router: mealPlanRouter,
   requires: ["recipes.catalog"],
   provides: { "meal-plan.recipeStats": provide("meal-plan.recipeStats", recipeStats) },
