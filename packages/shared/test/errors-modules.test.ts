@@ -14,7 +14,7 @@ describe("errors", () => {
     for (const code of ERROR_CODES) {
       const info = ERRORS[code];
       expect(code).toMatch(
-        /^(AUTH|SPACE|MODULE|RECIPE|MEAL|STORAGE|ADMIN|VALIDATION|COMMON)_\d{3}$/
+        /^(AUTH|SPACE|MODULE|RECIPE|MEAL|NOTIF|STORAGE|ADMIN|VALIDATION|COMMON)_\d{3}$/
       );
       expect(info.status).toBeGreaterThanOrEqual(400);
       expect(info.status).toBeLessThan(600);
@@ -51,7 +51,9 @@ describe("validateModuleDefinitions", () => {
         {
           code: "meal-plan",
           permissions: { "meal-plan.edit": { minRole: "MEMBER", configurable: true } },
-          notificationTypes: ["meal-plan.edit"],
+          notificationCategories: { "meal-plan.planning": {} },
+          notificationTypes: { "meal-plan.meal.changed": { category: "meal-plan.planning" } },
+          activityTypes: ["meal-plan.generated"],
         },
       ])
     ).toEqual([]);
@@ -71,6 +73,32 @@ describe("validateModuleDefinitions", () => {
       'invalid module code "Bad Code"',
       'permissions key "recipes.view" of module "shopping" must start with "shopping."',
       'duplicate permissions key "space.view"',
+    ]);
+  });
+
+  it("verifie les categories et les types de notification (F-NOT-3)", () => {
+    const problems = validateModuleDefinitions([
+      {
+        code: "recipes",
+        permissions: {},
+        notificationCategories: { "recipes.sharing": {}, "planning.x": {}, "core.members": {} },
+        notificationTypes: {
+          "recipes.suggestion.created": { category: "recipes.sharing" },
+          "recipes.shared": { category: "core.members" },
+          "recipes.orphan": { category: "recipes.unknown" },
+          "other.type": { category: "recipes.sharing" },
+        },
+        activityTypes: ["recipes.created", "core.member.joined"],
+      },
+    ]);
+    expect(problems).toEqual([
+      'notificationCategories key "planning.x" of module "recipes" must start with "recipes."',
+      'notificationCategories key "core.members" of module "recipes" must start with "recipes."',
+      'duplicate notificationCategories key "core.members"',
+      'notificationTypes key "other.type" of module "recipes" must start with "recipes."',
+      'activityTypes key "core.member.joined" of module "recipes" must start with "recipes."',
+      'duplicate activityTypes key "core.member.joined"',
+      'notification type "recipes.orphan" has unknown category "recipes.unknown"',
     ]);
   });
 });

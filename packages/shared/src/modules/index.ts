@@ -4,6 +4,13 @@
 
 import { z } from "zod";
 
+import {
+  CORE_ACTIVITY_TYPES,
+  CORE_NOTIFICATION_CATEGORIES,
+  CORE_NOTIFICATION_TYPES,
+  type NotificationCategoryDefinition,
+  type NotificationTypeDefinition,
+} from "../notifications/core.ts";
 import { CORE_PERMISSIONS, type ModulePermission } from "../permissions/index.ts";
 
 export const MODULE_STATUSES = ["AVAILABLE", "BETA", "COMING_SOON", "RETIRED"] as const;
@@ -23,9 +30,11 @@ export interface ModuleDefinition {
   readonly alwaysOn?: boolean;
   /** Cles prefixees par le code du module : `recipes.create`. */
   readonly permissions: Readonly<Record<string, ModulePermission>>;
-  /** Types de notification declares (C6) : `recipes.suggestion.created`. */
-  readonly notificationTypes?: readonly string[];
-  /** Types d'evenements du fil d'activite (C6). */
+  /** Categories de notification du module (preferences F-NOT-2) : `recipes.sharing`. */
+  readonly notificationCategories?: Readonly<Record<string, NotificationCategoryDefinition>>;
+  /** Types de notification et leur categorie : `recipes.suggestion.created`. */
+  readonly notificationTypes?: Readonly<Record<string, NotificationTypeDefinition>>;
+  /** Types d'evenements du fil d'activite. */
   readonly activityTypes?: readonly string[];
 }
 
@@ -40,9 +49,11 @@ export function validateModuleDefinitions(modules: readonly ModuleDefinition[]):
   // Une collision se cherche par famille de cles (permissions, notifications, activite).
   const seen = {
     permissions: new Set<string>(Object.keys(CORE_PERMISSIONS)),
-    notificationTypes: new Set<string>(),
-    activityTypes: new Set<string>(),
+    notificationCategories: new Set<string>(Object.keys(CORE_NOTIFICATION_CATEGORIES)),
+    notificationTypes: new Set<string>(Object.keys(CORE_NOTIFICATION_TYPES)),
+    activityTypes: new Set<string>(CORE_ACTIVITY_TYPES),
   };
+  const typeCategories: [string, string][] = [];
 
   for (const module of modules) {
     if (!moduleCodeSchema.safeParse(module.code).success) {
@@ -53,10 +64,20 @@ export function validateModuleDefinitions(modules: readonly ModuleDefinition[]):
 
     const declared = {
       permissions: Object.keys(module.permissions),
-      notificationTypes: module.notificationTypes ?? [],
+      notificationCategories: Object.keys(module.notificationCategories ?? {}),
+      notificationTypes: Object.keys(module.notificationTypes ?? {}),
       activityTypes: module.activityTypes ?? [],
     };
-    for (const family of ["permissions", "notificationTypes", "activityTypes"] as const) {
+    for (const [type, definition] of Object.entries(module.notificationTypes ?? {})) {
+      typeCategories.push([type, definition.category]);
+    }
+    const families = [
+      "permissions",
+      "notificationCategories",
+      "notificationTypes",
+      "activityTypes",
+    ] as const;
+    for (const family of families) {
       for (const key of declared[family]) {
         if (!key.startsWith(`${module.code}.`)) {
           problems.push(
@@ -66,6 +87,11 @@ export function validateModuleDefinitions(modules: readonly ModuleDefinition[]):
         if (seen[family].has(key)) problems.push(`duplicate ${family} key "${key}"`);
         seen[family].add(key);
       }
+    }
+  }
+  for (const [type, category] of typeCategories) {
+    if (!seen.notificationCategories.has(category)) {
+      problems.push(`notification type "${type}" has unknown category "${category}"`);
     }
   }
   return problems;

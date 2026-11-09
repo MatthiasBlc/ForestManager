@@ -74,6 +74,10 @@ const DEFINITIONS = {
   SPACE_018: { status: 404, message: "Lien d'invitation introuvable." },
   SPACE_019: { status: 409, message: "Vous ne pouvez pas faire cette action sur vous-même." },
 
+  // --- Notifications [F-NOT-1, F-NOT-2] ---
+  NOTIF_001: { status: 404, message: "Notification introuvable." },
+  NOTIF_002: { status: 400, message: "Cette catégorie de notification n'est pas réglable ici." },
+
   // --- Stockage des photos et avatars [D167] ---
   STORAGE_001: { status: 503, message: "L'envoi de photos n'est pas disponible." },
   STORAGE_002: { status: 404, message: "Photo introuvable : envoie-la de nouveau." },
