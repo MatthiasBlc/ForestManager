@@ -357,7 +357,8 @@ export interface ShareInfo {
 }
 
 /** Partages et adaptation, calcules a part du detail. */
-export type RecipeLinksInfo = ShareInfo & Pick<Recipe, "adaptedFrom" | "adaptationCount">;
+export type RecipeLinksInfo = ShareInfo &
+  Pick<Recipe, "adaptedFrom" | "adaptationCount" | "planning">;
 
 export function toRecipe(
   ctx: Context,

@@ -13,7 +13,9 @@ describe("errors", () => {
   it("chaque code a un prefixe de domaine, un statut HTTP, un message et sa cle i18n", () => {
     for (const code of ERROR_CODES) {
       const info = ERRORS[code];
-      expect(code).toMatch(/^(AUTH|SPACE|MODULE|RECIPE|STORAGE|ADMIN|VALIDATION|COMMON)_\d{3}$/);
+      expect(code).toMatch(
+        /^(AUTH|SPACE|MODULE|RECIPE|MEAL|STORAGE|ADMIN|VALIDATION|COMMON)_\d{3}$/
+      );
       expect(info.status).toBeGreaterThanOrEqual(400);
       expect(info.status).toBeLessThan(600);
       expect(info.message.length).toBeGreaterThan(0);

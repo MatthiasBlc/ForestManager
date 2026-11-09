@@ -320,4 +320,20 @@ describe("synchro du catalogue", () => {
     const dup = MODULES[0];
     expect(() => createTestApp({ modules: [...MODULES, dup!] })).toThrow(/duplicate module code/);
   });
+
+  it("refuse un service requis absent ou mal prefixe (provides / requires)", () => {
+    const planning = MODULES.find((m) => m.code === "meal-plan");
+    expect(() => createTestApp({ modules: [planning!] })).toThrow(
+      /requires missing service "recipes.catalog"/
+    );
+    const wrong: ApiModule = {
+      code: "films",
+      catalog: { status: "COMING_SOON", sortOrder: 9 },
+      permissions: {},
+      provides: { "recipes.catalog": () => null },
+    };
+    expect(() => createTestApp({ modules: [...MODULES, wrong] })).toThrow(
+      /service "recipes.catalog" of module "films" must start with "films."/
+    );
+  });
 });

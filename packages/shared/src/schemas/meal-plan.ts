@@ -51,3 +51,78 @@ export const updateMealPlanSettingsBodySchema = z.strictObject({
   editRole: spaceRoleSchema.optional(),
 });
 export type UpdateMealPlanSettingsBody = z.infer<typeof updateMealPlanSettingsBodySchema>;
+
+// --- Calendrier et repas [D180, D181, D184] ---
+
+/** Date de calendrier sans heure (`YYYY-MM-DD`). */
+export const planDateSchema = z.iso.date();
+
+/** Plus longue periode lue ou generee d'un coup. */
+export const MAX_PERIOD_DAYS = 31;
+
+/** Nombre de jours de `from` a `to` inclus (dates ISO valides). */
+export function periodDays(from: string, to: string): number {
+  return Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000) + 1;
+}
+
+export const mealsQuerySchema = z
+  .strictObject({ from: planDateSchema, to: planDateSchema })
+  .refine(({ from, to }) => {
+    const days = periodDays(from, to);
+    return days >= 1 && days <= MAX_PERIOD_DAYS;
+  }, "period must span 1 to 31 days");
+
+export const mealCellSchema = z.strictObject({ date: planDateSchema, mealTime: mealTimeSchema });
+export type MealCell = z.infer<typeof mealCellSchema>;
+
+export const MEAL_KINDS = ["RECIPE", "TEXT", "SKIPPED"] as const;
+export const mealKindSchema = z.enum(MEAL_KINDS);
+export type MealKind = z.infer<typeof mealKindSchema>;
+
+export const MEAL_TEXT_MAX = 200;
+export const MEAL_COMMENT_MAX = 500;
+
+const mealTextSchema = z.string().trim().min(1).max(MEAL_TEXT_MAX);
+const mealCommentSchema = z.string().trim().max(MEAL_COMMENT_MAX).nullable().optional();
+
+/** Ecrire un repas : recette, texte libre ou "Pas de repas" (jamais verrouille). */
+export const putMealBodySchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    kind: z.literal("RECIPE"),
+    recipeId: z.uuid(),
+    comment: mealCommentSchema,
+    servings: servingsSchema.nullable().optional(),
+    locked: z.boolean().optional(),
+  }),
+  z.strictObject({
+    kind: z.literal("TEXT"),
+    text: mealTextSchema,
+    comment: mealCommentSchema,
+    servings: servingsSchema.nullable().optional(),
+    locked: z.boolean().optional(),
+  }),
+  z.strictObject({ kind: z.literal("SKIPPED"), locked: z.literal(false).optional() }),
+]);
+export type PutMealBody = z.infer<typeof putMealBodySchema>;
+
+export const swapMealsBodySchema = z
+  .strictObject({ a: mealCellSchema, b: mealCellSchema })
+  .refine(({ a, b }) => a.date !== b.date || a.mealTime !== b.mealTime, "same cell");
+export type SwapMealsBody = z.infer<typeof swapMealsBodySchema>;
+
+export const mealSchema = z.object({
+  date: planDateSchema,
+  mealTime: mealTimeSchema,
+  kind: mealKindSchema,
+  /** Titre de la recette (ou son dernier titre connu), ou le texte ; null pour "Pas de repas". */
+  title: z.string().nullable(),
+  /** Recette encore visible dans l'espace ; null sinon (texte, retiree, masquee) [D184]. */
+  recipe: z.object({ id: z.uuid(), imageUrl: z.string().nullable() }).nullable(),
+  comment: z.string().nullable(),
+  /** null = portions par defaut de l'espace. */
+  servings: z.int().nullable(),
+  locked: z.boolean(),
+  updatedBy: z.object({ id: z.uuid(), username: z.string() }).nullable(),
+  updatedAt: z.iso.datetime(),
+});
+export type Meal = z.infer<typeof mealSchema>;

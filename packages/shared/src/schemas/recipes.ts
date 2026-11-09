@@ -264,6 +264,11 @@ export const recipeSchema = z.object({
   adaptationCount: z.number().int(),
   /** Masquee par la moderation [D178] : seul son auteur la voit encore, avec le motif. */
   hidden: z.object({ reason: z.string() }).nullable(),
+  /**
+   * Compteurs du planning [D39] : fois planifiee dans cet espace et derniere fois
+   * cuisinee (date passee) ; null quand le module Planning n'y est pas actif.
+   */
+  planning: z.object({ count: z.int(), lastOn: z.iso.date().nullable() }).nullable(),
   /** Droits de l'utilisateur courant sur cette recette, dans cet espace. */
   can: z.object({
     edit: z.boolean(),

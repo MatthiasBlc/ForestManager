@@ -6,6 +6,7 @@ import type { Context } from "../../core/context.ts";
 import type { Prisma } from "../../core/db/client.ts";
 import { AppError } from "../../core/http/errors.ts";
 import { copyImage } from "../../core/storage/images.ts";
+import { optionalService } from "../services.ts";
 import { assertComposition, countUsedBy, loadLinks } from "./composition.ts";
 import {
   blocksCreate,
@@ -170,14 +171,16 @@ export async function getRecipe(
   recipeId: string
 ): Promise<Recipe> {
   const row = await findVisible(ctx, actor, recipeId);
-  const [can, links, usedBy, shares, adaptation] = await Promise.all([
+  const stats = optionalService(ctx, "meal-plan.recipeStats");
+  const [can, links, usedBy, shares, adaptation, planning] = await Promise.all([
     rightsOf(ctx, actor, row),
     loadLinks(ctx.db, row.blocks, actor.spaceId),
     countUsedBy(ctx.db, row.id),
     shareInfo(ctx, actor, row.id),
     adaptationInfo(ctx.db, row),
+    stats ? stats.forRecipe(actor.spaceId, row.id) : null,
   ]);
-  return toRecipe(ctx, row, can, links, usedBy, { ...shares, ...adaptation });
+  return toRecipe(ctx, row, can, links, usedBy, { ...shares, ...adaptation, planning });
 }
 
 /** Adaptation [D17] : original, revision de depart, liens de l'original gardes. */

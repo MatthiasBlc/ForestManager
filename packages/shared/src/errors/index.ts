@@ -117,6 +117,9 @@ const DEFINITIONS = {
   RECIPE_016: { status: 422, message: "Cette page est injoignable ou trop lourde." },
   RECIPE_017: { status: 422, message: "Aucune recette trouvée sur cette page." },
 
+  // --- Planning ---
+  MEAL_001: { status: 409, message: "Ce repas n'est pas planifié dans cet espace." },
+
   // --- Administration de la plateforme ---
   ADMIN_001: { status: 401, message: "Identifiants incorrects." },
   ADMIN_002: { status: 401, message: "Connexion administrateur requise." },

@@ -36,6 +36,13 @@ export interface ApiModule extends ModuleDefinition {
     db: Db,
     spaceId: string
   ) => Promise<Readonly<Record<string, SpaceRole>>>;
+  /**
+   * Services offerts aux autres modules (14-Architecture.md) : cle prefixee par le
+   * code du module, fabrique appelee avec le contexte. Contrats dans `modules/services.ts`.
+   */
+  readonly provides?: Readonly<Record<string, (ctx: Context) => unknown>>;
+  /** Services d'autres modules indispensables : l'API ne demarre pas s'ils manquent. */
+  readonly requires?: readonly string[];
   readonly onSpaceDeleted?: LifecycleHooks["onSpaceDeleted"][number];
   readonly onMemberLeft?: LifecycleHooks["onMemberLeft"][number];
   readonly storageKeys?: LifecycleHooks["storageKeys"][number];
@@ -56,8 +63,24 @@ const RESERVED_CODES = new Set([
 /** Leve une erreur si un manifeste est invalide (l'API ne demarre pas). */
 export function assertValidModules(modules: readonly ApiModule[]): void {
   const problems = validateModuleDefinitions(modules);
+  const provided = new Set<string>();
   for (const module of modules) {
     if (RESERVED_CODES.has(module.code)) problems.push(`module code "${module.code}" is reserved`);
+    for (const key of Object.keys(module.provides ?? {})) {
+      if (!key.startsWith(`${module.code}.`)) {
+        problems.push(
+          `service "${key}" of module "${module.code}" must start with "${module.code}."`
+        );
+      }
+      if (provided.has(key)) problems.push(`duplicate service "${key}"`);
+      provided.add(key);
+    }
+  }
+  for (const module of modules) {
+    for (const key of module.requires ?? []) {
+      if (!provided.has(key))
+        problems.push(`module "${module.code}" requires missing service "${key}"`);
+    }
   }
   if (problems.length > 0) throw new Error(`invalid modules: ${problems.join("; ")}`);
 }
@@ -94,4 +117,13 @@ export async function syncCatalog(db: Db, modules: readonly ApiModule[]): Promis
     where: { code: { notIn: [...codes] }, status: { not: "RETIRED" } },
     data: { status: "RETIRED", isDefault: false },
   });
+}
+
+/** Service offert par un module de la liste, ou null s'il n'y est pas. */
+export function findService(ctx: Context, key: string): unknown {
+  for (const module of ctx.modules) {
+    const factory = module.provides?.[key];
+    if (factory) return factory(ctx);
+  }
+  return null;
 }

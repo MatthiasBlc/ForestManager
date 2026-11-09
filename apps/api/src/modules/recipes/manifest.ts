@@ -50,6 +50,8 @@ import {
 } from "../../core/modules/guards.ts";
 import type { ApiModule } from "../../core/modules/registry.ts";
 import * as adaptation from "./adaptation.ts";
+import { recipeCatalog } from "./catalog.ts";
+import { provide } from "../services.ts";
 import { authoredBySql, listRecipes } from "./list.ts";
 import { createRateLimiter } from "../../core/http/security.ts";
 import { importFromUrl } from "./import.ts";
@@ -519,4 +521,5 @@ export const recipesModule: ApiModule = {
   onMemberLeft: sharing.onMemberLeft,
   onSpaceDeleted: sharing.onSpaceDeleted,
   storageKeys: photos.storageKeys,
+  provides: { "recipes.catalog": provide("recipes.catalog", recipeCatalog) },
 };

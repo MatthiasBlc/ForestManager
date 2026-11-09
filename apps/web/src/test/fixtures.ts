@@ -39,7 +39,7 @@ function valid<S extends z.ZodType>(schema: S, data: z.input<S>): z.output<S> {
   return schema.parse(data);
 }
 
-const NOW = "2026-11-05T10:00:00.000Z";
+export const NOW = "2026-11-05T10:00:00.000Z";
 
 export function buildMe(over: Partial<Me> = {}): Me {
   return valid(meSchema, {
@@ -216,6 +216,7 @@ export function buildRecipe({ can, ...over }: RecipeOverrides = {}): Recipe {
     adaptedFrom: null,
     adaptationCount: 0,
     hidden: null,
+    planning: null,
     title: "Gratin de pâtes",
     imageUrl: null,
     yieldQuantity: 4,
