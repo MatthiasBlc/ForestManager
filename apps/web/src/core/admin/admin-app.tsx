@@ -9,9 +9,11 @@ import { AdminLayout } from "./admin-layout.tsx";
 import { AdminLoginPage } from "./admin-login-page.tsx";
 import { AislesPage } from "./aisles-page.tsx";
 import { IngredientsPage } from "./ingredients-page.tsx";
+import { ModerationPage } from "./moderation-page.tsx";
 import { ModuleRequestsPage } from "./module-requests-page.tsx";
 import { ModulesCatalogPage } from "./modules-catalog-page.tsx";
 import { adminMeQuery } from "./queries.ts";
+import { SpacesPage } from "./spaces-page.tsx";
 import { TagsPage } from "./tags-page.tsx";
 import { UnitsPage } from "./units-page.tsx";
 import { UsersPage } from "./users-page.tsx";
@@ -31,6 +33,8 @@ export function AdminApp() {
         <Route path="aisles" element={<AislesPage />} />
         <Route path="tags" element={<TagsPage />} />
         <Route path="users" element={<UsersPage />} />
+        <Route path="spaces" element={<SpacesPage />} />
+        <Route path="moderation/:spaceId" element={<ModerationPage />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Route>
     </Routes>

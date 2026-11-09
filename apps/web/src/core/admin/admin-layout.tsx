@@ -42,7 +42,10 @@ const ADMIN_NAV: readonly { label: string; items: readonly NavEntry[] }[] = [
   },
   {
     label: "Plateforme",
-    items: [{ to: "/admin/users", label: "Utilisateurs", icon: "users" }],
+    items: [
+      { to: "/admin/users", label: "Utilisateurs", icon: "users" },
+      { to: "/admin/spaces", label: "Espaces", icon: "shield" },
+    ],
   },
 ];
 

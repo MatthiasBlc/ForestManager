@@ -616,3 +616,13 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
   - **Choix du mot de passe** : meme politique que l'inscription ; le temporaire est consomme (`usedAt`) dans la meme transaction que le nouveau hash, les autres sessions sont fermees et la session courante tourne (nouvel identifiant). Temporaire expire entre-temps : `AUTH_014`, la session restreinte est fermee et l'ecran revient a la connexion.
   - **Web** : `PasswordChoiceGate` n'affiche que "Choisis ton mot de passe" tant que `mustChoosePassword` (hors `/admin`).
   - **Liste A12** : comptes non supprimes, par derniere connexion ; espaces groupe dont le compte est membre actif ; filtres "OWNER d'un espace" (groupe) et "Inactifs depuis 6 mois" (derniere connexion, ou inscription si jamais connecte) ; pagination admin plafonnee a 100, au-dela on affine la recherche. Le rappel "E-mails non configures" vient de `GET /config`.
+
+### D178 - Moderation : acces en table dediee, recette masquee visible de son auteur - VALIDEE (2026-11-09, realisation C4.5, choix du proprietaire)
+
+- **Constat** : le plan C4 laissait deux points a trancher : la forme de l'acces de moderation en base et l'etat "masquee" d'une recette (absent du schema cible).
+- **Options** : acces dans une table dediee ou dans la session admin ; recette masquee visible de son auteur avec le motif, cachee pour tous, ou pas d'etat masque.
+- **Choix** (recommandations retenues) :
+  - **Acces** : table `ModerationAccess` (admin, espace, motif parmi 4, precision obligatoire, ouverture, expiration a 30 min). Chaque route de moderation exige un acces valable de cet admin a cet espace non supprime (`ADMIN_013`) ; "Fermer l'acces" l'expire tout de suite. C6 y branchera la notification de l'OWNER (D172).
+  - **Masquer** : `Recipe.hiddenAt` et `hiddenReason`. La recette disparait des listes et du detail pour tous les membres, sauf son auteur qui la voit avec le bandeau "Masquee par la moderation" et le motif. L'admin peut la reafficher (audit `recipe.unhidden`).
+  - **Autres actions**, motif obligatoire et audit : retirer d'un espace de partage (la recette reste chez son auteur ; refuse dans l'espace d'origine, `ADMIN_014`), supprimer une recette (comme la suppression par l'auteur), supprimer un espace groupe (suppression masquee de 30 jours, D22 ; l'espace perso ne se supprime pas). La vue de moderation lit les recettes en lecture seule, masquees comprises.
+  - **Restaurer** un espace en suppression depuis la liste, a la demande de l'OWNER, avant la purge (`ADMIN_015` sinon).

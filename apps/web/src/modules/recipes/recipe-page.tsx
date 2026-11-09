@@ -109,7 +109,7 @@ function LocalBlockView({
   );
 }
 
-function BlockBody({
+export function BlockBody({
   block,
   units,
   scale,
@@ -352,6 +352,18 @@ function RecipeView({
             onSelect={actions.select}
           />
         </div>
+        {recipe.hidden ? (
+          <div
+            role="note"
+            aria-labelledby="recipe-hidden-title"
+            className="flex flex-col gap-1 rounded-md bg-warning-soft px-4 py-3"
+          >
+            <b id="recipe-hidden-title">Masquée par la modération</b>
+            <span className="text-sm">
+              Motif : {recipe.hidden.reason}. Les autres membres ne la voient plus.
+            </span>
+          </div>
+        ) : null}
         <AdaptedFromNotice spaceId={spaceId} recipe={recipe} />
         <RecipeSuggestionsBanner spaceId={spaceId} recipeId={recipe.id} />
         <div className="flex flex-wrap items-center gap-3">

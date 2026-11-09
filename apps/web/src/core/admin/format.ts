@@ -1,3 +1,5 @@
+import type { ModerationReason } from "@fm/shared";
+
 // Dates de l'administration, comme les maquettes : "Aujourd'hui, 14 h 02", "Hier, 21 h 15", "28 oct.".
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -36,3 +38,11 @@ export function parseDecimal(value: string): number | null {
   const number = Number(text);
   return Number.isFinite(number) ? number : null;
 }
+
+/** Motifs d'un acces de moderation (A09b). */
+export const REASON_LABELS: Record<ModerationReason, string> = {
+  MEMBER_REPORT: "Signalement d'un membre",
+  OWNER_REQUEST: "Demande de l'OWNER",
+  EXTERNAL_REPORT: "Contenu illicite signalé hors de l'application",
+  OTHER: "Autre",
+};
