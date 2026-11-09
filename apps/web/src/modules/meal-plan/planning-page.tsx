@@ -357,6 +357,16 @@ export function PlanningPage() {
           <Icon name="lightbulb" />
         </Link>
         {settings.data?.can.manage ? (
+          <Link
+            to="profiles"
+            className="fm-iconbtn"
+            aria-label="Profils de génération"
+            title="Profils de génération"
+          >
+            <Icon name="sparkles" />
+          </Link>
+        ) : null}
+        {settings.data?.can.manage ? (
           <IconButton
             icon="settings"
             label="Réglages du planning"

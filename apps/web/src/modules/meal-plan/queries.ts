@@ -1,5 +1,12 @@
 // Requetes du module Planning.
-import { listSchema, mealIdeaSchema, mealPlanSettingsSchema, mealSchema } from "@fm/shared";
+import {
+  generationProfileSchema,
+  generationProfileSummarySchema,
+  listSchema,
+  mealIdeaSchema,
+  mealPlanSettingsSchema,
+  mealSchema,
+} from "@fm/shared";
 import { queryOptions } from "@tanstack/react-query";
 
 import { api } from "../../lib/api.ts";
@@ -34,5 +41,28 @@ export function ideasQuery(spaceId: string) {
     queryKey: [...mealPlanKey(spaceId), "ideas"],
     queryFn: async () =>
       (await api.get(`/spaces/${spaceId}/meal-plan/ideas`, listSchema(mealIdeaSchema))).data,
+  });
+}
+
+export const profilesKey = (spaceId: string) => [...mealPlanKey(spaceId), "profiles"] as const;
+
+export function profilesQuery(spaceId: string) {
+  return queryOptions({
+    queryKey: [...profilesKey(spaceId), "list"],
+    queryFn: async () =>
+      (
+        await api.get(
+          `/spaces/${spaceId}/meal-plan/profiles`,
+          listSchema(generationProfileSummarySchema)
+        )
+      ).data,
+  });
+}
+
+export function profileQuery(spaceId: string, profileId: string) {
+  return queryOptions({
+    queryKey: [...profilesKey(spaceId), profileId],
+    queryFn: () =>
+      api.get(`/spaces/${spaceId}/meal-plan/profiles/${profileId}`, generationProfileSchema),
   });
 }

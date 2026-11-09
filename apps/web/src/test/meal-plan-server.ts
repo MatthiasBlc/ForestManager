@@ -5,6 +5,13 @@
 import {
   sortMealTimes,
   type ConvertMealIdeaBody,
+  type GenerationProfile,
+  type GridCell,
+  type PutGridBody,
+  type Rule,
+  type RuleBody,
+  type Tag,
+  type UpdateGenerationProfileBody,
   type Meal,
   type MealIdea,
   type MealIdeaBody,
@@ -59,6 +66,8 @@ export function mealPlanServer({
   myRecipes = [],
   shareResult = "SHARED",
   ideas = [],
+  profiles,
+  tags = [VEGETARIAN, FISH],
 }: {
   myRole?: SpaceRole;
   settings?: Partial<Omit<MealPlanSettings, "can">>;
@@ -71,6 +80,10 @@ export function mealPlanServer({
   shareResult?: ShareStatus;
   /** Idees de repas, plus recentes d'abord. */
   ideas?: MealIdea[];
+  /** Profils de generation ; par defaut, "Standard" seul [D183]. */
+  profiles?: GenerationProfile[];
+  /** Tags proposes aux regles et epinglages (globaux). */
+  tags?: Tag[];
 } = {}) {
   const s = spaceServer({ myRole });
   s.space.modules = [
@@ -97,6 +110,11 @@ export function mealPlanServer({
     ideas: [...ideas],
     ideaBodies: [] as MealIdeaBody[],
     conversions: [] as (ConvertMealIdeaBody & { ideaId: string })[],
+    profiles: profiles ?? [buildProfile({ name: "Standard", isDefault: true })],
+    profilePatches: [] as (UpdateGenerationProfileBody & { profileId: string })[],
+    ruleBodies: [] as RuleBody[],
+    grids: [] as PutGridBody[],
+    deletedProfiles: [] as { id: string; defaultId?: string }[],
   };
   const base = `/api/v1/spaces/${s.space.id}/meal-plan`;
   const current = (): MealPlanSettings => ({
@@ -198,6 +216,9 @@ export function mealPlanServer({
       state.ideas = state.ideas.filter((idea) => idea.id !== params.ideaId);
       return new HttpResponse(null, { status: 204 });
     }),
+    ...profileHandlers(base, state, tags),
+    http.get("/api/v1/tags", () => HttpResponse.json({ data: tags })),
+    http.get(`/api/v1/spaces/${s.space.id}/recipes/tags`, () => HttpResponse.json({ data: [] })),
     http.get(`/api/v1/spaces/${s.space.id}/recipes`, ({ request }) =>
       HttpResponse.json({
         data: matching(spaceRecipes, new URL(request.url)),
@@ -221,6 +242,165 @@ export function mealPlanServer({
     )
   );
   return { ...s, plan: state };
+}
+
+export const VEGETARIAN: Tag = {
+  id: "00000000-0000-4000-8000-0000000000a1",
+  scope: "GLOBAL",
+  name: "Végétarien",
+};
+export const FISH: Tag = {
+  id: "00000000-0000-4000-8000-0000000000a2",
+  scope: "GLOBAL",
+  name: "Poisson",
+};
+
+/** Profil de generation pour un test : seul le nom est obligatoire. */
+export function buildProfile(
+  over: Partial<GenerationProfile> & Pick<GenerationProfile, "name">
+): GenerationProfile {
+  const rules = over.rules ?? [];
+  return {
+    id: uuid(),
+    description: null,
+    isDefault: false,
+    cooldownDays: 3,
+    useIdeas: true,
+    grid: [],
+    ...over,
+    rules,
+    ruleCount: rules.length,
+  };
+}
+
+interface ProfileState {
+  profiles: GenerationProfile[];
+  profilePatches: (UpdateGenerationProfileBody & { profileId: string })[];
+  ruleBodies: RuleBody[];
+  grids: PutGridBody[];
+  deletedProfiles: { id: string; defaultId?: string }[];
+}
+
+/** Profils, regles et grille, avec l'etat garde dans `state`. */
+function profileHandlers(base: string, state: ProfileState, tags: readonly Tag[]) {
+  const url = `${base}/profiles`;
+  const find = (id: unknown) => state.profiles.find((p) => p.id === id);
+  const summary = (p: GenerationProfile) => ({
+    id: p.id,
+    name: p.name,
+    description: p.description,
+    isDefault: p.isDefault,
+    ruleCount: p.rules.length,
+  });
+  const save = (profile: GenerationProfile) => {
+    const saved = { ...profile, ruleCount: profile.rules.length };
+    state.profiles = state.profiles.map((p) => (p.id === saved.id ? saved : p));
+    return saved;
+  };
+  const tagOf = (id: string) => {
+    const tag = tags.find((t) => t.id === id);
+    return { id, name: tag?.name ?? "?", status: "ACTIVE" as const };
+  };
+  const toRule = (body: RuleBody, id = uuid()): Rule => {
+    const bounded = (body.frequencyMin ?? null) !== null || (body.frequencyMax ?? null) !== null;
+    return {
+      id,
+      target:
+        body.target.kind === "TAG"
+          ? { kind: "TAG", tag: tagOf(body.target.tagId) }
+          : { kind: "RECIPE", recipe: { id: body.target.recipeId, title: "Recette" } },
+      weight: body.weight ?? 1,
+      mealTime: body.mealTime ?? null,
+      frequencyMin: body.frequencyMin ?? null,
+      frequencyMax: body.frequencyMax ?? null,
+      frequencyPer: bounded ? (body.frequencyPer ?? "PER_WEEK") : null,
+      tagCooldownDays: body.tagCooldownDays ?? null,
+    };
+  };
+  return [
+    http.get(url, () =>
+      HttpResponse.json({
+        data: [...state.profiles]
+          .sort((a, b) => Number(b.isDefault) - Number(a.isDefault) || a.name.localeCompare(b.name))
+          .map(summary),
+      })
+    ),
+    http.post(url, async ({ request }) => {
+      const body = (await request.json()) as { name: string };
+      const profile = buildProfile({ name: body.name });
+      state.profiles.push(profile);
+      return HttpResponse.json(profile, { status: 201 });
+    }),
+    http.get(`${url}/:id`, ({ params }) => HttpResponse.json(find(params.id))),
+    http.patch(`${url}/:id`, async ({ params, request }) => {
+      const body = (await request.json()) as UpdateGenerationProfileBody;
+      state.profilePatches.push({ profileId: String(params.id), ...body });
+      if (body.isDefault) {
+        state.profiles = state.profiles.map((p) => ({ ...p, isDefault: p.id === params.id }));
+      }
+      const current = find(params.id);
+      if (!current) return new HttpResponse(null, { status: 404 });
+      const { isDefault: _default, ...rest } = body;
+      return HttpResponse.json(
+        save({ ...current, ...rest, description: body.description ?? current.description })
+      );
+    }),
+    http.delete(`${url}/:id`, async ({ params, request }) => {
+      const body = (await request.json().catch(() => ({}))) as { defaultId?: string };
+      state.deletedProfiles.push({ id: String(params.id), ...body });
+      state.profiles = state.profiles
+        .filter((p) => p.id !== params.id)
+        .map((p) => (p.id === body.defaultId ? { ...p, isDefault: true } : p));
+      return new HttpResponse(null, { status: 204 });
+    }),
+    http.post(`${url}/:id/duplicate`, ({ params }) => {
+      const source = find(params.id);
+      if (!source) return new HttpResponse(null, { status: 404 });
+      const copy = { ...source, id: uuid(), name: `${source.name} (copie)`, isDefault: false };
+      state.profiles.push(copy);
+      return HttpResponse.json(copy, { status: 201 });
+    }),
+    http.put(`${url}/:id/grid`, async ({ params, request }) => {
+      const body = (await request.json()) as PutGridBody;
+      state.grids.push(body);
+      const current = find(params.id);
+      if (!current) return new HttpResponse(null, { status: 404 });
+      const grid = body.cells.map((cell): GridCell =>
+        cell.state === "EXCLUDED"
+          ? { weekday: cell.weekday, mealTime: cell.mealTime, state: "EXCLUDED" }
+          : {
+              weekday: cell.weekday,
+              mealTime: cell.mealTime,
+              state: "PINNED",
+              tag: tagOf(cell.tagId),
+            }
+      );
+      return HttpResponse.json(save({ ...current, grid }));
+    }),
+    http.post(`${url}/:id/rules`, async ({ params, request }) => {
+      const body = (await request.json()) as RuleBody;
+      state.ruleBodies.push(body);
+      const current = find(params.id);
+      if (!current) return new HttpResponse(null, { status: 404 });
+      const rule = toRule(body);
+      save({ ...current, rules: [...current.rules, rule] });
+      return HttpResponse.json(rule, { status: 201 });
+    }),
+    http.put(`${url}/:id/rules/:ruleId`, async ({ params, request }) => {
+      const body = (await request.json()) as RuleBody;
+      state.ruleBodies.push(body);
+      const current = find(params.id);
+      if (!current) return new HttpResponse(null, { status: 404 });
+      const rule = toRule(body, String(params.ruleId));
+      save({ ...current, rules: current.rules.map((r) => (r.id === rule.id ? rule : r)) });
+      return HttpResponse.json(rule);
+    }),
+    http.delete(`${url}/:id/rules/:ruleId`, ({ params }) => {
+      const current = find(params.id);
+      if (current) save({ ...current, rules: current.rules.filter((r) => r.id !== params.ruleId) });
+      return new HttpResponse(null, { status: 204 });
+    }),
+  ];
 }
 
 /** Idee de repas pour un test : seul le nom est obligatoire. */
