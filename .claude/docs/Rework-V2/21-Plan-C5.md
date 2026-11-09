@@ -64,3 +64,19 @@ Tranches verticales, comme C3 et C4 : chaque sous-etape livre l'API (`apps/api/s
 - Ecrans E-PLANNING, F-REPAS, F-RECHERCHE, F-REGLAGES-PLANNING, F-GENERER et rapport, E-PROFILS-GENERATION, E-IDEES en mobile et bureau, tests de composants verts (axe sans violation), revue visuelle dans Chrome.
 - Scenario E2E 9 (remplir, verrouiller, generer le reste) ecrit, joue en C7.
 - Lint, typecheck et build verts ; README du chantier et roadmap a jour. Sur les bases existantes, le Planning passe de "Bientot" a "Disponible" dans A04 [D184].
+
+## 4. Scenario E2E 9 (ecrit a la cloture de C5, code et joue en C7)
+
+Parcours 9 de `15-Plan-Tests.md` : remplir le planning a la main, verrouiller un repas, generer le reste de la semaine. Mobile (projet par defaut).
+
+- **Donnees** (route `POST /api/v1/__test/scenario` de C7) : un OWNER, un espace partage avec le Planning accorde et actif, 6 recettes taguees (dont 3 "Vegetarien"), profil Standard sans regle. Date du navigateur figee au mardi d'une semaine connue, reglages par defaut (lundi, midi et soir).
+- **Etapes et attentes** :
+  1. Ouvrir Planning : vue Jour sur aujourd'hui, 14 cases de la semaine vides (vue Semaine), axe sans violation.
+  2. Toucher "Mardi, midi" : F-REPAS, chercher une recette, l'enregistrer ; la case montre son titre.
+  3. "Mardi, soir" : Texte libre "Restes", 2 portions, verrou active ; la case montre le texte, "2 p." et le cadenas.
+  4. "Mercredi, midi" : "Pas de repas".
+  5. Generer, "Cette semaine", sans remplacer : le rapport annonce 11 repas proposes sur 11 et "Laisses tels quels : 1 verrouille, 1 deja rempli, 1 « Pas de repas »" ; garder ce planning.
+  6. Les 14 cases sont remplies ; mardi midi et mardi soir n'ont pas change, mercredi midi reste "Pas de repas".
+  7. Generer a nouveau avec "Remplacer les repas non verrouilles" : mardi soir (verrouille) et mercredi midi restent tels quels, mardi midi peut changer.
+  8. Recharger la page : le planning garde est relu tel quel (rien ne depend du cache).
+- **Hors scenario** (deja prouve plus bas) : regles, frequences et delais (unitaires du domaine), conflits a l'enregistrement (integration), tirer pour rafraichir (composant).

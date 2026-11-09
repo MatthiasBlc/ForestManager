@@ -171,6 +171,28 @@ describe("E-PLANNING en mobile : Jour et Semaine (D111)", () => {
     await user.click(await screen.findByRole("button", { name: "Jeudi 12, midi : Cantine" }));
     expect(await screen.findByRole("dialog", { name: "Jeudi 12, midi" })).toBeInTheDocument();
   });
+
+  it("tirer vers le bas en haut de page relit la semaine (D186)", async () => {
+    const s = mealPlanServer();
+    renderWithProviders(<App />, { route: route(s.space.id) });
+    const slot = await screen.findByRole("button", { name: "Mardi 10, midi : Ajouter un repas" });
+    await waitFor(() => {
+      expect(s.plan.reads).toHaveLength(1);
+    });
+    const pull = (y: number) => ({ touches: [{ clientX: 100, clientY: y }] });
+    // Un petit geste ne suffit pas.
+    fireEvent.touchStart(slot, pull(100));
+    fireEvent.touchMove(slot, pull(140));
+    fireEvent.touchEnd(slot, { touches: [] });
+    // Au-dela du seuil : relecture, avec une annonce pendant le chargement.
+    fireEvent.touchStart(slot, pull(100));
+    fireEvent.touchMove(slot, pull(260));
+    fireEvent.touchEnd(slot, { touches: [] });
+    expect(await screen.findByText("Actualisation")).toHaveAttribute("role", "status");
+    await waitFor(() => {
+      expect(s.plan.reads).toHaveLength(2);
+    });
+  });
 });
 
 describe("F-REPAS", () => {

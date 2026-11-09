@@ -16,6 +16,7 @@ import { spaceQuery } from "../../core/session/queries.ts";
 import { errorMessage } from "../../i18n/index.ts";
 import { api } from "../../lib/api.ts";
 import { useMediaQuery } from "../../lib/use-media-query.ts";
+import { PullToRefresh } from "../../ui/pull-to-refresh.tsx";
 import { Button, IconButton } from "../../ui/button.tsx";
 import { SegmentedControl } from "../../ui/controls.tsx";
 import { cx } from "../../ui/cx.ts";
@@ -305,12 +306,13 @@ export function PlanningPage() {
       },
       today,
     };
+    // Mobile : tirer vers le bas relit la semaine affichee [D186].
     content = wide ? (
       <WeekGrid {...props} />
-    ) : view === "day" ? (
-      <DayView {...props} day={day} onDay={goTo} />
     ) : (
-      <WeekList {...props} />
+      <PullToRefresh onRefresh={() => meals.refetch()}>
+        {view === "day" ? <DayView {...props} day={day} onDay={goTo} /> : <WeekList {...props} />}
+      </PullToRefresh>
     );
   }
 

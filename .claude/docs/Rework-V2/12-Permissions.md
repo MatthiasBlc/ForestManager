@@ -232,7 +232,7 @@ Introduites par ce document, reportees dans le journal des decisions (qui porte 
 
 ### D58 - Droits du planning - VALIDEE (2026-11-03)
 
-- Modifier un repas : role minimal regle par l'OWNER, MEMBER par defaut. Creer, archiver un planning, regler les repas de la journee, gerer les parametres et generer tout un planning : MODERATOR et OWNER.
+- Modifier un repas : role minimal regle par l'OWNER, MEMBER par defaut. Regler le planning, gerer les parametres et generer tout un planning : MODERATOR et OWNER ; regler le role minimal : OWNER.
 
 ### D59 - Retour d'un ancien membre - VALIDEE (2026-11-03)
 

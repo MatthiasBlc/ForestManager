@@ -192,6 +192,7 @@ Reprise de la V1 (genere par la CI, page utilisateur, CRUD admin).
 ### 5.1 Principes
 
 - **Mobile first** [D38] : chaque ecran est concu pour le telephone d'abord. Gestes : glisser pour fermer les panneaux du bas, appui long pour le menu d'actions, tirer pour rafraichir.
+  Exception : pas d'appui long sur un repas du planning, F-REPAS porte ses actions [D186].
 - **Une seule interface** desktop et mobile, construite avec les memes composants (pas de pages "mobile" a part).
 - **Navigation stable en 3 niveaux** : espace -> module -> contenu. L'utilisateur sait toujours dans quel espace il est.
 - **Le contenu d'abord** : les panneaux lateraux et les menus servent le contenu, pas l'inverse.

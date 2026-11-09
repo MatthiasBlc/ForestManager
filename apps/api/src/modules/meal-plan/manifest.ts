@@ -344,7 +344,7 @@ function mealPlanRouter(ctx: Context): Router {
 
 export const mealPlanModule: ApiModule = {
   code: "meal-plan",
-  catalog: { status: "COMING_SOON", sortOrder: 2 },
+  catalog: { status: "AVAILABLE", sortOrder: 2 },
   permissions: MEAL_PLAN_PERMISSIONS,
   router: mealPlanRouter,
   requires: ["recipes.catalog"],

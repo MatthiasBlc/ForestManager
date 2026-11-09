@@ -142,13 +142,13 @@ Conventions :
   2. E-PLANNING mobile : jour par jour (SegmentedControl Jour / Semaine ; vue Jour par defaut sur mobile), une liste de MealSlot par repas. Desktop : grille jours x repas.
   3. Remplir : toucher un MealSlot vide -> F-REPAS : recherche de recette (espace d'abord, puis mes recettes avec "Partager dans l'espace" propose), ou texte libre + commentaire, ou "Pas de repas" (D181) ; Stepper portions ; Switch "Verrouiller". Button "Enregistrer".
   4. Generer : Button "Generer" -> F-GENERER : profil de generation (liste), periode, "Remplacer les repas non verrouilles" (Switch). Resultat : rapport (repas remplis, regles non tenues) dans la feuille, Button "Garder" / "Annuler".
-  5. Remplacer un repas : ActionMenu du MealSlot "Proposer un autre repas" (relance la generation sur ce repas, confirmation).
-  6. Echanger (D69) : desktop, glisser-deposer un MealSlot sur un autre ; mobile, ActionMenu "Echanger avec..." puis toucher le repas cible (mode selection avec bandeau "Choisis le repas a echanger", Annuler).
+  5. Remplacer un repas : F-REPAS, "Proposer un autre repas" (relance la generation sur ce repas, confirmation). Pas d'appui long sur un MealSlot : F-REPAS porte ses actions (D186).
+  6. Echanger (D69) : desktop, glisser-deposer un MealSlot sur un autre ; mobile, F-REPAS "Echanger avec un autre repas" puis toucher le repas cible (mode selection avec bandeau, Annuler). Mobile : tirer vers le bas relit la semaine (D186).
   7. Verrouiller : ActionMenu "Verrouiller" (cadenas sur le MealSlot) ; la generation ne le touche pas.
   8. PullToRefresh sur E-PLANNING pour voir les modifications des autres membres.
 - **Droits** : modification selon le role minimal regle par l'espace (F-MPL-3, matrice B2) ; sinon lecture seule avec mention.
 - **Notifications** : activite "Planning de la semaine genere par X" ; pas de notification individuelle par repas.
-- **Decisions** : D11, F-MPL-1 a F-MPL-5, D69.
+- **Decisions** : D11, F-MPL-1 a F-MPL-5, D69, D180, D181, D186.
 
 ## P11 - Mode cuisine
 
@@ -229,7 +229,7 @@ Conventions :
 | D66 | Un espace en suppression reste visible, grise, dans le rail de son OWNER seulement, avec le compte a rebours et "Restaurer".                                                                                         | VALIDEE |
 | D67 | Mode cuisine : une etape a la fois en grand, boutons Precedente / Suivante, ingredients dans une feuille, ecran maintenu allume.                                                                                     | VALIDEE |
 | D68 | Hors ligne : bandeau permanent "Hors ligne", actions d'ecriture desactivees avec la raison, pas de file d'attente de modifications ; brouillon de recette conserve localement.                                       | VALIDEE |
-| D69 | Echanger deux repas : glisser-deposer en desktop ; sur mobile, ActionMenu "Echanger avec..." puis toucher le repas cible (pas de glisser-deposer tactile, conflit avec le defilement).                               | VALIDEE |
+| D69 | Echanger deux repas : glisser-deposer en desktop ; sur mobile, "Echanger avec un autre repas" (F-REPAS, D186) puis toucher le repas cible (pas de glisser-deposer tactile, conflit avec le defilement).              | VALIDEE |
 
 ## Questions pour le proprietaire (tranchees)
 
@@ -282,7 +282,7 @@ Toutes tranchees : QP1 par D60, QP2 par D61, QP3 par D64, QP4 par D69, QP5 par D
 | E-SUGGESTION-EDITION    | Ecran   | Rediger une suggestion           | P07                |
 | E-SUGGESTION            | Ecran   | Examiner une suggestion          | P07, P08           |
 | E-HISTORIQUE            | Ecran   | Historique des revisions         | P07                |
-| F-ACTIONS               | Feuille | Menu d'actions (ActionMenu)      | P06, P07, P10      |
+| F-ACTIONS               | Feuille | Menu d'actions (ActionMenu)      | P06, P07           |
 | F-CONFIRMER             | Feuille | Confirmation generique           | P04, P07, P10      |
 | E-MODE-CUISINE          | Ecran   | Mode cuisine                     | P11                |
 | F-INGREDIENTS           | Feuille | Ingredients a cocher             | P11                |

@@ -1,11 +1,10 @@
 // MealSlot (design system) : un repas de la grille. Recette (fond accent), texte,
-// vide (pointille) ou "Pas de repas" (barre). Toucher l'ouvre, appui long ouvre
-// ses actions ; en bureau il se glisse sur un autre repas pour les echanger (D69).
+// vide (pointille) ou "Pas de repas" (barre). Toucher l'ouvre (F-REPAS porte ses actions,
+// pas d'appui long, D186) ; en bureau il se glisse sur un autre repas pour les echanger (D69).
 import type { DragEvent } from "react";
 
 import { cx } from "../../ui/cx.ts";
 import { Icon } from "../../ui/icon.tsx";
-import { useLongPress } from "../../ui/use-long-press.ts";
 
 export type SlotKind = "recipe" | "text" | "empty" | "off";
 
@@ -25,7 +24,6 @@ export interface MealSlotProps {
   /** Grille de bureau : titre sur plusieurs lignes, case vide reduite a "+". */
   compact?: boolean;
   onOpen?: () => void;
-  onActions?: () => void;
   /** Glisser-deposer (bureau) : identifiant de la case. */
   dragId?: string;
   onDropFrom?: (sourceId: string) => void;
@@ -41,11 +39,9 @@ export function MealSlot({
   selected = false,
   compact = false,
   onOpen,
-  onActions,
   dragId,
   onDropFrom,
 }: MealSlotProps) {
-  const press = useLongPress(() => onActions?.());
   const label = kind === "empty" ? placeholder : kind === "off" ? "Pas de repas" : (title ?? "");
   const name = [
     `${when} : ${label}`,
@@ -84,7 +80,6 @@ export function MealSlot({
       )}
       aria-label={name}
       onClick={onOpen}
-      {...(onActions ? press.handlers : {})}
       {...drag}
     >
       {kind === "empty" ? <Icon name="plus" /> : null}

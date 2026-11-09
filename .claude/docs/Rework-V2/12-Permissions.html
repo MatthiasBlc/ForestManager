@@ -929,7 +929,7 @@
         },
         {
           m: "planning",
-          a: "Voir le planning, les archives, les idees de repas",
+          a: "Voir le planning (semaines passees comprises), les idees de repas",
           c: ["N", "N", "Y", "Y", "Y", "N", "N"],
           ref: "CDC S4.6",
           n: "Si le module est accorde et actif.",
@@ -950,9 +950,16 @@
         },
         {
           m: "planning",
-          a: "Creer, archiver, supprimer un planning ; regler les repas de la journee",
+          a: "Regler le planning (repas de la journee, portions, debut de semaine)",
           c: ["N", "N", "N", "Y", "Y", "N", "N"],
           ref: "D11, D58",
+          n: "Calendrier continu, pas de planning a creer (D180).",
+        },
+        {
+          m: "planning",
+          a: "Regler le role minimal pour modifier un repas",
+          c: ["N", "N", "N", "N", "Y", "N", "N"],
+          ref: "F-MPL-3, D58",
           n: "",
         },
         {
@@ -987,8 +994,8 @@
           m: "planning",
           a: "Convertir une idee en recette",
           c: ["N", "N", "Y", "Y", "Y", "N", "N"],
-          ref: "F-MPL-4",
-          n: "La recette creee a pour auteur celui qui convertit.",
+          ref: "F-MPL-4, D182",
+          n: "Auteur : celui qui convertit ; l'idee est ensuite retiree.",
         },
         {
           m: "planning",
@@ -1158,7 +1165,7 @@
         [
           "D58",
           "Droits du planning",
-          "Modifier un repas : role minimal regle par l'OWNER, MEMBER par defaut. Creer, archiver un planning, regler les repas de la journee, gerer les parametres et generer tout un planning : MODERATOR et OWNER.",
+          "Modifier un repas : role minimal regle par l'OWNER, MEMBER par defaut. Regler le planning, gerer les parametres et generer tout un planning : MODERATOR et OWNER ; regler le role minimal : OWNER.",
         ],
         [
           "D59",

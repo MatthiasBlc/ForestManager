@@ -81,14 +81,15 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C5.4 Profils de generation
   - [x] C5.5 Algorithme de generation (domaine pur)
   - [x] C5.6 Generer, garder, remplacer
-  - [ ] Revue visuelle de C5 dans Chrome (bureau et mobile), puis cloture
+  - [x] Revue visuelle de C5 dans Chrome (bureau et mobile), puis cloture (D186 : pas d'appui long sur un repas, PullToRefresh ; E2E 9 ecrit ; Planning "Disponible")
+  - [ ] Republier la page du modele de donnees (`11-Modele-Donnees/Modele-Donnees.html`, regeneree localement) a son URL, puis cocher C5
 - [ ] C6 Notifications, activite, changelog
   - [ ] Changelog : ecran admin A10, page utilisateur, generation par la CI [D171]
   - [ ] Notifications posees en C4 : OWNER prevenu d'un acces de moderation avec son motif [D172, D121], decision sur une demande de module, nouvelle demande pour l'admin (P09)
 - [ ] C7 E2E complets, preprod, remise a zero de la base et de la stack de prod
   - [ ] Suivi d'erreurs : SDK Sentry front et back, DSN vers Bugsink, test depuis A13 [D75, D179]
   - [ ] Premier passage de la CI sur GitHub (reporte depuis C1.10 et la cloture de C3, decision du proprietaire du 2026-11-06)
-  - [ ] A faire par le proprietaire avant le premier deploy preprod (a revoir ensemble) : secrets GitHub `MINIO_ACCESS_KEY` et `MINIO_SECRET_KEY` (exiges par `docker/deploy.sh`) [D167]
+  - [ ] A faire par le proprietaire avant le premier deploy preprod (a revoir ensemble) : secrets GitHub `MINIO_ACCESS_KEY` et `MINIO_SECRET_KEY` (exiges par `docker/deploy.sh`) [D167] ; sur une base deja creee, passer le Planning en "Disponible" dans A04 (le seed n'ecrit le statut qu'a la creation)
 - [ ] C8 Mise en prod V2
   - [ ] A faire par le proprietaire (a revoir ensemble) : retirer la lecture publique des buckets V1 `forestmanager-images-preprod` / `-prod` (`mc anonymous set none`) [D167]
 - [ ] C9 Module liste de courses (V2.1)

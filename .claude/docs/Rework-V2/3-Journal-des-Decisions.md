@@ -678,3 +678,9 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 ### D185 - C5 en tranches verticales - VALIDEE (2026-11-09, plan C5)
 
 - **Choix** : comme C3 et C4, chaque sous-etape livre l'API, le partage et les ecrans d'une meme fonction. Detail : `21-Plan-C5.md`.
+
+### D186 - Planning : pas d'appui long sur un repas, tirer pour rafraichir garde - VALIDEE (2026-11-09, revue de C5, choix du proprietaire)
+
+- **Constat** : la maquette prevoyait un appui long sur un repas (menu d'actions) et PullToRefresh sur E-PLANNING. Toucher un repas ouvre F-REPAS, qui porte deja toutes ses actions (vider, verrouiller, echanger, proposer un autre repas) ; le planning se relit deja au retour sur l'onglet et apres chaque modification.
+- **Options** : appui long en plus de F-REPAS, ou rien ; PullToRefresh, ou la relecture automatique seule.
+- **Choix** : pas d'appui long sur un repas (un seul geste, rien en double) ; PullToRefresh garde sur E-PLANNING en mobile. Ecart au geste general du CDC S5.1 [D38] limite aux repas du planning.

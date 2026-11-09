@@ -554,19 +554,19 @@ F --> G["Module visible pour tous les membres"]
         <h2>Planning de la semaine</h2>
       </header>
       <p class="trig"><b>Declencheur</b> Onglet Planning (module actif)</p>
-      <div class="chips"><span class="chip">D11</span><span class="chip">D69</span></div>
+      <div class="chips"><span class="chip">D11</span><span class="chip">D69</span><span class="chip">D180</span><span class="chip">D186</span></div>
       <div class="diagram">
         <pre class="mermaid">
 flowchart TD
-A["E-PLANNING vide"] --> B["F-CREER-PLANNING"]
-B --> C["E-PLANNING jour / semaine"]
-C -->|repas vide| D["F-REPAS : recette, texte, portions, verrou"]
+C["E-PLANNING jour / semaine (calendrier continu)"]
+C -->|toucher un repas| D["F-REPAS : recette, texte, Pas de repas, portions, verrou, proposer un autre"]
 C -->|Generer| E["F-GENERER : profil, periode, rapport"]
-C -->|appui long| F["F-ACTIONS : remplacer, verrouiller, echanger"]
-F -->|Echanger avec| G["Toucher le repas cible (mobile) / glisser (desktop)"]
+C -->|reglages| R["F-REGLAGES-PLANNING"]
+D -->|Echanger avec un autre repas| G["Toucher le repas cible (mobile) / glisser (desktop)"]
 D --> C
 E --> C
 G --> C
+R --> C
 </pre
         >
       </div>
@@ -939,7 +939,7 @@ A -->|Preferences| C["E-NOTIF-PREFERENCES : par categorie et espace"]
               <td><code>F-ACTIONS</code></td>
               <td>Feuille</td>
               <td>Menu d&#x27;actions (ActionMenu)</td>
-              <td>P06, P07, P10</td>
+              <td>P06, P07</td>
             </tr>
             <tr>
               <td><code>F-CONFIRMER</code></td>
@@ -966,9 +966,9 @@ A -->|Preferences| C["E-NOTIF-PREFERENCES : par categorie et espace"]
               <td>P10</td>
             </tr>
             <tr>
-              <td><code>F-CREER-PLANNING</code></td>
+              <td><code>F-REGLAGES-PLANNING</code></td>
               <td>Feuille</td>
-              <td>Creer le planning</td>
+              <td>Reglages du planning (D180)</td>
               <td>P10</td>
             </tr>
             <tr>
@@ -1100,8 +1100,8 @@ A -->|Preferences| C["E-NOTIF-PREFERENCES : par categorie et espace"]
           recette conserve localement.
         </li>
         <li>
-          <b>D69</b> Echanger deux repas : glisser-deposer en desktop ; sur mobile, ActionMenu
-          &quot;Echanger avec...&quot; puis toucher le repas cible (pas de glisser-deposer tactile,
+          <b>D69</b> Echanger deux repas : glisser-deposer en desktop ; sur mobile,
+          &quot;Echanger avec un autre repas&quot; (F-REPAS, D186) puis toucher le repas cible (pas de glisser-deposer tactile,
           conflit avec le defilement).
         </li>
       </ul>

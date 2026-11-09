@@ -238,3 +238,11 @@ body,
 .fm-stepper {
   align-self: flex-start;
 }
+
+/* PullToRefresh de l'application (D186) : defilement vertical natif garde, l'indicateur
+   n'est coupe qu'en haut (les anneaux de focus du contenu restent visibles). */
+.fm-ptr-native {
+  touch-action: auto;
+  overflow: visible;
+  clip-path: inset(0 -8px -8px -8px);
+}
