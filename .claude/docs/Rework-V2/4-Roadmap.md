@@ -87,7 +87,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C6.0 Plan de C6 (D187 a D190 ; D190 a relire par le proprietaire)
   - [x] C6.1 Socle des notifications (centre, preferences, cloche)
   - [x] C6.2 Temps reel (SSE) [D188]
-  - [ ] C6.3 Fil d'activite
+  - [x] C6.3 Fil d'activite
   - [ ] C6.4 Evenements du socle, dont l'OWNER prevenu d'un acces de moderation [D172, D121] et les decisions sur les demandes de module (P09)
   - [ ] C6.5 Evenements des modules (Recettes, Planning)
   - [ ] C6.6 Changelog : A10, page Nouveautes, brouillon genere par la CI [D171, D187]
