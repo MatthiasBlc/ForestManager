@@ -1,5 +1,12 @@
 // Libelles du module Planning (interface en francais).
-import type { MealTime, Rule, SpaceRole, Weekday } from "@fm/shared";
+import type {
+  EmptyReason,
+  GenerationWarning,
+  MealTime,
+  Rule,
+  SpaceRole,
+  Weekday,
+} from "@fm/shared";
 
 export const MEAL_TIME_LABELS: Record<MealTime, string> = {
   LUNCH: "Midi",
@@ -63,4 +70,39 @@ export function ruleDetail(rule: Rule): string {
   ].filter((part): part is string => part !== null);
   const text = parts.length > 0 ? parts.join(" · ") : "poids normal";
   return `${text.charAt(0).toUpperCase()}${text.slice(1)}`;
+}
+
+const quoted = (tags: readonly { name: string }[]) => tags.map((t) => `« ${t.name} »`).join(", ");
+
+/** Pourquoi la generation laisse un repas vide [D113]. */
+export function reasonText(reason: EmptyReason): string {
+  switch (reason.code) {
+    case "NO_RECIPE":
+      return "Aucune recette disponible pour ce repas.";
+    case "PIN":
+      return `Aucune recette du tag « ${reason.tag.name} », épinglé sur ce repas.`;
+    case "FREQUENCY_MAX":
+      return `${quoted(reason.tags)} a déjà atteint son maximum et les autres recettes sont écartées.`;
+    case "COOLDOWN":
+      return `Toutes les recettes ont été prévues il y a moins de ${String(reason.days)} jours.`;
+    case "TAG_COOLDOWN":
+      return `Les recettes restantes (${quoted(reason.tags)}) reviendraient trop tôt.`;
+    case "WEIGHT_ZERO":
+      return "Les règles du profil écartent toutes les recettes restantes.";
+  }
+}
+
+const dayMonth = new Intl.DateTimeFormat("fr-FR", {
+  day: "numeric",
+  month: "long",
+  timeZone: "UTC",
+});
+const dayOf = (iso: string) => dayMonth.format(new Date(`${iso}T00:00:00Z`));
+
+/** Ecart du rapport : minimum non atteint, maximum depasse par un epinglage. */
+export function warningText(warning: GenerationWarning): string {
+  if (warning.code === "MIN_NOT_MET") {
+    return `« ${warning.tag.name} » : ${String(warning.actual)} fois au lieu de ${String(warning.required)} au moins, semaine du ${dayOf(warning.from)}.`;
+  }
+  return `« ${warning.tag.name} » : ${String(warning.actual)} fois pour ${String(warning.max)} au plus, à cause d'un épinglage (semaine du ${dayOf(warning.from)}).`;
 }

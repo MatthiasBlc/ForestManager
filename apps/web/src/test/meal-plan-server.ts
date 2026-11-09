@@ -4,7 +4,11 @@
 // Garde l'etat et les corps recus.
 import {
   sortMealTimes,
+  type ApplyGenerationBody,
   type ConvertMealIdeaBody,
+  type GenerateBody,
+  type GenerationPreview,
+  type SuggestMealResult,
   type GenerationProfile,
   type GridCell,
   type PutGridBody,
@@ -115,6 +119,14 @@ export function mealPlanServer({
     ruleBodies: [] as RuleBody[],
     grids: [] as PutGridBody[],
     deletedProfiles: [] as { id: string; defaultId?: string }[],
+    /** Apercu renvoye par POST /generate (a fixer par le test). */
+    preview: null as GenerationPreview | null,
+    generations: [] as GenerateBody[],
+    applied: [] as ApplyGenerationBody[],
+    /** Cases signalees comme modifiees entre-temps par POST /generate/apply. */
+    applyConflicts: [] as MealCell[],
+    suggestResult: { meal: null, reason: { code: "NO_RECIPE" } } as SuggestMealResult,
+    suggestions: [] as MealCell[],
   };
   const base = `/api/v1/spaces/${s.space.id}/meal-plan`;
   const current = (): MealPlanSettings => ({
@@ -217,6 +229,27 @@ export function mealPlanServer({
       return new HttpResponse(null, { status: 204 });
     }),
     ...profileHandlers(base, state, tags),
+    http.post(`${base}/generate`, async ({ request }) => {
+      state.generations.push((await request.json()) as GenerateBody);
+      return HttpResponse.json(state.preview);
+    }),
+    http.post(`${base}/generate/apply`, async ({ request }) => {
+      const body = (await request.json()) as ApplyGenerationBody;
+      state.applied.push(body);
+      const conflict = (cell: MealCell) => state.applyConflicts.some((c) => sameCell(c, cell));
+      const data = body.cells
+        .filter((cell) => !conflict(cell))
+        .map((cell) => buildMeal({ date: cell.date, mealTime: cell.mealTime, title: "Proposé" }));
+      state.meals = [...state.meals.filter((m) => !data.some((d) => sameCell(d, m))), ...data];
+      return HttpResponse.json({ data, conflicts: state.applyConflicts });
+    }),
+    http.post(`${base}/meals/:date/:mealTime/suggest`, ({ params }) => {
+      const cell = { date: String(params.date), mealTime: params.mealTime } as MealCell;
+      state.suggestions.push(cell);
+      const { meal } = state.suggestResult;
+      if (meal) state.meals = [...state.meals.filter((m) => !sameCell(m, cell)), meal];
+      return HttpResponse.json(state.suggestResult);
+    }),
     http.get("/api/v1/tags", () => HttpResponse.json({ data: tags })),
     http.get(`/api/v1/spaces/${s.space.id}/recipes/tags`, () => HttpResponse.json({ data: [] })),
     http.get(`/api/v1/spaces/${s.space.id}/recipes`, ({ request }) =>

@@ -74,3 +74,18 @@ export function whenLabel(iso: string, mealTime: MealTime): string {
   const day = capitalize(weekdayLong.format(parse(iso)));
   return `${day} ${String(parse(iso).getUTCDate())}, ${MEAL_TIME_LABELS[mealTime].toLowerCase()}`;
 }
+
+/** "Du lundi 9 au dimanche 15 novembre" (mois repete s'il change). */
+export function periodLabel(from: string, to: string): string {
+  const [a, b] = [parse(from), parse(to)];
+  const first =
+    a.getUTCMonth() === b.getUTCMonth() && a.getUTCFullYear() === b.getUTCFullYear()
+      ? String(a.getUTCDate())
+      : dayMonth.format(a);
+  return `Du ${weekdayLong.format(a)} ${first} au ${weekdayLong.format(b)} ${dayMonth.format(b)}`;
+}
+
+/** "Vendredi soir" : repas de la semaine, sans la date. */
+export function weeklyMealLabel(iso: string, mealTime: MealTime): string {
+  return `${capitalize(weekdayLong.format(parse(iso)))} ${mealTime === "LUNCH" ? "midi" : "soir"}`;
+}

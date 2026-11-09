@@ -33,6 +33,7 @@ import {
   whenLabel,
 } from "./dates.ts";
 import { MEAL_TIME_LABELS } from "./format.ts";
+import { GenerateSheet } from "./generate-sheet.tsx";
 import { EmptyCell, MealSlot, type SlotKind } from "./meal-slot.tsx";
 import { MealSheet } from "./meal-sheet.tsx";
 import { mealsKey, mealsQuery, settingsQuery } from "./queries.ts";
@@ -226,6 +227,7 @@ export function PlanningPage() {
   });
   const [view, setView] = useState<"day" | "week">("day");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [generateOpen, setGenerateOpen] = useState(false);
   const [open, setOpen] = useState<MealCell | null>(null);
   const [swapFrom, setSwapFrom] = useState<MealCell | null>(null);
 
@@ -363,7 +365,7 @@ export function PlanningPage() {
             aria-label="Profils de génération"
             title="Profils de génération"
           >
-            <Icon name="sparkles" />
+            <Icon name="puzzle" />
           </Link>
         ) : null}
         {settings.data?.can.manage ? (
@@ -374,6 +376,18 @@ export function PlanningPage() {
               setSettingsOpen(true);
             }}
           />
+        ) : null}
+        {settings.data?.can.manage ? (
+          <Button
+            variant="primary"
+            size="sm"
+            icon="sparkles"
+            onClick={() => {
+              setGenerateOpen(true);
+            }}
+          >
+            Générer
+          </Button>
         ) : null}
       </div>
       {swapFrom ? (
@@ -422,6 +436,16 @@ export function PlanningPage() {
             setSwapFrom(open);
             setOpen(null);
           }}
+        />
+      ) : null}
+      {settings.data?.can.manage ? (
+        <GenerateSheet
+          open={generateOpen}
+          onClose={() => {
+            setGenerateOpen(false);
+          }}
+          spaceId={spaceId}
+          weekStart={start}
         />
       ) : null}
       {settings.data ? (

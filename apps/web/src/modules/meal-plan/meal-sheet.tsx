@@ -6,6 +6,7 @@ import {
   pageSchema,
   recipeSummarySchema,
   shareRequestResultSchema,
+  suggestMealResultSchema,
   type Meal,
   type MealCell,
   type MealKind,
@@ -27,6 +28,7 @@ import { OptionList, type OptionItem } from "../../ui/option-list.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { whenLabel } from "./dates.ts";
+import { reasonText } from "./format.ts";
 import { mealsKey } from "./queries.ts";
 
 const KINDS: readonly { value: MealKind; label: string }[] = [
@@ -36,6 +38,8 @@ const KINDS: readonly { value: MealKind; label: string }[] = [
 ];
 
 const recipePage = pageSchema(recipeSummarySchema);
+
+const lowerFirst = (text: string) => text.charAt(0).toLowerCase() + text.slice(1);
 
 function useDebounced(value: string, delay = 250): string {
   const [debounced, setDebounced] = useState(value);
@@ -221,8 +225,22 @@ function MealForm({ spaceId, spaceName, cell, meal, defaultServings, onDone, onS
     },
   });
 
+  // "Proposer un autre repas" : profil par defaut, apres confirmation (D58, droit de modifier).
+  const [confirming, setConfirming] = useState(false);
+  const suggest = useMutation({
+    mutationFn: () => api.post(`${base}/suggest`, undefined, suggestMealResultSchema),
+    onSuccess: async (result) => {
+      setConfirming(false);
+      if (!result.meal) return;
+      await refresh();
+      toast(`Remplacé par « ${result.meal.title ?? ""} »`, { tone: "success" });
+      onDone();
+    },
+  });
+  const nothing = suggest.data && !suggest.data.meal ? suggest.data.reason : null;
+
   const valid = kind === "SKIPPED" || (kind === "TEXT" ? text.trim() !== "" : choice !== null);
-  const error = save.error ?? clear.error;
+  const error = save.error ?? clear.error ?? suggest.error;
 
   return (
     <div className="fm-stack">
@@ -286,6 +304,56 @@ function MealForm({ spaceId, spaceName, cell, meal, defaultServings, onDone, onS
         <Button variant="ghost" icon="refresh" onClick={onSwap} {...guard}>
           Échanger avec un autre repas
         </Button>
+      ) : null}
+      {meal?.locked ? null : confirming ? (
+        <div
+          role="group"
+          aria-label="Proposer un autre repas"
+          className="flex flex-wrap items-center gap-2 rounded-md bg-accent-soft px-3 py-2 text-accent-text"
+        >
+          <span className="flex-1 text-sm">
+            {meal && meal.kind !== "SKIPPED"
+              ? `Remplacer « ${meal.title ?? ""} » par une proposition du profil par défaut ?`
+              : "Remplir ce repas avec une proposition du profil par défaut ?"}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setConfirming(false);
+            }}
+          >
+            Annuler
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            disabled={suggest.isPending || guard.disabled}
+            aria-describedby={guard["aria-describedby"]}
+            onClick={() => {
+              suggest.mutate();
+            }}
+          >
+            Remplacer
+          </Button>
+        </div>
+      ) : (
+        <Button
+          variant="ghost"
+          icon="sparkles"
+          {...guard}
+          onClick={() => {
+            suggest.reset();
+            setConfirming(true);
+          }}
+        >
+          {meal ? "Proposer un autre repas" : "Proposer un repas"}
+        </Button>
+      )}
+      {nothing ? (
+        <p role="status" className="m-0 rounded-md bg-warning-soft px-3 py-2 text-sm">
+          Rien à proposer : {lowerFirst(reasonText(nothing))}
+        </p>
       ) : null}
       <SheetFooter>
         {meal ? (
