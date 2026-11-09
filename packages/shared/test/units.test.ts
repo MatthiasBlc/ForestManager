@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  addQuantities,
   convert,
   formatQuantity,
   scaleQuantity,
@@ -79,5 +80,79 @@ describe("normalizeName", () => {
     expect(normalizeName("  Crème   FRAÎCHE ")).toBe("creme fraiche");
     expect(normalizeName("Œuf")).toBe("oeuf");
     expect(normalizeName("Pâte à pizza")).toBe("pate a pizza");
+  });
+});
+
+describe("addQuantities (liste de courses, testeur A06)", () => {
+  const clove: UnitDef = { code: "clove", dimension: "COUNT", toBase: null, metric: false };
+  const pinch: UnitDef = { code: "pinch", dimension: "NONE", toBase: null, metric: false };
+  const all = [...units, clove, pinch];
+
+  it("additionne dans une dimension par l'unite de base, puis simplifie", () => {
+    expect(
+      addQuantities(
+        [
+          { quantity: 3, unit: tbsp },
+          { quantity: 20, unit: ml },
+        ],
+        all
+      )
+    ).toEqual([{ quantity: 6.5, unit: cl }]);
+    expect(
+      addQuantities(
+        [
+          { quantity: 800, unit: g },
+          { quantity: 0.5, unit: kg },
+        ],
+        all
+      )
+    ).toEqual([{ quantity: 1.3, unit: kg }]);
+  });
+
+  it("passe les pieces en grammes avec le poids de l'ingredient", () => {
+    expect(
+      addQuantities(
+        [
+          { quantity: 2, unit: piece },
+          { quantity: 200, unit: g },
+        ],
+        all,
+        { piece: 15 }
+      )
+    ).toEqual([{ quantity: 230, unit: g }]);
+  });
+
+  it("sans poids connu, garde une ligne par unite", () => {
+    expect(
+      addQuantities(
+        [
+          { quantity: 2, unit: piece },
+          { quantity: 200, unit: g },
+          { quantity: 1, unit: piece },
+          { quantity: 3, unit: clove },
+        ],
+        all
+      )
+    ).toEqual([
+      { quantity: 200, unit: g },
+      { quantity: 3, unit: piece },
+      { quantity: 3, unit: clove },
+    ]);
+  });
+
+  it("garde une ligne sans quantite pour les unites sans quantite", () => {
+    expect(
+      addQuantities(
+        [
+          { quantity: null, unit: pinch },
+          { quantity: null, unit: pinch },
+          { quantity: 10, unit: g },
+        ],
+        all
+      )
+    ).toEqual([
+      { quantity: 10, unit: g },
+      { quantity: null, unit: pinch },
+    ]);
   });
 });

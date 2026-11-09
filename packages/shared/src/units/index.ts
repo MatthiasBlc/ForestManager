@@ -52,6 +52,54 @@ export function simplify(
   return { quantity: round(base / (best.toBase ?? 1)), unit: best };
 }
 
+export interface QuantityLine {
+  /** null : sans quantite ("a gout"). */
+  quantity: number | null;
+  unit: UnitDef;
+}
+
+/**
+ * Additionne les quantites d'un meme ingredient, comme la liste de courses [D46] :
+ * masses et volumes par leur unite de base puis simplifies, pieces converties en
+ * grammes quand l'ingredient connait leur poids (`gramsPerUnit`, par code d'unite).
+ * Sinon une ligne par unite. Ordre : masse, volume, puis les autres unites
+ * dans l'ordre de saisie.
+ */
+export function addQuantities(
+  lines: readonly QuantityLine[],
+  units: readonly UnitDef[],
+  gramsPerUnit: Readonly<Record<string, number>> = {}
+): QuantityLine[] {
+  const totals = new Map<"MASS" | "VOLUME", number>();
+  const others = new Map<string, QuantityLine>();
+  for (const { quantity, unit } of lines) {
+    const grams = unit.dimension === "COUNT" ? gramsPerUnit[unit.code] : undefined;
+    if (quantity !== null && grams !== undefined) {
+      totals.set("MASS", (totals.get("MASS") ?? 0) + quantity * grams);
+      continue;
+    }
+    if (
+      quantity !== null &&
+      unit.toBase !== null &&
+      (unit.dimension === "MASS" || unit.dimension === "VOLUME")
+    ) {
+      totals.set(unit.dimension, (totals.get(unit.dimension) ?? 0) + quantity * unit.toBase);
+      continue;
+    }
+    const previous = others.get(unit.code)?.quantity ?? null;
+    const sum = quantity === null ? previous : (previous ?? 0) + quantity;
+    others.set(unit.code, { unit, quantity: sum === null ? null : round(sum) });
+  }
+  const result: QuantityLine[] = [];
+  for (const dimension of ["MASS", "VOLUME"] as const) {
+    const total = totals.get(dimension);
+    const baseUnit = units.find((u) => u.dimension === dimension && u.toBase === 1);
+    if (total === undefined || !baseUnit) continue;
+    result.push(simplify(round(total), baseUnit, units));
+  }
+  return [...result, ...others.values()];
+}
+
 /** Arrondi a 1e-6 : evite 0.30000000000000004 dans les conversions. */
 function round(value: number): number {
   return Math.round(value * 1e6) / 1e6;

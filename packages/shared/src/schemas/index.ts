@@ -7,3 +7,4 @@ export * from "./referentials.ts";
 export * from "./recipes.ts";
 export * from "./storage.ts";
 export * from "./admin.ts";
+export * from "./admin-referentials.ts";

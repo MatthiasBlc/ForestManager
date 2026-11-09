@@ -126,6 +126,17 @@ const DEFINITIONS = {
     status: 409,
     message: "Le module fourni à chaque espace ne peut pas être modifié ni retiré.",
   },
+  ADMIN_008: { status: 404, message: "Élément introuvable." },
+  ADMIN_009: { status: 409, message: "Ce nom ou ce code est déjà pris." },
+  ADMIN_010: {
+    status: 409,
+    message: "Fusion impossible : la cible doit être un autre élément, encore actif.",
+  },
+  ADMIN_011: {
+    status: 422,
+    message: "Rayon ou unité invalide (le poids par unité ne vaut que pour les pièces).",
+  },
+  ADMIN_012: { status: 422, message: "L'ordre doit contenir chaque rayon une seule fois." },
 } as const satisfies Record<string, ErrorDefinition>;
 
 export type ErrorCode = keyof typeof DEFINITIONS;
