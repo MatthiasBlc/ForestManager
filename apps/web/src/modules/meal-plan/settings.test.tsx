@@ -1,11 +1,21 @@
 // Planning (C5.1) : entree de navigation, F-REGLAGES-PLANNING [D11, D58, D180].
 import { screen, waitFor, within } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../../app/App.tsx";
 import { axeViolations } from "../../test/axe.ts";
 import { mealPlanServer } from "../../test/meal-plan-server.ts";
 import { renderWithProviders } from "../../test/render.tsx";
+
+// Mardi 10 novembre 2026 (heure locale).
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date(2026, 10, 10, 10));
+});
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe("module Planning dans l'espace", () => {
   it("apparait dans la navigation quand il est actif", async () => {
@@ -20,7 +30,7 @@ describe("module Planning dans l'espace", () => {
     renderWithProviders(<App />, { route: `/s/${s.space.id}/meal-plan` });
     expect(await screen.findByRole("heading", { name: "Planning" })).toBeInTheDocument();
     // Reglages charges : l'absence du bouton vient des droits, pas du chargement.
-    expect(await screen.findByText("Le calendrier des repas arrive bientôt")).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Mardi 10 novembre" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Réglages du planning" })).not.toBeInTheDocument();
   });
 });

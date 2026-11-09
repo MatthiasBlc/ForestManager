@@ -230,6 +230,28 @@ describe("detail d'une recette (E-RECETTE)", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
+  it("compteurs du planning (D39) : seulement quand le planning est actif", async () => {
+    const planned = buildRecipe({ title: "Dahl", planning: { count: 3, lastOn: "2026-11-02" } });
+    const never = buildRecipe({ title: "Curry", planning: { count: 0, lastOn: null } });
+    const off = buildRecipe({ title: "Soupe" });
+    const s = recipeServer({ recipes: [planned, never, off] });
+    const first = renderWithProviders(<App />, {
+      route: `/s/${s.space.id}/recipes/${planned.id}`,
+    });
+    await screen.findByRole("heading", { name: "Dahl" });
+    expect(screen.getByText("Planifiée 3 fois · dernière fois le 2 novembre")).toBeInTheDocument();
+    first.unmount();
+
+    const second = renderWithProviders(<App />, { route: `/s/${s.space.id}/recipes/${never.id}` });
+    await screen.findByRole("heading", { name: "Curry" });
+    expect(screen.getByText("Jamais planifiée")).toBeInTheDocument();
+    second.unmount();
+
+    renderWithProviders(<App />, { route: `/s/${s.space.id}/recipes/${off.id}` });
+    await screen.findByRole("heading", { name: "Soupe" });
+    expect(screen.queryByText(/planifiée/i)).not.toBeInTheDocument();
+  });
+
   it("sans droit de modifier : ni Modifier ni Supprimer, l'historique reste", async () => {
     const recipe = buildRecipe({ can: { edit: false, delete: false } });
     const s = recipeServer({ recipes: [recipe] });

@@ -63,6 +63,14 @@ describe("ce qui est garde hors ligne", () => {
     expect(isPersisted(["spaces", SPACE, "recipes", "detail", RECIPE])).toBe(true);
   });
 
+  it("planning : reglages et semaines lues (D169, C5.2), pas les recherches", () => {
+    expect(isPersisted(["spaces", SPACE, "meal-plan", "settings"])).toBe(true);
+    expect(isPersisted(["spaces", SPACE, "meal-plan", "meals", "2026-11-09", "2026-11-15"])).toBe(
+      true
+    );
+    expect(isPersisted(["spaces", SPACE, "meal-plan", "search", "", "dahl"])).toBe(false);
+  });
+
   it("ni les listes, ni l'historique, ni les recherches", () => {
     expect(isPersisted(["spaces", SPACE, "recipes", "list", "space", ""])).toBe(false);
     expect(isPersisted(["spaces", SPACE, "recipes", "detail", RECIPE, "revisions"])).toBe(false);

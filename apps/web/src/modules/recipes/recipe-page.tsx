@@ -18,7 +18,7 @@ import { Icon } from "../../ui/icon.tsx";
 import { IngredientRow } from "./components/ingredient-row.tsx";
 import { LINK_STATUS_TITLES } from "./draft.ts";
 import { cookSteps } from "./cook.ts";
-import { formatMinutes, scaledAmount, unitLabel } from "./format.ts";
+import { formatMinutes, plannedLabel, scaledAmount, unitLabel } from "./format.ts";
 import { recipeFailure, recipeQuery, unitsQuery, type RecipeFailure } from "./queries.ts";
 import { AdaptedFromNotice } from "./adaptation.tsx";
 import { useRecipeActions } from "./use-recipe-actions.tsx";
@@ -379,6 +379,12 @@ function RecipeView({
             <span className="inline-flex items-center gap-1.5 text-sm text-ink-muted">
               <Icon name="clock" size={16} />
               {formatMinutes(recipe.totalMinutes)}
+            </span>
+          ) : null}
+          {recipe.planning ? (
+            <span className="inline-flex items-center gap-1.5 text-sm text-ink-muted">
+              <Icon name="calendar" size={16} />
+              {plannedLabel(recipe.planning)}
             </span>
           ) : null}
         </div>

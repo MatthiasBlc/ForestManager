@@ -151,3 +151,18 @@ export function describeDiff(
       };
   }
 }
+
+const plannedDay = new Intl.DateTimeFormat("fr-FR", {
+  timeZone: "UTC",
+  day: "numeric",
+  month: "long",
+});
+
+/** Compteurs du planning [D39] : "Planifiee 3 fois · derniere fois le 2 novembre". */
+export function plannedLabel({ count, lastOn }: { count: number; lastOn: string | null }): string {
+  if (count === 0) return "Jamais planifiée";
+  const times = `Planifiée ${count} fois`;
+  return lastOn
+    ? `${times} · dernière fois le ${plannedDay.format(new Date(`${lastOn}T00:00:00.000Z`))}`
+    : times;
+}
