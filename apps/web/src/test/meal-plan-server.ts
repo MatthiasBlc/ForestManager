@@ -4,7 +4,10 @@
 // Garde l'etat et les corps recus.
 import {
   sortMealTimes,
+  type ConvertMealIdeaBody,
   type Meal,
+  type MealIdea,
+  type MealIdeaBody,
   type MealCell,
   type MealPlanRights,
   type MealPlanSettings,
@@ -17,7 +20,7 @@ import {
 } from "@fm/shared";
 import { http, HttpResponse } from "msw";
 
-import { buildRecipe, NOW, toSummary } from "./fixtures.ts";
+import { buildRecipe, NOW, toSummary, uuid } from "./fixtures.ts";
 import { server } from "./server.ts";
 import { spaceServer } from "./space-server.ts";
 
@@ -55,6 +58,7 @@ export function mealPlanServer({
   spaceRecipes = [],
   myRecipes = [],
   shareResult = "SHARED",
+  ideas = [],
 }: {
   myRole?: SpaceRole;
   settings?: Partial<Omit<MealPlanSettings, "can">>;
@@ -65,6 +69,8 @@ export function mealPlanServer({
   myRecipes?: RecipeSummary[];
   /** Reponse a une demande de partage depuis F-REPAS. */
   shareResult?: ShareStatus;
+  /** Idees de repas, plus recentes d'abord. */
+  ideas?: MealIdea[];
 } = {}) {
   const s = spaceServer({ myRole });
   s.space.modules = [
@@ -88,6 +94,9 @@ export function mealPlanServer({
     clears: [] as MealCell[],
     swaps: [] as SwapMealsBody[],
     shareRequests: [] as { recipeId: string; targetSpaceId: string }[],
+    ideas: [...ideas],
+    ideaBodies: [] as MealIdeaBody[],
+    conversions: [] as (ConvertMealIdeaBody & { ideaId: string })[],
   };
   const base = `/api/v1/spaces/${s.space.id}/meal-plan`;
   const current = (): MealPlanSettings => ({
@@ -157,6 +166,38 @@ export function mealPlanServer({
       state.meals = state.meals.filter((m) => !sameCell(m, cell));
       return new HttpResponse(null, { status: 204 });
     }),
+    http.get(`${base}/ideas`, () => HttpResponse.json({ data: state.ideas })),
+    http.post(`${base}/ideas`, async ({ request }) => {
+      const body = (await request.json()) as MealIdeaBody;
+      state.ideaBodies.push(body);
+      const idea = buildIdea({
+        name: body.name,
+        comment: body.comment ?? null,
+        author: { id: s.me.id, username: s.me.username },
+      });
+      state.ideas = [idea, ...state.ideas];
+      return HttpResponse.json(idea, { status: 201 });
+    }),
+    http.put(`${base}/ideas/:ideaId`, async ({ params, request }) => {
+      const body = (await request.json()) as MealIdeaBody;
+      state.ideaBodies.push(body);
+      state.ideas = state.ideas.map((idea) =>
+        idea.id === params.ideaId
+          ? { ...idea, name: body.name, comment: body.comment ?? null }
+          : idea
+      );
+      return HttpResponse.json(state.ideas.find((idea) => idea.id === params.ideaId));
+    }),
+    http.delete(`${base}/ideas/:ideaId`, ({ params }) => {
+      state.ideas = state.ideas.filter((idea) => idea.id !== params.ideaId);
+      return new HttpResponse(null, { status: 204 });
+    }),
+    http.post(`${base}/ideas/:ideaId/convert`, async ({ params, request }) => {
+      const body = (await request.json()) as ConvertMealIdeaBody;
+      state.conversions.push({ ideaId: String(params.ideaId), ...body });
+      state.ideas = state.ideas.filter((idea) => idea.id !== params.ideaId);
+      return new HttpResponse(null, { status: 204 });
+    }),
     http.get(`/api/v1/spaces/${s.space.id}/recipes`, ({ request }) =>
       HttpResponse.json({
         data: matching(spaceRecipes, new URL(request.url)),
@@ -180,6 +221,18 @@ export function mealPlanServer({
     )
   );
   return { ...s, plan: state };
+}
+
+/** Idee de repas pour un test : seul le nom est obligatoire. */
+export function buildIdea(over: Partial<MealIdea> & Pick<MealIdea, "name">): MealIdea {
+  return {
+    id: uuid(),
+    comment: null,
+    author: { id: uuid(), username: "lea" },
+    createdAt: NOW,
+    can: { edit: true, delete: true },
+    ...over,
+  };
 }
 
 /** Recette resumee d'un autre espace (pour "mes recettes"). */

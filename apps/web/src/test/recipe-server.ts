@@ -46,14 +46,17 @@ export function recipeServer({
   recipes = [],
   revisions = {},
   extraSpaces = [],
+  on,
 }: {
   myRole?: SpaceRole;
   recipes?: Recipe[];
+  /** Espace deja servi (par exemple par mealPlanServer) : les recettes s'y ajoutent. */
+  on?: ReturnType<typeof spaceServer>;
   /** Historique par recette, du plus recent au plus ancien. */
   revisions?: Record<string, RecipeRevision[]>;
   extraSpaces?: SpaceDetail[];
 } = {}) {
-  const s = spaceServer({ myRole, extraSpaces });
+  const s = on ?? spaceServer({ myRole, extraSpaces });
   const state = {
     // Recettes donnees : nees dans l'espace groupe (une autre origine passe par `add`).
     recipes: recipes.map((r) => ({

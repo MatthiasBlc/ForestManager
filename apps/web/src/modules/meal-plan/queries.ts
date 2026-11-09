@@ -1,5 +1,5 @@
 // Requetes du module Planning.
-import { listSchema, mealPlanSettingsSchema, mealSchema } from "@fm/shared";
+import { listSchema, mealIdeaSchema, mealPlanSettingsSchema, mealSchema } from "@fm/shared";
 import { queryOptions } from "@tanstack/react-query";
 
 import { api } from "../../lib/api.ts";
@@ -26,5 +26,13 @@ export function mealsQuery(spaceId: string, from: string, to: string) {
           listSchema(mealSchema)
         )
       ).data,
+  });
+}
+
+export function ideasQuery(spaceId: string) {
+  return queryOptions({
+    queryKey: [...mealPlanKey(spaceId), "ideas"],
+    queryFn: async () =>
+      (await api.get(`/spaces/${spaceId}/meal-plan/ideas`, listSchema(mealIdeaSchema))).data,
   });
 }

@@ -58,6 +58,7 @@ import {
 } from "./draft.ts";
 import { scaledAmount } from "./format.ts";
 import { useOnline } from "../../pwa/use-online.ts";
+import type { RecipePrefill } from "./prefill.ts";
 import { RecipeNotFound, RecipeUnavailable } from "./recipe-page.tsx";
 import {
   globalTagsQuery,
@@ -382,6 +383,7 @@ function Editor({
   units,
   suggest = false,
   imported,
+  prefill,
 }: {
   spaceId: string;
   spaceName: string;
@@ -389,6 +391,8 @@ function Editor({
   units: readonly Unit[];
   /** Recette lue par un import (C3.8) : pre-remplit une nouvelle recette. */
   imported?: ImportedRecipe;
+  /** Recette pre-remplie par un autre module (idee de repas). */
+  prefill?: RecipePrefill;
   /** E-SUGGESTION-EDITION : les changements partent en suggestion a l'auteur [D04]. */
   suggest?: boolean;
 }) {
@@ -399,8 +403,8 @@ function Editor({
   const globalTags = useQuery(globalTagsQuery);
   const spaceTags = useQuery(spaceTagsQuery(spaceId));
   const key = `${draftKey(spaceId, recipe)}${suggest ? ":suggest" : ""}`;
-  // Un import remplace le brouillon garde d'une nouvelle recette.
-  const [restored] = useState(() => (imported ? null : readDraft(key)));
+  // Un import ou un pre-remplissage remplace le brouillon garde d'une nouvelle recette.
+  const [restored] = useState(() => (imported || prefill ? null : readDraft(key)));
   const [draft, setDraft] = useState<Draft>(
     () =>
       restored ??
@@ -408,9 +412,13 @@ function Editor({
         ? draftFromRecipe(recipe)
         : imported
           ? draftFromImport(imported, units)
-          : emptyDraft())
+          : prefill
+            ? { ...emptyDraft(), title: prefill.title, notes: prefill.notes ?? "" }
+            : emptyDraft())
   );
-  const [dirty, setDirty] = useState(restored !== null || imported !== undefined);
+  const [dirty, setDirty] = useState(
+    restored !== null || imported !== undefined || prefill !== undefined
+  );
   // Mode suggestion : ce que la suggestion change, ligne par ligne.
   const [base] = useState(() => (suggest && recipe ? draftFromRecipe(recipe) : null));
   const marks = base ? suggestionMarks(base, draft) : {};
@@ -506,6 +514,15 @@ function Editor({
             recipeSchema
           );
       clearDraft(key);
+      if (!recipe && prefill?.afterSave) {
+        try {
+          await api.post(prefill.afterSave, { recipeId: saved.id });
+        } catch (error) {
+          toast(`Recette enregistrée, mais l'idée reste dans la liste : ${errorMessage(error)}`, {
+            tone: "danger",
+          });
+        }
+      }
       if (!recipe && photo) {
         try {
           const { url } = await api.put(
@@ -543,7 +560,7 @@ function Editor({
                 ? "Suggérer une modification"
                 : recipe
                   ? "Modifier la recette"
-                  : "Nouvelle recette"
+                  : (prefill?.heading ?? "Nouvelle recette")
             }
             titleShort={suggest ? "Suggestion" : undefined}
             onCancel={() => {
@@ -581,6 +598,11 @@ function Editor({
             {toCheck > 0
               ? ` : ${String(toCheck)} ${toCheck > 1 ? "quantités" : "quantité"} à vérifier.`
               : "."}
+          </p>
+        ) : null}
+        {prefill && !recipe ? (
+          <p role="status" className="m-0 rounded-md bg-accent-soft px-3 py-2 text-accent-text">
+            {prefill.banner}
           </p>
         ) : null}
         <FormAlert message={failure} />
@@ -798,9 +820,11 @@ export function RecipeEditorPage({ suggest = false }: { suggest?: boolean }) {
   const units = useQuery(unitsQuery);
   const recipe = useQuery({ ...recipeQuery(spaceId, recipeId ?? ""), enabled: !!recipeId });
   const location = useLocation();
-  const imported = recipeId
-    ? undefined
-    : (location.state as { imported?: ImportedRecipe } | null)?.imported;
+  const state = recipeId
+    ? null
+    : (location.state as { imported?: ImportedRecipe; prefill?: RecipePrefill } | null);
+  const imported = state?.imported;
+  const prefill = state?.prefill;
   const failure = recipeId ? recipeFailure(recipe) : null;
   if (failure) {
     return (
@@ -823,6 +847,7 @@ export function RecipeEditorPage({ suggest = false }: { suggest?: boolean }) {
       units={units.data}
       suggest={suggest}
       imported={imported}
+      prefill={prefill}
     />
   );
 }

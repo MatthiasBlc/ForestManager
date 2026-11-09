@@ -10,7 +10,7 @@ import {
 } from "@fm/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useParams, useSearchParams } from "react-router";
+import { Link, useParams, useSearchParams } from "react-router";
 
 import { spaceQuery } from "../../core/session/queries.ts";
 import { errorMessage } from "../../i18n/index.ts";
@@ -20,6 +20,7 @@ import { Button, IconButton } from "../../ui/button.tsx";
 import { SegmentedControl } from "../../ui/controls.tsx";
 import { cx } from "../../ui/cx.ts";
 import { EmptyState, Skeleton } from "../../ui/display.tsx";
+import { Icon } from "../../ui/icon.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import {
   addDays,
@@ -352,6 +353,9 @@ export function PlanningPage() {
         >
           Aujourd'hui
         </Button>
+        <Link to="ideas" className="fm-iconbtn" aria-label="Idées de repas" title="Idées de repas">
+          <Icon name="lightbulb" />
+        </Link>
         {settings.data?.can.manage ? (
           <IconButton
             icon="settings"
