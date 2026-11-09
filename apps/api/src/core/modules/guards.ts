@@ -6,6 +6,7 @@ import {
   modulePermissionDefinition,
   uuidSchema,
   type CorePermissionKey,
+  type SpaceRole,
 } from "@fm/shared";
 import type { Request, RequestHandler } from "express";
 
@@ -18,6 +19,8 @@ import type { ApiModule } from "./registry.ts";
 interface ModuleRequest {
   access: SpaceAccess;
   module: ApiModule;
+  /** Roles minimaux regles par l'espace (permissions `configurable`). */
+  roles: Readonly<Record<string, SpaceRole>>;
 }
 
 const state = new WeakMap<Request, ModuleRequest>();
@@ -54,7 +57,8 @@ export function requireModule(ctx: Context, module: ApiModule): RequestHandler {
     const spaceId = parsed.data;
     const access = await loadAccess(ctx.db, spaceId, currentUserId(req));
     if (!(await isModuleActive(ctx.db, spaceId, module.code))) throw new AppError("MODULE_001");
-    state.set(req, { access, module });
+    const roles = module.roleOverrides ? await module.roleOverrides(ctx.db, spaceId) : {};
+    state.set(req, { access, module, roles });
     next();
   };
 }
@@ -65,10 +69,10 @@ function isCoreKey(key: string): key is CorePermissionKey {
 
 /** Vrai si l'utilisateur a cette permission du module courant (sans lever d'erreur). */
 export function hasModulePermission(req: Request, key: string): boolean {
-  const { access, module } = moduleRequest(req);
+  const { access, module, roles } = moduleRequest(req);
   const permission = module.permissions[key];
   if (!permission) throw new Error(`unknown permission "${key}" in module "${module.code}"`);
-  return isAllowed(modulePermissionDefinition(permission), {
+  return isAllowed(modulePermissionDefinition(permission, roles[key]), {
     authenticated: true,
     space: { kind: access.space.kind, role: access.role },
   });

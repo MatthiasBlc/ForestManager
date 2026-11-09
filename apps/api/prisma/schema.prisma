@@ -81,6 +81,8 @@ model User {
   shareRequestsDecided RecipeShareRequest[]     @relation("ShareRequestDecider")
   suggestions          RecipeSuggestion[]       @relation("SuggestionProposer")
   suggestionsDecided   RecipeSuggestion[]       @relation("SuggestionDecider")
+  mealSlotsUpdated     MealSlot[]
+  mealIdeas            MealIdea[]
 
   @@index([deletedAt])
 }
@@ -167,6 +169,10 @@ model Space {
   shareRequestsFrom  RecipeShareRequest[]     @relation("ShareRequestSource")
   suggestions        RecipeSuggestion[]
   moderationAccesses ModerationAccess[]
+  mealSettings       MealPlanSettings?
+  mealSlots          MealSlot[]
+  mealIdeas          MealIdea[]
+  generationProfiles MealGenerationProfile[]
 
   @@index([deletedAt])
   @@index([purgeAfter])
@@ -486,13 +492,15 @@ model Tag {
   createdAt    DateTime  @default(now())
   deletedAt    DateTime?
 
-  space        Space?            @relation(fields: [spaceId], references: [id], onDelete: Cascade)
-  createdBy    User?             @relation(fields: [createdById], references: [id], onDelete: SetNull)
-  mergedInto   Tag?              @relation("TagMerge", fields: [mergedIntoId], references: [id])
-  mergedFrom   Tag[]             @relation("TagMerge")
+  space        Space?               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  createdBy    User?                @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  mergedInto   Tag?                 @relation("TagMerge", fields: [mergedIntoId], references: [id])
+  mergedFrom   Tag[]                @relation("TagMerge")
   recipes      RecipeGlobalTag[]
   spaceRecipes RecipeSpaceTag[]
   translations TagTranslation[]
+  mealRules    MealGenerationRule[]
+  mealPins     MealSlotPin[]
 
   @@unique([spaceId, slug])
   @@index([scope, deletedAt])
@@ -559,6 +567,8 @@ model Recipe {
   sharedVia     RecipeShare[]        @relation("ShareVia")
   shareRequests RecipeShareRequest[]
   suggestions   RecipeSuggestion[]
+  mealSlots     MealSlot[]
+  mealRules     MealGenerationRule[]
 
   @@index([homeSpaceId, deletedAt])
   @@index([authorId, deletedAt])
@@ -744,21 +754,21 @@ model RecipeShareRequest {
 // =============================================================================
 
 model AdminUser {
-  id          String    @id @default(uuid())
-  email       String    @unique
-  username    String    @unique
-  password    String
-  totpSecret  String
-  totpEnabled Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  lastLoginAt DateTime?
+  id           String    @id @default(uuid())
+  email        String    @unique
+  username     String    @unique
+  password     String
+  totpSecret   String
+  totpEnabled  Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastLoginAt  DateTime?
   /// Dernier pas de temps TOTP accepte : un code ne sert qu'une fois (rejeu refuse) [D174].
   totpLastStep Int?
 
-  moduleGrants    SpaceModule[]
-  requestsDecided ModuleAccessRequest[]
-  auditLogs       AdminAuditLog[]
+  moduleGrants       SpaceModule[]
+  requestsDecided    ModuleAccessRequest[]
+  auditLogs          AdminAuditLog[]
   moderationAccesses ModerationAccess[]
 }
 
@@ -855,4 +865,156 @@ model RecipeSuggestion {
 
   @@index([recipeId, status])
   @@index([proposerId])
+}
+
+// =============================================================================
+// 6. MODULE PLANNING [D02] [D11] [D180 a D184] (C5)
+// =============================================================================
+
+enum MealTime {
+  LUNCH
+  DINNER
+}
+
+enum Weekday {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+  SAT
+  SUN
+}
+
+/// Reglages du planning d'un espace [D11] ; pas de ligne = valeurs par defaut.
+/// editRole : role minimal pour modifier un repas, regle par l'OWNER [D58].
+model MealPlanSettings {
+  spaceId         String     @id
+  mealTimes       MealTime[] @default([LUNCH, DINNER])
+  defaultServings Int        @default(4)
+  editRole        SpaceRole  @default(MEMBER)
+  weekStartsOn    Weekday    @default(MON)
+  updatedAt       DateTime   @updatedAt
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+}
+
+enum MealSlotKind {
+  RECIPE
+  TEXT
+  SKIPPED // "Pas de repas" : la generation le saute [D181]
+}
+
+/// Calendrier continu par espace [D180] : une ligne par repas rempli ou marque,
+/// une case vide n'a pas de ligne. Le passe tient lieu d'archives.
+model MealSlot {
+  id          String       @id @default(uuid())
+  spaceId     String
+  date        DateTime     @db.Date
+  mealTime    MealTime
+  kind        MealSlotKind
+  recipeId    String?
+  /// TEXT : le repas ; RECIPE : dernier titre connu, affiche si la recette devient invisible [D184].
+  text        String?
+  comment     String?
+  servings    Int? // null = defaultServings de l'espace
+  locked      Boolean      @default(false) // la generation ne le remplace pas ; suit le repas a l'echange [D184]
+  updatedById String?
+  updatedAt   DateTime     @updatedAt
+
+  space     Space   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  recipe    Recipe? @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+  updatedBy User?   @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@unique([spaceId, date, mealTime])
+  @@index([recipeId, date]) // compteurs "fois planifiee", "derniere fois" [D39]
+}
+
+/// Idee de repas : nom et commentaire, retiree une fois convertie en recette [F-MPL-4, D182].
+model MealIdea {
+  id          String    @id @default(uuid())
+  spaceId     String
+  name        String
+  comment     String?
+  createdById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  space     Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([spaceId, deletedAt])
+}
+
+/// Jeu de parametres de generation (V1 : MealGenerationParams). Toujours exactement
+/// un profil par defaut par espace, "Standard" cree d'office [D183] (index partiel).
+model MealGenerationProfile {
+  id           String    @id @default(uuid())
+  spaceId      String
+  name         String
+  description  String?
+  cooldownDays Int       @default(3)
+  useIdeas     Boolean   @default(true)
+  isDefault    Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  space      Space                @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  exclusions MealSlotExclusion[]
+  rules      MealGenerationRule[]
+  pins       MealSlotPin[]
+
+  @@index([spaceId, deletedAt])
+}
+
+model MealSlotExclusion {
+  profileId String
+  weekday   Weekday
+  mealTime  MealTime
+
+  profile MealGenerationProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@id([profileId, weekday, mealTime])
+}
+
+enum FrequencyPer {
+  PER_WEEK // semaine du calendrier (weekStartsOn) [D184]
+  PER_PERIOD // periode generee
+}
+
+/// Regle de generation : sur un tag (global ou de l'espace) OU sur une recette,
+/// jamais les deux (CHECK SQL).
+model MealGenerationRule {
+  id              String        @id @default(uuid())
+  profileId       String
+  position        Int           @default(0) // ordre de declaration (conflits de minimums)
+  tagId           String?
+  recipeId        String?
+  weight          Float         @default(1) // 0 a 2 : paliers ou mode avance [D184]
+  mealTime        MealTime? // null = tous les repas
+  frequencyMin    Int?
+  frequencyMax    Int?
+  frequencyPer    FrequencyPer?
+  tagCooldownDays Int?
+
+  profile MealGenerationProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  tag     Tag?                  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  recipe  Recipe?               @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+}
+
+/// Epinglage d'un tag sur un repas de la semaine ; jamais sur un repas exclu.
+model MealSlotPin {
+  profileId String
+  weekday   Weekday
+  mealTime  MealTime
+  tagId     String
+
+  profile MealGenerationProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  tag     Tag                   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([profileId, weekday, mealTime])
 }

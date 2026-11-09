@@ -5,6 +5,7 @@ export * from "./spaces.ts";
 export * from "./modules.ts";
 export * from "./referentials.ts";
 export * from "./recipes.ts";
+export * from "./meal-plan.ts";
 export * from "./storage.ts";
 export * from "./admin.ts";
 export * from "./admin-referentials.ts";

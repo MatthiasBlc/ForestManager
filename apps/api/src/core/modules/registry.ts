@@ -3,7 +3,12 @@
 // La liste des manifestes vit dans `src/modules/index.ts` ; le socle ne
 // l'importe jamais, elle lui est injectee (server.ts, seed, tests).
 
-import { validateModuleDefinitions, type ModuleDefinition, type ModuleStatus } from "@fm/shared";
+import {
+  validateModuleDefinitions,
+  type ModuleDefinition,
+  type ModuleStatus,
+  type SpaceRole,
+} from "@fm/shared";
 import type { Router } from "express";
 
 import type { Context } from "../context.ts";
@@ -23,6 +28,14 @@ export interface ApiModule extends ModuleDefinition {
   };
   /** Monte sous /api/v1/spaces/:spaceId/<code>, derriere requireAuth et requireModule. */
   readonly router?: (ctx: Context) => Router;
+  /**
+   * Roles minimaux regles par l'espace pour les permissions `configurable`
+   * (D58, D141), lus par requireModule. Une cle absente garde le role du manifeste.
+   */
+  readonly roleOverrides?: (
+    db: Db,
+    spaceId: string
+  ) => Promise<Readonly<Record<string, SpaceRole>>>;
   readonly onSpaceDeleted?: LifecycleHooks["onSpaceDeleted"][number];
   readonly onMemberLeft?: LifecycleHooks["onMemberLeft"][number];
   readonly storageKeys?: LifecycleHooks["storageKeys"][number];
