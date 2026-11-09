@@ -80,7 +80,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C5.3 Idees de repas
   - [x] C5.4 Profils de generation
   - [x] C5.5 Algorithme de generation (domaine pur)
-  - [ ] C5.6 Generer, garder, remplacer
+  - [x] C5.6 Generer, garder, remplacer
   - [ ] Revue visuelle de C5 dans Chrome (bureau et mobile), puis cloture
 - [ ] C6 Notifications, activite, changelog
   - [ ] Changelog : ecran admin A10, page utilisateur, generation par la CI [D171]
