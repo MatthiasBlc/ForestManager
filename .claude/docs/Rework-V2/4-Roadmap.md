@@ -78,7 +78,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C5.1 Socle du module, reglages
   - [x] C5.2 Calendrier et repas
   - [x] C5.3 Idees de repas
-  - [ ] C5.4 Profils de generation
+  - [x] C5.4 Profils de generation
   - [ ] C5.5 Algorithme de generation (domaine pur)
   - [ ] C5.6 Generer, garder, remplacer
   - [ ] Revue visuelle de C5 dans Chrome (bureau et mobile), puis cloture
