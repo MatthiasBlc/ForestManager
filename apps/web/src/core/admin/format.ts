@@ -46,3 +46,91 @@ export const REASON_LABELS: Record<ModerationReason, string> = {
   EXTERNAL_REPORT: "Contenu illicite signalé hors de l'application",
   OTHER: "Autre",
 };
+
+// --- Journal d'audit (A11) ---
+
+type AuditTone = "neutral" | "success" | "warning" | "danger";
+
+const AUDIT_LABELS: Readonly<Record<string, [string, AuditTone]>> = {
+  "auth.login": ["Connexion", "neutral"],
+  "auth.logout": ["Déconnexion", "neutral"],
+  "auth.totp-enabled": ["2FA configurée", "neutral"],
+  "auth.totp-failed": ["Code 2FA refusé", "warning"],
+  "auth.totp-locked": ["Connexion bloquée", "danger"],
+  "module-request.approved": ["Demande accordée", "success"],
+  "module-request.rejected": ["Demande refusée", "danger"],
+  "module.granted": ["Module accordé", "success"],
+  "module.revoked": ["Accès au module retiré", "danger"],
+  "module.status-changed": ["Statut de module changé", "neutral"],
+  "ingredient.created": ["Ingrédient ajouté", "neutral"],
+  "ingredient.updated": ["Ingrédient modifié", "neutral"],
+  "ingredient.verified": ["Ingrédient vérifié", "success"],
+  "ingredient.merged": ["Ingrédient fusionné", "neutral"],
+  "unit.created": ["Unité ajoutée", "neutral"],
+  "unit.updated": ["Unité modifiée", "neutral"],
+  "aisle.created": ["Rayon ajouté", "neutral"],
+  "aisle.updated": ["Rayon modifié", "neutral"],
+  "aisle.reordered": ["Rayons réordonnés", "neutral"],
+  "tag.created": ["Tag créé", "neutral"],
+  "tag.updated": ["Tag modifié", "neutral"],
+  "tag.merged": ["Tag fusionné", "neutral"],
+  "tag.deleted": ["Tag supprimé", "danger"],
+  "user.temporary-password": ["Mot de passe réinitialisé", "warning"],
+  "space.restored": ["Espace restauré", "success"],
+  "space.deleted": ["Espace supprimé", "danger"],
+  "moderation.opened": ["Accès de modération", "warning"],
+  "moderation.closed": ["Accès de modération fermé", "neutral"],
+  "recipe.hidden": ["Contenu masqué", "danger"],
+  "recipe.unhidden": ["Contenu réaffiché", "success"],
+  "recipe.removed": ["Recette retirée d'un espace", "danger"],
+  "recipe.deleted": ["Recette supprimée", "danger"],
+};
+
+export function auditLabel(action: string): { label: string; tone: AuditTone } {
+  const [label, tone] = AUDIT_LABELS[action] ?? [action, "neutral"];
+  return { label, tone };
+}
+
+function text(value: unknown): string | null {
+  return typeof value === "string" && value !== "" ? value : null;
+}
+
+/** Cible lisible : nom, compte, titre ou code garde dans les donnees de l'entree. */
+export function auditTarget(entry: {
+  action: string;
+  targetType: string | null;
+  data: Record<string, unknown> | null;
+}): string {
+  const data = entry.data ?? {};
+  const named =
+    text(data.name) ??
+    text(data.username) ??
+    text(data.title) ??
+    text(data.code) ??
+    text(data.moduleCode);
+  if (named) return named;
+  if (entry.action.startsWith("auth.")) return "Session admin";
+  return entry.targetType ?? "-";
+}
+
+/** Motif ou detail : precision de moderation, nombre de recettes touchees, statut... */
+export function auditDetail(entry: {
+  action: string;
+  data: Record<string, unknown> | null;
+}): string {
+  const data = entry.data ?? {};
+  const note = text(data.note);
+  if (entry.action === "moderation.opened") {
+    const reason = REASON_LABELS[data.reason as ModerationReason] as string | undefined;
+    return [reason, note].filter(Boolean).join(" : ");
+  }
+  if (note) return note;
+  if (typeof data.recipeCount === "number" && entry.action.endsWith(".merged")) {
+    return `${String(data.recipeCount)} recette${data.recipeCount > 1 ? "s" : ""} mise${data.recipeCount > 1 ? "s" : ""} à jour`;
+  }
+  if (entry.action === "module.status-changed") {
+    return `${String(data.from)} → ${String(data.to)}`;
+  }
+  if (text(data.ip)) return `IP ${String(data.ip)}`;
+  return "";
+}

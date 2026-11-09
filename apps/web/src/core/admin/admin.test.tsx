@@ -5,6 +5,7 @@ import { http, HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 
 import { App } from "../../app/App.tsx";
+import { buildDashboard } from "../../test/admin-server.ts";
 import { axeViolations } from "../../test/axe.ts";
 import { renderWithProviders } from "../../test/render.tsx";
 import { server } from "../../test/server.ts";
@@ -26,6 +27,7 @@ function adminServer({ totpEnabled = true, loggedIn = false } = {}) {
     ),
     http.get("/api/v1/me", () => HttpResponse.json(errorBody("AUTH_001"), { status: 401 })),
     http.get("/api/v1/admin/module-requests", () => HttpResponse.json({ pending: [], recent: [] })),
+    http.get("/api/v1/admin/dashboard", () => HttpResponse.json(buildDashboard())),
     http.get("/api/v1/admin/me", () =>
       me ? HttpResponse.json(me) : HttpResponse.json(errorBody("ADMIN_002"), { status: 401 })
     ),

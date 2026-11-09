@@ -626,3 +626,11 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
   - **Masquer** : `Recipe.hiddenAt` et `hiddenReason`. La recette disparait des listes et du detail pour tous les membres, sauf son auteur qui la voit avec le bandeau "Masquee par la moderation" et le motif. L'admin peut la reafficher (audit `recipe.unhidden`).
   - **Autres actions**, motif obligatoire et audit : retirer d'un espace de partage (la recette reste chez son auteur ; refuse dans l'espace d'origine, `ADMIN_014`), supprimer une recette (comme la suppression par l'auteur), supprimer un espace groupe (suppression masquee de 30 jours, D22 ; l'espace perso ne se supprime pas). La vue de moderation lit les recettes en lecture seule, masquees comprises.
   - **Restaurer** un espace en suppression depuis la liste, a la demande de l'OWNER, avant la purge (`ADMIN_015` sinon).
+
+### D179 - Journal, reglages et tableau de bord admin : regles de realisation - VALIDEE (2026-11-09, realisation C4.6)
+
+- **Constat** : D128, D129 et D135 fixent les ecrans A11, A02 et A13 ; le SDK Sentry (D75) n'est pas encore dans le code, et le plan ne dit pas si tester un service s'audite.
+- **Choix** :
+  - **Journal** : du plus recent au plus ancien, filtre par categorie (prefixe de l'action, `auditPrefixes`), pagination par offset avec "Voir les plus anciennes". Libelles, cible et detail des actions calcules cote web (`core/admin/format.ts`) depuis les donnees de l'entree.
+  - **Reglages** : lus des variables d'environnement, jamais de secret (adresse SMTP sans identifiants, cles de stockage nommees mais masquees). Tester l'e-mail envoie un message a l'adresse de l'admin ; tester le stockage ecrit, relit et supprime un petit objet. Un test ne modifie rien : pas d'entree d'audit. Le suivi d'erreurs est affiche "Pas encore branche" ; son branchement (SDK Sentry front et back, DSN Bugsink, test depuis A13) est ajoute a C7.
+  - **Tableau de bord** : "A traiter" = demandes de modules, nouveaux ingredients (et jusqu'a 3 doublons probables), espaces en suppression ; chiffres de la plateforme ; etat des services ; version (package.json racine) ; 5 dernieres actions. A02m est le meme ecran en mobile.

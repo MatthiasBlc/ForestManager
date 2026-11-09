@@ -1,7 +1,10 @@
 // API admin simulee pour les tests des ecrans d'administration (session ouverte).
 import {
   errorBody,
+  type AdminDashboard,
   type AdminMe,
+  type AuditEntry,
+  type PlatformSettings,
   type AdminModule,
   type AdminModuleGrant,
   type AdminModuleRequest,
@@ -131,6 +134,7 @@ export function mockAdminApi() {
       state.grants = state.grants.filter((g) => g.space.id !== params.spaceId);
       return new HttpResponse(null, { status: 204 });
     }),
+    http.get("/api/v1/admin/dashboard", () => HttpResponse.json(buildDashboard())),
     http.get("/api/v1/admin/spaces/lookup", ({ request }) => {
       const query = new URL(request.url).searchParams.get("query") ?? "";
       return HttpResponse.json({
@@ -142,3 +146,47 @@ export function mockAdminApi() {
 }
 
 export const SPACES = { COLLOC, FOYER, SKI };
+
+export function buildAuditEntry(over: Partial<AuditEntry> = {}): AuditEntry {
+  return {
+    id: "a1a1a1a1-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    createdAt: new Date().toISOString(),
+    admin: "root_admin",
+    action: "auth.login",
+    category: "CONNECTIONS",
+    targetType: null,
+    targetId: null,
+    data: null,
+    ...over,
+  };
+}
+
+/** Tableau de bord vide par defaut (rien en suppression, aucun nouvel ingredient). */
+export function buildDashboard(over: Partial<AdminDashboard> = {}): AdminDashboard {
+  return {
+    newIngredients: { count: 0, duplicates: [] },
+    deletingSpaces: [],
+    platform: {
+      users: 34,
+      groupSpaces: 9,
+      personalSpaces: 34,
+      recipes: 212,
+      modules: [{ code: "meal-plan", grantedCount: 2 }],
+    },
+    services: { email: false, storage: true, errorTracking: false },
+    version: "2.0.0",
+    recent: [],
+    ...over,
+  };
+}
+
+export const SETTINGS: PlatformSettings = {
+  email: { configured: false, server: null, from: "Forest Manager <no-reply@forestmanager.local>" },
+  storage: {
+    configured: true,
+    endpoint: "http://minio:9000",
+    bucket: "forest-photos",
+    publicUrl: "https://photos.forest.example",
+  },
+  errorTracking: { configured: false },
+};
