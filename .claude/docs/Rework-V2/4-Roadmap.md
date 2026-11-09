@@ -83,9 +83,16 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C5.6 Generer, garder, remplacer
   - [x] Revue visuelle de C5 dans Chrome (bureau et mobile), puis cloture (D186 : pas d'appui long sur un repas, PullToRefresh ; E2E 9 ecrit ; Planning "Disponible")
   - [x] Republier la page du modele de donnees (`11-Modele-Donnees/Modele-Donnees.html`, regeneree localement) a son URL, puis cocher C5
-- [ ] C6 Notifications, activite, changelog
-  - [ ] Changelog : ecran admin A10, page utilisateur, generation par la CI [D171]
-  - [ ] Notifications posees en C4 : OWNER prevenu d'un acces de moderation avec son motif [D172, D121], decision sur une demande de module, nouvelle demande pour l'admin (P09)
+- [ ] C6 Notifications, activite, temps reel, changelog (plan : `22-Plan-C6.md`)
+  - [x] C6.0 Plan de C6 (D187 a D190 ; D190 a relire par le proprietaire)
+  - [ ] C6.1 Socle des notifications (centre, preferences, cloche)
+  - [ ] C6.2 Temps reel (SSE) [D188]
+  - [ ] C6.3 Fil d'activite
+  - [ ] C6.4 Evenements du socle, dont l'OWNER prevenu d'un acces de moderation [D172, D121] et les decisions sur les demandes de module (P09)
+  - [ ] C6.5 Evenements des modules (Recettes, Planning)
+  - [ ] C6.6 Changelog : A10, page Nouveautes, brouillon genere par la CI [D171, D187]
+  - [ ] Revue visuelle de C6 dans Chrome (bureau et mobile), puis cloture
+- [ ] C6b Recherche globale, export, widgets d'accueil [D189] (plan a ecrire)
 - [ ] C7 E2E complets, preprod, remise a zero de la base et de la stack de prod
   - [ ] Suivi d'erreurs : SDK Sentry front et back, DSN vers Bugsink, test depuis A13 [D75, D179]
   - [ ] Premier passage de la CI sur GitHub (reporte depuis C1.10 et la cloture de C3, decision du proprietaire du 2026-11-06)

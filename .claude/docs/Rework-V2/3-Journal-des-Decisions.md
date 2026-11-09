@@ -684,3 +684,30 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 - **Constat** : la maquette prevoyait un appui long sur un repas (menu d'actions) et PullToRefresh sur E-PLANNING. Toucher un repas ouvre F-REPAS, qui porte deja toutes ses actions (vider, verrouiller, echanger, proposer un autre repas) ; le planning se relit deja au retour sur l'onglet et apres chaque modification.
 - **Options** : appui long en plus de F-REPAS, ou rien ; PullToRefresh, ou la relecture automatique seule.
 - **Choix** : pas d'appui long sur un repas (un seul geste, rien en double) ; PullToRefresh garde sur E-PLANNING en mobile. Ecart au geste general du CDC S5.1 [D38] limite aux repas du planning.
+
+### D187 - Changelog : brouillon embarque dans l'image, cree au demarrage - VALIDEE (2026-11-09, plan C6, choix du proprietaire)
+
+- **Constat** : la V1 inserait le changelog apres la prod par `exec` Portainer dans le conteneur (fragile, non testable, JSON en ligne de commande). Les commits sont ecrits pour les developpeurs (`feat(api): ... (C5.5)`) : publies tels quels, ils seraient illisibles. Le modele cible n'a pas de statut alors que A10 montre Brouillon, Publiee, Masquee. `release-tag` lit `package.json` (`2.0.0-dev`), qui ne change pas : deux sources de version. `git describe --match "v*"` trouverait `v1-final`.
+- **Options** : `exec` Portainer comme la V1 ; brouillon embarque dans l'image et cree au demarrage ; changelog entierement manuel.
+- **Choix** : la CI calcule la version (dernier tag `v[0-9]*`, semver depuis les commits conventionnels) et les items classes (etapes `(Cx.y)` regroupees, scopes retires), les ecrit dans `release.json` dans l'image API ; le seed cree le brouillon de cette version s'il n'existe pas ; l'admin reformule et publie dans A10 (interrupteur D127). Le tag pose apres la prod est cette version. `ChangelogEntry` gagne `status`, `publishedAt` facultatif et `notifiedAt`. La 2.0.0 (premiere version V2, une centaine de commits depuis `v1-final`) s'ecrit a la main.
+
+### D188 - Temps reel en SSE plutot que Socket.IO - VALIDEE (2026-11-09, plan C6, choix du proprietaire)
+
+- **Constat** : les besoins vont du serveur vers le client seulement (notifications, invalidation des donnees d'un espace) ; une seule instance d'API.
+- **Options** : Socket.IO (prevu par `14-Architecture.md` S6, comme la V1) ; Server-Sent Events.
+- **Choix** : SSE (`GET /api/v1/events`, `EventSource` natif) : aucune dependance, reprise native, passe par nginx et Traefik en HTTP. Diffusion en memoire derriere une interface (PostgreSQL `LISTEN/NOTIFY` si un jour plusieurs instances). Amende `14-Architecture.md` S6.
+
+### D189 - C6 recentre, recherche globale, export et widgets en C6b - VALIDEE (2026-11-09, plan C6, choix du proprietaire)
+
+- **Constat** : les etapes precedentes ont reporte vers C6 la recherche globale (loupe masquee depuis C2.4), l'export (C2.6, C2.8) et les widgets d'accueil (C2.8), sans lien avec les notifications.
+- **Options** : tout dans C6 ; C6b separe avant C7 ; apres la prod (V2.1).
+- **Choix** : C6 = notifications, temps reel, activite, changelog. C6b = recherche globale, export, widgets d'accueil, avant C7.
+
+### D190 - C6 : decoupage et regles de realisation - PROPOSEE (2026-11-09, plan C6, defauts annonces au proprietaire)
+
+- **Decoupage** : tranches verticales C6.1 a C6.6 (`22-Plan-C6.md`).
+- **Retention** : notifications lues purgees apres 30 jours, toutes apres 90 jours, dans la tache horaire.
+- **Regroupement** : `groupKey` sur 24 h ; jamais de notification a l'auteur de l'action.
+- **Admin** : pas de notification en base pour l'admin (`AdminUser` isole) ; "A traiter" du tableau de bord [D129] et un compteur dans l'AdminNav suffisent.
+- **Nouvelle version** [D127] : une ligne de notification par utilisateur actif dont la categorie est activee, ecrite en une requete a la publication.
+- **Fil d'activite** : sans maquette, page "Activite" de l'espace calquee sur E-NOTIFICATIONS.

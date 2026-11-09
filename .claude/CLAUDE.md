@@ -4,7 +4,7 @@ Plateforme d'espaces prives (famille, amis, colocs) organisee en modules. Module
 
 ## Etat actuel
 
-**Chantier en cours : Rework V2. CDC 1.0 valide le 2026-11-05 : phase de realisation. C1 (socle API), C2 (design system, shell, ecrans du socle) et C3 (Recettes) termines ; C4 (referentiels et admin) et C5 (planning) termines ; C6 (notifications, activite, changelog) a planifier.**
+**Chantier en cours : Rework V2. CDC 1.0 valide le 2026-11-05 : phase de realisation. C1 (socle API), C2 (design system, shell, ecrans du socle) et C3 (Recettes) termines ; C4 (referentiels et admin) et C5 (planning) termines ; C6 (notifications, activite, temps reel, changelog) planifie (`22-Plan-C6.md`), puis C6b (recherche, export, widgets).**
 Point de reprise : `.claude/docs/Rework-V2/README.md`, puis la premiere case non cochee de `4-Roadmap.md`.
 
 La V1 est obsolete et supprimee de l'arbre (reference : tag git `v1-final`).

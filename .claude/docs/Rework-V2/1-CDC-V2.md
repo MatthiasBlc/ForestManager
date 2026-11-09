@@ -1,6 +1,6 @@
 # Forest Manager V2 - Cahier des charges
 
-**Version : 1.1 (1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder ; 1.1 : module Planning revu au plan C5, D180 a D184, D11 amendee : midi et soir seulement) ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception** - 2026-11-09
+**Version : 1.2 (1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder ; 1.1 : module Planning revu au plan C5, D180 a D184, D11 amendee : midi et soir seulement ; 1.2 : plan C6, D187 a D189 : changelog en brouillon embarque, temps reel en SSE) ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception** - 2026-11-09
 Statut de chaque decision : voir `3-Journal-des-Decisions.md`. Une ligne marquee `[Dxx]` renvoie a sa decision.
 Les questions de la phase A sont au S10 (toutes repondues). Tant qu'une question touche une section, cette section n'est pas validable.
 
@@ -168,7 +168,7 @@ Reprend la V1 (grille jours x repas, repas recette / texte libre / vide, verroui
 
 ### 4.8 Notifications et activite
 
-- F-NOT-1 Centre de notifications persistant (comme V1), temps reel par WebSocket, groupement.
+- F-NOT-1 Centre de notifications persistant (comme V1), temps reel par SSE [D188], groupement.
 - F-NOT-2 Preferences globales par categorie, avec un reglage personnalise par espace [D118].
 - F-NOT-3 Types de notification et d'activite : cles texte declarees par chaque module dans le registre, pas d'enum en base (un nouveau module n'impose pas de migration du socle) [D41].
 - F-NOT-4 Notification "nouvelle version" liee au changelog, envoyee a tous les utilisateurs si l'admin l'active a la publication (interrupteur) [D127].
@@ -185,7 +185,11 @@ Dashboard, referentiels, catalogue de modules (statut de chaque module), **file 
 
 ### 4.10 Changelog
 
-Reprise de la V1 (genere par la CI, page utilisateur, CRUD admin).
+Reprise de la V1 (page utilisateur, gestion admin), generation revue [D187] :
+
+- Chaque image API embarque le brouillon de sa version (version semver et items calcules par la CI depuis les commits) ; le demarrage le cree s'il n'existe pas.
+- L'admin le reformule pour les utilisateurs dans A10 et le publie, en prevenant tout le monde ou non [D127] ; une version publiee peut etre masquee.
+- La 2.0.0 (premiere version V2) s'ecrit a la main.
 
 ## 5. UX et design system
 

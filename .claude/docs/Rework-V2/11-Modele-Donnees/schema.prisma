@@ -1112,17 +1112,28 @@ model ModerationAccess {
   @@index([spaceId, openedAt])
 }
 
+enum ChangelogStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
+}
+
+/// Version du changelog [D187] : brouillon cree au demarrage depuis release.json
+/// (commits classes par la CI), reformule et publie par l'admin dans A10.
+/// notifiedAt : date de la notification "nouvelle version" [D127]. HIDDEN tient
+/// lieu de suppression (pas de deletedAt).
 model ChangelogEntry {
-  id          String    @id @default(uuid())
-  version     String    @unique
+  id          String          @id @default(uuid())
+  version     String          @unique
   title       String
   content     Json
-  publishedAt DateTime  @default(now())
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  deletedAt   DateTime?
+  status      ChangelogStatus @default(DRAFT)
+  publishedAt DateTime?
+  notifiedAt  DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
-  @@index([publishedAt])
+  @@index([status, publishedAt])
 }
 
 // =============================================================================

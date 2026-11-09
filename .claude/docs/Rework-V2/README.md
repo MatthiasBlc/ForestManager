@@ -6,7 +6,7 @@ Refonte de Forest Manager : clarifier les concepts de la V1, refaire l'interface
 
 1. Ce README.
 2. `4-Roadmap.md` : la premiere case non cochee est le point de reprise.
-3. Le plan de l'etape en cours (`21-Plan-C5.md` pour C5 ; `17-Plan-C1.md` a `20-Plan-C4.md` pour C1 a C4, termines).
+3. Le plan de l'etape en cours (`22-Plan-C6.md` pour C6 ; `17-Plan-C1.md` a `21-Plan-C5.md` pour C1 a C5, termines).
 4. `1-CDC-V2.md` : S1 a S3 (vision, glossaire, roles) pour tout le monde, puis la section du module concerne.
 5. `3-Journal-des-Decisions.md` : seulement pour comprendre le pourquoi d'une regle (chercher le `D##`).
 
@@ -164,7 +164,8 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
   - Conteneurs de dev a relancer apres une longue session (`docker restart forestmanager-api-1 forestmanager-web-1`) : Vite servait un ancien `@fm/shared` (page blanche) et l'API d'anciennes routes (404 sur Generer).
 - Cloture de C5 le 2026-11-09 : D186 (choix du proprietaire) : pas d'appui long sur un repas (F-REPAS porte ses actions, `onActions` retire de `MealSlot`), PullToRefresh garde sur E-PLANNING en mobile (`ui/pull-to-refresh.tsx` : evenements tactiles, seulement quand rien n'est defile au-dessus, `fm-ptr-native` dans `app.css` ; verifie dans Chrome par des touches synthetiques : une relecture). Planning "Disponible" dans son manifeste (bases neuves ; base de dev deja passee a la main). Scenario E2E 9 ecrit dans `21-Plan-C5.md` section 4 (code et joue en C7). CDC S5.1, permissions (D180, D182) et parcours P10 (D180, D186) mis a jour et republies (Permissions v6, Parcours v7). Suites : 770 tests API, 281 web, lint, typecheck et build verts.
 - Page du modele de donnees republiee le 2026-11-09 (v6, nouvelle mise en page D165). **C5 termine le 2026-11-09.**
-- **Prochaine etape : C6** (notifications, activite, changelog) : ecrire son plan (`22-Plan-C6.md`) et le faire valider.
+- Plan de C6 ecrit le 2026-11-09 (`22-Plan-C6.md`) apres une revue du perimetre : changelog en brouillon embarque dans l'image et cree au demarrage, plus d'exec Portainer, statuts Brouillon / Publiee / Masquee, version calculee par la CI et non plus lue dans `package.json`, 2.0.0 a la main (D187) ; temps reel en SSE (D188, `14-Architecture.md` S6 amende) ; recherche globale, export et widgets d'accueil sortis en C6b (D189) ; decoupage et defauts de realisation (D190, **a relire par le proprietaire**). CDC 1.2, schema cible a jour (`ChangelogStatus`) : page du modele de donnees **a regenerer et republier** a la cloture de C6.
+- **Prochaine etape : C6.1** (socle des notifications).
 - Tout est publie et committe au 2026-11-05 : DS v10, Acces v39, Recettes v35, Planning v26, Admin v26, Permissions v5 (v6 le 2026-11-09), Parcours v6 (v7 le 2026-11-09), Modele de donnees v5 (v6 le 2026-11-09, page regeneree en D165). Maquettes revues dans Chrome le 2026-11-05 (B5b, voir `archive/16-Maquettes-ECARTS.md`).
   - Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact) : relire l'artefact (action read sur l'URL), puis publier avec `root` = le dossier du canevas, `file_path` = un fichier modifie, `files` = les autres (`project/...`).
   - Les numeros de version des artefacts avancent aussi a la simple consultation : comparer le contenu en ligne au commit avant d'ecraser.

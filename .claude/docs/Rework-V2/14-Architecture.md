@@ -30,7 +30,7 @@ npm workspaces, un seul `package-lock.json` a la racine.
           exports/            # export perso et export d'espace
           admin/              # super admin (2FA, audit, referentiels, catalogue modules)
           http/               # app Express, middlewares (securite, CSRF, erreurs, validation)
-          realtime/           # Socket.IO
+          realtime/           # SSE (D188)
           storage/            # MinIO (S3), URLs presignees
           mail/               # transport SMTP optionnel
         modules/
@@ -156,12 +156,12 @@ Recettes est un module comme les autres : son manifeste, ses routes, ses permiss
 - **Admin isole** : `AdminUser`, session dediee de 30 min non glissante, **2FA TOTP obligatoire** (otplib), audit de chaque action, routes sous `/api/v1/admin`, rate limit renforce. Reprise de la V1.
 - Emails [D21] : voir section 9.
 
-## 6. Temps reel
+## 6. Temps reel [D188]
 
-- Socket.IO sur le meme serveur, authentifie par la session (meme cookie).
-- Rooms : `user:<id>` (notifications) et `space:<id>` (activite, mises a jour du planning).
-- **Rejoindre une room d'espace verifie l'appartenance** a chaque `join` (faille V1 corrigee) ; quitter ou etre exclu retire la socket de la room cote serveur.
+- Server-Sent Events sur le meme serveur : `GET /api/v1/events` (`text/event-stream`), authentifie par la session (meme cookie), battement toutes les 25 s, `EventSource` natif cote client (reprise automatique).
+- Abonnements calcules par le serveur, jamais demandes par le client : l'utilisateur (notifications) et ses espaces actifs (activite, mises a jour du planning). Rejoindre, quitter ou etre exclu d'un espace recalcule les abonnements (faille V1 des rooms corrigee par construction).
 - Les evenements transportent des identifiants et un type ; le client invalide les requetes TanStack Query concernees plutot que de recevoir des donnees completes.
+- Diffusion en memoire (une instance d'API) derriere une interface ; PostgreSQL `LISTEN/NOTIFY` si plusieurs instances un jour. nginx : pas de tampon ni de compression sur ce chemin.
 
 ## 7. Stockage des images
 
