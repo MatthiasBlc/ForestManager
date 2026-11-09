@@ -12,10 +12,13 @@ import {
   type UpdateSpaceBody,
 } from "@fm/shared";
 
+import { recordActivity } from "../activity/service.ts";
 import type { Context } from "../context.ts";
 import type { Prisma } from "../db/client.ts";
 import { AppError } from "../http/errors.ts";
 import type { MemberLeftReason } from "../modules/hooks.ts";
+import { activeMembers, managersOf } from "../notifications/recipients.ts";
+import { notify } from "../notifications/service.ts";
 import { authorize, loadAccess, requireSpacePermission } from "./access.ts";
 import { imageUrl, toUserSummary } from "../storage/images.ts";
 import { grantDefaultModules } from "./defaults.ts";
@@ -179,7 +182,16 @@ export async function softDelete(tx: Tx, spaceId: string): Promise<void> {
 
 export async function deleteSpace(ctx: Context, spaceId: string, userId: string): Promise<void> {
   await requireSpacePermission(ctx.db, spaceId, userId, "space.delete");
+  const recipients = await activeMembers(ctx.db, spaceId);
+  const space = await ctx.db.space.findUniqueOrThrow({ where: { id: spaceId } });
   await ctx.db.$transaction((tx) => softDelete(tx, spaceId));
+  // Espace masque : l'avis garde son nom sans pointer dessus (P14).
+  await notify(ctx, {
+    type: "core.space.deleted",
+    recipients,
+    actorId: userId,
+    data: { spaceName: space.name },
+  });
 }
 
 export async function restoreSpace(ctx: Context, spaceId: string, userId: string): Promise<void> {
@@ -193,6 +205,12 @@ export async function restoreSpace(ctx: Context, spaceId: string, userId: string
   await ctx.db.$transaction(async (tx) => {
     await assertCanOwnAnother(tx, userId);
     await tx.space.update({ where: { id: spaceId }, data: { deletedAt: null, purgeAfter: null } });
+  });
+  await notify(ctx, {
+    type: "core.space.restored",
+    recipients: await activeMembers(ctx.db, spaceId),
+    spaceId,
+    actorId: userId,
   });
 }
 
@@ -306,6 +324,13 @@ export async function excludeMember(
   if (target.role === "OWNER") throw new AppError("SPACE_002");
   if (target.role === "MODERATOR") authorize(access, "space.members.exclude.moderator");
   await ctx.db.$transaction((tx) => endMembership(ctx, tx, spaceId, targetId, "EXCLUDED"));
+  // Il ne voit plus l'espace : l'avis en garde le nom sans pointer dessus.
+  const space = await ctx.db.space.findUniqueOrThrow({ where: { id: spaceId } });
+  await notify(ctx, {
+    type: "core.member.excluded",
+    recipients: [targetId],
+    data: { spaceName: space.name },
+  });
 }
 
 /**
@@ -330,6 +355,14 @@ export async function leaveSpace(
     return "deleted";
   }
   await ctx.db.$transaction((tx) => endMembership(ctx, tx, spaceId, userId, "LEFT"));
+  await recordActivity(ctx, { spaceId, type: "core.member.left", actorId: userId });
+  await notify(ctx, {
+    type: "core.member.left",
+    recipients: await managersOf(ctx.db, spaceId),
+    spaceId,
+    actorId: userId,
+    groupKey: `core.member.left:${spaceId}`,
+  });
   return "left";
 }
 
@@ -404,6 +437,14 @@ export async function proposeTransfer(
       data: { spaceId, fromUserId: ownerId, toUserId },
       select: transferSelect,
     });
+    await notify(ctx, {
+      type: "core.transfer.proposed",
+      recipients: [toUserId],
+      spaceId,
+      actorId: ownerId,
+      targetType: "transfer",
+      targetId: row.id,
+    });
     return toTransfer(ctx, row);
   } catch (error) {
     // Index partiel : une seule proposition en attente par espace (requetes concurrentes).
@@ -430,7 +471,7 @@ export async function respondToTransfer(
   userId: string,
   accept: boolean
 ): Promise<void> {
-  await ctx.db.$transaction(async (tx) => {
+  const ownerId = await ctx.db.$transaction(async (tx) => {
     const transfer = await pendingTransferFor(tx, spaceId, transferId);
     // Seul le destinataire repond ; pour les autres, la proposition n'existe pas.
     if (transfer.toUserId !== userId) throw new AppError("SPACE_011");
@@ -440,7 +481,7 @@ export async function respondToTransfer(
         where: { id: transfer.id },
         data: { status: "DECLINED", respondedAt: now },
       });
-      return;
+      return transfer.fromUserId;
     }
     const owner = await activeMember(tx, spaceId, transfer.fromUserId);
     await activeMember(tx, spaceId, userId);
@@ -456,6 +497,13 @@ export async function respondToTransfer(
       where: { id: transfer.id },
       data: { status: "ACCEPTED", respondedAt: now },
     });
+    return transfer.fromUserId;
+  });
+  await notify(ctx, {
+    type: accept ? "core.transfer.accepted" : "core.transfer.declined",
+    recipients: [ownerId],
+    spaceId,
+    actorId: userId,
   });
 }
 

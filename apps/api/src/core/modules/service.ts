@@ -4,6 +4,7 @@
 
 import type { CatalogModule, ModuleAccessRequest } from "@fm/shared";
 
+import { recordActivity } from "../activity/service.ts";
 import type { Context } from "../context.ts";
 import { AppError } from "../http/errors.ts";
 import { requireSpacePermission } from "../spaces/access.ts";
@@ -160,6 +161,14 @@ export async function setEnabled(
       where: { id: grant.id },
       data: { enabled, enabledChangedAt: new Date() },
     });
+    if (enabled) {
+      await recordActivity(ctx, {
+        spaceId,
+        type: "core.module.enabled",
+        actorId: userId,
+        data: { moduleCode },
+      });
+    }
   }
   return buildCatalog(ctx, spaceId);
 }

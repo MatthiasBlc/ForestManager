@@ -19,6 +19,9 @@ import { unshareFrom } from "../../modules/recipes/sharing.ts";
 import type { Context } from "../context.ts";
 import type { Prisma } from "../db/client.ts";
 import { AppError } from "../http/errors.ts";
+import { activeMembers, ownerOf } from "../notifications/recipients.ts";
+import { notify } from "../notifications/service.ts";
+import { publishToSpace } from "../realtime/routes.ts";
 import { softDelete } from "../spaces/service.ts";
 import { audit } from "./audit.ts";
 
@@ -181,6 +184,13 @@ export async function openModeration(
     });
     return access;
   });
+  // L'OWNER est prevenu, avec le motif [D121, D172].
+  await notify(ctx, {
+    type: "core.moderation.opened",
+    recipients: await ownerOf(ctx.db, spaceId),
+    spaceId,
+    data: { reason: body.reason, note: body.note },
+  });
   return toAccess(row);
 }
 
@@ -321,6 +331,7 @@ export async function moderateRecipe(
       data: { spaceId, title: recipe.title, ...(note ? { note } : {}) },
     });
   });
+  await publishToSpace(ctx, spaceId, { type: "invalidate", spaceId, module: "recipes" });
 }
 
 /** Supprimer l'espace par moderation : masque, restaurable 30 jours, puis purge [D22]. */
@@ -334,6 +345,7 @@ export async function deleteSpaceByModeration(
   const space = await ctx.db.space.findUniqueOrThrow({ where: { id: access.spaceId } });
   // L'espace perso ne se supprime pas : on modere son contenu [D02].
   if (space.kind === "PERSONAL") throw new AppError("SPACE_003");
+  const recipients = await activeMembers(ctx.db, spaceId);
   await ctx.db.$transaction(async (tx) => {
     await softDelete(tx, spaceId);
     await audit(tx, {
@@ -344,4 +356,5 @@ export async function deleteSpaceByModeration(
       data: { name: space.name, note },
     });
   });
+  await notify(ctx, { type: "core.space.deleted", recipients, data: { spaceName: space.name } });
 }

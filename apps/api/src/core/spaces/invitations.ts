@@ -18,6 +18,9 @@ import { hashToken } from "../auth/tokens.ts";
 import type { Context } from "../context.ts";
 import type { Prisma } from "../db/client.ts";
 import { AppError } from "../http/errors.ts";
+import { recordActivity } from "../activity/service.ts";
+import { managersOf } from "../notifications/recipients.ts";
+import { notify } from "../notifications/service.ts";
 import { imageUrl, toUserSummary } from "../storage/images.ts";
 import { requireSpacePermission } from "./access.ts";
 
@@ -191,7 +194,7 @@ export async function previewInviteLink(ctx: Context, code: string): Promise<Inv
 
 /** Rejoindre par un lien ; renvoie l'espace. Un membre exclu ne revient pas par un lien [D149]. */
 export async function joinByLink(ctx: Context, code: string, userId: string): Promise<string> {
-  return ctx.db.$transaction(async (tx) => {
+  const spaceId = await ctx.db.$transaction(async (tx) => {
     const link = await usableLink(tx, code);
     const membership = await tx.membership.findUnique({
       where: { spaceId_userId: { spaceId: link.spaceId, userId } },
@@ -208,6 +211,8 @@ export async function joinByLink(ctx: Context, code: string, userId: string): Pr
     await addToSpace(tx, link.spaceId, userId);
     return link.spaceId;
   });
+  await memberJoined(ctx, spaceId, userId);
+  return spaceId;
 }
 
 // --- Invitations par username ---
@@ -264,10 +269,19 @@ export async function inviteByUsername(
   });
   if (membership && !membership.leftAt) return;
   // Index partiel : une seule invitation PENDING par (espace, invite) ; un doublon est ignore.
-  await ctx.db.$executeRaw`
+  const inserted = await ctx.db.$executeRaw`
     INSERT INTO "SpaceInvitation" ("id", "spaceId", "inviterId", "inviteeId")
     VALUES (gen_random_uuid(), ${spaceId}, ${inviterId}, ${invitee.id})
     ON CONFLICT ("spaceId", "inviteeId") WHERE "status" = 'PENDING' DO NOTHING`;
+  if (inserted === 0) return;
+  // Pas encore membre : l'avis ne pointe pas sur l'espace, il en garde le nom (P02).
+  const space = await ctx.db.space.findUniqueOrThrow({ where: { id: spaceId } });
+  await notify(ctx, {
+    type: "core.invitation.received",
+    recipients: [invitee.id],
+    actorId: inviterId,
+    data: { spaceName: space.name },
+  });
 }
 
 /** Invitations en attente envoyees par l'espace (pour les annuler). */
@@ -321,7 +335,7 @@ export async function respondToInvitation(
   userId: string,
   accept: boolean
 ): Promise<string> {
-  return ctx.db.$transaction(async (tx) => {
+  const result = await ctx.db.$transaction(async (tx) => {
     const invitation = await tx.spaceInvitation.findFirst({
       where: { id: invitationId, inviteeId: userId, space: { deletedAt: null } },
       select: { status: true, spaceId: true },
@@ -338,5 +352,19 @@ export async function respondToInvitation(
       });
     }
     return invitation.spaceId;
+  });
+  if (accept) await memberJoined(ctx, result, userId);
+  return result;
+}
+
+/** Arrivee (lien ou invitation) : OWNER et moderateurs prevenus, activite de l'espace (P03). */
+async function memberJoined(ctx: Context, spaceId: string, userId: string): Promise<void> {
+  await recordActivity(ctx, { spaceId, type: "core.member.joined", actorId: userId });
+  await notify(ctx, {
+    type: "core.member.joined",
+    recipients: await managersOf(ctx.db, spaceId),
+    spaceId,
+    actorId: userId,
+    groupKey: `core.member.joined:${spaceId}`,
   });
 }

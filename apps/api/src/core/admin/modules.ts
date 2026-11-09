@@ -13,6 +13,9 @@ import type {
 
 import type { Context } from "../context.ts";
 import { AppError } from "../http/errors.ts";
+import { ownerOf } from "../notifications/recipients.ts";
+import { notify } from "../notifications/service.ts";
+import { publishToSpace } from "../realtime/routes.ts";
 import { audit } from "./audit.ts";
 
 const RECENT_DECISIONS = 20;
@@ -86,7 +89,7 @@ async function decide(
   approve: boolean,
   note: string | null
 ): Promise<AdminModuleRequest> {
-  return ctx.db.$transaction(async (tx) => {
+  const decided = await ctx.db.$transaction(async (tx) => {
     const request = await tx.moduleAccessRequest.findUnique({ where: { id } });
     if (!request) throw new AppError("ADMIN_006");
     const { count } = await tx.moduleAccessRequest.updateMany({
@@ -115,8 +118,27 @@ async function decide(
       where: { id },
       include: requestInclude,
     });
-    return toRequest(row);
+    return { result: toRequest(row), spaceId: request.spaceId, moduleCode: request.moduleCode };
   });
+  // L'OWNER est prevenu de la decision, avec le motif d'un refus (P09).
+  await moduleDecided(ctx, decided.spaceId, decided.moduleCode, approve, note);
+  return decided.result;
+}
+
+async function moduleDecided(
+  ctx: Context,
+  spaceId: string,
+  moduleCode: string,
+  granted: boolean,
+  reason: string | null
+): Promise<void> {
+  await notify(ctx, {
+    type: granted ? "core.module.granted" : "core.module.rejected",
+    recipients: await ownerOf(ctx.db, spaceId),
+    spaceId,
+    data: granted ? { moduleCode } : { moduleCode, reason },
+  });
+  await publishToSpace(ctx, spaceId, { type: "invalidate", spaceId, module: null });
 }
 
 export function approveRequest(ctx: Context, adminId: string, id: string) {
@@ -246,6 +268,7 @@ export async function grantToSpace(
       data: { moduleCode: code },
     });
   });
+  await moduleDecided(ctx, spaceId, code, true, null);
 }
 
 /** Retire l'acces : le module est masque, ses donnees restent et reviennent avec l'acces [D85]. */
