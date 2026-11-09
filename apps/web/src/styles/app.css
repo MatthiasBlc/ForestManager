@@ -205,3 +205,36 @@ body,
   border-bottom: 1px solid var(--line);
   vertical-align: middle;
 }
+
+/* Case de repas dans la grille de bureau : colonnes etroites, le titre passe a la ligne
+   (3 lignes au plus) et les marques (portions, verrou) vont dessous. */
+.fm-slot-compact {
+  flex-wrap: wrap;
+  align-items: flex-start;
+  align-content: flex-start;
+  gap: var(--space-1) var(--space-2);
+  min-height: 72px;
+  padding: var(--space-2);
+  font-size: 13px;
+  line-height: 18px;
+}
+.fm-slot-compact > span {
+  flex-basis: 100%;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+.fm-slot-compact.fm-slot-empty {
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+}
+
+/* Stepper a sa taille dans une colonne flex (champ du formulaire), comme dans l'editeur de
+   recette, au lieu de s'etirer sur toute la largeur. */
+.fm-stepper {
+  align-self: flex-start;
+}

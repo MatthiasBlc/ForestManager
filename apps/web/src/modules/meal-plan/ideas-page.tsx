@@ -207,11 +207,12 @@ export function IdeasPage() {
     void navigate(`/s/${spaceId}/recipes/new`, { state: { prefill } });
   };
 
-  const add = (
+  // Au-dessus de la liste : aligne a gauche ; dans l'etat vide : centre avec lui.
+  const addButton = (className?: string) => (
     <Button
       variant="primary"
       icon="plus"
-      className="self-start"
+      className={className}
       disabled={guard.disabled}
       aria-describedby={guard["aria-describedby"]}
       onClick={() => {
@@ -237,14 +238,14 @@ export function IdeasPage() {
     content = <Skeleton />;
   } else if (ideas.data.length === 0) {
     content = (
-      <EmptyState icon="lightbulb" title="Aucune idée pour l'instant" action={add}>
+      <EmptyState icon="lightbulb" title="Aucune idée pour l'instant" action={addButton()}>
         Note un plat qui vous tente : la génération pourra le proposer.
       </EmptyState>
     );
   } else {
     content = (
       <>
-        {add}
+        {addButton("self-start")}
         {ideas.data.map((idea) => (
           <IdeaCard
             key={idea.id}

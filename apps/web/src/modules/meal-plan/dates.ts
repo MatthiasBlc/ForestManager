@@ -84,8 +84,3 @@ export function periodLabel(from: string, to: string): string {
       : dayMonth.format(a);
   return `Du ${weekdayLong.format(a)} ${first} au ${weekdayLong.format(b)} ${dayMonth.format(b)}`;
 }
-
-/** "Vendredi soir" : repas de la semaine, sans la date. */
-export function weeklyMealLabel(iso: string, mealTime: MealTime): string {
-  return `${capitalize(weekdayLong.format(parse(iso)))} ${mealTime === "LUNCH" ? "midi" : "soir"}`;
-}

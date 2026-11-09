@@ -70,7 +70,13 @@ describe("regles (D184)", () => {
     const { user } = openProfiles(s);
     await user.click(await screen.findByRole("button", { name: "Ajouter une règle" }));
     const sheet = await screen.findByRole("dialog", { name: "Nouvelle règle" });
-    await user.click(within(sheet).getByRole("radio", { name: "Végétarien" }));
+    // Tags en pastilles : la feuille reste courte meme avec beaucoup de tags.
+    const tags = within(sheet).getByRole("group", { name: "Tag" });
+    await user.click(within(tags).getByRole("button", { name: "Végétarien" }));
+    expect(within(tags).getByRole("button", { name: "Végétarien" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
     await user.click(within(sheet).getByRole("button", { name: "Soir" }));
     await user.click(within(sheet).getByRole("button", { name: "Plus souvent" }));
     const min = within(sheet).getByRole("group", { name: "Au moins" });
@@ -91,7 +97,10 @@ describe("regles (D184)", () => {
         },
       ]);
     });
-    const rule = await screen.findByRole("button", { name: /Végétarien/ });
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: "Nouvelle règle" })).not.toBeInTheDocument();
+    });
+    const rule = screen.getByRole("button", { name: /Végétarien/ });
     expect(rule).toHaveTextContent("Le soir · au moins 2 fois par semaine · poids ×1,5");
   });
 
@@ -100,7 +109,11 @@ describe("regles (D184)", () => {
     const { user } = openProfiles(s);
     await user.click(await screen.findByRole("button", { name: "Ajouter une règle" }));
     const sheet = await screen.findByRole("dialog", { name: "Nouvelle règle" });
-    await user.click(within(sheet).getByRole("radio", { name: "Poisson" }));
+    await user.click(
+      within(within(sheet).getByRole("group", { name: "Tag" })).getByRole("button", {
+        name: "Poisson",
+      })
+    );
     await user.click(within(sheet).getByRole("switch", { name: "Réglage fin" }));
     const gauge = within(sheet).getByRole("slider", { name: "Poids" });
     fireEvent.change(gauge, { target: { value: "135" } });
@@ -193,7 +206,11 @@ describe("grille jours x repas (D114)", () => {
     await user.click(screen.getByRole("button", { name: "Vendredi soir : généré" }));
     sheet = await screen.findByRole("dialog", { name: "Vendredi soir" });
     await user.click(within(sheet).getByRole("radio", { name: /Épingler un tag/ }));
-    await user.click(within(sheet).getByRole("radio", { name: "Poisson" }));
+    await user.click(
+      within(within(sheet).getByRole("group", { name: "Tag épinglé" })).getByRole("button", {
+        name: "Poisson",
+      })
+    );
     await user.click(within(sheet).getByRole("button", { name: "Enregistrer" }));
     expect(
       await screen.findByRole("button", { name: "Vendredi soir : tag Poisson épinglé" })

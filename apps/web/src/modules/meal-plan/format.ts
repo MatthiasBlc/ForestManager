@@ -1,12 +1,14 @@
 // Libelles du module Planning (interface en francais).
 import type {
   EmptyReason,
+  GenerationPreview,
   GenerationWarning,
   MealTime,
   Rule,
   SpaceRole,
   Weekday,
 } from "@fm/shared";
+import { plural } from "../../lib/plural.ts";
 
 export const MEAL_TIME_LABELS: Record<MealTime, string> = {
   LUNCH: "Midi",
@@ -105,4 +107,15 @@ export function warningText(warning: GenerationWarning): string {
     return `« ${warning.tag.name} » : ${String(warning.actual)} fois au lieu de ${String(warning.required)} au moins, semaine du ${dayOf(warning.from)}.`;
   }
   return `« ${warning.tag.name} » : ${String(warning.actual)} fois pour ${String(warning.max)} au plus, à cause d'un épinglage (semaine du ${dayOf(warning.from)}).`;
+}
+
+/** Repas du rapport que la generation n'a pas touches, ou null s'il n'y en a pas. */
+export function skippedText(skipped: GenerationPreview["skipped"]): string | null {
+  const parts = [
+    skipped.excluded > 0 ? plural(skipped.excluded, "exclu", "exclus") : null,
+    skipped.locked > 0 ? plural(skipped.locked, "verrouillé", "verrouillés") : null,
+    skipped.kept > 0 ? plural(skipped.kept, "déjà rempli", "déjà remplis") : null,
+    skipped.skippedMeals > 0 ? `${String(skipped.skippedMeals)} « Pas de repas »` : null,
+  ].filter((part) => part !== null);
+  return parts.length > 0 ? `Laissés tels quels : ${parts.join(", ")}.` : null;
 }

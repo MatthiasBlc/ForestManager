@@ -72,7 +72,17 @@ interface CalendarProps {
 }
 
 /** Une case : MealSlot, ou case vide inerte en lecture seule. */
-function Cell({ cell, props, drag }: { cell: MealCell; props: CalendarProps; drag: boolean }) {
+function Cell({
+  cell,
+  props,
+  drag,
+  compact = false,
+}: {
+  cell: MealCell;
+  props: CalendarProps;
+  drag: boolean;
+  compact?: boolean;
+}) {
   const { meals, settings, swapFrom, onCell, onDrop } = props;
   const meal = meals.get(cellId(cell));
   const kind = slotKind(meal);
@@ -88,6 +98,7 @@ function Cell({ cell, props, drag }: { cell: MealCell; props: CalendarProps; dra
       when={whenLabel(cell.date, cell.mealTime)}
       placeholder={swapFrom ? "Déplacer ici" : "Ajouter un repas"}
       selected={swapFrom !== null && cellId(swapFrom) === cellId(cell)}
+      compact={compact}
       onOpen={() => {
         onCell(cell);
       }}
@@ -103,12 +114,13 @@ function Cell({ cell, props, drag }: { cell: MealCell; props: CalendarProps; dra
   );
 }
 
-function DayHead({ iso, today }: { iso: string; today: string }) {
+function DayHead({ iso, today, className }: { iso: string; today: string; className?: string }) {
   const { day, num } = shortDay(iso);
   return (
     <span
       className={cx(
         "flex flex-col rounded-md px-2 py-1",
+        className,
         iso === today ? "bg-accent-soft text-accent-text" : "text-ink-muted"
       )}
       {...(iso === today ? { "aria-current": "date" as const } : {})}
@@ -123,8 +135,8 @@ function DayHead({ iso, today }: { iso: string; today: string }) {
 function WeekGrid(props: CalendarProps) {
   const { days, mealTimes, today } = props;
   return (
-    <div className="overflow-x-auto rounded-lg border border-line bg-surface">
-      <div className="grid min-w-[900px] grid-cols-[72px_repeat(7,minmax(0,1fr))] gap-2 p-3">
+    <div className="rounded-lg border border-line bg-surface">
+      <div className="grid grid-cols-[44px_repeat(7,minmax(0,1fr))] gap-1.5 p-2">
         <span />
         {days.map((iso) => (
           <DayHead key={iso} iso={iso} today={today} />
@@ -135,7 +147,7 @@ function WeekGrid(props: CalendarProps) {
               {MEAL_TIME_LABELS[mealTime]}
             </span>
             {days.map((date) => (
-              <Cell key={date} cell={{ date, mealTime }} props={props} drag />
+              <Cell key={date} cell={{ date, mealTime }} props={props} drag compact />
             ))}
           </div>
         ))}
@@ -196,7 +208,7 @@ function WeekList(props: CalendarProps) {
     <div className="flex flex-col overflow-hidden rounded-lg border border-line bg-surface-raised">
       {days.map((date) => (
         <div key={date} className="flex items-start gap-3 border-b border-line px-3 py-2.5">
-          <DayHead iso={date} today={today} />
+          <DayHead iso={date} today={today} className="w-12 shrink-0" />
           <div className="flex min-w-0 flex-1 flex-col gap-1.5">
             {mealTimes.map((mealTime) => (
               <Cell key={mealTime} cell={{ date, mealTime }} props={props} drag={false} />
@@ -310,21 +322,40 @@ export function PlanningPage() {
   const canEdit = settings.data?.can.edit ?? false;
   const swapTitle = swapFrom ? byCell.get(cellId(swapFrom))?.title : null;
 
+  const generateButton = settings.data?.can.manage ? (
+    <Button
+      variant="primary"
+      size="sm"
+      icon="sparkles"
+      onClick={() => {
+        setGenerateOpen(true);
+      }}
+    >
+      Générer
+    </Button>
+  ) : null;
+
   return (
     <div className="fm-stack mx-auto w-full max-w-6xl p-4">
       <h1 className="sr-only">Planning</h1>
       {wide ? null : (
-        <SegmentedControl
-          label="Vue du planning"
-          options={[
-            { value: "day", label: "Jour" },
-            { value: "week", label: "Semaine" },
-          ]}
-          value={view}
-          onChange={setView}
-        />
+        // Mobile : la vue et "Generer" en haut, la navigation et les icones dessous.
+        <div className="flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <SegmentedControl
+              label="Vue du planning"
+              options={[
+                { value: "day", label: "Jour" },
+                { value: "week", label: "Semaine" },
+              ]}
+              value={view}
+              onChange={setView}
+            />
+          </div>
+          {generateButton}
+        </div>
       )}
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center gap-1 lg:gap-2">
         <IconButton
           icon="chevron-right"
           label="Semaine précédente"
@@ -340,8 +371,8 @@ export function PlanningPage() {
             goTo(addDays(day, 7));
           }}
         />
-        {heading ? (
-          <h2 className="m-0 flex-1 font-display text-2xl font-bold">{heading}</h2>
+        {wide ? (
+          <h2 className="m-0 flex-1 font-display text-xl font-bold xl:text-2xl">{heading}</h2>
         ) : (
           <span className="flex-1" />
         )}
@@ -377,19 +408,9 @@ export function PlanningPage() {
             }}
           />
         ) : null}
-        {settings.data?.can.manage ? (
-          <Button
-            variant="primary"
-            size="sm"
-            icon="sparkles"
-            onClick={() => {
-              setGenerateOpen(true);
-            }}
-          >
-            Générer
-          </Button>
-        ) : null}
+        {wide ? generateButton : null}
       </div>
+      {!wide && heading ? <h2 className="m-0 font-display text-xl font-bold">{heading}</h2> : null}
       {swapFrom ? (
         <div
           role="status"

@@ -65,9 +65,10 @@ describe("E-PLANNING en bureau : grille semaine", () => {
     expect(
       screen.getByRole("button", { name: "Vendredi 13, soir : Pas de repas" })
     ).toBeInTheDocument();
+    // Grille etroite : une case vide ne montre que "+", son nom reste lu.
     expect(
       screen.getByRole("button", { name: "Lundi 9, midi : Ajouter un repas" })
-    ).toBeInTheDocument();
+    ).not.toHaveTextContent("Ajouter");
     expect(screen.getAllByRole("button", { name: /^\p{L}+ \d+, (midi|soir) : /u })).toHaveLength(
       14
     );

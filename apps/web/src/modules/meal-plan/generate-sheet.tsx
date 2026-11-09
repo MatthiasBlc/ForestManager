@@ -20,8 +20,8 @@ import { Button } from "../../ui/button.tsx";
 import { RadioGroup, SegmentedControl, Switch } from "../../ui/controls.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
-import { addDays, periodLabel, weeklyMealLabel } from "./dates.ts";
-import { reasonText, warningText } from "./format.ts";
+import { addDays, periodLabel, whenLabel } from "./dates.ts";
+import { reasonText, skippedText, warningText } from "./format.ts";
 import { mealsKey, profilesQuery } from "./queries.ts";
 
 type Span = "this" | "next" | "both";
@@ -195,6 +195,9 @@ function Report({
           {plural(picked.length, "repas proposé", "repas proposés")} sur{" "}
           {String(preview.proposals.length)}
         </b>
+        {skippedText(preview.skipped) ? (
+          <span className="text-sm">{skippedText(preview.skipped)}</span>
+        ) : null}
         <span className="text-sm text-ink-muted">
           Avec le profil {preview.profile.name}. Rien n'est enregistré tant que tu ne gardes pas ce
           planning.
@@ -211,8 +214,8 @@ function Report({
               key={`${p.date}/${p.mealTime}`}
               className="flex items-baseline gap-3 rounded-md border border-line px-3 py-2"
             >
-              <span className="w-28 shrink-0 text-sm text-ink-muted">
-                {weeklyMealLabel(p.date, p.mealTime)} {p.date.slice(8).replace(/^0/, "")}
+              <span className="w-36 shrink-0 text-sm whitespace-nowrap text-ink-muted">
+                {whenLabel(p.date, p.mealTime)}
               </span>
               <span className={p.pick ? "font-semibold" : "text-ink-muted italic"}>
                 {p.pick
@@ -229,7 +232,7 @@ function Report({
         <div role="note" className="fm-stack rounded-md bg-warning-soft px-3 py-2 text-sm">
           {empty.map((p) => (
             <p key={`${p.date}/${p.mealTime}`} className="m-0">
-              <b>{weeklyMealLabel(p.date, p.mealTime)} laissé vide.</b>{" "}
+              <b>{whenLabel(p.date, p.mealTime)} : laissé vide.</b>{" "}
               <span>{p.reason ? reasonText(p.reason) : null}</span>
             </p>
           ))}

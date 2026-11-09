@@ -21,7 +21,7 @@ import { errorMessage } from "../../i18n/index.ts";
 import { api } from "../../lib/api.ts";
 import { useWriteGuard } from "../../pwa/use-write-guard.ts";
 import { Button } from "../../ui/button.tsx";
-import { Chip, RadioGroup, SegmentedControl, Stepper, Switch } from "../../ui/controls.tsx";
+import { Chip, SegmentedControl, Stepper, Switch } from "../../ui/controls.tsx";
 import { OptionList } from "../../ui/option-list.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { globalTagsQuery, spaceTagsQuery } from "../recipes/queries.ts";
@@ -34,30 +34,36 @@ type MealChoice = "ALL" | MealTime;
 
 const isStep = (weight: number) => (WEIGHT_STEPS as readonly number[]).includes(weight);
 
-function TagChoice({
+/** Choix d'un tag (global ou de l'espace) en pastilles : reste court meme avec beaucoup de tags. */
+export function TagChoice({
   spaceId,
   value,
   onChange,
+  label = "Tag",
 }: {
   spaceId: string;
   value: string | null;
   onChange: (id: string) => void;
+  label?: string;
 }) {
   const global = useQuery(globalTagsQuery);
   const local = useQuery(spaceTagsQuery(spaceId));
   const tags = [...(global.data ?? []), ...(local.data ?? [])];
   if (!global.data || !local.data) return <p className="m-0 text-sm text-ink-muted">Chargement…</p>;
   return (
-    <RadioGroup
-      label="Tag"
-      options={tags.map((tag) => ({
-        value: tag.id,
-        label: tag.name,
-        ...(tag.scope === "SPACE" ? { hint: "Tag de l'espace" } : {}),
-      }))}
-      value={value ?? undefined}
-      onChange={onChange}
-    />
+    <div className="flex flex-wrap gap-2" role="group" aria-label={label}>
+      {tags.map((tag) => (
+        <Chip
+          key={tag.id}
+          selected={tag.id === value}
+          onToggle={() => {
+            onChange(tag.id);
+          }}
+        >
+          {tag.name}
+        </Chip>
+      ))}
+    </div>
   );
 }
 
@@ -277,22 +283,28 @@ function RuleForm({
           <div className="flex flex-col gap-2">
             <span className="fm-label">Fréquence</span>
             <div className="flex flex-wrap items-center gap-4">
-              <Stepper
-                label="Au moins"
-                min={0}
-                max={MAX_FREQUENCY}
-                value={min}
-                format={freeLabel}
-                onChange={setMin}
-              />
-              <Stepper
-                label="Au plus"
-                min={0}
-                max={MAX_FREQUENCY}
-                value={max}
-                format={freeLabel}
-                onChange={setMax}
-              />
+              <div className="flex flex-col gap-1">
+                <span className="text-sm text-ink-muted">Au moins</span>
+                <Stepper
+                  label="Au moins"
+                  min={0}
+                  max={MAX_FREQUENCY}
+                  value={min}
+                  format={freeLabel}
+                  onChange={setMin}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-sm text-ink-muted">Au plus</span>
+                <Stepper
+                  label="Au plus"
+                  min={0}
+                  max={MAX_FREQUENCY}
+                  value={max}
+                  format={freeLabel}
+                  onChange={setMax}
+                />
+              </div>
             </div>
             {min > 0 || max > 0 ? (
               <SegmentedControl

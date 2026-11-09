@@ -92,9 +92,13 @@ describe("F-GENERER", () => {
     });
     const report = await screen.findByRole("dialog", { name: "Planning proposé" });
     expect(within(report).getByText("2 repas proposés sur 3")).toBeInTheDocument();
+    expect(
+      within(report).getByText("Laissés tels quels : 1 exclu, 2 verrouillés.")
+    ).toBeInTheDocument();
     expect(within(report).getByText("Dahl de lentilles")).toBeInTheDocument();
     expect(within(report).getByText("Raclette")).toBeInTheDocument();
-    expect(within(report).getByText("Vendredi soir laissé vide.")).toBeInTheDocument();
+    expect(within(report).getByText("Mardi 10, soir")).toBeInTheDocument();
+    expect(within(report).getByText("Vendredi 13, soir : laissé vide.")).toBeInTheDocument();
     expect(
       within(report).getByText("Aucune recette du tag « Poisson », épinglé sur ce repas.")
     ).toBeInTheDocument();

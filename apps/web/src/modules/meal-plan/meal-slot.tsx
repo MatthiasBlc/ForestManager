@@ -22,6 +22,8 @@ export interface MealSlotProps {
   placeholder?: string;
   /** Repas en attente d'echange (mode echange). */
   selected?: boolean;
+  /** Grille de bureau : titre sur plusieurs lignes, case vide reduite a "+". */
+  compact?: boolean;
   onOpen?: () => void;
   onActions?: () => void;
   /** Glisser-deposer (bureau) : identifiant de la case. */
@@ -37,6 +39,7 @@ export function MealSlot({
   when,
   placeholder = "Ajouter un repas",
   selected = false,
+  compact = false,
   onOpen,
   onActions,
   dragId,
@@ -73,14 +76,19 @@ export function MealSlot({
   return (
     <button
       type="button"
-      className={cx("fm-slot", `fm-slot-${kind}`, selected && "ring-2 ring-accent")}
+      className={cx(
+        "fm-slot",
+        `fm-slot-${kind}`,
+        compact && "fm-slot-compact",
+        selected && "ring-2 ring-accent"
+      )}
       aria-label={name}
       onClick={onOpen}
       {...(onActions ? press.handlers : {})}
       {...drag}
     >
       {kind === "empty" ? <Icon name="plus" /> : null}
-      <span>{label}</span>
+      {compact && kind === "empty" ? null : <span>{label}</span>}
       {servings && kind !== "empty" && kind !== "off" ? <small>{servings} p.</small> : null}
       {locked ? <Icon name="lock" /> : null}
     </button>

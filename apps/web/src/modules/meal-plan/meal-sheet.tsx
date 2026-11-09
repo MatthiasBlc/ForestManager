@@ -112,12 +112,16 @@ function RecipeSearch({
         id="meal-recipe-search"
         type="search"
         className="fm-input"
-        placeholder={`Rechercher dans ${spaceName} et dans mes recettes`}
+        placeholder="Rechercher une recette"
+        aria-describedby="meal-recipe-search-hint"
         value={search}
         onChange={(event) => {
           setSearch(event.target.value);
         }}
       />
+      <span id="meal-recipe-search-hint" className="-mt-2 text-sm text-ink-muted">
+        Dans {spaceName} et dans mes recettes.
+      </span>
       {options.length > 0 ? (
         <OptionList
           label="Recettes trouvées"

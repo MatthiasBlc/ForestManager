@@ -10,7 +10,7 @@ import {
   type PutGridBody,
   type Weekday,
 } from "@fm/shared";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { FormAlert } from "../../core/access/auth-layout.tsx";
@@ -19,9 +19,9 @@ import { api } from "../../lib/api.ts";
 import { useWriteGuard } from "../../pwa/use-write-guard.ts";
 import { Button } from "../../ui/button.tsx";
 import { RadioGroup } from "../../ui/controls.tsx";
+import { TagChoice } from "./rule-sheet.tsx";
 import { cx } from "../../ui/cx.ts";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
-import { globalTagsQuery, spaceTagsQuery } from "../recipes/queries.ts";
 import { MEAL_TIME_LABELS, MEAL_TIME_WORDS, WEEKDAY_LABELS } from "./format.ts";
 import { profileQuery, profilesKey } from "./queries.ts";
 
@@ -96,9 +96,6 @@ function CellForm({
     current?.state === "PINNED" && current.tag.status === "ACTIVE" ? current.tag.id : null
   );
   const [problem, setProblem] = useState<string>();
-  const global = useQuery(globalTagsQuery);
-  const local = useQuery(spaceTagsQuery(spaceId));
-  const tags = [...(global.data ?? []), ...(local.data ?? [])];
   const save = useMutation({
     mutationFn: (body: PutGridBody) =>
       api.put(
@@ -131,12 +128,10 @@ function CellForm({
         onChange={setState}
       />
       {state === "PINNED" ? (
-        <RadioGroup
-          label="Tag épinglé"
-          options={tags.map((tag) => ({ value: tag.id, label: tag.name }))}
-          value={tagId ?? undefined}
-          onChange={setTagId}
-        />
+        <div className="flex flex-col gap-2">
+          <span className="fm-label">Tag épinglé</span>
+          <TagChoice spaceId={spaceId} label="Tag épinglé" value={tagId} onChange={setTagId} />
+        </div>
       ) : null}
       <SheetFooter>
         <Button
