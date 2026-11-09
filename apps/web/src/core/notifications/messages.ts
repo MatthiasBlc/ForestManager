@@ -9,6 +9,7 @@ import type {
   NotificationView,
 } from "../../app/registry.ts";
 import { WEB_MODULES } from "../../modules/index.ts";
+import { REASON_LABELS } from "../admin/format.ts";
 import { moduleInfo } from "../modules/module-info.ts";
 
 /** Libelles des categories du socle (E-NOTIF-PREFERENCES). */
@@ -96,16 +97,22 @@ const CORE: Record<string, NotificationRenderer> = {
   "core.module.rejected": (n) => {
     const reason = text(n, "reason");
     return {
-      text: `Ta demande du module ${moduleInfo(text(n, "moduleCode")).name} pour ${spaceName(n)} a été refusée${reason ? ` : ${reason}` : "."}`,
+      text: `Ta demande du module ${moduleInfo(text(n, "moduleCode")).name} pour ${spaceName(n)} a été refusée${reason ? ` : ${reason.replace(/[.!?]?$/, ".")}` : "."}`,
       actor: false,
       to: spacePath(n, "modules"),
     };
   },
-  "core.moderation.opened": (n) => ({
-    text: `Un administrateur consulte ${spaceName(n)} en lecture seule pendant 30 minutes. Motif : ${text(n, "reason")}.`,
-    actor: false,
-    to: null,
-  }),
+  "core.moderation.opened": (n) => {
+    const code = text(n, "reason");
+    const reason =
+      code in REASON_LABELS ? REASON_LABELS[code as keyof typeof REASON_LABELS] : "Autre";
+    const note = text(n, "note");
+    return {
+      text: `Un administrateur consulte ${spaceName(n)} en lecture seule pendant 30 minutes. Motif : ${reason}${note ? ` (${note})` : ""}.`,
+      actor: false,
+      to: null,
+    };
+  },
   "core.release.published": (n) => ({
     text: `La version ${text(n, "version")} est disponible : découvre les nouveautés.`,
     actor: false,

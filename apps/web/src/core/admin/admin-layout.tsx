@@ -71,7 +71,8 @@ function useMinutesLeft(me: AdminMe): number {
 }
 
 function AdminNavLinks({ onNavigate }: { onNavigate?: () => void }) {
-  const requests = useQuery(moduleRequestsQuery);
+  // L'admin n'a pas de flux temps reel [D190] : la file se relit chaque minute.
+  const requests = useQuery({ ...moduleRequestsQuery, refetchInterval: 60_000 });
   const counts = { requests: requests.data?.pending.length ?? 0 };
   return (
     <nav aria-label="Administration" className="flex flex-col gap-5">

@@ -234,3 +234,52 @@ describe("preferences de notifications (E-NOTIF-PREFERENCES, F-NOT-2, D118)", ()
     ]);
   });
 });
+
+describe("messages du socle (C6.4)", () => {
+  it("rend les avis du socle avec leurs parametres", async () => {
+    const me = buildMe();
+    const famille = buildSpaceDetail({ name: "Famille" });
+    mockSession({ me, spaces: [buildPersonalSpace(me), famille] });
+    const space = { id: famille.id, name: "Famille", tintIndex: famille.tintIndex };
+    notificationServer([
+      [
+        buildNotification({
+          type: "core.invitation.received",
+          data: { spaceName: "Amis" },
+        }),
+        buildNotification({
+          type: "core.moderation.opened",
+          category: "core.platform",
+          actor: null,
+          space,
+          data: { reason: "MEMBER_REPORT", note: "Recette signalée" },
+        }),
+        buildNotification({
+          type: "core.module.rejected",
+          category: "core.platform",
+          actor: null,
+          space,
+          data: { moduleCode: "meal-plan", reason: "Pas encore" },
+        }),
+        buildNotification({
+          type: "core.member.excluded",
+          actor: null,
+          data: { spaceName: "Colloc" },
+        }),
+      ],
+    ]);
+    renderWithProviders(<App />, { route: "/notifications" });
+    expect(await screen.findByText(/t'invite dans Amis\./)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Un administrateur consulte Famille en lecture seule pendant 30 minutes. Motif : Signalement d'un membre (Recette signalée)."
+      )
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Ta demande du module Planning des repas pour Famille a été refusée : Pas encore."
+      )
+    ).toBeInTheDocument();
+    expect(screen.getByText("Tu ne fais plus partie de Colloc.")).toBeInTheDocument();
+  });
+});
