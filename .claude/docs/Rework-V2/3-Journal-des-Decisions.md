@@ -124,6 +124,7 @@ _D12 (notifications) et D14 (analytics) : non utilises. Leurs sujets sont couver
 ### D11 - Repas du planning configurables par espace - VALIDEE (2026-11-03)
 
 - Chaque espace choisit ses repas parmi petit-dejeuner, midi, gouter, soir (midi et soir par defaut). La grille, les exclusions, les epinglages et la generation suivent ce reglage.
+- **Amendee le 2026-11-09 (plan C5, choix du proprietaire)** : deux repas par jour, midi et soir ; ni petit-dejeuner ni gouter. L'espace choisit de planifier midi, soir ou les deux (les deux par defaut). La maquette F-CREER-PLANNING (devenue F-REGLAGES-PLANNING) proposait encore les quatre.
 
 ### D26 - Partager une recette composee partage ses sous-recettes - VALIDEE (2026-11-03)
 

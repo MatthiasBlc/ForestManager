@@ -1,6 +1,6 @@
 # Forest Manager V2 - Cahier des charges
 
-**Version : 1.1 (1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder ; 1.1 : module Planning revu au plan C5, D180 a D184) ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception** - 2026-11-09
+**Version : 1.1 (1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder ; 1.1 : module Planning revu au plan C5, D180 a D184, D11 amendee : midi et soir seulement) ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception** - 2026-11-09
 Statut de chaque decision : voir `3-Journal-des-Decisions.md`. Une ligne marquee `[Dxx]` renvoie a sa decision.
 Les questions de la phase A sont au S10 (toutes repondues). Tant qu'une question touche une section, cette section n'est pas validable.
 
@@ -147,7 +147,7 @@ Reprend la V1 (grille jours x repas, repas recette / texte libre / vide, verroui
 - F-MPL-0 Calendrier continu par espace : pas de planning a creer ni d'archives, on navigue de semaine en semaine, le passe reste consultable ; la generation porte sur une periode choisie (31 jours au plus) [D180]. Un repas est vide, recette, texte libre ou "Pas de repas" [D181].
 
 - F-MPL-1 Disponible dans l'espace PERSONAL aussi.
-- F-MPL-2 Repas de la journee configurables par espace : petit-dejeuner, midi, gouter, soir (midi + soir par defaut) [D11].
+- F-MPL-2 Deux repas par jour, midi et soir ; chaque espace choisit de planifier l'un, l'autre ou les deux (les deux par defaut). Ni petit-dejeuner ni gouter [D11].
 - F-MPL-3 Droit de modifier un repas par role minimal, MEMBER par defaut, reglable par l'OWNER ; generer et regler le planning : moderateurs et OWNER [D58].
 - F-MPL-4 Une idee de repas (nom et commentaire) peut etre convertie en recette : elle ouvre l'editeur de recette pre-rempli, puis l'idee est retiree [D133, D182].
 - F-MPL-5 Un slot peut pointer vers n'importe quelle recette visible dans l'espace (origine ou partagee).

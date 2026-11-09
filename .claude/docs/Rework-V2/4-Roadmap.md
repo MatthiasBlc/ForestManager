@@ -75,7 +75,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] Revue visuelle de C4 dans Chrome (A01 a A13 hors A10, bureau et mobile), puis cloture
 - [ ] C5 Module planning + generation (plan : `21-Plan-C5.md`)
   - [x] C5.0 Plan de C5 (D180 a D185)
-  - [ ] C5.1 Socle du module, reglages
+  - [x] C5.1 Socle du module, reglages
   - [ ] C5.2 Calendrier et repas
   - [ ] C5.3 Idees de repas
   - [ ] C5.4 Profils de generation

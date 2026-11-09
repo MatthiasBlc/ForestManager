@@ -12,7 +12,7 @@ References : `1-CDC-V2.md` S4.6, `11-Modele-Donnees/schema.prisma` section 6, `1
 - Temps reel (salle `space:<id>`) et activite "Planning de la semaine genere par X" : C6, avec les notifications [D184].
 - Liste de courses : C9 (elle prendra une periode du calendrier).
 
-**Ecarts aux maquettes** (a reprendre a l'ecran, les canevas ne sont pas republies) : F-CREER-PLANNING devient F-REGLAGES-PLANNING (repas de la journee, portions par defaut, debut de semaine, role minimal) ; E-PLANNING-vide montre la semaine vide ; E-IDEES perd "Liee a ..." ; la regle du profil gagne le mode "Avance" (jauge 0 a 200 %).
+**Ecarts aux maquettes** (a reprendre a l'ecran, les canevas ne sont pas republies) : F-CREER-PLANNING devient F-REGLAGES-PLANNING (repas de la journee, portions par defaut, debut de semaine, role minimal) ; E-PLANNING-vide montre la semaine vide ; E-IDEES perd "Liee a ..." ; la regle du profil gagne le mode "Avance" (jauge 0 a 200 %) ; midi et soir seulement, ni petit-dejeuner ni gouter (D11 amendee).
 
 ## 2. Decoupage [D185]
 
@@ -21,12 +21,13 @@ Tranches verticales, comme C3 et C4 : chaque sous-etape livre l'API (`apps/api/s
 ### C5.1 Socle du module, reglages
 
 - Migration : `MealPlanSettings`, `MealSlot`, `MealIdea`, profils, regles, exclusions, epinglages (schema cible, section 6).
-- Services entre modules [D184] : `provides` / `requires` dans le manifeste, resolus par le registre. Recettes fournit `recipes.catalog` (recettes visibles d'un espace : recherche, tags globaux et de l'espace, `isBase`, masquee, supprimee) ; le Planning fournit `meal-plan.recipeStats`.
+- Role minimal reglable par espace : `ApiModule.roleOverrides` lu par `requireModule`, applique aux permissions `configurable` (`meal-plan.edit` = `editRole`).
 - Manifeste complet (routeur, permissions, `onSpaceDeleted`), droits calcules dans `shared` (editRole, moderateurs, OWNER).
 - Reglages : `GET` / `PUT` des reglages (repas de la journee, portions, debut de semaine ; role minimal par l'OWNER seul). Web : entree Planning dans ModuleNav / TabBar, F-REGLAGES-PLANNING.
 
 ### C5.2 Calendrier et repas
 
+- Services entre modules [D184], poses ici a leur premier usage : `provides` / `requires` dans le manifeste, resolus par le registre. Recettes fournit `recipes.catalog` (recettes visibles d'un espace : titres, tags globaux et de l'espace, `isBase`, masquee, supprimee ; le pool de la generation s'y ajoute en C5.5) ; le Planning fournit `meal-plan.recipeStats`.
 - Lecture d'une periode (`?from=&to=`, 31 jours au plus) : repas, reglages, droits du lecteur ; recette devenue invisible rendue en texte avec son dernier titre [D184].
 - Ecrire un repas (`PUT` par date et repas) : recette (visible dans l'espace), texte, "Pas de repas", commentaire, portions, verrou ; vider (`DELETE`). Echanger deux cases (verrou compris, case vide = deplacer).
 - Web : E-PLANNING (grille bureau, Jour / Semaine en mobile, D111), navigation de semaine et "Aujourd'hui", F-REPAS, F-RECHERCHE (espace d'abord, puis mes recettes avec "Partager dans l'espace"), echange par glisser en bureau et mode echange en mobile (D112), lecture seule avec mention sans le droit, PullToRefresh et relecture au retour sur l'onglet.
