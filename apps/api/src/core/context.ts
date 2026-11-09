@@ -8,6 +8,7 @@ import type { Mailer } from "./mail/mailer.ts";
 import type { LifecycleHooks } from "./modules/hooks.ts";
 import type { ApiModule } from "./modules/registry.ts";
 import type { PageFetcher } from "./net/page-fetcher.ts";
+import type { Realtime } from "./realtime/hub.ts";
 import type { Storage } from "./storage/storage.ts";
 
 export interface Context {
@@ -21,6 +22,8 @@ export interface Context {
   fetchPage: PageFetcher;
   hasher: PasswordHasher;
   hooks: LifecycleHooks;
+  /** Diffusion temps reel vers les flux SSE ouverts [D188]. */
+  realtime: Realtime;
   /** Manifestes du registre (src/modules/index.ts), injectes. */
   modules: readonly ApiModule[];
 }

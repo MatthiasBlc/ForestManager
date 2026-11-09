@@ -53,6 +53,8 @@ jobs.unref();
 function shutdown(signal: string): void {
   logger.info({ signal }, "shutting down");
   clearInterval(jobs);
+  // Les flux SSE ouverts retiendraient l'arret : on les ferme d'abord.
+  ctx.realtime.closeAll();
   server.close(() => {
     void db.$disconnect().finally(() => process.exit(0));
   });

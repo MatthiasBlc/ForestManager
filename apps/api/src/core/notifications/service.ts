@@ -110,6 +110,7 @@ export async function notify(ctx: Context, input: NotifyInput): Promise<string[]
     }
     await ctx.db.notification.create({ data: { ...fields, userId } });
   }
+  ctx.realtime.toUsers(recipients, { type: "notification" });
   return recipients;
 }
 

@@ -19,6 +19,8 @@ import type { LifecycleHooks } from "../modules/hooks.ts";
 import { assertValidModules, hooksFrom, type ApiModule } from "../modules/registry.ts";
 import { modulesRouter } from "../modules/routes.ts";
 import { notificationsRouter } from "../notifications/routes.ts";
+import { createRealtime, type Realtime } from "../realtime/hub.ts";
+import { publishSpaceChanges, realtimeRouter } from "../realtime/routes.ts";
 import { referentialsRouter } from "../../referentials/routes.ts";
 import { invitationsRouter } from "../spaces/invitations-routes.ts";
 import { storageRouter } from "../storage/routes.ts";
@@ -45,6 +47,8 @@ export interface AppDeps {
   fetchPage?: PageFetcher;
   hasher?: PasswordHasher;
   hooks?: LifecycleHooks;
+  /** Diffusion temps reel ; un hub en memoire par defaut. */
+  realtime?: Realtime;
   /** Manifestes des modules (src/modules/index.ts) ; le socle ne les importe pas [D40]. */
   modules: readonly ApiModule[];
 }
@@ -64,6 +68,7 @@ export function createContext(deps: AppDeps): Context {
     fetchPage: deps.fetchPage ?? createPageFetcher(),
     hasher: deps.hasher ?? createPasswordHasher(env.NODE_ENV === "test"),
     hooks: deps.hooks ?? hooksFrom(deps.modules),
+    realtime: deps.realtime ?? createRealtime(),
     modules: deps.modules,
   };
 }
@@ -102,6 +107,8 @@ export function createApp(deps: AppDeps): express.Express {
   // Admin avant la session des utilisateurs : cookie et table distincts [D174].
   api.use("/admin", adminRouter(ctx, rateLimit));
   api.use(sessionMiddleware(deps.db, env.SESSION_SECRET, production));
+  api.use(publishSpaceChanges(ctx));
+  api.use(realtimeRouter(ctx));
   api.use(authRouter(ctx, rateLimit));
   api.use(storageRouter(ctx, rateLimit));
   api.use(spacesRouter(ctx));
