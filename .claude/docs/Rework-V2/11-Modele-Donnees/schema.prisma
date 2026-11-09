@@ -173,7 +173,7 @@ model Space {
   suggestions        RecipeSuggestion[]
   moderationAccesses ModerationAccess[]
   mealSettings       MealPlanSettings?
-  mealPlans          MealPlan[]
+  mealSlots          MealSlot[]
   mealIdeas          MealIdea[]
   generationProfiles MealGenerationProfile[]
   notifications      Notification[]
@@ -576,8 +576,6 @@ model Recipe {
   spaceTags      RecipeSpaceTag[]
   suggestions    RecipeSuggestion[]
   mealSlots      MealSlot[]
-  mealIdeas      MealIdea[]           @relation("IdeaRecipe")
-  ideasConverted MealIdea[]           @relation("IdeaConverted")
   rules          MealGenerationRule[]
 
   @@index([homeSpaceId, deletedAt])
@@ -828,78 +826,55 @@ model MealPlanSettings {
   space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 }
 
-enum MealPlanStatus {
-  ACTIVE
-  ARCHIVED
-}
-
-/// Planning d'un espace. Un seul ACTIVE par espace (index partiel), les autres archives.
-model MealPlan {
-  id        String         @id @default(uuid())
-  spaceId   String
-  startDate DateTime       @db.Date
-  endDate   DateTime       @db.Date
-  status    MealPlanStatus @default(ACTIVE)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-
-  space Space      @relation(fields: [spaceId], references: [id])
-  slots MealSlot[]
-
-  @@index([spaceId, status])
-}
-
 enum MealSlotKind {
-  EMPTY
   RECIPE
   TEXT
+  SKIPPED // "Pas de repas" : la generation le saute [D181]
 }
 
+/// Calendrier continu par espace [D180] : une ligne par repas rempli ou marque,
+/// une case vide n'a pas de ligne. Le passe tient lieu d'archives.
 model MealSlot {
   id          String       @id @default(uuid())
-  planId      String
+  spaceId     String
   date        DateTime     @db.Date
   mealTime    MealTime
-  kind        MealSlotKind @default(EMPTY)
+  kind        MealSlotKind
   recipeId    String?
-  text        String?
+  text        String? // TEXT : le repas ; RECIPE : dernier titre connu, affiche si la recette devient invisible [D184]
   comment     String?
   servings    Int? // null = defaultServings de l'espace
-  disabled    Boolean      @default(false) // on ne mange pas ensemble
-  locked      Boolean      @default(false) // la generation ne le remplace pas
+  locked      Boolean      @default(false) // la generation ne le remplace pas ; suit le repas a l'echange [D184]
   updatedById String?
   updatedAt   DateTime     @updatedAt
 
-  plan      MealPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-  recipe    Recipe?  @relation(fields: [recipeId], references: [id])
-  updatedBy User?    @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+  space     Space   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  recipe    Recipe? @relation(fields: [recipeId], references: [id])
+  updatedBy User?   @relation(fields: [updatedById], references: [id], onDelete: SetNull)
 
-  @@unique([planId, date, mealTime])
+  @@unique([spaceId, date, mealTime])
   @@index([recipeId, date]) // compteurs "fois planifiee", "derniere fois" [D39]
 }
 
-/// Idee de repas, convertible en recette [F-MPL-4].
+/// Idee de repas : nom et commentaire, retiree une fois convertie en recette [F-MPL-4, D182].
 model MealIdea {
-  id                String    @id @default(uuid())
-  spaceId           String
-  name              String
-  comment           String?
-  recipeId          String? // idee rattachee a une recette existante
-  convertedRecipeId String? // recette creee a partir de l'idee
-  createdById       String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  deletedAt         DateTime?
+  id          String    @id @default(uuid())
+  spaceId     String
+  name        String
+  comment     String?
+  createdById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
 
-  space           Space   @relation(fields: [spaceId], references: [id])
-  recipe          Recipe? @relation("IdeaRecipe", fields: [recipeId], references: [id])
-  convertedRecipe Recipe? @relation("IdeaConverted", fields: [convertedRecipeId], references: [id])
-  createdBy       User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  space     Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
 
   @@index([spaceId, deletedAt])
 }
 
 /// Jeu de parametres de generation (V1 : MealGenerationParams), repris tel quel.
+/// Toujours exactement un profil par defaut par espace ("Standard" cree d'office) [D183].
 model MealGenerationProfile {
   id           String    @id @default(uuid())
   spaceId      String
@@ -931,8 +906,8 @@ model MealSlotExclusion {
 }
 
 enum FrequencyPer {
-  PER_WEEK
-  PER_PLAN
+  PER_WEEK // semaine du calendrier (weekStartsOn) [D184]
+  PER_PERIOD // periode generee
 }
 
 /// Regle de generation : sur un tag (global ou de l'espace) OU sur une recette,
@@ -942,7 +917,7 @@ model MealGenerationRule {
   profileId       String
   tagId           String?
   recipeId        String?
-  weight          Float         @default(1) // 0 a 2
+  weight          Float         @default(1) // 0 a 2 : paliers ou mode avance [D184]
   mealTime        MealTime? // null = tous les repas
   frequencyMin    Int?
   frequencyMax    Int?

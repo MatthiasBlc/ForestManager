@@ -6,7 +6,7 @@ Refonte de Forest Manager : clarifier les concepts de la V1, refaire l'interface
 
 1. Ce README.
 2. `4-Roadmap.md` : la premiere case non cochee est le point de reprise.
-3. Le plan de l'etape en cours (`20-Plan-C4.md` pour C4 ; `17-Plan-C1.md`, `18-Plan-C2.md` et `19-Plan-C3.md` pour C1 a C3, termines).
+3. Le plan de l'etape en cours (`21-Plan-C5.md` pour C5 ; `17-Plan-C1.md` a `20-Plan-C4.md` pour C1 a C4, termines).
 4. `1-CDC-V2.md` : S1 a S3 (vision, glossaire, roles) pour tout le monde, puis la section du module concerne.
 5. `3-Journal-des-Decisions.md` : seulement pour comprendre le pourquoi d'une regle (chercher le `D##`).
 
@@ -28,6 +28,7 @@ Refonte de Forest Manager : clarifier les concepts de la V1, refaire l'interface
 | `18-Plan-C2.md`               | Plan de C2 : design system en code, app shell, ecrans du socle.                                               |
 | `19-Plan-C3.md`               | Plan de C3 : module Recettes en tranches verticales.                                                          |
 | `20-Plan-C4.md`               | Plan de C4 : referentiels et administration en tranches verticales.                                           |
+| `21-Plan-C5.md`               | Plan de C5 : module Planning et generation en tranches verticales.                                            |
 | `archive/`                    | Etudes terminees (phase A et B5b) : leurs conclusions sont dans le CDC et le journal. Ne pas lire par defaut. |
 
 `archive/` contient : l'analyse de la V1 (`2-Analyse-V1.html`), les etudes adaptations (5) et recettes composees (6, 7), les directions visuelles (8), la revue du brainstorming (9), les ecarts des maquettes traites en B5b.
@@ -148,7 +149,8 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
   - Corrige : navigation admin qui defilait avec la page (racine `shrink-0`), libelle masque "Actions" des tableaux qui elargissait la page en mobile (`.fm-table` positionne), en-tetes de ligne des tableaux en gris, recherche ecrasee par le filtre segmente en mobile (Espaces, Utilisateurs), libelles de la feuille d'unite sur deux lignes, dates coupees dans "Dernieres actions", module "Bientot" dans les chiffres du tableau de bord (seuls les modules disponibles ou en beta), minutes restantes de la moderation figees, cibles du journal sans nom (acces de moderation, fusions).
   - Observe, non corrige : une session ouverte hors de l'application (connexion par script) reste vue "deconnectee" quelques secondes, le temps que `me: null` garde par le cache hors ligne soit relu. Une connexion par l'ecran n'est pas concernee.
 - **C4 termine le 2026-11-09.**
-- **Prochaine etape : C5** (module planning et generation) : ecrire son plan (`21-Plan-C5.md`) avant de coder.
+- Plan de C5 ecrit le 2026-11-09 (`21-Plan-C5.md`) apres une revue du module : calendrier continu sans planning date ni archives (D180), etat "Pas de repas" (D181), idees en texte libre retirees a la conversion (D182), profil Standard d'office (D183), regles de realisation dont les poids en paliers avec mode avance 0 a 200 % (D184), tranches verticales (D185). CDC passe en 1.1 ; permissions, parcours P10 et schema cible a jour. Page du modele de donnees regeneree localement : **a republier** ; pages HTML des permissions et des parcours pas encore regenerees ; canevas Planning non republie (ecarts listes dans le plan).
+- **Prochaine etape : C5.1** (socle du module, reglages).
 - Tout est publie et committe au 2026-11-05 : DS v10, Acces v39, Recettes v35, Planning v26, Admin v26, Permissions v5, Parcours v6, Modele de donnees v5. Page du modele de donnees regeneree localement le 2026-11-06 (D165) : **a republier**. Maquettes revues dans Chrome le 2026-11-05 (B5b, voir `archive/16-Maquettes-ECARTS.md`).
   - Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact) : relire l'artefact (action read sur l'URL), puis publier avec `root` = le dossier du canevas, `file_path` = un fichier modifie, `files` = les autres (`project/...`).
   - Les numeros de version des artefacts avancent aussi a la simple consultation : comparer le contenu en ligne au commit avant d'ecraser.

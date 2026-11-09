@@ -634,3 +634,46 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
   - **Journal** : du plus recent au plus ancien, filtre par categorie (prefixe de l'action, `auditPrefixes`), pagination par offset avec "Voir les plus anciennes". Libelles, cible et detail des actions calcules cote web (`core/admin/format.ts`) depuis les donnees de l'entree.
   - **Reglages** : lus des variables d'environnement, jamais de secret (adresse SMTP sans identifiants, cles de stockage nommees mais masquees). Tester l'e-mail envoie un message a l'adresse de l'admin ; tester le stockage ecrit, relit et supprime un petit objet. Un test ne modifie rien : pas d'entree d'audit. Le suivi d'erreurs est affiche "Pas encore branche" ; son branchement (SDK Sentry front et back, DSN Bugsink, test depuis A13) est ajoute a C7.
   - **Tableau de bord** : "A traiter" = demandes de modules, nouveaux ingredients (et jusqu'a 3 doublons probables), espaces en suppression ; chiffres de la plateforme ; etat des services ; version (package.json racine) ; 5 dernieres actions. A02m est le meme ecran en mobile.
+
+## Phase C5 - plan du module Planning (2026-11-09)
+
+Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquettes du canevas Planning, specs V1 `SPEC_MEAL_PLAN.md` et `SPEC_MEAL_GENERATION.md`). Les quatre points a trancher l'ont ete par le proprietaire, recommandations retenues.
+
+### D180 - Planning en calendrier continu, sans planning date ni archives - VALIDEE (2026-11-09, plan C5, choix du proprietaire)
+
+- **Constat** : le modele V1 (un planning actif a dates libres cree par un moderateur, les anciens archives) oblige a creer un planning chaque semaine, bloque un MEMBER tant qu'aucun planning n'existe (alors que D58 donne la main aux membres), redemande dans F-CREER-PLANNING les repas et portions deja dans `MealPlanSettings`, et demande des regles de chevauchement, un index "un seul actif" et un cooldown "inter-plannings" qui lit l'archive precedente. Ajouter un repas dans les reglages laisse le planning en cours sans ces cases.
+- **Options** : calendrier continu par espace ; plannings dates et archives comme la V1.
+- **Choix** : calendrier continu. Les repas sont ranges par espace et par date (`MealSlot (spaceId, date, mealTime)`), sans entite `MealPlan`. On navigue de semaine en semaine ; le passe tient lieu d'archives (lecture et modification avec les memes droits). La generation porte sur une periode choisie (31 jours au plus). Les cooldowns lisent les repas deja places autour de la periode, la frequence "par semaine" suit les semaines du calendrier (`weekStartsOn`). La future liste de courses prendra aussi une periode.
+- **Consequences** : F-CREER-PLANNING, les archives et `MealPlanStatus` disparaissent ; E-PLANNING-vide montre la semaine vide avec "Touche un repas pour le remplir" et "Generer". Les reglages du planning (repas de la journee, portions, debut de semaine, role minimal) vivent dans une feuille de reglages du module.
+
+### D181 - Un etat "Pas de repas" remplace le drapeau disabled - VALIDEE (2026-11-09, plan C5, choix du proprietaire)
+
+- **Constat** : trois facons de dire "pas de repas ici" : `disabled` sur la case, l'exclusion du profil et un repas vide verrouille.
+- **Choix** : un repas est vide (pas de ligne), recette, texte libre ou "Pas de repas" (`SKIPPED`, la generation le saute). Les exclusions du profil restent pour ce qui revient chaque semaine. Plus de drapeau `disabled`, plus de repas vide verrouille : le verrou ne porte que sur une recette ou un texte.
+
+### D182 - Idee de repas en texte libre, retiree a la conversion - VALIDEE (2026-11-09, plan C5, choix du proprietaire)
+
+- **Constat** : `MealIdea` avait deux liens vers une recette (`recipeId`, `convertedRecipeId`) ; une idee liee a une recette existante doublait le poids de cette recette au tirage.
+- **Choix** : une idee est un nom et un commentaire. "Transformer en recette" ouvre l'editeur pre-rempli (D133) ; une fois la recette enregistree, l'idee est retiree (soft delete). A la generation, une idee tiree donne un repas en texte libre (poids 1, aucune regle de tag ne s'y applique, comme la V1). La mention "Liee a ..." de la maquette E-IDEES disparait.
+
+### D183 - Profil de generation "Standard" cree d'office - VALIDEE (2026-11-09, plan C5, choix du proprietaire)
+
+- **Choix** : chaque espace a toujours exactement un profil par defaut. Un profil "Standard" sans regle (delai de 3 jours, idees incluses) est cree au premier acces au planning de l'espace s'il n'en a aucun. Supprimer le profil par defaut demande d'en designer un autre ; le dernier profil ne se supprime pas. "Generer" et "Proposer un autre repas" marchent des le premier jour.
+
+### D184 - Planning : regles de realisation fixees au plan - VALIDEE (2026-11-09, plan C5, defauts annonces au proprietaire)
+
+- **Tags fusionnes ou supprimes** : la fusion d'un tag le masque (`mergedIntoId`, `deletedAt`) sans cascade. Regles et epinglages sont resolus a la lecture : un tag fusionne suit sa cible, un tag supprime rend la regle inactive, affichee "Tag supprime" dans le profil. Pas de crochet entre modules.
+- **Recette devenue invisible** (retiree du partage, supprimee, masquee par la moderation) : le repas reste et s'affiche en texte avec le dernier titre connu (garde dans `MealSlot.text` a chaque choix de recette) ; la generation ne la propose plus.
+- **Pool de la generation** : recettes visibles dans l'espace (origine ou partagees, F-MPL-5), non supprimees, non masquees, jamais une recette de base (D24) ; tags pris en compte : globaux et tags de cet espace (D19) ; idees si le profil les inclut.
+- **Garder ce planning** (D110) sans etat serveur : l'apercu renvoie la proposition et l'etat de chaque case au moment du tirage ; a l'enregistrement, une case modifiee entre-temps par un membre n'est pas ecrasee et le resultat la signale.
+- **Echange** (D69, D112) : tout le contenu change de case, verrou compris (le verrou suit le repas). Echanger avec une case vide revient a deplacer le repas.
+- **Poids** (complete par le proprietaire) : par defaut cinq paliers (Jamais x0, Moins souvent x0,5, Normal x1, Plus souvent x1,5, Beaucoup plus x2), valeurs deja montrees par les maquettes. Un mode "Avance" dans la regle ouvre une jauge de 0 a 200 % par pas de 5 % pour un reglage fin. En base, un nombre de 0 a 2 ; une regle dont le poids n'est pas un palier s'affiche en pourcentage et s'ouvre en mode avance. Les poids se multiplient comme en V1.
+- **Algorithme** : celui de la V1 (passe principale, rattrapage des minimums, rapport), avec une graine aleatoire injectable pour des tests deterministes ; ordre de priorite des contraintes V1 conserve ; la generation ne refuse jamais, elle explique chaque case laissee vide (D113).
+- **Temps reel** : pas de socket en C5 ; relecture au retour sur l'onglet et en tirant l'ecran (P10). La salle `space:<id>` arrive avec C6.
+- **Services entre modules** (`14-Architecture.md`, `provides` / `requires`) : Recettes fournit le catalogue des recettes visibles d'un espace (recherche et generation) ; le Planning fournit les compteurs D39 ("planifiee N fois", "derniere fois le ..."), que Recettes affiche seulement si le module est present et actif.
+- **Droits** (D58, F-MPL-3) : modifier, echanger, verrouiller, remplacer un repas = role minimal `editRole` ; le role minimal se regle par l'OWNER seul ; les autres reglages, les profils et la generation : MODERATOR et OWNER.
+- **Catalogue** : le statut d'un module n'est ecrit qu'a la creation de sa ligne (D175) ; sur une base existante, passer le Planning de "Bientot" a "Disponible" se fait dans A04.
+
+### D185 - C5 en tranches verticales - VALIDEE (2026-11-09, plan C5)
+
+- **Choix** : comme C3 et C4, chaque sous-etape livre l'API, le partage et les ecrans d'une meme fonction. Detail : `21-Plan-C5.md`.

@@ -1,6 +1,6 @@
 # Forest Manager V2 - Cahier des charges
 
-**Version : 1.0 (valide par le proprietaire le 2026-11-05, feu vert pour coder ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception)** - 2026-11-05
+**Version : 1.1 (1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder ; 1.1 : module Planning revu au plan C5, D180 a D184) ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception** - 2026-11-09
 Statut de chaque decision : voir `3-Journal-des-Decisions.md`. Une ligne marquee `[Dxx]` renvoie a sa decision.
 Les questions de la phase A sont au S10 (toutes repondues). Tant qu'une question touche une section, cette section n'est pas validable.
 
@@ -142,17 +142,20 @@ Ce que l'on supprime de la V1 : la recette perso jumelle creee automatiquement, 
 
 ### 4.6 Planning de repas (module)
 
-Reprend la V1 (grille jours x repas, slots recette / texte libre / vide, verrouillage, echange par glisser-deposer, idees de repas, archives, generation par jeux de parametres) avec ces changements :
+Reprend la V1 (grille jours x repas, repas recette / texte libre / vide, verrouillage, echange par glisser-deposer, idees de repas, generation par jeux de parametres) avec ces changements :
+
+- F-MPL-0 Calendrier continu par espace : pas de planning a creer ni d'archives, on navigue de semaine en semaine, le passe reste consultable ; la generation porte sur une periode choisie (31 jours au plus) [D180]. Un repas est vide, recette, texte libre ou "Pas de repas" [D181].
 
 - F-MPL-1 Disponible dans l'espace PERSONAL aussi.
 - F-MPL-2 Repas de la journee configurables par espace : petit-dejeuner, midi, gouter, soir (midi + soir par defaut) [D11].
-- F-MPL-3 Droit de modifier un repas par role minimal, MEMBER par defaut, reglable par l'OWNER ; creer, generer et regler le planning : moderateurs et OWNER [D58].
-- F-MPL-4 Une idee de repas peut etre convertie en recette : elle ouvre l'editeur de recette pre-rempli [D133].
+- F-MPL-3 Droit de modifier un repas par role minimal, MEMBER par defaut, reglable par l'OWNER ; generer et regler le planning : moderateurs et OWNER [D58].
+- F-MPL-4 Une idee de repas (nom et commentaire) peut etre convertie en recette : elle ouvre l'editeur de recette pre-rempli, puis l'idee est retiree [D133, D182].
 - F-MPL-5 Un slot peut pointer vers n'importe quelle recette visible dans l'espace (origine ou partagee).
 - La generation (regles par tag ou recette, poids, frequences, cooldowns, exclusions, epinglages) est conservee telle quelle fonctionnellement ; son UI est refaite :
   - elle produit un apercu ; rien n'est enregistre avant "Garder ce planning" [D110] ;
   - le rapport explique chaque repas laisse vide au lieu de le remplir de force [D113] ;
   - exclusions et epinglages se reglent dans une seule grille jours x repas [D114].
+  - un profil "Standard" sans regle existe d'office dans chaque espace [D183] ; poids en cinq paliers, avec un mode avance a jauge 0 a 200 % [D184].
 - F-MPL-6 Sur mobile, selecteur "Jour | Semaine" : Jour = vue detaillee, Semaine = liste compacte des 7 jours (une ligne par jour, repas en pastilles, toucher un repas l'ouvre) ; grille semaine complete en bureau [D111].
 - F-MPL-7 Echange de repas sur mobile en mode "echange" : bandeau, cibles en pointilles, Annuler [D112].
 

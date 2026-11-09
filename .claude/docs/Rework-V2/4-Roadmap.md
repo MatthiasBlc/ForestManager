@@ -73,7 +73,15 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C4.5 Espaces et moderation
   - [x] C4.6 Journal d'audit, reglages, tableau de bord
   - [x] Revue visuelle de C4 dans Chrome (A01 a A13 hors A10, bureau et mobile), puis cloture
-- [ ] C5 Module planning + generation
+- [ ] C5 Module planning + generation (plan : `21-Plan-C5.md`)
+  - [x] C5.0 Plan de C5 (D180 a D185)
+  - [ ] C5.1 Socle du module, reglages
+  - [ ] C5.2 Calendrier et repas
+  - [ ] C5.3 Idees de repas
+  - [ ] C5.4 Profils de generation
+  - [ ] C5.5 Algorithme de generation (domaine pur)
+  - [ ] C5.6 Generer, garder, remplacer
+  - [ ] Revue visuelle de C5 dans Chrome (bureau et mobile), puis cloture
 - [ ] C6 Notifications, activite, changelog
   - [ ] Changelog : ecran admin A10, page utilisateur, generation par la CI [D171]
   - [ ] Notifications posees en C4 : OWNER prevenu d'un acces de moderation avec son motif [D172, D121], decision sur une demande de module, nouvelle demande pour l'admin (P09)

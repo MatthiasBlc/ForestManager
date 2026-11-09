@@ -136,11 +136,11 @@ Conventions :
 ## P10 - Planning : remplir une semaine, generer, verrouiller, echanger
 
 - **Declencheur** : TabBar / ModuleNav "Planning" (module accorde et actif).
-- **Ecrans** : E-PLANNING -> F-REPAS ; F-GENERER ; E-PROFILS-GENERATION ; E-IDEES.
+- **Ecrans** : E-PLANNING -> F-REPAS ; F-GENERER ; E-PROFILS-GENERATION ; E-IDEES ; F-REGLAGES-PLANNING.
 - **Etapes** :
-  1. Premiere ouverture : EmptyState "Pas encore de planning", Button "Creer le planning" -> F-CREER-PLANNING (dates de debut et de fin, portions par defaut). Les repas affiches suivent les reglages de l'espace (D11 : midi et soir par defaut).
+  1. Premiere ouverture : la semaine en cours, vide, avec "Touche un repas pour le remplir" et Button "Generer" (moderateurs). Pas de planning a creer : calendrier continu, fleches semaine precedente / suivante et "Aujourd'hui" (D180). Les repas affiches suivent les reglages de l'espace (F-REGLAGES-PLANNING ; D11 : midi et soir par defaut).
   2. E-PLANNING mobile : jour par jour (SegmentedControl Jour / Semaine ; vue Jour par defaut sur mobile), une liste de MealSlot par repas. Desktop : grille jours x repas.
-  3. Remplir : toucher un MealSlot vide -> F-REPAS : recherche de recette (espace d'abord, puis mes recettes avec "Partager dans l'espace" propose), ou texte libre + commentaire ; Stepper portions ; Switch "Verrouiller". Button "Enregistrer".
+  3. Remplir : toucher un MealSlot vide -> F-REPAS : recherche de recette (espace d'abord, puis mes recettes avec "Partager dans l'espace" propose), ou texte libre + commentaire, ou "Pas de repas" (D181) ; Stepper portions ; Switch "Verrouiller". Button "Enregistrer".
   4. Generer : Button "Generer" -> F-GENERER : profil de generation (liste), periode, "Remplacer les repas non verrouilles" (Switch). Resultat : rapport (repas remplis, regles non tenues) dans la feuille, Button "Garder" / "Annuler".
   5. Remplacer un repas : ActionMenu du MealSlot "Proposer un autre repas" (relance la generation sur ce repas, confirmation).
   6. Echanger (D69) : desktop, glisser-deposer un MealSlot sur un autre ; mobile, ActionMenu "Echanger avec..." puis toucher le repas cible (mode selection avec bandeau "Choisis le repas a echanger", Annuler).
@@ -287,7 +287,7 @@ Toutes tranchees : QP1 par D60, QP2 par D61, QP3 par D64, QP4 par D69, QP5 par D
 | E-MODE-CUISINE          | Ecran   | Mode cuisine                     | P11                |
 | F-INGREDIENTS           | Feuille | Ingredients a cocher             | P11                |
 | E-PLANNING              | Ecran   | Planning (jour / semaine)        | P10                |
-| F-CREER-PLANNING        | Feuille | Creer le planning                | P10                |
+| F-REGLAGES-PLANNING     | Feuille | Reglages du planning (D180)      | P10                |
 | F-REPAS                 | Feuille | Modifier un repas                | P10                |
 | F-GENERER               | Feuille | Generer le planning + rapport    | P10                |
 | E-PROFILS-GENERATION    | Ecran   | Profils de generation et regles  | P10                |
