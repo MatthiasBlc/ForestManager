@@ -2,6 +2,7 @@
 import { lazy } from "react";
 
 import type { WebModule } from "../../app/registry.ts";
+import { RECIPE_ACTIVITY, RECIPE_NOTIFICATIONS } from "./notifications.ts";
 
 export const recipesModule: WebModule = {
   code: "recipes",
@@ -20,4 +21,6 @@ export const recipesModule: WebModule = {
     },
     "recipes.new": { label: "Nouvelles recettes", hint: "Ajoutées dans tes espaces" },
   },
+  notifications: RECIPE_NOTIFICATIONS,
+  activity: RECIPE_ACTIVITY,
 };

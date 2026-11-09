@@ -283,3 +283,60 @@ describe("messages du socle (C6.4)", () => {
     expect(screen.getByText("Tu ne fais plus partie de Colloc.")).toBeInTheDocument();
   });
 });
+
+describe("messages des modules (C6.5)", () => {
+  it("rend les avis de Recettes et du Planning avec leur lien", async () => {
+    const me = buildMe();
+    const famille = buildSpaceDetail({ name: "Famille" });
+    mockSession({ me, spaces: [buildPersonalSpace(me), famille] });
+    const space = { id: famille.id, name: "Famille", tintIndex: famille.tintIndex };
+    const recipeId = crypto.randomUUID();
+    notificationServer([
+      [
+        buildNotification({
+          type: "recipes.suggestion.created",
+          category: "recipes.sharing",
+          space,
+          data: { recipeId, title: "Gratin" },
+        }),
+        buildNotification({
+          type: "recipes.share-request.created",
+          category: "recipes.sharing",
+          space,
+          data: { recipeId, title: "Gratin", targetSpaceName: "Amis", personal: false },
+        }),
+        buildNotification({
+          type: "recipes.recipe.adapted",
+          category: "recipes.sharing",
+          space,
+          data: { recipeId, title: "Gratin", spaceName: "Colloc" },
+        }),
+        buildNotification({
+          type: "meal-plan.meal.changed",
+          category: "meal-plan.planning",
+          space,
+          count: 3,
+        }),
+        buildNotification({
+          type: "meal-plan.plan.generated",
+          category: "meal-plan.planning",
+          space,
+          data: { from: "2026-11-09", to: "2026-11-15", count: 14 },
+        }),
+      ],
+    ]);
+    renderWithProviders(<App />, { route: "/notifications" });
+    expect(
+      await screen.findByRole("link", { name: /propose une modification de « Gratin »/ })
+    ).toHaveAttribute("href", `/s/${famille.id}/recipes/${recipeId}`);
+    expect(
+      screen.getByRole("link", { name: /voudrait partager ta recette « Gratin » dans Amis/ })
+    ).toHaveAttribute("href", `/s/${famille.id}/recipes`);
+    expect(screen.getByText(/a adapté ta recette « Gratin » dans Colloc\./)).toBeInTheDocument();
+    expect(screen.getByText(/a modifié 3 repas du planning de Famille\./)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /a généré le planning de Famille/ })).toHaveAttribute(
+      "href",
+      `/s/${famille.id}/meal-plan?day=2026-11-09`
+    );
+  });
+});

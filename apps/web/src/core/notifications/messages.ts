@@ -11,6 +11,7 @@ import type {
 import { WEB_MODULES } from "../../modules/index.ts";
 import { REASON_LABELS } from "../admin/format.ts";
 import { moduleInfo } from "../modules/module-info.ts";
+import { others } from "./others.ts";
 
 /** Libelles des categories du socle (E-NOTIF-PREFERENCES). */
 const CORE_CATEGORIES: Record<string, NotificationCategoryLabel> = {
@@ -42,13 +43,6 @@ function text(notification: Notification, key: string): string {
 /** Nom de l'espace : celui du lien, sinon celui garde dans les parametres. */
 function spaceName(notification: Notification): string {
   return notification.space?.name ?? text(notification, "spaceName");
-}
-
-/** " et 2 autres" quand plusieurs evenements sont regroupes ("Sam et 2 autres ..."). */
-export function others(notification: Notification): string {
-  const extra = notification.count - 1;
-  if (extra <= 0) return "";
-  return extra === 1 ? "et 1 autre " : `et ${String(extra)} autres `;
 }
 
 function verb(notification: Notification, one: string, many: string): string {
