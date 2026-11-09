@@ -14,6 +14,7 @@ import { ModulesCatalogPage } from "./modules-catalog-page.tsx";
 import { adminMeQuery } from "./queries.ts";
 import { TagsPage } from "./tags-page.tsx";
 import { UnitsPage } from "./units-page.tsx";
+import { UsersPage } from "./users-page.tsx";
 
 export function AdminApp() {
   const me = useQuery(adminMeQuery);
@@ -29,6 +30,7 @@ export function AdminApp() {
         <Route path="units" element={<UnitsPage />} />
         <Route path="aisles" element={<AislesPage />} />
         <Route path="tags" element={<TagsPage />} />
+        <Route path="users" element={<UsersPage />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Route>
     </Routes>

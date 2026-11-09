@@ -14,7 +14,7 @@ describe("ingredients (A05)", () => {
     mockReferentialsApi();
     renderWithProviders(<App />, { route: "/admin" });
     const nav = await screen.findByRole("navigation", { name: "Administration" });
-    for (const name of ["Ingrédients", "Unités", "Rayons", "Tags globaux"]) {
+    for (const name of ["Ingrédients", "Unités et conversions", "Rayons", "Tags globaux"]) {
       expect(within(nav).getByRole("link", { name })).toBeInTheDocument();
     }
   });

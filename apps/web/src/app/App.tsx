@@ -12,6 +12,7 @@ import { AppearancePage } from "../core/profile/appearance-page.tsx";
 import { DeleteAccountPage } from "../core/profile/delete-account-page.tsx";
 import { AccountPage, PasswordPage, ProfilePage } from "../core/profile/profile-pages.tsx";
 import { GuestOnly } from "../core/session/guest-only.tsx";
+import { PasswordChoiceGate } from "../core/session/password-choice-gate.tsx";
 import { meQuery } from "../core/session/queries.ts";
 import { RequireAuth } from "../core/session/require-auth.tsx";
 import { RootPage } from "../core/session/root-page.tsx";
@@ -46,43 +47,45 @@ export function App() {
           <PwaUpdater />
         </Suspense>
       ) : null}
-      <Routes>
-        <Route
-          path="/design"
-          element={
-            <Suspense fallback={null}>
-              <DesignPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/admin/*"
-          element={
-            <Suspense fallback={null}>
-              <AdminApp />
-            </Suspense>
-          }
-        />
-        <Route path="/" element={<RootPage />} />
-        <Route element={<GuestOnly />}>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        </Route>
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/verify-email" element={<VerifyEmailPage />} />
-        <Route path="/join/:code" element={<JoinPage />} />
-        <Route element={<RequireAuth />}>
-          <Route path="/welcome" element={<WelcomePage />} />
-          <Route path="/s/:spaceId/*" element={<SpaceLayout />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/profile/account" element={<AccountPage />} />
-          <Route path="/profile/password" element={<PasswordPage />} />
-          <Route path="/profile/appearance" element={<AppearancePage />} />
-          <Route path="/profile/delete" element={<DeleteAccountPage />} />
-        </Route>
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <PasswordChoiceGate>
+        <Routes>
+          <Route
+            path="/design"
+            element={
+              <Suspense fallback={null}>
+                <DesignPage />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/admin/*"
+            element={
+              <Suspense fallback={null}>
+                <AdminApp />
+              </Suspense>
+            }
+          />
+          <Route path="/" element={<RootPage />} />
+          <Route element={<GuestOnly />}>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          </Route>
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
+          <Route path="/join/:code" element={<JoinPage />} />
+          <Route element={<RequireAuth />}>
+            <Route path="/welcome" element={<WelcomePage />} />
+            <Route path="/s/:spaceId/*" element={<SpaceLayout />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/account" element={<AccountPage />} />
+            <Route path="/profile/password" element={<PasswordPage />} />
+            <Route path="/profile/appearance" element={<AppearancePage />} />
+            <Route path="/profile/delete" element={<DeleteAccountPage />} />
+          </Route>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </PasswordChoiceGate>
     </ToastProvider>
   );
 }

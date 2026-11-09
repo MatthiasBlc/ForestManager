@@ -606,3 +606,13 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
   - **Tags globaux** : nom unique sans casse ni accents parmi les tags vivants (`ADMIN_009`) ; fusionner deplace les recettes et masque le tag (`mergedIntoId`, `deletedAt`) ; supprimer le retire de toutes les recettes.
   - **Rayons** : l'ordre s'enregistre en entier (`PUT /admin/aisles/order`, chaque rayon une fois, `ADMIN_012`) ; les boutons Monter / Descendre l'envoient.
   - **Testeur d'addition** (A06) : `addQuantities` de `packages/shared/src/units/` (masses et volumes par la base puis unite la plus lisible, pieces en grammes avec le poids de l'ingredient, sinon une ligne par unite), le calcul que reprendra la liste de courses.
+
+### D177 - Comptes cote admin et mot de passe temporaire : regles de realisation - VALIDEE (2026-11-09, realisation C4.4)
+
+- **Constat** : D134 fixe le principe (24 h, usage unique, l'ancien reste valable, autres sessions fermees ensuite) et le schema la session restreinte, sans dire comment elle est restreinte, ni la forme du mot de passe.
+- **Choix** :
+  - **Forme** : trois mots courts sans accents et quatre chiffres (`tison-7342-cendre-houx`, environ 31 bits), facile a dicter ; seul son hash argon2id est garde (`AuthToken.tokenHash`). Un nouveau temporaire remplace celui qui n'a pas servi. La reponse n'est jamais mise en cache (`no-store`).
+  - **Connexion** : le mot de passe habituel est essaye d'abord, puis les temporaires valables du compte. Le temporaire ouvre une session courte (pas de "rester connecte") marquee `passwordChoice` : `requireAuth` repond `AUTH_011` partout ; seuls `GET /me` (avec `mustChoosePassword: true`), `POST /auth/choose-password` et la deconnexion passent.
+  - **Choix du mot de passe** : meme politique que l'inscription ; le temporaire est consomme (`usedAt`) dans la meme transaction que le nouveau hash, les autres sessions sont fermees et la session courante tourne (nouvel identifiant). Temporaire expire entre-temps : `AUTH_014`, la session restreinte est fermee et l'ecran revient a la connexion.
+  - **Web** : `PasswordChoiceGate` n'affiche que "Choisis ton mot de passe" tant que `mustChoosePassword` (hors `/admin`).
+  - **Liste A12** : comptes non supprimes, par derniere connexion ; espaces groupe dont le compte est membre actif ; filtres "OWNER d'un espace" (groupe) et "Inactifs depuis 6 mois" (derniere connexion, ou inscription si jamais connecte) ; pagination admin plafonnee a 100, au-dela on affine la recherche. Le rappel "E-mails non configures" vient de `GET /config`.

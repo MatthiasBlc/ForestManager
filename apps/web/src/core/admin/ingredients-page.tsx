@@ -534,7 +534,7 @@ export function IngredientsPage() {
           )}
           {list.data && list.data.total > list.data.data.length ? (
             <p className="m-0 text-sm text-ink-muted">
-              {list.data.data.length} sur {list.data.total} : affinez la recherche.
+              {list.data.data.length} sur {list.data.total} : affine la recherche.
             </p>
           ) : null}
         </section>
@@ -542,7 +542,7 @@ export function IngredientsPage() {
           <IngredientDetail key={selectedId} id={selectedId} onSelect={setSelectedId} />
         ) : (
           <p className="m-0 flex-[1_1_460px] self-center text-center text-ink-muted">
-            Choisissez un ingrédient dans la liste pour le vérifier.
+            Choisis un ingrédient dans la liste pour le vérifier.
           </p>
         )}
       </div>

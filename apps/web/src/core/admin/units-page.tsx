@@ -222,7 +222,7 @@ function UnitForm({ unit, onClose }: { unit: AdminUnit | null; onClose: () => vo
   const submit = async () => {
     const toBase = base ? parseDecimal(factor) : null;
     if (base && (toBase === null || toBase <= 0)) {
-      setError(`Indiquez combien de ${base} vaut une unité.`);
+      setError(`Indique combien de ${base} vaut une unité.`);
       return;
     }
     if (!fr.name.trim() || !fr.abbreviation.trim() || (!unit && !code.trim())) {

@@ -69,7 +69,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C4.1 Compte admin, 2FA, audit, shell
   - [x] C4.2 Modules : demandes et catalogue
   - [x] C4.3 Referentiels
-  - [ ] C4.4 Utilisateurs
+  - [x] C4.4 Utilisateurs
   - [ ] C4.5 Espaces et moderation
   - [ ] C4.6 Journal d'audit, reglages, tableau de bord
 - [ ] C5 Module planning + generation

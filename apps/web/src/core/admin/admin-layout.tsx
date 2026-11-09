@@ -35,10 +35,14 @@ const ADMIN_NAV: readonly { label: string; items: readonly NavEntry[] }[] = [
     label: "Référentiels",
     items: [
       { to: "/admin/ingredients", label: "Ingrédients", icon: "chef-hat" },
-      { to: "/admin/units", label: "Unités", icon: "ruler" },
+      { to: "/admin/units", label: "Unités et conversions", icon: "ruler" },
       { to: "/admin/aisles", label: "Rayons", icon: "shopping-basket" },
       { to: "/admin/tags", label: "Tags globaux", icon: "tag" },
     ],
+  },
+  {
+    label: "Plateforme",
+    items: [{ to: "/admin/users", label: "Utilisateurs", icon: "users" }],
   },
 ];
 
