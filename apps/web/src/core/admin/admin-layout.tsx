@@ -45,6 +45,7 @@ const ADMIN_NAV: readonly { label: string; items: readonly NavEntry[] }[] = [
     items: [
       { to: "/admin/users", label: "Utilisateurs", icon: "users" },
       { to: "/admin/spaces", label: "Espaces", icon: "shield" },
+      { to: "/admin/changelog", label: "Changelog", icon: "git-branch" },
       { to: "/admin/audit", label: "Journal d'audit", icon: "inbox" },
       { to: "/admin/settings", label: "Réglages", icon: "settings" },
     ],

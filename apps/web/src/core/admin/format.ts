@@ -84,6 +84,10 @@ const AUDIT_LABELS: Readonly<Record<string, [string, AuditTone]>> = {
   "recipe.unhidden": ["Contenu réaffiché", "success"],
   "recipe.removed": ["Recette retirée d'un espace", "danger"],
   "recipe.deleted": ["Recette supprimée", "danger"],
+  "release.updated": ["Version modifiée", "neutral"],
+  "release.published": ["Version publiée", "success"],
+  "release.hidden": ["Version masquée", "warning"],
+  "release.shown": ["Version réaffichée", "success"],
 };
 
 export function auditLabel(action: string): { label: string; tone: AuditTone } {
@@ -112,6 +116,7 @@ export function auditTarget(entry: {
     text(data.code) ??
     text(data.moduleCode);
   if (named) return named;
+  if (text(data.version)) return `Version ${String(data.version)}`;
   if (entry.action.startsWith("auth.")) return "Session admin";
   return entry.targetType ?? "-";
 }

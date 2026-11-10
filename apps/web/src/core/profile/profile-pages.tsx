@@ -91,6 +91,12 @@ export function ProfilePage() {
         <Row icon="bell" label="Notifications" to="/profile/notifications" />
         <Row icon="lock" label="Mot de passe" to="/profile/password" />
         <Row icon="home" label="Langue" value="Français" />
+        <Row
+          icon="sparkles"
+          label="Nouveautés"
+          value="Ce qui a changé dans Forest Manager"
+          to="/news"
+        />
       </nav>
       <div className="fm-stack">
         <Button icon="log-out" onClick={() => void logout()}>
