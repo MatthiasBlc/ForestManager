@@ -711,3 +711,25 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 - **Admin** : pas de notification en base pour l'admin (`AdminUser` isole) ; "A traiter" du tableau de bord [D129] et un compteur dans l'AdminNav suffisent.
 - **Nouvelle version** [D127] : une ligne de notification par utilisateur actif dont la categorie est activee, ecrite en une requete a la publication.
 - **Fil d'activite** : sans maquette, page "Activite" de l'espace calquee sur E-NOTIFICATIONS.
+
+### D191 - Recherche globale : contributions des modules, actions cote client - PROPOSEE (2026-11-10, plan C6b, defauts annonces au proprietaire)
+
+- **Constat** : P16 et D119 demandent une recherche qui couvre recettes, ingredients, membres, espaces, planning et actions, sans que le socle connaisse les modules [D40].
+- **Choix** : un seul appel `GET /search?q=`, chaque module contribue ses groupes par `ApiModule.search` ; perimetre = espaces ou l'utilisateur est membre actif et ou le module est actif ; 5 resultats par groupe, 2 caracteres minimum. Les actions sont declarees cote web (`WebModule.actions` et socle) et filtrees sans appel API. Repas cherches de 2 semaines en arriere a 4 semaines en avant.
+
+### D192 - Export : tache de fond, MinIO 24 h, archive zip, reimport en V2.1 - VALIDEE (2026-11-10, plan C6b, choix du proprietaire)
+
+- **Options** : tache de fond avec `DataExport` et fichier dans MinIO (schema cible) ; telechargement direct dans la reponse HTTP.
+- **Choix** : tache de fond. L'export est genere dans l'API juste apres la demande (pas de file d'attente, une seule instance), stocke 24 h dans MinIO puis efface par la tache horaire ; l'ecran relit le statut puis propose "Telecharger". Toujours une archive zip (JSON ou Markdown, photos si demande).
+- **Reimport** : le format JSON est versionne, valide par Zod et teste en aller-retour des C6b ; l'ecran d'import arrive en V2.1 (choix du proprietaire).
+- **Limite d'espace** [D37] : un export par espace sur 24 h glissantes, message avec l'heure du prochain possible (maquette F-EXPORT).
+
+### D193 - Widgets d'accueil : feuille "Personnaliser", registre de widgets - VALIDEE (2026-11-10, plan C6b, choix du proprietaire pour la feuille)
+
+- **Options** : feuille "Personnaliser l'accueil" ; mode edition sur l'accueil.
+- **Choix** : feuille (interrupteur + monter / descendre, comme E-MODULES, "Retablir par defaut"), enregistree a chaque changement dans `User.homeWidgets`.
+- **Defauts annonces** : widgets declares par cle `<module>.<nom>` des deux cotes ; un seul appel `GET /me/home` ; widgets V2.0 : en attente (invitations, transferts), prochains repas, recettes les plus cuisinees (repas passes planifies, D39), recemment ajoutees, activite des groupes (coupe par defaut).
+
+### D194 - C6b : decoupage - PROPOSEE (2026-11-10, plan C6b)
+
+- Tranches verticales C6b.1 (recherche), C6b.2 (export), C6b.3 (widgets), puis revue visuelle et cloture (`23-Plan-C6b.md`).

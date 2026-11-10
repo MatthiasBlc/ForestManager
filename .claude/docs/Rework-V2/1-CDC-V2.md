@@ -1,6 +1,6 @@
 # Forest Manager V2 - Cahier des charges
 
-**Version : 1.2 (1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder ; 1.1 : module Planning revu au plan C5, D180 a D184, D11 amendee : midi et soir seulement ; 1.2 : plan C6, D187 a D189 : changelog en brouillon embarque, temps reel en SSE) ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception** - 2026-11-09
+**Version : 1.3 (1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder ; 1.1 : module Planning revu au plan C5, D180 a D184, D11 amendee : midi et soir seulement ; 1.2 : plan C6, D187 a D189 : changelog en brouillon embarque, temps reel en SSE ; 1.3 : plan C6b, D192 : export en tache de fond, reimport en V2.1) ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception** - 2026-11-10
 Statut de chaque decision : voir `3-Journal-des-Decisions.md`. Une ligne marquee `[Dxx]` renvoie a sa decision.
 Les questions de la phase A sont au S10 (toutes repondues). Tant qu'une question touche une section, cette section n'est pas validable.
 
@@ -87,7 +87,7 @@ Identifiants `F-<module>-<n>` pour que roadmap et tests s'y referent.
 - F-ACC-3 Mot de passe oublie par email si un SMTP est configure ; sinon reinitialisation par un admin [D21] : mot de passe temporaire de 24 h a usage unique, transmis par l'admin lui-meme, a changer a la connexion ; l'ancien reste valable tant que le temporaire n'a pas servi, puis les autres sessions sont fermees [D134]. L'app demarre et fonctionne sans SMTP.
 - F-ACC-4 Profil : username, email, mot de passe, avatar, theme d'interface (S5.3).
 - F-ACC-5 Suppression du compte (RGPD) : les contenus partages dans des espaces GROUP restent, auteur anonymise, repris par les moderateurs [D20]. L'ecran montre les consequences espace par espace et propose l'export avant de demander le mot de passe [D116].
-- F-ACC-6 Export natif de ses recettes (JSON reimportable, Markdown, photos en zip) [D37].
+- F-ACC-6 Export natif de ses recettes (JSON reimportable, Markdown, photos en zip) [D37]. Archive preparee en tache de fond, gardee 24 h ; ecran de reimport en V2.1 [D192].
 - A la creation du compte, l'espace PERSONAL est cree automatiquement. Il montre son contenu propre et une vue "Mes recettes" (toutes les recettes dont on est l'auteur) [D82].
 
 ### 4.2 Espaces, membres, invitations
@@ -210,7 +210,7 @@ Reprise de la V1 (page utilisateur, gestion admin), generation revue [D187] :
 - **Barre du module** : modules actifs de l'espace courant (Recettes, Planning, Courses, Membres, Reglages). Sur mobile : barre d'onglets en bas, 4 modules maximum puis "Plus" (membres, reglages et modules au-dela du quatrieme, dans l'ordre choisi par l'OWNER) [D131]. Espace perso : Accueil, Recettes, Mes recettes, Plus [D95].
 - **Zone de contenu** : liste / detail, avec panneau de detail lateral sur grand ecran et page pleine sur mobile.
 - **En-tete** : recherche, notifications, profil.
-- Dashboard d'accueil fait de **widgets** que l'utilisateur choisit et ordonne (prochains repas, recettes recentes, invitations, activite).
+- Dashboard d'accueil fait de **widgets** que l'utilisateur choisit et ordonne (prochains repas, recettes recentes, invitations, activite), dans une feuille "Personnaliser l'accueil" [D193].
 
 ### 5.3 Design system
 

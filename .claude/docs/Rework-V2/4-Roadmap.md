@@ -93,7 +93,13 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C6.6 Changelog : A10, page Nouveautes, brouillon genere par la CI [D171, D187]
   - [x] Revue visuelle de C6 dans Chrome (bureau et mobile) et flux SSE a travers nginx
   - [x] Cloture de C6 : lignes "Notifications" de `13-Parcours.md` branchees ou reportees, scenario E2E des notifications, `14-Architecture.md` S6, page du modele de donnees regeneree et republiee, suite complete verte (`22-Plan-C6.md` S3)
-- [ ] C6b Recherche globale, export, widgets d'accueil [D189] (plan a ecrire)
+- [ ] C6b Recherche globale, export, widgets d'accueil [D189] (plan : `23-Plan-C6b.md`)
+  - [x] C6b.0 Plan de C6b (D191 a D194 ; D191 et D194 a relire par le proprietaire)
+  - [ ] C6b.1 Recherche globale et CommandPalette [D191, D119]
+  - [ ] C6b.2 Export de ses recettes et d'un espace [D37, D192]
+  - [ ] C6b.3 Widgets d'accueil et feuille "Personnaliser" [D193]
+  - [ ] Revue visuelle de C6b dans Chrome (bureau et mobile)
+  - [ ] Cloture de C6b (`23-Plan-C6b.md` S3)
 - [ ] C7 E2E complets, preprod, remise a zero de la base et de la stack de prod
   - [ ] Suivi d'erreurs : SDK Sentry front et back, DSN vers Bugsink, test depuis A13 [D75, D179]
   - [ ] Premier passage de la CI sur GitHub (reporte depuis C1.10 et la cloture de C3, decision du proprietaire du 2026-11-06)
@@ -101,3 +107,4 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
 - [ ] C8 Mise en prod V2
   - [ ] A faire par le proprietaire (a revoir ensemble) : retirer la lecture publique des buckets V1 `forestmanager-images-preprod` / `-prod` (`mc anonymous set none`) [D167]
 - [ ] C9 Module liste de courses (V2.1)
+- [ ] Reimport du JSON d'export dans F-AJOUT-RECETTE (V2.1) [D192]
