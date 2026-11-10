@@ -47,6 +47,8 @@ export function useRealtime(enabled: boolean): void {
       invalidate(["me", "invitations"]);
       invalidate(["me", "transfers"]);
       invalidate(["spaces"], true);
+      // Nouvelle version publiee : la page Nouveautes ouverte se relit.
+      invalidate(["releases"]);
     });
     source.addEventListener("invalidate", (event: MessageEvent) => {
       const data = read(event);

@@ -15,6 +15,8 @@ const releasesQuery = queryOptions({
 
 function ReleaseArticle({ release }: { release: Release }) {
   const titleId = `release-${release.version}`;
+  // Titre par defaut ("Version 2.0.0") : la version n'est pas repetee au-dessus.
+  const defaultTitle = release.title === `Version ${release.version}`;
   return (
     <article
       aria-labelledby={titleId}
@@ -22,7 +24,11 @@ function ReleaseArticle({ release }: { release: Release }) {
     >
       <header className="flex flex-col gap-1">
         <span className="text-sm text-ink-muted">
-          <b className="font-mono text-ink">Version {release.version}</b> ·{" "}
+          {defaultTitle ? null : (
+            <>
+              <b className="font-mono text-ink">Version {release.version}</b> ·{" "}
+            </>
+          )}
           {releaseDate(release.publishedAt)}
         </span>
         <h2 id={titleId} className="m-0 font-display text-xl font-bold">

@@ -199,6 +199,17 @@ describe("Nouveautes (utilisateurs)", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
+  it("titre par defaut : la version n'est pas ecrite deux fois", async () => {
+    mockSession();
+    const release: Release = { ...RELEASES[1]!, title: "Version 2.0.0" };
+    server.use(http.get("/api/v1/releases", () => HttpResponse.json({ data: [release] })));
+    renderWithProviders(<App />, { route: "/news" });
+
+    const article = await screen.findByRole("article", { name: "Version 2.0.0" });
+    expect(article.textContent.match(/Version 2\.0\.0/g)).toHaveLength(1);
+    expect(article).toHaveTextContent("31 octobre 2026");
+  });
+
   it("lien depuis le profil", async () => {
     mockSession();
     renderWithProviders(<App />, { route: "/profile" });

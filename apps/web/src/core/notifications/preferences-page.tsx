@@ -125,7 +125,7 @@ function CategorySwitch({ category }: { category: CategoryPreference }) {
           change.mutate(on);
         }}
       />
-      {label.hint ? <span className="text-sm text-ink-muted">{label.hint}</span> : null}
+      {label.hint ? <span className="-mt-2 pl-14 text-sm text-ink-muted">{label.hint}</span> : null}
     </div>
   );
 }

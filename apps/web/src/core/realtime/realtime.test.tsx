@@ -57,6 +57,24 @@ describe("temps reel (SSE, D188)", () => {
     ).toBeInTheDocument();
   });
 
+  it("page Nouveautes ouverte : une nouvelle version apparait sans recharger", async () => {
+    mockSession();
+    let releases: unknown[] = [];
+    server.use(http.get("/api/v1/releases", () => HttpResponse.json({ data: releases })));
+    renderWithProviders(<App />, { route: "/news" });
+    await screen.findByText(/Rien de nouveau pour l'instant/);
+    releases = [
+      {
+        version: "2.0.0",
+        title: "La nouvelle version",
+        content: { features: [{ text: "Tout est neuf" }], improvements: [], fixes: [] },
+        publishedAt: "2026-11-10T10:00:00.000Z",
+      },
+    ];
+    FakeEventSource.instances[0]?.emit("notification", { type: "notification" });
+    expect(await screen.findByRole("article", { name: "La nouvelle version" })).toBeInTheDocument();
+  });
+
   it("relit les donnees de l'espace touche par un autre membre", async () => {
     const me = buildMe();
     const famille = buildSpaceDetail({ name: "Famille" });
