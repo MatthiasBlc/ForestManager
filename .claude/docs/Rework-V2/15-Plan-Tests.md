@@ -83,6 +83,7 @@ Chaque parcours tourne en **mobile** (projet par defaut) ; ceux marques (D) tour
 13. Connexion admin avec 2FA, fusion de deux ingredients. (D)
 14. Navigation au clavier seul sur les ecrans principaux (D) ; palette Ctrl K.
 15. Changer d'ambiance et de mode dans Profil > Apparence ; le choix persiste apres reconnexion.
+16. Notification en temps reel : un membre suggere, la cloche de l'autrice s'allume sans rechargement, la notification ouvre la suggestion et passe en lue ; une categorie coupee ne previent plus (scenario detaille : `22-Plan-C6.md` S4).
 
 ## 5. Donnees de test [D79]
 

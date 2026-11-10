@@ -83,7 +83,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C5.6 Generer, garder, remplacer
   - [x] Revue visuelle de C5 dans Chrome (bureau et mobile), puis cloture (D186 : pas d'appui long sur un repas, PullToRefresh ; E2E 9 ecrit ; Planning "Disponible")
   - [x] Republier la page du modele de donnees (`11-Modele-Donnees/Modele-Donnees.html`, regeneree localement) a son URL, puis cocher C5
-- [ ] C6 Notifications, activite, temps reel, changelog (plan : `22-Plan-C6.md`)
+- [x] C6 Notifications, activite, temps reel, changelog (plan : `22-Plan-C6.md`)
   - [x] C6.0 Plan de C6 (D187 a D190 ; D190 a relire par le proprietaire)
   - [x] C6.1 Socle des notifications (centre, preferences, cloche)
   - [x] C6.2 Temps reel (SSE) [D188]
@@ -92,7 +92,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C6.5 Evenements des modules (Recettes, Planning)
   - [x] C6.6 Changelog : A10, page Nouveautes, brouillon genere par la CI [D171, D187]
   - [x] Revue visuelle de C6 dans Chrome (bureau et mobile) et flux SSE a travers nginx
-  - [ ] Cloture de C6 : lignes "Notifications" de `13-Parcours.md` branchees ou reportees, scenario E2E des notifications, `14-Architecture.md` S6, page du modele de donnees regeneree et republiee, suite complete verte (`22-Plan-C6.md` S3)
+  - [x] Cloture de C6 : lignes "Notifications" de `13-Parcours.md` branchees ou reportees, scenario E2E des notifications, `14-Architecture.md` S6, page du modele de donnees regeneree et republiee, suite complete verte (`22-Plan-C6.md` S3)
 - [ ] C6b Recherche globale, export, widgets d'accueil [D189] (plan a ecrire)
 - [ ] C7 E2E complets, preprod, remise a zero de la base et de la stack de prod
   - [ ] Suivi d'erreurs : SDK Sentry front et back, DSN vers Bugsink, test depuis A13 [D75, D179]

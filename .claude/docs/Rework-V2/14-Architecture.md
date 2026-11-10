@@ -158,10 +158,11 @@ Recettes est un module comme les autres : son manifeste, ses routes, ses permiss
 
 ## 6. Temps reel [D188]
 
-- Server-Sent Events sur le meme serveur : `GET /api/v1/events` (`text/event-stream`), authentifie par la session (meme cookie), battement toutes les 25 s, `EventSource` natif cote client (reprise automatique).
-- Abonnements calcules par le serveur, jamais demandes par le client : l'utilisateur (notifications) et ses espaces actifs (activite, mises a jour du planning). Rejoindre, quitter ou etre exclu d'un espace recalcule les abonnements (faille V1 des rooms corrigee par construction).
-- Les evenements transportent des identifiants et un type ; le client invalide les requetes TanStack Query concernees plutot que de recevoir des donnees completes.
-- Diffusion en memoire (une instance d'API) derriere une interface ; PostgreSQL `LISTEN/NOTIFY` si plusieurs instances un jour. nginx : pas de tampon ni de compression sur ce chemin.
+- Server-Sent Events sur le meme serveur : `GET /api/v1/events` (`text/event-stream`), authentifie par la session (meme cookie), `retry: 5000`, battement toutes les 25 s qui ferme le flux si la session n'existe plus. `EventSource` natif cote client, un seul par onglet (reprise automatique, tout est relu apres une reconnexion).
+- Pas d'etat d'abonnement : les destinataires sont lus en base au moment de l'envoi (l'utilisateur pour ses notifications, les membres actifs pour un espace). Rejoindre, quitter ou etre exclu prend effet a l'evenement suivant (faille V1 des rooms corrigee par construction).
+- Deux evenements, qui transportent des identifiants et jamais de donnees : `notification` (relire le compteur et la liste) et `invalidate` (`spaceId`, `module`), publie apres toute ecriture reussie sous `/spaces/:id` et apres les actions de l'admin sur un espace. Le client invalide les requetes TanStack Query concernees, groupees sur 150 ms.
+- Diffusion en memoire (`core/realtime/hub.ts`, une instance d'API, 10 connexions au plus par utilisateur, toutes fermees a l'arret) derriere `Context.realtime` ; PostgreSQL `LISTEN/NOTIFY` si plusieurs instances un jour.
+- nginx : `location = /api/v1/events` sans tampon ni gzip, lecture longue (1 h). L'admin n'a pas de flux : sa file des demandes est relue chaque minute (D190).
 
 ## 7. Stockage des images
 

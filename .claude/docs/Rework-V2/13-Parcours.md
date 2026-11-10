@@ -24,8 +24,8 @@ Conventions :
   6. Arrivee sur l'espace perso (D02), module Recettes, EmptyState "Pas encore de recette".
 - **Connexion / mot de passe** : E-CONNEXION (email ou nom, mot de passe, "Rester connecte"). "Mot de passe oublie" visible seulement avec SMTP : E-MDP-OUBLIE -> email -> E-MDP-NOUVEAU. Sans SMTP : texte "Demande a l'administrateur de reinitialiser ton mot de passe".
 - **Composants** : Field, Button, Switch, Toast, EmptyState.
-- **Notifications** : aucune.
-- **Decisions** : D02, D13, D21, D34 (textes traduisibles), D61.
+- **Notifications** : avec SMTP, rappel "Confirme ton adresse e-mail" (ouvre le compte, Button "Renvoyer le lien"), retire une fois l'adresse confirmee ; de meme apres un changement d'adresse (D90).
+- **Decisions** : D02, D13, D21, D34 (textes traduisibles), D61, D90.
 
 ## P02 - Creer un espace groupe et inviter par lien
 
@@ -66,7 +66,7 @@ Conventions :
   5. Button primary "Enregistrer" -> E-RECETTE, Toast "Recette enregistree". Revision 1 creee (D05).
   6. Quitter avec des modifications : F-CONFIRMER "Abandonner les modifications ?".
 - **Etats** : brouillon conserve localement si l'app se ferme (pas de perte de saisie) ; hors ligne : Enregistrer desactive avec "Reviens en ligne pour enregistrer" (D68).
-- **Notifications** : activite de l'espace "X a ajoute Gratin de pates" (pas de notification individuelle).
+- **Notifications** : activite de l'espace "X a ajoute Gratin de pates". Notification regroupee "X et 2 autres ont ajoute des recettes dans Famille" seulement pour qui active la categorie "Nouvelles recettes" (coupee par defaut).
 - **Decisions** : D05, D08, D09, D19, D28, D63.
 
 ## P05 - Recette composee
@@ -128,9 +128,9 @@ Conventions :
   1. E-MODULES : catalogue des modules, chacun avec Badge de statut (Disponible, Beta, Bientot) et etat pour cet espace : "Actif", "Accorde, desactive" (Switch), "Demande en cours", "Demander l'acces". Les membres non OWNER voient la liste en lecture seule.
   2. F-DEMANDE-MODULE : Field message optionnel ("Pour planifier nos repas de la semaine"), Button "Envoyer la demande". Toast "Demande envoyee".
   3. Admin (E-ADMIN-DEMANDES) : file des demandes (espace, demandeur, module, message, date), Button "Accorder" / "Refuser" avec motif.
-  4. Accorde : l'OWNER recoit "Le module Planning est disponible pour Famille", Button "Activer" (dans la notification ou sur E-MODULES). Le Switch active le module : il apparait dans ModuleNav / TabBar de tous les membres.
+  4. Accorde : l'OWNER recoit "Le module Planning est disponible pour Famille" ; la notification ouvre E-MODULES, qui porte le Switch "Activer" (pas de bouton dans une notification). Le Switch active le module : il apparait dans ModuleNav / TabBar de tous les membres.
   5. Refuse : notification avec le motif ; une nouvelle demande reste possible.
-- **Notifications** : admin (nouvelle demande), OWNER (accorde / refuse), membres (activite "Le planning est active").
+- **Notifications** : admin : pas de notification (compte isole), la demande se voit dans "A traiter" du tableau de bord et au compteur de "Demandes" de l'AdminNav, relu chaque minute (D190) ; OWNER (accorde / refuse) ; membres (activite "Le planning est active").
 - **Decisions** : D10, D33, D40.
 
 ## P10 - Planning : remplir une semaine, generer, verrouiller, echanger
@@ -147,7 +147,7 @@ Conventions :
   7. Verrouiller : ActionMenu "Verrouiller" (cadenas sur le MealSlot) ; la generation ne le touche pas.
   8. PullToRefresh sur E-PLANNING pour voir les modifications des autres membres.
 - **Droits** : modification selon le role minimal regle par l'espace (F-MPL-3, matrice B2) ; sinon lecture seule avec mention.
-- **Notifications** : activite "Planning de la semaine genere par X" ; pas de notification individuelle par repas.
+- **Notifications** : activite "X a genere le planning" et notification "X a genere le planning de Famille" (ouvre la semaine generee) ; repas modifie par un autre membre : une seule notification regroupee par espace sur 24 h ("X et 2 autres ont modifie le planning"), categorie Planning.
 - **Decisions** : D11, F-MPL-1 a F-MPL-5, D69, D180, D181, D186.
 
 ## P11 - Mode cuisine
@@ -169,7 +169,7 @@ Conventions :
 - **Etapes** :
   1. F-EXPORT : format (SegmentedControl JSON / Markdown), Switch "Inclure les photos" (archive zip). Button "Preparer l'export".
   2. Preparation (quelques secondes) puis Button "Telecharger". Export d'espace : rappel "Les membres verront dans l'activite que tu as exporte l'espace" ; limite atteinte : "Un export par jour. Prochain export possible demain a 14:02."
-- **Notifications** : activite de l'espace "X a exporte l'espace" (D37).
+- **Notifications** : activite de l'espace "X a exporte l'espace" (D37). Type declare en C6, branche avec l'export en C6b (D189).
 - **Decisions** : D37.
 
 ## P13 - Changer d'ambiance

@@ -70,3 +70,19 @@ Tranches verticales, comme C3 a C5 : chaque sous-etape livre l'API, le partage (
 - Revue visuelle dans Chrome (bureau et mobile) : cloche, E-NOTIFICATIONS, E-NOTIF-PREFERENCES, Activite, A10, Nouveautes.
 - `14-Architecture.md` S6 et le schema cible a jour ; page du modele de donnees regeneree et republiee.
 - Scenario E2E des notifications ecrit dans ce plan (code et joue en C7).
+
+## 4. Scenario E2E 16 (ecrit a la cloture de C6, code et joue en C7)
+
+Parcours 16 de `15-Plan-Tests.md` : une notification arrive en direct dans un autre navigateur, s'ouvre et se lit. Deux contextes Playwright (deux comptes, deux sessions), mobile. Traverse le vrai flux SSE (`GET /api/v1/events`) : le serveur web de C7 sert le front par nginx, comme en prod.
+
+- **Donnees** (route `POST /api/v1/__test/scenario` de C7) : Lea OWNER de "Famille", Sam MEMBER, une recette "Gratin" de Lea dans Famille. Aucune notification au depart.
+- **Etapes et attentes** :
+  1. Lea ouvre Famille : la cloche n'a pas de compteur. Sam ouvre "Gratin" dans l'autre contexte.
+  2. Sam envoie une suggestion sur "Gratin" (temps de cuisson change, message "Plus longtemps").
+  3. Sans recharger, la cloche de Lea montre "1" (attente bornee a 5 s : preuve du temps reel).
+  4. Lea ouvre E-NOTIFICATIONS : "Sam propose une modification de « Gratin »" sous "Aujourd'hui", marquee non lue ; axe sans violation.
+  5. Lea touche la notification : E-SUGGESTION s'ouvre ; retour : la notification est lue, la cloche n'a plus de compteur.
+  6. Lea refuse la suggestion ; sans recharger, la cloche de Sam montre "1", et "Lea a refuse ta suggestion sur « Gratin »" s'ouvre sur la recette.
+  7. Sam coupe "Suggestions et partages" pour Famille dans E-NOTIF-PREFERENCES (feuille de l'espace) ; Sam envoie une seconde suggestion, Lea la refuse : la cloche de Sam reste sans compteur.
+  8. Sam quitte Famille : l'entree "Activite" de Lea montre "Sam a quitte l'espace" en tete, et sa notification "Sam a quitte Famille." ne cite aucune suggestion en attente (celles de Sam sont tombees avec son depart).
+- **Hors scenario** (deja prouve plus bas) : regroupement "et 2 autres", preferences globales et par espace, purge, rappel de verification de l'email, changelog et notification de version (integration et composants), relecture apres reconnexion du flux (composant).
