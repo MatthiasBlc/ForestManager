@@ -135,6 +135,17 @@ const DEFINITIONS = {
   MEAL_008: { status: 409, message: "Nombre maximal de règles atteint pour ce profil." },
   MEAL_009: { status: 409, message: "Ce repas est verrouillé." },
 
+  // --- Changelog [D187] ---
+  CHANGELOG_001: { status: 404, message: "Version introuvable." },
+  CHANGELOG_002: {
+    status: 409,
+    message: "Action impossible dans l'état actuel de cette version.",
+  },
+  CHANGELOG_003: {
+    status: 422,
+    message: "Une version publiée doit contenir au moins une ligne.",
+  },
+
   // --- Administration de la plateforme ---
   ADMIN_001: { status: 401, message: "Identifiants incorrects." },
   ADMIN_002: { status: 401, message: "Connexion administrateur requise." },

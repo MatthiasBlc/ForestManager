@@ -40,3 +40,6 @@ stack_substituted.yml
 
 # Client Prisma genere (prisma generate)
 apps/api/src/generated/
+
+# Notes de version calculees par la CI (C6.6, D187)
+apps/api/release.json

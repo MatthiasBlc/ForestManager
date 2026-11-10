@@ -91,6 +91,19 @@ jobs:
       PUSH: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/master' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        if: matrix.image == 'backend'
+        with:
+          node-version-file: .nvmrc
+
+      # Notes de version (version suivante et items des commits) embarquees dans
+      # l'image API ; le seed en cree le brouillon au demarrage [D187].
+      - name: Release notes
+        if: matrix.image == 'backend'
+        run: node apps/api/src/scripts/release-notes.ts --out apps/api/release.json
 
       - name: Tags
         id: tags
@@ -188,8 +201,7 @@ jobs:
   # ========================================
   # Tag de version apres la prod
   # ========================================
-  # Le changelog en base (insere dans le conteneur par l'API Portainer en V1)
-  # revient en C6 avec le modele Changelog ; d'ici la, seul le tag est pose.
+  # La version est celle de release.json, recalculee sur le meme commit [D187].
   release-tag:
     runs-on: ubuntu-latest
     needs: deploy-prod
@@ -200,9 +212,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Tag v<version de package.json>
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Tag v<version des notes>
         run: |
-          VERSION="v$(jq -r .version package.json)"
+          VERSION="v$(node apps/api/src/scripts/release-notes.ts --version)"
           if git rev-parse -q --verify "refs/tags/${VERSION}" >/dev/null; then
             echo "Tag ${VERSION} already exists, nothing to do"
             exit 0

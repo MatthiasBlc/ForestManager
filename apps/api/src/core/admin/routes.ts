@@ -10,6 +10,7 @@ import {
 import { Router, type Request } from "express";
 
 import { destroySession, regenerate } from "../auth/session.ts";
+import { adminChangelogRouter } from "../changelog/routes.ts";
 import type { Context } from "../context.ts";
 import { AppError } from "../http/errors.ts";
 import { createRateLimiter } from "../http/security.ts";
@@ -122,6 +123,7 @@ export function adminRouter(ctx: Context, rateLimit: boolean): Router {
   router.use(adminUsersRouter(ctx));
   router.use(adminSpacesRouter(ctx));
   router.use(adminPlatformRouter(ctx));
+  router.use(adminChangelogRouter(ctx));
 
   // Une route admin inconnue ne tombe jamais dans l'API des utilisateurs.
   router.use(() => {

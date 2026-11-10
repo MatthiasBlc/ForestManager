@@ -59,6 +59,7 @@ export const AUDIT_CATEGORIES = [
   "REFERENTIALS",
   "ACCOUNTS",
   "CONNECTIONS",
+  "RELEASES",
 ] as const;
 export type AuditCategory = (typeof AUDIT_CATEGORIES)[number];
 
@@ -75,6 +76,7 @@ const AUDIT_PREFIXES: Readonly<Record<string, AuditCategory>> = {
   space: "MODERATION",
   recipe: "MODERATION",
   moderation: "MODERATION",
+  release: "RELEASES",
 };
 
 /** Prefixes d'une categorie (filtre du journal). */

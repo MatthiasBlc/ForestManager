@@ -7,6 +7,7 @@ import express, { Router } from "express";
 import type { Logger } from "pino";
 
 import { activityRouter } from "../activity/routes.ts";
+import { changelogRouter } from "../changelog/routes.ts";
 import { adminRouter } from "../admin/routes.ts";
 import { createPasswordHasher, type PasswordHasher } from "../auth/password.ts";
 import { authRouter } from "../auth/routes.ts";
@@ -117,6 +118,7 @@ export function createApp(deps: AppDeps): express.Express {
   api.use(modulesRouter(ctx));
   api.use(notificationsRouter(ctx));
   api.use(activityRouter(ctx));
+  api.use(changelogRouter(ctx));
   api.use(referentialsRouter(ctx, rateLimit));
   // Routeurs des modules, chacun derriere sa garde [D33].
   for (const module of ctx.modules) {

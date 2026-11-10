@@ -13,3 +13,4 @@ export * from "./admin-users.ts";
 export * from "./admin-spaces.ts";
 export * from "./admin-platform.ts";
 export * from "./realtime.ts";
+export * from "./changelog.ts";

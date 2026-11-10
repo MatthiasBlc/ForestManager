@@ -14,7 +14,7 @@ describe("errors", () => {
     for (const code of ERROR_CODES) {
       const info = ERRORS[code];
       expect(code).toMatch(
-        /^(AUTH|SPACE|MODULE|RECIPE|MEAL|NOTIF|STORAGE|ADMIN|VALIDATION|COMMON)_\d{3}$/
+        /^(AUTH|SPACE|MODULE|RECIPE|MEAL|NOTIF|CHANGELOG|STORAGE|ADMIN|VALIDATION|COMMON)_\d{3}$/
       );
       expect(info.status).toBeGreaterThanOrEqual(400);
       expect(info.status).toBeLessThan(600);

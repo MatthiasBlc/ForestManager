@@ -17,15 +17,21 @@ import {
   type ServiceTestResult,
 } from "@fm/shared";
 
+import { readReleaseFile } from "../changelog/service.ts";
 import type { Context } from "../context.ts";
 import type { Prisma } from "../db/client.ts";
 
 const RECENT = 5;
 const DUPLICATE_SIMILARITY = 0.45;
 
-/** Version de l'application (package.json racine, present dans l'image de prod). */
+/**
+ * Version de l'application : celle de release.json (calculee par la CI, D187),
+ * sinon celle du package.json racine (dev et tests).
+ */
 const VERSION = (() => {
   try {
+    const release = readReleaseFile();
+    if (release) return release.version;
     const raw = readFileSync(new URL("../../../../../package.json", import.meta.url), "utf8");
     const parsed = JSON.parse(raw) as { version?: unknown };
     return typeof parsed.version === "string" ? parsed.version : "inconnue";

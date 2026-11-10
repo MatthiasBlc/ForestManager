@@ -25,6 +25,7 @@ const CATEGORY_LABELS: Record<AuditCategory, string> = {
   REFERENTIALS: "Référentiels",
   ACCOUNTS: "Comptes",
   CONNECTIONS: "Connexions",
+  RELEASES: "Changelog",
 };
 
 export function AuditPage() {

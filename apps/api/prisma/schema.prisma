@@ -1093,3 +1093,31 @@ model ActivityEvent {
 
   @@index([spaceId, createdAt])
 }
+
+// =============================================================================
+// Changelog (C6.6) [D187, D127]
+// =============================================================================
+
+enum ChangelogStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
+}
+
+/// Version du changelog : brouillon cree au demarrage depuis release.json
+/// (commits classes par la CI), reformule et publie par l'admin dans A10.
+/// notifiedAt : date de la notification "nouvelle version". HIDDEN tient lieu
+/// de suppression (pas de deletedAt).
+model ChangelogEntry {
+  id          String          @id @default(uuid())
+  version     String          @unique
+  title       String
+  content     Json
+  status      ChangelogStatus @default(DRAFT)
+  publishedAt DateTime?
+  notifiedAt  DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([status, publishedAt])
+}

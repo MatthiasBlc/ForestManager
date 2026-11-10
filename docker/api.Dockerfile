@@ -52,7 +52,9 @@ COPY --from=prod-deps /app/node_modules ./node_modules
 COPY package.json ./
 COPY packages/shared/package.json packages/shared/
 COPY packages/shared/src packages/shared/src
-COPY apps/api/package.json apps/api/prisma.config.ts apps/api/
+# release.json : notes de version ecrites par la CI [D187] ; le motif le rend
+# facultatif (absent d'un build local).
+COPY apps/api/package.json apps/api/prisma.config.ts apps/api/release.jso[n] apps/api/
 COPY apps/api/prisma apps/api/prisma
 COPY apps/api/src apps/api/src
 COPY --from=generate /app/apps/api/src/generated apps/api/src/generated

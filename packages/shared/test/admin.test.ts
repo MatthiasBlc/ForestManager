@@ -18,6 +18,7 @@ describe("categories du journal d'audit [D128]", () => {
     expect(auditCategory("tag.deleted")).toBe("REFERENTIALS");
     expect(auditCategory("user.password-reset")).toBe("ACCOUNTS");
     expect(auditCategory("moderation.opened")).toBe("MODERATION");
+    expect(auditCategory("release.published")).toBe("RELEASES");
   });
 
   it("chaque categorie a au moins un prefixe, une action inconnue est refusee", () => {
@@ -34,6 +35,7 @@ const AUDIT_PREFIX_SAMPLE = {
   ingredient: "REFERENTIALS",
   user: "ACCOUNTS",
   moderation: "MODERATION",
+  release: "RELEASES",
 } as const;
 
 describe("schemas de connexion admin", () => {
