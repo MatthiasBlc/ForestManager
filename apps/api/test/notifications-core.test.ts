@@ -1,8 +1,9 @@
 // Evenements du socle branches sur les notifications et l'activite (C6.4)
 // [P02, P03, P08, P09, P14, D92, D121, D172].
+import { buildUser } from "@fm/test-utils";
 import { describe, expect, it } from "vitest";
 
-import { createTestApp, loginAs } from "./helpers/app.ts";
+import { createClient, createTestApp, fakeMailer, loginAs } from "./helpers/app.ts";
 import { createAdmin, loginAdmin } from "./helpers/admin.ts";
 import { db } from "./helpers/db.ts";
 import { addMember, createSpace, createUser } from "./helpers/factories.ts";
@@ -113,6 +114,45 @@ describe("departs (P08, D53)", () => {
   });
 });
 
+describe("rappel de verification de l'email (D90, F-ACC-1)", () => {
+  async function reminders(userId: string) {
+    return db.notification.findMany({ where: { userId, type: "core.email.unverified" } });
+  }
+
+  it("avec SMTP : rappel a l'inscription et au changement d'adresse, retire une fois verifie", async () => {
+    const mailer = fakeMailer();
+    const mailApp = createTestApp({ mailer });
+    const client = await createClient(mailApp);
+    const data = buildUser();
+    const registered = await client.post("/auth/register", data);
+    const userId = registered.body.id as string;
+    const first = await reminders(userId);
+    expect(first).toHaveLength(1);
+    expect(first[0]).toMatchObject({ category: "core.platform", spaceId: null, actorId: null });
+    // Renvoyer le lien ne double pas le rappel.
+    expect((await client.post("/auth/verify-email/resend")).status).toBe(204);
+    expect(await reminders(userId)).toHaveLength(1);
+
+    expect((await client.post("/auth/verify-email", { token: mailer.lastToken() })).status).toBe(
+      204
+    );
+    expect(await reminders(userId)).toEqual([]);
+
+    const changed = await client.patch("/me", {
+      email: "nouvelle.adresse@test.local",
+      currentPassword: data.password,
+    });
+    expect(changed.status).toBe(200);
+    expect(await reminders(userId)).toHaveLength(1);
+  });
+
+  it("sans SMTP : pas de rappel", async () => {
+    const client = await createClient(app);
+    const registered = await client.post("/auth/register", buildUser());
+    expect(await reminders(registered.body.id as string)).toEqual([]);
+  });
+});
+
 describe("transfert de propriete (D92)", () => {
   it("le destinataire est prevenu de la proposition, l'OWNER de la reponse", async () => {
     const { owner, moderator, space } = await family();
@@ -164,6 +204,8 @@ describe("modules et moderation (P09, D121, D172)", () => {
     const ownerClient = await loginAs(owner, app);
     const admin = await createAdmin();
     const adminClient = await loginAdmin(admin, app);
+    // Referentiel partage entre fichiers : ne pas dependre de l'ordre d'execution.
+    await db.module.update({ where: { code: "meal-plan" }, data: { status: "AVAILABLE" } });
 
     await ownerClient.post(`/spaces/${space.id}/modules/meal-plan/requests`, {});
     const first = await db.moduleAccessRequest.findFirstOrThrow({ where: { spaceId: space.id } });

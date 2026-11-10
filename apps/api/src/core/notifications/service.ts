@@ -11,7 +11,7 @@ import {
 } from "@fm/shared";
 
 import type { Context } from "../context.ts";
-import type { Db, Prisma } from "../db/client.ts";
+import { Prisma, type Db } from "../db/client.ts";
 import { afterDateCursor, decodeDateCursor, encodeDateCursor } from "../http/cursor.ts";
 import { AppError } from "../http/errors.ts";
 import type { ApiModule } from "../modules/registry.ts";
@@ -105,7 +105,13 @@ export async function notify(ctx: Context, input: NotifyInput): Promise<string[]
           readAt: null,
           createdAt: { gte: new Date(Date.now() - GROUP_WINDOW) },
         },
-        data: { ...fields, count: { increment: 1 }, createdAt: new Date() },
+        // Les parametres sont ceux du dernier evenement, meme absents.
+        data: {
+          ...fields,
+          data: data ?? Prisma.DbNull,
+          count: { increment: 1 },
+          createdAt: new Date(),
+        },
       });
       if (grouped.count > 0) continue;
     }

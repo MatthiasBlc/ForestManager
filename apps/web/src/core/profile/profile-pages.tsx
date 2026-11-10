@@ -6,6 +6,7 @@ import { useForm, useWatch } from "react-hook-form";
 import { Link } from "react-router";
 
 import { api } from "../../lib/api.ts";
+import { errorMessage } from "../../i18n/index.ts";
 import { applyApiError } from "../../lib/form-errors.ts";
 import { ImagePicker } from "../../patterns/image-picker.tsx";
 import { AMBIANCES } from "../../theme/themes.ts";
@@ -15,7 +16,7 @@ import { Field } from "../../ui/field.tsx";
 import { Icon, type IconName } from "../../ui/icon.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { FormAlert } from "../access/auth-layout.tsx";
-import { meQuery } from "../session/queries.ts";
+import { configQuery, meQuery } from "../session/queries.ts";
 import { ProfileLayout } from "./profile-layout.tsx";
 import { useLogout } from "./use-logout.ts";
 
@@ -110,8 +111,34 @@ export function ProfilePage() {
   );
 }
 
+/** Rappel tant que l'adresse n'est pas confirmee [D90], avec un nouvel envoi du lien. */
+function VerifyReminder() {
+  const toast = useToast();
+  const [sending, setSending] = useState(false);
+  const resend = async () => {
+    setSending(true);
+    try {
+      await api.post("/auth/verify-email/resend");
+      toast("Lien envoyé", { tone: "success" });
+    } catch (error) {
+      toast(errorMessage(error), { tone: "danger" });
+    } finally {
+      setSending(false);
+    }
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <p className="text-ink-muted">Adresse pas encore confirmée.</p>
+      <Button size="sm" disabled={sending} onClick={() => void resend()}>
+        Renvoyer le lien
+      </Button>
+    </div>
+  );
+}
+
 export function AccountPage() {
   const me = useQuery(meQuery);
+  const config = useQuery(configQuery);
   const queryClient = useQueryClient();
   const toast = useToast();
   const form = useForm({
@@ -161,6 +188,9 @@ export function AccountPage() {
           error={errors.email?.message}
           {...form.register("email")}
         />
+        {config.data?.features.email && me.data && !me.data.emailVerified && !emailChanged ? (
+          <VerifyReminder />
+        ) : null}
         {emailChanged ? (
           <Field
             label="Mot de passe actuel"

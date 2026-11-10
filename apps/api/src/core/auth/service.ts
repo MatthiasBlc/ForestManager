@@ -13,6 +13,7 @@ import type { Context } from "../context.ts";
 import { AppError } from "../http/errors.ts";
 import { imageUrl } from "../storage/images.ts";
 import { resetPasswordMail, verifyEmailMail, type MailMessage } from "../mail/mailer.ts";
+import { notify } from "../notifications/service.ts";
 import { grantDefaultModules } from "../spaces/defaults.ts";
 import { assertStrongPassword } from "./password.ts";
 import { destroyUserSessions } from "./session.ts";
@@ -128,6 +129,7 @@ export async function register(ctx: Context, body: RegisterBody): Promise<string
       return created;
     });
     await sendVerification(ctx, user);
+    await remindVerification(ctx, user.id);
     return user.id;
   } catch (error) {
     if (!isUniqueViolation(error)) throw error;
@@ -229,7 +231,10 @@ export async function updateProfile(
         ...(emailChanged && { email: body.email, emailVerifiedAt: null }),
       },
     });
-    if (emailChanged) await sendVerification(ctx, updated);
+    if (emailChanged) {
+      await sendVerification(ctx, updated);
+      await remindVerification(ctx, updated.id);
+    }
   } catch (error) {
     if (!isUniqueViolation(error)) throw error;
     await assertAvailable(ctx, { username: body.username, email: body.email }, user.id);
@@ -267,6 +272,19 @@ export async function updatePreferences(
 
 // --- Emails optionnels [D21] ---
 
+const VERIFY_REMINDER = "core.email.unverified";
+
+/** Rappel dans l'app tant que l'adresse n'est pas confirmee [D90] (un seul a la fois). */
+async function remindVerification(ctx: Context, userId: string): Promise<void> {
+  if (!ctx.mailer) return;
+  await ctx.db.notification.deleteMany({ where: { userId, type: VERIFY_REMINDER } });
+  await notify(ctx, { type: VERIFY_REMINDER, recipients: [userId] });
+}
+
+async function clearVerificationReminder(ctx: Context, userId: string): Promise<void> {
+  await ctx.db.notification.deleteMany({ where: { userId, type: VERIFY_REMINDER } });
+}
+
 function requireMailer(ctx: Context): void {
   if (!ctx.mailer) throw new AppError("AUTH_007");
 }
@@ -283,6 +301,7 @@ export async function verifyEmail(ctx: Context, token: string): Promise<void> {
   const userId = await consumeToken(ctx.db, token, "VERIFY_EMAIL");
   if (!userId) throw new AppError("AUTH_008");
   await ctx.db.user.update({ where: { id: userId }, data: { emailVerifiedAt: new Date() } });
+  await clearVerificationReminder(ctx, userId);
 }
 
 /** Repond toujours pareil, que l'email existe ou non (pas d'enumeration). */
@@ -314,5 +333,6 @@ export async function resetPassword(ctx: Context, token: string, password: strin
     where: { id: userId, emailVerifiedAt: null },
     data: { emailVerifiedAt: new Date() },
   });
+  await clearVerificationReminder(ctx, userId);
   await destroyUserSessions(ctx.db, userId);
 }

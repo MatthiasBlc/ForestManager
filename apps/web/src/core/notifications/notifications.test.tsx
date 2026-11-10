@@ -266,6 +266,16 @@ describe("messages du socle (C6.4)", () => {
           actor: null,
           data: { spaceName: "Colloc" },
         }),
+        buildNotification({
+          type: "core.email.unverified",
+          category: "core.platform",
+          actor: null,
+        }),
+        buildNotification({
+          type: "core.member.left",
+          space: { ...space, name: "Amis" },
+          data: { pending: { "recipes.suggestions": 2 } },
+        }),
       ],
     ]);
     renderWithProviders(<App />, { route: "/notifications" });
@@ -281,6 +291,13 @@ describe("messages du socle (C6.4)", () => {
       )
     ).toBeInTheDocument();
     expect(screen.getByText("Tu ne fais plus partie de Colloc.")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Confirme ton adresse e-mail/ })).toHaveAttribute(
+      "href",
+      "/profile/account"
+    );
+    expect(
+      screen.getByText(/a quitté Amis\. 2 suggestions en attente sur ses recettes\./)
+    ).toBeInTheDocument();
   });
 });
 

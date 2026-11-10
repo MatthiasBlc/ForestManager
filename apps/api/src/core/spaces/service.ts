@@ -16,7 +16,7 @@ import { recordActivity } from "../activity/service.ts";
 import type { Context } from "../context.ts";
 import type { Prisma } from "../db/client.ts";
 import { AppError } from "../http/errors.ts";
-import type { MemberLeftReason } from "../modules/hooks.ts";
+import type { MemberLeftReason, PendingCounts } from "../modules/hooks.ts";
 import { activeMembers, managersOf } from "../notifications/recipients.ts";
 import { notify } from "../notifications/service.ts";
 import { authorize, loadAccess, requireSpacePermission } from "./access.ts";
@@ -282,7 +282,7 @@ export async function endMembership(
   spaceId: string,
   userId: string,
   reason: MemberLeftReason
-): Promise<void> {
+): Promise<PendingCounts> {
   const now = new Date();
   await tx.membership.update({
     where: { spaceId_userId: { spaceId, userId } },
@@ -292,7 +292,12 @@ export async function endMembership(
     where: { spaceId, status: "PENDING", OR: [{ toUserId: userId }, { fromUserId: userId }] },
     data: { status: "CANCELLED", respondedAt: now },
   });
-  for (const hook of ctx.hooks.onMemberLeft) await hook(tx, { spaceId, userId, reason });
+  const pending: PendingCounts = {};
+  for (const hook of ctx.hooks.onMemberLeft) {
+    const counts = await hook(tx, { spaceId, userId, reason });
+    for (const [key, count] of Object.entries(counts ?? {})) if (count > 0) pending[key] = count;
+  }
+  return pending;
 }
 
 export async function changeRole(
@@ -354,7 +359,9 @@ export async function leaveSpace(
     await ctx.db.$transaction((tx) => softDelete(tx, spaceId));
     return "deleted";
   }
-  await ctx.db.$transaction((tx) => endMembership(ctx, tx, spaceId, userId, "LEFT"));
+  const pending = await ctx.db.$transaction((tx) =>
+    endMembership(ctx, tx, spaceId, userId, "LEFT")
+  );
   await recordActivity(ctx, { spaceId, type: "core.member.left", actorId: userId });
   await notify(ctx, {
     type: "core.member.left",
@@ -362,6 +369,8 @@ export async function leaveSpace(
     spaceId,
     actorId: userId,
     groupKey: `core.member.left:${spaceId}`,
+    // P08 : "2 suggestions en attente sur ses recettes".
+    data: Object.keys(pending).length > 0 ? { pending } : null,
   });
   return "left";
 }

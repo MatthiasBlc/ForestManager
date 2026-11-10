@@ -15,7 +15,7 @@ import type { Context } from "../../core/context.ts";
 import { Prisma } from "../../core/db/client.ts";
 import { AppError } from "../../core/http/errors.ts";
 import { recipeShared, shareDecided, shareRequested } from "./events.ts";
-import type { MemberLeftReason } from "../../core/modules/hooks.ts";
+import type { MemberLeftReason, PendingCounts } from "../../core/modules/hooks.ts";
 import { canModerate } from "./permissions.ts";
 import {
   authorIsActiveMember,
@@ -481,12 +481,13 @@ export async function leavePreview(ctx: Context, actor: RecipeActor): Promise<Re
 
 /**
  * Depart d'un membre : ses demandes et suggestions liees a cet espace tombent et sa confiance
- * dans cet espace est oubliee. Ses recettes et ses partages restent [D18, D84].
+ * dans cet espace est oubliee. Ses recettes et ses partages restent [D18, D84]. Renvoie
+ * les suggestions en attente sur ses recettes, que les moderateurs reprennent (P08).
  */
 export async function onMemberLeft(
   tx: Tx,
   event: { spaceId: string; userId: string; reason: MemberLeftReason }
-): Promise<void> {
+): Promise<PendingCounts> {
   const { spaceId, userId } = event;
   await tx.recipeShareRequest.updateMany({
     where: {
@@ -505,6 +506,10 @@ export async function onMemberLeft(
     where: { spaceId, userId },
     data: { allowMembersToShare: false },
   });
+  const suggestions = await tx.recipeSuggestion.count({
+    where: { spaceId, status: "PENDING", recipe: { authorId: userId, deletedAt: null } },
+  });
+  return { "recipes.suggestions": suggestions };
 }
 
 /**

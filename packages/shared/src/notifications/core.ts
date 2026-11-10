@@ -18,7 +18,7 @@ export interface NotificationTypeDefinition {
 export const CORE_NOTIFICATION_CATEGORIES = {
   /** Invitations, transferts, arrivees et departs, espace supprime ou restaure. */
   "core.members": {},
-  /** Avis de la plateforme : decision sur un module, acces de moderation [D121]. */
+  /** Avis de la plateforme : adresse a confirmer [D90], decision sur un module, moderation [D121]. */
   "core.platform": { mandatory: true },
   /** Nouvelle version publiee [D127]. */
   "core.releases": { perSpace: false },
@@ -34,6 +34,7 @@ export const CORE_NOTIFICATION_TYPES = {
   "core.member.excluded": { category: "core.members" },
   "core.space.deleted": { category: "core.members" },
   "core.space.restored": { category: "core.members" },
+  "core.email.unverified": { category: "core.platform" },
   "core.module.granted": { category: "core.platform" },
   "core.module.rejected": { category: "core.platform" },
   "core.moderation.opened": { category: "core.platform" },

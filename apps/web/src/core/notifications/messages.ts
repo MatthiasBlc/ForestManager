@@ -49,6 +49,18 @@ function verb(notification: Notification, one: string, many: string): string {
   return notification.count > 1 ? many : one;
 }
 
+/** P08 : ce que le membre laisse en attente, dit seulement pour un depart seul. */
+function pendingText(notification: Notification): string {
+  const pending = notification.data?.pending;
+  if (notification.count > 1 || typeof pending !== "object" || pending === null) return "";
+  return Object.entries(pending)
+    .map(([key, count]) => {
+      const render = WEB_MODULES.map((module) => module.pendingTexts?.[key]).find(Boolean);
+      return render && typeof count === "number" ? ` ${render(count)}` : "";
+    })
+    .join("");
+}
+
 const spacePath = (n: Notification, path: string) => (n.space ? `/s/${n.space.id}/${path}` : null);
 
 const CORE: Record<string, NotificationRenderer> = {
@@ -73,7 +85,7 @@ const CORE: Record<string, NotificationRenderer> = {
     to: spacePath(n, "members"),
   }),
   "core.member.left": (n) => ({
-    text: `${others(n)}${verb(n, "a quitté", "ont quitté")} ${spaceName(n)}.`,
+    text: `${others(n)}${verb(n, "a quitté", "ont quitté")} ${spaceName(n)}.${pendingText(n)}`,
     to: spacePath(n, "members"),
   }),
   "core.member.excluded": (n) => ({
@@ -83,6 +95,11 @@ const CORE: Record<string, NotificationRenderer> = {
   }),
   "core.space.deleted": (n) => ({ text: `a supprimé ${spaceName(n)}.`, to: null }),
   "core.space.restored": (n) => ({ text: `a restauré ${spaceName(n)}.`, to: spacePath(n, "") }),
+  "core.email.unverified": () => ({
+    text: "Confirme ton adresse e-mail : un lien t'a été envoyé.",
+    actor: false,
+    to: "/profile/account",
+  }),
   "core.module.granted": (n) => ({
     text: `Le module ${moduleInfo(text(n, "moduleCode")).name} est disponible pour ${spaceName(n)}.`,
     actor: false,

@@ -61,6 +61,25 @@ describe("recettes", () => {
     expect(await notificationsOf(w.lea.id)).toEqual([]);
   });
 
+  it("depart de l'autrice : les responsables voient ses suggestions en attente (P08)", async () => {
+    const w = await world();
+    const created = await w.asMatthias.post(`${w.base}/suggestions`, {
+      ...(await recipeBody(w.asMatthias, { title: "Saumon teriyaki", cookMinutes: 40 })),
+      revision: 1,
+    });
+    expect(created.status).toBe(201);
+    expect((await w.asLea.post(`/spaces/${w.foyer.id}/leave`, {})).status).toBe(204);
+    const left = await notificationsOf(w.olga.id, "core.member.left");
+    expect(left).toHaveLength(1);
+    expect(left[0]!.data).toEqual({ pending: { "recipes.suggestions": 1 } });
+
+    // Sans rien en attente, pas de parametre.
+    expect((await w.asMatthias.post(`/spaces/${w.foyer.id}/leave`, {})).status).toBe(204);
+    const again = await notificationsOf(w.olga.id, "core.member.left");
+    expect(again[0]!.count).toBe(2);
+    expect(again[0]!.data).toBeNull();
+  });
+
   it("suggestion : l'autrice est prevenue, puis le proposant de la decision", async () => {
     const w = await world();
     const created = await w.asMatthias.post(`${w.base}/suggestions`, {

@@ -11,6 +11,12 @@ import { addMember, createSpace, createUser } from "./helpers/factories.ts";
 import { describePermissions } from "./helpers/roles.ts";
 
 const app = createTestApp();
+
+/** Ordre d'enregistrement : n = 0, 1, 2, puis la recette (sans n). */
+function rank(data: unknown): number {
+  const n = (data as { n?: number } | null)?.n;
+  return typeof n === "number" ? n : 3;
+}
 const ctx = createContext({
   env: testEnv,
   db,
@@ -49,6 +55,19 @@ describe("fil d'activite (F-SPC-7)", () => {
       targetId: "6f1c2a54-7a8b-4c1d-9e2f-0a1b2c3d4e5f",
       data: { title: "Gratin" },
     });
+    // Horodatages distincts : deux evenements de la meme milliseconde se departagent par id.
+    const events = await db.activityEvent.findMany({
+      where: { spaceId: space.id },
+      orderBy: { createdAt: "asc" },
+    });
+    const start = Date.now();
+    const ranked = events.sort((a, b) => rank(a.data) - rank(b.data));
+    for (const [i, event] of ranked.entries()) {
+      await db.activityEvent.update({
+        where: { id: event.id },
+        data: { createdAt: new Date(start + i * 1000) },
+      });
+    }
     const client = await loginAs(member, app);
     const first = await client.get(`/spaces/${space.id}/activity?limit=2`);
     expect(first.status).toBe(200);

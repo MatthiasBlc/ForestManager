@@ -23,4 +23,8 @@ export const recipesModule: WebModule = {
   },
   notifications: RECIPE_NOTIFICATIONS,
   activity: RECIPE_ACTIVITY,
+  pendingTexts: {
+    "recipes.suggestions": (count) =>
+      `${count} suggestion${count > 1 ? "s" : ""} en attente sur ses recettes.`,
+  },
 };

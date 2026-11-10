@@ -66,4 +66,6 @@ export interface WebModule {
   notifications?: Readonly<Record<string, NotificationRenderer>>;
   /** Messages des evenements du fil d'activite du module. */
   activity?: Readonly<Record<string, ActivityRenderer>>;
+  /** Ce qu'un membre laisse en attente en partant (P08), par cle declaree par l'API. */
+  pendingTexts?: Readonly<Record<string, (count: number) => string>>;
 }

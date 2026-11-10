@@ -144,6 +144,30 @@ describe("profil (E-PROFIL)", () => {
     });
   });
 
+  it("adresse non confirmee : renvoie le lien (D90)", async () => {
+    const me = buildMe({ username: "matthias", emailVerified: false });
+    mockSession({ me, email: true });
+    let resent = 0;
+    server.use(
+      http.post("/api/v1/auth/verify-email/resend", () => {
+        resent += 1;
+        return new HttpResponse(null, { status: 204 });
+      })
+    );
+    const { user } = renderWithProviders(<App />, { route: "/profile/account" });
+    expect(await screen.findByText("Adresse pas encore confirmée.")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Renvoyer le lien" }));
+    expect(await screen.findByText("Lien envoyé")).toBeInTheDocument();
+    expect(resent).toBe(1);
+  });
+
+  it("adresse confirmee ou sans SMTP : pas de rappel", async () => {
+    mockSession({ me: buildMe({ emailVerified: false }), email: false });
+    renderWithProviders(<App />, { route: "/profile/account" });
+    expect(await screen.findByLabelText("Adresse e-mail")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Renvoyer le lien" })).not.toBeInTheDocument();
+  });
+
   it("change le mot de passe ; mot de passe actuel refuse", async () => {
     const { bodies } = profileServer();
     const { user } = renderWithProviders(<App />, { route: "/profile/password" });

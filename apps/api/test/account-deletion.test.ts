@@ -178,7 +178,7 @@ describe("suppression du compte (D20, D51)", () => {
         onMemberLeft: [
           (_tx, event) => {
             seen.push(`${event.spaceId}:${event.reason}`);
-            return Promise.resolve();
+            return Promise.resolve(undefined);
           },
         ],
         storageKeys: [],
