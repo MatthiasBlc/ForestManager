@@ -91,7 +91,8 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C6.4 Evenements du socle, dont l'OWNER prevenu d'un acces de moderation [D172, D121] et les decisions sur les demandes de module (P09)
   - [x] C6.5 Evenements des modules (Recettes, Planning)
   - [x] C6.6 Changelog : A10, page Nouveautes, brouillon genere par la CI [D171, D187]
-  - [ ] Revue visuelle de C6 dans Chrome (bureau et mobile), puis cloture
+  - [x] Revue visuelle de C6 dans Chrome (bureau et mobile) et flux SSE a travers nginx
+  - [ ] Cloture de C6 : lignes "Notifications" de `13-Parcours.md` branchees ou reportees, scenario E2E des notifications, `14-Architecture.md` S6, page du modele de donnees regeneree et republiee, suite complete verte (`22-Plan-C6.md` S3)
 - [ ] C6b Recherche globale, export, widgets d'accueil [D189] (plan a ecrire)
 - [ ] C7 E2E complets, preprod, remise a zero de la base et de la stack de prod
   - [ ] Suivi d'erreurs : SDK Sentry front et back, DSN vers Bugsink, test depuis A13 [D75, D179]
