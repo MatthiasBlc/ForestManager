@@ -56,6 +56,11 @@ export interface AppDeps {
   realtime?: Realtime;
   /** Manifestes des modules (src/modules/index.ts) ; le socle ne les importe pas [D40]. */
   modules: readonly ApiModule[];
+  /**
+   * Routes des E2E (`apps/api/test/e2e/routes.ts`) [D79] : montees sous
+   * `/api/v1/__test` en NODE_ENV=test seulement, sans CSRF ni session.
+   */
+  testRoutes?: (ctx: Context) => Router;
 }
 
 /** Taille maximale d'un corps JSON (comme la V1). */
@@ -101,6 +106,8 @@ export function createApp(deps: AppDeps): express.Express {
   });
 
   app.use(express.json({ limit: JSON_LIMIT }));
+  if (deps.testRoutes && env.NODE_ENV === "test")
+    app.use(`${API_PREFIX}/__test`, deps.testRoutes(ctx));
   app.use(csrfProtection(env.SESSION_SECRET, production));
 
   const api = Router();

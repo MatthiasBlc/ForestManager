@@ -16,8 +16,11 @@ import { MODULES } from "./modules/index.ts";
 const env = loadEnv();
 const logger = createLogger(env);
 const db = createDb(env.DATABASE_URL);
+// Stack E2E (NODE_ENV=test) : routes de test [D79], absentes de l'image de production.
+const testRoutes =
+  env.NODE_ENV === "test" ? (await import("../test/e2e/routes.ts")).e2eRoutes : undefined;
 const ctx = createContext({ env, db, logger, modules: MODULES });
-const app = createApp(ctx);
+const app = createApp({ ...ctx, testRoutes });
 
 // En dev, le bucket du stockage local est cree au besoin (en preprod et prod il existe deja).
 if (ctx.storage && env.NODE_ENV !== "production") {
