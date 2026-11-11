@@ -23,6 +23,9 @@ export default defineConfig({
     browserName: "chromium",
     locale: "fr-FR",
     timezoneId: "Europe/Paris",
+    // Animations coupees (le design system suit `prefers-reduced-motion`) : axe
+    // mesurerait sinon le contraste d'une feuille en plein fondu.
+    reducedMotion: "reduce",
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     video: "retain-on-failure",

@@ -37,6 +37,10 @@ interface Scenarios {
       members: (Account & { role: MemberRole })[];
     };
   };
+  admin: {
+    input: object;
+    output: { admin: { id: string; username: string; password: string; totpSecret: string } };
+  };
 }
 
 export type Scenario = <N extends keyof Scenarios>(
@@ -165,9 +169,10 @@ export const test = base.extend<Fixtures>({
   },
 });
 
-/** Toast affiche (la zone `role="status"` le repete pour les lecteurs d'ecran). */
+/** Toast affiche (cherche dans la zone des toasts : `role="status"` le repete ailleurs). */
 export async function expectToast(page: Page, text: string): Promise<void> {
-  await expect(page.getByText(text, { exact: true })).toBeVisible();
+  const toasts = page.getByRole("region", { name: /^Notifications/ });
+  await expect(toasts.getByText(text, { exact: true })).toBeVisible();
 }
 
 export { expect };
