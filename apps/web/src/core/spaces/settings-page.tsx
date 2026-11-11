@@ -31,6 +31,7 @@ import { meQuery } from "../session/queries.ts";
 import { canIn } from "./queries.ts";
 import { toVisual } from "../shell/space-visual.ts";
 import { TransferBanner, TransferSheet } from "./transfer.tsx";
+import { ExportSheet } from "../exports/export-sheet.tsx";
 
 function SpaceForm({ space }: { space: SpaceDetail }) {
   const queryClient = useQueryClient();
@@ -231,10 +232,12 @@ function DeleteSheet({
   space,
   open,
   onClose,
+  onExport,
 }: {
   space: SpaceDetail;
   open: boolean;
   onClose: () => void;
+  onExport: () => void;
 }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -261,6 +264,12 @@ function DeleteSheet({
         <p className="text-ink-muted">
           Tu peux le restaurer pendant 30 jours. Ensuite, tout est effacé.
         </p>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-ink-muted">Garder une copie des recettes ?</span>
+          <Button size="sm" icon="arrow-down" onClick={onExport}>
+            Exporter d'abord
+          </Button>
+        </div>
         <Field
           label={`Pour confirmer, tape ${space.name}`}
           value={typed}
@@ -284,7 +293,7 @@ function DeleteSheet({
 }
 
 export function SettingsPage({ space }: { space: SpaceDetail }) {
-  const [sheet, setSheet] = useState<"leave" | "delete" | "transfer" | null>(null);
+  const [sheet, setSheet] = useState<"leave" | "delete" | "transfer" | "export" | null>(null);
   const group = space.kind === "GROUP";
   const owner = space.myRole === "OWNER";
   const alone = space.memberCount <= 1;
@@ -316,6 +325,23 @@ export function SettingsPage({ space }: { space: SpaceDetail }) {
           <Icon name="chevron-right" className="fm-option-go" />
         </Link>
       </section>
+
+      {group && canIn(space, "space.export") ? (
+        <section aria-labelledby="settings-export" className="fm-stack border-t border-line pt-4">
+          <h2 id="settings-export" className="font-display text-lg font-bold">
+            Export
+          </h2>
+          <p className="m-0 text-ink-muted">
+            Toutes les recettes de l'espace dans une archive, une fois par jour.
+          </p>
+          <div>
+            <Button icon="arrow-down" onClick={() => setSheet("export")}>
+              Exporter l'espace
+            </Button>
+          </div>
+          <ExportSheet space={space} scope="SPACE" open={sheet === "export"} onClose={close} />
+        </section>
+      ) : null}
 
       {group ? (
         <section aria-labelledby="settings-leave" className="fm-stack border-t border-line pt-4">
@@ -349,7 +375,12 @@ export function SettingsPage({ space }: { space: SpaceDetail }) {
             </div>
           ) : null}
           <LeaveSheet space={space} alone={alone} open={sheet === "leave"} onClose={close} />
-          <DeleteSheet space={space} open={sheet === "delete"} onClose={close} />
+          <DeleteSheet
+            space={space}
+            open={sheet === "delete"}
+            onClose={close}
+            onExport={() => setSheet("export")}
+          />
           {owner ? (
             <TransferSheet space={space} open={sheet === "transfer"} onClose={close} />
           ) : null}

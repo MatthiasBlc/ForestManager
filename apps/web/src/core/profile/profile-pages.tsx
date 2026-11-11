@@ -16,6 +16,7 @@ import { Field } from "../../ui/field.tsx";
 import { Icon, type IconName } from "../../ui/icon.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { FormAlert } from "../access/auth-layout.tsx";
+import { ExportSheet } from "../exports/export-sheet.tsx";
 import { configQuery, meQuery } from "../session/queries.ts";
 import { ProfileLayout } from "./profile-layout.tsx";
 import { useLogout } from "./use-logout.ts";
@@ -27,11 +28,13 @@ function Row({
   label,
   value,
   to,
+  onClick,
 }: {
   icon: IconName;
   label: string;
   value?: string;
   to?: string;
+  onClick?: () => void;
 }) {
   const content = (
     <>
@@ -45,6 +48,13 @@ function Row({
       {to ? <Icon name="chevron-right" className="fm-option-go" /> : null}
     </>
   );
+  if (onClick) {
+    return (
+      <button type="button" className="fm-option" onClick={onClick} aria-label={label}>
+        {content}
+      </button>
+    );
+  }
   return to ? (
     <Link to={to} className="fm-option">
       {content}
@@ -58,6 +68,7 @@ export function ProfilePage() {
   const me = useQuery(meQuery);
   const queryClient = useQueryClient();
   const logout = useLogout();
+  const [exportOpen, setExportOpen] = useState(false);
   if (!me.data) return null;
   const { preferences } = me.data;
   return (
@@ -93,6 +104,12 @@ export function ProfilePage() {
         <Row icon="lock" label="Mot de passe" to="/profile/password" />
         <Row icon="home" label="Langue" value="Français" />
         <Row
+          icon="arrow-down"
+          label="Exporter mes recettes"
+          value="Archive JSON ou Markdown"
+          onClick={() => setExportOpen(true)}
+        />
+        <Row
           icon="sparkles"
           label="Nouveautés"
           value="Ce qui a changé dans Forest Manager"
@@ -107,6 +124,7 @@ export function ProfilePage() {
           Supprimer mon compte
         </Link>
       </div>
+      <ExportSheet open={exportOpen} onClose={() => setExportOpen(false)} />
     </ProfileLayout>
   );
 }

@@ -1,6 +1,7 @@
 // F-SUPPRIMER-COMPTE [D20, D51, D116] : consequences espace par espace, puis mot de passe.
 import { accountDeletionPreviewSchema, type AccountDeletionPreview } from "@fm/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 
@@ -12,6 +13,7 @@ import { Skeleton } from "../../ui/display.tsx";
 import { Field } from "../../ui/field.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { FormAlert } from "../access/auth-layout.tsx";
+import { ExportSheet } from "../exports/export-sheet.tsx";
 import { ProfileLayout } from "./profile-layout.tsx";
 
 function effect(item: AccountDeletionPreview["spaces"][number]): string {
@@ -32,6 +34,7 @@ export function DeleteAccountPage() {
     queryFn: () => api.get("/me/deletion-preview", accountDeletionPreviewSchema),
     staleTime: 0,
   });
+  const [exportOpen, setExportOpen] = useState(false);
   const form = useForm({ defaultValues: { password: "" } });
   const { errors, isSubmitting } = form.formState;
   const onSubmit = form.handleSubmit(async ({ password }) => {
@@ -73,6 +76,15 @@ export function DeleteAccountPage() {
         Tes recettes partagées dans ces espaces restent, signées « Ancien membre ». Ton espace perso
         et tes recettes perso sont supprimés.
       </p>
+      <div className="fm-stack gap-2">
+        <p className="m-0">Avant de partir, tu peux garder une copie de tes recettes.</p>
+        <div>
+          <Button icon="arrow-down" onClick={() => setExportOpen(true)}>
+            Exporter mes recettes
+          </Button>
+        </div>
+      </div>
+      <ExportSheet open={exportOpen} onClose={() => setExportOpen(false)} />
       <form className="fm-stack" onSubmit={(e) => void onSubmit(e)} noValidate>
         <FormAlert message={errors.root?.message} />
         <Field
