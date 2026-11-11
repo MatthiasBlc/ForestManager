@@ -105,7 +105,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C7.1 Socle E2E : workspace `e2e/`, `docker/compose.e2e.yml`, route de test, parcours 1 [D197, D79]
   - [x] C7.2 Parcours du socle : 2, 8, 10, 11, 13, 15
   - [x] C7.3 Parcours des Recettes : 3, 4, 5, 6, 7, 12
-  - [ ] C7.4 Parcours du Planning, du temps reel et du clavier : 9, 14, 16
+  - [x] C7.4 Parcours du Planning, du temps reel et du clavier : 9, 14, 16
   - [ ] C7.5 Suivi d'erreurs : SDK Sentry front et back, tunnel, test depuis A13, compose Bugsink [D75, D179, D196]
   - [ ] C7.6 CI complete (couverture, cles i18n, job E2E) et premier passage sur GitHub (reporte depuis C1.10) [D78] ; puis etat ecrit et push : **changement d'ordinateur** [D198]
   - [ ] C7.7 Preprod, sur l'autre ordinateur : deploy par pull request vers `master`, verification, feuille de recette (`24-Plan-C7.md` S2)

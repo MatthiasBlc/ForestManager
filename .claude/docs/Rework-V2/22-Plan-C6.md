@@ -81,7 +81,7 @@ Parcours 16 de `15-Plan-Tests.md` : une notification arrive en direct dans un au
   2. Sam envoie une suggestion sur "Gratin" (temps de cuisson change, message "Plus longtemps").
   3. Sans recharger, la cloche de Lea montre "1" (attente bornee a 5 s : preuve du temps reel).
   4. Lea ouvre E-NOTIFICATIONS : "Sam propose une modification de « Gratin »" sous "Aujourd'hui", marquee non lue ; axe sans violation.
-  5. Lea touche la notification : E-SUGGESTION s'ouvre ; retour : la notification est lue, la cloche n'a plus de compteur.
+  5. Lea touche la notification : E-SUGGESTION s'ouvre [joue en C7.4 : la recette s'ouvre, avec le lien vers la suggestion] ; retour : la notification est lue, la cloche n'a plus de compteur.
   6. Lea refuse la suggestion ; sans recharger, la cloche de Sam montre "1", et "Lea a refuse ta suggestion sur « Gratin »" s'ouvre sur la recette.
   7. Sam coupe "Suggestions et partages" pour Famille dans E-NOTIF-PREFERENCES (feuille de l'espace) ; Sam envoie une seconde suggestion, Lea la refuse : la cloche de Sam reste sans compteur.
   8. Sam quitte Famille : l'entree "Activite" de Lea montre "Sam a quitte l'espace" en tete, et sa notification "Sam a quitte Famille." ne cite aucune suggestion en attente (celles de Sam sont tombees avec son depart).

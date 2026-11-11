@@ -69,7 +69,7 @@ Tranches verticales, comme C3 et C4 : chaque sous-etape livre l'API (`apps/api/s
 
 Parcours 9 de `15-Plan-Tests.md` : remplir le planning a la main, verrouiller un repas, generer le reste de la semaine. Mobile (projet par defaut).
 
-- **Donnees** (route `POST /api/v1/__test/scenario` de C7) : un OWNER, un espace partage avec le Planning accorde et actif, 6 recettes taguees (dont 3 "Vegetarien"), profil Standard sans regle. Date du navigateur figee au mardi d'une semaine connue, reglages par defaut (lundi, midi et soir).
+- **Donnees** (route `POST /api/v1/__test/scenario` de C7) : un OWNER, un espace partage avec le Planning accorde et actif, 6 recettes taguees (dont 3 "Vegetarien") [joue en C7.4 avec 14 recettes sans tag : le delai de 3 jours du profil Standard laissait 2 cases vides avec 6], profil Standard sans regle. Date du navigateur figee au mardi d'une semaine connue, reglages par defaut (lundi, midi et soir).
 - **Etapes et attentes** :
   1. Ouvrir Planning : vue Jour sur aujourd'hui, 14 cases de la semaine vides (vue Semaine), axe sans violation.
   2. Toucher "Mardi, midi" : F-REPAS, chercher une recette, l'enregistrer ; la case montre son titre.
