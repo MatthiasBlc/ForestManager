@@ -56,7 +56,7 @@ describe("CommandPalette (design system)", () => {
     );
     const input = screen.getByRole("combobox", { name: "Rechercher" });
     expect(input).toHaveFocus();
-    expect(screen.getByRole("option", { name: "Gratin, Famille" })).toHaveAttribute(
+    expect(screen.getByRole("option", { name: "Gratin Famille" })).toHaveAttribute(
       "aria-selected",
       "true"
     );
@@ -69,6 +69,25 @@ describe("CommandPalette (design system)", () => {
     expect(onSelect).toHaveBeenCalledWith("x1");
     await user.keyboard("{ArrowUp}{ArrowUp}{ArrowUp}{ArrowUp}{Enter}");
     expect(onSelect).toHaveBeenLastCalledWith("r1");
+  });
+
+  it("nomme chaque resultat par son texte visible, indice compris", () => {
+    renderWithProviders(
+      <CommandPalette
+        open
+        onClose={() => undefined}
+        query=""
+        onQueryChange={() => undefined}
+        groups={groups}
+        onSelect={() => undefined}
+      />
+    );
+    // Pas d'aria-label qui doublerait le texte affiche : le nom vient du contenu
+    // (regle axe label-content-name-mismatch, trouvee par le parcours 14).
+    const options = screen.getAllByRole("option");
+    expect(options.map((option) => option.getAttribute("aria-label"))).toEqual([null, null, null]);
+    expect(options[0]).toHaveAccessibleName("Gratin Famille");
+    expect(options[1]).toHaveAccessibleName("Gratin froid");
   });
 
   it("se ferme par Echap et affiche le message quand rien n'est trouve", async () => {
@@ -200,14 +219,14 @@ describe("recherche globale (F-RECHERCHE)", () => {
     await user.click(await within(dialog).findByRole("option", { name: /Pâtes.*2 recettes/ }));
 
     expect(
-      await screen.findByRole("button", { name: "Retirer le filtre Pâtes" })
+      await screen.findByRole("button", { name: "Avec Pâtes, retirer le filtre" })
     ).toBeInTheDocument();
     await waitFor(() => {
       expect(s.recipes.queries.at(-1)?.get("ingredientIds")).toBe(
         "8a3c1e52-7b9d-4f0a-8c2e-1d3f5a7b9c0e"
       );
     });
-    await user.click(screen.getByRole("button", { name: "Retirer le filtre Pâtes" }));
+    await user.click(screen.getByRole("button", { name: "Avec Pâtes, retirer le filtre" }));
     await waitFor(() => {
       expect(s.recipes.queries.at(-1)?.get("ingredientIds")).toBeNull();
     });

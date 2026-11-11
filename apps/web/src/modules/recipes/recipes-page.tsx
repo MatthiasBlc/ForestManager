@@ -435,7 +435,8 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
             type="button"
             className="fm-chip"
             aria-pressed="true"
-            aria-label={`Retirer le filtre ${ingredientName}`}
+            // Le nom commence par le texte visible (axe label-content-name-mismatch).
+            aria-label={`Avec ${ingredientName}, retirer le filtre`}
             onClick={clearIngredient}
           >
             Avec {ingredientName}

@@ -154,7 +154,6 @@ export function CommandPalette(props: CommandPaletteProps) {
                           tabIndex={-1}
                           className="fm-cmd-item"
                           aria-selected={at === current}
-                          aria-label={item.hint ? `${item.label}, ${item.hint}` : item.label}
                           onMouseMove={() => {
                             if (at !== current) setActive(at);
                           }}
@@ -163,8 +162,15 @@ export function CommandPalette(props: CommandPaletteProps) {
                           }}
                         >
                           <Icon name={item.icon} />
+                          {/* Nom accessible tire du texte affiche, "Gratin Famille" (pas
+                              d'aria-label : axe label-content-name-mismatch). */}
                           <span className="fm-cmd-label">{item.label}</span>
-                          {item.hint ? <small>{item.hint}</small> : null}
+                          {item.hint ? (
+                            <>
+                              {" "}
+                              <small>{item.hint}</small>
+                            </>
+                          ) : null}
                         </div>
                       );
                     })}
