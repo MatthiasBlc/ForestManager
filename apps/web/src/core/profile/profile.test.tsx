@@ -95,7 +95,8 @@ describe("profil (E-PROFIL)", () => {
     await waitFor(() => {
       expect(bodies).toEqual([{ uploadId: uploadIds[0] }]);
     });
-    const avatar = screen.getAllByRole("img", { name: "matthias" })[0];
+    // Dans la page : le rail porte aussi une image "matthias" (son espace perso).
+    const avatar = within(screen.getByRole("main")).getAllByRole("img", { name: "matthias" })[0];
     await waitFor(() => {
       expect(avatar?.querySelector("img")).toHaveAttribute("src", signedUrl("users/me/1.webp"));
     });

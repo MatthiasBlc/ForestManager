@@ -20,11 +20,14 @@ export function SpaceRail({ personal, spaces, activeId, onSelect, onAdd }: Space
       className={cx("fm-space", space.deleting && "fm-space-deleting")}
       style={tintStyle(space.tint)}
       title={spaceLabel(space)}
-      aria-label={spaceLabel(space)}
       aria-current={space.id === activeId ? "true" : undefined}
       onClick={() => onSelect(space.id)}
     >
-      <SpaceGlyph space={space} />
+      {/* Le bouton tire son nom de cette image : un aria-label sur le bouton
+          contredirait les initiales et le "J-n" affiches (axe label-content-name-mismatch). */}
+      <span role="img" aria-label={spaceLabel(space)} className="contents">
+        <SpaceGlyph space={space} />
+      </span>
     </button>
   );
   return (

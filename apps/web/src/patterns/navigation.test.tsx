@@ -4,6 +4,7 @@ import { MemoryRouter } from "react-router";
 import { describe, expect, it, vi } from "vitest";
 
 import { SpaceRail } from "./space-rail.tsx";
+import { SpaceSwitcher } from "./space-switcher.tsx";
 import { TabBar } from "./tab-bar.tsx";
 import { TopBar } from "./top-bar.tsx";
 
@@ -65,17 +66,49 @@ describe("SpaceRail", () => {
     );
     const rail = screen.getByRole("navigation", { name: "Espaces" });
     const buttons = within(rail).getAllByRole("button");
-    expect(buttons.map((b) => b.getAttribute("aria-label"))).toEqual([
+    const names = [
       "matthias",
       "Famille, nouveautés",
       "TOM, suppression dans 12 jours",
       "Créer ou rejoindre un espace",
-    ]);
+    ];
+    for (const [index, name] of names.entries()) expect(buttons[index]).toHaveAccessibleName(name);
+    // Le nom vient de l'image de l'espace, pas d'un aria-label pose sur le bouton : ses
+    // initiales et son "J-12" affiches n'en font pas partie (axe label-content-name-mismatch).
+    expect(buttons[2]).not.toHaveAttribute("aria-label");
+    expect(within(buttons[2]!).getByRole("img", { name: names[2] })).toBeInTheDocument();
     expect(buttons[1]).toHaveAttribute("aria-current", "true");
     await userEvent.click(buttons[2]!);
     expect(onSelect).toHaveBeenCalledWith("t");
     await userEvent.click(buttons[3]!);
     expect(onAdd).toHaveBeenCalledOnce();
+  });
+});
+
+describe("SpaceSwitcher (D130)", () => {
+  it("le nom accessible de chaque espace reprend tout son texte visible", () => {
+    render(
+      <SpaceSwitcher
+        open
+        onClose={vi.fn()}
+        personal={{ id: "p", name: "matthias", hint: "Espace perso" }}
+        spaces={[
+          { id: "f", name: "Famille", tint: 1, unread: true, hint: "4 membres" },
+          { id: "t", name: "TOM", tint: 3, deleting: { daysLeft: 12 } },
+        ]}
+        activeId="f"
+        onSelect={vi.fn()}
+        onAdd={vi.fn()}
+      />
+    );
+    // Pas d'aria-label qui masquerait le texte affiche (regle axe label-content-name-mismatch) ;
+    // "j" est lu "jours".
+    const sheet = screen.getByRole("dialog", { name: "Espaces" });
+    const buttons = within(sheet).getAllByRole("button", { name: /matthias|Famille|TOM/ });
+    expect(buttons.map((b) => b.getAttribute("aria-label"))).toEqual([null, null, null]);
+    expect(buttons[0]).toHaveAccessibleName("matthias Espace perso");
+    expect(buttons[1]).toHaveAccessibleName("Famille 4 membres Nouveau");
+    expect(buttons[2]).toHaveAccessibleName("TOM Suppression dans 12 jours");
   });
 });
 

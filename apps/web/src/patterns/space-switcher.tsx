@@ -4,7 +4,7 @@ import { Badge } from "../ui/display.tsx";
 import { Icon } from "../ui/icon.tsx";
 import { Sheet } from "../ui/sheet.tsx";
 import { SpaceIcon } from "./space-icon.tsx";
-import { spaceLabel, type SpaceVisual } from "./space-label.ts";
+import type { SpaceVisual } from "./space-label.ts";
 
 export interface SpaceSwitcherProps {
   open: boolean;
@@ -33,18 +33,22 @@ export function SpaceSwitcher({
         type="button"
         className={cx("fm-option", on && "fm-option-on")}
         aria-current={on ? "true" : undefined}
-        aria-label={spaceLabel(space)}
         onClick={() => onSelect(space.id)}
       >
+        {/* Pas d'aria-label : le nom accessible est le texte affiche (axe
+            label-content-name-mismatch), les espaces separent ses morceaux. */}
         <SpaceIcon space={space} />
         <span className="fm-option-text">
-          <b>{space.name}</b>
+          <b>{space.name}</b>{" "}
           {space.deleting ? (
-            <small className="fm-danger-text">Suppression dans {space.deleting.daysLeft} j</small>
+            <small className="fm-danger-text">
+              Suppression dans {space.deleting.daysLeft} <span aria-hidden="true">j</span>
+              <span className="sr-only">jours</span>
+            </small>
           ) : space.hint ? (
             <small>{space.hint}</small>
           ) : null}
-        </span>
+        </span>{" "}
         {space.unread && !space.deleting ? <Badge tone="accent">Nouveau</Badge> : null}
         {on ? <Icon name="check" className="fm-option-go" /> : null}
       </button>

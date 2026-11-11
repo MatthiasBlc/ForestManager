@@ -27,17 +27,11 @@ describe("shell d'un espace", () => {
 
     const rail = await screen.findByRole("navigation", { name: "Espaces" });
     await waitFor(() => {
-      expect(
-        within(rail)
-          .getAllByRole("button")
-          .map((b) => b.getAttribute("aria-label"))
-      ).toEqual([
-        "matthias",
-        "Famille",
-        "TOM, suppression dans 12 jours",
-        "Créer ou rejoindre un espace",
-      ]);
+      expect(within(rail).getAllByRole("button")).toHaveLength(4);
     });
+    const railNames = ["matthias", "Famille", "TOM, suppression dans 12 jours"];
+    for (const name of [...railNames, "Créer ou rejoindre un espace"])
+      expect(within(rail).getByRole("button", { name })).toBeInTheDocument();
     const nav = await screen.findByRole("complementary", { name: "Modules de l'espace" });
     expect(
       within(nav)
@@ -92,7 +86,7 @@ describe("shell d'un espace", () => {
     const { user } = renderWithProviders(<App />, { route: `/s/${family.id}/recipes` });
     await user.click(await screen.findByRole("button", { name: /^Famille.*changer d'espace/ }));
     const sheet = screen.getByRole("dialog", { name: "Espaces" });
-    expect(within(sheet).getByRole("button", { name: "Famille" })).toHaveAttribute(
+    expect(within(sheet).getByRole("button", { name: /^Famille/ })).toHaveAttribute(
       "aria-current",
       "true"
     );
