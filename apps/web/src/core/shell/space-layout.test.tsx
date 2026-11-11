@@ -5,6 +5,7 @@ import { App } from "../../app/App.tsx";
 import { buildMe, buildPersonalSpace, buildSpaceDetail } from "../../test/fixtures.ts";
 import { renderWithProviders } from "../../test/render.tsx";
 import { mockSession } from "../../test/session.ts";
+import { spaceServer } from "../../test/space-server.ts";
 
 function session() {
   const me = buildMe();
@@ -124,6 +125,59 @@ describe("shell d'un espace", () => {
     renderWithProviders(<App />, { route: "/" });
     await waitFor(() => {
       expect(document.documentElement).toHaveAttribute("data-space", "3");
+    });
+  });
+
+  it("la racine reprend aussi la derniere entree visitee de cet espace (D60)", async () => {
+    // Faux serveur complet : la page Membres lit membres, invitations et transfert.
+    const { space: family } = spaceServer();
+    const visit = renderWithProviders(<App />, { route: `/s/${family.id}/members` });
+    const nav = await screen.findByRole("complementary", { name: "Modules de l'espace" });
+    await waitFor(() => {
+      expect(within(nav).getByRole("link", { name: "Membres" })).toHaveAttribute(
+        "aria-current",
+        "page"
+      );
+    });
+    visit.unmount();
+
+    renderWithProviders(<App />, { route: "/" });
+    const resumed = await screen.findByRole("complementary", { name: "Modules de l'espace" });
+    await waitFor(() => {
+      expect(within(resumed).getByRole("link", { name: "Membres" })).toHaveAttribute(
+        "aria-current",
+        "page"
+      );
+    });
+  });
+
+  it("une entree memorisee qui n'existe plus retombe sur la premiere (D60)", async () => {
+    const { family } = session();
+    localStorage.setItem("fm:lastSpace", family.id);
+    localStorage.setItem(
+      "fm:lastSection",
+      JSON.stringify({ spaceId: family.id, path: "shopping" })
+    );
+    renderWithProviders(<App />, { route: "/" });
+    const nav = await screen.findByRole("complementary", { name: "Modules de l'espace" });
+    await waitFor(() => {
+      expect(within(nav).getByRole("link", { name: "Recettes" })).toHaveAttribute(
+        "aria-current",
+        "page"
+      );
+    });
+  });
+
+  it("changer d'espace par le rail ouvre toujours sa premiere entree", async () => {
+    const { family } = session();
+    localStorage.setItem("fm:lastSection", JSON.stringify({ spaceId: family.id, path: "members" }));
+    renderWithProviders(<App />, { route: `/s/${family.id}` });
+    const nav = await screen.findByRole("complementary", { name: "Modules de l'espace" });
+    await waitFor(() => {
+      expect(within(nav).getByRole("link", { name: "Recettes" })).toHaveAttribute(
+        "aria-current",
+        "page"
+      );
     });
   });
 });

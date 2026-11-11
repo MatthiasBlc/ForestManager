@@ -26,7 +26,7 @@ import { Button } from "../../ui/button.tsx";
 import { EmptyState, Skeleton } from "../../ui/display.tsx";
 import { Icon } from "../../ui/icon.tsx";
 import { Sheet } from "../../ui/sheet.tsx";
-import { writeLastSpace } from "../session/last-space.ts";
+import { writeLastSection, writeLastSpace } from "../session/last-space.ts";
 import { meQuery, spaceQuery, spacesQuery } from "../session/queries.ts";
 import { ActivityPage } from "../activity/activity-page.tsx";
 import { HomePage } from "../home/home-page.tsx";
@@ -127,6 +127,11 @@ export function SpaceLayout() {
   useEffect(() => {
     if (space.data) writeLastSpace(space.data.id);
   }, [space.data]);
+  useEffect(() => {
+    if (!space.data) return;
+    const item = activeItem(buildNavigation(space.data, WEB_MODULES).items, location.pathname);
+    if (item) writeLastSection(space.data.id, item.to.slice(`/s/${space.data.id}/`.length));
+  }, [space.data, location.pathname]);
 
   const visuals = (spaces.data ?? []).map(toVisual);
   const personal = visuals.find((v) => v.id === me.data?.personalSpaceId);
@@ -195,6 +200,11 @@ export function SpaceLayout() {
 
   const nav = buildNavigation(space.data, WEB_MODULES);
   const active = activeItem(nav.items, location.pathname);
+  const base = `/s/${space.data.id}/`;
+  const sectionOf = (item: NavItem) => item.to.slice(base.length);
+  // Reprise a l'ouverture (D60) : l'entree memorisee, si elle existe encore.
+  const resume = (location.state as { resume?: unknown } | null)?.resume;
+  const entry = nav.items.find((item) => sectionOf(item) === resume) ?? nav.items[0];
   const current = visuals.find((v) => v.id === spaceId) ?? toVisual(space.data);
   const activeCodes = new Set(space.data.modules.map((m) => m.code));
   const moduleRoute = (element: ReactNode) => (
@@ -243,7 +253,7 @@ export function SpaceLayout() {
     >
       <ChromeProvider value={chrome.value}>
         <Routes>
-          <Route index element={<Navigate to={nav.items[0]?.to ?? "home"} replace />} />
+          <Route index element={<Navigate to={entry?.to ?? "home"} replace />} />
           <Route path="home" element={<HomePage />} />
           <Route path="members" element={<MembersPage space={space.data} />} />
           <Route path="activity" element={<ActivityPage space={space.data} />} />
