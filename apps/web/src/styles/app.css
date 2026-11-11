@@ -382,3 +382,9 @@ body,
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* Contenu principal focalise par programme (feuille fermee sans declencheur) :
+   point de reprise du clavier, pas un arret de tabulation, donc sans contour. */
+main[tabindex="-1"]:focus-visible {
+  outline: none;
+}

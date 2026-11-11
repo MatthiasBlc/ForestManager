@@ -45,6 +45,42 @@ describe("Sheet", () => {
   });
 });
 
+/** Feuille ouverte depuis un element qui disparait (ex. la palette, `?generate=1`). */
+function VanishingOpenerDemo() {
+  const [step, setStep] = useState<"idle" | "opener" | "open">("idle");
+  return (
+    <main>
+      <h1>Planning</h1>
+      {step === "idle" ? (
+        <Button onClick={() => setStep("opener")}>Ouvrir la palette</Button>
+      ) : null}
+      {step === "opener" ? (
+        <Button autoFocus onClick={() => setStep("open")}>
+          Generer le planning
+        </Button>
+      ) : null}
+      <Sheet open={step === "open"} onClose={() => setStep("idle")} title="Generer">
+        <p>Contenu</p>
+      </Sheet>
+    </main>
+  );
+}
+
+describe("Sheet, declencheur disparu", () => {
+  it("rend le focus au contenu principal plutot qu'a body", async () => {
+    const user = userEvent.setup();
+    render(<VanishingOpenerDemo />);
+    await user.click(screen.getByRole("button", { name: "Ouvrir la palette" }));
+    await user.keyboard("{Enter}");
+    expect(screen.getByRole("dialog", { name: "Generer" })).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole("main")).toHaveFocus();
+    });
+  });
+});
+
 describe("ActionMenu", () => {
   it("s'ouvre depuis son declencheur et renvoie l'action choisie", async () => {
     const user = userEvent.setup();

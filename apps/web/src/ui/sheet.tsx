@@ -15,6 +15,22 @@ export interface SheetProps {
   children: ReactNode;
 }
 
+/**
+ * Rend le focus a l'element qui a ouvert la feuille ; s'il a disparu (feuille
+ * ouverte depuis la palette, ou par l'adresse), au contenu principal plutot
+ * qu'a body : le clavier reprend dans la page.
+ */
+function returnFocus(opener: HTMLElement | null): void {
+  if (opener?.isConnected && opener !== document.body) {
+    opener.focus();
+    return;
+  }
+  const main = document.querySelector("main");
+  if (!main) return;
+  if (!main.hasAttribute("tabindex")) main.tabIndex = -1;
+  main.focus();
+}
+
 /** Distance de glissement (px) au-dela de laquelle la feuille se ferme. */
 const CLOSE_DISTANCE = 110;
 
@@ -59,10 +75,8 @@ export function Sheet({ open, onClose, title, description, children }: SheetProp
           <Dialog.Content
             className="fm-sheet"
             onCloseAutoFocus={(event) => {
-              if (opener.current?.isConnected) {
-                event.preventDefault();
-                opener.current.focus();
-              }
+              event.preventDefault();
+              returnFocus(opener.current);
             }}
             style={dy ? { transform: `translateY(${dy}px)`, transition: "none" } : undefined}
           >
