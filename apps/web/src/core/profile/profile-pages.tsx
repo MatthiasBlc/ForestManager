@@ -43,14 +43,20 @@ function Row({
       </span>
       <span className="fm-option-text">
         <b>{label}</b>
-        {value ? <small>{value}</small> : null}
+        {/* L'espace separe les deux textes dans le nom accessible de la ligne. */}
+        {value ? (
+          <>
+            {" "}
+            <small>{value}</small>
+          </>
+        ) : null}
       </span>
       {to ? <Icon name="chevron-right" className="fm-option-go" /> : null}
     </>
   );
   if (onClick) {
     return (
-      <button type="button" className="fm-option" onClick={onClick} aria-label={label}>
+      <button type="button" className="fm-option" onClick={onClick}>
         {content}
       </button>
     );

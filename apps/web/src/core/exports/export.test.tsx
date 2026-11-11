@@ -59,7 +59,10 @@ describe("F-EXPORT", () => {
     mockSession();
     const bodies = exportServer();
     const { user } = renderWithProviders(<App />, { route: "/profile" });
-    await user.click(await screen.findByRole("button", { name: "Exporter mes recettes" }));
+    // Le nom accessible reprend tout le texte visible (regle axe label-content-name-mismatch).
+    await user.click(
+      await screen.findByRole("button", { name: "Exporter mes recettes Archive JSON ou Markdown" })
+    );
     const sheet = await screen.findByRole("dialog", { name: "Exporter mes recettes" });
     // Hors d'un espace dont on est OWNER : pas de choix de portee.
     expect(within(sheet).queryByRole("radiogroup", { name: "Recettes à exporter" })).toBeNull();
@@ -134,7 +137,7 @@ describe("F-EXPORT", () => {
     exportServer();
     server.use(http.get("/api/v1/me/deletion-preview", () => HttpResponse.json({ spaces: [] })));
     const { user } = renderWithProviders(<App />, { route: "/profile/delete" });
-    await user.click(await screen.findByRole("button", { name: "Exporter mes recettes" }));
+    await user.click(await screen.findByRole("button", { name: /^Exporter mes recettes/ }));
     expect(
       await screen.findByRole("dialog", { name: "Exporter mes recettes" })
     ).toBeInTheDocument();
