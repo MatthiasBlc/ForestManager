@@ -759,3 +759,17 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 
 - **Constat** : le proprietaire fait depuis un autre ordinateur tout ce qui pousse vers Portainer (preprod et prod).
 - **Choix** : C7.1 a C7.6 (E2E, suivi d'erreurs, CI) sur le poste actuel, sans toucher Portainer ni `master` ; C7.6 se termine par l'etat ecrit et un push. C7.7 (preprod) et C8 (prod) reprennent sur l'autre poste (`24-Plan-C7.md`).
+
+## Phase C7 - realisation du suivi d'erreurs (2026-11-11)
+
+### D199 - Suivi d'erreurs : regles de realisation - VALIDEE (2026-11-11, realisation C7.5, defauts annonces)
+
+- **Constat** : D196 cite `@sentry/node` ; en version 11 il embarque OpenTelemetry et une instrumentation automatique dont l'API n'a pas besoin. Sentry 11 remplace aussi `sendDefaultPii` par `dataCollection`. Preprod et prod tournent toutes deux en `NODE_ENV=production`.
+- **Choix** :
+  - **API** : `@sentry/core` 11.9.0 seul (`ServerRuntimeClient` de `@sentry/core/server`, meme protocole, aucune dependance de plus), transport par `fetch` (5 s), un client par application (pas d'etat global, testable). Erreurs 500 du gestionnaire unique (UUID de l'utilisateur, identifiant de requete), rejets et exceptions non geres, echec des taches horaires. `dataCollection` tout coupe et `beforeSend` qui retire requete, nom du serveur et tout champ de l'utilisateur hors `id`.
+  - **Environnement** : variable `SENTRY_ENVIRONMENT` (`preprod`, `production` dans les compose ; `NODE_ENV` par defaut). Version = `release.json` (module `core/changelog/version.ts`, partage avec le tableau de bord). Un `SENTRY_DSN` vide (secret absent) vaut absent ; un DSN illisible arrete le demarrage.
+  - **Configuration publique** : `GET /config` ajoute `features.errorTracking`, `release` et `environment` (jamais le DSN).
+  - **Tunnel** : `POST /api/v1/monitoring` monte avant le CSRF et la session (une erreur peut survenir avant la connexion), corps texte de 200 ko au plus, 30 par minute ; en-tete d'enveloppe illisible -> `VALIDATION_001` sans appel au recepteur ; seul le corps est relaye (ni cookies, ni en-tetes, ni IP) avec le vrai DSN ; reponse 202 meme si le recepteur echoue (journalise en `warn`).
+  - **Web** : `@sentry/react` 11.9.0 importe a la demande par `app/error-tracking.ts` si `features.errorTracking` ; DSN factice `https://forest@monitoring.invalid/1` remplace par le tunnel ; integrations par defaut (erreurs et rejets globaux) ; utilisateur = UUID suivi par la requete `["me"]`.
+  - **A13** : carte "Configure" / "Non configure" comme les autres services, hote du DSN et environnement, "Envoyer un evenement de test" (evenement d'information construit a la main, pour lire le statut HTTP du recepteur). Tableau de bord : "En ligne" / "Non configure".
+  - **Bugsink** : `bugsink/bugsink:2.6.2` (date a reverifier sur Docker Hub avant la mise en place), SQLite dans le volume `bugsink_data`, inscription par l'admin seulement, une equipe, garde-fous de volume. Notice : `docker/bugsink/README.md`.

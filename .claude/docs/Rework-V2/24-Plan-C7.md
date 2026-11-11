@@ -55,6 +55,8 @@ Un parcours qui revele un defaut : le defaut est corrige en TDD au niveau le plu
 - Infra : `docker/bugsink/compose.yml` (un conteneur, Traefik, volume) et sa notice ; un seul Bugsink pour les deux environnements, un projet par environnement. Secrets GitHub facultatifs `DEV_SENTRY_DSN` (preprod) et `SENTRY_DSN` (prod), passes par `deploy.sh` sans etre exiges : sans DSN, le suivi est coupe et rien ne casse.
 - Tests : faux recepteur local (integration API), composant A13, aucun appel a Internet.
 
+Fait le 2026-11-11 ; regles de realisation et ecarts (`@sentry/core` au lieu de `@sentry/node`, `SENTRY_ENVIRONMENT`) : D199.
+
 ### C7.6 CI complete et premier passage [D78, D197]
 
 - Couverture (`@vitest/coverage-v8`) : seuils de `15-Plan-Tests.md` S7 par projet. Zone sous le seuil : tests ajoutes la ou un comportement n'est pas prouve ; sinon seuil pose au niveau mesure, arrondi en dessous, et ecart note dans le plan de tests (pas de test ecrit pour le chiffre).

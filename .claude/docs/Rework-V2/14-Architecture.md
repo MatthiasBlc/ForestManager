@@ -256,7 +256,7 @@ Relevees sur le registre npm le 2026-11-03. A reverifier au demarrage du code ; 
 | vitest                      | 5.1.x                                         |                                                                                              |
 | @playwright/test            | 1.64.x                                        | + `@axe-core/playwright` 4.14.x.                                                             |
 | msw                         | 3.0.x                                         | Mocks reseau des tests de composants.                                                        |
-| @sentry/node, @sentry/react | 11.x                                          | SDK seulement (voir section 12).                                                             |
+| @sentry/core, @sentry/react | 11.x                                          | SDK seulement (voir section 12) ; `@sentry/core` cote API au lieu de `@sentry/node` [D199].  |
 
 ## 15. Decisions proposees
 
