@@ -4,6 +4,7 @@ import request from "supertest";
 import { describe, expect, it } from "vitest";
 
 import { CSRF_COOKIE, CSRF_HEADER } from "../src/core/http/security.ts";
+import { adminLogin, totpFor } from "./helpers/admin.ts";
 import { createClient, createTestApp, loginAs } from "./helpers/app.ts";
 import { db, testEnv } from "./helpers/db.ts";
 import { e2eRoutes } from "./e2e/routes.ts";
@@ -40,6 +41,21 @@ describe("routes de test des E2E", () => {
     const space = await client.get(`/spaces/${res.body.space.id}`);
     expect(space.status).toBe(200);
     expect(space.body.name).toBe(res.body.space.name);
+  });
+
+  it("scenario admin : un super admin dont la 2FA est deja configuree", async () => {
+    const res = await request(app).post(url("/scenario")).send({ name: "admin" });
+    expect(res.status).toBe(201);
+    expect(res.body.admin).toEqual({
+      id: expect.any(String),
+      username: expect.any(String),
+      password: expect.any(String),
+      totpSecret: expect.any(String),
+    });
+    const client = await createClient(app);
+    expect((await adminLogin(client, res.body.admin)).status).toBe(200);
+    const totp = await client.post("/admin/auth/totp", { code: totpFor(res.body.admin) });
+    expect(totp.status).toBe(200);
   });
 
   it("scenario inconnu : VALIDATION_001", async () => {

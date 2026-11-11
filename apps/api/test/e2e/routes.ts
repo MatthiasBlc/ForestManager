@@ -12,6 +12,7 @@ import { z } from "zod";
 
 import type { Context } from "../../src/core/context.ts";
 import { handle } from "../../src/core/http/validate.ts";
+import { createAdmin } from "../helpers/admin.ts";
 import { resetDatabase } from "../helpers/db.ts";
 import {
   addMember,
@@ -30,6 +31,8 @@ const scenarioBodySchema = z.discriminatedUnion("name", [
     spaceName: z.string().optional(),
     members: z.array(spaceRoleSchema.exclude(["OWNER"])).default(["MEMBER"]),
   }),
+  /** Un super admin, 2FA deja configuree : le parcours calcule le code avec `totpSecret`. */
+  z.object({ name: z.literal("admin") }),
 ]);
 
 type Scenario = z.output<typeof scenarioBodySchema>;
@@ -63,6 +66,17 @@ async function build(scenario: Scenario) {
         members.push({ ...member, role });
       }
       return { owner, space: { id: space.id, name: space.name }, members };
+    }
+    case "admin": {
+      const admin = await createAdmin();
+      return {
+        admin: {
+          id: admin.id,
+          username: admin.username,
+          password: admin.password,
+          totpSecret: admin.totpSecret,
+        },
+      };
     }
   }
 }
