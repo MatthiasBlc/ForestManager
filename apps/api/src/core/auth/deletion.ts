@@ -124,6 +124,8 @@ export async function deleteAccount(ctx: Context, userId: string, password: stri
       data: { status: "CANCELLED" },
     });
     await tx.authToken.deleteMany({ where: { userId } });
+    // Ses exports : lignes supprimees, archives effacees par le menage du stockage.
+    await tx.dataExport.deleteMany({ where: { requestedById: userId } });
     // Anonymisation [D20] : username et email liberes, connexion impossible.
     await tx.user.update({
       where: { id: userId },

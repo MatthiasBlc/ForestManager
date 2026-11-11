@@ -87,6 +87,7 @@ model User {
   notificationsActed   Notification[]           @relation("NotificationActor")
   notificationPrefs    NotificationPreference[]
   activities           ActivityEvent[]
+  exports              DataExport[]
 
   @@index([deletedAt])
 }
@@ -180,6 +181,7 @@ model Space {
   notifications      Notification[]
   notificationPrefs  NotificationPreference[]
   activities         ActivityEvent[]
+  exports            DataExport[]
 
   @@index([deletedAt])
   @@index([purgeAfter])
@@ -1120,4 +1122,48 @@ model ChangelogEntry {
   updatedAt   DateTime        @updatedAt
 
   @@index([status, publishedAt])
+}
+
+// =============================================================================
+// Export de donnees (C6b.2) [D37, D192]
+// =============================================================================
+
+enum ExportScope {
+  MY_RECIPES
+  SPACE
+}
+
+enum ExportFormat {
+  JSON
+  MARKDOWN
+}
+
+enum ExportStatus {
+  PENDING
+  READY
+  FAILED
+  EXPIRED
+}
+
+/// Export de donnees [D37, D192] : ses recettes, ou tout l'espace (OWNER, un par
+/// espace sur 24 h glissantes). L'archive zip est generee par l'API juste apres
+/// la demande, gardee 24 h dans le stockage (fileKey), puis EXPIRED et effacee
+/// par la tache horaire. Supprime avec l'espace purge ou le compte supprime.
+model DataExport {
+  id            String       @id @default(uuid())
+  scope         ExportScope
+  requestedById String
+  spaceId       String?
+  format        ExportFormat @default(JSON)
+  includePhotos Boolean      @default(false)
+  status        ExportStatus @default(PENDING)
+  fileKey       String?
+  expiresAt     DateTime?
+  createdAt     DateTime     @default(now())
+
+  requestedBy User   @relation(fields: [requestedById], references: [id], onDelete: Cascade)
+  space       Space? @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([spaceId, createdAt])
+  @@index([requestedById, createdAt])
 }

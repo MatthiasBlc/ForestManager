@@ -13,6 +13,7 @@ import type { Router } from "express";
 
 import type { Context } from "../context.ts";
 import type { Db } from "../db/client.ts";
+import type { ModuleExport } from "../exports/types.ts";
 import type { ModuleSearch } from "../search/types.ts";
 import type { LifecycleHooks } from "./hooks.ts";
 
@@ -49,6 +50,8 @@ export interface ApiModule extends ModuleDefinition {
   readonly storageKeys?: LifecycleHooks["storageKeys"][number];
   /** Recherche globale (P16) : groupes `<code>.<nom>` [D191]. */
   readonly search?: ModuleSearch;
+  /** Fichiers du module dans une archive d'export (P12) [D192]. */
+  readonly exportData?: ModuleExport;
 }
 
 /** Segments deja pris par le socle sous /spaces/:spaceId. */

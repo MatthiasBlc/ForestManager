@@ -59,6 +59,7 @@ import * as photos from "./photos.ts";
 import { RECIPE_PERMISSIONS } from "./permissions.ts";
 import * as revisions from "./revisions.ts";
 import { searchRecipes } from "./search.ts";
+import { exportRecipes } from "./export.ts";
 import * as recipes from "./service.ts";
 import * as sharing from "./sharing.ts";
 import * as suggestions from "./suggestions.ts";
@@ -536,5 +537,6 @@ export const recipesModule: ApiModule = {
   onSpaceDeleted: sharing.onSpaceDeleted,
   storageKeys: photos.storageKeys,
   search: searchRecipes,
+  exportData: exportRecipes,
   provides: { "recipes.catalog": provide("recipes.catalog", recipeCatalog) },
 };

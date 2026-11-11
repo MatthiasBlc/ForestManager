@@ -8,6 +8,7 @@ import { createDb } from "./core/db/client.ts";
 import { createApp, createContext } from "./core/http/app.ts";
 import { createLogger } from "./core/http/logger.ts";
 import { purgeDeletedSpaces } from "./core/spaces/service.ts";
+import { expireExports } from "./core/exports/service.ts";
 import { sweepStorage } from "./core/storage/images.ts";
 import { purgeNotifications } from "./core/notifications/service.ts";
 import { MODULES } from "./modules/index.ts";
@@ -31,14 +32,16 @@ const server = app.listen(env.PORT, () => {
 
 // Taches horaires : sessions expirees, espaces supprimes depuis plus de 30 jours [D22],
 // puis menage du stockage (apres la purge, qui libere des images) [D167],
-// et notifications anciennes [D190].
+// notifications anciennes [D190] et exports expires (avant le menage, qui efface
+// alors leur archive) [D192].
 async function hourlyJobs(): Promise<void> {
   const sessions = (await purgeExpiredSessions(db)) + (await purgeExpiredAdminSessions(db));
   const spaces = await purgeDeletedSpaces(ctx);
+  const exports = await expireExports(ctx);
   const files = await sweepStorage(ctx);
   const notifications = await purgeNotifications(db);
-  if (sessions + spaces + files + notifications > 0)
-    logger.info({ sessions, spaces, files, notifications }, "purge done");
+  if (sessions + spaces + exports + files + notifications > 0)
+    logger.info({ sessions, spaces, exports, files, notifications }, "purge done");
 }
 const jobs = setInterval(
   () => {

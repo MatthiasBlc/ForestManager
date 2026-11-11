@@ -1016,6 +1016,11 @@ enum ExportScope {
   SPACE
 }
 
+enum ExportFormat {
+  JSON
+  MARKDOWN
+}
+
 enum ExportStatus {
   PENDING
   READY
@@ -1023,20 +1028,25 @@ enum ExportStatus {
   EXPIRED
 }
 
-/// Export de donnees [D37] : ses recettes, ou tout l'espace (OWNER, un par jour).
-/// L'archive est generee en tache de fond et stockee dans MinIO un temps limite.
+/// Export de donnees [D37, D192] : ses recettes, ou tout l'espace (OWNER, un par
+/// espace sur 24 h glissantes). L'archive zip est generee par l'API juste apres
+/// la demande, gardee 24 h dans le stockage (fileKey), puis EXPIRED et effacee
+/// par la tache horaire. Supprime avec l'espace purge ou le compte supprime.
+/// CHECK : scope = SPACE <=> spaceId renseigne.
 model DataExport {
   id            String       @id @default(uuid())
   scope         ExportScope
   requestedById String
   spaceId       String?
+  format        ExportFormat @default(JSON)
+  includePhotos Boolean      @default(false)
   status        ExportStatus @default(PENDING)
   fileKey       String?
   expiresAt     DateTime?
   createdAt     DateTime     @default(now())
 
-  requestedBy User   @relation(fields: [requestedById], references: [id])
-  space       Space? @relation(fields: [spaceId], references: [id])
+  requestedBy User   @relation(fields: [requestedById], references: [id], onDelete: Cascade)
+  space       Space? @relation(fields: [spaceId], references: [id], onDelete: Cascade)
 
   @@index([spaceId, createdAt])
   @@index([requestedById, createdAt])

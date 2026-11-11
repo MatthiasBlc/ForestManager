@@ -4,6 +4,7 @@ import { IMAGE_MAX_SIDE, UPLOAD_MAX_BYTES } from "@fm/shared";
 import { randomUUID } from "node:crypto";
 
 import type { Context } from "../context.ts";
+import { exportKeys } from "../exports/service.ts";
 import { AppError } from "../http/errors.ts";
 import { pendingKey, type Storage } from "./storage.ts";
 import { IMAGE_CONTENT_TYPES, IMAGE_EXTENSIONS, readImageInfo } from "./image-format.ts";
@@ -76,14 +77,16 @@ export async function discardImage(ctx: Context, key: string | null): Promise<vo
  */
 export async function sweepStorage(ctx: Context, now = new Date()): Promise<number> {
   if (!ctx.storage) return 0;
-  const [users, spaces, ...fromModules] = await Promise.all([
+  const [users, spaces, exports, ...fromModules] = await Promise.all([
     ctx.db.user.findMany({ where: { avatarKey: { not: null } }, select: { avatarKey: true } }),
     ctx.db.space.findMany({ where: { avatarKey: { not: null } }, select: { avatarKey: true } }),
+    exportKeys(ctx),
     ...ctx.hooks.storageKeys.map((keys) => keys(ctx.db, now)),
   ]);
   const used = new Set<string>([
     ...users.flatMap((row) => (row.avatarKey ? [row.avatarKey] : [])),
     ...spaces.flatMap((row) => (row.avatarKey ? [row.avatarKey] : [])),
+    ...exports,
     ...fromModules.flat(),
   ]);
 

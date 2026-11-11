@@ -136,6 +136,14 @@ const DEFINITIONS = {
   MEAL_009: { status: 409, message: "Ce repas est verrouillé." },
 
   // --- Changelog [D187] ---
+  // --- Export [D37, D192] ---
+  EXPORT_001: {
+    status: 429,
+    message: "Cet espace a déjà été exporté il y a moins de 24 heures.",
+  },
+  EXPORT_002: { status: 503, message: "L'export n'est pas disponible pour le moment." },
+  EXPORT_003: { status: 404, message: "Cet export est introuvable ou a expiré." },
+
   CHANGELOG_001: { status: 404, message: "Version introuvable." },
   CHANGELOG_002: {
     status: 409,
