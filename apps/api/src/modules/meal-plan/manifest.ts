@@ -61,6 +61,7 @@ import {
   updateRule,
 } from "./profiles.ts";
 import { readSettings, saveSettings, toSettings } from "./settings.ts";
+import { MEAL_PLAN_WIDGETS } from "./widgets.ts";
 
 /** Case du calendrier dans l'URL : `/meals/2026-11-10/DINNER`. */
 const cellParamsSchema = z.object({ date: planDateSchema, mealTime: mealTimeSchema });
@@ -372,4 +373,5 @@ export const mealPlanModule: ApiModule = {
   roleOverrides: async (db, spaceId) => ({
     "meal-plan.edit": (await readSettings(db, spaceId)).editRole,
   }),
+  widgets: MEAL_PLAN_WIDGETS,
 };

@@ -53,6 +53,8 @@ export function useRealtime(enabled: boolean): void {
     source.addEventListener("invalidate", (event: MessageEvent) => {
       const data = read(event);
       if (data?.type !== "invalidate") return;
+      // L'accueil agrege tous les espaces : il se relit a chaque changement.
+      invalidate(["me", "home"]);
       if (data.module) {
         invalidate(["spaces", data.spaceId, data.module]);
       } else {

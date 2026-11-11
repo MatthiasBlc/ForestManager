@@ -64,6 +64,7 @@ import * as recipes from "./service.ts";
 import * as sharing from "./sharing.ts";
 import * as suggestions from "./suggestions.ts";
 import * as tags from "./tags.ts";
+import { RECIPE_WIDGETS } from "./widgets.ts";
 
 const tagParamsSchema = spaceTagParamsSchema.pick({ tagId: true });
 const recipeIdSchema = recipeParamsSchema.pick({ recipeId: true });
@@ -539,4 +540,5 @@ export const recipesModule: ApiModule = {
   search: searchRecipes,
   exportData: exportRecipes,
   provides: { "recipes.catalog": provide("recipes.catalog", recipeCatalog) },
+  widgets: RECIPE_WIDGETS,
 };

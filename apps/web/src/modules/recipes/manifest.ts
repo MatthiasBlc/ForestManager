@@ -4,6 +4,7 @@ import { lazy } from "react";
 import type { WebModule } from "../../app/registry.ts";
 import { RECIPE_ACTIVITY, RECIPE_NOTIFICATIONS } from "./notifications.ts";
 import { RECIPE_SEARCH_GROUPS, recipeActions } from "./search.ts";
+import { RecentRecipes } from "./widgets.tsx";
 
 export const recipesModule: WebModule = {
   code: "recipes",
@@ -30,4 +31,7 @@ export const recipesModule: WebModule = {
   },
   searchGroups: RECIPE_SEARCH_GROUPS,
   actions: recipeActions,
+  widgets: {
+    "recipes.recent": { title: "Récemment ajoutées dans tes espaces", Component: RecentRecipes },
+  },
 };

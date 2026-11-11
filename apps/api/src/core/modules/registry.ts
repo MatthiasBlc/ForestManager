@@ -14,6 +14,7 @@ import type { Router } from "express";
 import type { Context } from "../context.ts";
 import type { Db } from "../db/client.ts";
 import type { ModuleExport } from "../exports/types.ts";
+import type { ApiWidget } from "../home/types.ts";
 import type { ModuleSearch } from "../search/types.ts";
 import type { LifecycleHooks } from "./hooks.ts";
 
@@ -52,6 +53,8 @@ export interface ApiModule extends ModuleDefinition {
   readonly search?: ModuleSearch;
   /** Fichiers du module dans une archive d'export (P12) [D192]. */
   readonly exportData?: ModuleExport;
+  /** Widgets d'accueil, cles `<code>.<nom>` [D193]. */
+  readonly widgets?: Readonly<Record<string, ApiWidget>>;
 }
 
 /** Segments deja pris par le socle sous /spaces/:spaceId. */
@@ -81,6 +84,13 @@ export function assertValidModules(modules: readonly ApiModule[]): void {
       }
       if (provided.has(key)) problems.push(`duplicate service "${key}"`);
       provided.add(key);
+    }
+    for (const key of Object.keys(module.widgets ?? {})) {
+      if (!key.startsWith(`${module.code}.`)) {
+        problems.push(
+          `widget "${key}" of module "${module.code}" must start with "${module.code}."`
+        );
+      }
     }
   }
   for (const module of modules) {

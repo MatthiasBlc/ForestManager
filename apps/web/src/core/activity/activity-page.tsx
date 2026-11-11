@@ -34,7 +34,16 @@ function groups(events: ActivityEvent[]) {
   return result;
 }
 
-function Row({ event, spaceId }: { event: ActivityEvent; spaceId: string }) {
+/** Ligne du fil ; `spaceName` la situe hors de la page de l'espace (accueil). */
+export function ActivityRow({
+  event,
+  spaceId,
+  spaceName,
+}: {
+  event: ActivityEvent;
+  spaceId: string;
+  spaceName?: string;
+}) {
   const view = renderActivity(event, spaceId);
   const name = event.actor?.username ?? "Un ancien membre";
   const body = (
@@ -46,6 +55,7 @@ function Row({ event, spaceId }: { event: ActivityEvent; spaceId: string }) {
         </span>
         <span className="text-[13px] leading-[18px] text-ink-muted">
           {ageLabel(event.createdAt)}
+          {spaceName ? ` · ${spaceName}` : null}
         </span>
       </span>
     </>
@@ -82,7 +92,7 @@ export function ActivityPage({ space }: { space: SpaceDetail }) {
               {group.title}
             </h2>
             {group.items.map((event) => (
-              <Row key={event.id} event={event} spaceId={space.id} />
+              <ActivityRow key={event.id} event={event} spaceId={space.id} />
             ))}
           </section>
         ))

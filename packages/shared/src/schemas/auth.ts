@@ -4,6 +4,7 @@
 import { z } from "zod";
 
 import { isoDateTimeSchema, uuidSchema } from "./common.ts";
+import { homeWidgetsSchema } from "./home.ts";
 
 export const USERNAME_MIN = 3;
 export const USERNAME_MAX = 30;
@@ -98,6 +99,10 @@ export const changePasswordBodySchema = z.strictObject({
 export type ChangePasswordBody = z.infer<typeof changePasswordBodySchema>;
 
 export const updatePreferencesBodySchema = preferencesSchema
+  .extend({
+    /** Widgets de l'accueil, dans l'ordre ; null = defaut du registre [D193]. */
+    homeWidgets: homeWidgetsSchema,
+  })
   .strict()
   .partial()
   .refine((body) => Object.keys(body).length > 0, { message: "empty update" });

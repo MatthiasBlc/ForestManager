@@ -97,7 +97,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C6b.0 Plan de C6b (D191 a D194 ; D191 et D194 a relire par le proprietaire)
   - [x] C6b.1 Recherche globale et CommandPalette [D191, D119]
   - [x] C6b.2 Export de ses recettes et d'un espace [D37, D192]
-  - [ ] C6b.3 Widgets d'accueil et feuille "Personnaliser" [D193]
+  - [x] C6b.3 Widgets d'accueil et feuille "Personnaliser" [D193]
   - [ ] Revue visuelle de C6b dans Chrome (bureau et mobile)
   - [ ] Cloture de C6b (`23-Plan-C6b.md` S3)
 - [ ] C7 E2E complets, preprod, remise a zero de la base et de la stack de prod

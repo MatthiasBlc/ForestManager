@@ -10,6 +10,7 @@ import type {
 } from "@fm/shared";
 
 import type { Context } from "../context.ts";
+import { Prisma } from "../db/client.ts";
 import { AppError } from "../http/errors.ts";
 import { imageUrl } from "../storage/images.ts";
 import { resetPasswordMail, verifyEmailMail, type MailMessage } from "../mail/mailer.ts";
@@ -18,6 +19,7 @@ import { grantDefaultModules } from "../spaces/defaults.ts";
 import { assertStrongPassword } from "./password.ts";
 import { destroyUserSessions } from "./session.ts";
 import { consumeToken, issueToken } from "./tokens.ts";
+import { assertKnownWidgets } from "../home/service.ts";
 
 type UserRow = NonNullable<Awaited<ReturnType<Context["db"]["user"]["findUnique"]>>>;
 
@@ -267,7 +269,17 @@ export async function updatePreferences(
   body: UpdatePreferencesBody
 ): Promise<void> {
   await findActiveUser(ctx, userId);
-  await ctx.db.user.update({ where: { id: userId }, data: body });
+  const { homeWidgets, ...display } = body;
+  if (homeWidgets) assertKnownWidgets(ctx, homeWidgets);
+  await ctx.db.user.update({
+    where: { id: userId },
+    data: {
+      ...display,
+      ...(homeWidgets === undefined
+        ? {}
+        : { homeWidgets: homeWidgets === null ? Prisma.DbNull : homeWidgets }),
+    },
+  });
 }
 
 // --- Emails optionnels [D21] ---

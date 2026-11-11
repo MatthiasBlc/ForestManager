@@ -77,6 +77,12 @@ export interface PaletteAction {
   keywords?: string;
 }
 
+/** Widget d'accueil [D193] : donnees recues de `GET /me/home` (a valider par le widget). */
+export interface WebWidget {
+  title: string;
+  Component: ComponentType<{ data: Record<string, unknown> }>;
+}
+
 export interface WebModule {
   /** Meme code que l'API et la base. */
   code: string;
@@ -98,4 +104,6 @@ export interface WebModule {
   searchGroups?: Readonly<Record<string, SearchGroupView>>;
   /** Actions de la palette dans l'espace courant (module actif), selon les droits connus. */
   actions?: (space: SpaceDetail) => readonly PaletteAction[];
+  /** Widgets d'accueil du module, par cle `<code>.<nom>` de l'API. */
+  widgets?: Readonly<Record<string, WebWidget>>;
 }

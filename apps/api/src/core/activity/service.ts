@@ -43,6 +43,33 @@ export async function recordActivity(
   });
 }
 
+export const activityInclude = {
+  actor: { select: { id: true, username: true, avatarKey: true, deletedAt: true } },
+} as const;
+
+type ActivityRow = Prisma.ActivityEventGetPayload<{ include: typeof activityInclude }>;
+
+/** Evenement vu par les membres (acteur supprime : null). */
+export function toActivityEvent(ctx: Context, row: ActivityRow): ActivityEvent {
+  return {
+    id: row.id,
+    type: row.type,
+    moduleCode: row.moduleCode,
+    actor:
+      row.actor && !row.actor.deletedAt
+        ? {
+            id: row.actor.id,
+            username: row.actor.username,
+            avatarUrl: imageUrl(ctx, row.actor.avatarKey),
+          }
+        : null,
+    targetType: row.targetType,
+    targetId: row.targetId,
+    data: (row.data ?? null) as Record<string, unknown> | null,
+    createdAt: row.createdAt.toISOString(),
+  };
+}
+
 export async function listActivity(
   ctx: Context,
   spaceId: string,
@@ -55,28 +82,12 @@ export async function listActivity(
     where: { spaceId, ...afterDateCursor(cursor) },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     take: query.limit + 1,
-    include: { actor: { select: { id: true, username: true, avatarKey: true, deletedAt: true } } },
+    include: activityInclude,
   });
   const page = rows.slice(0, query.limit);
   const last = page.at(-1);
   return {
-    data: page.map((row) => ({
-      id: row.id,
-      type: row.type,
-      moduleCode: row.moduleCode,
-      actor:
-        row.actor && !row.actor.deletedAt
-          ? {
-              id: row.actor.id,
-              username: row.actor.username,
-              avatarUrl: imageUrl(ctx, row.actor.avatarKey),
-            }
-          : null,
-      targetType: row.targetType,
-      targetId: row.targetId,
-      data: (row.data ?? null) as Record<string, unknown> | null,
-      createdAt: row.createdAt.toISOString(),
-    })),
+    data: page.map((row) => toActivityEvent(ctx, row)),
     nextCursor:
       rows.length > query.limit && last ? encodeDateCursor(last.createdAt, last.id) : null,
   };

@@ -26,6 +26,7 @@ import { publishSpaceChanges, realtimeRouter } from "../realtime/routes.ts";
 import { referentialsRouter } from "../../referentials/routes.ts";
 import { searchRouter } from "../search/routes.ts";
 import { exportsRouter } from "../exports/routes.ts";
+import { homeRouter } from "../home/routes.ts";
 import { invitationsRouter } from "../spaces/invitations-routes.ts";
 import { storageRouter } from "../storage/routes.ts";
 import { createStorage, type Storage } from "../storage/storage.ts";
@@ -123,6 +124,7 @@ export function createApp(deps: AppDeps): express.Express {
   api.use(changelogRouter(ctx));
   api.use(searchRouter(ctx, rateLimit));
   api.use(exportsRouter(ctx, rateLimit));
+  api.use(homeRouter(ctx));
   api.use(referentialsRouter(ctx, rateLimit));
   // Routeurs des modules, chacun derriere sa garde [D33].
   for (const module of ctx.modules) {

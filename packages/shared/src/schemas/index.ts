@@ -16,3 +16,4 @@ export * from "./realtime.ts";
 export * from "./changelog.ts";
 export * from "./search.ts";
 export * from "./export.ts";
+export * from "./home.ts";

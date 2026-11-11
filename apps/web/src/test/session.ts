@@ -40,7 +40,10 @@ export function mockSession({
     }),
     http.get("/api/v1/me/invitations", () => HttpResponse.json({ data: [] })),
     http.get("/api/v1/me/transfers", () => HttpResponse.json({ data: [] })),
-    http.get("/api/v1/me/notifications/unread-count", () => HttpResponse.json({ count: 0 }))
+    http.get("/api/v1/me/notifications/unread-count", () => HttpResponse.json({ count: 0 })),
+    http.get("/api/v1/me/home", () =>
+      HttpResponse.json({ widgets: [], available: [], custom: false })
+    )
   );
   mockEmptyRecipes();
   return { me, spaces: all };

@@ -4,6 +4,7 @@ import { lazy } from "react";
 import type { WebModule } from "../../app/registry.ts";
 import { MEAL_PLAN_ACTIVITY, MEAL_PLAN_NOTIFICATIONS } from "./notifications.ts";
 import { MEAL_PLAN_SEARCH_GROUPS, mealPlanActions } from "./search.ts";
+import { MostCooked, Upcoming } from "./widgets.tsx";
 
 export const mealPlanModule: WebModule = {
   code: "meal-plan",
@@ -19,4 +20,8 @@ export const mealPlanModule: WebModule = {
   activity: MEAL_PLAN_ACTIVITY,
   searchGroups: MEAL_PLAN_SEARCH_GROUPS,
   actions: mealPlanActions,
+  widgets: {
+    "meal-plan.upcoming": { title: "Prochains repas", Component: Upcoming },
+    "meal-plan.most-cooked": { title: "Tes recettes les plus cuisinées", Component: MostCooked },
+  },
 };

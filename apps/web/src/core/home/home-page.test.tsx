@@ -15,12 +15,13 @@ import { server } from "../../test/server.ts";
 import { mockSession } from "../../test/session.ts";
 
 describe("accueil (E-ACCUEIL, F-INVITATION)", () => {
-  it("salue, sans rien en attente", async () => {
+  it("salue ; la section en attente n'apparait que s'il y a quelque chose", async () => {
     const me = buildMe({ username: "matthias" });
     mockSession({ me });
     renderWithProviders(<App />, { route: `/s/${me.personalSpaceId}/home` });
     expect(await screen.findByRole("heading", { name: /matthias/ })).toBeInTheDocument();
-    expect(await screen.findByText("Rien en attente pour l'instant.")).toBeInTheDocument();
+    await screen.findByRole("button", { name: "Personnaliser l'accueil" });
+    expect(screen.queryByRole("heading", { name: "En attente" })).toBeNull();
   });
 
   it("accepte une invitation recue et ouvre l'espace ; refuse une autre", async () => {
