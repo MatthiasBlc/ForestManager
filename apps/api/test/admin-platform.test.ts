@@ -74,7 +74,7 @@ describe("reglages (A13, D135)", () => {
       configured: true,
       bucket: testEnv.MINIO_BUCKET,
     });
-    expect(res.body.errorTracking).toEqual({ configured: false });
+    expect(res.body.errorTracking).toEqual({ configured: false, host: null, environment: null });
     const text = JSON.stringify(res.body);
     for (const secret of [
       testEnv.MINIO_SECRET_KEY,

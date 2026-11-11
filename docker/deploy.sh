@@ -23,6 +23,9 @@ required_vars=(
   MINIO_ACCESS_KEY MINIO_SECRET_KEY
   REGISTRY_URL IMAGE_NAME
 )
+# Facultatives : vides, la fonction est coupee (suivi d'erreurs sans DSN [D196]).
+export SENTRY_DSN=${SENTRY_DSN:-}
+
 for var in "${required_vars[@]}"; do
   if [ -z "${!var:-}" ]; then
     echo "ERROR: required variable ${var} is not set" >&2
@@ -37,7 +40,7 @@ if [ ! -f "${COMPOSE_FILE}" ]; then
 fi
 
 # Variables du compose remplacees ; tout autre "$" reste tel quel.
-SUBST_VARS='${POSTGRES_USER} ${POSTGRES_PASSWORD} ${POSTGRES_DB} ${SESSION_SECRET} ${ADMIN_SESSION_SECRET} ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY} ${REGISTRY_URL} ${IMAGE_NAME} ${TAG}'
+SUBST_VARS='${POSTGRES_USER} ${POSTGRES_PASSWORD} ${POSTGRES_DB} ${SESSION_SECRET} ${ADMIN_SESSION_SECRET} ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY} ${SENTRY_DSN} ${REGISTRY_URL} ${IMAGE_NAME} ${TAG}'
 STACK_FILE=$(mktemp)
 trap 'rm -f "${STACK_FILE}"' EXIT
 envsubst "${SUBST_VARS}" < "${COMPOSE_FILE}" > "${STACK_FILE}"

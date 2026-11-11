@@ -7,6 +7,7 @@ import express, { Router } from "express";
 import type { Logger } from "pino";
 
 import { activityRouter } from "../activity/routes.ts";
+import { APP_VERSION } from "../changelog/version.ts";
 import { changelogRouter } from "../changelog/routes.ts";
 import { adminRouter } from "../admin/routes.ts";
 import { createPasswordHasher, type PasswordHasher } from "../auth/password.ts";
@@ -16,6 +17,8 @@ import type { Env } from "../config/env.ts";
 import type { Context } from "../context.ts";
 import type { Db } from "../db/client.ts";
 import { createMailer, type Mailer } from "../mail/mailer.ts";
+import { createErrorTracking, type ErrorTracking } from "../monitoring/error-tracking.ts";
+import { monitoringRouter } from "../monitoring/routes.ts";
 import { requireModule } from "../modules/guards.ts";
 import type { LifecycleHooks } from "../modules/hooks.ts";
 import { assertValidModules, hooksFrom, type ApiModule } from "../modules/registry.ts";
@@ -51,6 +54,8 @@ export interface AppDeps {
   /** Lecture des pages web ; les tests autorisent leur serveur local. */
   fetchPage?: PageFetcher;
   hasher?: PasswordHasher;
+  /** Suivi d'erreurs ; par defaut celui de SENTRY_DSN (null sans). */
+  errorTracking?: ErrorTracking | null;
   hooks?: LifecycleHooks;
   /** Diffusion temps reel ; un hub en memoire par defaut. */
   realtime?: Realtime;
@@ -77,6 +82,7 @@ export function createContext(deps: AppDeps): Context {
     storage: deps.storage === undefined ? createStorage(env) : deps.storage,
     fetchPage: deps.fetchPage ?? createPageFetcher(),
     hasher: deps.hasher ?? createPasswordHasher(env.NODE_ENV === "test"),
+    errorTracking: deps.errorTracking === undefined ? createErrorTracking(env) : deps.errorTracking,
     hooks: deps.hooks ?? hooksFrom(deps.modules),
     realtime: deps.realtime ?? createRealtime(),
     modules: deps.modules,
@@ -105,6 +111,8 @@ export function createApp(deps: AppDeps): express.Express {
     res.json({ status: "ok" });
   });
 
+  // Tunnel du navigateur vers Bugsink : corps texte borne, sans CSRF ni session [D196].
+  app.use(`${API_PREFIX}/monitoring`, monitoringRouter(ctx, rateLimit));
   app.use(express.json({ limit: JSON_LIMIT }));
   if (deps.testRoutes && env.NODE_ENV === "test")
     app.use(`${API_PREFIX}/__test`, deps.testRoutes(ctx));
@@ -113,7 +121,13 @@ export function createApp(deps: AppDeps): express.Express {
   const api = Router();
   api.get("/config", (_req, res) => {
     reply(res, appConfigSchema, {
-      features: { email: ctx.mailer !== null, uploads: ctx.storage !== null },
+      features: {
+        email: ctx.mailer !== null,
+        uploads: ctx.storage !== null,
+        errorTracking: ctx.errorTracking !== null,
+      },
+      release: APP_VERSION,
+      environment: ctx.errorTracking?.environment ?? env.NODE_ENV,
     });
   });
   // Admin avant la session des utilisateurs : cookie et table distincts [D174].
@@ -143,6 +157,6 @@ export function createApp(deps: AppDeps): express.Express {
   app.use(API_PREFIX, api);
 
   app.use(notFoundHandler);
-  app.use(errorHandler);
+  app.use(errorHandler(ctx.errorTracking));
   return app;
 }

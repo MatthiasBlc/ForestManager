@@ -196,7 +196,11 @@ export function AdminDashboardPage() {
                 )}
                 <li className="flex items-center gap-3">
                   <span className="flex-1">Suivi des erreurs (Bugsink)</span>
-                  <Badge>{data.services.errorTracking ? "En ligne" : "Pas encore branché"}</Badge>
+                  {data.services.errorTracking ? (
+                    <Badge tone="success">En ligne</Badge>
+                  ) : (
+                    <Badge tone="warning">Non configuré</Badge>
+                  )}
                 </li>
                 <li className="flex items-center gap-3">
                   <span className="flex-1">Stockage des photos</span>

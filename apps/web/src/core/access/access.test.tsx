@@ -8,6 +8,7 @@ import { buildMe, buildPersonalSpace } from "../../test/fixtures.ts";
 import { renderWithProviders } from "../../test/render.tsx";
 import { server } from "../../test/server.ts";
 import { mockEmptyRecipes } from "../../test/session.ts";
+import { buildConfig } from "../../test/fixtures.ts";
 
 /** Serveur sans session au depart ; /auth/login et /auth/register ouvrent la session. */
 function loggedOut({ email = true }: { email?: boolean } = {}) {
@@ -16,7 +17,7 @@ function loggedOut({ email = true }: { email?: boolean } = {}) {
   const bodies: Record<string, unknown> = {};
   mockEmptyRecipes();
   server.use(
-    http.get("/api/v1/config", () => HttpResponse.json({ features: { email, uploads: false } })),
+    http.get("/api/v1/config", () => HttpResponse.json(buildConfig({ email, uploads: false }))),
     http.get("/api/v1/me", () =>
       me ? HttpResponse.json(me) : HttpResponse.json(errorBody("AUTH_001"), { status: 401 })
     ),

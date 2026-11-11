@@ -165,6 +165,7 @@ jobs:
           ADMIN_SESSION_SECRET: ${{ secrets.ADMIN_SESSION_SECRET }}
           MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
           MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
+          SENTRY_DSN: ${{ secrets.DEV_SENTRY_DSN }}
 
   # ========================================
   # Deploy prod (push sur master)
@@ -197,6 +198,7 @@ jobs:
           ADMIN_SESSION_SECRET: ${{ secrets.ADMIN_SESSION_SECRET }}
           MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
           MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
 
   # ========================================
   # Tag de version apres la prod

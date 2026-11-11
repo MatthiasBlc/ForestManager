@@ -24,10 +24,10 @@ describe("socle HTTP", () => {
 
   it("GET /api/v1/config expose features.email selon SMTP_URL", async () => {
     const off = await request(app).get(`${API_PREFIX}/config`);
-    expect(off.body).toEqual({ features: { email: false, uploads: true } });
+    expect(off.body.features).toEqual({ email: false, uploads: true, errorTracking: false });
     const withSmtp = createTestApp({ env: { ...testEnv, SMTP_URL: "smtp://mail:25" } });
     const on = await request(withSmtp).get(`${API_PREFIX}/config`);
-    expect(on.body).toEqual({ features: { email: true, uploads: true } });
+    expect(on.body.features).toEqual({ email: true, uploads: true, errorTracking: false });
   });
 
   it("route inconnue : COMMON_003 au format unique", async () => {
@@ -121,7 +121,7 @@ describe("handle et reply", () => {
   mini.get("/broken", (_req, res) => {
     reply(res, spaceSummarySchema, { id: "nope" } as never);
   });
-  mini.use(errorHandler);
+  mini.use(errorHandler(null));
 
   it("passe les entrees validees et typees", async () => {
     const res = await request(mini).get(`/items/${NOT_FOUND_UUID}?full=1`);

@@ -4,7 +4,6 @@
 // lecture (rien n'est modifie) : pas d'entree d'audit.
 
 import { randomUUID } from "node:crypto";
-import { readFileSync } from "node:fs";
 
 import {
   auditCategory,
@@ -17,28 +16,12 @@ import {
   type ServiceTestResult,
 } from "@fm/shared";
 
-import { readReleaseFile } from "../changelog/service.ts";
+import { APP_VERSION } from "../changelog/version.ts";
 import type { Context } from "../context.ts";
 import type { Prisma } from "../db/client.ts";
 
 const RECENT = 5;
 const DUPLICATE_SIMILARITY = 0.45;
-
-/**
- * Version de l'application : celle de release.json (calculee par la CI, D187),
- * sinon celle du package.json racine (dev et tests).
- */
-const VERSION = (() => {
-  try {
-    const release = readReleaseFile();
-    if (release) return release.version;
-    const raw = readFileSync(new URL("../../../../../package.json", import.meta.url), "utf8");
-    const parsed = JSON.parse(raw) as { version?: unknown };
-    return typeof parsed.version === "string" ? parsed.version : "inconnue";
-  } catch {
-    return "inconnue";
-  }
-})();
 
 // --- Journal ---
 
@@ -113,12 +96,35 @@ export function settings(ctx: Context): PlatformSettings {
       bucket: env.MINIO_BUCKET ?? null,
       publicUrl: env.MINIO_PUBLIC_URL ?? null,
     },
-    errorTracking: { configured: false },
+    errorTracking: {
+      configured: ctx.errorTracking !== null,
+      host: ctx.errorTracking?.host ?? null,
+      environment: ctx.errorTracking?.environment ?? null,
+    },
   };
 }
 
 function failure(error: unknown): string {
   return error instanceof Error ? error.message : "erreur inconnue";
+}
+
+async function testErrorTracking(ctx: Context): Promise<ServiceTestResult> {
+  const tracking = ctx.errorTracking;
+  if (!tracking) {
+    return { ok: false, message: "Aucun suivi des erreurs configuré (SENTRY_DSN absente)." };
+  }
+  try {
+    const status = await tracking.sendTest();
+    if (status >= 200 && status < 300) {
+      return { ok: true, message: `Événement de test accepté par ${tracking.host}.` };
+    }
+    return {
+      ok: false,
+      message: `Événement refusé par ${tracking.host} (HTTP ${String(status)}).`,
+    };
+  } catch (error) {
+    return { ok: false, message: `Récepteur injoignable : ${failure(error)}` };
+  }
 }
 
 export async function testService(
@@ -143,6 +149,7 @@ export async function testService(
       return { ok: false, message: `Envoi impossible : ${failure(error)}` };
     }
   }
+  if (service === "errorTracking") return testErrorTracking(ctx);
   if (!ctx.storage) {
     return { ok: false, message: "Aucun stockage configuré (MINIO_ENDPOINT absente)." };
   }
@@ -214,9 +221,9 @@ export async function dashboard(ctx: Context): Promise<AdminDashboard> {
     services: {
       email: ctx.mailer !== null,
       storage: ctx.storage !== null,
-      errorTracking: false,
+      errorTracking: ctx.errorTracking !== null,
     },
-    version: VERSION,
+    version: APP_VERSION,
     recent: recent.map(toEntry),
   };
 }

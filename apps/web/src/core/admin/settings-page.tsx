@@ -141,13 +141,27 @@ export function SettingsPage() {
       id: "errors",
       name: "Suivi des erreurs (Bugsink)",
       icon: "shield",
-      role: "Recevra les erreurs de l'application et du navigateur.",
+      role: "Erreurs inattendues de l'API et du navigateur, sans donnée personnelle.",
       status: errorTracking.configured
-        ? { label: "Connecté", tone: "success" }
-        : { label: "Pas encore branché", tone: "neutral" },
-      rows: [["Variable", "SENTRY_DSN (prévue)"]],
-      effect:
-        "Le SDK Sentry n'est pas encore intégré : il arrivera avec la mise en préproduction. Changer d'outil de suivi ne demandera que de changer le DSN.",
+        ? { label: "Configuré", tone: "success" }
+        : { label: "Non configuré", tone: "warning" },
+      rows: [
+        [
+          "Récepteur",
+          errorTracking.host ? `SENTRY_DSN = ${errorTracking.host}` : "SENTRY_DSN (absente)",
+        ],
+        ["Environnement", errorTracking.environment ?? "-"],
+      ],
+      effect: errorTracking.configured
+        ? "Les erreurs du navigateur passent par l'API, qui seule connaît le DSN. Le test envoie un événement d'information au projet de cet environnement."
+        : "Sans DSN, l'application fonctionne sans suivi des erreurs : elles restent dans les journaux du conteneur.",
+      test: {
+        service: "errorTracking",
+        label: "Envoyer un événement de test",
+        ...(errorTracking.configured
+          ? {}
+          : { disabledHint: "Disponible une fois SENTRY_DSN renseignée." }),
+      },
     },
     {
       id: "storage",

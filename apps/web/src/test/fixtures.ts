@@ -1,6 +1,7 @@
 // Fabriques de reponses de l'API pour MSW [D157] : chaque objet est valide contre
 // le schema partage au moment de sa construction (une derive du contrat casse le test).
 import {
+  appConfigSchema,
   suggestionSchema,
   catalogModuleSchema,
   invitationSchema,
@@ -12,6 +13,7 @@ import {
   recipeSummarySchema,
   spaceDetailSchema,
   spaceSummarySchema,
+  type AppConfig,
   type CatalogModule,
   type Invitation,
   type Me,
@@ -27,6 +29,15 @@ import {
   type Suggestion,
 } from "@fm/shared";
 import type { z } from "zod";
+
+/** Reponse de GET /config : fonctions coupees sauf mention contraire. */
+export function buildConfig(features: Partial<AppConfig["features"]> = {}): AppConfig {
+  return appConfigSchema.parse({
+    features: { email: false, uploads: false, errorTracking: false, ...features },
+    release: "2.0.0",
+    environment: "test",
+  });
+}
 
 let seq = 0;
 /** UUID v4 deterministe pour les tests. */

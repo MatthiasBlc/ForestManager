@@ -54,11 +54,25 @@ const jobs = setInterval(
   () => {
     hourlyJobs().catch((error: unknown) => {
       logger.error({ err: error }, "hourly jobs failed");
+      ctx.errorTracking?.captureException(error);
     });
   },
   60 * 60 * 1000
 );
 jobs.unref();
+
+// Rejets et exceptions non geres : journalises et envoyes au suivi d'erreurs [D196].
+// Une exception non geree laisse le processus dans un etat inconnu : on s'arrete
+// apres l'envoi (Docker relance le conteneur).
+process.on("unhandledRejection", (reason) => {
+  logger.error({ err: reason }, "unhandled rejection");
+  ctx.errorTracking?.captureException(reason);
+});
+process.on("uncaughtException", (error) => {
+  logger.fatal({ err: error }, "uncaught exception");
+  ctx.errorTracking?.captureException(error);
+  void (ctx.errorTracking?.flush(2000) ?? Promise.resolve()).finally(() => process.exit(1));
+});
 
 function shutdown(signal: string): void {
   logger.info({ signal }, "shutting down");
@@ -66,7 +80,9 @@ function shutdown(signal: string): void {
   // Les flux SSE ouverts retiendraient l'arret : on les ferme d'abord.
   ctx.realtime.closeAll();
   server.close(() => {
-    void db.$disconnect().finally(() => process.exit(0));
+    void Promise.allSettled([db.$disconnect(), ctx.errorTracking?.flush(2000)]).finally(() =>
+      process.exit(0)
+    );
   });
   // Filet : les connexions keep-alive ne doivent pas bloquer l'arret.
   setTimeout(() => process.exit(1), 10_000).unref();

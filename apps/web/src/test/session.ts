@@ -5,6 +5,7 @@ import { http, HttpResponse } from "msw";
 
 import { buildMe, buildPersonalSpace, UNITS } from "./fixtures.ts";
 import { server } from "./server.ts";
+import { buildConfig } from "./fixtures.ts";
 
 export interface SessionOptions {
   me?: Me | null;
@@ -23,7 +24,7 @@ export function mockSession({
 }: SessionOptions = {}) {
   const all = me ? (spaces ?? [buildPersonalSpace(me)]) : [];
   server.use(
-    http.get("/api/v1/config", () => HttpResponse.json({ features: { email, uploads } })),
+    http.get("/api/v1/config", () => HttpResponse.json(buildConfig({ email, uploads }))),
     http.get("/api/v1/me", () =>
       me ? HttpResponse.json(me) : HttpResponse.json(errorBody("AUTH_001"), { status: 401 })
     ),

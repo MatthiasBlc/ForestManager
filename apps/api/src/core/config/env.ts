@@ -33,6 +33,13 @@ const envSchema = z
     MINIO_BUCKET: z.string().optional(),
     /** URL vue par le navigateur (envoi et lecture), sans le bucket. */
     MINIO_PUBLIC_URL: z.url().optional(),
+    /**
+     * Suivi d'erreurs [D75, D196] : DSN du projet Bugsink de l'environnement.
+     * Facultatif : sans DSN, le suivi est coupe et `features.errorTracking` vaut false.
+     */
+    SENTRY_DSN: z.preprocess((value) => (value === "" ? undefined : value), z.url().optional()),
+    /** Nom de l'environnement dans Bugsink (preprod, production) ; NODE_ENV par defaut. */
+    SENTRY_ENVIRONMENT: z.string().min(1).optional(),
   })
   .refine(
     (env) =>

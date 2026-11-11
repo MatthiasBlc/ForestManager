@@ -131,6 +131,9 @@ export const choosePasswordBodySchema = z.strictObject({ password: passwordSchem
 
 export const appConfigSchema = z.object({
   /** Emails [D21] et envoi de photos [D167] : facultatifs selon la configuration. */
-  features: z.object({ email: z.boolean(), uploads: z.boolean() }),
+  features: z.object({ email: z.boolean(), uploads: z.boolean(), errorTracking: z.boolean() }),
+  /** Version et environnement, repris par le SDK du navigateur [D196]. */
+  release: z.string(),
+  environment: z.string(),
 });
 export type AppConfig = z.infer<typeof appConfigSchema>;

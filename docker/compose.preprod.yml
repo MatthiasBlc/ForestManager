@@ -60,6 +60,9 @@ services:
       - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
       - MINIO_BUCKET=forestmanager-images-preprod
       - MINIO_PUBLIC_URL=https://s3.matthias-bouloc.fr
+      # Suivi d'erreurs [D196] : vide = coupe (secret GitHub facultatif).
+      - SENTRY_DSN=${SENTRY_DSN}
+      - SENTRY_ENVIRONMENT=preprod
       - NODE_OPTIONS=--max-old-space-size=1024
     networks:
       internal-dev:

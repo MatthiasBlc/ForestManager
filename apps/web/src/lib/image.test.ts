@@ -7,6 +7,7 @@ import { server } from "../test/server.ts";
 import { ApiRequestError } from "./api.ts";
 import { convertImage } from "./image.ts";
 import { uploadImage } from "./upload.ts";
+import { buildConfig } from "../test/fixtures.ts";
 
 /** Taille du bitmap decode, types que le canvas sait produire, tailles des fichiers rendus. */
 function fakeCanvas({
@@ -105,10 +106,9 @@ describe("uploadImage", () => {
     sent = null;
     server.use(
       http.get("/api/v1/config", () =>
-        HttpResponse.json(
-          { features: { email: false, uploads: true } },
-          { headers: { "set-cookie": "XSRF-TOKEN=test" } }
-        )
+        HttpResponse.json(buildConfig({ email: false, uploads: true }), {
+          headers: { "set-cookie": "XSRF-TOKEN=test" },
+        })
       ),
       http.post("/api/v1/uploads", () => HttpResponse.json(ticket, { status: 201 })),
       http.post("http://storage.test/bucket", async ({ request }) => {

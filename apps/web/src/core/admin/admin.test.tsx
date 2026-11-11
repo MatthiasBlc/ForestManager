@@ -9,6 +9,7 @@ import { buildDashboard } from "../../test/admin-server.ts";
 import { axeViolations } from "../../test/axe.ts";
 import { renderWithProviders } from "../../test/render.tsx";
 import { server } from "../../test/server.ts";
+import { buildConfig } from "../../test/fixtures.ts";
 
 const ADMIN: AdminMe = {
   id: "7c1e7a5e-2c1b-4f55-9b0e-1d2a3b4c5d6e",
@@ -23,7 +24,7 @@ function adminServer({ totpEnabled = true, loggedIn = false } = {}) {
   const calls: string[] = [];
   server.use(
     http.get("/api/v1/config", () =>
-      HttpResponse.json({ features: { email: true, uploads: false } })
+      HttpResponse.json(buildConfig({ email: true, uploads: false }))
     ),
     http.get("/api/v1/me", () => HttpResponse.json(errorBody("AUTH_001"), { status: 401 })),
     http.get("/api/v1/admin/module-requests", () => HttpResponse.json({ pending: [], recent: [] })),

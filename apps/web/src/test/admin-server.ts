@@ -13,6 +13,7 @@ import {
 import { http, HttpResponse } from "msw";
 
 import { server } from "./server.ts";
+import { buildConfig } from "./fixtures.ts";
 
 export const TEST_ADMIN: AdminMe = {
   id: "7c1e7a5e-2c1b-4f55-9b0e-1d2a3b4c5d6e",
@@ -83,7 +84,7 @@ export function mockAdminApi() {
   const lookup: SpaceLookupItem[] = [{ ...SKI, ownerUsername: "paul" }];
   server.use(
     http.get("/api/v1/config", () =>
-      HttpResponse.json({ features: { email: true, uploads: false } })
+      HttpResponse.json(buildConfig({ email: true, uploads: false }))
     ),
     http.get("/api/v1/me", () => HttpResponse.json(errorBody("AUTH_001"), { status: 401 })),
     http.get("/api/v1/admin/me", () => HttpResponse.json(TEST_ADMIN)),
@@ -188,5 +189,5 @@ export const SETTINGS: PlatformSettings = {
     bucket: "forest-photos",
     publicUrl: "https://photos.forest.example",
   },
-  errorTracking: { configured: false },
+  errorTracking: { configured: false, host: null, environment: null },
 };

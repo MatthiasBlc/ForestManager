@@ -5,6 +5,7 @@ import { UPLOAD_MAX_BYTES } from "@fm/shared";
 import { http, HttpResponse } from "msw";
 
 import { server } from "./server.ts";
+import { buildConfig } from "./fixtures.ts";
 
 const STORAGE_URL = "http://storage.test/bucket";
 
@@ -12,7 +13,7 @@ export function mockUploads() {
   const uploadIds: string[] = [];
   server.use(
     http.get("/api/v1/config", () =>
-      HttpResponse.json({ features: { email: true, uploads: true } })
+      HttpResponse.json(buildConfig({ email: true, uploads: true }))
     ),
     http.post("/api/v1/uploads", () => {
       const uploadId = crypto.randomUUID();

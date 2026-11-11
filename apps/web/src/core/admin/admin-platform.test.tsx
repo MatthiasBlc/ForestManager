@@ -129,9 +129,12 @@ describe("reglages (A13, D135)", () => {
     expect(within(email).getByRole("button", { name: "Envoyer un e-mail de test" })).toBeDisabled();
     const storage = screen.getByRole("region", { name: "Stockage des photos (S3)" });
     expect(storage).toHaveTextContent("forest-photos");
-    expect(screen.getByRole("region", { name: "Suivi des erreurs (Bugsink)" })).toHaveTextContent(
-      "Pas encore branché"
-    );
+    const errors = screen.getByRole("region", { name: "Suivi des erreurs (Bugsink)" });
+    expect(errors).toHaveTextContent("Non configuré");
+    expect(errors).toHaveTextContent("SENTRY_DSN (absente)");
+    expect(
+      within(errors).getByRole("button", { name: "Envoyer un événement de test" })
+    ).toBeDisabled();
     expect(await axeViolations(container)).toEqual([]);
 
     await user.click(within(storage).getByRole("button", { name: "Tester la connexion" }));
@@ -139,5 +142,36 @@ describe("reglages (A13, D135)", () => {
       await within(storage).findByText("Écriture, lecture et suppression réussies.")
     ).toBeVisible();
     expect(tested).toEqual(["storage"]);
+  });
+
+  it("suivi des erreurs branche : hote du DSN, environnement, test [D179, D196]", async () => {
+    mockAdminApi();
+    server.use(
+      http.get("/api/v1/admin/settings", () =>
+        HttpResponse.json({
+          ...SETTINGS,
+          errorTracking: {
+            configured: true,
+            host: "bugsink.forest.example",
+            environment: "preprod",
+          },
+        })
+      ),
+      http.post("/api/v1/admin/settings/test/errorTracking", () =>
+        HttpResponse.json({
+          ok: false,
+          message: "Événement refusé par bugsink.forest.example (HTTP 403).",
+        })
+      )
+    );
+    const { user } = renderWithProviders(<App />, { route: "/admin/settings" });
+    const errors = await screen.findByRole("region", { name: "Suivi des erreurs (Bugsink)" });
+    expect(errors).toHaveTextContent("Configuré");
+    expect(errors).toHaveTextContent("bugsink.forest.example");
+    expect(errors).toHaveTextContent("preprod");
+    await user.click(within(errors).getByRole("button", { name: "Envoyer un événement de test" }));
+    expect(
+      await within(errors).findByText("Événement refusé par bugsink.forest.example (HTTP 403).")
+    ).toBeVisible();
   });
 });

@@ -37,12 +37,16 @@ export const platformSettingsSchema = z.object({
     bucket: z.string().nullable(),
     publicUrl: z.string().nullable(),
   }),
-  /** Suivi des erreurs (SDK Sentry vers Bugsink, D75) : pas encore branche. */
-  errorTracking: z.object({ configured: z.boolean() }),
+  /** Suivi des erreurs (SDK Sentry vers Bugsink) [D75, D196] : hote du DSN, jamais la cle. */
+  errorTracking: z.object({
+    configured: z.boolean(),
+    host: z.string().nullable(),
+    environment: z.string().nullable(),
+  }),
 });
 export type PlatformSettings = z.infer<typeof platformSettingsSchema>;
 
-export const SERVICE_TESTS = ["email", "storage"] as const;
+export const SERVICE_TESTS = ["email", "storage", "errorTracking"] as const;
 export type ServiceTest = (typeof SERVICE_TESTS)[number];
 export const serviceTestParamsSchema = z.strictObject({ service: z.enum(SERVICE_TESTS) });
 

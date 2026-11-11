@@ -9,6 +9,7 @@ import { mockAdminApi } from "../../test/admin-server.ts";
 import { axeViolations } from "../../test/axe.ts";
 import { renderWithProviders } from "../../test/render.tsx";
 import { server } from "../../test/server.ts";
+import { buildConfig } from "../../test/fixtures.ts";
 
 const SAM: AdminUser = {
   id: "5a5a5a5a-5555-4555-8555-555555555555",
@@ -29,7 +30,7 @@ function mockUsers({ email = false } = {}) {
   const queries: string[] = [];
   const posts: string[] = [];
   server.use(
-    http.get("/api/v1/config", () => HttpResponse.json({ features: { email, uploads: false } })),
+    http.get("/api/v1/config", () => HttpResponse.json(buildConfig({ email, uploads: false }))),
     http.get("/api/v1/admin/users", ({ request }) => {
       queries.push(new URL(request.url).search);
       return HttpResponse.json({ data: [SAM], total: 34 });

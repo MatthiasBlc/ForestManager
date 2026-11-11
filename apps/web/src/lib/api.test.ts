@@ -5,17 +5,18 @@ import { z } from "zod";
 
 import { server } from "../test/server.ts";
 import { api, ApiRequestError } from "./api.ts";
+import { buildConfig } from "../test/fixtures.ts";
 
 describe("client API", () => {
   it("lit une reponse et la valide contre son schema", async () => {
     server.use(
       http.get("/api/v1/config", () =>
-        HttpResponse.json({ features: { email: true, uploads: true } })
+        HttpResponse.json(buildConfig({ email: true, uploads: true }))
       )
     );
-    await expect(api.get("/config", appConfigSchema)).resolves.toEqual({
-      features: { email: true, uploads: true },
-    });
+    await expect(api.get("/config", appConfigSchema)).resolves.toEqual(
+      buildConfig({ email: true, uploads: true })
+    );
   });
 
   it("refuse une reponse qui ne respecte pas le contrat", async () => {
@@ -51,7 +52,7 @@ describe("client API", () => {
       http.get("/api/v1/config", () => {
         calls.push("config");
         document.cookie = "XSRF-TOKEN=neuf; path=/";
-        return HttpResponse.json({ features: { email: false, uploads: false } });
+        return HttpResponse.json(buildConfig({ email: false, uploads: false }));
       }),
       http.post("/api/v1/auth/logout", ({ request }) => {
         calls.push(`logout:${request.headers.get("x-xsrf-token") ?? ""}`);
