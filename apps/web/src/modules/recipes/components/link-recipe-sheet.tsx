@@ -13,7 +13,7 @@ import { Sheet, SheetFooter } from "../../../ui/sheet.tsx";
 import { parseQuantity, type DraftLinkedBlock } from "../draft.ts";
 import { formatYield } from "../format.ts";
 import { recipesQuery } from "../queries.ts";
-import { useDebounced } from "../use-debounced.ts";
+import { useDebounced } from "../../../lib/use-debounced.ts";
 
 export function AddBlockSheet({
   open,

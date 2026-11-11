@@ -23,6 +23,8 @@ import { api, isNetworkError } from "../../lib/api.ts";
 export interface RecipeFilters {
   q?: string;
   tagIds?: string[];
+  /** Ingredient choisi dans la recherche globale [D191]. */
+  ingredientIds?: string[];
   base?: boolean;
   sort?: RecipeSort;
   /** "Mes recettes" [D82] : recettes de l'utilisateur dans tous ses espaces. */
@@ -37,6 +39,7 @@ export function recipesQuery(spaceId: string, filters: RecipeFilters) {
   const params = new URLSearchParams();
   if (filters.q) params.set("q", filters.q);
   if (filters.tagIds?.length) params.set("tagIds", filters.tagIds.join(","));
+  if (filters.ingredientIds?.length) params.set("ingredientIds", filters.ingredientIds.join(","));
   if (filters.base) params.set("base", "true");
   if (filters.sort && filters.sort !== "recent") params.set("sort", filters.sort);
   const path = `/spaces/${spaceId}/recipes${filters.mine ? "/mine" : ""}`;

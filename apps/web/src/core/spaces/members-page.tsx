@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { errorMessage } from "../../i18n/index.ts";
 import { api } from "../../lib/api.ts";
+import { useUrlFlag } from "../../lib/use-url-flag.ts";
 import { ActionMenu, type ActionItem } from "../../ui/action-menu.tsx";
 import { Button, IconButton } from "../../ui/button.tsx";
 import { Avatar, Badge, Skeleton } from "../../ui/display.tsx";
@@ -53,7 +54,7 @@ export function MembersPage({ space }: { space: SpaceDetail }) {
   const members = useQuery(membersQuery(space.id));
   const manage = space.kind === "GROUP" && canIn(space, "space.invites.manage");
   const invitations = useQuery({ ...spaceInvitationsQuery(space.id), enabled: manage });
-  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteOpen, setInviteOpen] = useUrlFlag("invite", manage);
   const [excluding, setExcluding] = useState<Member | null>(null);
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["spaces", space.id] });

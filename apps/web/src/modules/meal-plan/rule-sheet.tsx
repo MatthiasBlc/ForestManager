@@ -25,7 +25,7 @@ import { Chip, SegmentedControl, Stepper, Switch } from "../../ui/controls.tsx";
 import { OptionList } from "../../ui/option-list.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { globalTagsQuery, spaceTagsQuery } from "../recipes/queries.ts";
-import { useDebounced } from "../recipes/use-debounced.ts";
+import { useDebounced } from "../../lib/use-debounced.ts";
 import { WEIGHT_STEP_LABELS } from "./format.ts";
 import { profilesKey } from "./queries.ts";
 

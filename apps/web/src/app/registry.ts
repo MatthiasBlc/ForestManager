@@ -1,7 +1,7 @@
 // Registre web des modules [D71] : un manifeste par module, liste statique dans
 // `modules/index.ts`. Le shell ne connait aucun module : il lit leurs entrees de
 // navigation et monte leurs routes sous /s/:spaceId/<code>/*.
-import type { ActivityEvent, Notification, SpaceKind } from "@fm/shared";
+import type { ActivityEvent, Notification, SearchItem, SpaceDetail, SpaceKind } from "@fm/shared";
 import type { ComponentType, LazyExoticComponent } from "react";
 
 import type { IconName } from "../ui/icon.tsx";
@@ -51,6 +51,32 @@ export type ActivityRenderer = (
   spaceId: string
 ) => { text: string; to: string | null };
 
+/** Ligne de la recherche globale pour un resultat de l'API [D191]. */
+export interface SearchResultView {
+  label: string;
+  icon: IconName;
+  hint?: string;
+  /** Ecran a ouvrir, et etat de navigation facultatif. */
+  to: string;
+  state?: unknown;
+}
+
+/** Groupe de resultats declare par un module (cle `<code>.<nom>` de l'API). */
+export interface SearchGroupView {
+  label: string;
+  render: (item: SearchItem) => SearchResultView;
+}
+
+/** Action de la palette [D119] : sans appel API, filtree par le texte tape. */
+export interface PaletteAction {
+  id: string;
+  label: string;
+  icon: IconName;
+  to: string;
+  /** Mots en plus du libelle pour la correspondance. */
+  keywords?: string;
+}
+
 export interface WebModule {
   /** Meme code que l'API et la base. */
   code: string;
@@ -68,4 +94,8 @@ export interface WebModule {
   activity?: Readonly<Record<string, ActivityRenderer>>;
   /** Ce qu'un membre laisse en attente en partant (P08), par cle declaree par l'API. */
   pendingTexts?: Readonly<Record<string, (count: number) => string>>;
+  /** Groupes de la recherche globale fournis par le module, par cle. */
+  searchGroups?: Readonly<Record<string, SearchGroupView>>;
+  /** Actions de la palette dans l'espace courant (module actif), selon les droits connus. */
+  actions?: (space: SpaceDetail) => readonly PaletteAction[];
 }

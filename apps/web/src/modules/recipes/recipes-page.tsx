@@ -16,7 +16,7 @@ import {
   type QueryClient,
 } from "@tanstack/react-query";
 import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 
 import { meQuery, spaceQuery, spacesQuery } from "../../core/session/queries.ts";
 import { errorMessage } from "../../i18n/index.ts";
@@ -41,7 +41,7 @@ import {
 import { RecipeActionsSheet } from "./recipe-actions-sheet.tsx";
 import { ShareRequestsBanner } from "./sharing.tsx";
 import { SuggestionsToDecideBanner } from "./suggestions.tsx";
-import { useDebounced } from "./use-debounced.ts";
+import { useDebounced } from "../../lib/use-debounced.ts";
 
 /**
  * Hors de son espace d'origine : "Partagee" dans un espace de partage, nom de
@@ -226,19 +226,41 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
   const [addOpen, setAddOpen] = useState(false);
   const [importSheet, setImportSheet] = useState<ImportSheet>(null);
   const [actionsFor, setActionsFor] = useState<{ spaceId: string; recipe: RecipeSummary }>();
+  // Filtre par ingredient ouvert depuis la recherche globale (?ingredient=, nom dans l'etat).
+  const [params, setParams] = useSearchParams();
+  const location = useLocation();
+  const ingredientId = params.get("ingredient");
+  const ingredientName =
+    (location.state as { ingredientName?: string } | null)?.ingredientName ?? "Ingrédient";
+  const clearIngredient = () => {
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        next.delete("ingredient");
+        return next;
+      },
+      { replace: true }
+    );
+  };
   const q = useDebounced(search.trim());
   const online = useOnline();
   const guard = useWriteGuard();
   const queryClient = useQueryClient();
   const me = useQuery(meQuery);
   const list = useInfiniteQuery({
-    ...recipesQuery(spaceId, { q, tagIds, base: baseOnly, mine }),
+    ...recipesQuery(spaceId, {
+      q,
+      tagIds,
+      ingredientIds: ingredientId ? [ingredientId] : [],
+      base: baseOnly,
+      mine,
+    }),
     // Pendant une recherche, la liste precedente reste affichee (pas de clignotement).
     placeholderData: keepPreviousData,
   });
 
   const spaceName = space.data?.name ?? "";
-  const filtered = q !== "" || tagIds.length > 0 || baseOnly;
+  const filtered = q !== "" || tagIds.length > 0 || baseOnly || ingredientId !== null;
   const recipes = list.data?.pages.flatMap((page) => page.data) ?? [];
   const tags = [...(globalTags.data ?? []), ...(spaceTags.data ?? [])];
   // "Mes recettes" ouvre chaque recette dans son espace d'origine.
@@ -403,10 +425,23 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
             setTagIds([]);
             setBaseOnly(false);
             setSearch("");
+            clearIngredient();
           }}
         >
           Toutes
         </Chip>
+        {ingredientId ? (
+          <button
+            type="button"
+            className="fm-chip"
+            aria-pressed="true"
+            aria-label={`Retirer le filtre ${ingredientName}`}
+            onClick={clearIngredient}
+          >
+            Avec {ingredientName}
+            <Icon name="x" size={16} />
+          </button>
+        ) : null}
         {tags.map((tag) => (
           <Chip
             key={tag.id}

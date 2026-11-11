@@ -3,7 +3,7 @@
 // modifier, partager, retirer et supprimer selon les droits (D57, D81, F-REC-9).
 import { linkFactor, type LinkedBlock, type Recipe, type RecipeBlock, type Unit } from "@fm/shared";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
 import { spaceQuery } from "../../core/session/queries.ts";
@@ -23,6 +23,7 @@ import { recipeFailure, recipeQuery, unitsQuery, type RecipeFailure } from "./qu
 import { AdaptedFromNotice } from "./adaptation.tsx";
 import { useRecipeActions } from "./use-recipe-actions.tsx";
 import { RecipeSuggestionsBanner } from "./suggestions.tsx";
+import { pushRecentRecipe } from "../../core/search/recent.ts";
 
 export function RecipeNotFound({ spaceId }: { spaceId: string }) {
   return (
@@ -435,6 +436,11 @@ export function RecipePage() {
   const { spaceId = "", recipeId = "" } = useParams();
   const recipe = useQuery(recipeQuery(spaceId, recipeId));
   const units = useQuery(unitsQuery);
+  const title = recipe.data?.title;
+  useEffect(() => {
+    // Proposee ensuite par la palette vide (F-RECHERCHE).
+    if (title) pushRecentRecipe({ id: recipeId, title, spaceId });
+  }, [title, recipeId, spaceId]);
   const failure = recipeFailure(recipe);
   if (failure) {
     return (

@@ -180,6 +180,13 @@ export function recipeServer({
       const data = state.recipes
         .filter((r) => r.title.toLowerCase().includes(q))
         .filter((r) => tagIds.every((id) => r.tags.some((t) => t.id === id)))
+        .filter((r) =>
+          (params.get("ingredientIds")?.split(",") ?? []).every((id) =>
+            r.blocks.some(
+              (b) => b.kind === "LOCAL" && b.ingredients.some((i) => i.ingredientId === id)
+            )
+          )
+        )
         .filter((r) => params.get("base") !== "true" || r.isBase)
         .map(toSummary);
       return HttpResponse.json({ data, nextCursor: null });

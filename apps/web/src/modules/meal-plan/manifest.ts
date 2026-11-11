@@ -3,6 +3,7 @@ import { lazy } from "react";
 
 import type { WebModule } from "../../app/registry.ts";
 import { MEAL_PLAN_ACTIVITY, MEAL_PLAN_NOTIFICATIONS } from "./notifications.ts";
+import { MEAL_PLAN_SEARCH_GROUPS, mealPlanActions } from "./search.ts";
 
 export const mealPlanModule: WebModule = {
   code: "meal-plan",
@@ -16,4 +17,6 @@ export const mealPlanModule: WebModule = {
   },
   notifications: MEAL_PLAN_NOTIFICATIONS,
   activity: MEAL_PLAN_ACTIVITY,
+  searchGroups: MEAL_PLAN_SEARCH_GROUPS,
+  actions: mealPlanActions,
 };

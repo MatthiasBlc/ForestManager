@@ -260,3 +260,75 @@ body,
     grid-template-areas: "rail top" "rail main";
   }
 }
+
+/* CommandPalette (F-RECHERCHE) : plein ecran sur mobile, centree en haut a partir
+   de 768px. Le style des lignes vient du design system (.fm-cmd-*). */
+.fm-cmd-layer .fm-cmd {
+  position: absolute;
+  inset: 0;
+  max-width: none;
+  border: 0;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  animation: fm-fade 0.15s ease-out;
+}
+.fm-cmd-results {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.fm-cmd-item {
+  scroll-margin: var(--space-2);
+}
+.fm-cmd-item svg {
+  flex: none;
+}
+.fm-cmd-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fm-cmd-item small {
+  flex: none;
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fm-cmd-status {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--ink-muted);
+  font-size: 14px;
+}
+.fm-cmd-esc {
+  display: none;
+}
+.fm-cmd-close {
+  border: 0;
+  background: transparent;
+  color: var(--accent-text);
+  font: 600 15px/22px var(--font-sans);
+  min-height: var(--size-touch);
+  padding: 0 var(--space-1);
+  cursor: pointer;
+}
+@media (min-width: 768px) {
+  .fm-cmd-layer .fm-cmd {
+    inset: 12vh auto auto 50%;
+    transform: translateX(-50%);
+    width: min(560px, calc(100% - 32px));
+    max-height: 70vh;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+  }
+  .fm-cmd-esc {
+    display: inline;
+  }
+  .fm-cmd-close {
+    display: none;
+  }
+}

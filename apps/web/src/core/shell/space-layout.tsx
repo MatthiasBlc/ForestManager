@@ -1,7 +1,7 @@
 // Shell d'un espace : rail (bureau), selecteur d'espaces (mobile), barre du
 // module, en-tete, onglets et "Plus", routes du socle et des modules.
 import { useQuery } from "@tanstack/react-query";
-import { Suspense, useEffect, useState, type ReactNode } from "react";
+import { Suspense, useCallback, useEffect, useState, type ReactNode } from "react";
 import {
   Link,
   Navigate,
@@ -32,6 +32,8 @@ import { ActivityPage } from "../activity/activity-page.tsx";
 import { HomePage } from "../home/home-page.tsx";
 import { unreadCountQuery } from "../notifications/queries.ts";
 import { ModulesPage } from "../modules/modules-page.tsx";
+import { SearchPalette } from "../search/search-palette.tsx";
+import { usePaletteShortcut } from "../search/use-palette-shortcut.ts";
 import { CreateSpaceSheet } from "../spaces/create-space-sheet.tsx";
 import { DeletedSpacePage } from "../spaces/deleted-space-page.tsx";
 import { MembersPage } from "../spaces/members-page.tsx";
@@ -104,6 +106,8 @@ export function SpaceLayout() {
   const space = useQuery(spaceQuery(spaceId));
   const [switcherOpen, setSwitcherOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  usePaletteShortcut(useCallback(() => setPaletteOpen(true), []));
   const chrome = useChromeSlots();
   const [params, setParams] = useSearchParams();
   const createOpen = params.get("create") === "1";
@@ -219,6 +223,7 @@ export function SpaceLayout() {
               title={active?.label}
               space={current}
               onSpace={() => setSwitcherOpen(true)}
+              onSearch={() => setPaletteOpen(true)}
               onNotifications={() => void navigate("/notifications")}
               unread={unread.data}
               user={user}
@@ -282,6 +287,12 @@ export function SpaceLayout() {
       {switcher}
       {createSheet}
       <MoreSheet open={moreOpen} onClose={() => setMoreOpen(false)} items={nav.more} />
+      <SearchPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        space={space.data}
+        spaces={spaces.data ?? []}
+      />
     </AppShell>
   );
 }

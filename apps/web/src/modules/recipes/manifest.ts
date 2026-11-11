@@ -3,6 +3,7 @@ import { lazy } from "react";
 
 import type { WebModule } from "../../app/registry.ts";
 import { RECIPE_ACTIVITY, RECIPE_NOTIFICATIONS } from "./notifications.ts";
+import { RECIPE_SEARCH_GROUPS, recipeActions } from "./search.ts";
 
 export const recipesModule: WebModule = {
   code: "recipes",
@@ -27,4 +28,6 @@ export const recipesModule: WebModule = {
     "recipes.suggestions": (count) =>
       `${count} suggestion${count > 1 ? "s" : ""} en attente sur ses recettes.`,
   },
+  searchGroups: RECIPE_SEARCH_GROUPS,
+  actions: recipeActions,
 };

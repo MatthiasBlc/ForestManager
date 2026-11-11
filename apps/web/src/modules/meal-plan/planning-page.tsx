@@ -39,6 +39,7 @@ import { EmptyCell, MealSlot, type SlotKind } from "./meal-slot.tsx";
 import { MealSheet } from "./meal-sheet.tsx";
 import { mealsKey, mealsQuery, settingsQuery } from "./queries.ts";
 import { SettingsSheet } from "./settings-sheet.tsx";
+import { useUrlFlag } from "../../lib/use-url-flag.ts";
 
 const WIDE = "(min-width: 1024px)";
 
@@ -240,7 +241,7 @@ export function PlanningPage() {
   });
   const [view, setView] = useState<"day" | "week">("day");
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [generateOpen, setGenerateOpen] = useState(false);
+  const [generateOpen, setGenerateOpen] = useUrlFlag("generate", settings.data?.can.manage);
   const [open, setOpen] = useState<MealCell | null>(null);
   const [swapFrom, setSwapFrom] = useState<MealCell | null>(null);
 
