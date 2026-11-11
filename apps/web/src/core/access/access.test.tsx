@@ -104,6 +104,16 @@ describe("connexion (P01)", () => {
     });
   });
 
+  it("deja connecte sur l'ecran de connexion : ouvre la page demandee, pas l'accueil", async () => {
+    // Session crue absente puis confirmee par le serveur (copie de l'appareil en retard, C7.6).
+    const { account } = loggedOut();
+    server.use(http.get("/api/v1/me", () => HttpResponse.json(account)));
+    renderWithProviders(<App />, {
+      route: `/login?next=${encodeURIComponent(`/s/${account.personalSpaceId}/recipes`)}`,
+    });
+    expect(await screen.findByRole("heading", { name: "Recettes" })).toBeInTheDocument();
+  });
+
   it("identifiants refuses : message clair ; sans SMTP, pas de mot de passe oublie (D21)", async () => {
     loggedOut({ email: false });
     const { user } = renderWithProviders(<App />, { route: "/login" });

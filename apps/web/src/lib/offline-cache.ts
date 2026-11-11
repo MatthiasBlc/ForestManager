@@ -27,7 +27,9 @@ const STORAGE_KEY = "query-cache";
 /** Schema de la donnee d'une cle gardee hors ligne, ou null si la cle n'est pas gardee. */
 function schemaOf(key: QueryKey): z.ZodType | null {
   const [root, id, module, kind, recipeId] = key;
-  if (key.length === 1 && root === "me") return meSchema.nullable();
+  // Session seulement si elle existe : une absence gardee survivrait a une
+  // connexion faite avant l'ecriture suivante et renverrait vers la connexion.
+  if (key.length === 1 && root === "me") return meSchema;
   if (key.length === 1 && root === "config") return appConfigSchema;
   if (key.length === 1 && root === "units") return z.array(unitSchema);
   if (root !== "spaces") return null;

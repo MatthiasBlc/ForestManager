@@ -121,6 +121,21 @@ describe("persistance sur l'appareil", () => {
     expect(restored?.clientState.queries.map((query) => query.queryKey)).toEqual([["units"]]);
   });
 
+  it("ne garde pas l'absence de session : un rechargement la redemande au serveur", async () => {
+    // Deconnexion puis connexion en moins d'une ecriture (C7.6) : la copie disait
+    // encore "pas de session" et renvoyait vers la connexion une session valide.
+    const storage = memoryStorage();
+    const persister = createOfflinePersister(storage);
+    await persister.persistClient(
+      client([
+        { queryKey: ["me"], data: null },
+        { queryKey: ["units"], data: UNITS },
+      ])
+    );
+    const restored = await persister.restoreClient();
+    expect(restored?.clientState.queries.map((query) => query.queryKey)).toEqual([["units"]]);
+  });
+
   it("oublier le client efface tout", async () => {
     const storage = memoryStorage();
     const persister = createOfflinePersister(storage);
