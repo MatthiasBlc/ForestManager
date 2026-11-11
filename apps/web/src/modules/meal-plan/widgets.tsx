@@ -36,6 +36,7 @@ export function Upcoming({ data }: { data: Record<string, unknown> }) {
                 kind={meal.recipeId ? "recipe" : "text"}
                 title={meal.title}
                 when={relativeWhen(meal.date, meal.mealTime)}
+                showWhen
                 onOpen={() => void navigate(`/s/${space.spaceId}/meal-plan?day=${meal.date}`)}
               />
             ))

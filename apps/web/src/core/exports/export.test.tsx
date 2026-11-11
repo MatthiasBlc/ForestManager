@@ -82,6 +82,9 @@ describe("F-EXPORT", () => {
     await user.click(await screen.findByRole("button", { name: "Exporter l'espace" }));
     const sheet = await screen.findByRole("dialog", { name: "Exporter des recettes" });
     expect(within(sheet).getByRole("radio", { name: /Tout l'espace Famille/ })).toBeChecked();
+    // Deux groupes de choix : chacun porte un intitule visible.
+    expect(within(sheet).getByText("Recettes à exporter")).toBeVisible();
+    expect(within(sheet).getByText("Format")).toBeVisible();
     expect(within(sheet).getByText(/Les membres verront/)).toBeInTheDocument();
 
     await user.click(within(sheet).getByRole("button", { name: "Préparer l'export" }));
@@ -103,7 +106,7 @@ describe("F-EXPORT", () => {
     const sheet = await screen.findByRole("dialog", { name: "Exporter des recettes" });
     await user.click(within(sheet).getByRole("button", { name: "Préparer l'export" }));
     expect(
-      await within(sheet).findByText("Un export par jour. Prochain export possible demain à 14:02.")
+      await within(sheet).findByText("Prochain export de l'espace possible demain à 14:02.")
     ).toBeInTheDocument();
   });
 

@@ -50,8 +50,8 @@ function refusal(error: unknown): string {
   if (error instanceof ApiRequestError && error.code === "EXPORT_001") {
     const details = exportLimitDetailsSchema.safeParse(error.details);
     return details.success
-      ? `Un export par jour. Prochain export possible ${whenText(details.data.nextAt)}.`
-      : "Un export par jour.";
+      ? `Prochain export de l'espace possible ${whenText(details.data.nextAt)}.`
+      : "L'espace a déjà été exporté ces dernières 24 heures.";
   }
   return errorMessage(error);
 }
@@ -130,6 +130,7 @@ export function ExportSheet({ open, onClose, space, scope = "MY_RECIPES" }: Expo
   } else {
     body = (
       <div className="fm-stack">
+        {spaceScope ? <p className="fm-choice-title">Recettes à exporter</p> : null}
         {spaceScope ? (
           <RadioGroup
             label="Recettes à exporter"
@@ -149,6 +150,7 @@ export function ExportSheet({ open, onClose, space, scope = "MY_RECIPES" }: Expo
             ]}
           />
         ) : null}
+        {spaceScope ? <p className="fm-choice-title">Format</p> : null}
         <RadioGroup label="Format" value={format} onChange={setFormat} options={FORMATS} />
         <Switch label="Inclure les photos" checked={photos} onChange={setPhotos} />
         {spaceExport ? (

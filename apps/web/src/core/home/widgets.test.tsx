@@ -114,6 +114,8 @@ describe("widgets d'accueil (E-ACCUEIL)", () => {
     const meals = screen.getByRole("region", { name: "Prochains repas" });
     expect(within(meals).getByText("Famille")).toBeInTheDocument();
     expect(within(meals).getByRole("button", { name: /Demain, midi.*Gratin/ })).toBeInTheDocument();
+    // Le moment du repas est lu a l'ecran, pas seulement dans le nom accessible.
+    expect(within(meals).getByText("Demain, midi")).toBeInTheDocument();
     const cooked = screen.getByRole("region", { name: "Tes recettes les plus cuisinées" });
     expect(within(cooked).getByRole("link", { name: /Dahl corail.*9 fois/ })).toHaveAttribute(
       "href",

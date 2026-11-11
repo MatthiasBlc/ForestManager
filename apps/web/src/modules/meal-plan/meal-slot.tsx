@@ -23,6 +23,8 @@ export interface MealSlotProps {
   selected?: boolean;
   /** Grille de bureau : titre sur plusieurs lignes, case vide reduite a "+". */
   compact?: boolean;
+  /** Hors de la grille (accueil) : `when` affiche a droite, pas seulement lu. */
+  showWhen?: boolean;
   onOpen?: () => void;
   /** Glisser-deposer (bureau) : identifiant de la case. */
   dragId?: string;
@@ -38,6 +40,7 @@ export function MealSlot({
   placeholder = "Ajouter un repas",
   selected = false,
   compact = false,
+  showWhen = false,
   onOpen,
   dragId,
   onDropFrom,
@@ -86,6 +89,7 @@ export function MealSlot({
       {compact && kind === "empty" ? null : <span>{label}</span>}
       {servings && kind !== "empty" && kind !== "off" ? <small>{servings} p.</small> : null}
       {locked ? <Icon name="lock" /> : null}
+      {showWhen ? <small className="fm-slot-when">{when}</small> : null}
     </button>
   );
 }

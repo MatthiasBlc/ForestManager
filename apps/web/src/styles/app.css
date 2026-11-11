@@ -227,6 +227,14 @@ body,
   overflow-wrap: anywhere;
   hyphens: auto;
 }
+/* Repas hors grille (accueil) : le moment a droite, discret. */
+.fm-slot-when {
+  margin-left: auto;
+  flex: none;
+  font-weight: 500;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
 .fm-slot-compact.fm-slot-empty {
   align-items: center;
   align-content: center;
@@ -259,6 +267,31 @@ body,
     grid-template-columns: var(--size-rail) minmax(0, 1fr);
     grid-template-areas: "rail top" "rail main";
   }
+}
+
+/* Loupe de la TopBar : le raccourci garde sa largeur (`.fm-search span` du design
+   system l'etirait autant que le libelle). */
+.fm-search .fm-kbd {
+  flex: none;
+}
+/* IconButton desactive (monter / descendre en bout de liste...) : le design system
+   ne le distinguait pas d'un bouton actif. */
+.fm-iconbtn[disabled] {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: transparent;
+}
+/* Intitule d'un groupe de choix quand une feuille en empile plusieurs (F-EXPORT). */
+.fm-choice-title {
+  margin: 0 0 calc(-1 * var(--space-2));
+  font: 600 14px/20px var(--font-sans);
+  color: var(--ink-muted);
+}
+/* Selecteur d'espace de la TopBar mobile : prend la largeur de son contenu (le
+   `flex: 1` du design system partageait la place avec l'espaceur et tronquait
+   le nom des la moitie de la barre). */
+.fm-top-space {
+  flex: 0 1 auto;
 }
 
 /* CommandPalette (F-RECHERCHE) : plein ecran sur mobile, centree en haut a partir
