@@ -33,6 +33,8 @@ Outillage, Docker et CI sont hors TDD [D151] ; la route de test et le suivi d'er
 
 Parcours 2 (invitation par lien, deux contextes), 8 (demande du Planning, admin, activation) (D), 10 (depart d'un membre), 11 (export Markdown avec photos, suppression, restauration ; `23-Plan-C6b.md` S4), 13 (admin 2FA, fusion d'ingredients) (D), 15 (apparence persistante).
 
+Fait le 2026-11-11 ; defauts trouves, photos de la stack E2E et aides ajoutees : `README.md`, section "Reprise".
+
 ### C7.3 Parcours des Recettes
 
 Parcours 3 (partage), 4 (suggestion acceptee puis refusee), 5 (adaptation, badge, comparaison), 6 (recette composee, lien vivant), 7 (import par URL depuis `apps/api/test/fixtures/import/`), 12 (hors ligne : `context.setOffline`, service worker enregistre, coquille chargee sans reseau).

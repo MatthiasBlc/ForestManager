@@ -47,7 +47,7 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
 
 ## Reprise
 
-- Derniere session : 2026-11-09. Contexte remis a zero apres cette session : tout l'etat est ici et dans les fichiers cites.
+- Derniere session : 2026-11-11. Contexte remis a zero apres cette session : tout l'etat est ici et dans les fichiers cites.
 - Fait : etude (A), design system (B4), modele de donnees (B1), permissions (B2), parcours (B3), architecture (B6), tests (B8), maquettes (B5). Version et couverture du CDC : son en-tete.
 - Fait aussi : decisions D01 a D142 (journal). Points ouverts B9 tranches le 2026-11-05 (D140 a D142) : copie independante supprimee, liste de courses a role minimal reglable, schema mis a jour avec les decisions des maquettes, super admin sans modification de recette, statuts des documents au journal, D37 et D130 definitifs, D12 et D14 non utilises.
 - CDC 1.0 valide par le proprietaire le 2026-11-05 (B9) : la phase d'etude est terminee, le code est autorise.
@@ -197,7 +197,17 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
   - Limites de debit : deja coupees en `NODE_ENV=test`, rien a faire.
   - **Reporte a C7.2** : photos dans la stack E2E. La CSP du nginx n'ouvre `img-src` et `connect-src` qu'a `https://s3.matthias-bouloc.fr` ; piste : garder cette URL en `MINIO_PUBLIC_URL` et la router vers RustFS par `page.route` (la CSP reste celle de la prod), a verifier avec les URL signees. Code TOTP du parcours 13 : dans le test.
   - **Reporte a C7.3** : anti-SSRF du parcours 7. Piste plus simple que la variable d'hote du plan : servir les fixtures par la route de test de l'API et creer le `fetchPage` du serveur avec `allowLoopback` en `NODE_ENV=test` (option deja utilisee par les tests d'integration). Le dossier `apps/api/test/fixtures/import/` cite par le plan n'existe pas encore.
-  - **Prochaine etape : C7.2** (parcours 2, 8, 10, 11, 13, 15).
+- C7.2 fait le 2026-11-11 : parcours 2, 8 (D), 10, 11, 13 (D) et 15 dans `e2e/journeys/`, verts avec le parcours 1 (7 parcours, 10 passages : mobile, et desktop pour les (D)).
+  - Aides ajoutees (`e2e/support/`) : `otherPage()` (seconde personne dans un contexte separe, console surveillee), `apiCall` / `apiCreate` (vraies routes avec la session de la page, pour preparer un etat), `expectToast`, `recipes.ts` (`createRecipe` par l'API), `admin.ts` (code TOTP calcule avec `node:crypto`, `loginAdmin` par l'API ; le parcours 13 passe par les ecrans), `storage.ts` (`photoFile`, `zipEntries`, `routeStorage`). Scenarios de la route de test : `admin` (2FA configuree, rend `totpSecret`), `group` accepte `ownerName`.
+  - Photos dans la stack E2E (reporte de C7.1) : `MINIO_PUBLIC_URL` de `compose.e2e.yml` = l'adresse publique de production, la seule ouverte par la CSP du nginx ; `routeStorage` (pose sur chaque contexte) sert ces requetes par le RustFS de la stack avec `node:http`, en gardant l'en-tete `Host` public que couvre la signature des URL de lecture. Rien ne sort du reseau Docker ; envoi par le navigateur, relecture et export avec photos prouves par le parcours 11.
+  - Animations coupees pendant les parcours (`reducedMotion: "reduce"` dans `playwright.config.ts`) : axe mesurait le contraste d'une feuille en plein fondu sur desktop.
+  - Six defauts trouves par les parcours, corriges en TDD au niveau le plus bas :
+    - cache hors ligne relu de l'appareil considere frais 30 s : un rechargement remontrait l'ancienne donnee (nombre de membres) sans la verifier ; ce qui est relu est maintenant perime d'office (`lib/offline-cache.ts`) ;
+    - ambiance du compte gardee a l'ecran apres la deconnexion : `SessionTheme` (`App.tsx`) se redessine a chaque navigation (connexion et deconnexion vident le cache sans prevenir un composant deja monte ; les gardes de route comptent sur ce silence, ne pas remplacer `clear()` par une mise a jour de `me` sur place) ;
+    - axe `label-content-name-mismatch` : ligne "Exporter mes recettes" du profil, lignes du selecteur d'espaces (plus d'`aria-label`, "j" lu "jours"), boutons du rail (le nom vient d'une image `role="img"` dans le bouton, plus d'un `aria-label` contredit par les initiales et le "J-n") ;
+    - axe `scrollable-region-focusable` : tableaux larges de l'administration, 7 pages, par `ui/table-scroll.tsx` (`TableScroll`, zone nommee et focalisable).
+  - A savoir pour les parcours suivants : un toast est repete par une zone `role="status"` (passer par `expectToast`) ; `getByText` exact sur un compteur trouve aussi la barre des modules (cibler `main`) ; fermer F-EXPORT ouverte depuis F-SUPPRIMER-ESPACE ne rouvre pas la feuille de suppression.
+  - **Prochaine etape : C7.3** (parcours 3, 4, 5, 6, 7, 12 ; anti-SSRF du parcours 7 : voir le report note en C7.1).
 - Tout est publie et committe au 2026-11-05 : DS v10, Acces v39, Recettes v35, Planning v26, Admin v26, Permissions v5 (v6 le 2026-11-09), Parcours v6 (v7 le 2026-11-09), Modele de donnees v5 (v6 le 2026-11-09, page regeneree en D165). Maquettes revues dans Chrome le 2026-11-05 (B5b, voir `archive/16-Maquettes-ECARTS.md`).
   - Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact) : relire l'artefact (action read sur l'URL), puis publier avec `root` = le dossier du canevas, `file_path` = un fichier modifie, `files` = les autres (`project/...`).
   - Les numeros de version des artefacts avancent aussi a la simple consultation : comparer le contenu en ligne au commit avant d'ecraser.
