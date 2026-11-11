@@ -32,7 +32,12 @@ export type MemberRole = "MEMBER" | "MODERATOR";
 interface Scenarios {
   user: { input: { username?: string }; output: { user: Account } };
   group: {
-    input: { spaceName?: string; ownerName?: string; members?: MemberRole[] };
+    input: {
+      spaceName?: string;
+      ownerName?: string;
+      members?: MemberRole[];
+      modules?: string[];
+    };
     output: {
       owner: Account;
       space: { id: string; name: string };
@@ -52,10 +57,12 @@ export type Scenario = <N extends keyof Scenarios>(
 
 /**
  * Bruit attendu : Chromium ecrit une erreur de console pour toute reponse 4xx
- * (le 401 de `GET /me` d'un visiteur, par exemple). Les erreurs 5xx, elles,
- * font echouer le parcours.
+ * (le 401 de `GET /me` d'un visiteur, par exemple) et pour toute requete
+ * tentee sans reseau (parcours 12). Les erreurs 5xx, elles, font echouer le
+ * parcours.
  */
-const EXPECTED_CONSOLE = /Failed to load resource: the server responded with a status of 4\d\d/;
+const EXPECTED_CONSOLE =
+  /Failed to load resource: (the server responded with a status of 4\d\d|net::ERR_INTERNET_DISCONNECTED)/;
 
 /** Releve les erreurs de console et les exceptions d'une page. */
 export function watchConsole(page: Page, errors: string[]): void {
@@ -110,9 +117,15 @@ export async function apiCreate<T>(page: Page, path: string, data: unknown): Pro
   return (await response.json()) as T;
 }
 
-/** Aucune violation axe "serious" ou "critical" sur l'ecran affiche [15-Plan-Tests S8]. */
-export async function expectNoA11yViolations(page: Page): Promise<void> {
-  const results = await new AxeBuilder({ page }).analyze();
+/**
+ * Aucune violation axe "serious" ou "critical" sur l'ecran affiche [15-Plan-Tests S8].
+ * `include` limite l'analyse a une zone : un menu Radix ouvert masque le reste de
+ * la page par `aria-hidden` et garde le focus chez lui, ce qu'axe ne sait pas
+ * (`aria-hidden-focus` sur toute la page). Le menu se verifie donc seul.
+ */
+export async function expectNoA11yViolations(page: Page, include?: string): Promise<void> {
+  const builder = new AxeBuilder({ page });
+  const results = await (include ? builder.include(include) : builder).analyze();
   const blocking = results.violations
     .filter((violation) => violation.impact === "serious" || violation.impact === "critical")
     .map((violation) => ({
@@ -180,3 +193,37 @@ export async function expectToast(page: Page, text: string): Promise<void> {
 }
 
 export { expect };
+
+/**
+ * Attend que la copie hors ligne de l'appareil (IndexedDB, `lib/offline-cache.ts`)
+ * contienne chaque fragment de cle donne : elle s'ecrit au plus une fois par
+ * seconde, un parcours rapide couperait sinon le reseau avant.
+ */
+export async function waitForOfflineCopy(page: Page, ...fragments: string[]): Promise<void> {
+  await expect
+    .poll(
+      async () => {
+        const copy = await page.evaluate(
+          () =>
+            new Promise<string>((resolve) => {
+              const open = indexedDB.open("forest-manager");
+              open.onerror = () => resolve("");
+              open.onsuccess = () => {
+                // Base vide si l'application ne l'a pas encore creee.
+                const db = open.result;
+                if (!db.objectStoreNames.contains("offline")) {
+                  resolve("");
+                  return;
+                }
+                const get = db.transaction("offline").objectStore("offline").get("query-cache");
+                get.onsuccess = () => resolve(JSON.stringify(get.result ?? ""));
+                get.onerror = () => resolve("");
+              };
+            })
+        );
+        return fragments.filter((fragment) => !copy.includes(fragment));
+      },
+      { message: "copie hors ligne sur l'appareil (fragments absents)" }
+    )
+    .toEqual([]);
+}
