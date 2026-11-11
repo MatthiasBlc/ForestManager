@@ -46,6 +46,7 @@ import { convertIdea, createIdea, deleteIdea, listIdeas, updateIdea } from "./id
 import { clearMeal, listMeals, putMeal, recipeStats, swapMeals } from "./meals.ts";
 import { mealChanged, planGenerated } from "./events.ts";
 import { MEAL_PLAN_PERMISSIONS } from "./permissions.ts";
+import { searchMeals } from "./search.ts";
 import {
   addRule,
   createProfile,
@@ -366,6 +367,7 @@ export const mealPlanModule: ApiModule = {
   activityTypes: ["meal-plan.plan.generated"],
   router: mealPlanRouter,
   requires: ["recipes.catalog"],
+  search: searchMeals,
   provides: { "meal-plan.recipeStats": provide("meal-plan.recipeStats", recipeStats) },
   roleOverrides: async (db, spaceId) => ({
     "meal-plan.edit": (await readSettings(db, spaceId)).editRole,
