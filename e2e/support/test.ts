@@ -2,7 +2,14 @@
 // route de test [D79], connexion sans formulaire, axe, et echec sur toute
 // erreur de la console.
 import { AxeBuilder } from "@axe-core/playwright";
-import { expect, test as base, type APIRequestContext, type Page } from "@playwright/test";
+import {
+  expect,
+  test as base,
+  type APIRequestContext,
+  type APIResponse,
+  type BrowserContext,
+  type Page,
+} from "@playwright/test";
 
 const API = "/api/v1";
 const CSRF_COOKIE = "XSRF-TOKEN";
@@ -60,16 +67,41 @@ export function watchConsole(page: Page, errors: string[]): void {
  * passer par le formulaire). Les parcours 1 et 13 passent par les ecrans.
  */
 export async function loginAs(page: Page, account: Account): Promise<void> {
-  const request = page.context().request;
-  await request.get(`${API}/config`);
-  const cookies = await page.context().cookies();
-  const csrf = cookies.find((cookie) => cookie.name === CSRF_COOKIE)?.value;
-  if (!csrf) throw new Error("CSRF cookie missing");
-  const response = await request.post(`${API}/auth/login`, {
-    headers: { [CSRF_HEADER]: decodeURIComponent(csrf) },
-    data: { identifier: account.username, password: account.password },
+  const response = await apiCall(page, "POST", "/auth/login", {
+    identifier: account.username,
+    password: account.password,
   });
   expect(response.status(), "login by API").toBe(200);
+}
+
+/**
+ * Appel de l'API avec la session du contexte de la page (jeton CSRF compris) :
+ * prepare l'etat d'un parcours par les vraies routes, sans passer par les ecrans.
+ */
+export async function apiCall(
+  page: Page,
+  method: "POST" | "PUT" | "PATCH" | "DELETE",
+  path: string,
+  data?: unknown
+): Promise<APIResponse> {
+  const request = page.context().request;
+  const csrf = async () =>
+    (await page.context().cookies()).find((cookie) => cookie.name === CSRF_COOKIE)?.value;
+  if (!(await csrf())) await request.get(`${API}/config`);
+  const token = await csrf();
+  if (!token) throw new Error("CSRF cookie missing");
+  return request.fetch(`${API}${path}`, {
+    method,
+    headers: { [CSRF_HEADER]: decodeURIComponent(token) },
+    data,
+  });
+}
+
+/** Comme `apiCall`, pour une creation : exige le statut attendu et rend le corps. */
+export async function apiCreate<T>(page: Page, path: string, data: unknown): Promise<T> {
+  const response = await apiCall(page, "POST", path, data);
+  expect(response.status(), `POST ${path}: ${await response.text()}`).toBe(201);
+  return (await response.json()) as T;
 }
 
 /** Aucune violation axe "serious" ou "critical" sur l'ecran affiche [15-Plan-Tests S8]. */
@@ -96,6 +128,8 @@ interface Fixtures {
   journey: undefined;
   /** Cree les donnees du parcours et rend les identifiants utiles. */
   scenario: Scenario;
+  /** Ouvre la page d'une autre personne (contexte separe, console surveillee aussi). */
+  otherPage: () => Promise<Page>;
 }
 
 export const test = base.extend<Fixtures>({
@@ -116,6 +150,24 @@ export const test = base.extend<Fixtures>({
       return (await response.json()) as never;
     });
   },
+  otherPage: async ({ browser }, use) => {
+    const errors: string[] = [];
+    const contexts: BrowserContext[] = [];
+    await use(async () => {
+      const context = await browser.newContext();
+      contexts.push(context);
+      const page = await context.newPage();
+      watchConsole(page, errors);
+      return page;
+    });
+    for (const context of contexts) await context.close();
+    expect(errors, "erreurs de console de l'autre personne").toEqual([]);
+  },
 });
+
+/** Toast affiche (la zone `role="status"` le repete pour les lecteurs d'ecran). */
+export async function expectToast(page: Page, text: string): Promise<void> {
+  await expect(page.getByText(text, { exact: true })).toBeVisible();
+}
 
 export { expect };
