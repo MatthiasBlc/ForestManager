@@ -748,7 +748,7 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 - **Front** (defaut annonce) : le SDK du navigateur envoie par un tunnel de l'API (`POST /api/v1/monitoring`) ; le front ne connait pas le DSN, la CSP ne change pas, une seule image pour la preprod et la prod.
 - **Donnees** (defaut annonce) : erreurs 5xx et rejets non geres seulement ; ni corps, ni cookies, ni IP ; l'utilisateur n'est qu'un UUID.
 
-### D197 - Stack E2E, route de test, seuils de couverture - PROPOSEE (2026-11-11, plan C7, defauts annonces au proprietaire)
+### D197 - Stack E2E, route de test, seuils de couverture - VALIDEE (2026-11-11, plan C7, defauts annonces au proprietaire ; realisation de la CI : D200)
 
 - **Stack** : `docker/compose.e2e.yml`, front en image prod (nginx, bundle de production) devant une API en `NODE_ENV=test`, PostgreSQL et RustFS en tmpfs, conteneur Playwright officiel.
 - **Route de test** [D79] : `POST /api/v1/__test/scenario` et `/__test/reset`, montees seulement en `NODE_ENV=test`, absence en production prouvee par un test.
@@ -773,3 +773,13 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
   - **Web** : `@sentry/react` 11.9.0 importe a la demande par `app/error-tracking.ts` si `features.errorTracking` ; DSN factice `https://forest@monitoring.invalid/1` remplace par le tunnel ; integrations par defaut (erreurs et rejets globaux) ; utilisateur = UUID suivi par la requete `["me"]`.
   - **A13** : carte "Configure" / "Non configure" comme les autres services, hote du DSN et environnement, "Envoyer un evenement de test" (evenement d'information construit a la main, pour lire le statut HTTP du recepteur). Tableau de bord : "En ligne" / "Non configure".
   - **Bugsink** : `bugsink/bugsink:2.6.2` (date a reverifier sur Docker Hub avant la mise en place), SQLite dans le volume `bugsink_data`, inscription par l'admin seulement, une equipe, garde-fous de volume. Notice : `docker/bugsink/README.md`.
+
+## Phase C7 - realisation de la CI complete (2026-11-11)
+
+### D200 - CI complete : couverture, cles i18n, E2E - VALIDEE (2026-11-11, realisation C7.6, defauts annonces)
+
+- **Constat** : mesure du 2026-11-11 (`@vitest/coverage-v8` 5.0.5), lignes / branches : `packages/shared` 99,7 / 92,1, `apps/api` 95,8 / 83,1, `apps/web` 91,4 / 80,8. Toutes les zones depassent les seuils de `15-Plan-Tests.md` S7. Cote web, aucun texte ne passe encore par `t()` : les seules cles lues sont les codes d'erreur.
+- **Choix** :
+  - **Couverture** : seuils du plan gardes tels quels (90/85, 80/70, 60/50), aucun test ajoute pour le chiffre. Configuration dans `vitest.config.ts` (seuils par motif de fichiers), lancee par `npm run test:coverage` ; generated, scripts et aides de test exclus. Rapport texte seul, ecrit dans `/tmp` du conteneur (il tourne en root sur l'arbre monte).
+  - **Cles i18n** : par le typage d'i18next (`apps/web/src/i18n/i18next.d.ts`, `CustomTypeOptions.resources`) plutot qu'un script : une cle absente de `fr` echoue au typecheck, bloquant en CI. Le namespace `errors` est construit depuis `ERROR_CODES` et le type `ClientErrorCode` (`lib/api.ts`), complet par construction ; un code inconnu venu du serveur reste lu par `i18n.exists`.
+  - **E2E** : job `e2e` apres `verify`, `build` attend les deux ; `npm run e2e` (avec `CI` : une relance, `test.only` interdit), rapport et `test-results` envoyes en artefact 7 jours sur echec seulement, 30 min au plus.

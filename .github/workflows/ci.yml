@@ -6,7 +6,8 @@
 #   push sur master       -> verification, images poussees, deploy prod, tag
 #
 # Changements V2 : une seule verification, celle du poste (format, lint,
-# typecheck, audit, `npm test` dans docker/compose.test.yml) ; images du
+# typecheck dont les cles i18n, audit, tests avec seuils de couverture dans
+# docker/compose.test.yml), puis les parcours E2E (docker/compose.e2e.yml) ; images du
 # monorepo (docker/*.Dockerfile) taguees `sha-<court>` (+ `latest` en prod) et
 # deployees par ce tag ; deploys serialises par environnement.
 # Rien ne part vers master avant C7 [D143].
@@ -61,25 +62,55 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Typecheck
+      # Les ressources `fr` typent `t()` (apps/web/src/i18n/i18next.d.ts) : une
+      # cle i18n absente echoue ici.
+      - name: Typecheck (dont cles i18n)
         run: npm run typecheck
 
       - name: Security audit (production dependencies)
         run: npm audit --omit=dev --audit-level=high
 
-      - name: Tests (docker/compose.test.yml)
-        run: npm test
+      - name: Tests et couverture (docker/compose.test.yml)
+        run: npm run test:coverage
 
       - name: Stop test database
         if: always()
         run: npm run test:down
 
   # ========================================
+  # Parcours E2E (Chromium mobile + desktop) [D197]
+  # ========================================
+  e2e:
+    runs-on: ubuntu-latest
+    needs: verify
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parcours (docker/compose.e2e.yml)
+        run: npm run e2e
+
+      - name: Stop E2E stack
+        if: always()
+        run: npm run e2e:down
+
+      # Traces, captures et videos des echecs (Playwright ne garde que ceux-la).
+      - name: Rapport des echecs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+          retention-days: 7
+
+  # ========================================
   # Images (backend = API, frontend = nginx + SPA)
   # ========================================
   build:
     runs-on: ubuntu-latest
-    needs: verify
+    needs: [verify, e2e]
     strategy:
       matrix:
         include:

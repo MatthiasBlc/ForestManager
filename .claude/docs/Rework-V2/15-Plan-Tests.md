@@ -19,7 +19,8 @@ Regle : un comportement se teste au niveau **le plus bas** qui le prouve. Les E2
 - **Supertest** sur l'app Express sans ouvrir de port.
 - **PostgreSQL de test** dans Docker (`docker compose -f docker/compose.test.yml`), migrations appliquees au demarrage, **base remise a zero entre fichiers de test** (TRUNCATE des tables hors referentiels), referentiels seedes une fois.
 - **Testing Library** + `user-event` ; **MSW** pour simuler l'API, avec des handlers generes depuis les schemas Zod partages (les reponses mockees sont valides par construction).
-- **Playwright** (Chromium seul, WebKit reporte en V2.1 [D195] ; emulation mobile 390x844 par defaut ; un projet desktop 1280x800) ; **@axe-core/playwright** pour l'accessibilite.
+- **Playwright** (Chromium seul, WebKit reporte en V2.1 [D195] ; emulation mobile 390x844 par defaut ; un projet desktop 1280x800) ; **@axe-core/playwright** pour l'accessibilite. Stack `docker/compose.e2e.yml` (front en image prod, API en `NODE_ENV=test`), `npm run e2e` [D197].
+- **Couverture** : `@vitest/coverage-v8`, seuils par zone dans `vitest.config.ts` (section 7), `npm run test:coverage` [D200].
 - Tous les tests tournent **dans Docker** en local, comme en V1 (les variables d'environnement n'existent pas hors conteneur).
 
 ## 3. Perimetre par domaine
@@ -95,13 +96,13 @@ Chaque parcours tourne en **mobile** (projet par defaut) ; ceux marques (D) tour
 
 ## 6. CI [D78]
 
-Sur chaque push et chaque pull request :
+Sur chaque push et chaque pull request (`.github/workflows/ci.yml` : job `verify`, puis job `e2e`, puis `build`) :
 
 | Etape                                               | Bloquant |
 | --------------------------------------------------- | -------- |
 | Lint + format (ESLint, Prettier)                    | Oui      |
 | Typecheck de tout le monorepo                       | Oui      |
-| Controle des cles i18n manquantes                   | Oui      |
+| Controle des cles i18n manquantes (typecheck, D200) | Oui      |
 | Unitaires + integration API (PostgreSQL de service) | Oui      |
 | Composants (dont rendu des six themes)              | Oui      |
 | E2E parcours critiques (Chromium mobile + desktop)  | Oui      |
@@ -119,6 +120,8 @@ Des seuils qui protegent sans pousser a tester pour le chiffre :
 | `packages/shared` (logique pure)  | 90 %   | 85 %     |
 | `apps/api` (services et routes)   | 80 %   | 70 %     |
 | `apps/web` (composants et ecrans) | 60 %   | 50 %     |
+
+Seuils appliques par `vitest.config.ts` (`npm run test:coverage`, bloquant en CI). Mesure du 2026-11-11 (lignes / branches) : shared 99,7 / 92,1, api 95,8 / 83,1, web 91,4 / 80,8 ; aucun ecart [D200].
 
 La matrice des permissions est couverte a **100 % des couples route x role** par les tests generes (section 3).
 

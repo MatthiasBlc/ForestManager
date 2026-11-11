@@ -8,6 +8,9 @@ const CSRF_COOKIE = "XSRF-TOKEN";
 const CSRF_HEADER = "x-xsrf-token";
 
 /** Erreur d'appel : code de l'API (`SPACE_001`...), ou `NETWORK` / `CONTRACT` cote client. */
+/** Codes produits par le client seul (sans reponse de l'API) ; messages dans `i18n/fr/errors.ts`. */
+export type ClientErrorCode = "NETWORK" | "OFFLINE" | "CONTRACT";
+
 export class ApiRequestError extends Error {
   readonly code: string;
   readonly status: number;

@@ -23,6 +23,7 @@
     "docker:logs": "docker compose --project-directory . -f docker/compose.dev.yml logs -f",
     "docker:clean": "docker compose --project-directory . -f docker/compose.dev.yml down -v --remove-orphans",
     "test": "docker compose -p forestmanager-test --project-directory . -f docker/compose.test.yml run --rm --build tests",
+    "test:coverage": "docker compose -p forestmanager-test --project-directory . -f docker/compose.test.yml run --rm --build tests npx vitest run --configLoader runner --coverage",
     "test:api": "docker compose -p forestmanager-test --project-directory . -f docker/compose.test.yml run --rm --build tests npx vitest run --configLoader runner --project @fm/api",
     "test:web": "docker compose -p forestmanager-test --project-directory . -f docker/compose.test.yml run --rm --build tests npx vitest run --configLoader runner --project @fm/web",
     "test:shared": "docker compose -p forestmanager-test --project-directory . -f docker/compose.test.yml run --rm --build tests npx vitest run --configLoader runner --project @fm/shared",
@@ -57,6 +58,7 @@
   "devDependencies": {
     "@eslint/js": "9.39.5",
     "@types/node": "22.20.5",
+    "@vitest/coverage-v8": "5.0.5",
     "eslint": "9.39.5",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-react-hooks": "7.1.1",

@@ -217,14 +217,16 @@ Journaux structures **pino** conserves (JSON en prod, lisibles en dev), identifi
 
 Proposition : **SDK Sentry dans le code** (front et back, protocole standard) et **Bugsink auto-heberge** sur l'infrastructure existante. Aucune donnee chez un tiers, aucune carte, un conteneur de plus. Changer d'outil ne demande que de changer le DSN.
 
-## 13. CI/CD [D76]
+## 13. CI/CD [D76, D147]
 
-- **Branches** : `Developement` = travail ; `master` = prod. Push sur `Developement` -> tests + build + **deploy preprod**. Merge sur `master` -> tests + build + **deploy prod**.
-- **Pipeline** : lint, typecheck, tests unitaires et d'integration (PostgreSQL de service), tests de composants, E2E (voir plan de tests), build des images, push, deploy Portainer, generation du changelog.
-- **Images taguees** `vX.Y.Z` et `sha-<court>` (plus `latest` pour Portainer) : on sait ce qui tourne et on peut revenir a la version precedente en changeant le tag.
-- **Base de donnees** : `pg_dump` automatique avant chaque deploy prod (conserve 14 jours), puis `prisma migrate deploy`. Le deploy echoue proprement si la migration echoue.
-- **Seed** : uniquement les referentiels (unites, conversions, rayons, tags globaux, catalogue de modules), idempotent (upsert). Donnees de demo dans un script separe, jamais lance en prod.
-- **Remise a zero avant la V2** [D23] : nouvelle base, nouvelle stack Portainer, ancien code V1 supprime du depot a la fin du chantier.
+Fichier : `.github/workflows/ci.yml` (reprise de la chaine V1 : memes secrets, registre, stacks Portainer, Traefik).
+
+- **Declencheurs** : push sur toute branche -> verification, E2E et build des images sans les pousser ; pull request vers `master` -> idem, images poussees, **deploy preprod** ; push sur `master` -> idem, **deploy prod**, puis tag `v<version>`.
+- **Jobs** : `verify` (format, lint, typecheck dont les cles i18n, audit des dependances de prod, tests avec seuils de couverture dans `docker/compose.test.yml`) ; `e2e` (16 parcours dans `docker/compose.e2e.yml`, artefacts des echecs 7 jours) ; `build` (images `backend` et `frontend` cible `prod`) ; `deploy-preprod` / `deploy-prod` (`docker/deploy.sh` vers Portainer, serialises par environnement) ; `release-tag`. Detail des controles : `15-Plan-Tests.md` S6 [D200].
+- **Images taguees** `sha-<court>` (plus `latest` en prod) et deployees par ce tag : on sait ce qui tourne et on revient en arriere en changeant le tag.
+- **Base de donnees** : au demarrage de l'image (`docker/api-start.sh`), `prisma migrate deploy` puis seed ; le conteneur s'arrete si la migration echoue. `pg_dump` avant chaque deploy prod (14 jours) : a ecrire en C8.
+- **Seed** : uniquement les referentiels (unites, conversions, rayons, tags globaux, catalogue de modules) et le brouillon de changelog [D187], idempotent (upsert). Donnees de demo dans un script separe, jamais lance en prod.
+- **Remise a zero avant la V2** [D23] : nouvelle base sur un volume neuf (`postgres17_data[_dev]`), memes stacks Portainer.
 
 ## 14. Versions cibles
 
