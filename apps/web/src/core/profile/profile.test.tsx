@@ -120,6 +120,21 @@ describe("profil (E-PROFIL)", () => {
     expect(await screen.findByRole("link", { name: "Se connecter" })).toBeInTheDocument();
   });
 
+  it("la deconnexion rend l'ambiance par defaut : celle du compte ne reste pas a l'ecran", async () => {
+    profileServer();
+    const { user } = renderWithProviders(<App />, { route: "/profile/appearance" });
+    await user.click(await screen.findByRole("radio", { name: /Potager/ }));
+    await waitFor(() => {
+      expect(document.documentElement.dataset.theme).toMatch(/^potager/);
+    });
+    await user.click(screen.getByRole("button", { name: "Retour" }));
+    await user.click(await screen.findByRole("button", { name: "Se déconnecter" }));
+    expect(await screen.findByRole("link", { name: "Se connecter" })).toBeInTheDocument();
+    await waitFor(() => {
+      expect(document.documentElement.dataset.theme).toMatch(/^braise/);
+    });
+  });
+
   it("change le nom d'utilisateur ; l'email demande le mot de passe actuel", async () => {
     const { bodies } = profileServer();
     const { user } = renderWithProviders(<App />, { route: "/profile/account" });

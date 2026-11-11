@@ -1,7 +1,7 @@
 // Routes de l'application.
 import { useQuery } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
-import { Navigate, Route, Routes } from "react-router";
+import { Navigate, Route, Routes, useLocation } from "react-router";
 
 import { LoginPage } from "../core/access/login-page.tsx";
 import { ForgotPasswordPage, ResetPasswordPage } from "../core/access/password-pages.tsx";
@@ -36,6 +36,10 @@ const DesignPage = lazy(() =>
 );
 
 function SessionTheme() {
+  // Connexion et deconnexion vident le cache puis naviguent : ce composant, monte
+  // une fois pour toutes, ne relirait pas la nouvelle session sans se redessiner
+  // (l'ambiance du compte resterait a l'ecran apres la deconnexion).
+  useLocation();
   const me = useQuery(meQuery);
   return <ThemeController preferences={me.data?.preferences ?? null} />;
 }
