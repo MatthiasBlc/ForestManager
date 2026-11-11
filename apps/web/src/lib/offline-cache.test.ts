@@ -97,6 +97,15 @@ describe("persistance sur l'appareil", () => {
     ]);
   });
 
+  it("rend ce qui est relu perime : un rechargement redemande au serveur", async () => {
+    const storage = memoryStorage();
+    const persister = createOfflinePersister(storage);
+    // Ecrit a l'instant : sans cela, la donnee resterait "fraiche" 30 s apres le rechargement.
+    await persister.persistClient(client([{ queryKey: ["units"], data: UNITS }]));
+    const restored = await persister.restoreClient();
+    expect(restored?.clientState.queries.map((query) => query.state.isInvalidated)).toEqual([true]);
+  });
+
   it("ecarte a la relecture une donnee qui ne correspond plus au contrat", async () => {
     const storage = memoryStorage();
     const persister = createOfflinePersister(storage);

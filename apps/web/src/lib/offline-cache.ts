@@ -64,6 +64,24 @@ function keep(client: PersistedClient): PersistedClient {
   };
 }
 
+/**
+ * Ce qui est relu de l'appareil est perime d'office : affiche tout de suite,
+ * redemande au serveur des que le reseau le permet. Sans cela, un rechargement
+ * dans les 30 s (`staleTime`) remontrerait l'ancienne donnee sans la verifier.
+ */
+function stale(client: PersistedClient): PersistedClient {
+  return {
+    ...client,
+    clientState: {
+      ...client.clientState,
+      queries: client.clientState.queries.map((query) => ({
+        ...query,
+        state: { ...query.state, isInvalidated: true },
+      })),
+    },
+  };
+}
+
 /** `throttleMs` : les evenements du cache sont nombreux, une ecriture par intervalle suffit. */
 export function createOfflinePersister(storage: OfflineStorage, throttleMs = 0): Persister {
   let pending: PersistedClient | null = null;
@@ -82,7 +100,7 @@ export function createOfflinePersister(storage: OfflineStorage, throttleMs = 0):
     },
     restoreClient: async () => {
       const stored = (await storage.get(STORAGE_KEY)) as PersistedClient | undefined;
-      return stored ? keep(stored) : undefined;
+      return stored ? stale(keep(stored)) : undefined;
     },
     removeClient: async () => {
       if (timer) clearTimeout(timer);
