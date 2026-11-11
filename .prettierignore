@@ -10,3 +10,5 @@ apps/api/prisma/migrations
 .claude/docs/**/project/
 .claude/docs/**/*.html
 apps/api/src/generated
+e2e/test-results
+e2e/playwright-report

@@ -21,6 +21,7 @@ COPY apps/api/package.json apps/api/
 COPY apps/web/package.json apps/web/
 COPY packages/shared/package.json packages/shared/
 COPY packages/test-utils/package.json packages/test-utils/
+COPY e2e/package.json e2e/
 
 # ---------- dev : toutes les dependances (lint, tests, outils) ----------
 FROM manifests AS dev

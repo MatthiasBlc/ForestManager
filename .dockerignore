@@ -20,3 +20,6 @@
 .idea
 **/.DS_Store
 **/src/generated
+
+**/test-results
+**/playwright-report

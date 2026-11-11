@@ -1,10 +1,11 @@
 #!/bin/sh
-# Demarrage de l'API (dev et prod) : migrations, seed idempotent, puis serveur.
-# En dev, le client Prisma est regenere (les sources sont montees depuis l'hote).
-# Usage : api-start.sh dev|prod
+# Demarrage de l'API : migrations, seed idempotent, puis serveur.
+# Hors prod, le client Prisma est genere au demarrage (en dev les sources sont
+# montees depuis l'hote ; l'image de dev ne le contient pas).
+# Usage : api-start.sh dev|test|prod   (test : stack E2E, sans rechargement)
 set -e
 cd /app/apps/api
-if [ "$1" = "dev" ]; then
+if [ "$1" != "prod" ]; then
   npx prisma generate
 fi
 npx prisma migrate deploy
