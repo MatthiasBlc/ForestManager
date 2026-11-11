@@ -75,17 +75,21 @@ export function TopBar(props: ViewProps | EditProps) {
     <header className={space ? "fm-top fm-top-has-space" : "fm-top"}>
       {onBack ? <IconButton icon="arrow-left" label="Retour" onClick={onBack} /> : null}
       {space ? (
-        <button
-          type="button"
-          className="fm-top-space"
-          aria-label={`Changer d'espace, espace courant : ${spaceLabel(space)}`}
-          aria-haspopup="dialog"
-          onClick={onSpace}
-        >
+        <button type="button" className="fm-top-space" aria-haspopup="dialog" onClick={onSpace}>
           <SpaceIcon space={space} />
+          {/* Pas d'aria-label : le nom accessible doit commencer par le texte visible
+              (axe label-content-name-mismatch) ; la suite est reservee aux lecteurs d'ecran. */}
           <span className="fm-top-space-text">
             <b>{space.name}</b>
-            {title ? <small>{title}</small> : null}
+            {title ? (
+              <>
+                {" "}
+                <small>{title}</small>
+              </>
+            ) : null}
+          </span>
+          <span className="sr-only">
+            {spaceLabel(space).slice(space.name.length)}, changer d'espace
           </span>
           <Icon name="chevron-down" size={16} />
         </button>

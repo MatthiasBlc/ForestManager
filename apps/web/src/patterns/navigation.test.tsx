@@ -92,9 +92,11 @@ describe("TopBar", () => {
         />
       </MemoryRouter>
     );
-    await userEvent.click(
-      screen.getByRole("button", { name: "Changer d'espace, espace courant : Famille" })
-    );
+    // Le nom accessible commence par le texte visible (regle axe label-content-name-mismatch).
+    const spaceButton = screen.getByRole("button", { name: /changer d'espace/ });
+    expect(spaceButton).toHaveAccessibleName("Famille Recettes, changer d'espace");
+    expect(spaceButton).not.toHaveAttribute("aria-label");
+    await userEvent.click(spaceButton);
     expect(onSpace).toHaveBeenCalledOnce();
     expect(screen.getByRole("link", { name: "Profil de matthias" })).toHaveAttribute(
       "href",

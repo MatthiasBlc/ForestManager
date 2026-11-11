@@ -90,9 +90,7 @@ describe("shell d'un espace", () => {
   it("le bouton d'espace (mobile) ouvre la liste des espaces", async () => {
     const { family } = session();
     const { user } = renderWithProviders(<App />, { route: `/s/${family.id}/recipes` });
-    await user.click(
-      await screen.findByRole("button", { name: /Changer d'espace, espace courant : Famille/ })
-    );
+    await user.click(await screen.findByRole("button", { name: /^Famille.*changer d'espace/ }));
     const sheet = screen.getByRole("dialog", { name: "Espaces" });
     expect(within(sheet).getByRole("button", { name: "Famille" })).toHaveAttribute(
       "aria-current",
