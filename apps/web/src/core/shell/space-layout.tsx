@@ -27,6 +27,7 @@ import { EmptyState, Skeleton } from "../../ui/display.tsx";
 import { Icon } from "../../ui/icon.tsx";
 import { Sheet } from "../../ui/sheet.tsx";
 import { writeLastSection, writeLastSpace } from "../session/last-space.ts";
+import { isNetworkError } from "../../lib/api.ts";
 import { meQuery, spaceQuery, spacesQuery } from "../session/queries.ts";
 import { ActivityPage } from "../activity/activity-page.tsx";
 import { HomePage } from "../home/home-page.tsx";
@@ -172,7 +173,10 @@ export function SpaceLayout() {
   const unread = useQuery({ ...unreadCountQuery, enabled: Boolean(me.data) });
 
   const deleted = spaces.data?.find((s) => s.id === spaceId && s.deletedAt);
-  if (space.isError && deleted) {
+  // Une relecture sans reseau n'efface pas l'espace deja lu (D35) : seule une
+  // reponse de l'API (ou l'absence de toute copie) dit qu'il est introuvable.
+  const failed = space.isError && !(space.data && isNetworkError(space.error));
+  if (failed && deleted) {
     return (
       <AppShell rail={rail} top={<TopBar title={deleted.name} user={user} />}>
         <DeletedSpacePage space={deleted} />
@@ -181,7 +185,7 @@ export function SpaceLayout() {
       </AppShell>
     );
   }
-  if (space.isError) {
+  if (failed) {
     return (
       <AppShell rail={rail} top={<TopBar title="Espace introuvable" user={user} />}>
         <SpaceNotFound personalSpaceId={me.data?.personalSpaceId ?? ""} />
