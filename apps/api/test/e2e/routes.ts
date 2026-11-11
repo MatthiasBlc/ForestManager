@@ -29,6 +29,7 @@ const scenarioBodySchema = z.discriminatedUnion("name", [
   z.object({
     name: z.literal("group"),
     spaceName: z.string().optional(),
+    ownerName: z.string().optional(),
     members: z.array(spaceRoleSchema.exclude(["OWNER"])).default(["MEMBER"]),
   }),
   /** Un super admin, 2FA deja configuree : le parcours calcule le code avec `totpSecret`. */
@@ -54,7 +55,7 @@ async function build(scenario: Scenario) {
     case "user":
       return { user: await account(scenario.username) };
     case "group": {
-      const owner = await account();
+      const owner = await account(scenario.ownerName);
       const space = await createSpace(
         owner.id,
         scenario.spaceName ? { name: scenario.spaceName } : {}

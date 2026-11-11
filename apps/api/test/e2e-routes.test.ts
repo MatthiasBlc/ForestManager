@@ -43,6 +43,15 @@ describe("routes de test des E2E", () => {
     expect(space.body.name).toBe(res.body.space.name);
   });
 
+  it("scenario group : l'OWNER peut etre nomme", async () => {
+    const res = await request(app)
+      .post(url("/scenario"))
+      .send({ name: "group", ownerName: "lea", members: [] });
+    expect(res.status).toBe(201);
+    expect(res.body.owner.username).toBe("lea");
+    expect(res.body.members).toEqual([]);
+  });
+
   it("scenario admin : un super admin dont la 2FA est deja configuree", async () => {
     const res = await request(app).post(url("/scenario")).send({ name: "admin" });
     expect(res.status).toBe(201);
