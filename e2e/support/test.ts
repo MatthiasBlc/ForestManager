@@ -11,6 +11,8 @@ import {
   type Page,
 } from "@playwright/test";
 
+import { routeStorage } from "./storage.ts";
+
 const API = "/api/v1";
 const CSRF_COOKIE = "XSRF-TOKEN";
 const CSRF_HEADER = "x-xsrf-token";
@@ -30,7 +32,7 @@ export type MemberRole = "MEMBER" | "MODERATOR";
 interface Scenarios {
   user: { input: { username?: string }; output: { user: Account } };
   group: {
-    input: { spaceName?: string; members?: MemberRole[] };
+    input: { spaceName?: string; ownerName?: string; members?: MemberRole[] };
     output: {
       owner: Account;
       space: { id: string; name: string };
@@ -140,6 +142,7 @@ export const test = base.extend<Fixtures>({
   journey: [
     async ({ page, request }, use) => {
       await resetDatabase(request);
+      await routeStorage(page.context());
       const errors: string[] = [];
       watchConsole(page, errors);
       await use(undefined);
@@ -160,6 +163,7 @@ export const test = base.extend<Fixtures>({
     await use(async () => {
       const context = await browser.newContext();
       contexts.push(context);
+      await routeStorage(context);
       const page = await context.newPage();
       watchConsole(page, errors);
       return page;

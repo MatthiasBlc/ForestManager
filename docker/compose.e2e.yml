@@ -61,7 +61,9 @@ services:
       MINIO_ACCESS_KEY: test-access-key
       MINIO_SECRET_KEY: test-secret-key-not-for-production
       MINIO_BUCKET: forestmanager-images-e2e
-      MINIO_PUBLIC_URL: http://s3:9000
+      # Adresse publique de production, la seule ouverte par la CSP du nginx :
+      # Playwright sert ces requetes par le RustFS de la stack (e2e/support/storage.ts).
+      MINIO_PUBLIC_URL: https://s3.matthias-bouloc.fr
     networks:
       default:
         aliases:
