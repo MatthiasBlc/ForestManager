@@ -52,6 +52,16 @@ describe("routes de test des E2E", () => {
     expect(res.body.members).toEqual([]);
   });
 
+  it("scenario group : modules actives en plus des modules par defaut", async () => {
+    const res = await request(app)
+      .post(url("/scenario"))
+      .send({ name: "group", members: [], modules: ["meal-plan"] });
+    expect(res.status).toBe(201);
+    const client = await loginAs(res.body.owner, app);
+    const settings = await client.get(`/spaces/${res.body.space.id}/meal-plan/settings`);
+    expect(settings.status).toBe(200);
+  });
+
   it("scenario admin : un super admin dont la 2FA est deja configuree", async () => {
     const res = await request(app).post(url("/scenario")).send({ name: "admin" });
     expect(res.status).toBe(201);
@@ -81,6 +91,17 @@ describe("routes de test des E2E", () => {
     expect(await db.user.count()).toBe(0);
     expect(await db.unit.count()).toBeGreaterThan(0);
     expect(await db.module.count()).toBeGreaterThan(0);
+  });
+
+  it("fixtures d'import : page HTML servie, nom inconnu ou hors du dossier refuse", async () => {
+    const page = await request(app).get(url("/fixtures/import/tarte-tatin.html"));
+    expect(page.status).toBe(200);
+    expect(page.headers["content-type"]).toMatch(/^text\/html/);
+    expect(page.text).toContain('"@type": "Recipe"');
+    for (const name of ["absente.html", "..%2F..%2Fpackage.json", "%2Fetc%2Fpasswd"]) {
+      const res = await request(app).get(url(`/fixtures/import/${name}`));
+      expect(res.status, name).toBe(404);
+    }
   });
 
   it("absentes en production et en developpement, meme si elles sont fournies", async () => {

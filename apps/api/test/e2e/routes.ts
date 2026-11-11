@@ -5,18 +5,22 @@
 // Ce fichier vit sous `test/` : il n'est pas copie dans l'image de production.
 // `server.ts` ne le charge qu'en NODE_ENV=test, et `createApp` ne monte ces
 // routes que dans cet environnement.
+import { readdir, readFile } from "node:fs/promises";
+
 import { spaceRoleSchema } from "@fm/shared";
 import { TEST_PASSWORD } from "@fm/test-utils";
 import { Router } from "express";
 import { z } from "zod";
 
 import type { Context } from "../../src/core/context.ts";
+import { AppError } from "../../src/core/http/errors.ts";
 import { handle } from "../../src/core/http/validate.ts";
 import { createAdmin } from "../helpers/admin.ts";
 import { resetDatabase } from "../helpers/db.ts";
 import {
   addMember,
   createSpace,
+  grantModule,
   createUser,
   setTestPasswordHash,
   testPasswordHash,
@@ -31,6 +35,8 @@ const scenarioBodySchema = z.discriminatedUnion("name", [
     spaceName: z.string().optional(),
     ownerName: z.string().optional(),
     members: z.array(spaceRoleSchema.exclude(["OWNER"])).default(["MEMBER"]),
+    /** Modules actives en plus de ceux par defaut ("meal-plan"...). */
+    modules: z.array(z.string()).default([]),
   }),
   /** Un super admin, 2FA deja configuree : le parcours calcule le code avec `totpSecret`. */
   z.object({ name: z.literal("admin") }),
@@ -60,6 +66,7 @@ async function build(scenario: Scenario) {
         owner.id,
         scenario.spaceName ? { name: scenario.spaceName } : {}
       );
+      for (const code of scenario.modules) await grantModule(space.id, code);
       const members = [];
       for (const role of scenario.members) {
         const member = await account();
@@ -80,6 +87,19 @@ async function build(scenario: Scenario) {
       };
     }
   }
+}
+
+/**
+ * Pages de reference des imports (15-Plan-Tests S5), lues par l'API elle-meme
+ * sur la boucle locale (`allowLoopback` en NODE_ENV=test, voir `server.ts`).
+ * Seuls les noms presents dans le dossier sont servis : aucun chemin n'est
+ * construit a partir de l'URL.
+ */
+const FIXTURES = new URL("../fixtures/import/", import.meta.url);
+
+async function importFixture(name: string): Promise<string | null> {
+  const names = await readdir(FIXTURES);
+  return names.includes(name) ? readFile(new URL(name, FIXTURES), "utf8") : null;
 }
 
 export function e2eRoutes(ctx: Context): Router {
@@ -103,6 +123,15 @@ export function e2eRoutes(ctx: Context): Router {
     handle({}, async (_input, _req, res) => {
       await resetDatabase();
       res.status(204).end();
+    })
+  );
+
+  router.get(
+    "/fixtures/import/:name",
+    handle({ params: z.object({ name: z.string() }) }, async ({ params }, _req, res) => {
+      const html = await importFixture(params.name);
+      if (html === null) throw new AppError("COMMON_003");
+      res.type("html").send(html);
     })
   );
 
