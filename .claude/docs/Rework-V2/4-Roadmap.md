@@ -102,7 +102,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] Cloture de C6b (`23-Plan-C6b.md` S3)
 - [ ] C7 E2E complets, suivi d'erreurs, CI, preprod (plan : `24-Plan-C7.md`)
   - [x] C7.0 Plan de C7 (D195 a D198 ; D197 a relire par le proprietaire)
-  - [ ] C7.1 Socle E2E : workspace `e2e/`, `docker/compose.e2e.yml`, route de test, parcours 1 [D197, D79]
+  - [x] C7.1 Socle E2E : workspace `e2e/`, `docker/compose.e2e.yml`, route de test, parcours 1 [D197, D79]
   - [ ] C7.2 Parcours du socle : 2, 8, 10, 11, 13, 15
   - [ ] C7.3 Parcours des Recettes : 3, 4, 5, 6, 7, 12
   - [ ] C7.4 Parcours du Planning, du temps reel et du clavier : 9, 14, 16

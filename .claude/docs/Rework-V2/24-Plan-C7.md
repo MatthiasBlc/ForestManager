@@ -27,6 +27,7 @@ Outillage, Docker et CI sont hors TDD [D151] ; la route de test et le suivi d'er
 - Aides Playwright : connexion par la route de test (cookie de session pose sans passer par le formulaire, sauf parcours 1 et 13), `expectNoA11yViolations` (axe, "serious" et "critical"), echec sur toute erreur de console, horloge figee par `page.clock` quand le parcours depend de la date.
 - A regler ici : limites de debit desactivees ou relevees en test, anti-SSRF de l'import (le serveur de fixtures est sur une IP privee : hote autorise par une variable lue seulement en test), code TOTP du parcours 13 calcule dans le test.
 - Preuve : parcours 1 (inscription, espace perso, premiere recette) vert en mobile et desktop.
+- Fait le 2026-11-11 ; ecarts et reports (connexion par la vraie route, photos en C7.2, anti-SSRF en C7.3) : `README.md`, section "Reprise".
 
 ### C7.2 Parcours du socle
 

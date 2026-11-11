@@ -30,6 +30,7 @@ npm run docker:down            # arreter (docker:clean supprime aussi la base de
 npm test                       # tous les tests, dans docker/compose.test.yml (PostgreSQL de test en memoire)
 npm run test:api               # idem par projet : test:web, test:shared
 npm run test:down              # arreter la base de test
+npm run e2e                    # parcours Playwright dans docker/compose.e2e.yml (front en image prod) ; e2e:down pour arreter
 npm run lint && npm run typecheck
 npm run prisma:migrate         # migrations (a partir de C1.4) ; prisma:studio sur :5555
 npm run admin:create           # compte super admin dans la stack de dev (2FA a la premiere connexion)
