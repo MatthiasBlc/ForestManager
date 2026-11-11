@@ -164,13 +164,14 @@ Conventions :
 
 ## P12 - Exporter ses recettes ou un espace
 
-- **Declencheur** : E-PROFIL > "Exporter mes recettes" ; OWNER : E-REGLAGES-ESPACE > "Exporter l'espace".
+- **Declencheur** : E-PROFIL > "Exporter mes recettes" ; OWNER : E-REGLAGES-ESPACE > "Exporter l'espace" ; propositions "Exporter d'abord" de F-SUPPRIMER-ESPACE (P14) et "Exporter mes recettes" de F-SUPPRIMER-COMPTE (P15).
 - **Ecrans** : F-EXPORT.
 - **Etapes** :
-  1. F-EXPORT : format (SegmentedControl JSON / Markdown), Switch "Inclure les photos" (archive zip). Button "Preparer l'export".
-  2. Preparation (quelques secondes) puis Button "Telecharger". Export d'espace : rappel "Les membres verront dans l'activite que tu as exporte l'espace" ; limite atteinte : "Un export par jour. Prochain export possible demain a 14:02."
-- **Notifications** : activite de l'espace "X a exporte l'espace" (D37). Type declare en C6, branche avec l'export en C6b (D189).
-- **Decisions** : D37.
+  1. F-EXPORT : portee "Recettes a exporter" (Mes recettes / l'espace) seulement pour l'OWNER d'un espace groupe ; format (JSON "Se reimportera dans Forest Manager" / Markdown "Se lit partout, un fichier par recette") ; Switch "Inclure les photos". Toujours une archive zip. Button "Preparer l'export".
+  2. Preparation en tache de fond (statut relu chaque seconde) puis Button "Telecharger" ; l'archive est gardee 24 h. Export d'espace : rappel "Un export d'espace par jour. Les membres verront dans l'activite que tu as exporte l'espace." ; limite atteinte : "Prochain export de l'espace possible demain a 14:02."
+- **Notifications** : activite de l'espace "X a exporte l'espace" (D37), pas de notification.
+- **Reimport** : V2.1 (D192) ; le format JSON est versionne (`forest-manager/recipes` v1).
+- **Decisions** : D37, D192.
 
 ## P13 - Changer d'ambiance
 
@@ -202,10 +203,13 @@ Conventions :
 
 ## P16 - Recherche globale
 
-- **Declencheur** : Ctrl K (desktop) ou loupe de la TopBar (mobile, plein ecran).
+- **Declencheur** : Ctrl K / Cmd K (bureau) ou loupe de la TopBar (mobile, plein ecran), dans un espace (absente des ecrans hors espace : profil, notifications).
 - **Ecrans** : F-RECHERCHE (CommandPalette).
-- **Etapes** : resultats groupes (Recettes, Ingredients, Membres, Espaces, Actions), fleches + Entree ; choisir un ingredient ouvre E-RECETTES filtre sur cet ingredient. Les recettes d'autres espaces affichent le nom de l'espace.
-- **Decisions** : CDC S5.1.
+- **Etapes** :
+  1. Champ vide : actions (nouvelle recette, generer le planning, inviter, creer un espace, profil, apparence, notifications, selon les droits) puis "Recemment ouvertes".
+  2. Des 2 caracteres : resultats groupes (Recettes, Ingredients, Planning, Membres, Espaces, Actions), 5 par groupe, groupes vides omis ; fleches a travers les groupes + Entree, Echap. Les recettes d'autres espaces affichent le nom de l'espace.
+  3. Choisir un ingredient ouvre E-RECETTES de l'espace filtre sur cet ingredient (puce "Avec X" retirable) ; un repas ouvre la semaine du planning.
+- **Decisions** : CDC S5.1, D119, D191.
 
 ## P17 - Notifications
 

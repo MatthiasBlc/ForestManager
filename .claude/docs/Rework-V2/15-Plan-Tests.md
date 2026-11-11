@@ -78,10 +78,10 @@ Chaque parcours tourne en **mobile** (projet par defaut) ; ceux marques (D) tour
 8. OWNER demande l'acces au Planning, le super admin accepte, l'OWNER l'active, le module apparait dans la navigation. (D)
 9. Remplir le planning a la main, verrouiller un repas, generer le reste de la semaine.
 10. Un membre quitte l'espace ; ses recettes restent, reprises par un moderateur.
-11. Supprimer un espace puis le restaurer dans le delai.
+11. Exporter un espace (Markdown avec photos, `23-Plan-C6b.md` S4), le supprimer puis le restaurer dans le delai.
 12. Hors ligne : ouvrir une recette et le planning, couper le reseau, recharger, tout reste lisible, les boutons de modification sont desactives avec le bandeau "Hors ligne".
 13. Connexion admin avec 2FA, fusion de deux ingredients. (D)
-14. Navigation au clavier seul sur les ecrans principaux (D) ; palette Ctrl K.
+14. Navigation au clavier seul sur les ecrans principaux (D) ; palette Ctrl K ; reprise du dernier espace et de la derniere entree (scenario detaille : `23-Plan-C6b.md` S4).
 15. Changer d'ambiance et de mode dans Profil > Apparence ; le choix persiste apres reconnexion.
 16. Notification en temps reel : un membre suggere, la cloche de l'autrice s'allume sans rechargement, la notification ouvre la suggestion et passe en lue ; une categorie coupee ne previent plus (scenario detaille : `22-Plan-C6.md` S4).
 

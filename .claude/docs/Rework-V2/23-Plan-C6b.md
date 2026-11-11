@@ -48,3 +48,32 @@ Tranches verticales, comme C3 a C6 : chaque sous-etape livre l'API, le partage (
 - Revue visuelle dans Chrome (bureau et mobile) : CommandPalette (clavier et mobile plein ecran), F-EXPORT et ses quatre entrees, accueil et feuille "Personnaliser".
 - `13-Parcours.md` (P12, P16, D60) et CDC a jour ; schema cible et page du modele de donnees si le schema change.
 - Parcours E2E 14 de `15-Plan-Tests.md` (clavier seul et palette Ctrl K) detaille dans ce plan, et export ajoute a un parcours (code et joue en C7).
+
+## 4. Scenarios E2E (ecrits a la cloture de C6b, codes et joues en C7)
+
+### Parcours 14 : clavier seul et palette Ctrl K (mobile pour la palette plein ecran, desktop pour le reste)
+
+Parcours 14 de `15-Plan-Tests.md`. Aucun clic ni toucher dans la partie desktop : `page.keyboard` seulement, apres une connexion faite par la route de test.
+
+- **Donnees** (route `POST /api/v1/__test/scenario` de C7) : Lea OWNER de "Famille" avec Recettes et Planning actifs ; recettes "Gratin dauphinois" (pommes de terre, creme) et "Soupe de potiron" dans Famille ; un repas "Gratin dauphinois" mardi midi de la semaine courante ; "Tarte aux pommes" dans l'espace perso de Lea.
+- **Etapes et attentes (desktop)** :
+  1. Lea arrive sur `/` : E-ACCUEIL de l'espace perso (premier passage, D60). Tab parcourt le rail, la barre des modules et le contenu dans l'ordre visuel ; chaque element focalise a un contour visible (capture de `:focus-visible`).
+  2. Ctrl K : la palette s'ouvre, le focus est dans le champ ; vide : "Actions" puis "Recemment ouvertes". Echap la ferme et rend le focus a l'element d'origine.
+  3. Lea ouvre Famille par le rail (Tab + Entree), puis Ctrl K, tape "pom" : groupes "Recettes" ("Tarte aux pommes" avec le nom de l'espace perso), "Ingredients" ("Pomme de terre", 1 recette). Fleche bas jusqu'a l'ingredient, Entree : E-RECETTES de Famille avec la puce "Avec Pomme de terre" et le seul "Gratin dauphinois".
+  4. Ctrl K, "gratin" : le groupe "Planning" montre le repas de mardi midi ; Entree ouvre la semaine du planning sur ce repas.
+  5. Ctrl K, "generer" : l'action "Generer le planning" ; Entree ouvre F-GENERER ; Echap ferme la feuille et rend le focus.
+  6. Ctrl K, "zzz" : "Rien trouve pour « zzz »", aucune erreur dans la console.
+  7. axe sans violation "serious" ou "critical" sur la palette ouverte et sur E-RECETTES filtre.
+- **Etapes et attentes (mobile)** : la loupe de la TopBar ouvre la palette en plein ecran avec "Fermer" ; "soupe" puis toucher le resultat ouvre "Soupe de potiron" ; rouvrir la palette : elle est dans "Recemment ouvertes".
+- **Reprise (D60)** : Lea ouvre les membres de Famille, recharge `/` : l'app rouvre Famille sur Membres.
+
+### Export ajoute au parcours 11 (supprimer un espace puis le restaurer)
+
+Avant l'etape de suppression du parcours 11, dans F-SUPPRIMER-ESPACE :
+
+1. "Exporter d'abord" ouvre F-EXPORT sur la portee de l'espace ; Markdown, "Inclure les photos", "Preparer l'export".
+2. "Telecharger" apparait en moins de 10 s (MinIO de la stack E2E) ; le fichier telecharge (`page.waitForEvent("download")`) est un zip qui contient un `.md` par recette de l'espace.
+3. Rouvrir F-EXPORT de l'espace : la portee de l'espace dit "Prochain export de l'espace possible demain a ..." apres "Preparer l'export".
+4. Le fil d'activite de l'espace montre "Lea a exporte l'espace" en tete ; le parcours reprend avec la suppression.
+
+Hors scenario (deja prouve plus bas) : contenu du JSON et aller-retour par le schema, expiration a 24 h, droits de l'export (integration) ; feuille "Personnaliser l'accueil" (composants).

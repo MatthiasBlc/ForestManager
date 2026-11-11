@@ -729,6 +729,7 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 - **Options** : feuille "Personnaliser l'accueil" ; mode edition sur l'accueil.
 - **Choix** : feuille (interrupteur + monter / descendre, comme E-MODULES, "Retablir par defaut"), enregistree a chaque changement dans `User.homeWidgets`.
 - **Defauts annonces** : widgets declares par cle `<module>.<nom>` des deux cotes ; un seul appel `GET /me/home` ; widgets V2.0 : en attente (invitations, transferts), prochains repas, recettes les plus cuisinees (repas passes planifies, D39), recemment ajoutees, activite des groupes (coupe par defaut).
+- **Ecarts a la realisation (C6b.3, 2026-11-11)** : invitations et transferts en attente ne sont pas un widget mais restent en tete de l'accueil quand il y en a (pas de section vide a choisir) ; "les plus cuisinees" devient `meal-plan.most-cooked`, ses donnees venant du Planning [D40].
 
 ### D194 - C6b : decoupage - PROPOSEE (2026-11-10, plan C6b)
 
