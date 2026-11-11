@@ -90,7 +90,7 @@ Chaque parcours tourne en **mobile** (projet par defaut) ; ceux marques (D) tour
 - **Fabriques partagees** dans `packages/test-utils` (utilisateur, espace avec membres et roles, recette simple, recette composee, plan) utilisees par l'integration et par les seeds E2E.
 - **Referentiels** : le meme seed que la prod (unites, conversions, rayons, tags globaux, modules), jamais de donnees de demo dans la prod.
 - **E2E** : chaque parcours cree ses donnees par une route de test reservee a l'environnement `test` (`POST /api/v1/__test/scenario`, absente du build de prod, verifiee par un test), puis remise a zero.
-- **Import** : pages HTML et textes de reference stockes dans `apps/api/test/fixtures/import/`, servis par un serveur local pendant les tests (aucun appel a Internet en CI).
+- **Import** : pages HTML de reference dans `apps/api/test/fixtures/import/` (aucun appel a Internet en CI). Integration : serveur local du test. E2E : servies par la route de test (`GET /api/v1/__test/fixtures/import/:nom`) et lues par l'API sur sa boucle locale, permise seulement en `NODE_ENV=test`.
 - UUID "introuvable" : `00000000-0000-4000-8000-000000000000` (convention V1).
 
 ## 6. CI [D78]

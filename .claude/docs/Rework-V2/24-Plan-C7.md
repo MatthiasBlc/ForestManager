@@ -39,6 +39,8 @@ Fait le 2026-11-11 ; defauts trouves, photos de la stack E2E et aides ajoutees :
 
 Parcours 3 (partage), 4 (suggestion acceptee puis refusee), 5 (adaptation, badge, comparaison), 6 (recette composee, lien vivant), 7 (import par URL depuis `apps/api/test/fixtures/import/`), 12 (hors ligne : `context.setOffline`, service worker enregistre, coquille chargee sans reseau).
 
+Fait le 2026-11-11 ; fixtures d'import servies par la route de test, deux defauts du hors ligne corriges : `README.md`, section "Reprise".
+
 ### C7.4 Parcours du Planning, du temps reel et du clavier
 
 Parcours 9 (`21-Plan-C5.md` S4), 14 (`23-Plan-C6b.md` S4) (D), 16 (`22-Plan-C6.md` S4, deux contextes, vrai flux SSE par nginx).
