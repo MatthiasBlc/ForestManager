@@ -100,11 +100,20 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C6b.3 Widgets d'accueil et feuille "Personnaliser" [D193]
   - [x] Revue visuelle de C6b dans Chrome (bureau et mobile)
   - [x] Cloture de C6b (`23-Plan-C6b.md` S3)
-- [ ] C7 E2E complets, preprod, remise a zero de la base et de la stack de prod
-  - [ ] Suivi d'erreurs : SDK Sentry front et back, DSN vers Bugsink, test depuis A13 [D75, D179]
-  - [ ] Premier passage de la CI sur GitHub (reporte depuis C1.10 et la cloture de C3, decision du proprietaire du 2026-11-06)
-  - [ ] A faire par le proprietaire avant le premier deploy preprod (a revoir ensemble) : secrets GitHub `MINIO_ACCESS_KEY` et `MINIO_SECRET_KEY` (exiges par `docker/deploy.sh`) [D167] ; sur une base deja creee, passer le Planning en "Disponible" dans A04 (le seed n'ecrit le statut qu'a la creation)
-- [ ] C8 Mise en prod V2
+- [ ] C7 E2E complets, suivi d'erreurs, CI, preprod (plan : `24-Plan-C7.md`)
+  - [x] C7.0 Plan de C7 (D195 a D198 ; D197 a relire par le proprietaire)
+  - [ ] C7.1 Socle E2E : workspace `e2e/`, `docker/compose.e2e.yml`, route de test, parcours 1 [D197, D79]
+  - [ ] C7.2 Parcours du socle : 2, 8, 10, 11, 13, 15
+  - [ ] C7.3 Parcours des Recettes : 3, 4, 5, 6, 7, 12
+  - [ ] C7.4 Parcours du Planning, du temps reel et du clavier : 9, 14, 16
+  - [ ] C7.5 Suivi d'erreurs : SDK Sentry front et back, tunnel, test depuis A13, compose Bugsink [D75, D179, D196]
+  - [ ] C7.6 CI complete (couverture, cles i18n, job E2E) et premier passage sur GitHub (reporte depuis C1.10) [D78] ; puis etat ecrit et push : **changement d'ordinateur** [D198]
+  - [ ] C7.7 Preprod, sur l'autre ordinateur : deploy par pull request vers `master`, verification, feuille de recette (`24-Plan-C7.md` S2)
+  - [ ] A faire par le proprietaire avant le premier deploy preprod (a revoir ensemble) : secrets GitHub `MINIO_ACCESS_KEY` et `MINIO_SECRET_KEY` (exiges par `docker/deploy.sh`) [D167] ; sur une base deja creee, passer le Planning en "Disponible" dans A04 (le seed n'ecrit le statut qu'a la creation) ; stack Bugsink dans Portainer (`docker/bugsink/compose.yml`, livre en C7.5) et secret `DEV_SENTRY_DSN` (`SENTRY_DSN` pour la prod) [D196]
+  - [ ] Cloture de C7 (`24-Plan-C7.md` S3)
+- [ ] C8 Mise en prod V2 (autre ordinateur [D198])
+  - [ ] `pg_dump` avant chaque deploy prod, garde 14 jours [D76] : absent de `ci.yml`, a ecrire avant la prod
   - [ ] A faire par le proprietaire (a revoir ensemble) : retirer la lecture publique des buckets V1 `forestmanager-images-preprod` / `-prod` (`mc anonymous set none`) [D167]
 - [ ] C9 Module liste de courses (V2.1)
 - [ ] Reimport du JSON d'export dans F-AJOUT-RECETTE (V2.1) [D192]
+- [ ] E2E WebKit (Safari) (V2.1) [D195]

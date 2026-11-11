@@ -734,3 +734,28 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 ### D194 - C6b : decoupage - PROPOSEE (2026-11-10, plan C6b)
 
 - Tranches verticales C6b.1 (recherche), C6b.2 (export), C6b.3 (widgets), puis revue visuelle et cloture (`23-Plan-C6b.md`).
+
+### D195 - E2E : Chromium seul, WebKit reporte en V2.1 - VALIDEE (2026-11-11, plan C7, choix du proprietaire)
+
+- **Constat** : D78 rendait WebKit bloquant sur `master` ; le proprietaire a demande depuis d'ignorer Safari pour l'instant.
+- **Options** : Chromium seul ; WebKit informatif ; WebKit bloquant sur `master` (D78).
+- **Choix** : Chromium seul, projets mobile (390x844) et desktop (1280x800). D78 amendee : la ligne WebKit sort de la CI. WebKit revient en V2.1 (case dans `4-Roadmap.md`).
+
+### D196 - Suivi d'erreurs : Bugsink en stack a part, tunnel par l'API - VALIDEE (2026-11-11, plan C7, choix du proprietaire pour l'hebergement)
+
+- **Options d'hebergement** : stack Portainer a part ; conteneur dans la stack de l'app ; SDK seul, Bugsink plus tard.
+- **Choix** : un seul Bugsink dans sa propre stack Portainer, creee par le proprietaire a partir de `docker/bugsink/compose.yml`, un projet par environnement. Le code ne recoit qu'un DSN (`SENTRY_DSN`, secrets GitHub `DEV_SENTRY_DSN` et `SENTRY_DSN`, facultatifs) : sans DSN, le suivi est coupe.
+- **Front** (defaut annonce) : le SDK du navigateur envoie par un tunnel de l'API (`POST /api/v1/monitoring`) ; le front ne connait pas le DSN, la CSP ne change pas, une seule image pour la preprod et la prod.
+- **Donnees** (defaut annonce) : erreurs 5xx et rejets non geres seulement ; ni corps, ni cookies, ni IP ; l'utilisateur n'est qu'un UUID.
+
+### D197 - Stack E2E, route de test, seuils de couverture - PROPOSEE (2026-11-11, plan C7, defauts annonces au proprietaire)
+
+- **Stack** : `docker/compose.e2e.yml`, front en image prod (nginx, bundle de production) devant une API en `NODE_ENV=test`, PostgreSQL et RustFS en tmpfs, conteneur Playwright officiel.
+- **Route de test** [D79] : `POST /api/v1/__test/scenario` et `/__test/reset`, montees seulement en `NODE_ENV=test`, absence en production prouvee par un test.
+- **Couverture** [D78] : seuils 90 / 80 / 60 % vises ; une zone en dessous recoit des tests la ou un comportement n'est pas prouve, sinon son seuil est pose au niveau mesure et l'ecart est note dans `15-Plan-Tests.md`.
+- **E2E en CI** : job bloquant a chaque push et pull request, artefacts des echecs gardes 7 jours.
+
+### D198 - C7 : decoupage et changement de poste avant tout deploy - VALIDEE (2026-11-11, plan C7, demande du proprietaire pour le changement de poste)
+
+- **Constat** : le proprietaire fait depuis un autre ordinateur tout ce qui pousse vers Portainer (preprod et prod).
+- **Choix** : C7.1 a C7.6 (E2E, suivi d'erreurs, CI) sur le poste actuel, sans toucher Portainer ni `master` ; C7.6 se termine par l'etat ecrit et un push. C7.7 (preprod) et C8 (prod) reprennent sur l'autre poste (`24-Plan-C7.md`).

@@ -19,7 +19,7 @@ Regle : un comportement se teste au niveau **le plus bas** qui le prouve. Les E2
 - **Supertest** sur l'app Express sans ouvrir de port.
 - **PostgreSQL de test** dans Docker (`docker compose -f docker/compose.test.yml`), migrations appliquees au demarrage, **base remise a zero entre fichiers de test** (TRUNCATE des tables hors referentiels), referentiels seedes une fois.
 - **Testing Library** + `user-event` ; **MSW** pour simuler l'API, avec des handlers generes depuis les schemas Zod partages (les reponses mockees sont valides par construction).
-- **Playwright** (Chromium, WebKit pour Safari iOS, emulation mobile 390x844 par defaut ; un projet desktop 1280x800) ; **@axe-core/playwright** pour l'accessibilite.
+- **Playwright** (Chromium seul, WebKit reporte en V2.1 [D195] ; emulation mobile 390x844 par defaut ; un projet desktop 1280x800) ; **@axe-core/playwright** pour l'accessibilite.
 - Tous les tests tournent **dans Docker** en local, comme en V1 (les variables d'environnement n'existent pas hors conteneur).
 
 ## 3. Perimetre par domaine
@@ -97,17 +97,16 @@ Chaque parcours tourne en **mobile** (projet par defaut) ; ceux marques (D) tour
 
 Sur chaque push et chaque pull request :
 
-| Etape                                               | Bloquant                                        |
-| --------------------------------------------------- | ----------------------------------------------- |
-| Lint + format (ESLint, Prettier)                    | Oui                                             |
-| Typecheck de tout le monorepo                       | Oui                                             |
-| Controle des cles i18n manquantes                   | Oui                                             |
-| Unitaires + integration API (PostgreSQL de service) | Oui                                             |
-| Composants (dont rendu des six themes)              | Oui                                             |
-| E2E parcours critiques (Chromium mobile + desktop)  | Oui                                             |
-| E2E WebKit (Safari)                                 | Oui sur `master`, informatif sur `Developement` |
-| Couverture sous les seuils                          | Oui                                             |
-| `npm audit` (vulnerabilites hautes et critiques)    | Oui                                             |
+| Etape                                               | Bloquant |
+| --------------------------------------------------- | -------- |
+| Lint + format (ESLint, Prettier)                    | Oui      |
+| Typecheck de tout le monorepo                       | Oui      |
+| Controle des cles i18n manquantes                   | Oui      |
+| Unitaires + integration API (PostgreSQL de service) | Oui      |
+| Composants (dont rendu des six themes)              | Oui      |
+| E2E parcours critiques (Chromium mobile + desktop)  | Oui      |
+| Couverture sous les seuils                          | Oui      |
+| `npm audit` (vulnerabilites hautes et critiques)    | Oui      |
 
 Les traces Playwright, captures et videos des echecs sont gardees comme artefacts de CI pendant 7 jours.
 
@@ -147,7 +146,7 @@ Une **feuille de recette** courte avant chaque mise en prod : installation sur u
 | #   | Decision                                                                                                                                                                                                                                                | Statut  |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | D77 | Outils : Vitest partout, Supertest sur vraie base PostgreSQL remise a zero entre fichiers, Testing Library + MSW avec handlers issus des schemas Zod, Playwright mobile + desktop avec axe.                                                             | VALIDEE |
-| D78 | CI bloquante : lint, typecheck, cles i18n, unitaires, integration, composants, E2E critiques, couverture, `npm audit` ; WebKit bloquant sur `master` seulement ; seuils 90 / 80 / 60 % (shared / api / web).                                            | VALIDEE |
+| D78 | CI bloquante : lint, typecheck, cles i18n, unitaires, integration, composants, E2E critiques, couverture, `npm audit` ; WebKit retire de la CI par D195 ; seuils 90 / 80 / 60 % (shared / api / web).                                                   | VALIDEE |
 | D79 | Donnees de test : fabriques partagees dans `packages/test-utils`, seed des referentiels identique a la prod, scenarios E2E crees par une route reservee a l'environnement de test, fixtures d'import servies localement (aucun appel a Internet en CI). | VALIDEE |
 
 ## 12. Questions pour le proprietaire (tranchees)
