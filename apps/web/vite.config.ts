@@ -14,6 +14,11 @@ const storageBucket = process.env.STORAGE_BUCKET ?? "forestmanager-images-dev";
 export default defineConfig({
   // Hors de l'arbre dans les conteneurs (VITE_CACHE_DIR), pour ne rien y ecrire en root.
   cacheDir: process.env.VITE_CACHE_DIR ?? "node_modules/.vite",
+  build: {
+    // Polices jamais integrees en `data:` : la CSP du nginx (`font-src 'self'`)
+    // les bloquerait (trouve par le parcours E2E 1). Le reste garde le seuil par defaut.
+    assetsInlineLimit: (file) => (/\.woff2?$/.test(file) ? false : undefined),
+  },
   plugins: [
     react(),
     tailwindcss(),
