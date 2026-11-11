@@ -23,6 +23,7 @@ import { useToast } from "../../ui/use-toast.ts";
 import { FormAlert } from "../access/auth-layout.tsx";
 import { parseDecimal } from "./format.ts";
 import { adminUnitsQuery } from "./referential-queries.ts";
+import { TableScroll } from "../../ui/table-scroll.tsx";
 
 const DIMENSION_LABELS: Record<UnitDimension, string> = {
   MASS: "Masse",
@@ -405,7 +406,7 @@ export function UnitsPage() {
         <FormAlert message={errorMessage(units.error)} />
       ) : (
         <div className="flex flex-wrap items-start gap-5">
-          <div className="min-w-0 flex-[999_1_480px] overflow-x-auto">
+          <TableScroll label="Unités" className="min-w-0 flex-[999_1_480px]">
             <table aria-label="Unités" className="fm-table">
               <thead>
                 <tr>
@@ -442,7 +443,7 @@ export function UnitsPage() {
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableScroll>
           <AdditionTester units={units.data} />
         </div>
       )}

@@ -15,6 +15,7 @@ import { useToast } from "../../ui/use-toast.ts";
 import { FormAlert } from "../access/auth-layout.tsx";
 import { adminTagsQuery } from "./referential-queries.ts";
 import { TranslatedNameSheet, type TranslatedName } from "./translated-name-sheet.tsx";
+import { TableScroll } from "../../ui/table-scroll.tsx";
 
 type Dialog =
   | { kind: "edit"; tag: AdminTag | null }
@@ -181,7 +182,7 @@ export function TagsPage() {
       ) : tags.isError ? (
         <FormAlert message={errorMessage(tags.error)} />
       ) : (
-        <div className="overflow-x-auto">
+        <TableScroll label="Tags globaux">
           <table aria-label="Tags globaux" className="fm-table max-w-3xl">
             <thead>
               <tr>
@@ -223,7 +224,7 @@ export function TagsPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </TableScroll>
       )}
       <p className="m-0 max-w-3xl text-sm text-ink-muted">
         Supprimer un tag global le retire de toutes les recettes. Fusionner déplace ses recettes

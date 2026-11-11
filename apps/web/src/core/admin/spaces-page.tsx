@@ -27,6 +27,7 @@ import { useToast } from "../../ui/use-toast.ts";
 import { FormAlert } from "../access/auth-layout.tsx";
 import { moduleInfo } from "../modules/module-info.ts";
 import { REASON_LABELS } from "./format.ts";
+import { TableScroll } from "../../ui/table-scroll.tsx";
 
 const FILTER_LABELS: Record<AdminSpaceFilter, string> = {
   GROUP: "Groupes",
@@ -191,7 +192,7 @@ export function SpacesPage() {
       ) : spaces.data.data.length === 0 ? (
         <p className="m-0 text-ink-muted">Aucun espace ne correspond.</p>
       ) : (
-        <div className="overflow-x-auto">
+        <TableScroll label="Espaces">
           <table aria-label="Espaces" className="fm-table">
             <thead>
               <tr>
@@ -257,7 +258,7 @@ export function SpacesPage() {
               })}
             </tbody>
           </table>
-        </div>
+        </TableScroll>
       )}
       <p className="m-0 text-sm text-ink-muted">
         « Restaurer » ne sert que sur demande de l&apos;OWNER pendant les 30 jours ; à la purge, les

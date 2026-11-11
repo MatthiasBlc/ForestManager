@@ -24,6 +24,7 @@ import { FormAlert } from "../access/auth-layout.tsx";
 import { moduleInfo } from "../modules/module-info.ts";
 import { whenLabel } from "./format.ts";
 import { adminModulesQuery, moduleGrantsQuery, moduleRequestsQuery } from "./module-queries.ts";
+import { TableScroll } from "../../ui/table-scroll.tsx";
 
 const STATUS_LABELS: Record<ModuleStatus, { label: string; tone: Tone }> = {
   AVAILABLE: { label: "Disponible", tone: "success" },
@@ -264,7 +265,7 @@ function ModuleGrants({ module }: { module: AdminModule }) {
       ) : grants.data.data.length === 0 ? (
         <p className="m-0 text-ink-muted">Aucun espace n&apos;a accès à ce module.</p>
       ) : (
-        <div className="overflow-x-auto">
+        <TableScroll labelledBy={captionId}>
           <table aria-labelledby={captionId} className="fm-table">
             <thead>
               <tr>
@@ -308,7 +309,7 @@ function ModuleGrants({ module }: { module: AdminModule }) {
               ))}
             </tbody>
           </table>
-        </div>
+        </TableScroll>
       )}
       {grants.data && grants.data.total > grants.data.data.length ? (
         <p className="m-0 text-sm text-ink-muted">

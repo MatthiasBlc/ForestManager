@@ -35,6 +35,11 @@ describe("demandes d'acces aux modules", () => {
     });
     expect(await screen.findByText("Aucune demande en attente")).toBeInTheDocument();
     const history = screen.getByRole("table", { name: "Traitées récemment" });
+    // Tableau large : sa zone de defilement s'atteint au clavier (axe scrollable-region-focusable).
+    expect(screen.getByRole("region", { name: "Traitées récemment" })).toHaveAttribute(
+      "tabindex",
+      "0"
+    );
     expect(within(history).getByText("Accordée")).toBeInTheDocument();
   });
 

@@ -25,6 +25,7 @@ import { useToast } from "../../ui/use-toast.ts";
 import { FormAlert } from "../access/auth-layout.tsx";
 import { configQuery } from "../session/queries.ts";
 import { whenLabel } from "./format.ts";
+import { TableScroll } from "../../ui/table-scroll.tsx";
 
 const PAGE = 50;
 /** Plafond de la pagination admin (offsetQuerySchema) : au-dela, affiner la recherche. */
@@ -194,7 +195,7 @@ export function UsersPage() {
       ) : users.data.data.length === 0 ? (
         <p className="m-0 text-ink-muted">Aucun compte ne correspond.</p>
       ) : (
-        <div className="overflow-x-auto">
+        <TableScroll label="Comptes">
           <table aria-label="Comptes" className="fm-table">
             <thead>
               <tr>
@@ -244,7 +245,7 @@ export function UsersPage() {
               ))}
             </tbody>
           </table>
-        </div>
+        </TableScroll>
       )}
       {users.data ? (
         <div className="flex flex-wrap items-center gap-3">

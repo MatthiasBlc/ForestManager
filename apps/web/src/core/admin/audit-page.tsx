@@ -16,6 +16,7 @@ import { Chip } from "../../ui/controls.tsx";
 import { Badge, Skeleton } from "../../ui/display.tsx";
 import { FormAlert } from "../access/auth-layout.tsx";
 import { auditDetail, auditLabel, auditTarget, whenLabel } from "./format.ts";
+import { TableScroll } from "../../ui/table-scroll.tsx";
 
 const PAGE = 50;
 
@@ -83,7 +84,7 @@ export function AuditPage() {
       ) : entries.length === 0 ? (
         <p className="m-0 text-ink-muted">Aucune action dans cette catégorie.</p>
       ) : (
-        <div className="overflow-x-auto">
+        <TableScroll label="Journal d'audit">
           <table aria-label="Journal d'audit" className="fm-table">
             <thead>
               <tr>
@@ -111,7 +112,7 @@ export function AuditPage() {
               })}
             </tbody>
           </table>
-        </div>
+        </TableScroll>
       )}
       {audit.data ? (
         <div className="flex flex-wrap items-center gap-3">

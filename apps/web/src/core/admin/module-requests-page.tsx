@@ -16,6 +16,7 @@ import { FormAlert } from "../access/auth-layout.tsx";
 import { moduleInfo } from "../modules/module-info.ts";
 import { agoLabel, whenLabel } from "./format.ts";
 import { adminModulesQuery, moduleRequestsQuery } from "./module-queries.ts";
+import { TableScroll } from "../../ui/table-scroll.tsx";
 
 function useRefreshModules() {
   const queryClient = useQueryClient();
@@ -191,7 +192,7 @@ export function ModuleRequestsPage() {
               <h2 id="recent-requests" className="m-0 font-display text-lg font-bold">
                 Traitées récemment
               </h2>
-              <div className="overflow-x-auto">
+              <TableScroll labelledBy="recent-requests">
                 <table aria-labelledby="recent-requests" className="fm-table">
                   <thead>
                     <tr>
@@ -220,7 +221,7 @@ export function ModuleRequestsPage() {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </TableScroll>
             </section>
           ) : null}
         </>
