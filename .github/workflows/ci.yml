@@ -1,8 +1,9 @@
 # CI et deploy V2 [D147] : reprise de .github/workflows/deploy.yml de la V1
 # (tag v1-final) avec les memes secrets, images, stacks Portainer et declencheurs.
 #
-#   push (toute branche)  -> verification + build des images (sans push)
+#   push (sauf Developement) -> verification + build des images (sans push)
 #   PR vers master        -> verification, images poussees, deploy preprod
+#                            (seule CI de Developement [D201])
 #   push sur master       -> verification, images poussees, deploy prod, tag
 #
 # Changements V2 : une seule verification, celle du poste (format, lint,
@@ -19,7 +20,10 @@ env:
 
 on:
   push:
-    branches: ["**"]
+    # Developement (preprod) part toujours vers master par PR : le run de la PR
+    # suffit, un run de push en double ne verifierait rien de plus [D201].
+    # Sans PR ouverte : lancement a la main (workflow_dispatch).
+    branches-ignore: [Developement]
     tags-ignore: ["**"]
   pull_request:
     branches: [master]

@@ -49,7 +49,7 @@ npm run admin:create           # compte super admin dans la stack de dev (2FA a 
 
 ## Git
 
-- `master` = prod (deploy auto au push). `Developement` = branche de travail. Preprod = deploy sur PR vers `master`.
+- Flux : branche de travail -> PR vers `Developement` (code de preprod) -> PR `Developement` -> `master` (deploy preprod a chaque push sur la PR) -> fusion = prod (deploy auto au push sur `master`). Pendant la preprod V2, travail direct sur `Developement`. Le proprietaire pousse et fusionne.
 - Commit uniquement sur demande. **Jamais de Co-Authored-By pour Claude.**
 
 ## Documentation
