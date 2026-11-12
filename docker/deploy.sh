@@ -73,8 +73,12 @@ HTTP_CODE=$(echo "${RESPONSE}" | tail -n1)
 if [ "${HTTP_CODE}" -ge 200 ] && [ "${HTTP_CODE}" -lt 300 ]; then
   echo "Deployment successful (HTTP ${HTTP_CODE})"
 else
-  # Le corps de la reponse peut citer la stack substituee : on ne l'affiche pas en entier.
+  # Message et detail de Portainer (sortie de docker compose : image introuvable,
+  # reseau, volume...) ; jamais le corps entier, qui peut citer la stack
+  # substituee. GitHub masque de toute facon les valeurs des secrets.
   echo "ERROR: deployment failed (HTTP ${HTTP_CODE})" >&2
-  echo "${RESPONSE}" | sed '$d' | jq -r '.message // empty' 2>/dev/null >&2 || true
+  echo "${RESPONSE}" | sed '$d' |
+    jq -r '[.message, .details] | map(select(. != null and . != "")) | .[]' 2>/dev/null >&2 ||
+    true
   exit 1
 fi
