@@ -137,9 +137,12 @@ export function SpaceLayout() {
   const visuals = (spaces.data ?? []).map(toVisual);
   const personal = visuals.find((v) => v.id === me.data?.personalSpaceId);
   const groups = visuals.filter((v) => v.id !== me.data?.personalSpaceId);
-  const selectSpace = (id: string) => {
+  const goTo = (path: string) => {
     setSwitcherOpen(false);
-    void navigate(`/s/${id}`);
+    void navigate(path);
+  };
+  const selectSpace = (id: string) => {
+    goTo(`/s/${id}`);
   };
   const addSpace = () => {
     setSwitcherOpen(false);
@@ -163,6 +166,7 @@ export function SpaceLayout() {
       spaces={groups}
       activeId={spaceId}
       onSelect={selectSpace}
+      {...(me.data ? { onHome: () => goTo(`/s/${me.data.personalSpaceId}/home`) } : {})}
       onAdd={addSpace}
     />
   );
@@ -237,9 +241,6 @@ export function SpaceLayout() {
               title={active?.label}
               space={current}
               onSpace={() => setSwitcherOpen(true)}
-              {...(space.data.kind === "PERSONAL" || !me.data
-                ? {}
-                : { homeTo: `/s/${me.data.personalSpaceId}/home` })}
               onSearch={() => setPaletteOpen(true)}
               onNotifications={() => void navigate("/notifications")}
               unread={unread.data}

@@ -83,19 +83,31 @@ describe("shell d'un espace", () => {
     ).toEqual(["Membres", "Activité", "Réglages"]);
   });
 
-  it("un espace de groupe mene a l'Accueil en un geste (mobile) ; pas dans l'espace perso", async () => {
+  it("le selecteur d'espaces mene a l'Accueil, en tete de liste (D206)", async () => {
     const { me, family } = session();
-    const { unmount } = renderWithProviders(<App />, { route: `/s/${family.id}/recipes` });
+    const { user } = renderWithProviders(<App />, { route: `/s/${family.id}/recipes` });
     const banner = await screen.findByRole("banner");
-    expect(await within(banner).findByRole("link", { name: "Accueil" })).toHaveAttribute(
-      "href",
-      `/s/${me.personalSpaceId}/home`
+    expect(within(banner).queryByRole("link", { name: "Accueil" })).not.toBeInTheDocument();
+    await user.click(await screen.findByRole("button", { name: /^Famille.*changer d'espace/ }));
+    const sheet = screen.getByRole("dialog", { name: "Espaces" });
+    const home = within(sheet).getByRole("button", { name: "Accueil" });
+    const own = within(sheet).getByRole("button", { name: /^matthias/ });
+    expect(home.compareDocumentPosition(own) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    await user.click(home);
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: "Espaces" })).not.toBeInTheDocument();
+    });
+    const nav = await screen.findByRole("complementary", { name: "Modules de l'espace" });
+    await waitFor(() => {
+      expect(within(nav).getByRole("link", { name: "Accueil" })).toHaveAttribute(
+        "href",
+        `/s/${me.personalSpaceId}/home`
+      );
+    });
+    expect(within(nav).getByRole("link", { name: "Accueil" })).toHaveAttribute(
+      "aria-current",
+      "page"
     );
-    unmount();
-    renderWithProviders(<App />, { route: `/s/${me.personalSpaceId}/home` });
-    const own = await screen.findByRole("banner");
-    await within(own).findByRole("button", { name: /changer d'espace/ });
-    expect(within(own).queryByRole("link", { name: "Accueil" })).not.toBeInTheDocument();
   });
 
   it("le bouton d'espace (mobile) ouvre la liste des espaces", async () => {

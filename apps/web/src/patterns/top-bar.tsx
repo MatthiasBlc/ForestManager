@@ -1,4 +1,4 @@
-// TopBar : Accueil (mobile, espace de groupe), bouton d'espace (mobile) ou titre, recherche (C6b) et notifications,
+// TopBar : bouton d'espace (mobile) ou titre, recherche (C6b) et notifications,
 // profil. Mode edition (D136) : Annuler, titre, action principale.
 import { Link } from "react-router";
 
@@ -13,8 +13,6 @@ interface ViewProps {
   space?: SpaceVisual;
   onSpace?: () => void;
   onBack?: () => void;
-  /** Accueil en un geste (mobile, espace de groupe) ; le rail y mene en bureau. */
-  homeTo?: string;
   /** Recherche (C6b) et notifications (C6.1) : sans rappel, rien n'est affiche. */
   onSearch?: () => void;
   onNotifications?: () => void;
@@ -72,15 +70,10 @@ export function TopBar(props: ViewProps | EditProps) {
       </header>
     );
   }
-  const { title, space, onSpace, onBack, homeTo, onSearch, onNotifications, unread, user } = props;
+  const { title, space, onSpace, onBack, onSearch, onNotifications, unread, user } = props;
   return (
     <header className={space ? "fm-top fm-top-has-space" : "fm-top"}>
       {onBack ? <IconButton icon="arrow-left" label="Retour" onClick={onBack} /> : null}
-      {homeTo ? (
-        <Link to={homeTo} aria-label="Accueil" title="Accueil" className="fm-iconbtn fm-top-home">
-          <Icon name="home" />
-        </Link>
-      ) : null}
       {space ? (
         <button type="button" className="fm-top-space" aria-haspopup="dialog" onClick={onSpace}>
           <SpaceIcon space={space} />
