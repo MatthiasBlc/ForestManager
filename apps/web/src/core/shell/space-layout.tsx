@@ -166,7 +166,7 @@ export function SpaceLayout() {
       spaces={groups}
       activeId={spaceId}
       onSelect={selectSpace}
-      {...(me.data ? { onHome: () => goTo(`/s/${me.data.personalSpaceId}/home`) } : {})}
+      {...(personal ? { onHome: () => goTo(`/s/${personal.id}/home`) } : {})}
       onAdd={addSpace}
     />
   );
