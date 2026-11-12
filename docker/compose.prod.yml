@@ -83,9 +83,12 @@ services:
     networks:
       - internal
       - proxy
+    # service_started, pas service_healthy : un backend malade ne fait pas
+    # echouer compose, donc Portainer garde les conteneurs et leurs logs.
+    # La sante est verifiee apres coup par docker/deploy.sh (HEALTH_URL).
     depends_on:
       forestmanager-backend:
-        condition: service_healthy
+        condition: service_started
     healthcheck:
       test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1/"]
       <<: *health_http

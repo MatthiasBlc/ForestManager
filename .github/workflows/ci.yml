@@ -193,6 +193,7 @@ jobs:
         run: TAG="sha-${GITHUB_SHA::7}" ./docker/deploy.sh
         env:
           DEPLOY_ENV: preprod
+          HEALTH_URL: https://preprod-forestmanager.matthias-bouloc.fr/api/v1/config
           COMPOSE_FILE: docker/compose.preprod.yml
           PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
           PORTAINER_API: ${{ secrets.PORTAINER_API }}
@@ -226,6 +227,7 @@ jobs:
         run: TAG="sha-${GITHUB_SHA::7}" ./docker/deploy.sh
         env:
           DEPLOY_ENV: production
+          HEALTH_URL: https://forestmanager.matthias-bouloc.fr/api/v1/config
           COMPOSE_FILE: docker/compose.prod.yml
           PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
           PORTAINER_API: ${{ secrets.PORTAINER_API }}

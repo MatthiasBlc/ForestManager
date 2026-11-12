@@ -90,3 +90,20 @@ else
   fi
   exit 1
 fi
+
+# Sante reelle apres le deploy, par Traefik et nginx comme un navigateur.
+# Portainer rend la main des que les conteneurs sont lances (le frontend
+# n'attend plus le healthcheck du backend) : en cas d'echec, les conteneurs
+# restent en place et leurs logs se lisent dans Portainer.
+if [ -n "${HEALTH_URL:-}" ]; then
+  echo "Waiting for ${HEALTH_URL}..."
+  for _ in $(seq 1 30); do
+    if curl -fsS -o /dev/null --max-time 5 "${HEALTH_URL}"; then
+      echo "Application is up"
+      exit 0
+    fi
+    sleep 10
+  done
+  echo "ERROR: ${HEALTH_URL} still failing after 5 min; read the backend logs in Portainer" >&2
+  exit 1
+fi
