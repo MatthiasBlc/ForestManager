@@ -1,0 +1,123 @@
+# Stack de developpement. Lancer depuis la racine via les scripts npm (docker:*),
+# qui passent --project-directory . : les chemins ci-dessous partent de la racine
+# et le .env racine est lu.
+#
+# node_modules vient de l'image (volume anonyme) : apres un changement de
+# dependances, `npm run docker:up:build` reconstruit et renouvelle ce volume.
+
+name: ${COMPOSE_PROJECT_NAME:-forestmanager}
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-app: &app
+  restart: unless-stopped
+  init: true
+  volumes:
+    - .:/app
+    - /app/node_modules
+  networks: [internal]
+  logging: *default-logging
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-forestmanager}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-forestmanager_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-forestmanager_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    logging: *default-logging
+
+  # Stockage S3 des photos [D167] : RustFS (les images MinIO ne sont plus
+  # publiques). Le navigateur passe par le proxy de Vite (meme origine).
+  s3:
+    image: rustfs/rustfs:1.0.3
+    restart: unless-stopped
+    environment:
+      RUSTFS_ACCESS_KEY: ${MINIO_ACCESS_KEY:-forestmanager}
+      RUSTFS_SECRET_KEY: ${MINIO_SECRET_KEY:-forestmanager_dev_secret}
+    ports:
+      - "9001:9001" # console
+    volumes:
+      - s3_data:/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://127.0.0.1:9000/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    logging: *default-logging
+
+  api:
+    <<: *app
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+      target: dev
+    ports:
+      - "3001:3001"
+      - "5555:5555" # Prisma Studio
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      DATABASE_URL: postgresql://${POSTGRES_USER:-forestmanager}:${POSTGRES_PASSWORD:-forestmanager_dev}@postgres:5432/${POSTGRES_DB:-forestmanager_db}
+      SESSION_SECRET: ${SESSION_SECRET:-dev-session-secret-change-me}
+      CORS_ORIGIN: ${CORS_ORIGIN:-}
+      APP_URL: http://localhost:3000
+      SMTP_URL: ${SMTP_URL:-}
+      MINIO_ENDPOINT: s3
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-forestmanager}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-forestmanager_dev_secret}
+      MINIO_BUCKET: forestmanager-images-dev
+      MINIO_PUBLIC_URL: http://localhost:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      s3:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:3001/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  web:
+    <<: *app
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+      target: dev
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      API_PROXY_TARGET: http://api:3001
+      STORAGE_PROXY_TARGET: http://s3:9000
+      STORAGE_BUCKET: forestmanager-images-dev
+      VITE_CACHE_DIR: /tmp/vite
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+networks:
+  internal:
+
+volumes:
+  postgres_data:
+  s3_data:

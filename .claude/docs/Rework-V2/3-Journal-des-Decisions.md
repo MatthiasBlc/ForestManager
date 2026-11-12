@@ -124,6 +124,7 @@ _D12 (notifications) et D14 (analytics) : non utilises. Leurs sujets sont couver
 ### D11 - Repas du planning configurables par espace - VALIDEE (2026-11-03)
 
 - Chaque espace choisit ses repas parmi petit-dejeuner, midi, gouter, soir (midi et soir par defaut). La grille, les exclusions, les epinglages et la generation suivent ce reglage.
+- **Amendee le 2026-11-09 (plan C5, choix du proprietaire)** : deux repas par jour, midi et soir ; ni petit-dejeuner ni gouter. L'espace choisit de planifier midi, soir ou les deux (les deux par defaut). La maquette F-CREER-PLANNING (devenue F-REGLAGES-PLANNING) proposait encore les quatre.
 
 ### D26 - Partager une recette composee partage ses sous-recettes - VALIDEE (2026-11-03)
 
@@ -401,3 +402,392 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
 ### D146 - Stockage MinIO et avatars en C3 - VALIDEE (2026-11-05)
 
 - **Choix** : avatars d'utilisateur et d'espace livres en C3 avec les photos de recettes : un seul chantier stockage. C1 reste centre sur comptes, espaces, invitations et modules.
+
+### D147 - CI et deploy V2 repris de la V1 : meme Portainer, memes stacks, Traefik - VALIDEE (2026-11-05)
+
+- **Constat** : le plan C1.10 ne prevoyait qu'une CI de verification. Le proprietaire demande de reprendre le processus de la V1 (`.github/workflows/deploy.yml`, `deploy_prod.sh`, `docker-compose.preprod.yml` et `.prod.yml` au tag `v1-final`) et de deployer sur le meme Portainer, idealement dans les memes stacks.
+- **Choix** : la V2 reprend la chaine V1 en l'ameliorant, sans en changer les points de contact :
+  - memes secrets GitHub (`REGISTRY_*`, `IMAGE_NAME`, `PORTAINER_URL`, `PORTAINER_API`, `STACK_ID`, `DEV_STACK_ID`, `ENDPOINT_ID`, `POSTGRES_*`, `SESSION_SECRET`, `ADMIN_SESSION_SECRET`), nouveaux secrets seulement si une fonction l'exige ;
+  - memes images (`<registre>/<IMAGE_NAME>/backend` et `/frontend`), memes noms de services et de conteneurs (`forestmanager-*`, `forestmanager-dev-*` en preprod), meme alias `forestmanager-backend` vise par le nginx du front ;
+  - memes stacks Portainer mises a jour par API (`deploy_prod.sh` : envsubst puis PUT de la stack), memes reseaux externes (`proxy` pour Traefik, `minio-net`), memes labels Traefik (entrypoint `https`, certresolver `cloudflare`, memes domaines) ;
+  - meme declenchement : PR vers `master` = preprod, push sur `master` = prod, changelog et tag apres la prod.
+- **Ameliorations prevues** : contexte de build monorepo (`docker/*.Dockerfile`), images taguees `sha-<court>` en plus de `latest` (B6), verification unique dans le conteneur de test (`docker/compose.test.yml`, identique en local et en CI), volume PostgreSQL neuf en 17 (remise a zero D23).
+- **Consequence** : C1.10 ecrit le workflow complet et les compose preprod et prod dans `docker/`. D143 tient toujours : rien ne se deploie avant C7, puisque rien ne part vers `master` avant.
+
+### D148 - Store de sessions maison et colonne `UserSession.userId` - VALIDEE (2026-11-05, realisation C1.5)
+
+- **Constat** : changer de mot de passe doit fermer les autres sessions (F-ACC-4), la reinitialisation et la suppression du compte toutes ses sessions. Le schema cible ne reliait pas une session a son compte (donnees serialisees seulement), et la V1 dependait de `@quixo3/prisma-session-store`.
+- **Choix** : store express-session ecrit dans `core/auth/session.ts` sur la table `UserSession`, avec une colonne `userId` indexee (sans cle etrangere : les sessions d'un compte sont supprimees explicitement). Purge horaire des sessions expirees. Schema cible mis a jour.
+
+### D149 - Exclusion distinguee d'un depart : `Membership.excludedAt` - VALIDEE (2026-11-05, realisation C1.6)
+
+- **Constat** : un membre exclu ne revient que par invitation directe, jamais par un lien (D07, D53) ; un membre parti de lui-meme peut revenir par un lien. Le schema cible n'avait que `leftAt` et ne permettait pas de les distinguer.
+- **Choix** : colonne `excludedAt` sur `Membership`, renseignee a l'exclusion et effacee au retour. Au depart, le role revient a MEMBER et les propositions de transfert de propriete en cours qui le concernent sont annulees. Schema cible mis a jour.
+
+### D150 - Invitation par username : meme reponse que le compte existe ou non - VALIDEE (2026-11-05, realisation C1.7)
+
+- **Constat** : le parcours P02 affichait "Aucun compte avec ce nom" pour un username inconnu, ce qui permet de tester l'existence des comptes. Le plan C1.7 demande une reponse identique (D07, D50).
+- **Choix** : `POST /spaces/:id/invitations` repond toujours 202 sans corps (compte inconnu, supprime, deja membre ou deja invite). Rate limit de 30 invitations par heure. La liste des invitations en attente de l'espace (moderateurs) ne montre que les invitations reelles : fuite residuelle acceptee, limitee par le rate limit et reservee aux moderateurs. P02 mis a jour : message neutre "Si ce compte existe, il recevra l'invitation".
+- **Liens** : un code inconnu, expire, revoque, epuise ou d'un espace supprime repond pareil (SPACE_014). Rejoindre par un lien accepte l'invitation directe en attente pour le meme espace.
+
+### D151 - TDD par defaut en phase C - VALIDEE (2026-11-05, demande du proprietaire)
+
+- **Choix** : a partir de C1.8, chaque regle s'ecrit test d'abord (constate rouge), puis code, puis nettoyage. Exceptions : outillage, configuration, Docker, CI.
+
+### D152 - Registre : statut initial declare par le manifeste, modules a venir declares - VALIDEE (2026-11-05, realisation C1.8)
+
+- **Constat** : l'architecture (S3.2) ajoutait tout code nouveau en `COMING_SOON`, alors que le seed creait Recettes en `AVAILABLE`. Retirer du catalogue un code absent du registre aurait aussi retire Planning et Courses, qui n'ont pas encore de code.
+- **Choix** : chaque manifeste API declare son entree de catalogue (`catalog.status` initial, `isDefault`, `sortOrder`). Le seed appelle `syncCatalog` : code nouveau -> statut declare ; code absent -> `RETIRED` (donnees conservees, D85) ; code revenu apres retrait -> statut declare. Le statut n'est jamais reecrit ensuite (il appartient au super admin). Planning et Courses ont des manifestes minimaux (`COMING_SOON`, aucune route). `alwaysOn` dans le contrat partage porte D91.
+- **Reporte** : la surcharge du role minimal d'une permission `configurable` (D58) attend les reglages de module (C5) ; `requirePermission` applique le role par defaut du manifeste.
+
+### D153 - Suppression du compte : heritier au plafond, anonymisation - VALIDEE (2026-11-05, realisation C1.9)
+
+- **Heritier (D51)** : MODERATOR le plus ancien, sinon MEMBER le plus ancien, en sautant ceux qui possedent deja 20 espaces. Si tous sont au plafond, le premier herite quand meme : le plafond freine la creation abusive, il ne doit pas faire disparaitre l'espace de ses membres.
+- **Anonymisation (D20)** : username `deleted-<id>` et email `deleted-<id>@invalid` (l'ancien username et l'ancien email redeviennent libres), mot de passe vide, jetons et sessions supprimes. Invitations, liens, transferts et demandes d'acces en cours a son nom sont annules. Espace perso supprime avec purge a la tache horaire suivante (les crochets des modules s'appliquent). Les espaces groupe deja supprimes qu'il possedait ne sont plus restaurables.
+
+### D154 - Perimetre de C2 : ecrans du socle complets, sans notifications ni Recettes - VALIDEE (2026-11-05, plan C2)
+
+- **Choix** : C2 livre l'outillage web, le design system en code, les themes, l'app shell, le registre web et tous les ecrans du socle branches sur l'API de C1, plus une coquille PWA. Notifications, Ctrl K et widgets complets en C6 ; persistance hors ligne et avatars en C3 ; E2E en C7. Detail : `18-Plan-C2.md`.
+
+### D155 - Composants : le design system porte en TSX avec son CSS, comportements Radix - VALIDEE (2026-11-05, plan C2)
+
+- **Constat** : le design system valide (B4) existe deja en composants React (`components/bundle.js`) et en CSS base sur les tokens (`bundle.css`), utilises par les maquettes. Repartir des primitives shadcn generiques obligerait a redessiner chaque composant pour retrouver ce rendu.
+- **Choix** : porter ces composants en TSX types dans `apps/web/src/ui` et `patterns`, garder leur CSS, et confier les comportements accessibles a Radix (Dialog, DropdownMenu, Toast, Switch, RadioGroup). Tailwind 4 (theme lu dans les tokens) pour la mise en page des ecrans. C'est la demarche shadcn de D16 (code possede, Radix, Tailwind, tokens) appliquee au design system valide.
+
+### D156 - Polices auto-hebergees - VALIDEE (2026-11-05, plan C2)
+
+- **Choix** : Sora, Manrope et IBM Plex Mono servies par l'application (`@fontsource`), au lieu de Google Fonts : CSP stricte, aucune requete vers un tiers.
+
+### D157 - Tests de composants : jsdom, MSW, reponses validees par les schemas partages - VALIDEE (2026-11-05, plan C2)
+
+- **Choix** : Vitest + jsdom + Testing Library + MSW. Les reponses mockees sont construites par des fabriques et validees contre les schemas Zod du partage ; axe-core verifie les ecrans ; chaque composant est rendu dans les six themes.
+
+### D158 - Taille du texte et densite cote application - VALIDEE (2026-11-05, realisation C2.3)
+
+- **Constat** : le design system est en px et ne prevoit ni densite ni taille du texte, alors que le profil les propose (F-ACC-4, `textScale` 90 a 130 %, `density`).
+- **Choix** : la taille du texte agrandit toute l'interface (`zoom` sur `body`, comme un zoom du navigateur : les requetes de conteneur s'adaptent) ; la densite compacte resserre les espacements (`--space-3` a `--space-6`) sans toucher aux cibles tactiles de 44px. Preferences posees sur `<html>` (`data-theme`, `data-density`, `--text-scale`), la teinte de l'espace aussi (`data-space`) pour que les portails (feuilles, menus) la recoivent.
+
+### D159 - Hors ligne en C2 : ecritures refusees par le client, bandeau global - VALIDEE (2026-11-05, realisation C2.9)
+
+- **Constat** : D106 demande des actions d'ecriture desactivees avec la raison quand on est hors ligne. En C2, aucune donnee n'est encore lisible hors ligne (la persistance TanStack Query arrive avec les recettes, C3).
+- **Choix** : en C2, un bandeau global annonce le hors ligne et le client API refuse toute ecriture sans reseau (`OFFLINE`, message clair, aucune file d'attente conforme a D35). La desactivation bouton par bouton se fait en C3, avec la persistance hors ligne et le badge des cartes. Service worker : coquille en precache (polices latines seulement), mise a jour proposee par un bandeau, jamais de reponse de l'API en cache ; icone provisoire (un "F" ambre sur fond Braise) en attendant un logo.
+
+### D160 - Referentiels minimaux livres avec les recettes (C3), gestion admin en C4 - VALIDEE (2026-11-05, plan C3)
+
+- **Constat** : la roadmap place les referentiels en C4 avec l'admin, mais une recette ne s'ecrit pas sans unites ni ingredients.
+- **Choix** : C3 livre les tables et le seed des unites, des rayons et des tags globaux, l'autocompletion et la creation a la volee des ingredients (D09), les tags d'espace et leur moderation par les moderateurs (D08). C4 ajoute la gestion par le super admin (fusion D120, traductions, poids par unite, ordre des rayons, tags globaux).
+
+### D161 - C3 en tranches verticales - VALIDEE (2026-11-05, plan C3)
+
+- **Choix** : chaque sous-etape de C3 livre l'API et les ecrans d'une meme fonction (au lieu de toute l'API puis tous les ecrans), pour montrer un resultat utilisable a chaque etape et valider le contrat partage au plus tot. Detail : `19-Plan-C3.md`.
+
+### D162 - Plan C3 ecrit sans validation formelle - EN ATTENTE DE RELECTURE (2026-11-05)
+
+- **Constat** : le proprietaire a demande de poursuivre C1, C2 et C3 sans questions pendant la session du 2026-11-05.
+- **Choix** : le plan C3 est ecrit et suivi ; le proprietaire le relit a la prochaine session (perimetre, decoupage, D160, D161). Meme chose pour le plan C2 (D154 a D157), deja realise.
+
+### D163 - Enregistrement d'une recette : verrou optimiste sur la revision - VALIDEE (2026-11-05, realisation C3.2)
+
+- **Constat** : deux personnes peuvent modifier la meme recette en meme temps (auteur et moderateur, deux appareils). Sans controle, la seconde ecrase la premiere sans le savoir ; le bouton "Enregistrer la revision N" (D102) suppose deja de connaitre la revision de depart.
+- **Choix** : la modification envoie la revision sur laquelle elle a ete faite ; si la recette a avance entre-temps, l'API refuse (`RECIPE_004`, 409) et l'editeur propose de recharger, le brouillon local (D104) restant sur l'appareil. Les revisions (instantane CREATE puis EDIT) sont ecrites des C3.2 ; C3.3 ajoute l'historique et la restauration.
+
+### D164 - Liens de recettes composees : les liens deja presents survivent - VALIDEE (2026-11-05, realisation C3.4)
+
+- **Constat** : une sous-recette peut etre supprimee, ou ne plus etre visible dans l'espace du plat (partage retire, C3.5). Si l'enregistrement exigeait que chaque lien soit visible, le plat ne serait plus modifiable sans retirer le lien, et une restauration (D55) echouerait.
+- **Choix** : un **nouveau** lien doit viser une recette visible et non supprimee de l'espace ; un lien **deja present** dans la recette (ou dans la revision restauree) est garde tel quel. Le bloc s'affiche "Recette supprimee" ou "Recette non disponible" avec sa quantite. La quantite d'un lien garde son unite : si le rendement de la sous-recette change d'unite, elle est convertie dans la meme dimension, sinon le rapport direct des quantites s'applique (`linkFactor`). Supprimer une recette liee previent : "utilisee dans N recettes" (`usedBy`).
+- **Reporte** : recuperer le contenu d'une sous-recette supprimee en bloc local (etude 6) ; "Demander le partage" sur un bloc non disponible (C3.5).
+
+### D165 - Partage des recettes : regles de realisation - VALIDEE (2026-11-06, realisation C3.5)
+
+- **Constat** : D03, D26, D81, D83 et D84 laissent des cas ouverts : origine d'une recette dont l'auteur n'existe plus, portee de la confiance, place des demandes sans notifications (C6), message de la maquette F-PARTAGER-Demande absent du schema, depart d'un membre alors que le socle ne connait pas les modules (D40).
+- **Choix** (selecteur du 2026-11-05 pour les trois premiers points) :
+  - **Purge de l'origine** : une recette partagee ailleurs, ou liee par une recette gardee, part dans l'espace perso de son auteur ; sans auteur, son **plus ancien espace de partage** devient son origine et ses moderateurs la gerent (D18). Les autres recettes de l'espace sont effacees.
+  - **Demandes** : un **bandeau** "N demandes de partage" en tete de "Mes recettes" (espace perso : toutes celles de l'auteur) et de la liste d'un groupe (recettes nees dans ce groupe, pour ses moderateurs quand l'auteur est parti). Il ouvre F-DEMANDE-PARTAGE.
+  - **Message** : "Un mot pour l'auteur", 280 caracteres, facultatif (`RecipeShareRequest.message`).
+  - **Confiance** : elle porte sur l'espace ou le demandeur voit la recette (`sourceSpaceId`) ; le reglage se fait dans la feuille de la demande (D101) et tombe quand l'auteur quitte cet espace.
+  - **Partage direct** par l'auteur (s'il est encore membre de l'origine) ou, auteur parti, par les MOD et OWNER de l'origine. L'auteur modifie, supprime et retire aussi depuis un espace de partage.
+  - **Sous-recettes** (D26) : seules celles du meme auteur partent avec le plat ; retirer le plat retire celles partagees avec lui si aucune autre recette de l'espace ne les utilise.
+  - **Depart** (D84) : le module Recettes fournit l'apercu (recettes creees ici, recettes perso partagees ici) ; l'ecran retire les partages choisis avant le depart. Rien n'est retire d'office, ni a l'exclusion.
+
+### D166 - Adaptation et suggestions : regles de realisation - VALIDEE (2026-11-06, realisation C3.6)
+
+- **Constat** : D04, D17, D105 et D140 laissent ouverts l'espace cible d'une adaptation, le mot du refus montre par la maquette E-SUGGESTION-Refusee (absent du schema), l'endroit ou le decideur trouve les suggestions avant les notifications (C6) et ce que voit un membre de l'espace de l'adaptation qui ne voit pas l'original.
+- **Choix** (selecteur du 2026-11-06 pour les trois premiers points) :
+  - **Cibles** : tout espace ou l'utilisateur peut creer une recette (module actif, `recipes.create`), y compris l'espace courant et l'espace perso : l'adaptation est la seule copie (D140).
+  - **Refus** : un mot facultatif du decideur (280 caracteres, `RecipeSuggestion.decisionMessage`), montre au suggereur.
+  - **Suggestions en attente** : bandeau "N suggestions a examiner" sur "Mes recettes" et la liste d'un groupe (comme D165), et bandeau sur le detail de la recette.
+  - **Contenu adapte** : contenu de la revision actuelle de l'original, ses tags globaux (pas ses tags d'espace, D19), ses liens gardes meme non visibles dans l'espace cible (D164). Revision 1 `CREATE` a l'auteur de l'adaptation.
+  - **Suggerer** : tout membre qui voit la recette sauf son auteur, moderateurs compris (12-Permissions) ; une seule suggestion en attente par personne et par recette (`RECIPE_013`, index partiel). Contenu complet propose, sans tags (non versionnes, D19).
+  - **Accepter une suggestion basee sur une ancienne revision** : les parties changees par la suggestion (chaque champ, chaque bloc, ou tous les blocs si leur nombre differe) sont appliquees a la version actuelle ; une partie changee aussi depuis la base est signalee en conflit, et la suggestion l'emporte si on accepte. Revision `SUGGESTION` au nom du suggereur, verrou optimiste (D163).
+  - **Annulation** : statut `CANCELLED` (ajoute au schema cible) quand le suggereur quitte ou est exclu de l'espace ou il a suggere.
+  - **Transformer en adaptation** : seulement une suggestion refusee, par son auteur, vers un de ses espaces ; adaptation liee a la revision de depart de la suggestion.
+  - **Comparer** : lisible par tout membre qui voit l'adaptation, meme sans voir l'original (l'adaptation en est deja une copie). L'API renvoie l'original a la revision vue, l'original actuel et l'adaptation ; les differences se calculent dans `packages/shared` (`diffContents`), partagees avec les suggestions. "Marquer comme vu" : qui peut modifier l'adaptation. Original supprime : plus de badge, comparaison avec la seule revision vue.
+
+### D167 - Photos et avatars : stockage S3 - VALIDEE (2026-11-06, realisation C3.7)
+
+- **Constat** : le plan C3 prevoit une URL presignee PUT de 60 s ; une URL PUT ne borne pas la taille du fichier. Q-ARCH-4 est tranche (liens signes de courte duree), mais un lien signe nouveau a chaque reponse empeche le navigateur de garder l'image en cache. Les images MinIO ne sont plus telechargeables publiquement (Docker Hub et quay.io refusent en 2026-11) : impossible d'en lancer une neuve en dev, en test ou en CI. La photo et les revisions (D13) ne sont pas reliees.
+- **Choix** (selecteur du 2026-11-06 pour les trois premiers points) :
+  - **Bucket** : celui de la V1 (`forestmanager-images-preprod` / `-prod`) rendu **prive** (lecture publique retiree a la main avant la mise en prod V2) ; les images V1 restantes ne sont plus lisibles.
+  - **Photo hors revisions** : changer ou retirer la photo est immediat, sans revision ; restaurer une revision garde la photo actuelle ; une suggestion ne propose pas de photo ; une adaptation copie la photo de l'original. Droit : celui de modifier la recette.
+  - **Envoi par POST signe** (60 s) au lieu de PUT : le stockage refuse un fichier de plus de 2 Mo ou qui n'est pas de type `image/*`. Le fichier arrive dans une zone d'attente `uploads/<userId>/<uploadId>`, puis l'API le verifie (signature, dimensions bornees : 2048 px pour une photo, 512 px pour un avatar) en l'attachant et le range a sa place avec le type lu dans le contenu.
+  - **WebP, ou JPEG sur Safari** (ajout du 2026-11-06, realisation web) : le navigateur convertit en WebP quand il sait l'encoder ; Safari ne l'encode pas (le canvas rend du PNG), il envoie alors du JPEG. L'API accepte ces deux formats, verifies par leur contenu ; PNG refuse (trop lourd).
+  - **Cles uniques par version** : `recipes/<recipeId>/<uuid>.webp` (ou `.jpg`), `users/<userId>/<uuid>.webp`, `spaces/<spaceId>/<uuid>.webp` ; l'ancienne image est effacee apres le changement.
+  - **Lecture** : URL signee GET dont la date de signature est arrondie a l'heure (valable 2 h) : la meme URL pendant une heure, donc le cache du navigateur sert.
+  - **Menage** par balayage horaire : les envois en attente de plus d'une heure, et tout objet que la base ne reference plus (compte supprime, espace purge, image remplacee) et vieux de plus d'une heure. Les recettes supprimees depuis plus de 30 jours perdent leur photo.
+  - **Stockage facultatif** (comme les emails, D21) : sans variables `MINIO_*`, `features.uploads` vaut false et le front masque les choix de photo.
+  - **Serveur de dev, de test et de CI : RustFS** (`rustfs/rustfs`, compatible S3, licence Apache 2). La preprod et la prod gardent le MinIO deja installe (D147). En dev, le bucket est servi par le proxy de Vite (meme origine, pas de CORS).
+
+### D168 - Import de recettes : regles de realisation - VALIDEE (2026-11-06, realisation C3.8)
+
+- **Constat** : le plan C3 fixe l'import par lien (JSON-LD, anti-SSRF) et par texte colle, sans dire ou vit l'analyse, ce que devient une recette importee avant relecture, ni quoi faire des unites absentes du referentiel.
+- **Choix** :
+  - **Analyse partagee** (`packages/shared/src/recipes/import.ts`) : lignes d'ingredients (unites francaises vers les codes du referentiel, dl converti en cl, "a gout" vers `to-taste`, detail apres la virgule en note), JSON-LD (`@graph`, tableaux, `mainEntity`, sections d'etapes, HTML et entites), texte colle. Le texte est analyse sur l'appareil, sans appel a l'API ; seule la lecture d'une page passe par l'API.
+  - **Rien n'est enregistre a l'import** : l'API renvoie la recette lue, l'editeur s'ouvre pre-rempli (bandeau "Recette importee", nombre de quantites a verifier) ; l'enregistrement cree la revision 1 de source `IMPORT`.
+  - **Anti-SSRF** (`apps/api/src/core/net/page-fetcher.ts`) : http et https seulement, 5 redirections, a chaque saut toutes les adresses du nom doivent etre publiques (privees, locales, partagees, link-local, metadata, reservees, multicast, IPv6 locales et mappees refusees) et la connexion se fait sur l'adresse verifiee (pas de rebinding DNS) ; 10 s au total, 3 Mo apres decompression ; 20 imports par 15 min.
+  - **Unite inconnue** (pot, brin, feuille...) : le mot reste dans le nom de l'ingredient, a corriger a la relecture.
+  - **Reporte** : photo de la page importee (lecture d'image distante, a voir avec le menage du stockage).
+
+### D169 - Hors ligne : cache persistant limite et relu par schema - VALIDEE (2026-11-06, realisation C3.9)
+
+- **Constat** : D35 et D106 demandent les recettes deja ouvertes lisibles sans reseau, sans dire quoi garder sur l'appareil ni comment survivre a une nouvelle version de l'application.
+- **Choix** :
+  - **Ce qui est garde** (IndexedDB, 14 jours) : session, configuration, espaces, unites et le detail de chaque recette ouverte. Pas les listes (filtrees et paginees), ni l'historique, ni les recherches : hors ligne, la liste d'un espace montre les recettes ouvertes sur l'appareil ("Disponibles hors ligne : N recettes ouvertes recemment", badge "Hors ligne"), filtrees sur place.
+  - **Relecture par schema** : chaque donnee relue repasse par son schema Zod ; une forme perimee est ecartee, sans numero de version a tenir a jour.
+  - **Vidage** : deconnexion, connexion et suppression du compte vident le client, donc l'appareil.
+  - **Ecritures** : desactivees, pas masquees, et reliees au bandeau qui donne la raison (`useWriteGuard`, `aria-describedby`) ; menu du detail desactive en entier ; le client API les refuse de toute facon (D159). Mode cuisine disponible hors ligne.
+
+### D170 - Administration dans la meme SPA, sous /admin, chargee a part - VALIDEE (2026-11-06, plan C4)
+
+- **Constat** : les maquettes A01 a A13 decrivent une interface admin a part entiere ; elle peut vivre dans `apps/web` ou dans une application separee.
+- **Options** : meme SPA avec des routes `/admin` chargees dans un bundle separe ; workspace `apps/admin` avec son build et son image.
+- **Choix** : meme SPA (comme la V1), routes `/admin` chargees a la demande, shell AdminNav, session admin dans un cookie distinct. Un seul build, un seul nginx, design system reutilise directement ; l'isolation est portee par l'API (session et `requireAdmin`), pas par le deploiement.
+
+### D171 - Changelog en C6 - VALIDEE (2026-11-06, plan C4)
+
+- **Choix** : l'ecran admin A10, la page utilisateur et la generation par la CI restent en C6 comme le prevoit la roadmap. C4 n'affiche pas d'entree "Changelog" dans la navigation admin.
+
+### D172 - Acces de moderation : audit en C4, OWNER prevenu en C6 - VALIDEE (2026-11-06, plan C4)
+
+- **Constat** : D121 demande que l'OWNER soit informe, avec le motif, quand un admin ouvre son espace ; les notifications n'existent qu'a partir de C6.
+- **Options** : audit seul en C4 et notification en C6 ; bandeau provisoire dans l'espace en C4.
+- **Choix** : C4 enregistre l'acces et son motif dans le journal d'audit et pose un point d'accroche ; C6 y branche la notification. Une case sous C6 dans la roadmap evite l'oubli.
+
+### D173 - C4 en tranches verticales - VALIDEE (2026-11-06, plan C4)
+
+- **Choix** : comme C3 (D161), chaque sous-etape de C4 livre l'API et les ecrans d'une meme fonction : compte admin et shell, modules, referentiels, utilisateurs, espaces et moderation, journal et reglages. Detail : `20-Plan-C4.md`.
+
+### D174 - Connexion admin : regles de realisation - VALIDEE (2026-11-06, realisation C4.1)
+
+- **Constat** : le CDC et `14-Architecture.md` fixent une session admin isolee de 30 min non glissante avec 2FA TOTP, sans dire comment l'isoler de la session des utilisateurs, ni comment traiter le rejeu d'un code ou la creation du premier compte.
+- **Choix** :
+  - **Session isolee** : routeur `/api/v1/admin` monte avant la session des utilisateurs, cookie `fm.admin.sid` (httpOnly, SameSite strict, chemin `/api/v1/admin`), table `AdminSession`. Un compte utilisateur n'ouvre rien cote admin, et l'inverse. L'etape mot de passe ouvre une session d'attente de 5 min ; le code valide ouvre une session neuve de 30 min que les requetes ne prolongent jamais.
+  - **Code TOTP** : tolerance d'un pas (30 s) ; un code deja accepte est refuse (`AdminUser.totpLastStep`, ecrit sous condition en SQL) ; 3 codes faux ferment la tentative (retour au mot de passe). Rate limit : 5 mots de passe et 10 codes par 15 min.
+  - **Audit** : connexions (`auth.login`, `auth.totp-enabled`, `auth.totp-failed`, `auth.totp-locked`, `auth.logout`) avec l'IP. La categorie d'une entree se deduit du prefixe de l'action (`auditCategory` dans `packages/shared`) ; une action sans categorie est refusee. Trigger en base qui refuse UPDATE et DELETE sur `AdminAuditLog` [D128].
+  - **Premier compte** : script `apps/api/src/scripts/create-admin.ts` (`npm run admin:create`), dans `src/` pour etre present dans l'image de prod ; meme politique de mot de passe que les utilisateurs, argon2id.
+
+### D175 - Modules cote admin : regles de realisation - VALIDEE (2026-11-06, realisation C4.2)
+
+- **Constat** : le plan C4 fixe la file des demandes et le catalogue, sans dire ce que deviennent une demande en attente quand l'admin accorde d'office, ni l'etat "active" d'un module retire puis rendu.
+- **Choix** :
+  - **Accorder** (demande ou d'office) : l'acces est rendu sans activer le module ; l'OWNER l'active. Accorder d'office accepte la demande en attente du meme espace.
+  - **Retirer** : `revokedAt` seulement ; le choix "active" de l'OWNER est garde et revient avec l'acces (D85).
+  - **Module par defaut** (Recettes) : ni statut modifiable, ni acces retirable (`ADMIN_007`).
+  - **Refus** : motif obligatoire (500 caracteres), lu par l'OWNER dans les modules de son espace ; la notification viendra en C6 (D172). Une demande deja traitee ou annulee repond `ADMIN_006`.
+  - **Recherche d'espace** pour accorder : `GET /admin/spaces/lookup` (espaces groupe actifs, nom et OWNER, 10 resultats), reprise par la liste des espaces en C4.5.
+
+### D176 - Referentiels cote admin : regles de realisation - VALIDEE (2026-11-09, realisation C4.3)
+
+- **Constat** : le plan C4 fixe les ecrans A05 a A08 et la fusion D120, sans dire ce que garde la cible d'une fusion, quand un nouveau est un "doublon probable", ni comment renommer un tag global sans que le seed le recree.
+- **Choix** :
+  - **Doublon probable** : nouvel ingredient dont le nom francais ressemble (pg_trgm, similarite >= 0,45) a celui d'un ingredient verifie. Le detail propose les 5 ingredients les plus proches comme cibles de fusion, plus une recherche.
+  - **Fusion d'ingredients** : la cible garde ses propres attributs (rien n'est copie du fusionne : rayon, unite, poids, anglais) ; les synonymes du fusionne passent a la cible (un seul niveau de synonymes). La recherche de l'admin trouve un ingredient par ses synonymes.
+  - **Ajout par l'admin** : l'ingredient est cree verifie (ACTIVE). "Marquer comme verifie" enregistre le formulaire et verifie dans le meme appel.
+  - **Poids par unite** (D46) : seulement pour les unites de pieces (COUNT) ; masses et volumes se convertissent deja. Un champ par unite de pieces, vide = pas de poids.
+  - **Codes stables** : le code d'une unite, d'un rayon (tire du nom a la creation) et le slug d'un tag global ne changent plus ; renommer ne touche que les noms. Le seed retrouve donc tout et ne recree ni un tag renomme ni un tag supprime.
+  - **Tags globaux** : nom unique sans casse ni accents parmi les tags vivants (`ADMIN_009`) ; fusionner deplace les recettes et masque le tag (`mergedIntoId`, `deletedAt`) ; supprimer le retire de toutes les recettes.
+  - **Rayons** : l'ordre s'enregistre en entier (`PUT /admin/aisles/order`, chaque rayon une fois, `ADMIN_012`) ; les boutons Monter / Descendre l'envoient.
+  - **Testeur d'addition** (A06) : `addQuantities` de `packages/shared/src/units/` (masses et volumes par la base puis unite la plus lisible, pieces en grammes avec le poids de l'ingredient, sinon une ligne par unite), le calcul que reprendra la liste de courses.
+
+### D177 - Comptes cote admin et mot de passe temporaire : regles de realisation - VALIDEE (2026-11-09, realisation C4.4)
+
+- **Constat** : D134 fixe le principe (24 h, usage unique, l'ancien reste valable, autres sessions fermees ensuite) et le schema la session restreinte, sans dire comment elle est restreinte, ni la forme du mot de passe.
+- **Choix** :
+  - **Forme** : trois mots courts sans accents et quatre chiffres (`tison-7342-cendre-houx`, environ 31 bits), facile a dicter ; seul son hash argon2id est garde (`AuthToken.tokenHash`). Un nouveau temporaire remplace celui qui n'a pas servi. La reponse n'est jamais mise en cache (`no-store`).
+  - **Connexion** : le mot de passe habituel est essaye d'abord, puis les temporaires valables du compte. Le temporaire ouvre une session courte (pas de "rester connecte") marquee `passwordChoice` : `requireAuth` repond `AUTH_011` partout ; seuls `GET /me` (avec `mustChoosePassword: true`), `POST /auth/choose-password` et la deconnexion passent.
+  - **Choix du mot de passe** : meme politique que l'inscription ; le temporaire est consomme (`usedAt`) dans la meme transaction que le nouveau hash, les autres sessions sont fermees et la session courante tourne (nouvel identifiant). Temporaire expire entre-temps : `AUTH_014`, la session restreinte est fermee et l'ecran revient a la connexion.
+  - **Web** : `PasswordChoiceGate` n'affiche que "Choisis ton mot de passe" tant que `mustChoosePassword` (hors `/admin`).
+  - **Liste A12** : comptes non supprimes, par derniere connexion ; espaces groupe dont le compte est membre actif ; filtres "OWNER d'un espace" (groupe) et "Inactifs depuis 6 mois" (derniere connexion, ou inscription si jamais connecte) ; pagination admin plafonnee a 100, au-dela on affine la recherche. Le rappel "E-mails non configures" vient de `GET /config`.
+
+### D178 - Moderation : acces en table dediee, recette masquee visible de son auteur - VALIDEE (2026-11-09, realisation C4.5, choix du proprietaire)
+
+- **Constat** : le plan C4 laissait deux points a trancher : la forme de l'acces de moderation en base et l'etat "masquee" d'une recette (absent du schema cible).
+- **Options** : acces dans une table dediee ou dans la session admin ; recette masquee visible de son auteur avec le motif, cachee pour tous, ou pas d'etat masque.
+- **Choix** (recommandations retenues) :
+  - **Acces** : table `ModerationAccess` (admin, espace, motif parmi 4, precision obligatoire, ouverture, expiration a 30 min). Chaque route de moderation exige un acces valable de cet admin a cet espace non supprime (`ADMIN_013`) ; "Fermer l'acces" l'expire tout de suite. C6 y branchera la notification de l'OWNER (D172).
+  - **Masquer** : `Recipe.hiddenAt` et `hiddenReason`. La recette disparait des listes et du detail pour tous les membres, sauf son auteur qui la voit avec le bandeau "Masquee par la moderation" et le motif. L'admin peut la reafficher (audit `recipe.unhidden`).
+  - **Autres actions**, motif obligatoire et audit : retirer d'un espace de partage (la recette reste chez son auteur ; refuse dans l'espace d'origine, `ADMIN_014`), supprimer une recette (comme la suppression par l'auteur), supprimer un espace groupe (suppression masquee de 30 jours, D22 ; l'espace perso ne se supprime pas). La vue de moderation lit les recettes en lecture seule, masquees comprises.
+  - **Restaurer** un espace en suppression depuis la liste, a la demande de l'OWNER, avant la purge (`ADMIN_015` sinon).
+
+### D179 - Journal, reglages et tableau de bord admin : regles de realisation - VALIDEE (2026-11-09, realisation C4.6)
+
+- **Constat** : D128, D129 et D135 fixent les ecrans A11, A02 et A13 ; le SDK Sentry (D75) n'est pas encore dans le code, et le plan ne dit pas si tester un service s'audite.
+- **Choix** :
+  - **Journal** : du plus recent au plus ancien, filtre par categorie (prefixe de l'action, `auditPrefixes`), pagination par offset avec "Voir les plus anciennes". Libelles, cible et detail des actions calcules cote web (`core/admin/format.ts`) depuis les donnees de l'entree.
+  - **Reglages** : lus des variables d'environnement, jamais de secret (adresse SMTP sans identifiants, cles de stockage nommees mais masquees). Tester l'e-mail envoie un message a l'adresse de l'admin ; tester le stockage ecrit, relit et supprime un petit objet. Un test ne modifie rien : pas d'entree d'audit. Le suivi d'erreurs est affiche "Pas encore branche" ; son branchement (SDK Sentry front et back, DSN Bugsink, test depuis A13) est ajoute a C7.
+  - **Tableau de bord** : "A traiter" = demandes de modules, nouveaux ingredients (et jusqu'a 3 doublons probables), espaces en suppression ; chiffres de la plateforme ; etat des services ; version (package.json racine) ; 5 dernieres actions. A02m est le meme ecran en mobile.
+
+## Phase C5 - plan du module Planning (2026-11-09)
+
+Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquettes du canevas Planning, specs V1 `SPEC_MEAL_PLAN.md` et `SPEC_MEAL_GENERATION.md`). Les quatre points a trancher l'ont ete par le proprietaire, recommandations retenues.
+
+### D180 - Planning en calendrier continu, sans planning date ni archives - VALIDEE (2026-11-09, plan C5, choix du proprietaire)
+
+- **Constat** : le modele V1 (un planning actif a dates libres cree par un moderateur, les anciens archives) oblige a creer un planning chaque semaine, bloque un MEMBER tant qu'aucun planning n'existe (alors que D58 donne la main aux membres), redemande dans F-CREER-PLANNING les repas et portions deja dans `MealPlanSettings`, et demande des regles de chevauchement, un index "un seul actif" et un cooldown "inter-plannings" qui lit l'archive precedente. Ajouter un repas dans les reglages laisse le planning en cours sans ces cases.
+- **Options** : calendrier continu par espace ; plannings dates et archives comme la V1.
+- **Choix** : calendrier continu. Les repas sont ranges par espace et par date (`MealSlot (spaceId, date, mealTime)`), sans entite `MealPlan`. On navigue de semaine en semaine ; le passe tient lieu d'archives (lecture et modification avec les memes droits). La generation porte sur une periode choisie (31 jours au plus). Les cooldowns lisent les repas deja places autour de la periode, la frequence "par semaine" suit les semaines du calendrier (`weekStartsOn`). La future liste de courses prendra aussi une periode.
+- **Consequences** : F-CREER-PLANNING, les archives et `MealPlanStatus` disparaissent ; E-PLANNING-vide montre la semaine vide avec "Touche un repas pour le remplir" et "Generer". Les reglages du planning (repas de la journee, portions, debut de semaine, role minimal) vivent dans une feuille de reglages du module.
+
+### D181 - Un etat "Pas de repas" remplace le drapeau disabled - VALIDEE (2026-11-09, plan C5, choix du proprietaire)
+
+- **Constat** : trois facons de dire "pas de repas ici" : `disabled` sur la case, l'exclusion du profil et un repas vide verrouille.
+- **Choix** : un repas est vide (pas de ligne), recette, texte libre ou "Pas de repas" (`SKIPPED`, la generation le saute). Les exclusions du profil restent pour ce qui revient chaque semaine. Plus de drapeau `disabled`, plus de repas vide verrouille : le verrou ne porte que sur une recette ou un texte.
+
+### D182 - Idee de repas en texte libre, retiree a la conversion - VALIDEE (2026-11-09, plan C5, choix du proprietaire)
+
+- **Constat** : `MealIdea` avait deux liens vers une recette (`recipeId`, `convertedRecipeId`) ; une idee liee a une recette existante doublait le poids de cette recette au tirage.
+- **Choix** : une idee est un nom et un commentaire. "Transformer en recette" ouvre l'editeur pre-rempli (D133) ; une fois la recette enregistree, l'idee est retiree (soft delete). A la generation, une idee tiree donne un repas en texte libre (poids 1, aucune regle de tag ne s'y applique, comme la V1). La mention "Liee a ..." de la maquette E-IDEES disparait.
+
+### D183 - Profil de generation "Standard" cree d'office - VALIDEE (2026-11-09, plan C5, choix du proprietaire)
+
+- **Choix** : chaque espace a toujours exactement un profil par defaut. Un profil "Standard" sans regle (delai de 3 jours, idees incluses) est cree au premier acces au planning de l'espace s'il n'en a aucun. Supprimer le profil par defaut demande d'en designer un autre ; le dernier profil ne se supprime pas. "Generer" et "Proposer un autre repas" marchent des le premier jour.
+
+### D184 - Planning : regles de realisation fixees au plan - VALIDEE (2026-11-09, plan C5, defauts annonces au proprietaire)
+
+- **Tags fusionnes ou supprimes** : la fusion d'un tag le masque (`mergedIntoId`, `deletedAt`) sans cascade. Regles et epinglages sont resolus a la lecture : un tag fusionne suit sa cible, un tag supprime rend la regle inactive, affichee "Tag supprime" dans le profil. Pas de crochet entre modules.
+- **Recette devenue invisible** (retiree du partage, supprimee, masquee par la moderation) : le repas reste et s'affiche en texte avec le dernier titre connu (garde dans `MealSlot.text` a chaque choix de recette) ; la generation ne la propose plus.
+- **Pool de la generation** : recettes visibles dans l'espace (origine ou partagees, F-MPL-5), non supprimees, non masquees, jamais une recette de base (D24) ; tags pris en compte : globaux et tags de cet espace (D19) ; idees si le profil les inclut.
+- **Garder ce planning** (D110) sans etat serveur : l'apercu renvoie la proposition et l'etat de chaque case au moment du tirage ; a l'enregistrement, une case modifiee entre-temps par un membre n'est pas ecrasee et le resultat la signale.
+- **Echange** (D69, D112) : tout le contenu change de case, verrou compris (le verrou suit le repas). Echanger avec une case vide revient a deplacer le repas.
+- **Poids** (complete par le proprietaire) : par defaut cinq paliers (Jamais x0, Moins souvent x0,5, Normal x1, Plus souvent x1,5, Beaucoup plus x2), valeurs deja montrees par les maquettes. Un mode "Avance" dans la regle ouvre une jauge de 0 a 200 % par pas de 5 % pour un reglage fin. En base, un nombre de 0 a 2 ; une regle dont le poids n'est pas un palier s'affiche en pourcentage et s'ouvre en mode avance. Les poids se multiplient comme en V1.
+- **Algorithme** : celui de la V1 (passe principale, rattrapage des minimums, rapport), avec une graine aleatoire injectable pour des tests deterministes ; ordre de priorite des contraintes V1 conserve ; la generation ne refuse jamais, elle explique chaque case laissee vide (D113).
+- **Temps reel** : pas de socket en C5 ; relecture au retour sur l'onglet et en tirant l'ecran (P10). La salle `space:<id>` arrive avec C6.
+- **Services entre modules** (`14-Architecture.md`, `provides` / `requires`) : Recettes fournit le catalogue des recettes visibles d'un espace (recherche et generation) ; le Planning fournit les compteurs D39 ("planifiee N fois", "derniere fois le ..."), que Recettes affiche seulement si le module est present et actif.
+- **Droits** (D58, F-MPL-3) : modifier, echanger, verrouiller, remplacer un repas = role minimal `editRole` ; le role minimal se regle par l'OWNER seul ; les autres reglages, les profils et la generation : MODERATOR et OWNER.
+- **Catalogue** : le statut d'un module n'est ecrit qu'a la creation de sa ligne (D175) ; sur une base existante, passer le Planning de "Bientot" a "Disponible" se fait dans A04.
+
+### D185 - C5 en tranches verticales - VALIDEE (2026-11-09, plan C5)
+
+- **Choix** : comme C3 et C4, chaque sous-etape livre l'API, le partage et les ecrans d'une meme fonction. Detail : `21-Plan-C5.md`.
+
+### D186 - Planning : pas d'appui long sur un repas, tirer pour rafraichir garde - VALIDEE (2026-11-09, revue de C5, choix du proprietaire)
+
+- **Constat** : la maquette prevoyait un appui long sur un repas (menu d'actions) et PullToRefresh sur E-PLANNING. Toucher un repas ouvre F-REPAS, qui porte deja toutes ses actions (vider, verrouiller, echanger, proposer un autre repas) ; le planning se relit deja au retour sur l'onglet et apres chaque modification.
+- **Options** : appui long en plus de F-REPAS, ou rien ; PullToRefresh, ou la relecture automatique seule.
+- **Choix** : pas d'appui long sur un repas (un seul geste, rien en double) ; PullToRefresh garde sur E-PLANNING en mobile. Ecart au geste general du CDC S5.1 [D38] limite aux repas du planning.
+
+### D187 - Changelog : brouillon embarque dans l'image, cree au demarrage - VALIDEE (2026-11-09, plan C6, choix du proprietaire)
+
+- **Constat** : la V1 inserait le changelog apres la prod par `exec` Portainer dans le conteneur (fragile, non testable, JSON en ligne de commande). Les commits sont ecrits pour les developpeurs (`feat(api): ... (C5.5)`) : publies tels quels, ils seraient illisibles. Le modele cible n'a pas de statut alors que A10 montre Brouillon, Publiee, Masquee. `release-tag` lit `package.json` (`2.0.0-dev`), qui ne change pas : deux sources de version. `git describe --match "v*"` trouverait `v1-final`.
+- **Options** : `exec` Portainer comme la V1 ; brouillon embarque dans l'image et cree au demarrage ; changelog entierement manuel.
+- **Choix** : la CI calcule la version (dernier tag `v[0-9]*`, semver depuis les commits conventionnels) et les items classes (etapes `(Cx.y)` regroupees, scopes retires), les ecrit dans `release.json` dans l'image API ; le seed cree le brouillon de cette version s'il n'existe pas ; l'admin reformule et publie dans A10 (interrupteur D127). Le tag pose apres la prod est cette version. `ChangelogEntry` gagne `status`, `publishedAt` facultatif et `notifiedAt`. La 2.0.0 (premiere version V2, une centaine de commits depuis `v1-final`) s'ecrit a la main.
+
+### D188 - Temps reel en SSE plutot que Socket.IO - VALIDEE (2026-11-09, plan C6, choix du proprietaire)
+
+- **Constat** : les besoins vont du serveur vers le client seulement (notifications, invalidation des donnees d'un espace) ; une seule instance d'API.
+- **Options** : Socket.IO (prevu par `14-Architecture.md` S6, comme la V1) ; Server-Sent Events.
+- **Choix** : SSE (`GET /api/v1/events`, `EventSource` natif) : aucune dependance, reprise native, passe par nginx et Traefik en HTTP. Diffusion en memoire derriere une interface (PostgreSQL `LISTEN/NOTIFY` si un jour plusieurs instances). Amende `14-Architecture.md` S6.
+
+### D189 - C6 recentre, recherche globale, export et widgets en C6b - VALIDEE (2026-11-09, plan C6, choix du proprietaire)
+
+- **Constat** : les etapes precedentes ont reporte vers C6 la recherche globale (loupe masquee depuis C2.4), l'export (C2.6, C2.8) et les widgets d'accueil (C2.8), sans lien avec les notifications.
+- **Options** : tout dans C6 ; C6b separe avant C7 ; apres la prod (V2.1).
+- **Choix** : C6 = notifications, temps reel, activite, changelog. C6b = recherche globale, export, widgets d'accueil, avant C7.
+
+### D190 - C6 : decoupage et regles de realisation - PROPOSEE (2026-11-09, plan C6, defauts annonces au proprietaire)
+
+- **Decoupage** : tranches verticales C6.1 a C6.6 (`22-Plan-C6.md`).
+- **Retention** : notifications lues purgees apres 30 jours, toutes apres 90 jours, dans la tache horaire.
+- **Regroupement** : `groupKey` sur 24 h ; jamais de notification a l'auteur de l'action.
+- **Admin** : pas de notification en base pour l'admin (`AdminUser` isole) ; "A traiter" du tableau de bord [D129] et un compteur dans l'AdminNav suffisent.
+- **Nouvelle version** [D127] : une ligne de notification par utilisateur actif dont la categorie est activee, ecrite en une requete a la publication.
+- **Fil d'activite** : sans maquette, page "Activite" de l'espace calquee sur E-NOTIFICATIONS.
+
+### D191 - Recherche globale : contributions des modules, actions cote client - PROPOSEE (2026-11-10, plan C6b, defauts annonces au proprietaire)
+
+- **Constat** : P16 et D119 demandent une recherche qui couvre recettes, ingredients, membres, espaces, planning et actions, sans que le socle connaisse les modules [D40].
+- **Choix** : un seul appel `GET /search?q=`, chaque module contribue ses groupes par `ApiModule.search` ; perimetre = espaces ou l'utilisateur est membre actif et ou le module est actif ; 5 resultats par groupe, 2 caracteres minimum. Les actions sont declarees cote web (`WebModule.actions` et socle) et filtrees sans appel API. Repas cherches de 2 semaines en arriere a 4 semaines en avant.
+
+### D192 - Export : tache de fond, MinIO 24 h, archive zip, reimport en V2.1 - VALIDEE (2026-11-10, plan C6b, choix du proprietaire)
+
+- **Options** : tache de fond avec `DataExport` et fichier dans MinIO (schema cible) ; telechargement direct dans la reponse HTTP.
+- **Choix** : tache de fond. L'export est genere dans l'API juste apres la demande (pas de file d'attente, une seule instance), stocke 24 h dans MinIO puis efface par la tache horaire ; l'ecran relit le statut puis propose "Telecharger". Toujours une archive zip (JSON ou Markdown, photos si demande).
+- **Reimport** : le format JSON est versionne, valide par Zod et teste en aller-retour des C6b ; l'ecran d'import arrive en V2.1 (choix du proprietaire).
+- **Limite d'espace** [D37] : un export par espace sur 24 h glissantes, message avec l'heure du prochain possible (maquette F-EXPORT).
+
+### D193 - Widgets d'accueil : feuille "Personnaliser", registre de widgets - VALIDEE (2026-11-10, plan C6b, choix du proprietaire pour la feuille)
+
+- **Options** : feuille "Personnaliser l'accueil" ; mode edition sur l'accueil.
+- **Choix** : feuille (interrupteur + monter / descendre, comme E-MODULES, "Retablir par defaut"), enregistree a chaque changement dans `User.homeWidgets`.
+- **Defauts annonces** : widgets declares par cle `<module>.<nom>` des deux cotes ; un seul appel `GET /me/home` ; widgets V2.0 : en attente (invitations, transferts), prochains repas, recettes les plus cuisinees (repas passes planifies, D39), recemment ajoutees, activite des groupes (coupe par defaut).
+- **Ecarts a la realisation (C6b.3, 2026-11-11)** : invitations et transferts en attente ne sont pas un widget mais restent en tete de l'accueil quand il y en a (pas de section vide a choisir) ; "les plus cuisinees" devient `meal-plan.most-cooked`, ses donnees venant du Planning [D40].
+
+### D194 - C6b : decoupage - PROPOSEE (2026-11-10, plan C6b)
+
+- Tranches verticales C6b.1 (recherche), C6b.2 (export), C6b.3 (widgets), puis revue visuelle et cloture (`23-Plan-C6b.md`).
+
+### D195 - E2E : Chromium seul, WebKit reporte en V2.1 - VALIDEE (2026-11-11, plan C7, choix du proprietaire)
+
+- **Constat** : D78 rendait WebKit bloquant sur `master` ; le proprietaire a demande depuis d'ignorer Safari pour l'instant.
+- **Options** : Chromium seul ; WebKit informatif ; WebKit bloquant sur `master` (D78).
+- **Choix** : Chromium seul, projets mobile (390x844) et desktop (1280x800). D78 amendee : la ligne WebKit sort de la CI. WebKit revient en V2.1 (case dans `4-Roadmap.md`).
+
+### D196 - Suivi d'erreurs : Bugsink en stack a part, tunnel par l'API - VALIDEE (2026-11-11, plan C7, choix du proprietaire pour l'hebergement)
+
+- **Options d'hebergement** : stack Portainer a part ; conteneur dans la stack de l'app ; SDK seul, Bugsink plus tard.
+- **Choix** : un seul Bugsink dans sa propre stack Portainer, creee par le proprietaire a partir de `docker/bugsink/compose.yml`, un projet par environnement. Le code ne recoit qu'un DSN (`SENTRY_DSN`, secrets GitHub `DEV_SENTRY_DSN` et `SENTRY_DSN`, facultatifs) : sans DSN, le suivi est coupe.
+- **Front** (defaut annonce) : le SDK du navigateur envoie par un tunnel de l'API (`POST /api/v1/monitoring`) ; le front ne connait pas le DSN, la CSP ne change pas, une seule image pour la preprod et la prod.
+- **Donnees** (defaut annonce) : erreurs 5xx et rejets non geres seulement ; ni corps, ni cookies, ni IP ; l'utilisateur n'est qu'un UUID.
+
+### D197 - Stack E2E, route de test, seuils de couverture - VALIDEE (2026-11-11, plan C7, defauts annonces au proprietaire ; realisation de la CI : D200)
+
+- **Stack** : `docker/compose.e2e.yml`, front en image prod (nginx, bundle de production) devant une API en `NODE_ENV=test`, PostgreSQL et RustFS en tmpfs, conteneur Playwright officiel.
+- **Route de test** [D79] : `POST /api/v1/__test/scenario` et `/__test/reset`, montees seulement en `NODE_ENV=test`, absence en production prouvee par un test.
+- **Couverture** [D78] : seuils 90 / 80 / 60 % vises ; une zone en dessous recoit des tests la ou un comportement n'est pas prouve, sinon son seuil est pose au niveau mesure et l'ecart est note dans `15-Plan-Tests.md`.
+- **E2E en CI** : job bloquant a chaque push et pull request, artefacts des echecs gardes 7 jours.
+
+### D198 - C7 : decoupage et changement de poste avant tout deploy - REMPLACEE par D201 (2026-11-11, plan C7, demande du proprietaire pour le changement de poste)
+
+- **Constat** : le proprietaire fait depuis un autre ordinateur tout ce qui pousse vers Portainer (preprod et prod).
+- **Choix** : C7.1 a C7.6 (E2E, suivi d'erreurs, CI) sur le poste actuel, sans toucher Portainer ni `master` ; C7.6 se termine par l'etat ecrit et un push. C7.7 (preprod) et C8 (prod) reprennent sur l'autre poste (`24-Plan-C7.md`).
+
+## Phase C7 - realisation du suivi d'erreurs (2026-11-11)
+
+### D199 - Suivi d'erreurs : regles de realisation - VALIDEE (2026-11-11, realisation C7.5, defauts annonces)
+
+- **Constat** : D196 cite `@sentry/node` ; en version 11 il embarque OpenTelemetry et une instrumentation automatique dont l'API n'a pas besoin. Sentry 11 remplace aussi `sendDefaultPii` par `dataCollection`. Preprod et prod tournent toutes deux en `NODE_ENV=production`.
+- **Choix** :
+  - **API** : `@sentry/core` 11.9.0 seul (`ServerRuntimeClient` de `@sentry/core/server`, meme protocole, aucune dependance de plus), transport par `fetch` (5 s), un client par application (pas d'etat global, testable). Erreurs 500 du gestionnaire unique (UUID de l'utilisateur, identifiant de requete), rejets et exceptions non geres, echec des taches horaires. `dataCollection` tout coupe et `beforeSend` qui retire requete, nom du serveur et tout champ de l'utilisateur hors `id`.
+  - **Environnement** : variable `SENTRY_ENVIRONMENT` (`preprod`, `production` dans les compose ; `NODE_ENV` par defaut). Version = `release.json` (module `core/changelog/version.ts`, partage avec le tableau de bord). Un `SENTRY_DSN` vide (secret absent) vaut absent ; un DSN illisible arrete le demarrage.
+  - **Configuration publique** : `GET /config` ajoute `features.errorTracking`, `release` et `environment` (jamais le DSN).
+  - **Tunnel** : `POST /api/v1/monitoring` monte avant le CSRF et la session (une erreur peut survenir avant la connexion), corps texte de 200 ko au plus, 30 par minute ; en-tete d'enveloppe illisible -> `VALIDATION_001` sans appel au recepteur ; seul le corps est relaye (ni cookies, ni en-tetes, ni IP) avec le vrai DSN ; reponse 202 meme si le recepteur echoue (journalise en `warn`).
+  - **Web** : `@sentry/react` 11.9.0 importe a la demande par `app/error-tracking.ts` si `features.errorTracking` ; DSN factice `https://forest@monitoring.invalid/1` remplace par le tunnel ; integrations par defaut (erreurs et rejets globaux) ; utilisateur = UUID suivi par la requete `["me"]`.
+  - **A13** : carte "Configure" / "Non configure" comme les autres services, hote du DSN et environnement, "Envoyer un evenement de test" (evenement d'information construit a la main, pour lire le statut HTTP du recepteur). Tableau de bord : "En ligne" / "Non configure".
+  - **Bugsink** : `bugsink/bugsink:2.6.2` (date a reverifier sur Docker Hub avant la mise en place), SQLite dans le volume `bugsink_data`, inscription par l'admin seulement, une equipe, garde-fous de volume. Notice : `docker/bugsink/README.md`.
+
+## Phase C7 - realisation de la CI complete (2026-11-11)
+
+### D200 - CI complete : couverture, cles i18n, E2E - VALIDEE (2026-11-11, realisation C7.6, defauts annonces)
+
+- **Constat** : mesure du 2026-11-11 (`@vitest/coverage-v8` 5.0.5), lignes / branches : `packages/shared` 99,7 / 92,1, `apps/api` 95,8 / 83,1, `apps/web` 91,4 / 80,8. Toutes les zones depassent les seuils de `15-Plan-Tests.md` S7. Cote web, aucun texte ne passe encore par `t()` : les seules cles lues sont les codes d'erreur.
+- **Choix** :
+  - **Couverture** : seuils du plan gardes tels quels (90/85, 80/70, 60/50), aucun test ajoute pour le chiffre. Configuration dans `vitest.config.ts` (seuils par motif de fichiers), lancee par `npm run test:coverage` ; generated, scripts et aides de test exclus. Rapport texte seul, ecrit dans `/tmp` du conteneur (il tourne en root sur l'arbre monte).
+  - **Cles i18n** : par le typage d'i18next (`apps/web/src/i18n/i18next.d.ts`, `CustomTypeOptions.resources`) plutot qu'un script : une cle absente de `fr` echoue au typecheck, bloquant en CI. Le namespace `errors` est construit depuis `ERROR_CODES` et le type `ClientErrorCode` (`lib/api.ts`), complet par construction ; un code inconnu venu du serveur reste lu par `i18n.exists`.
+  - **E2E** : job `e2e` apres `verify`, `build` attend les deux ; `npm run e2e` (avec `CI` : une relance, `test.only` interdit), rapport et `test-results` envoyes en artefact 7 jours sur echec seulement, 30 min au plus.
+
+## Phase C7 - preprod (2026-11-12)
+
+### D201 - Preprod et prod depuis ce poste - VALIDEE (2026-11-12, demande du proprietaire)
+
+- **Constat** : D198 renvoyait C7.7 et C8 sur un autre ordinateur. Le proprietaire a acces a Portainer et a GitHub depuis ce poste.
+- **Choix** : C7.7 et C8 se font depuis ce poste, pas a pas. Le proprietaire saisit lui-meme toute valeur secrete (GitHub, Portainer, MinIO) ; seuls les noms circulent.
+- **Etat des acces (2026-11-12)** : les 14 secrets de la V1 et `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY` (cles V1, deja presents) sont en place ; `CORS_ORIGIN` (V1) n'est plus lu. DNS generique `*.matthias-bouloc.fr` : rien a creer pour Bugsink. Stack Bugsink creee, projets `forestmanager-preprod` et `forestmanager-prod`, secret `DEV_SENTRY_DSN` ajoute. Bugsink n'envoie aucun mail (pas de SMTP dans sa stack) : l'adresse du compte ne sert qu'a la connexion.

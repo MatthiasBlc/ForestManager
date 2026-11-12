@@ -147,15 +147,16 @@ Un meme utilisateur est MEM, MOD ou OWN selon l'espace. "Auteur" se cumule avec 
 
 | Action                                                                                 | VIS | CON |  MEM  | MOD | OWN | ANC | ADM | Source        | Note                                                                          |
 | -------------------------------------------------------------------------------------- | :-: | :-: | :---: | :-: | :-: | :-: | :-: | ------------- | ----------------------------------------------------------------------------- |
-| Voir le planning, les archives, les idees de repas                                     |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | CDC S4.6      | Si le module est accorde et actif.                                            |
+| Voir le planning (semaines passees comprises), les idees de repas                      |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | CDC S4.6      | Si le module est accorde et actif.                                            |
 | Modifier un repas (recette, texte libre, portions, commentaire), echanger, verrouiller |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | F-MPL-3, D58  | Role minimal regle par l'OWNER ; MEMBER par defaut.                           |
 | Remplacer un repas par la generation (un seul repas)                                   |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | D58           | Memes droits que modifier un repas.                                           |
-| Creer, archiver, supprimer un planning ; regler les repas de la journee                |  -  |  -  |   -   | Oui | Oui |  -  |  -  | D11, D58      |                                                                               |
+| Regler le planning (repas de la journee, portions, debut de semaine)                   |  -  |  -  |   -   | Oui | Oui |  -  |  -  | D11, D58      | Calendrier continu, pas de planning a creer (D180).                           |
+| Regler le role minimal pour modifier un repas                                          |  -  |  -  |   -   |  -  | Oui |  -  |  -  | F-MPL-3, D58  |                                                                               |
 | Gerer les jeux de parametres de generation (regles, exclusions, epinglages)            |  -  |  -  |   -   | Oui | Oui |  -  |  -  | D58           |                                                                               |
 | Generer tout un planning                                                               |  -  |  -  |   -   | Oui | Oui |  -  |  -  | D58           | Les repas verrouilles ne bougent pas.                                         |
 | Ajouter une idee de repas                                                              |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | CDC S4.6      |                                                                               |
 | Modifier, supprimer une idee                                                           |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | CDC S4.6      | Membre : seulement ses propres idees.                                         |
-| Convertir une idee en recette                                                          |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | F-MPL-4       | La recette creee a pour auteur celui qui convertit.                           |
+| Convertir une idee en recette                                                          |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | F-MPL-4, D182 | Auteur : celui qui convertit ; l'idee est ensuite retiree.                    |
 | Liste de courses (V2.1) : creer, cocher, archiver                                      |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | F-SHP-4, D141 | Role minimal regle par l'OWNER ; MEMBER par defaut, comme le planning (D141). |
 
 ## Notifications et activite
@@ -231,7 +232,7 @@ Introduites par ce document, reportees dans le journal des decisions (qui porte 
 
 ### D58 - Droits du planning - VALIDEE (2026-11-03)
 
-- Modifier un repas : role minimal regle par l'OWNER, MEMBER par defaut. Creer, archiver un planning, regler les repas de la journee, gerer les parametres et generer tout un planning : MODERATOR et OWNER.
+- Modifier un repas : role minimal regle par l'OWNER, MEMBER par defaut. Regler le planning, gerer les parametres et generer tout un planning : MODERATOR et OWNER ; regler le role minimal : OWNER.
 
 ### D59 - Retour d'un ancien membre - VALIDEE (2026-11-03)
 

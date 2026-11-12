@@ -19,7 +19,8 @@ Regle : un comportement se teste au niveau **le plus bas** qui le prouve. Les E2
 - **Supertest** sur l'app Express sans ouvrir de port.
 - **PostgreSQL de test** dans Docker (`docker compose -f docker/compose.test.yml`), migrations appliquees au demarrage, **base remise a zero entre fichiers de test** (TRUNCATE des tables hors referentiels), referentiels seedes une fois.
 - **Testing Library** + `user-event` ; **MSW** pour simuler l'API, avec des handlers generes depuis les schemas Zod partages (les reponses mockees sont valides par construction).
-- **Playwright** (Chromium, WebKit pour Safari iOS, emulation mobile 390x844 par defaut ; un projet desktop 1280x800) ; **@axe-core/playwright** pour l'accessibilite.
+- **Playwright** (Chromium seul, WebKit reporte en V2.1 [D195] ; emulation mobile 390x844 par defaut ; un projet desktop 1280x800) ; **@axe-core/playwright** pour l'accessibilite. Stack `docker/compose.e2e.yml` (front en image prod, API en `NODE_ENV=test`), `npm run e2e` [D197].
+- **Couverture** : `@vitest/coverage-v8`, seuils par zone dans `vitest.config.ts` (section 7), `npm run test:coverage` [D200].
 - Tous les tests tournent **dans Docker** en local, comme en V1 (les variables d'environnement n'existent pas hors conteneur).
 
 ## 3. Perimetre par domaine
@@ -78,35 +79,35 @@ Chaque parcours tourne en **mobile** (projet par defaut) ; ceux marques (D) tour
 8. OWNER demande l'acces au Planning, le super admin accepte, l'OWNER l'active, le module apparait dans la navigation. (D)
 9. Remplir le planning a la main, verrouiller un repas, generer le reste de la semaine.
 10. Un membre quitte l'espace ; ses recettes restent, reprises par un moderateur.
-11. Supprimer un espace puis le restaurer dans le delai.
+11. Exporter un espace (Markdown avec photos, `23-Plan-C6b.md` S4), le supprimer puis le restaurer dans le delai.
 12. Hors ligne : ouvrir une recette et le planning, couper le reseau, recharger, tout reste lisible, les boutons de modification sont desactives avec le bandeau "Hors ligne".
 13. Connexion admin avec 2FA, fusion de deux ingredients. (D)
-14. Navigation au clavier seul sur les ecrans principaux (D) ; palette Ctrl K.
+14. Navigation au clavier seul sur les ecrans principaux (D) ; palette Ctrl K ; reprise du dernier espace et de la derniere entree (scenario detaille : `23-Plan-C6b.md` S4).
 15. Changer d'ambiance et de mode dans Profil > Apparence ; le choix persiste apres reconnexion.
+16. Notification en temps reel : un membre suggere, la cloche de l'autrice s'allume sans rechargement, la notification ouvre la suggestion et passe en lue ; une categorie coupee ne previent plus (scenario detaille : `22-Plan-C6.md` S4).
 
 ## 5. Donnees de test [D79]
 
 - **Fabriques partagees** dans `packages/test-utils` (utilisateur, espace avec membres et roles, recette simple, recette composee, plan) utilisees par l'integration et par les seeds E2E.
 - **Referentiels** : le meme seed que la prod (unites, conversions, rayons, tags globaux, modules), jamais de donnees de demo dans la prod.
 - **E2E** : chaque parcours cree ses donnees par une route de test reservee a l'environnement `test` (`POST /api/v1/__test/scenario`, absente du build de prod, verifiee par un test), puis remise a zero.
-- **Import** : pages HTML et textes de reference stockes dans `apps/api/test/fixtures/import/`, servis par un serveur local pendant les tests (aucun appel a Internet en CI).
+- **Import** : pages HTML de reference dans `apps/api/test/fixtures/import/` (aucun appel a Internet en CI). Integration : serveur local du test. E2E : servies par la route de test (`GET /api/v1/__test/fixtures/import/:nom`) et lues par l'API sur sa boucle locale, permise seulement en `NODE_ENV=test`.
 - UUID "introuvable" : `00000000-0000-4000-8000-000000000000` (convention V1).
 
 ## 6. CI [D78]
 
-Sur chaque push et chaque pull request :
+Sur chaque push et chaque pull request (`.github/workflows/ci.yml` : job `verify`, puis job `e2e`, puis `build`) :
 
-| Etape                                               | Bloquant                                        |
-| --------------------------------------------------- | ----------------------------------------------- |
-| Lint + format (ESLint, Prettier)                    | Oui                                             |
-| Typecheck de tout le monorepo                       | Oui                                             |
-| Controle des cles i18n manquantes                   | Oui                                             |
-| Unitaires + integration API (PostgreSQL de service) | Oui                                             |
-| Composants (dont rendu des six themes)              | Oui                                             |
-| E2E parcours critiques (Chromium mobile + desktop)  | Oui                                             |
-| E2E WebKit (Safari)                                 | Oui sur `master`, informatif sur `Developement` |
-| Couverture sous les seuils                          | Oui                                             |
-| `npm audit` (vulnerabilites hautes et critiques)    | Oui                                             |
+| Etape                                               | Bloquant |
+| --------------------------------------------------- | -------- |
+| Lint + format (ESLint, Prettier)                    | Oui      |
+| Typecheck de tout le monorepo                       | Oui      |
+| Controle des cles i18n manquantes (typecheck, D200) | Oui      |
+| Unitaires + integration API (PostgreSQL de service) | Oui      |
+| Composants (dont rendu des six themes)              | Oui      |
+| E2E parcours critiques (Chromium mobile + desktop)  | Oui      |
+| Couverture sous les seuils                          | Oui      |
+| `npm audit` (vulnerabilites hautes et critiques)    | Oui      |
 
 Les traces Playwright, captures et videos des echecs sont gardees comme artefacts de CI pendant 7 jours.
 
@@ -119,6 +120,8 @@ Des seuils qui protegent sans pousser a tester pour le chiffre :
 | `packages/shared` (logique pure)  | 90 %   | 85 %     |
 | `apps/api` (services et routes)   | 80 %   | 70 %     |
 | `apps/web` (composants et ecrans) | 60 %   | 50 %     |
+
+Seuils appliques par `vitest.config.ts` (`npm run test:coverage`, bloquant en CI). Mesure du 2026-11-11 (lignes / branches) : shared 99,7 / 92,1, api 95,8 / 83,1, web 91,4 / 80,8 ; aucun ecart [D200].
 
 La matrice des permissions est couverte a **100 % des couples route x role** par les tests generes (section 3).
 
@@ -146,7 +149,7 @@ Une **feuille de recette** courte avant chaque mise en prod : installation sur u
 | #   | Decision                                                                                                                                                                                                                                                | Statut  |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | D77 | Outils : Vitest partout, Supertest sur vraie base PostgreSQL remise a zero entre fichiers, Testing Library + MSW avec handlers issus des schemas Zod, Playwright mobile + desktop avec axe.                                                             | VALIDEE |
-| D78 | CI bloquante : lint, typecheck, cles i18n, unitaires, integration, composants, E2E critiques, couverture, `npm audit` ; WebKit bloquant sur `master` seulement ; seuils 90 / 80 / 60 % (shared / api / web).                                            | VALIDEE |
+| D78 | CI bloquante : lint, typecheck, cles i18n, unitaires, integration, composants, E2E critiques, couverture, `npm audit` ; WebKit retire de la CI par D195 ; seuils 90 / 80 / 60 % (shared / api / web).                                                   | VALIDEE |
 | D79 | Donnees de test : fabriques partagees dans `packages/test-utils`, seed des referentiels identique a la prod, scenarios E2E crees par une route reservee a l'environnement de test, fixtures d'import servies localement (aucun appel a Internet en CI). | VALIDEE |
 
 ## 12. Questions pour le proprietaire (tranchees)

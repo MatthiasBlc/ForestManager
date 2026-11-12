@@ -1,0 +1,115 @@
+# Stack de preprod (Portainer, mise a jour par docker/deploy.sh sur PR vers master) [D147].
+# Reprise de docker-compose.preprod.yml de la V1 (tag v1-final) : memes services,
+# conteneurs, reseaux externes (proxy pour Traefik, minio-net) et labels Traefik.
+# Les ${VAR} sont remplaces par envsubst avant l'envoi a Portainer.
+#
+# Changements V2 : PostgreSQL 17 sur un volume neuf [D145, D23], images taguees
+# par commit (TAG = sha-<court>), API sans build (types effaces par Node).
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "7"
+
+x-healthcheck: &health_http
+  interval: 30s
+  timeout: 10s
+  retries: 5
+  start_period: 30s
+
+services:
+  forestmanager-dev-postgres:
+    image: postgres:17-alpine
+    container_name: forestmanager-dev-postgres
+    hostname: forestmanager-dev-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_INITDB_ARGS=--data-checksums
+    volumes:
+      - postgres17_data_dev:/var/lib/postgresql/data
+    networks:
+      - internal-dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    logging: *default-logging
+
+  forestmanager-dev-backend:
+    image: ${REGISTRY_URL}/${IMAGE_NAME}/backend:${TAG}
+    container_name: forestmanager-dev-backend
+    hostname: forestmanager-dev-backend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@forestmanager-dev-postgres:5432/${POSTGRES_DB}?schema=public&connection_limit=20&pool_timeout=30
+      - SESSION_SECRET=${SESSION_SECRET}
+      - ADMIN_SESSION_SECRET=${ADMIN_SESSION_SECRET}
+      - APP_URL=https://preprod-forestmanager.matthias-bouloc.fr
+      - TRUST_PROXY=1
+      - MINIO_ENDPOINT=minio
+      - MINIO_PORT=9000
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - MINIO_BUCKET=forestmanager-images-preprod
+      - MINIO_PUBLIC_URL=https://s3.matthias-bouloc.fr
+      # Suivi d'erreurs [D196] : vide = coupe (secret GitHub facultatif).
+      - SENTRY_DSN=${SENTRY_DSN}
+      - SENTRY_ENVIRONMENT=preprod
+      - NODE_OPTIONS=--max-old-space-size=1024
+    networks:
+      internal-dev:
+        aliases:
+          - forestmanager-backend
+      minio-net:
+    depends_on:
+      forestmanager-dev-postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:3001/health"]
+      <<: *health_http
+    logging: *default-logging
+
+  forestmanager-dev-frontend:
+    image: ${REGISTRY_URL}/${IMAGE_NAME}/frontend:${TAG}
+    container_name: forestmanager-dev-frontend
+    hostname: forestmanager-dev-frontend
+    restart: unless-stopped
+    networks:
+      - internal-dev
+      - proxy
+    depends_on:
+      forestmanager-dev-backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1/"]
+      <<: *health_http
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.forestmanager-dev-web.rule=Host(`preprod-forestmanager.matthias-bouloc.fr`)"
+      - "traefik.http.routers.forestmanager-dev-web.entrypoints=https"
+      - "traefik.http.routers.forestmanager-dev-web.tls.certresolver=cloudflare"
+      - "traefik.http.services.forestmanager-dev-web.loadbalancer.server.port=80"
+      - "traefik.docker.network=proxy"
+    logging: *default-logging
+
+networks:
+  internal-dev:
+    driver: bridge
+    name: forestmanager_internal_dev
+  proxy:
+    external: true
+    name: proxy
+  minio-net:
+    external: true
+    name: minio-net
+
+volumes:
+  postgres17_data_dev:

@@ -30,7 +30,7 @@ npm workspaces, un seul `package-lock.json` a la racine.
           exports/            # export perso et export d'espace
           admin/              # super admin (2FA, audit, referentiels, catalogue modules)
           http/               # app Express, middlewares (securite, CSRF, erreurs, validation)
-          realtime/           # Socket.IO
+          realtime/           # SSE (D188)
           storage/            # MinIO (S3), URLs presignees
           mail/               # transport SMTP optionnel
         modules/
@@ -156,19 +156,21 @@ Recettes est un module comme les autres : son manifeste, ses routes, ses permiss
 - **Admin isole** : `AdminUser`, session dediee de 30 min non glissante, **2FA TOTP obligatoire** (otplib), audit de chaque action, routes sous `/api/v1/admin`, rate limit renforce. Reprise de la V1.
 - Emails [D21] : voir section 9.
 
-## 6. Temps reel
+## 6. Temps reel [D188]
 
-- Socket.IO sur le meme serveur, authentifie par la session (meme cookie).
-- Rooms : `user:<id>` (notifications) et `space:<id>` (activite, mises a jour du planning).
-- **Rejoindre une room d'espace verifie l'appartenance** a chaque `join` (faille V1 corrigee) ; quitter ou etre exclu retire la socket de la room cote serveur.
-- Les evenements transportent des identifiants et un type ; le client invalide les requetes TanStack Query concernees plutot que de recevoir des donnees completes.
+- Server-Sent Events sur le meme serveur : `GET /api/v1/events` (`text/event-stream`), authentifie par la session (meme cookie), `retry: 5000`, battement toutes les 25 s qui ferme le flux si la session n'existe plus. `EventSource` natif cote client, un seul par onglet (reprise automatique, tout est relu apres une reconnexion).
+- Pas d'etat d'abonnement : les destinataires sont lus en base au moment de l'envoi (l'utilisateur pour ses notifications, les membres actifs pour un espace). Rejoindre, quitter ou etre exclu prend effet a l'evenement suivant (faille V1 des rooms corrigee par construction).
+- Deux evenements, qui transportent des identifiants et jamais de donnees : `notification` (relire le compteur et la liste) et `invalidate` (`spaceId`, `module`), publie apres toute ecriture reussie sous `/spaces/:id` et apres les actions de l'admin sur un espace. Le client invalide les requetes TanStack Query concernees, groupees sur 150 ms.
+- Diffusion en memoire (`core/realtime/hub.ts`, une instance d'API, 10 connexions au plus par utilisateur, toutes fermees a l'arret) derriere `Context.realtime` ; PostgreSQL `LISTEN/NOTIFY` si plusieurs instances un jour.
+- nginx : `location = /api/v1/events` sans tampon ni gzip, lecture longue (1 h). L'admin n'a pas de flux : sa file des demandes est relue chaque minute (D190).
 
 ## 7. Stockage des images
 
-- MinIO (API S3) comme en V1 : upload direct du navigateur par URL presignee PUT (60 s), conversion en WebP et redimensionnement cote client puis verification cote serveur (type, taille, dimensions).
-- Cles : `spaces/<spaceId>/avatar.webp`, `recipes/<recipeId>/cover.webp`, `users/<userId>/avatar.webp`.
-- Lecture par URLs publiques du bucket ou presignees courtes selon la confidentialite retenue (proposition : presignees, car les espaces sont prives).
-- Job de nettoyage des orphelins et purge des espaces supprimes apres 30 jours [D22].
+- MinIO (API S3) comme en V1 en preprod et prod, bucket prive ; RustFS (compatible S3) en dev, test et CI [D167].
+- Envoi direct du navigateur par **POST signe** (60 s, 2 Mo, `image/*` imposes par le stockage) vers `uploads/<userId>/<uploadId>`, apres conversion en WebP (JPEG sur Safari) et redimensionnement cote client ; l'API verifie (signature, dimensions) en rattachant l'envoi [D167].
+- Cles uniques par version : `recipes/<recipeId>/<uuid>.webp`, `users/<userId>/<uuid>.webp`, `spaces/<spaceId>/<uuid>.webp`.
+- Lecture par URLs signees courtes (date de signature arrondie a l'heure, valables 2 h : cache du navigateur) [D167].
+- Menage horaire : envois abandonnes et objets que la base ne reference plus ; photos des recettes supprimees depuis 30 jours [D22, D167].
 
 ## 8. Internationalisation [D34, D73]
 
@@ -215,14 +217,16 @@ Journaux structures **pino** conserves (JSON en prod, lisibles en dev), identifi
 
 Proposition : **SDK Sentry dans le code** (front et back, protocole standard) et **Bugsink auto-heberge** sur l'infrastructure existante. Aucune donnee chez un tiers, aucune carte, un conteneur de plus. Changer d'outil ne demande que de changer le DSN.
 
-## 13. CI/CD [D76]
+## 13. CI/CD [D76, D147]
 
-- **Branches** : `Developement` = travail ; `master` = prod. Push sur `Developement` -> tests + build + **deploy preprod**. Merge sur `master` -> tests + build + **deploy prod**.
-- **Pipeline** : lint, typecheck, tests unitaires et d'integration (PostgreSQL de service), tests de composants, E2E (voir plan de tests), build des images, push, deploy Portainer, generation du changelog.
-- **Images taguees** `vX.Y.Z` et `sha-<court>` (plus `latest` pour Portainer) : on sait ce qui tourne et on peut revenir a la version precedente en changeant le tag.
-- **Base de donnees** : `pg_dump` automatique avant chaque deploy prod (conserve 14 jours), puis `prisma migrate deploy`. Le deploy echoue proprement si la migration echoue.
-- **Seed** : uniquement les referentiels (unites, conversions, rayons, tags globaux, catalogue de modules), idempotent (upsert). Donnees de demo dans un script separe, jamais lance en prod.
-- **Remise a zero avant la V2** [D23] : nouvelle base, nouvelle stack Portainer, ancien code V1 supprime du depot a la fin du chantier.
+Fichier : `.github/workflows/ci.yml` (reprise de la chaine V1 : memes secrets, registre, stacks Portainer, Traefik).
+
+- **Declencheurs** : push sur toute branche -> verification, E2E et build des images sans les pousser ; pull request vers `master` -> idem, images poussees, **deploy preprod** ; push sur `master` -> idem, **deploy prod**, puis tag `v<version>`.
+- **Jobs** : `verify` (format, lint, typecheck dont les cles i18n, audit des dependances de prod, tests avec seuils de couverture dans `docker/compose.test.yml`) ; `e2e` (16 parcours dans `docker/compose.e2e.yml`, artefacts des echecs 7 jours) ; `build` (images `backend` et `frontend` cible `prod`) ; `deploy-preprod` / `deploy-prod` (`docker/deploy.sh` vers Portainer, serialises par environnement) ; `release-tag`. Detail des controles : `15-Plan-Tests.md` S6 [D200].
+- **Images taguees** `sha-<court>` (plus `latest` en prod) et deployees par ce tag : on sait ce qui tourne et on revient en arriere en changeant le tag.
+- **Base de donnees** : au demarrage de l'image (`docker/api-start.sh`), `prisma migrate deploy` puis seed ; le conteneur s'arrete si la migration echoue. `pg_dump` avant chaque deploy prod (14 jours) : a ecrire en C8.
+- **Seed** : uniquement les referentiels (unites, conversions, rayons, tags globaux, catalogue de modules) et le brouillon de changelog [D187], idempotent (upsert). Donnees de demo dans un script separe, jamais lance en prod.
+- **Remise a zero avant la V2** [D23] : nouvelle base sur un volume neuf (`postgres17_data[_dev]`), memes stacks Portainer.
 
 ## 14. Versions cibles
 
@@ -250,11 +254,11 @@ Relevees sur le registre npm le 2026-11-03. A reverifier au demarrage du code ; 
 | helmet / express-rate-limit | 8.3.x / 8.7.x                                 |                                                                                              |
 | @aws-sdk/client-s3          | 3.x recent                                    | MinIO.                                                                                       |
 | nodemailer                  | 10.x                                          | Emails optionnels.                                                                           |
-| otplib                      | 13.6.x                                        | 2FA admin.                                                                                   |
+| otplib                      | 13.5.x                                        | 2FA admin.                                                                                   |
 | vitest                      | 5.1.x                                         |                                                                                              |
 | @playwright/test            | 1.64.x                                        | + `@axe-core/playwright` 4.14.x.                                                             |
 | msw                         | 3.0.x                                         | Mocks reseau des tests de composants.                                                        |
-| @sentry/node, @sentry/react | 11.x                                          | SDK seulement (voir section 12).                                                             |
+| @sentry/core, @sentry/react | 11.x                                          | SDK seulement (voir section 12) ; `@sentry/core` cote API au lieu de `@sentry/node` [D199].  |
 
 ## 15. Decisions proposees
 
@@ -273,4 +277,4 @@ Relevees sur le registre npm le 2026-11-03. A reverifier au demarrage du code ; 
 - **Q-ARCH-1 Suivi d'erreurs** : (a) Bugsink auto-heberge, un conteneur [recommande] ; (b) Sentry SaaS offre gratuite ; (c) GlitchTip auto-heberge ; (d) rien en V2.0, journaux pino seulement.
 - **Q-ARCH-2 Framework HTTP** : (a) Express 5, continuite avec la V1 [recommande] ; (b) Fastify (plus rapide, validation de schemas native) ; (c) Hono (leger, moderne).
 - **Q-ARCH-3 Versions majeures** : (a) prendre les dernieres stables compatibles entre elles (TypeScript 6.0, Prisma 7, React 19, Express 5) [recommande] ; (b) attendre les toutes dernieres majeures (TypeScript 7, Prisma 8) quitte a decaler le demarrage.
-- **Q-ARCH-4 Images des espaces prives** : (a) URLs presignees courtes [recommande, contenu prive] ; (b) bucket public avec chemins non devinables (plus simple, cache plus efficace).
+- **Q-ARCH-4 Images des espaces prives** : (a) URLs presignees courtes [recommande, contenu prive] ; (b) bucket public avec chemins non devinables (plus simple, cache plus efficace). Tranche : (a), avec signature arrondie a l'heure pour le cache [D167].

@@ -1,6 +1,6 @@
 # Forest Manager V2 - Cahier des charges
 
-**Version : 1.0 (valide par le proprietaire le 2026-11-05, feu vert pour coder ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception)** - 2026-11-05
+**Version : 1.3 (1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder ; 1.1 : module Planning revu au plan C5, D180 a D184, D11 amendee : midi et soir seulement ; 1.2 : plan C6, D187 a D189 : changelog en brouillon embarque, temps reel en SSE ; 1.3 : plan C6b, D192 : export en tache de fond, reimport en V2.1) ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception** - 2026-11-10
 Statut de chaque decision : voir `3-Journal-des-Decisions.md`. Une ligne marquee `[Dxx]` renvoie a sa decision.
 Les questions de la phase A sont au S10 (toutes repondues). Tant qu'une question touche une section, cette section n'est pas validable.
 
@@ -87,7 +87,7 @@ Identifiants `F-<module>-<n>` pour que roadmap et tests s'y referent.
 - F-ACC-3 Mot de passe oublie par email si un SMTP est configure ; sinon reinitialisation par un admin [D21] : mot de passe temporaire de 24 h a usage unique, transmis par l'admin lui-meme, a changer a la connexion ; l'ancien reste valable tant que le temporaire n'a pas servi, puis les autres sessions sont fermees [D134]. L'app demarre et fonctionne sans SMTP.
 - F-ACC-4 Profil : username, email, mot de passe, avatar, theme d'interface (S5.3).
 - F-ACC-5 Suppression du compte (RGPD) : les contenus partages dans des espaces GROUP restent, auteur anonymise, repris par les moderateurs [D20]. L'ecran montre les consequences espace par espace et propose l'export avant de demander le mot de passe [D116].
-- F-ACC-6 Export natif de ses recettes (JSON reimportable, Markdown, photos en zip) [D37].
+- F-ACC-6 Export natif de ses recettes (JSON reimportable, Markdown, photos en zip) [D37]. Archive preparee en tache de fond, gardee 24 h ; ecran de reimport en V2.1 [D192].
 - A la creation du compte, l'espace PERSONAL est cree automatiquement. Il montre son contenu propre et une vue "Mes recettes" (toutes les recettes dont on est l'auteur) [D82].
 
 ### 4.2 Espaces, membres, invitations
@@ -142,17 +142,20 @@ Ce que l'on supprime de la V1 : la recette perso jumelle creee automatiquement, 
 
 ### 4.6 Planning de repas (module)
 
-Reprend la V1 (grille jours x repas, slots recette / texte libre / vide, verrouillage, echange par glisser-deposer, idees de repas, archives, generation par jeux de parametres) avec ces changements :
+Reprend la V1 (grille jours x repas, repas recette / texte libre / vide, verrouillage, echange par glisser-deposer, idees de repas, generation par jeux de parametres) avec ces changements :
+
+- F-MPL-0 Calendrier continu par espace : pas de planning a creer ni d'archives, on navigue de semaine en semaine, le passe reste consultable ; la generation porte sur une periode choisie (31 jours au plus) [D180]. Un repas est vide, recette, texte libre ou "Pas de repas" [D181].
 
 - F-MPL-1 Disponible dans l'espace PERSONAL aussi.
-- F-MPL-2 Repas de la journee configurables par espace : petit-dejeuner, midi, gouter, soir (midi + soir par defaut) [D11].
-- F-MPL-3 Droit de modifier un repas par role minimal, MEMBER par defaut, reglable par l'OWNER ; creer, generer et regler le planning : moderateurs et OWNER [D58].
-- F-MPL-4 Une idee de repas peut etre convertie en recette : elle ouvre l'editeur de recette pre-rempli [D133].
+- F-MPL-2 Deux repas par jour, midi et soir ; chaque espace choisit de planifier l'un, l'autre ou les deux (les deux par defaut). Ni petit-dejeuner ni gouter [D11].
+- F-MPL-3 Droit de modifier un repas par role minimal, MEMBER par defaut, reglable par l'OWNER ; generer et regler le planning : moderateurs et OWNER [D58].
+- F-MPL-4 Une idee de repas (nom et commentaire) peut etre convertie en recette : elle ouvre l'editeur de recette pre-rempli, puis l'idee est retiree [D133, D182].
 - F-MPL-5 Un slot peut pointer vers n'importe quelle recette visible dans l'espace (origine ou partagee).
 - La generation (regles par tag ou recette, poids, frequences, cooldowns, exclusions, epinglages) est conservee telle quelle fonctionnellement ; son UI est refaite :
   - elle produit un apercu ; rien n'est enregistre avant "Garder ce planning" [D110] ;
   - le rapport explique chaque repas laisse vide au lieu de le remplir de force [D113] ;
   - exclusions et epinglages se reglent dans une seule grille jours x repas [D114].
+  - un profil "Standard" sans regle existe d'office dans chaque espace [D183] ; poids en cinq paliers, avec un mode avance a jauge 0 a 200 % [D184].
 - F-MPL-6 Sur mobile, selecteur "Jour | Semaine" : Jour = vue detaillee, Semaine = liste compacte des 7 jours (une ligne par jour, repas en pastilles, toucher un repas l'ouvre) ; grille semaine complete en bureau [D111].
 - F-MPL-7 Echange de repas sur mobile en mode "echange" : bandeau, cibles en pointilles, Annuler [D112].
 
@@ -165,7 +168,7 @@ Reprend la V1 (grille jours x repas, slots recette / texte libre / vide, verroui
 
 ### 4.8 Notifications et activite
 
-- F-NOT-1 Centre de notifications persistant (comme V1), temps reel par WebSocket, groupement.
+- F-NOT-1 Centre de notifications persistant (comme V1), temps reel par SSE [D188], groupement.
 - F-NOT-2 Preferences globales par categorie, avec un reglage personnalise par espace [D118].
 - F-NOT-3 Types de notification et d'activite : cles texte declarees par chaque module dans le registre, pas d'enum en base (un nouveau module n'impose pas de migration du socle) [D41].
 - F-NOT-4 Notification "nouvelle version" liee au changelog, envoyee a tous les utilisateurs si l'admin l'active a la publication (interrupteur) [D127].
@@ -175,20 +178,25 @@ Reprend la V1 (grille jours x repas, slots recette / texte libre / vide, verroui
 Dashboard, referentiels, catalogue de modules (statut de chaque module), **file des demandes d'acces aux modules** (accepter / refuser, accorder ou retirer d'office), espaces, recettes (moderation), changelog, journal d'audit. Reprise de la V1 avec le design system V2.
 
 - Le tableau de bord s'ouvre sur "A traiter" et l'etat des services [D129].
-- Moderation d'un espace : acces en lecture seule pendant 30 minutes, seules les actions de moderation sont possibles (sur une recette : masquer, supprimer, ou la retirer d'un espace de partage, ou elle reste chez son auteur ; motif obligatoire, audit) [D122] ; l'OWNER est informe, avec le motif [D121].
+- Moderation d'un espace : acces en lecture seule pendant 30 minutes, seules les actions de moderation sont possibles (sur une recette : masquer, supprimer, ou la retirer d'un espace de partage, ou elle reste chez son auteur ; motif obligatoire, audit) [D122] ; l'OWNER est informe, avec le motif [D121]. Une recette masquee n'est plus visible que de son auteur, qui voit le motif ; l'acces est enregistre a part et expire seul [D178].
 - Le journal d'audit ne se modifie ni ne se supprime ; il se filtre par categorie [D128].
 - Reglages de la plateforme en lecture seule : SMTP, Bugsink et stockage restent configures par variables d'environnement (`14-Architecture.md`) ; l'ecran affiche l'etat, les valeurs non secretes et un bouton "Tester" par service [D135].
 - Connexion admin sans compteur d'etapes (2 ou 3 selon que la 2FA est deja configuree) : les titres suffisent [D138].
 
 ### 4.10 Changelog
 
-Reprise de la V1 (genere par la CI, page utilisateur, CRUD admin).
+Reprise de la V1 (page utilisateur, gestion admin), generation revue [D187] :
+
+- Chaque image API embarque le brouillon de sa version (version semver et items calcules par la CI depuis les commits) ; le demarrage le cree s'il n'existe pas.
+- L'admin le reformule pour les utilisateurs dans A10 et le publie, en prevenant tout le monde ou non [D127] ; une version publiee peut etre masquee.
+- La 2.0.0 (premiere version V2) s'ecrit a la main.
 
 ## 5. UX et design system
 
 ### 5.1 Principes
 
 - **Mobile first** [D38] : chaque ecran est concu pour le telephone d'abord. Gestes : glisser pour fermer les panneaux du bas, appui long pour le menu d'actions, tirer pour rafraichir.
+  Exception : pas d'appui long sur un repas du planning, F-REPAS porte ses actions [D186].
 - **Une seule interface** desktop et mobile, construite avec les memes composants (pas de pages "mobile" a part).
 - **Navigation stable en 3 niveaux** : espace -> module -> contenu. L'utilisateur sait toujours dans quel espace il est.
 - **Le contenu d'abord** : les panneaux lateraux et les menus servent le contenu, pas l'inverse.
@@ -202,7 +210,7 @@ Reprise de la V1 (genere par la CI, page utilisateur, CRUD admin).
 - **Barre du module** : modules actifs de l'espace courant (Recettes, Planning, Courses, Membres, Reglages). Sur mobile : barre d'onglets en bas, 4 modules maximum puis "Plus" (membres, reglages et modules au-dela du quatrieme, dans l'ordre choisi par l'OWNER) [D131]. Espace perso : Accueil, Recettes, Mes recettes, Plus [D95].
 - **Zone de contenu** : liste / detail, avec panneau de detail lateral sur grand ecran et page pleine sur mobile.
 - **En-tete** : recherche, notifications, profil.
-- Dashboard d'accueil fait de **widgets** que l'utilisateur choisit et ordonne (prochains repas, recettes recentes, invitations, activite).
+- Dashboard d'accueil fait de **widgets** que l'utilisateur choisit et ordonne (prochains repas, recettes les plus cuisinees, recemment ajoutees, activite des groupes), dans une feuille "Personnaliser l'accueil" ; invitations et transferts en attente toujours en tete [D193].
 
 ### 5.3 Design system
 

@@ -24,8 +24,8 @@ Conventions :
   6. Arrivee sur l'espace perso (D02), module Recettes, EmptyState "Pas encore de recette".
 - **Connexion / mot de passe** : E-CONNEXION (email ou nom, mot de passe, "Rester connecte"). "Mot de passe oublie" visible seulement avec SMTP : E-MDP-OUBLIE -> email -> E-MDP-NOUVEAU. Sans SMTP : texte "Demande a l'administrateur de reinitialiser ton mot de passe".
 - **Composants** : Field, Button, Switch, Toast, EmptyState.
-- **Notifications** : aucune.
-- **Decisions** : D02, D13, D21, D34 (textes traduisibles), D61.
+- **Notifications** : avec SMTP, rappel "Confirme ton adresse e-mail" (ouvre le compte, Button "Renvoyer le lien"), retire une fois l'adresse confirmee ; de meme apres un changement d'adresse (D90).
+- **Decisions** : D02, D13, D21, D34 (textes traduisibles), D61, D90.
 
 ## P02 - Creer un espace groupe et inviter par lien
 
@@ -36,7 +36,7 @@ Conventions :
   2. Arrivee dans l'espace : SpaceRail montre la nouvelle icone active, l'interface prend la teinte. EmptyState du module Recettes avec deux actions : "Ajouter une recette" et "Inviter des membres".
   3. F-INVITER (D07), deux onglets SegmentedControl :
      - **Lien** : duree (SegmentedControl 1 jour / 7 jours / 30 jours), nombre d'usages (Stepper, illimite possible), Button "Creer le lien" puis "Copier le lien" (Toast "Lien copie"). Liste des liens actifs avec usages restants et ActionMenu "Revoquer".
-     - **Nom d'utilisateur** : Field nom exact (pas d'autocompletion globale), Button "Inviter". Erreur "Aucun compte avec ce nom" si inconnu.
+     - **Nom d'utilisateur** : Field nom exact (pas d'autocompletion globale), Button "Inviter". Message neutre "Si ce compte existe, il recevra l'invitation" dans tous les cas (D150).
   4. Desktop : F-INVITER aussi accessible depuis E-MEMBRES.
 - **Notifications** : invitation par nom -> la personne invitee recoit une notification "X t'invite dans Famille".
 - **Decisions** : D06, D07, D32, D33.
@@ -66,7 +66,7 @@ Conventions :
   5. Button primary "Enregistrer" -> E-RECETTE, Toast "Recette enregistree". Revision 1 creee (D05).
   6. Quitter avec des modifications : F-CONFIRMER "Abandonner les modifications ?".
 - **Etats** : brouillon conserve localement si l'app se ferme (pas de perte de saisie) ; hors ligne : Enregistrer desactive avec "Reviens en ligne pour enregistrer" (D68).
-- **Notifications** : activite de l'espace "X a ajoute Gratin de pates" (pas de notification individuelle).
+- **Notifications** : activite de l'espace "X a ajoute Gratin de pates". Notification regroupee "X et 2 autres ont ajoute des recettes dans Famille" seulement pour qui active la categorie "Nouvelles recettes" (coupee par defaut).
 - **Decisions** : D05, D08, D09, D19, D28, D63.
 
 ## P05 - Recette composee
@@ -128,27 +128,27 @@ Conventions :
   1. E-MODULES : catalogue des modules, chacun avec Badge de statut (Disponible, Beta, Bientot) et etat pour cet espace : "Actif", "Accorde, desactive" (Switch), "Demande en cours", "Demander l'acces". Les membres non OWNER voient la liste en lecture seule.
   2. F-DEMANDE-MODULE : Field message optionnel ("Pour planifier nos repas de la semaine"), Button "Envoyer la demande". Toast "Demande envoyee".
   3. Admin (E-ADMIN-DEMANDES) : file des demandes (espace, demandeur, module, message, date), Button "Accorder" / "Refuser" avec motif.
-  4. Accorde : l'OWNER recoit "Le module Planning est disponible pour Famille", Button "Activer" (dans la notification ou sur E-MODULES). Le Switch active le module : il apparait dans ModuleNav / TabBar de tous les membres.
+  4. Accorde : l'OWNER recoit "Le module Planning est disponible pour Famille" ; la notification ouvre E-MODULES, qui porte le Switch "Activer" (pas de bouton dans une notification). Le Switch active le module : il apparait dans ModuleNav / TabBar de tous les membres.
   5. Refuse : notification avec le motif ; une nouvelle demande reste possible.
-- **Notifications** : admin (nouvelle demande), OWNER (accorde / refuse), membres (activite "Le planning est active").
+- **Notifications** : admin : pas de notification (compte isole), la demande se voit dans "A traiter" du tableau de bord et au compteur de "Demandes" de l'AdminNav, relu chaque minute (D190) ; OWNER (accorde / refuse) ; membres (activite "Le planning est active").
 - **Decisions** : D10, D33, D40.
 
 ## P10 - Planning : remplir une semaine, generer, verrouiller, echanger
 
 - **Declencheur** : TabBar / ModuleNav "Planning" (module accorde et actif).
-- **Ecrans** : E-PLANNING -> F-REPAS ; F-GENERER ; E-PROFILS-GENERATION ; E-IDEES.
+- **Ecrans** : E-PLANNING -> F-REPAS ; F-GENERER ; E-PROFILS-GENERATION ; E-IDEES ; F-REGLAGES-PLANNING.
 - **Etapes** :
-  1. Premiere ouverture : EmptyState "Pas encore de planning", Button "Creer le planning" -> F-CREER-PLANNING (dates de debut et de fin, portions par defaut). Les repas affiches suivent les reglages de l'espace (D11 : midi et soir par defaut).
+  1. Premiere ouverture : la semaine en cours, vide, avec "Touche un repas pour le remplir" et Button "Generer" (moderateurs). Pas de planning a creer : calendrier continu, fleches semaine precedente / suivante et "Aujourd'hui" (D180). Les repas affiches suivent les reglages de l'espace (F-REGLAGES-PLANNING ; D11 : midi et soir par defaut).
   2. E-PLANNING mobile : jour par jour (SegmentedControl Jour / Semaine ; vue Jour par defaut sur mobile), une liste de MealSlot par repas. Desktop : grille jours x repas.
-  3. Remplir : toucher un MealSlot vide -> F-REPAS : recherche de recette (espace d'abord, puis mes recettes avec "Partager dans l'espace" propose), ou texte libre + commentaire ; Stepper portions ; Switch "Verrouiller". Button "Enregistrer".
+  3. Remplir : toucher un MealSlot vide -> F-REPAS : recherche de recette (espace d'abord, puis mes recettes avec "Partager dans l'espace" propose), ou texte libre + commentaire, ou "Pas de repas" (D181) ; Stepper portions ; Switch "Verrouiller". Button "Enregistrer".
   4. Generer : Button "Generer" -> F-GENERER : profil de generation (liste), periode, "Remplacer les repas non verrouilles" (Switch). Resultat : rapport (repas remplis, regles non tenues) dans la feuille, Button "Garder" / "Annuler".
-  5. Remplacer un repas : ActionMenu du MealSlot "Proposer un autre repas" (relance la generation sur ce repas, confirmation).
-  6. Echanger (D69) : desktop, glisser-deposer un MealSlot sur un autre ; mobile, ActionMenu "Echanger avec..." puis toucher le repas cible (mode selection avec bandeau "Choisis le repas a echanger", Annuler).
+  5. Remplacer un repas : F-REPAS, "Proposer un autre repas" (relance la generation sur ce repas, confirmation). Pas d'appui long sur un MealSlot : F-REPAS porte ses actions (D186).
+  6. Echanger (D69) : desktop, glisser-deposer un MealSlot sur un autre ; mobile, F-REPAS "Echanger avec un autre repas" puis toucher le repas cible (mode selection avec bandeau, Annuler). Mobile : tirer vers le bas relit la semaine (D186).
   7. Verrouiller : ActionMenu "Verrouiller" (cadenas sur le MealSlot) ; la generation ne le touche pas.
   8. PullToRefresh sur E-PLANNING pour voir les modifications des autres membres.
 - **Droits** : modification selon le role minimal regle par l'espace (F-MPL-3, matrice B2) ; sinon lecture seule avec mention.
-- **Notifications** : activite "Planning de la semaine genere par X" ; pas de notification individuelle par repas.
-- **Decisions** : D11, F-MPL-1 a F-MPL-5, D69.
+- **Notifications** : activite "X a genere le planning" et notification "X a genere le planning de Famille" (ouvre la semaine generee) ; repas modifie par un autre membre : une seule notification regroupee par espace sur 24 h ("X et 2 autres ont modifie le planning"), categorie Planning.
+- **Decisions** : D11, F-MPL-1 a F-MPL-5, D69, D180, D181, D186.
 
 ## P11 - Mode cuisine
 
@@ -164,13 +164,14 @@ Conventions :
 
 ## P12 - Exporter ses recettes ou un espace
 
-- **Declencheur** : E-PROFIL > "Exporter mes recettes" ; OWNER : E-REGLAGES-ESPACE > "Exporter l'espace".
+- **Declencheur** : E-PROFIL > "Exporter mes recettes" ; OWNER : E-REGLAGES-ESPACE > "Exporter l'espace" ; propositions "Exporter d'abord" de F-SUPPRIMER-ESPACE (P14) et "Exporter mes recettes" de F-SUPPRIMER-COMPTE (P15).
 - **Ecrans** : F-EXPORT.
 - **Etapes** :
-  1. F-EXPORT : format (SegmentedControl JSON / Markdown), Switch "Inclure les photos" (archive zip). Button "Preparer l'export".
-  2. Preparation (quelques secondes) puis Button "Telecharger". Export d'espace : rappel "Les membres verront dans l'activite que tu as exporte l'espace" ; limite atteinte : "Un export par jour. Prochain export possible demain a 14:02."
-- **Notifications** : activite de l'espace "X a exporte l'espace" (D37).
-- **Decisions** : D37.
+  1. F-EXPORT : portee "Recettes a exporter" (Mes recettes / l'espace) seulement pour l'OWNER d'un espace groupe ; format (JSON "Se reimportera dans Forest Manager" / Markdown "Se lit partout, un fichier par recette") ; Switch "Inclure les photos". Toujours une archive zip. Button "Preparer l'export".
+  2. Preparation en tache de fond (statut relu chaque seconde) puis Button "Telecharger" ; l'archive est gardee 24 h. Export d'espace : rappel "Un export d'espace par jour. Les membres verront dans l'activite que tu as exporte l'espace." ; limite atteinte : "Prochain export de l'espace possible demain a 14:02."
+- **Notifications** : activite de l'espace "X a exporte l'espace" (D37), pas de notification.
+- **Reimport** : V2.1 (D192) ; le format JSON est versionne (`forest-manager/recipes` v1).
+- **Decisions** : D37, D192.
 
 ## P13 - Changer d'ambiance
 
@@ -202,10 +203,13 @@ Conventions :
 
 ## P16 - Recherche globale
 
-- **Declencheur** : Ctrl K (desktop) ou loupe de la TopBar (mobile, plein ecran).
+- **Declencheur** : Ctrl K / Cmd K (bureau) ou loupe de la TopBar (mobile, plein ecran), dans un espace (absente des ecrans hors espace : profil, notifications).
 - **Ecrans** : F-RECHERCHE (CommandPalette).
-- **Etapes** : resultats groupes (Recettes, Ingredients, Membres, Espaces, Actions), fleches + Entree ; choisir un ingredient ouvre E-RECETTES filtre sur cet ingredient. Les recettes d'autres espaces affichent le nom de l'espace.
-- **Decisions** : CDC S5.1.
+- **Etapes** :
+  1. Champ vide : actions (nouvelle recette, generer le planning, inviter, creer un espace, profil, apparence, notifications, selon les droits) puis "Recemment ouvertes".
+  2. Des 2 caracteres : resultats groupes (Recettes, Ingredients, Planning, Membres, Espaces, Actions), 5 par groupe, groupes vides omis ; fleches a travers les groupes + Entree, Echap. Les recettes d'autres espaces affichent le nom de l'espace.
+  3. Choisir un ingredient ouvre E-RECETTES de l'espace filtre sur cet ingredient (puce "Avec X" retirable) ; un repas ouvre la semaine du planning.
+- **Decisions** : CDC S5.1, D119, D191.
 
 ## P17 - Notifications
 
@@ -229,7 +233,7 @@ Conventions :
 | D66 | Un espace en suppression reste visible, grise, dans le rail de son OWNER seulement, avec le compte a rebours et "Restaurer".                                                                                         | VALIDEE |
 | D67 | Mode cuisine : une etape a la fois en grand, boutons Precedente / Suivante, ingredients dans une feuille, ecran maintenu allume.                                                                                     | VALIDEE |
 | D68 | Hors ligne : bandeau permanent "Hors ligne", actions d'ecriture desactivees avec la raison, pas de file d'attente de modifications ; brouillon de recette conserve localement.                                       | VALIDEE |
-| D69 | Echanger deux repas : glisser-deposer en desktop ; sur mobile, ActionMenu "Echanger avec..." puis toucher le repas cible (pas de glisser-deposer tactile, conflit avec le defilement).                               | VALIDEE |
+| D69 | Echanger deux repas : glisser-deposer en desktop ; sur mobile, "Echanger avec un autre repas" (F-REPAS, D186) puis toucher le repas cible (pas de glisser-deposer tactile, conflit avec le defilement).              | VALIDEE |
 
 ## Questions pour le proprietaire (tranchees)
 
@@ -282,12 +286,12 @@ Toutes tranchees : QP1 par D60, QP2 par D61, QP3 par D64, QP4 par D69, QP5 par D
 | E-SUGGESTION-EDITION    | Ecran   | Rediger une suggestion           | P07                |
 | E-SUGGESTION            | Ecran   | Examiner une suggestion          | P07, P08           |
 | E-HISTORIQUE            | Ecran   | Historique des revisions         | P07                |
-| F-ACTIONS               | Feuille | Menu d'actions (ActionMenu)      | P06, P07, P10      |
+| F-ACTIONS               | Feuille | Menu d'actions (ActionMenu)      | P06, P07           |
 | F-CONFIRMER             | Feuille | Confirmation generique           | P04, P07, P10      |
 | E-MODE-CUISINE          | Ecran   | Mode cuisine                     | P11                |
 | F-INGREDIENTS           | Feuille | Ingredients a cocher             | P11                |
 | E-PLANNING              | Ecran   | Planning (jour / semaine)        | P10                |
-| F-CREER-PLANNING        | Feuille | Creer le planning                | P10                |
+| F-REGLAGES-PLANNING     | Feuille | Reglages du planning (D180)      | P10                |
 | F-REPAS                 | Feuille | Modifier un repas                | P10                |
 | F-GENERER               | Feuille | Generer le planning + rapport    | P10                |
 | E-PROFILS-GENERATION    | Ecran   | Profils de generation et regles  | P10                |
