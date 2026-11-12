@@ -113,6 +113,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [ ] Apres le premier deploy preprod : verifier le statut du Planning dans A04 et le passer en "Disponible" si besoin (le seed n'ecrit le statut qu'a la creation)
   - [x] Retirer le raccourci temporaire `deploy-only` une fois le deploy preprod stable : revert du commit `3aa8cab` dans `ci.yml`, label supprime de la PR et du depot [D201]
   - [ ] Cloture de C7 (`24-Plan-C7.md` S3)
+- [ ] C7b Connexion avec Discord avant la prod [D202] : inscription par Discord, liaison d'un compte existant depuis le profil, connexion ; plan a ecrire (`25-Plan-C7b.md`), decision et ligne du CDC, maquette, TDD ; lignes ajoutees a la feuille de recette ; plus tard peut-etre un bot Discord pour les notifications (V2.1 ou apres)
 - [ ] C8 Mise en prod V2 (depuis ce poste [D201])
   - [ ] `pg_dump` avant chaque deploy prod, garde 14 jours [D76] : absent de `ci.yml`, a ecrire avant la prod
   - [ ] Menage des images (2026-11-12) : rien ne purge aujourd'hui. Registry `registry:2` auto-heberge : etape CI qui garde les 10 derniers `sha-*` par image + `latest` (DELETE par digest, jamais un digest encore tague), puis `garbage-collect --delete-untagged` periodique dans le conteneur du registry. Serveur : `docker image prune` des images inutilisees de plus de quelques jours (les derniers tags restent pour un retour arriere)
@@ -121,4 +122,3 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
 - [ ] C9 Module liste de courses (V2.1)
 - [ ] Reimport du JSON d'export dans F-AJOUT-RECETTE (V2.1) [D192]
 - [ ] E2E WebKit (Safari) (V2.1) [D195]
-- [ ] Connexion avec Discord : inscription par Discord et liaison d'un compte existant (V2.1, idee du proprietaire du 2026-11-12, a cadrer : decision, CDC, maquette) ; plus tard peut-etre un bot Discord pour les notifications
