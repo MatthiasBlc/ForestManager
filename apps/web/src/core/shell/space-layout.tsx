@@ -237,6 +237,9 @@ export function SpaceLayout() {
               title={active?.label}
               space={current}
               onSpace={() => setSwitcherOpen(true)}
+              {...(space.data.kind === "PERSONAL" || !me.data
+                ? {}
+                : { homeTo: `/s/${me.data.personalSpaceId}/home` })}
               onSearch={() => setPaletteOpen(true)}
               onNotifications={() => void navigate("/notifications")}
               unread={unread.data}

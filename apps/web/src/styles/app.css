@@ -388,3 +388,10 @@ body,
 main[tabindex="-1"]:focus-visible {
   outline: none;
 }
+
+/* Accueil dans la barre du haut : mobile seulement, le rail y mene des 768 px. */
+@container (min-width: 768px) {
+  .fm-top-home {
+    display: none;
+  }
+}

@@ -83,6 +83,21 @@ describe("shell d'un espace", () => {
     ).toEqual(["Membres", "Activité", "Réglages"]);
   });
 
+  it("un espace de groupe mene a l'Accueil en un geste (mobile) ; pas dans l'espace perso", async () => {
+    const { me, family } = session();
+    const { unmount } = renderWithProviders(<App />, { route: `/s/${family.id}/recipes` });
+    const banner = await screen.findByRole("banner");
+    expect(await within(banner).findByRole("link", { name: "Accueil" })).toHaveAttribute(
+      "href",
+      `/s/${me.personalSpaceId}/home`
+    );
+    unmount();
+    renderWithProviders(<App />, { route: `/s/${me.personalSpaceId}/home` });
+    const own = await screen.findByRole("banner");
+    await within(own).findByRole("button", { name: /changer d'espace/ });
+    expect(within(own).queryByRole("link", { name: "Accueil" })).not.toBeInTheDocument();
+  });
+
   it("le bouton d'espace (mobile) ouvre la liste des espaces", async () => {
     const { family } = session();
     const { user } = renderWithProviders(<App />, { route: `/s/${family.id}/recipes` });

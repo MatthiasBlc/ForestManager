@@ -821,3 +821,9 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 
 - **Constat** : la recette preprod a fait remonter des defauts et des envies d'ergonomie (D203, D204, parcours mobile juge labyrinthique).
 - **Choix** : pas de date pour C8. La prod ne part que lorsque l'application donne l'impression d'un produit propre et termine : optimisee, sans defaut connu, parcours simples (mobile d'abord). Repousser la prod est accepte. Avant C8 : toutes les suites de la recette traitees, le tour mobile fait et ses simplifications realisees, une seconde recette complete sans echec ni remarque ouverte, puis le feu vert explicite du proprietaire.
+
+### D206 - Accueil en un geste depuis un espace de groupe (mobile) ; pas d'accueil par espace - VALIDEE (2026-11-12, demande du proprietaire, "je te laisse juge")
+
+- **Constat** : sur mobile, dans un espace de groupe, revenir a l'Accueil demande trois gestes (bouton d'espace, espace perso, onglet Accueil) ; en bureau, le rail y mene en un clic. Le proprietaire demande aussi s'il faudrait un accueil propre a chaque espace.
+- **Options** : (a) icone Accueil dans la barre du haut, mobile seulement ; (b) onglet Accueil dans chaque espace (prend un des 4 onglets, et un onglet qui fait quitter l'espace brouille la barre) ; (c) accueil propre a chaque espace.
+- **Choix** : (a), a gauche du bouton d'espace, dans les espaces de groupe seulement (l'espace perso a son onglet Accueil), masquee des 768 px (le rail est la). Pas de (c) : l'Accueil perso regroupe deja les widgets de tous les espaces (D193) avec un lien "Planning" par espace (D204) ; un accueil par espace ferait doublon et ajouterait un niveau de navigation, a l'inverse du tour mobile (D205).
