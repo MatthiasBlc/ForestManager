@@ -51,7 +51,6 @@ services:
       - PORT=3001
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@forestmanager-dev-postgres:5432/${POSTGRES_DB}?schema=public&connection_limit=20&pool_timeout=30
       - SESSION_SECRET=${SESSION_SECRET}
-      - ADMIN_SESSION_SECRET=${ADMIN_SESSION_SECRET}
       - APP_URL=https://preprod-forestmanager.matthias-bouloc.fr
       - TRUST_PROXY=1
       - MINIO_ENDPOINT=minio

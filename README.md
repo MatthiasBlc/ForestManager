@@ -226,7 +226,6 @@ Copier `.env.example` vers `.env` et renseigner les valeurs :
 | `POSTGRES_DB`          | Nom de la base de donnees                  | `forestmanager_db`      |
 | `PORT`                 | Port du backend                            | `3001`                  |
 | `SESSION_SECRET`       | Secret sessions utilisateur (min 32 chars) | -                       |
-| `ADMIN_SESSION_SECRET` | Secret sessions admin (min 32 chars)       | -                       |
 | `CORS_ORIGIN`          | Origine CORS autorisee                     | `http://localhost:3000` |
 | `VITE_BACKEND_URL`     | URL du backend (frontend)                  | `http://localhost:3001` |
 
@@ -243,23 +242,22 @@ L'application est deployee via Docker avec Traefik comme reverse proxy et Portai
 
 ### GitHub Secrets requis
 
-| Secret                 | Description                        |
-| ---------------------- | ---------------------------------- |
-| `REGISTRY_URL`         | URL du registry Docker             |
-| `REGISTRY_USERNAME`    | Utilisateur du registry            |
-| `REGISTRY_PASSWORD`    | Mot de passe du registry           |
-| `IMAGE_NAME`           | Prefixe des images Docker          |
-| `PORTAINER_URL`        | URL de Portainer                   |
-| `PORTAINER_API`        | Cle API Portainer                  |
-| `STACK_ID`             | ID de la stack Portainer           |
-| `ENDPOINT_ID`          | ID de l'endpoint Portainer         |
-| `POSTGRES_USER`        | Utilisateur PostgreSQL (prod)      |
-| `POSTGRES_PASSWORD`    | Mot de passe PostgreSQL (prod)     |
-| `POSTGRES_DB`          | Nom de la base (prod)              |
-| `SESSION_SECRET`       | Secret sessions utilisateur (prod) |
-| `ADMIN_SESSION_SECRET` | Secret sessions admin (prod)       |
-| `CORS_ORIGIN`          | Origine CORS autorisee (prod)      |
-| `API_URL`              | URL publique de l'API              |
+| Secret              | Description                        |
+| ------------------- | ---------------------------------- |
+| `REGISTRY_URL`      | URL du registry Docker             |
+| `REGISTRY_USERNAME` | Utilisateur du registry            |
+| `REGISTRY_PASSWORD` | Mot de passe du registry           |
+| `IMAGE_NAME`        | Prefixe des images Docker          |
+| `PORTAINER_URL`     | URL de Portainer                   |
+| `PORTAINER_API`     | Cle API Portainer                  |
+| `STACK_ID`          | ID de la stack Portainer           |
+| `ENDPOINT_ID`       | ID de l'endpoint Portainer         |
+| `POSTGRES_USER`     | Utilisateur PostgreSQL (prod)      |
+| `POSTGRES_PASSWORD` | Mot de passe PostgreSQL (prod)     |
+| `POSTGRES_DB`       | Nom de la base (prod)              |
+| `SESSION_SECRET`    | Secret sessions utilisateur (prod) |
+| `CORS_ORIGIN`       | Origine CORS autorisee (prod)      |
+| `API_URL`           | URL publique de l'API              |
 
 ### Pipeline CI/CD
 
