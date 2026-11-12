@@ -48,6 +48,20 @@ envsubst "${SUBST_VARS}" < "${COMPOSE_FILE}" > "${STACK_FILE}"
 PAYLOAD=$(jq -n --rawfile content "${STACK_FILE}" \
   '{ prune: true, pullImage: true, stackFileContent: $content }')
 
+# Une stack arretee refuse la mise a jour (HTTP 500 sans message) : on la
+# demarre d'abord (Status 2 = inactive ; l'ancienne version tourne un instant).
+STATUS=$(curl -sS -f "${PORTAINER_URL}/api/stacks/${STACK_ID}" \
+  -H "X-API-Key: ${PORTAINER_API}" | jq -r '.Status')
+if [ "${STATUS}" = "2" ]; then
+  echo "Stack ${STACK_ID} is stopped, starting it before the update..."
+  # Un echec ici (ancienne version qui demarre mal) n'arrete pas : la mise a
+  # jour qui suit remplace de toute facon les conteneurs, et dira si ca bloque.
+  curl -sS -f -o /dev/null -X POST \
+    "${PORTAINER_URL}/api/stacks/${STACK_ID}/start?endpointId=${ENDPOINT_ID}" \
+    -H "X-API-Key: ${PORTAINER_API}" ||
+    echo "WARNING: start failed, trying the update anyway" >&2
+fi
+
 echo "Updating Portainer stack ${STACK_ID}..."
 RESPONSE=$(curl -sS -w "\n%{http_code}" -X PUT \
   "${PORTAINER_URL}/api/stacks/${STACK_ID}?endpointId=${ENDPOINT_ID}" \
