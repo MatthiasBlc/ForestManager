@@ -388,3 +388,83 @@ body,
 main[tabindex="-1"]:focus-visible {
   outline: none;
 }
+
+/* "Depuis mes recettes" (F-MES-RECETTES, D203) : lignes a case a cocher. */
+.fm-pick-list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fm-pick {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 52px;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.fm-pick:hover {
+  background: var(--surface);
+}
+.fm-pick:has(input:disabled) {
+  cursor: default;
+  opacity: 0.55;
+}
+.fm-pick input {
+  appearance: none;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  border: 2px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+}
+.fm-pick input:checked {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.fm-pick input:checked::after {
+  content: "";
+  width: 10px;
+  height: 6px;
+  border: solid var(--on-accent);
+  border-width: 0 0 2.5px 2.5px;
+  transform: translateY(-1px) rotate(-45deg);
+}
+.fm-pick input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.fm-pick-text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.fm-pick-text b {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fm-pick-text small {
+  color: var(--ink-muted);
+}
+.fm-pick-count {
+  display: flex;
+  justify-content: space-between;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Premier choix de F-AJOUT-RECETTE dans un espace de groupe (D208). */
+.fm-option-lead {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}

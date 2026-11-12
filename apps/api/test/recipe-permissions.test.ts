@@ -104,6 +104,8 @@ const B2_ROUTES: Record<string, RecipeKey> = {
   "POST /import": "recipes.create",
   "POST /": "recipes.create",
   "GET /mine": "recipes.view",
+  "POST /add-mine/preview": "recipes.create",
+  "POST /add-mine": "recipes.create",
   "GET /share-requests": "recipes.view",
   "POST /share-requests/:requestId/approve": "recipes.view",
   "POST /share-requests/:requestId/reject": "recipes.view",
@@ -207,6 +209,11 @@ async function suggestion(s: Scenario, from: Client, recipeId: string): Promise<
   return (await db.recipeSuggestion.findFirstOrThrow({ where: { recipeId } })).id;
 }
 
+/** Recette du sujet nee dans son espace perso ("Depuis mes recettes", D203). */
+async function personalRecipe(s: Scenario): Promise<string> {
+  return (await createRecipe(s.subject, s.subjectUser.personalSpaceId)).id;
+}
+
 async function extraRecipe(s: Scenario): Promise<string> {
   return (await createRecipe(s.extra, s.f.spaceId)).id;
 }
@@ -218,6 +225,10 @@ const CALLS: Record<string, Call> = {
   "POST /import": (c, s) => c.post(`${s.base}/import`, { url: "https://example.org/soupe" }),
   "POST /": async (c, s) => c.post(s.base, await recipeBody(s.subject)),
   "GET /mine": (c, s) => c.get(`${s.base}/mine`),
+  "POST /add-mine/preview": async (c, s) =>
+    c.post(`${s.base}/add-mine/preview`, { recipeIds: [await personalRecipe(s)] }),
+  "POST /add-mine": async (c, s) =>
+    c.post(`${s.base}/add-mine`, { recipeIds: [await personalRecipe(s)] }),
   "GET /share-requests": (c, s) => c.get(`${s.base}/share-requests`),
   "POST /share-requests/:requestId/approve": async (c, s) =>
     c.post(`${s.base}/share-requests/${await pendingShareRequest(s)}/approve`, {}),

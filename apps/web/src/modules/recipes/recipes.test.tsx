@@ -63,11 +63,13 @@ describe("liste des recettes (E-RECETTES)", () => {
     });
   });
 
-  it("Nouvelle recette ouvre le choix, Saisir ouvre l'editeur (F-AJOUT-RECETTE)", async () => {
+  it("Ajouter une recette > Creer > Saisir ouvre l'editeur (F-AJOUT-RECETTE)", async () => {
     const s = recipeServer();
     const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/recipes` });
-    await user.click((await screen.findAllByRole("button", { name: "Nouvelle recette" }))[0]!);
-    const sheet = screen.getByRole("dialog", { name: "Nouvelle recette dans Famille" });
+    await user.click((await screen.findAllByRole("button", { name: "Ajouter une recette" }))[0]!);
+    const root = screen.getByRole("dialog", { name: "Ajouter une recette dans Famille" });
+    await user.click(within(root).getByRole("button", { name: /Créer/ }));
+    const sheet = screen.getByRole("dialog", { name: "Créer une recette" });
     await user.click(within(sheet).getByRole("link", { name: /Saisir/ }));
     expect(await screen.findByLabelText("Titre")).toBeInTheDocument();
   });

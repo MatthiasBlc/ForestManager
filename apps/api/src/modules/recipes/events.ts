@@ -171,6 +171,22 @@ export async function recipeShared(
   });
 }
 
+/** Plusieurs recettes ajoutees d'un coup ("Depuis mes recettes") : une seule ligne [D208]. */
+export async function recipesAdded(
+  ctx: Context,
+  recipes: { title: string }[],
+  spaceId: string,
+  actorId: string
+): Promise<void> {
+  await recordActivity(ctx, {
+    spaceId,
+    type: "recipes.recipes.added",
+    moduleCode: MODULE,
+    actorId,
+    data: { count: recipes.length, titles: recipes.slice(0, 3).map((recipe) => recipe.title) },
+  });
+}
+
 /** L'auteur de l'original apprend qu'elle a ete adaptee ailleurs (P06). */
 export async function recipeAdapted(
   ctx: Context,

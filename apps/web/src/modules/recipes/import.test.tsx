@@ -47,11 +47,13 @@ const CURRY: ImportedRecipe = {
 async function openAddSheet(spaceId: string) {
   const rendered = renderWithProviders(<App />, { route: `/s/${spaceId}/recipes` });
   await rendered.user.click(
-    (await screen.findAllByRole("button", { name: "Nouvelle recette" }))[0]!
+    (await screen.findAllByRole("button", { name: "Ajouter une recette" }))[0]!
   );
+  const root = screen.getByRole("dialog", { name: "Ajouter une recette dans Famille" });
+  await rendered.user.click(within(root).getByRole("button", { name: /Créer/ }));
   return {
     ...rendered,
-    sheet: screen.getByRole("dialog", { name: "Nouvelle recette dans Famille" }),
+    sheet: screen.getByRole("dialog", { name: "Créer une recette" }),
   };
 }
 
@@ -66,7 +68,7 @@ describe("importer un lien (F-IMPORT-URL)", () => {
       })
     );
     const { user, sheet } = await openAddSheet(s.space.id);
-    await user.click(within(sheet).getByRole("button", { name: /Importer un lien/ }));
+    await user.click(within(sheet).getByRole("button", { name: /Un lien/ }));
     const dialog = await screen.findByRole("dialog", { name: "Importer depuis un lien" });
     await user.click(within(dialog).getByLabelText("Lien de la recette"));
     await user.paste("https://exemple.fr/curry");
@@ -109,7 +111,7 @@ describe("importer un lien (F-IMPORT-URL)", () => {
       )
     );
     const { user, sheet } = await openAddSheet(s.space.id);
-    await user.click(within(sheet).getByRole("button", { name: /Importer un lien/ }));
+    await user.click(within(sheet).getByRole("button", { name: /Un lien/ }));
     const dialog = await screen.findByRole("dialog", { name: "Importer depuis un lien" });
     await user.click(within(dialog).getByLabelText("Lien de la recette"));
     await user.paste("https://exemple.fr/x");
@@ -126,7 +128,7 @@ describe("coller un texte (F-IMPORT-TEXTE)", () => {
   it("resume ce qui est repere puis ouvre l'editeur", async () => {
     const s = recipeServer();
     const { user, sheet } = await openAddSheet(s.space.id);
-    await user.click(within(sheet).getByRole("button", { name: /Coller un texte/ }));
+    await user.click(within(sheet).getByRole("button", { name: /Un texte collé/ }));
     const dialog = await screen.findByRole("dialog", { name: "Coller un texte" });
     const open = within(dialog).getByRole("button", { name: "Ouvrir dans l'éditeur" });
     expect(open).toBeDisabled();

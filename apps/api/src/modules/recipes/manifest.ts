@@ -1,5 +1,8 @@
 // Manifeste API du module Recettes [D33, D91]. Les routes se completent au fil de C3.
 import {
+  addMineBodySchema,
+  addMinePreviewSchema,
+  addMineResultSchema,
   acceptSuggestionBodySchema,
   adaptRecipeBodySchema,
   convertSuggestionBodySchema,
@@ -53,7 +56,8 @@ import type { ApiModule } from "../../core/modules/registry.ts";
 import * as adaptation from "./adaptation.ts";
 import { recipeCatalog } from "./catalog.ts";
 import { provide } from "../services.ts";
-import { authoredBySql, listRecipes } from "./list.ts";
+import { AppError } from "../../core/http/errors.ts";
+import { addableSql, authoredBySql, listRecipes } from "./list.ts";
 import { createRateLimiter } from "../../core/http/security.ts";
 import { importFromUrl } from "./import.ts";
 import * as photos from "./photos.ts";
@@ -79,6 +83,11 @@ function actorOf(req: Request): recipes.RecipeActor {
     spaceId: moduleRequest(req).access.space.id,
     moderate: hasModulePermission(req, "recipes.moderate"),
   };
+}
+
+/** Ajouter ses recettes n'a pas de sens dans l'espace perso : elles y sont deja. */
+function refusePersonal(req: Request): void {
+  if (moduleRequest(req).access.space.kind === "PERSONAL") throw new AppError("SPACE_003");
 }
 
 function recipesRouter(ctx: Context): Router {
@@ -126,10 +135,32 @@ function recipesRouter(ctx: Context): Router {
     requirePermission("recipes.view"),
     handle({ query: mineRecipeListQuerySchema }, async ({ query }, req, res) => {
       const userId = currentUserId(req);
-      const { homeSpaceId, ...filters } = query;
-      const scope = authoredBySql(userId, homeSpaceId);
+      const { homeSpaceId, addable, ...filters } = query;
+      if (addable) refusePersonal(req);
+      const scope = addable ? addableSql(userId, spaceOf(req)) : authoredBySql(userId, homeSpaceId);
       const page = await listRecipes(ctx, spaceOf(req), userId, filters, scope);
       reply(res, pageSchema(recipeSummarySchema), page);
+    })
+  );
+
+  // "Depuis mes recettes" [D203, D208] : ajout en lot de ses recettes a un espace de groupe.
+  router.post(
+    "/add-mine/preview",
+    requirePermission("recipes.create"),
+    handle({ body: addMineBodySchema }, async ({ body }, req, res) => {
+      refusePersonal(req);
+      const preview = await sharing.previewAddMine(ctx, actorOf(req), body.recipeIds);
+      reply(res, addMinePreviewSchema, preview);
+    })
+  );
+
+  router.post(
+    "/add-mine",
+    requirePermission("recipes.create"),
+    handle({ body: addMineBodySchema }, async ({ body }, req, res) => {
+      refusePersonal(req);
+      const added = await sharing.addMine(ctx, actorOf(req), body.recipeIds);
+      reply(res, addMineResultSchema, { added });
     })
   );
 
@@ -535,7 +566,7 @@ export const recipesModule: ApiModule = {
     "recipes.recipe.adapted": { category: "recipes.sharing" },
     "recipes.recipe.created": { category: "recipes.new" },
   },
-  activityTypes: ["recipes.recipe.created", "recipes.recipe.shared"],
+  activityTypes: ["recipes.recipe.created", "recipes.recipe.shared", "recipes.recipes.added"],
   router: recipesRouter,
   onMemberLeft: sharing.onMemberLeft,
   onSpaceDeleted: sharing.onSpaceDeleted,

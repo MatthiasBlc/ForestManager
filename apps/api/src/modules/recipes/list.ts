@@ -93,6 +93,14 @@ export function authoredBySql(userId: string, homeSpaceId?: string): Prisma.Sql 
     WHERE m."userId" = ${userId} AND m."leftAt" IS NULL AND s."deletedAt" IS NULL))`;
 }
 
+/**
+ * "Depuis mes recettes" [D203] : recettes de l'auteur pas encore visibles dans
+ * `spaceId`, ni masquees par la moderation.
+ */
+export function addableSql(userId: string, spaceId: string): Prisma.Sql {
+  return Prisma.sql`(${authoredBySql(userId)} AND r."hiddenAt" IS NULL AND NOT ${visibleInSql(spaceId)})`;
+}
+
 function filters(
   scope: Prisma.Sql,
   spaceId: string,

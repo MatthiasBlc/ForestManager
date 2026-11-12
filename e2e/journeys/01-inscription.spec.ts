@@ -29,7 +29,7 @@ test(
     await expectNoA11yViolations(page);
 
     await page.getByRole("button", { name: "Nouvelle recette" }).first().click();
-    const sheet = page.getByRole("dialog", { name: /Nouvelle recette dans/ });
+    const sheet = page.getByRole("dialog", { name: "Créer une recette" });
     await expectNoA11yViolations(page);
     await sheet.getByRole("link", { name: /Saisir/ }).click();
 

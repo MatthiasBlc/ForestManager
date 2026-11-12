@@ -14,7 +14,7 @@ import {
 import type { Context } from "../../core/context.ts";
 import { Prisma } from "../../core/db/client.ts";
 import { AppError } from "../../core/http/errors.ts";
-import { recipeShared, shareDecided, shareRequested } from "./events.ts";
+import { recipeShared, recipesAdded, shareDecided, shareRequested } from "./events.ts";
 import type { MemberLeftReason, PendingCounts } from "../../core/modules/hooks.ts";
 import { canModerate } from "./permissions.ts";
 import {
@@ -237,6 +237,83 @@ export async function setShares(
   });
   for (const spaceId of added) await recipeShared(ctx, recipe, spaceId, actor.userId);
   return getSharing(ctx, actor, recipeId);
+}
+
+// --- "Depuis mes recettes" : ajout en lot depuis l'espace cible [D203, D208] ---
+
+/**
+ * Recettes choisies, dans l'ordre de la selection : de l'acteur, ni supprimees ni
+ * masquees, nees dans un espace dont il est encore membre (il tranche lui-meme,
+ * D81). Une seule hors de ces regles refuse tout (RECIPE_001).
+ */
+async function ownRecipes(db: Db, userId: string, recipeIds: string[]) {
+  const rows = await db.recipe.findMany({
+    where: {
+      id: { in: recipeIds },
+      authorId: userId,
+      deletedAt: null,
+      hiddenAt: null,
+      homeSpace: {
+        deletedAt: null,
+        memberships: { some: { userId, leftAt: null } },
+      },
+    },
+    select: { id: true, title: true, homeSpaceId: true, authorId: true },
+  });
+  if (rows.length !== recipeIds.length) throw new AppError("RECIPE_001");
+  const byId = new Map(rows.map((row) => [row.id, row]));
+  return recipeIds.flatMap((id) => {
+    const row = byId.get(id);
+    return row ? [row] : [];
+  });
+}
+
+/** Sous-recettes qui arrivent avec la selection (ni deja visibles, ni deja choisies). */
+export async function previewAddMine(
+  ctx: Context,
+  actor: RecipeActor,
+  recipeIds: string[]
+): Promise<{ withIt: RecipeSharing["withIt"] }> {
+  const recipes = await ownRecipes(ctx.db, actor.userId, recipeIds);
+  const seen = new Set(recipeIds);
+  const withIt: RecipeSharing["withIt"] = [];
+  for (const recipe of recipes) {
+    for (const sub of await subRecipesOf(ctx.db, recipe.id)) {
+      if (seen.has(sub.id)) continue;
+      seen.add(sub.id);
+      const row = await ctx.db.recipe.findUniqueOrThrow({
+        where: { id: sub.id },
+        select: { id: true, homeSpaceId: true, authorId: true },
+      });
+      if (await isVisibleIn(ctx.db, row, actor.spaceId)) continue;
+      withIt.push({ id: sub.id, title: sub.title, included: sub.authorId === recipe.authorId });
+    }
+  }
+  return { withIt };
+}
+
+/** Partage les recettes choisies dans l'espace courant, tout ou rien ; renvoie le nombre ajoute. */
+export async function addMine(
+  ctx: Context,
+  actor: RecipeActor,
+  recipeIds: string[]
+): Promise<number> {
+  const added = await ctx.db.$transaction(async (tx) => {
+    const into: { id: string; title: string }[] = [];
+    for (const recipe of await ownRecipes(tx, actor.userId, recipeIds)) {
+      if (await isVisibleIn(tx, recipe, actor.spaceId)) continue;
+      await shareInto(tx, recipe, actor.spaceId, { sharedById: actor.userId, approvedById: null });
+      into.push(recipe);
+    }
+    return into;
+  });
+  const [single] = added;
+  if (added.length === 1 && single) {
+    await recipeShared(ctx, single, actor.spaceId, actor.userId);
+  } else if (added.length > 1) {
+    await recipesAdded(ctx, added, actor.spaceId, actor.userId);
+  }
+  return added.length;
 }
 
 /** Retirer la recette de l'espace courant, ou elle est partagee (F-REC-9). */

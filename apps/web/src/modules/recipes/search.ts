@@ -31,7 +31,7 @@ export const RECIPE_SEARCH_GROUPS: Readonly<Record<string, SearchGroupView>> = {
   },
 };
 
-export function recipeActions(space: { id: string }): PaletteAction[] {
+export function recipeActions(space: { id: string; kind: "PERSONAL" | "GROUP" }): PaletteAction[] {
   return [
     {
       id: "recipes.new",
@@ -40,5 +40,17 @@ export function recipeActions(space: { id: string }): PaletteAction[] {
       to: `/s/${space.id}/recipes/new`,
       keywords: "ajouter creer",
     },
+    // "Depuis mes recettes" [D203] : seulement dans un espace de groupe.
+    ...(space.kind === "GROUP"
+      ? [
+          {
+            id: "recipes.add-mine",
+            label: "Ajouter mes recettes",
+            icon: "book-open" as const,
+            to: `/s/${space.id}/recipes?addMine=1`,
+            keywords: "partager importer depuis mes recettes",
+          },
+        ]
+      : []),
   ];
 }

@@ -24,11 +24,12 @@ import { errorMessage } from "../../i18n/index.ts";
 import { isNetworkError } from "../../lib/api.ts";
 import { useOnline } from "../../pwa/use-online.ts";
 import { useWriteGuard } from "../../pwa/use-write-guard.ts";
-import { Button } from "../../ui/button.tsx";
+import { Button, IconButton } from "../../ui/button.tsx";
 import { Chip } from "../../ui/controls.tsx";
 import { EmptyState, Skeleton } from "../../ui/display.tsx";
 import { Icon, type IconName } from "../../ui/icon.tsx";
 import { Sheet } from "../../ui/sheet.tsx";
+import { AddMineSheet } from "./add-mine-sheet.tsx";
 import { RecipeCard, type CardBadge } from "./components/recipe-card.tsx";
 import { recipeMeta } from "./format.ts";
 import { ImportTextSheet, ImportUrlSheet, type ImportSheet } from "./import-sheets.tsx";
@@ -43,6 +44,7 @@ import { RecipeActionsSheet } from "./recipe-actions-sheet.tsx";
 import { ShareRequestsBanner } from "./sharing.tsx";
 import { SuggestionsToDecideBanner } from "./suggestions.tsx";
 import { useDebounced } from "../../lib/use-debounced.ts";
+import { useUrlFlag } from "../../lib/use-url-flag.ts";
 
 /**
  * Hors de son espace d'origine : "Partagee" dans un espace de partage, nom de
@@ -65,79 +67,107 @@ function badgesOf(
   return badges;
 }
 
+/** Etape de la feuille d'ajout : choix (groupe), creation, ou "Depuis mes recettes". */
+type AddStep = "root" | "create" | "mine";
+
+/**
+ * F-AJOUT-RECETTE [D208] : dans un espace de groupe, "Depuis mes recettes" puis
+ * "Creer" (sous-menu) ; dans l'espace perso, directement la creation.
+ */
 function AddRecipeSheet({
-  open,
+  step,
+  onStep,
   onClose,
   onImport,
   spaceId,
   spaceName,
+  group,
 }: {
-  open: boolean;
+  step: "root" | "create" | null;
+  onStep: (step: AddStep) => void;
   onClose: () => void;
   onImport: (sheet: Exclude<ImportSheet, null>) => void;
   spaceId: string;
   spaceName: string;
+  group: boolean;
 }) {
-  const choices: {
-    to?: string;
-    sheet?: Exclude<ImportSheet, null>;
-    icon: IconName;
-    title: string;
-    text: string;
-  }[] = [
-    {
-      to: `/s/${spaceId}/recipes/new`,
-      icon: "pencil",
-      title: "Saisir",
-      text: "Écrire la recette toi-même",
-    },
-    {
-      sheet: "url",
-      icon: "link",
-      title: "Importer un lien",
-      text: "Une page de recette sur le web",
-    },
-    {
-      sheet: "text",
-      icon: "book-open",
-      title: "Coller un texte",
-      text: "Depuis un mail, une note, un PDF",
-    },
-  ];
+  const option = (icon: IconName, title: string, text: string) => (
+    <>
+      <span className="fm-option-icon">
+        <Icon name={icon} />
+      </span>
+      <span className="fm-option-text">
+        <b>{title}</b>
+        <small>{text}</small>
+      </span>
+    </>
+  );
+  if (step === "root") {
+    return (
+      <Sheet open onClose={onClose} title={`Ajouter une recette dans ${spaceName}`}>
+        <div className="fm-stack">
+          <button
+            type="button"
+            className="fm-option fm-option-lead w-full text-left"
+            onClick={() => {
+              onStep("mine");
+            }}
+          >
+            {option(
+              "book-open",
+              "Depuis mes recettes",
+              "Celles que tu as déjà, en quelques cases à cocher"
+            )}
+            <Icon name="chevron-right" className="fm-option-go" />
+          </button>
+          <button
+            type="button"
+            className="fm-option w-full text-left"
+            onClick={() => {
+              onStep("create");
+            }}
+          >
+            {option("plus", "Créer", "La saisir, importer un lien ou coller un texte")}
+            <Icon name="chevron-right" className="fm-option-go" />
+          </button>
+        </div>
+      </Sheet>
+    );
+  }
   return (
-    <Sheet open={open} onClose={onClose} title={`Nouvelle recette dans ${spaceName}`}>
+    <Sheet open={step === "create"} onClose={onClose} title="Créer une recette">
       <div className="fm-stack">
-        {choices.map((choice) => {
-          const content = (
-            <>
-              <span className="fm-option-icon">
-                <Icon name={choice.icon} />
-              </span>
-              <span className="fm-option-text">
-                <b>{choice.title}</b>
-                <small>{choice.text}</small>
-              </span>
-            </>
-          );
-          return choice.to ? (
-            <Link key={choice.title} to={choice.to} className="fm-option" onClick={onClose}>
-              {content}
-              <Icon name="chevron-right" className="fm-option-go" />
-            </Link>
-          ) : (
-            <button
-              key={choice.title}
-              type="button"
-              className="fm-option w-full text-left"
-              onClick={() => {
-                if (choice.sheet) onImport(choice.sheet);
-              }}
-            >
-              {content}
-              <Icon name="chevron-right" className="fm-option-go" />
-            </button>
-          );
-        })}
+        {group ? (
+          <IconButton
+            icon="arrow-left"
+            label="Retour"
+            onClick={() => {
+              onStep("root");
+            }}
+          />
+        ) : null}
+        <Link to={`/s/${spaceId}/recipes/new`} className="fm-option" onClick={onClose}>
+          {option("pencil", "Saisir", "Écrire la recette toi-même")}
+          <Icon name="chevron-right" className="fm-option-go" />
+        </Link>
+        <button
+          type="button"
+          className="fm-option w-full text-left"
+          onClick={() => {
+            onImport("url");
+          }}
+        >
+          {option("link", "Un lien", "Une page de recette sur le web")}
+        </button>
+        <button
+          type="button"
+          className="fm-option w-full text-left"
+          onClick={() => {
+            onImport("text");
+          }}
+        >
+          {option("book-open", "Un texte collé", "Depuis un mail, une note, un PDF")}
+        </button>
         <small className="text-ink-muted">
           Dans tous les cas, tu vérifies tout dans l'éditeur avant d'enregistrer.
         </small>
@@ -226,7 +256,7 @@ export function RecipesPage() {
   const [search, setSearch] = useState("");
   const [tagIds, setTagIds] = useState<string[]>([]);
   const [baseOnly, setBaseOnly] = useState(false);
-  const [addOpen, setAddOpen] = useState(false);
+  const [addStep, setAddStep] = useState<AddStep | null>(null);
   const [importSheet, setImportSheet] = useState<ImportSheet>(null);
   const [actionsFor, setActionsFor] = useState<{ spaceId: string; recipe: RecipeSummary }>();
   // Filtre par ingredient ouvert depuis la recherche globale (?ingredient=, nom dans l'etat).
@@ -280,8 +310,12 @@ export function RecipesPage() {
   const open = (recipe: RecipeSummary) => {
     void navigate(`/s/${mine ? recipe.homeSpaceId : spaceId}/recipes/${recipe.id}`);
   };
+  const group = space.data?.kind === "GROUP";
+  // Recherche globale : "Ajouter mes recettes" ouvre la selection (`?addMine=1`).
+  const [mineFlag, setMineFlag] = useUrlFlag("addMine", space.data ? group : undefined);
+  const addLabel = group ? "Ajouter une recette" : "Nouvelle recette";
   const add = () => {
-    setAddOpen(true);
+    setAddStep(group ? "root" : "create");
   };
   const showActions = (recipe: RecipeSummary) => {
     setActionsFor({ spaceId: mine ? recipe.homeSpaceId : spaceId, recipe });
@@ -364,7 +398,7 @@ export function RecipesPage() {
         title={mine ? "Pas encore de recette à toi" : `Pas encore de recette dans ${spaceName}`}
         action={
           <Button icon="plus" onClick={add}>
-            Nouvelle recette
+            {addLabel}
           </Button>
         }
       >
@@ -411,7 +445,7 @@ export function RecipesPage() {
           onClick={add}
           {...guard}
         >
-          Nouvelle recette
+          {addLabel}
         </Button>
       </div>
       {mine || space.data?.kind === "GROUP" ? (
@@ -497,17 +531,38 @@ export function RecipesPage() {
       </div>
       {content}
       <AddRecipeSheet
-        open={addOpen}
+        step={addStep === "root" || addStep === "create" ? addStep : null}
+        onStep={setAddStep}
         onClose={() => {
-          setAddOpen(false);
+          setAddStep(null);
         }}
         onImport={(sheet) => {
-          setAddOpen(false);
+          setAddStep(null);
           setImportSheet(sheet);
         }}
         spaceId={spaceId}
         spaceName={spaceName}
+        group={group}
       />
+      {group ? (
+        <AddMineSheet
+          open={addStep === "mine" || mineFlag}
+          onClose={() => {
+            setMineFlag(false);
+            setAddStep(null);
+          }}
+          onBack={() => {
+            setMineFlag(false);
+            setAddStep("root");
+          }}
+          onCreate={() => {
+            setMineFlag(false);
+            setAddStep("create");
+          }}
+          spaceId={spaceId}
+          spaceName={spaceName}
+        />
+      ) : null}
       <ImportUrlSheet
         open={importSheet === "url"}
         onClose={() => {

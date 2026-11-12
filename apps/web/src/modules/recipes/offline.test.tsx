@@ -45,7 +45,7 @@ describe("liste hors ligne (E-RECETTES-HorsLigne)", () => {
     const card = screen.getByRole("article", { name: "Dahl de lentilles" });
     expect(within(card).getByText("Hors ligne")).toBeInTheDocument();
     expect(screen.queryByRole("article", { name: "Tarte aux pommes" })).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Nouvelle recette" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Ajouter une recette" })).toBeDisabled();
   });
 
   it("rien d'ouvert : le dit au lieu de charger sans fin", async () => {

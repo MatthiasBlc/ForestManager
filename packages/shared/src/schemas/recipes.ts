@@ -350,6 +350,11 @@ export type RecipeListQuery = z.infer<typeof recipeListQuerySchema>;
 /** "Mes recettes" [D82, D207] : filtre facultatif par espace d'origine. */
 export const mineRecipeListQuerySchema = recipeListQuerySchema.extend({
   homeSpaceId: uuidSchema.optional(),
+  /** Seulement celles qu'on peut ajouter a l'espace courant ("Depuis mes recettes", D203). */
+  addable: z
+    .enum(["true", "false"])
+    .transform((v) => v === "true")
+    .optional(),
 });
 
 // --- Partage [D03, D26, D81, D82, D84] ---
@@ -375,6 +380,27 @@ export const recipeSharesBodySchema = z.strictObject({
   spaceIds: z.array(uuidSchema).max(MAX_SHARE_TARGETS),
 });
 export type RecipeSharesBody = z.infer<typeof recipeSharesBodySchema>;
+
+// --- "Depuis mes recettes" : ajout en lot a un espace [D203, D208] ---
+
+export const ADD_MINE_MAX = 50;
+
+export const addMineBodySchema = z.strictObject({
+  recipeIds: z
+    .array(uuidSchema)
+    .min(1)
+    .max(ADD_MINE_MAX)
+    .refine((ids) => new Set(ids).size === ids.length, { message: "Recette en double" }),
+});
+export type AddMineBody = z.infer<typeof addMineBodySchema>;
+
+/** Sous-recettes emportees par la selection ; `included: false` : d'un autre auteur [D26]. */
+export const addMinePreviewSchema = recipeSharingSchema.pick({ withIt: true });
+export type AddMinePreview = z.infer<typeof addMinePreviewSchema>;
+
+/** Nombre de recettes choisies vraiment ajoutees (celles deja visibles sont ignorees). */
+export const addMineResultSchema = z.object({ added: z.number().int().min(0) });
+export type AddMineResult = z.infer<typeof addMineResultSchema>;
 
 export const shareRequestBodySchema = z.strictObject({
   targetSpaceId: uuidSchema,

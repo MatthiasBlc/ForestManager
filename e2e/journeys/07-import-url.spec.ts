@@ -11,11 +11,11 @@ test("parcours 7 : import par lien, correction, enregistrement", async ({ page, 
   await loginAs(page, lea);
   await page.goto(`/s/${lea.personalSpaceId}/recipes`);
 
-  // Nouvelle recette > Importer un lien.
+  // Espace perso : Nouvelle recette > Un lien (D208).
   await page.getByRole("button", { name: "Nouvelle recette" }).first().click();
   await page
-    .getByRole("dialog", { name: /Nouvelle recette dans/ })
-    .getByRole("button", { name: /Importer un lien/ })
+    .getByRole("dialog", { name: "Créer une recette" })
+    .getByRole("button", { name: /Un lien/ })
     .click();
   const sheet = page.getByRole("dialog", { name: "Importer depuis un lien" });
   // Un lien incomplet est refuse avant tout appel.

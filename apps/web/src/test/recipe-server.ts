@@ -80,6 +80,12 @@ export function recipeServer({
     /** Comparaison avec l'original, par adaptation (E-COMPARER-ORIGINAL). */
     comparisons: {} as Record<string, RecipeComparison>,
     suggestions: [] as Suggestion[],
+    /** "Depuis mes recettes" [D203] : mes recettes nees ailleurs, pas encore dans l'espace. */
+    addable: [] as Recipe[],
+    /** Sous-recettes annoncees par l'apercu de l'ajout en lot. */
+    addMinePreview: [] as RecipeSharing["withIt"],
+    /** Refus de l'ajout en lot (une recette n'est plus disponible). */
+    addMineFails: false,
     queries: [] as URLSearchParams[],
     bodies: {} as Record<string, unknown>,
     calls: [] as string[],
@@ -407,10 +413,32 @@ export function recipeServer({
       const params = new URL(request.url).searchParams;
       state.queries.push(params);
       const home = params.get("homeSpaceId");
+      if (params.get("addable") === "true") {
+        const q = (params.get("q") ?? "").toLowerCase();
+        const tagIds = params.get("tagIds")?.split(",") ?? [];
+        const data = state.addable
+          .filter((r) => r.title.toLowerCase().includes(q))
+          .filter((r) => tagIds.every((id) => r.tags.some((t) => t.id === id)))
+          .map(toSummary);
+        return HttpResponse.json({ data, nextCursor: null });
+      }
       const data = state.recipes
         .filter((r) => r.author.id === s.me.id && (!home || r.homeSpaceId === home))
         .map(toSummary);
       return HttpResponse.json({ data, nextCursor: null });
+    }),
+    http.post(`${base}/add-mine/preview`, async ({ request }) => {
+      record("addMinePreview", await request.json());
+      return HttpResponse.json({ withIt: state.addMinePreview });
+    }),
+    http.post(`${base}/add-mine`, async ({ request }) => {
+      const body = (await request.json()) as { recipeIds: string[] };
+      record("addMine", body);
+      if (state.addMineFails) return notFound();
+      const moved = state.addable.filter((r) => body.recipeIds.includes(r.id));
+      state.addable = state.addable.filter((r) => !body.recipeIds.includes(r.id));
+      state.recipes.unshift(...moved);
+      return HttpResponse.json({ added: moved.length });
     }),
     http.get("/api/v1/spaces/:spaceId/recipes/share-requests", () =>
       HttpResponse.json({ data: state.shareRequests })

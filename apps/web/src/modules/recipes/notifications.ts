@@ -64,4 +64,14 @@ export const RECIPE_ACTIVITY: Record<string, ActivityRenderer> = {
     text: `a partagé « ${text(event.data, "title")} ».`,
     to: event.targetId ? `/s/${spaceId}/recipes/${event.targetId}` : null,
   }),
+  // "Depuis mes recettes" : une ligne par lot, les trois premiers titres [D208].
+  "recipes.recipes.added": (event, spaceId) => {
+    const count = Number(event.data?.count ?? 0);
+    const raw = event.data?.titles;
+    const titles = Array.isArray(raw) ? raw.map((t) => `« ${String(t)} »`) : [];
+    return {
+      text: `a ajouté ${String(count)} recettes : ${titles.join(", ")}${count > titles.length ? "…" : "."}`,
+      to: `/s/${spaceId}/recipes`,
+    };
+  },
 };
