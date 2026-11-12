@@ -755,7 +755,7 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 - **Couverture** [D78] : seuils 90 / 80 / 60 % vises ; une zone en dessous recoit des tests la ou un comportement n'est pas prouve, sinon son seuil est pose au niveau mesure et l'ecart est note dans `15-Plan-Tests.md`.
 - **E2E en CI** : job bloquant a chaque push et pull request, artefacts des echecs gardes 7 jours.
 
-### D198 - C7 : decoupage et changement de poste avant tout deploy - VALIDEE (2026-11-11, plan C7, demande du proprietaire pour le changement de poste)
+### D198 - C7 : decoupage et changement de poste avant tout deploy - REMPLACEE par D201 (2026-11-11, plan C7, demande du proprietaire pour le changement de poste)
 
 - **Constat** : le proprietaire fait depuis un autre ordinateur tout ce qui pousse vers Portainer (preprod et prod).
 - **Choix** : C7.1 a C7.6 (E2E, suivi d'erreurs, CI) sur le poste actuel, sans toucher Portainer ni `master` ; C7.6 se termine par l'etat ecrit et un push. C7.7 (preprod) et C8 (prod) reprennent sur l'autre poste (`24-Plan-C7.md`).
@@ -783,3 +783,11 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
   - **Couverture** : seuils du plan gardes tels quels (90/85, 80/70, 60/50), aucun test ajoute pour le chiffre. Configuration dans `vitest.config.ts` (seuils par motif de fichiers), lancee par `npm run test:coverage` ; generated, scripts et aides de test exclus. Rapport texte seul, ecrit dans `/tmp` du conteneur (il tourne en root sur l'arbre monte).
   - **Cles i18n** : par le typage d'i18next (`apps/web/src/i18n/i18next.d.ts`, `CustomTypeOptions.resources`) plutot qu'un script : une cle absente de `fr` echoue au typecheck, bloquant en CI. Le namespace `errors` est construit depuis `ERROR_CODES` et le type `ClientErrorCode` (`lib/api.ts`), complet par construction ; un code inconnu venu du serveur reste lu par `i18n.exists`.
   - **E2E** : job `e2e` apres `verify`, `build` attend les deux ; `npm run e2e` (avec `CI` : une relance, `test.only` interdit), rapport et `test-results` envoyes en artefact 7 jours sur echec seulement, 30 min au plus.
+
+## Phase C7 - preprod (2026-11-12)
+
+### D201 - Preprod et prod depuis ce poste - VALIDEE (2026-11-12, demande du proprietaire)
+
+- **Constat** : D198 renvoyait C7.7 et C8 sur un autre ordinateur. Le proprietaire a acces a Portainer et a GitHub depuis ce poste.
+- **Choix** : C7.7 et C8 se font depuis ce poste, pas a pas. Le proprietaire saisit lui-meme toute valeur secrete (GitHub, Portainer, MinIO) ; seuls les noms circulent.
+- **Etat des acces (2026-11-12)** : les 14 secrets de la V1 et `MINIO_ACCESS_KEY` / `MINIO_SECRET_KEY` (cles V1, deja presents) sont en place ; `CORS_ORIGIN` (V1) n'est plus lu. DNS generique `*.matthias-bouloc.fr` : rien a creer pour Bugsink. Stack Bugsink creee, projets `forestmanager-preprod` et `forestmanager-prod`, secret `DEV_SENTRY_DSN` ajoute. Bugsink n'envoie aucun mail (pas de SMTP dans sa stack) : l'adresse du compte ne sert qu'a la connexion.

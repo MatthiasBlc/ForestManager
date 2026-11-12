@@ -231,7 +231,9 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
   - **CI verte de bout en bout sur GitHub** le 2026-11-11 (run 43080277269, commit `a6ac13b`) : verify 8 min, e2e 5 min, build des deux images 3 min ; deploys sautes (branche hors `master`, pas de PR).
   - Lire la CI depuis ce poste : `gh` absent, le depot est public, l'API GitHub (`curl https://api.github.com/repos/MatthiasBlc/ForestManager/actions/runs?branch=...`) donne runs, jobs, etapes et annotations ; logs et artefacts exigent une authentification.
   - Avertissements GitHub non bloquants : actions en Node 20 forcees en Node 24 (`actions/checkout@v4`, `upload-artifact@v4`), `ubuntu-latest` migre vers Ubuntu 26.
-  - **Prochaine etape : C7.7 sur l'autre ordinateur** (preprod ; revoir d'abord avec le proprietaire ses actions listees sous C7 dans `4-Roadmap.md`).
+  - Etape suivante prevue alors : C7.7 sur l'autre ordinateur (D198), remplacee par D201.
+- C7.7 commence le 2026-11-12, depuis ce poste (D201) : actions du proprietaire faites (secrets `MINIO_*` deja presents, stack Bugsink, `DEV_SENTRY_DSN`).
+  - **Prochaine etape** : pull request `UpdateV2` -> `master` ouverte par le proprietaire sur GitHub (deploy preprod a chaque push sur la PR ; **ne pas fusionner** : la fusion deploie la prod), puis verification (`24-Plan-C7.md` S2, C7.7).
 - Tout est publie et committe au 2026-11-05 : DS v10, Acces v39, Recettes v35, Planning v26, Admin v26, Permissions v5 (v6 le 2026-11-09), Parcours v6 (v7 le 2026-11-09), Modele de donnees v5 (v6 le 2026-11-09, page regeneree en D165). Maquettes revues dans Chrome le 2026-11-05 (B5b, voir `archive/16-Maquettes-ECARTS.md`).
   - Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact) : relire l'artefact (action read sur l'URL), puis publier avec `root` = le dossier du canevas, `file_path` = un fichier modifie, `files` = les autres (`project/...`).
   - Les numeros de version des artefacts avancent aussi a la simple consultation : comparer le contenu en ligne au commit avant d'ecraser.

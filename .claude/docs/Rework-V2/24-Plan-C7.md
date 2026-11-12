@@ -13,7 +13,7 @@ References : `15-Plan-Tests.md` (S4 parcours, S5 donnees, S6 CI, S7 couverture, 
 - Mise en prod, `pg_dump` avant deploy prod [D76], buckets V1 rendus prives : C8.
 - Tests manuels sur de vrais telephones (`15-Plan-Tests.md` S10) : feuille de recette jouee sur la preprod en C7.7, rejouee avant la prod en C8.
 
-**Deux postes** [D198] : tout ce qui pousse vers Portainer (preprod comme prod) se fait depuis l'autre ordinateur du proprietaire. C7.1 a C7.6 se font ici et ne touchent ni Portainer ni `master` ; C7.6 se termine par l'etat ecrit dans le `README.md` et un push. C7.7 reprend la-bas.
+**Poste** : D198 prevoyait la preprod et la prod depuis un autre ordinateur ; remplacee par D201 (2026-11-12) : tout se fait depuis ce poste, le proprietaire saisit lui-meme les secrets.
 
 ## 2. Decoupage [D198]
 
@@ -64,9 +64,9 @@ Fait le 2026-11-11 ; regles de realisation et ecarts (`@sentry/core` au lieu de 
 - Job `e2e` dans `ci.yml` (apres `verify`, avant `build`) : `npm run e2e`, traces, captures et videos des echecs gardees 7 jours.
 - `14-Architecture.md` S13 et `15-Plan-Tests.md` S2 et S6 alignes sur ce qui tourne.
 - Premier passage sur GitHub : push de la branche de travail (verification et build, aucune image poussee, aucun deploy), corrections jusqu'au vert.
-- **Point d'arret** : etat ecrit dans le `README.md` (section "Reprise"), tout committe et pousse. Suite sur l'autre ordinateur.
+- **Point d'arret** : etat ecrit dans le `README.md` (section "Reprise"), tout committe et pousse. Suite : C7.7 (depuis ce poste, D201).
 
-### C7.7 Preprod (autre ordinateur)
+### C7.7 Preprod
 
 - Revue avec le proprietaire de ses actions (liste : `4-Roadmap.md` sous C7) : secrets GitHub `MINIO_ACCESS_KEY` et `MINIO_SECRET_KEY`, stack Bugsink et `DEV_SENTRY_DSN`, branche de la pull request vers `master`.
 - Pull request vers `master` : images poussees, deploy de la stack de preprod existante [D147] ; base neuve sur le volume `postgres17_data_dev` [D23, D145], l'ancien volume V1 reste en place jusqu'a C8.

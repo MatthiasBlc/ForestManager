@@ -108,10 +108,11 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C7.4 Parcours du Planning, du temps reel et du clavier : 9, 14, 16
   - [x] C7.5 Suivi d'erreurs : SDK Sentry front et back, tunnel, test depuis A13, compose Bugsink [D75, D179, D196]
   - [x] C7.6 CI complete (couverture, cles i18n, job E2E) et premier passage sur GitHub (reporte depuis C1.10) [D78] ; puis etat ecrit et push : **changement d'ordinateur** [D198]
-  - [ ] C7.7 Preprod, sur l'autre ordinateur : deploy par pull request vers `master`, verification, feuille de recette (`24-Plan-C7.md` S2)
-  - [ ] A faire par le proprietaire avant le premier deploy preprod (a revoir ensemble) : secrets GitHub `MINIO_ACCESS_KEY` et `MINIO_SECRET_KEY` (exiges par `docker/deploy.sh`) [D167] ; sur une base deja creee, passer le Planning en "Disponible" dans A04 (le seed n'ecrit le statut qu'a la creation) ; stack Bugsink dans Portainer (`docker/bugsink/compose.yml`, livre en C7.5) et secret `DEV_SENTRY_DSN` (`SENTRY_DSN` pour la prod) [D196]
+  - [ ] C7.7 Preprod, depuis ce poste [D201] : deploy par pull request vers `master`, verification, feuille de recette (`24-Plan-C7.md` S2)
+  - [x] Actions du proprietaire avant le premier deploy preprod (2026-11-12) : secrets GitHub `MINIO_ACCESS_KEY` et `MINIO_SECRET_KEY` deja presents (cles V1) [D167] ; stack Bugsink dans Portainer et secret `DEV_SENTRY_DSN` [D196]
+  - [ ] Apres le premier deploy preprod : verifier le statut du Planning dans A04 et le passer en "Disponible" si besoin (le seed n'ecrit le statut qu'a la creation)
   - [ ] Cloture de C7 (`24-Plan-C7.md` S3)
-- [ ] C8 Mise en prod V2 (autre ordinateur [D198])
+- [ ] C8 Mise en prod V2 (depuis ce poste [D201])
   - [ ] `pg_dump` avant chaque deploy prod, garde 14 jours [D76] : absent de `ci.yml`, a ecrire avant la prod
   - [ ] A faire par le proprietaire (a revoir ensemble) : retirer la lecture publique des buckets V1 `forestmanager-images-preprod` / `-prod` (`mc anonymous set none`) [D167]
 - [ ] C9 Module liste de courses (V2.1)
