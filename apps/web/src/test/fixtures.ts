@@ -201,6 +201,15 @@ export const UNITS: Unit[] = [
     name: "à goût",
     abbreviation: "à goût",
   },
+  {
+    code: "pinch",
+    dimension: "NONE",
+    toBase: null,
+    metric: false,
+    name: "pincée",
+    namePlural: "pincées",
+    abbreviation: "pincée",
+  },
 ].map((unit, index) => ({
   ...unit,
   dimension: unit.dimension as Unit["dimension"],

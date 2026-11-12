@@ -64,7 +64,9 @@ export function scaledAmount(
   const scaled = scaleQuantity(line.quantity, 1, scale);
   if (scaled === null) return unit ? unit.abbreviation : "";
   if (!unit) return formatQuantity(scaled, { fractions: true });
-  if (unit.dimension === "NONE") return unit.abbreviation;
+  // Sans dimension (pincee) : pas de conversion, mais la quantite saisie reste lisible.
+  if (unit.dimension === "NONE")
+    return `${formatQuantity(scaled, { fractions: true })} ${unitLabel(unit, scaled)}`;
   const readable = simplify(scaled, unit, units);
   const shown = units.find((u) => u.code === readable.unit.code) ?? unit;
   const label = unitLabel(shown, readable.quantity);

@@ -19,6 +19,12 @@ describe("scaledAmount", () => {
     expect(scaledAmount(line(2, "tbsp"), UNITS, 1)).toBe("2 c. à soupe");
     expect(scaledAmount(line(300, "g"), UNITS, 1)).toBe("300 g");
   });
+
+  it("montre la quantite d'une unite sans dimension quand elle en a une", () => {
+    expect(scaledAmount(line(1, "pinch"), UNITS, 1)).toBe("1 pincée");
+    expect(scaledAmount(line(1, "pinch"), UNITS, 2)).toBe("2 pincées");
+    expect(scaledAmount(line(null, "to-taste"), UNITS, 2)).toBe("à goût");
+  });
 });
 
 describe("formatYield", () => {
