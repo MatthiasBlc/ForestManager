@@ -9,6 +9,7 @@ import { api } from "../../lib/api.ts";
 import { Button, IconButton } from "../../ui/button.tsx";
 import { Switch } from "../../ui/controls.tsx";
 import { Badge, Skeleton, type Tone } from "../../ui/display.tsx";
+import { Icon } from "../../ui/icon.tsx";
 import { Field } from "../../ui/field.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
@@ -148,6 +149,20 @@ export function ModulesPage({ space }: { space: SpaceDetail }) {
           ? `Les modules ajoutent des outils à ${space.name}. Désactiver un module le cache pour tous ; ses données sont gardées.`
           : `Les modules actifs de ${space.name}. Seul le propriétaire les gère.`}
       </p>
+      {manage && granted.length > 1 ? (
+        <p
+          role="note"
+          aria-label="Ordre des modules"
+          className="m-0 flex items-start gap-2 rounded-md bg-accent-soft px-3 py-2 text-sm text-accent-text"
+        >
+          <Icon name="arrow-up" />
+          <span>
+            Les flèches rangent les modules dans le menu de l'espace : le premier s'ouvre en entrant
+            dans l'espace. Sur téléphone, les 4 premiers ont un onglet en bas, les autres sont dans
+            « Plus ».
+          </span>
+        </p>
+      ) : null}
       {catalog.isPending ? <Skeleton kind="row" /> : null}
       <ul className="fm-stack">
         {catalog.data?.map((module) => {

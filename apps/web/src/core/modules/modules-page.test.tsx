@@ -166,11 +166,20 @@ describe("modules de l'espace (E-MODULES)", () => {
     });
   });
 
+  it("explique l'ordre des modules au proprietaire (D131)", async () => {
+    const s = catalogServer();
+    renderWithProviders(<App />, { route: `/s/${s.space.id}/modules` });
+    const note = await screen.findByRole("note", { name: "Ordre des modules" });
+    expect(note).toHaveTextContent(/premier s'ouvre en entrant dans l'espace/);
+    expect(note).toHaveTextContent(/4 premiers/);
+  });
+
   it("un membre consulte sans agir (D54)", async () => {
     const s = catalogServer("MEMBER");
     renderWithProviders(<App />, { route: `/s/${s.space.id}/modules` });
     await screen.findByRole("listitem", { name: "Liste de courses" });
     expect(screen.queryByRole("button", { name: "Demander l'accès" })).not.toBeInTheDocument();
     expect(screen.queryByRole("switch")).not.toBeInTheDocument();
+    expect(screen.queryByRole("note", { name: "Ordre des modules" })).not.toBeInTheDocument();
   });
 });
