@@ -86,8 +86,9 @@ export function visibleInSql(spaceId: string): Prisma.Sql {
 }
 
 /** "Mes recettes" [D82] : recettes de l'auteur dans les espaces dont il est membre actif. */
-export function authoredBySql(userId: string): Prisma.Sql {
-  return Prisma.sql`(r."authorId" = ${userId} AND r."homeSpaceId" IN (SELECT m."spaceId"
+export function authoredBySql(userId: string, homeSpaceId?: string): Prisma.Sql {
+  const home = homeSpaceId ? Prisma.sql` AND r."homeSpaceId" = ${homeSpaceId}` : Prisma.empty;
+  return Prisma.sql`(r."authorId" = ${userId}${home} AND r."homeSpaceId" IN (SELECT m."spaceId"
     FROM "Membership" m JOIN "Space" s ON s.id = m."spaceId"
     WHERE m."userId" = ${userId} AND m."leftAt" IS NULL AND s."deletedAt" IS NULL))`;
 }

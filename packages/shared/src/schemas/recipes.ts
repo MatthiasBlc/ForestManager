@@ -347,6 +347,11 @@ export const recipeListQuerySchema = cursorQuerySchema.extend({
 });
 export type RecipeListQuery = z.infer<typeof recipeListQuerySchema>;
 
+/** "Mes recettes" [D82, D207] : filtre facultatif par espace d'origine. */
+export const mineRecipeListQuerySchema = recipeListQuerySchema.extend({
+  homeSpaceId: uuidSchema.optional(),
+});
+
 // --- Partage [D03, D26, D81, D82, D84] ---
 
 export const SHARE_STATUSES = ["SHARED", "PENDING"] as const;

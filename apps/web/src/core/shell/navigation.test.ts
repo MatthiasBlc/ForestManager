@@ -5,13 +5,15 @@ import { WEB_MODULES } from "../../modules/index.ts";
 import { buildNavigation } from "./navigation.ts";
 
 describe("buildNavigation", () => {
-  it("espace perso (D95) : Accueil, Recettes, Mes recettes, puis Reglages dans Plus", () => {
+  it("espace perso (D95, D207) : Accueil, Mes recettes (onglet unique), puis Reglages dans Plus", () => {
     const space = buildPersonalSpace(buildMe());
     const nav = buildNavigation(space, WEB_MODULES);
-    expect(nav.items.map((i) => i.id)).toEqual(["home", "recipes", "mine", "settings"]);
-    expect(nav.tabs.map((i) => i.id)).toEqual(["home", "recipes", "mine"]);
+    expect(nav.items.map((i) => i.id)).toEqual(["home", "recipes", "settings"]);
+    expect(nav.tabs.map((i) => i.id)).toEqual(["home", "recipes"]);
     expect(nav.more.map((i) => i.id)).toEqual(["settings"]);
-    expect(nav.items.find((i) => i.id === "mine")?.to).toBe(`/s/${space.id}/recipes/mine`);
+    const recipes = nav.items.find((i) => i.id === "recipes");
+    expect(recipes?.label).toBe("Mes recettes");
+    expect(recipes?.to).toBe(`/s/${space.id}/recipes`);
   });
 
   it("groupe : modules actifs dans l'ordre, puis Membres, Activite et Reglages ; modules sans code web ignores", () => {

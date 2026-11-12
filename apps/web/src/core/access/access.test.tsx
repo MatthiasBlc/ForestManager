@@ -96,7 +96,7 @@ describe("connexion (P01)", () => {
     await user.type(screen.getByLabelText("Mot de passe"), "bon-mot-de-passe");
     await user.click(screen.getByRole("switch", { name: "Rester connecté" }));
     await user.click(screen.getByRole("button", { name: "Se connecter" }));
-    expect(await screen.findByRole("heading", { name: "Recettes" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Mes recettes" })).toBeInTheDocument();
     expect(bodies.login).toEqual({
       identifier: "matthias",
       password: "bon-mot-de-passe",
@@ -111,7 +111,7 @@ describe("connexion (P01)", () => {
     renderWithProviders(<App />, {
       route: `/login?next=${encodeURIComponent(`/s/${account.personalSpaceId}/recipes`)}`,
     });
-    expect(await screen.findByRole("heading", { name: "Recettes" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Mes recettes" })).toBeInTheDocument();
   });
 
   it("identifiants refuses : message clair ; sans SMTP, pas de mot de passe oublie (D21)", async () => {

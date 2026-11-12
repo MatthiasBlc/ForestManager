@@ -21,6 +21,7 @@ import {
   listSchema,
   mergeTagBodySchema,
   pageSchema,
+  mineRecipeListQuerySchema,
   recipeListQuerySchema,
   recipeParamsSchema,
   recipeSchema,
@@ -123,9 +124,11 @@ function recipesRouter(ctx: Context): Router {
   router.get(
     "/mine",
     requirePermission("recipes.view"),
-    handle({ query: recipeListQuerySchema }, async ({ query }, req, res) => {
+    handle({ query: mineRecipeListQuerySchema }, async ({ query }, req, res) => {
       const userId = currentUserId(req);
-      const page = await listRecipes(ctx, spaceOf(req), userId, query, authoredBySql(userId));
+      const { homeSpaceId, ...filters } = query;
+      const scope = authoredBySql(userId, homeSpaceId);
+      const page = await listRecipes(ctx, spaceOf(req), userId, filters, scope);
       reply(res, pageSchema(recipeSummarySchema), page);
     })
   );

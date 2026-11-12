@@ -404,8 +404,12 @@ export function recipeServer({
       return new HttpResponse(null, { status: 204 });
     }),
     http.get("/api/v1/spaces/:spaceId/recipes/mine", ({ request }) => {
-      state.queries.push(new URL(request.url).searchParams);
-      const data = state.recipes.filter((r) => r.author.id === s.me.id).map(toSummary);
+      const params = new URL(request.url).searchParams;
+      state.queries.push(params);
+      const home = params.get("homeSpaceId");
+      const data = state.recipes
+        .filter((r) => r.author.id === s.me.id && (!home || r.homeSpaceId === home))
+        .map(toSummary);
       return HttpResponse.json({ data, nextCursor: null });
     }),
     http.get("/api/v1/spaces/:spaceId/recipes/share-requests", () =>

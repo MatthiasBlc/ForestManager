@@ -827,3 +827,9 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 - **Constat** : sur mobile, dans un espace de groupe, revenir a l'Accueil demande trois gestes (bouton d'espace, espace perso, onglet Accueil) ; en bureau, le rail y mene en un clic. Le proprietaire demande aussi s'il faudrait un accueil propre a chaque espace.
 - **Options** : (a) icone Accueil dans la barre du haut (un geste) ; (b) ligne "Accueil" en tete du selecteur d'espaces (deux gestes) ; (c) onglet Accueil propre a chaque espace de groupe (widgets de cet espace).
 - **Choix** : (b). (a) a ete code puis retire le jour meme : le proprietaire l'a juge deroutant, car un bouton de la barre de l'espace faisait changer d'espace sans le montrer ; dans le selecteur, changer d'espace est attendu. (c) ecarte : l'Accueil perso regroupe deja les widgets de tous les espaces (D193) avec un lien "Planning" par espace (D204) ; un accueil par espace ferait doublon et prendrait un onglet.
+
+### D207 - Espace perso : un seul onglet "Mes recettes" - VALIDEE (2026-11-12, remarque du proprietaire) - AMENDE D95
+
+- **Constat** : dans l'espace perso, "Recettes" (recettes nees dans l'espace perso) et "Mes recettes" (toutes celles dont on est l'auteur, D82) menent a des pages presque identiques ; la premiere est contenue dans la seconde. Deux onglets sur quatre pour une meme chose.
+- **Options** : (a) un seul onglet "Mes recettes" avec un filtre par espace ; (b) garder les deux ; (c) reporter au tour mobile.
+- **Choix** : (a). La liste de l'espace perso (`recipes`) devient "Mes recettes" (`GET .../recipes/mine`, nouveau filtre `homeSpaceId`) avec une rangee de puces "Tous les espaces", "Perso", puis les groupes ; "Nouvelle recette" cree dans l'espace perso ; l'ancien chemin `recipes/mine` redirige. Un onglet libere sur mobile (place pour le Planning).

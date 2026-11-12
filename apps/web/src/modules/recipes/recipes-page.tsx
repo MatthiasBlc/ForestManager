@@ -1,5 +1,6 @@
 // E-RECETTES : recettes de l'espace (F-REC-11) avec recherche, filtres par tag,
-// "Bases" ; "Mes recettes" de tous les espaces (D82) ; recettes partagees ;
+// "Bases" ; dans l'espace perso, "Mes recettes" de tous les espaces (D82), filtrees
+// par espace d'origine (onglet unique, D207) ; recettes partagees ;
 // bandeau des demandes de partage ; etats vide, chargement, erreur ; F-AJOUT-RECETTE.
 import {
   normalizeName,
@@ -212,10 +213,12 @@ function RecipeGrid({
   );
 }
 
-export function RecipesPage({ mine = false }: { mine?: boolean }) {
+export function RecipesPage() {
   const { spaceId = "" } = useParams();
   const navigate = useNavigate();
   const space = useQuery(spaceQuery(spaceId));
+  const mine = space.data?.kind === "PERSONAL";
+  const [homeSpaceId, setHomeSpaceId] = useState<string | null>(null);
   const spaces = useQuery(spacesQuery);
   const units = useQuery(unitsQuery);
   const globalTags = useQuery(globalTagsQuery);
@@ -254,13 +257,23 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
       ingredientIds: ingredientId ? [ingredientId] : [],
       base: baseOnly,
       mine,
+      homeSpaceId,
     }),
+    // La nature de l'espace choisit la liste (perso : "Mes recettes").
+    enabled: space.data !== undefined,
     // Pendant une recherche, la liste precedente reste affichee (pas de clignotement).
     placeholderData: keepPreviousData,
   });
 
   const spaceName = space.data?.name ?? "";
-  const filtered = q !== "" || tagIds.length > 0 || baseOnly || ingredientId !== null;
+  const tagFiltered = q !== "" || tagIds.length > 0 || baseOnly || ingredientId !== null;
+  const filtered = tagFiltered || homeSpaceId !== null;
+  // Espaces ou je peux avoir des recettes : perso d'abord, puis les groupes actifs.
+  const homeChoices = mine
+    ? [...(spaces.data ?? [])]
+        .filter((s) => s.deletedAt === null)
+        .sort((a, b) => (a.kind === b.kind ? 0 : a.kind === "PERSONAL" ? -1 : 1))
+    : [];
   const recipes = list.data?.pages.flatMap((page) => page.data) ?? [];
   const tags = [...(globalTags.data ?? []), ...(spaceTags.data ?? [])];
   // "Mes recettes" ouvre chaque recette dans son espace d'origine.
@@ -336,6 +349,7 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
               setSearch("");
               setTagIds([]);
               setBaseOnly(false);
+              setHomeSpaceId(null);
             }}
           >
             Effacer les filtres
@@ -418,9 +432,32 @@ export function RecipesPage({ mine = false }: { mine?: boolean }) {
           }}
         />
       </div>
+      {homeChoices.length > 1 ? (
+        <div className="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Espaces">
+          <Chip
+            selected={homeSpaceId === null}
+            onToggle={() => {
+              setHomeSpaceId(null);
+            }}
+          >
+            Tous les espaces
+          </Chip>
+          {homeChoices.map((choice) => (
+            <Chip
+              key={choice.id}
+              selected={homeSpaceId === choice.id}
+              onToggle={(on) => {
+                setHomeSpaceId(on ? choice.id : null);
+              }}
+            >
+              {choice.kind === "PERSONAL" ? "Perso" : choice.name}
+            </Chip>
+          ))}
+        </div>
+      ) : null}
       <div className="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Filtres">
         <Chip
-          selected={!filtered}
+          selected={!tagFiltered}
           onToggle={() => {
             setTagIds([]);
             setBaseOnly(false);

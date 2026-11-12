@@ -10,7 +10,7 @@ export interface ModuleNavEntry {
   id: string;
   label: string;
   icon: IconName;
-  /** Chemin relatif a /s/:spaceId (ex. "recipes", "recipes/mine"). */
+  /** Chemin relatif a /s/:spaceId (ex. "recipes", "meal-plan"). */
   path: string;
 }
 

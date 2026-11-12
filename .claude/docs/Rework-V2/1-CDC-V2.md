@@ -88,7 +88,7 @@ Identifiants `F-<module>-<n>` pour que roadmap et tests s'y referent.
 - F-ACC-4 Profil : username, email, mot de passe, avatar, theme d'interface (S5.3).
 - F-ACC-5 Suppression du compte (RGPD) : les contenus partages dans des espaces GROUP restent, auteur anonymise, repris par les moderateurs [D20]. L'ecran montre les consequences espace par espace et propose l'export avant de demander le mot de passe [D116].
 - F-ACC-6 Export natif de ses recettes (JSON reimportable, Markdown, photos en zip) [D37]. Archive preparee en tache de fond, gardee 24 h ; ecran de reimport en V2.1 [D192].
-- A la creation du compte, l'espace PERSONAL est cree automatiquement. Il montre son contenu propre et une vue "Mes recettes" (toutes les recettes dont on est l'auteur) [D82].
+- A la creation du compte, l'espace PERSONAL est cree automatiquement. Son onglet recettes est "Mes recettes" : toutes les recettes dont on est l'auteur, dans tous ses espaces, filtrables par espace d'origine ; une recette creee la nait dans l'espace perso [D82, D207].
 
 ### 4.2 Espaces, membres, invitations
 
@@ -207,7 +207,7 @@ Reprise de la V1 (page utilisateur, gestion admin), generation revue [D187] :
 ### 5.2 Structure d'ecran (App shell)
 
 - **Rail des espaces** (gauche, etroit) en bureau : avatar de l'espace perso puis des groupes, bouton "+". Sur mobile : l'espace courant (avatar + nom) est un bouton de l'en-tete qui ouvre la liste des espaces en feuille (avatars, pastilles de nouveautes, "+") [D130].
-- **Barre du module** : modules actifs de l'espace courant (Recettes, Planning, Courses, Membres, Reglages). Sur mobile : barre d'onglets en bas, 4 modules maximum puis "Plus" (membres, reglages et modules au-dela du quatrieme, dans l'ordre choisi par l'OWNER) [D131]. Espace perso : Accueil, Recettes, Mes recettes, Plus [D95].
+- **Barre du module** : modules actifs de l'espace courant (Recettes, Planning, Courses, Membres, Reglages). Sur mobile : barre d'onglets en bas, 4 modules maximum puis "Plus" (membres, reglages et modules au-dela du quatrieme, dans l'ordre choisi par l'OWNER) [D131]. Espace perso : Accueil, Mes recettes, puis les autres modules et Plus [D95, D207].
 - **Zone de contenu** : liste / detail, avec panneau de detail lateral sur grand ecran et page pleine sur mobile.
 - **En-tete** : recherche, notifications, profil.
 - Dashboard d'accueil fait de **widgets** que l'utilisateur choisit et ordonne (prochains repas, recettes les plus cuisinees, recemment ajoutees, activite des groupes), dans une feuille "Personnaliser l'accueil" ; invitations et transferts en attente toujours en tete [D193].

@@ -94,7 +94,7 @@ describe("actions d'une carte (F-ACTIONS)", () => {
   it("Mes recettes : supprimer depuis la carte reste sur Mes recettes", async () => {
     const s = recipeServer();
     s.add({ title: "Dahl" });
-    const { user } = renderWithProviders(<App />, { route: `/s/${s.personal.id}/recipes/mine` });
+    const { user } = renderWithProviders(<App />, { route: `/s/${s.personal.id}/recipes` });
     await user.pointer({
       keys: "[MouseRight]",
       target: await screen.findByRole("article", { name: "Dahl" }),

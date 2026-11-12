@@ -185,7 +185,8 @@ describe("mes recettes (D82) et recettes partagees", () => {
   it("l'espace perso liste mes recettes de tous les espaces, ouvertes dans leur origine", async () => {
     const s = recipeServer();
     s.add({ title: "Dahl de lentilles" });
-    const { user } = renderWithProviders(<App />, { route: `/s/${s.personal.id}/recipes/mine` });
+    const { user } = renderWithProviders(<App />, { route: `/s/${s.personal.id}/recipes` });
+    expect(await screen.findByRole("heading", { name: "Mes recettes" })).toBeInTheDocument();
     const card = await screen.findByRole("article", { name: "Dahl de lentilles" });
     expect(within(card).getByText("Famille")).toBeInTheDocument();
     await user.click(card);
@@ -193,6 +194,35 @@ describe("mes recettes (D82) et recettes partagees", () => {
       await screen.findByRole("heading", { name: "Dahl de lentilles", level: 1 })
     ).toBeInTheDocument();
     expect(screen.getByText(/par matthias · révision 1/)).toBeInTheDocument();
+  });
+
+  it("onglet unique de l'espace perso (D207) : filtre par espace d'origine", async () => {
+    const s = recipeServer();
+    s.add({ title: "Dahl de lentilles" });
+    const { user } = renderWithProviders(<App />, { route: `/s/${s.personal.id}/recipes` });
+    await screen.findByRole("article", { name: "Dahl de lentilles" });
+    const spaces = screen.getByRole("group", { name: "Espaces" });
+    expect(within(spaces).getByRole("button", { name: "Tous les espaces" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    expect(within(spaces).getByRole("button", { name: "Perso" })).toBeInTheDocument();
+    await user.click(within(spaces).getByRole("button", { name: "Famille" }));
+    await waitFor(() => {
+      expect(s.recipes.queries.at(-1)?.get("homeSpaceId")).toBe(s.space.id);
+    });
+    await user.click(within(spaces).getByRole("button", { name: "Perso" }));
+    await waitFor(() => {
+      expect(s.recipes.queries.at(-1)?.get("homeSpaceId")).toBe(s.personal.id);
+    });
+  });
+
+  it("l'ancien lien Mes recettes mene a l'onglet unique (D207)", async () => {
+    const s = recipeServer();
+    s.add({ title: "Dahl de lentilles" });
+    renderWithProviders(<App />, { route: `/s/${s.personal.id}/recipes/mine` });
+    expect(await screen.findByRole("heading", { name: "Mes recettes" })).toBeInTheDocument();
+    expect(await screen.findByRole("article", { name: "Dahl de lentilles" })).toBeInTheDocument();
   });
 
   it("une recette partagee porte un badge et son origine", async () => {

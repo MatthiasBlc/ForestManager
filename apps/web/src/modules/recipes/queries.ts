@@ -29,6 +29,8 @@ export interface RecipeFilters {
   sort?: RecipeSort;
   /** "Mes recettes" [D82] : recettes de l'utilisateur dans tous ses espaces. */
   mine?: boolean;
+  /** "Mes recettes" : seulement celles nees dans cet espace (D207). */
+  homeSpaceId?: string | null;
 }
 
 const recipePage = pageSchema(recipeSummarySchema);
@@ -42,6 +44,7 @@ export function recipesQuery(spaceId: string, filters: RecipeFilters) {
   if (filters.ingredientIds?.length) params.set("ingredientIds", filters.ingredientIds.join(","));
   if (filters.base) params.set("base", "true");
   if (filters.sort && filters.sort !== "recent") params.set("sort", filters.sort);
+  if (filters.mine && filters.homeSpaceId) params.set("homeSpaceId", filters.homeSpaceId);
   const path = `/spaces/${spaceId}/recipes${filters.mine ? "/mine" : ""}`;
   return infiniteQueryOptions({
     queryKey: [...recipesKey(spaceId), "list", filters.mine ? "mine" : "space", params.toString()],

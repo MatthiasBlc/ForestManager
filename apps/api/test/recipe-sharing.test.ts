@@ -467,6 +467,19 @@ describe("vue Mes recettes (D82)", () => {
     const searched = await w.asLea.get(`${recipesOf(w.lea.personalSpaceId)}/mine?q=gra`);
     expect(searched.body.data).toHaveLength(1);
   });
+
+  it("Mes recettes filtrees par espace d'origine (onglet unique de l'espace perso)", async () => {
+    const w = await world();
+    await createRecipe(w.asLea, w.lea.personalSpaceId, { title: "Dahl" });
+    await createRecipe(w.asLea, w.famille.id, { title: "Tarte" });
+    const mine = `${recipesOf(w.lea.personalSpaceId)}/mine`;
+    const famille = await w.asLea.get(`${mine}?homeSpaceId=${w.famille.id}`);
+    expect(famille.status).toBe(200);
+    expect(famille.body.data.map((r: { title: string }) => r.title)).toEqual(["Tarte"]);
+    const perso = await w.asLea.get(`${mine}?homeSpaceId=${w.lea.personalSpaceId}`);
+    expect(perso.body.data.map((r: { title: string }) => r.title)).toEqual(["Dahl"]);
+    expect((await w.asLea.get(`${mine}?homeSpaceId=pas-un-uuid`)).status).toBe(400);
+  });
 });
 
 describe("depart d'un membre (D18, D84)", () => {

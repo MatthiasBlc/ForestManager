@@ -8,11 +8,14 @@ import { RecentRecipes } from "./widgets.tsx";
 
 export const recipesModule: WebModule = {
   code: "recipes",
+  // Espace perso : un seul onglet, toutes mes recettes avec filtre par espace (D82, D207).
   nav: (kind) => [
-    { id: "recipes", label: "Recettes", icon: "book-open", path: "recipes" },
-    ...(kind === "PERSONAL"
-      ? [{ id: "mine", label: "Mes recettes", icon: "chef-hat", path: "recipes/mine" } as const]
-      : []),
+    {
+      id: "recipes",
+      label: kind === "PERSONAL" ? "Mes recettes" : "Recettes",
+      icon: "book-open",
+      path: "recipes",
+    },
   ],
   Routes: lazy(() => import("./routes.tsx")),
   LeaveSection: lazy(() => import("./leave-section.tsx")),
