@@ -1,6 +1,7 @@
 // Actions d'une carte de recette (F-ACTIONS) : appui long, clic droit ou
 // touche Menu sur la carte ouvrent les memes actions que le "..." du detail.
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { App } from "../../app/App.tsx";
@@ -8,6 +9,7 @@ import { axeViolations } from "../../test/axe.ts";
 import { buildRecipe, buildRevision } from "../../test/fixtures.ts";
 import { recipeServer } from "../../test/recipe-server.ts";
 import { renderWithProviders } from "../../test/render.tsx";
+import { server } from "../../test/server.ts";
 
 beforeEach(() => {
   localStorage.clear();
@@ -105,5 +107,47 @@ describe("actions d'une carte (F-ACTIONS)", () => {
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Pas encore de recette à toi" })).toBeVisible();
     });
+  });
+
+  it('Accueil : l\'appui long sur une carte "Recemment ajoutees" ouvre ses actions', async () => {
+    const s = recipeServer();
+    const recipe = s.add({ title: "Tarte aux pommes" });
+    server.use(
+      http.get("/api/v1/me/home", () =>
+        HttpResponse.json({
+          custom: false,
+          available: [{ key: "recipes.recent", default: true }],
+          widgets: [
+            {
+              key: "recipes.recent",
+              data: {
+                recipes: [
+                  {
+                    id: recipe.id,
+                    title: "Tarte aux pommes",
+                    imageUrl: null,
+                    author: s.me.username,
+                    isBase: false,
+                    adapted: false,
+                    spaceId: s.space.id,
+                    spaceName: s.space.name,
+                  },
+                ],
+              },
+            },
+          ],
+        })
+      )
+    );
+    renderWithProviders(<App />, { route: `/s/${s.personal.id}/home` });
+    const card = await screen.findByRole("article", { name: "Tarte aux pommes" });
+    fireEvent.pointerDown(card, { clientX: 10, clientY: 10 });
+    const sheet = await screen.findByRole("dialog", { name: "Tarte aux pommes" });
+    fireEvent.pointerUp(card);
+    fireEvent.click(card);
+    await within(sheet).findByRole("button", { name: "Voir l'historique" });
+    expect(
+      screen.queryByRole("heading", { level: 1, name: "Tarte aux pommes" })
+    ).not.toBeInTheDocument();
   });
 });
