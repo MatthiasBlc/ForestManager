@@ -114,6 +114,8 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [ ] Cloture de C7 (`24-Plan-C7.md` S3)
 - [ ] C8 Mise en prod V2 (depuis ce poste [D201])
   - [ ] `pg_dump` avant chaque deploy prod, garde 14 jours [D76] : absent de `ci.yml`, a ecrire avant la prod
+  - [ ] Menage des images (2026-11-12) : rien ne purge aujourd'hui. Registry `registry:2` auto-heberge : etape CI qui garde les 10 derniers `sha-*` par image + `latest` (DELETE par digest, jamais un digest encore tague), puis `garbage-collect --delete-untagged` periodique dans le conteneur du registry. Serveur : `docker image prune` des images inutilisees de plus de quelques jours (les derniers tags restent pour un retour arriere)
+  - [ ] A faire par le proprietaire pour le menage du registry : `REGISTRY_STORAGE_DELETE_ENABLED=true` sur le registry, tache planifiee du garbage collect (a revoir ensemble)
   - [ ] A faire par le proprietaire (a revoir ensemble) : retirer la lecture publique des buckets V1 `forestmanager-images-preprod` / `-prod` (`mc anonymous set none`) [D167]
 - [ ] C9 Module liste de courses (V2.1)
 - [ ] Reimport du JSON d'export dans F-AJOUT-RECETTE (V2.1) [D192]
