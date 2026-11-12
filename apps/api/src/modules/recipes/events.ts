@@ -3,7 +3,7 @@
 import { recordActivity } from "../../core/activity/service.ts";
 import type { Context } from "../../core/context.ts";
 import { activeMembers } from "../../core/notifications/recipients.ts";
-import { notify } from "../../core/notifications/service.ts";
+import { markTargetRead, notify } from "../../core/notifications/service.ts";
 import { authorIsActiveMember } from "./service.ts";
 
 const MODULE = "recipes";
@@ -63,6 +63,15 @@ export async function suggestionCreated(
   });
 }
 
+/** Suggestion close : ceux qui devaient la trancher n'ont plus rien a lire. */
+export async function suggestionClosed(ctx: Context, suggestionId: string): Promise<void> {
+  await markTargetRead(ctx, {
+    type: "recipes.suggestion.created",
+    targetType: "suggestion",
+    targetId: suggestionId,
+  });
+}
+
 export async function suggestionDecided(
   ctx: Context,
   suggestion: { id: string; spaceId: string; proposerId: string },
@@ -71,6 +80,7 @@ export async function suggestionDecided(
   deciderId: string,
   message?: string | null
 ): Promise<void> {
+  await suggestionClosed(ctx, suggestion.id);
   await notify(ctx, {
     type: accepted ? "recipes.suggestion.accepted" : "recipes.suggestion.rejected",
     recipients: [suggestion.proposerId],

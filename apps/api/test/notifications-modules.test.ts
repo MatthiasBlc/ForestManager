@@ -108,6 +108,39 @@ describe("recettes", () => {
     });
   });
 
+  it("une suggestion tranchee ou retiree n'est plus a lire chez ceux qui devaient la trancher", async () => {
+    const w = await world();
+    const suggest = async () =>
+      (
+        await w.asMatthias.post(`${w.base}/suggestions`, {
+          ...(await recipeBody(w.asMatthias, { title: "Saumon teriyaki", cookMinutes: 40 })),
+          revision: (await w.asLea.get(w.base)).body.currentRevision,
+        })
+      ).body.id as string;
+    const unread = async (suggestionId: string) =>
+      (await notificationsOf(w.lea.id, "recipes.suggestion.created")).filter(
+        (row) => row.targetId === suggestionId && row.readAt === null
+      );
+
+    const rejected = await suggest();
+    expect(await unread(rejected)).toHaveLength(1);
+    await w.asLea.post(`${w.base}/suggestions/${rejected}/reject`, {});
+    expect(await unread(rejected)).toEqual([]);
+
+    const accepted = await suggest();
+    const revision = (await w.asLea.get(w.base)).body.currentRevision;
+    expect(
+      (await w.asLea.post(`${w.base}/suggestions/${accepted}/accept`, { revision })).status
+    ).toBe(200);
+    expect(await unread(accepted)).toEqual([]);
+
+    const withdrawn = await suggest();
+    expect(
+      (await w.asMatthias.post(`${w.base}/suggestions/${withdrawn}/withdraw`, {})).status
+    ).toBe(204);
+    expect(await unread(withdrawn)).toEqual([]);
+  });
+
   it("demande de partage : l'autrice est prevenue, puis le demandeur ; le partage entre dans l'activite", async () => {
     const w = await world();
     const asked = await w.asMatthias.post(`${w.base}/share-requests`, {

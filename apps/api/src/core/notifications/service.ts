@@ -121,6 +121,21 @@ export async function notify(ctx: Context, input: NotifyInput): Promise<string[]
   return recipients;
 }
 
+/**
+ * Marque lues les notifications d'un type portant sur une cible qui n'attend
+ * plus rien (ex. suggestion tranchee) ; previent les destinataires touches.
+ */
+export async function markTargetRead(
+  ctx: Context,
+  target: { type: string; targetType: string; targetId: string }
+): Promise<void> {
+  const where = { ...target, readAt: null };
+  const rows = await ctx.db.notification.findMany({ where, select: { userId: true } });
+  if (rows.length === 0) return;
+  await ctx.db.notification.updateMany({ where, data: { readAt: new Date() } });
+  ctx.realtime.toUsers([...new Set(rows.map((row) => row.userId))], { type: "notification" });
+}
+
 /** Retention [D190] : lues depuis plus de 30 jours, toutes apres 90 jours. */
 export async function purgeNotifications(db: Db): Promise<number> {
   const now = Date.now();

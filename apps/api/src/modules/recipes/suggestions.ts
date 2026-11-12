@@ -21,7 +21,7 @@ import { AppError } from "../../core/http/errors.ts";
 import { targetActor, viewsOf } from "./adaptation.ts";
 import { linksOf, resolveContent, snapshotOf } from "./content.ts";
 import { contentOf, snapshotAt, snapshotSchema, type Snapshot } from "./revisions.ts";
-import { suggestionCreated, suggestionDecided } from "./events.ts";
+import { suggestionClosed, suggestionCreated, suggestionDecided } from "./events.ts";
 import { decision } from "./sharing.ts";
 import {
   createRecipe,
@@ -350,6 +350,7 @@ export async function withdrawSuggestion(
   const { row, mine } = await findSuggestion(ctx, actor, recipeId, suggestionId);
   if (!mine) throw new AppError("SPACE_002");
   await close(ctx.db, row.id, "PENDING", { status: "WITHDRAWN", decidedAt: new Date() });
+  await suggestionClosed(ctx, row.id);
 }
 
 /** Suggestion refusee -> adaptation du suggereur, liee a la revision de depart (D140). */
