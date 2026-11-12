@@ -816,3 +816,8 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
   - **Accueil** : lien "Planning" a cote du nom de chaque espace du bloc, vers le planning de cet espace (semaine en cours), qu'il y ait des repas ou non.
   - **Echange a la volee sur mobile** (le proprietaire laisse le choix le plus ergonomique) : appui long, la case se souleve ; si le doigt bouge, on la glisse sur une autre case (defilement automatique au bord) et les deux repas s'echangent ; si le doigt ne bouge pas, F-REPAS s'ouvre. Glisser au doigt ecrit avec les evenements pointeur (le drag natif ne marche pas au toucher). **Bureau** : le meme glisser pointeur remplace le drag natif, style "Trello" (demande du proprietaire) : la carte se souleve (ombre, legere inclinaison) et suit le curseur, la case d'origine reste en creux, la case survolee s'eclaire, l'echange s'anime ; souris et doigt partagent le code. "Echanger" reste dans F-REPAS (clavier, accessibilite). D69 est amende.
 - **Calendrier** : avant la prod, avec C7c.
+
+### D205 - La prod attend un produit fini - VALIDEE (2026-11-12, demande du proprietaire)
+
+- **Constat** : la recette preprod a fait remonter des defauts et des envies d'ergonomie (D203, D204, parcours mobile juge labyrinthique).
+- **Choix** : pas de date pour C8. La prod ne part que lorsque l'application donne l'impression d'un produit propre et termine : optimisee, sans defaut connu, parcours simples (mobile d'abord). Repousser la prod est accepte. Avant C8 : toutes les suites de la recette traitees, le tour mobile fait et ses simplifications realisees, une seconde recette complete sans echec ni remarque ouverte, puis le feu vert explicite du proprietaire.
