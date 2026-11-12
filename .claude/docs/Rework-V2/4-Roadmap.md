@@ -121,4 +121,4 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
 - [ ] C9 Module liste de courses (V2.1)
 - [ ] Reimport du JSON d'export dans F-AJOUT-RECETTE (V2.1) [D192]
 - [ ] E2E WebKit (Safari) (V2.1) [D195]
-- [ ] Connexion avec Discord : inscription par Discord et liaison d'un compte existant (V2.1, idee du proprietaire du 2026-11-12, a cadrer : decision, CDC, maquette)
+- [ ] Connexion avec Discord : inscription par Discord et liaison d'un compte existant (V2.1, idee du proprietaire du 2026-11-12, a cadrer : decision, CDC, maquette) ; plus tard peut-etre un bot Discord pour les notifications
