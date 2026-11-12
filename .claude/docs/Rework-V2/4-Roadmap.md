@@ -110,10 +110,12 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C7.6 CI complete (couverture, cles i18n, job E2E) et premier passage sur GitHub (reporte depuis C1.10) [D78] ; puis etat ecrit et push : **changement d'ordinateur** [D198]
   - [ ] C7.7 Preprod, depuis ce poste [D201] : deploy par pull request vers `master`, verification, feuille de recette (`24-Plan-C7.md` S2)
   - [x] Actions du proprietaire avant le premier deploy preprod (2026-11-12) : secrets GitHub `MINIO_ACCESS_KEY` et `MINIO_SECRET_KEY` deja presents (cles V1) [D167] ; stack Bugsink dans Portainer et secret `DEV_SENTRY_DSN` [D196]
-  - [ ] Apres le premier deploy preprod : verifier le statut du Planning dans A04 et le passer en "Disponible" si besoin (le seed n'ecrit le statut qu'a la creation)
+  - [x] Apres le premier deploy preprod : verifier le statut du Planning dans A04 et le passer en "Disponible" si besoin (le seed n'ecrit le statut qu'a la creation)
   - [x] Retirer le raccourci temporaire `deploy-only` une fois le deploy preprod stable : revert du commit `3aa8cab` dans `ci.yml`, label supprime de la PR et du depot [D201]
   - [ ] Cloture de C7 (`24-Plan-C7.md` S3)
 - [ ] C7b Connexion avec Discord avant la prod [D202] : inscription par Discord, liaison d'un compte existant depuis le profil, connexion ; plan a ecrire (`25-Plan-C7b.md`), decision et ligne du CDC, maquette, TDD ; lignes ajoutees a la feuille de recette ; plus tard peut-etre un bot Discord pour les notifications (V2.1 ou apres)
+- [ ] C7c Ajouter ses recettes a un espace depuis l'espace [D203] : bouton "Ajouter une recette" (Creer / Importer : lien, texte, depuis mes recettes), feuille a selection multiple, partage par reference en lot, sous-recettes listees ; plan court, maquette, TDD, ligne ajoutee a la feuille de recette
+  - [ ] Repas [D204] : toucher un repas-recette ouvre la recette (planning et accueil), appui long / clic droit / Menu ouvrent F-REPAS, lien "Planning" par espace dans "Prochains repas", echange au doigt sur mobile (appui long puis glisser) et glisser style Trello en bureau, meme code pointeur ; TDD, lignes ajoutees a la feuille de recette
 - [ ] C8 Mise en prod V2 (depuis ce poste [D201])
   - [ ] `pg_dump` avant chaque deploy prod, garde 14 jours [D76] : absent de `ci.yml`, a ecrire avant la prod
   - [ ] Menage des images (2026-11-12) : rien ne purge aujourd'hui. Registry `registry:2` auto-heberge : etape CI qui garde les 10 derniers `sha-*` par image + `latest` (DELETE par digest, jamais un digest encore tague), puis `garbage-collect --delete-untagged` periodique dans le conteneur du registry. Serveur : `docker image prune` des images inutilisees de plus de quelques jours (les derniers tags restent pour un retour arriere)
