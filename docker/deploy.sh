@@ -77,8 +77,16 @@ else
   # reseau, volume...) ; jamais le corps entier, qui peut citer la stack
   # substituee. GitHub masque de toute facon les valeurs des secrets.
   echo "ERROR: deployment failed (HTTP ${HTTP_CODE})" >&2
-  echo "${RESPONSE}" | sed '$d' |
-    jq -r '[.message, .details] | map(select(. != null and . != "")) | .[]' 2>/dev/null >&2 ||
-    true
+  BODY=$(echo "${RESPONSE}" | sed '$d')
+  DETAIL=$(echo "${BODY}" |
+    jq -r '[.message, .details] | map(select(. != null and . != "")) | .[]' 2>/dev/null || true)
+  if [ -n "${DETAIL}" ]; then
+    echo "${DETAIL}" >&2
+  else
+    # Reponse hors format Portainer (proxy, page HTML...) : extrait brut.
+    echo "Raw response (${#BODY} bytes):" >&2
+    echo "${BODY}" | head -c 2000 >&2
+    echo >&2
+  fi
   exit 1
 fi
