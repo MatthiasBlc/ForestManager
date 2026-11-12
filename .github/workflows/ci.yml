@@ -4,6 +4,7 @@
 #   push (sauf Developement) -> verification + build des images (sans push)
 #   PR vers master        -> verification, images poussees, deploy preprod
 #                            (seule CI de Developement [D201])
+#                            label `deploy-only` : verify et e2e sautes
 #   push sur master       -> verification, images poussees, deploy prod, tag
 #
 # Changements V2 : une seule verification, celle du poste (format, lint,
@@ -42,6 +43,10 @@ jobs:
   # ========================================
   verify:
     runs-on: ubuntu-latest
+    # Label `deploy-only` sur une PR : verify et e2e sautes, pour iterer vite sur
+    # le deploy de la preprod. Jamais sur master : la prod est toujours verifiee
+    # par le run du push [D201].
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'deploy-only') }}
     steps:
       - uses: actions/checkout@v4
 
@@ -115,6 +120,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     needs: [verify, e2e]
+    # Tourne aussi quand verify et e2e sont sautes (label deploy-only), jamais apres un echec.
+    if: ${{ !cancelled() && !contains(needs.*.result, 'failure') }}
     strategy:
       matrix:
         include:
@@ -175,7 +182,7 @@ jobs:
   deploy-preprod:
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'pull_request'
+    if: ${{ !cancelled() && needs.build.result == 'success' && github.event_name == 'pull_request' }}
     concurrency:
       group: deploy-preprod
       cancel-in-progress: false
