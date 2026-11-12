@@ -111,6 +111,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [ ] C7.7 Preprod, depuis ce poste [D201] : deploy par pull request vers `master`, verification, feuille de recette (`24-Plan-C7.md` S2)
   - [x] Actions du proprietaire avant le premier deploy preprod (2026-11-12) : secrets GitHub `MINIO_ACCESS_KEY` et `MINIO_SECRET_KEY` deja presents (cles V1) [D167] ; stack Bugsink dans Portainer et secret `DEV_SENTRY_DSN` [D196]
   - [ ] Apres le premier deploy preprod : verifier le statut du Planning dans A04 et le passer en "Disponible" si besoin (le seed n'ecrit le statut qu'a la creation)
+  - [ ] Retirer le raccourci temporaire `deploy-only` une fois le deploy preprod stable : revert du commit `3aa8cab` dans `ci.yml`, label supprime de la PR et du depot [D201]
   - [ ] Cloture de C7 (`24-Plan-C7.md` S3)
 - [ ] C8 Mise en prod V2 (depuis ce poste [D201])
   - [ ] `pg_dump` avant chaque deploy prod, garde 14 jours [D76] : absent de `ci.yml`, a ecrire avant la prod
