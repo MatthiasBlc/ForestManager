@@ -35,6 +35,7 @@ const summarySelect = {
   description: true,
   tintIndex: true,
   avatarKey: true,
+  personalUser: { select: { avatarKey: true } },
   createdAt: true,
   deletedAt: true,
   purgeAfter: true,
@@ -50,7 +51,8 @@ function toSummary(ctx: Context, row: SummaryRow, myRole: SpaceSummary["myRole"]
     name: row.name,
     description: row.description,
     tintIndex: row.tintIndex,
-    avatarUrl: imageUrl(ctx, row.avatarKey),
+    // Espace perso sans photo : l'avatar du compte, sinon les initiales.
+    avatarUrl: imageUrl(ctx, row.avatarKey ?? row.personalUser?.avatarKey ?? null),
     myRole,
     memberCount: row._count.memberships,
     createdAt: row.createdAt.toISOString(),

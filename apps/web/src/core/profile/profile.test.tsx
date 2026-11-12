@@ -105,6 +105,29 @@ describe("profil (E-PROFIL)", () => {
     expect(await screen.findByRole("button", { name: "Ajouter la photo" })).toBeInTheDocument();
   });
 
+  it("la nouvelle photo apparait aussitot sur l'espace perso du rail", async () => {
+    const { account } = profileServer();
+    mockUploads();
+    let avatarUrl: string | null = null;
+    server.use(
+      http.get("/api/v1/me", () => HttpResponse.json({ ...account, avatarUrl })),
+      // L'API donne l'avatar du compte a l'espace perso sans photo.
+      http.get("/api/v1/spaces", () =>
+        HttpResponse.json({ data: [{ ...buildPersonalSpace(account), avatarUrl }] })
+      ),
+      http.put("/api/v1/me/avatar", () => {
+        avatarUrl = signedUrl("users/me/1.webp");
+        return HttpResponse.json({ url: avatarUrl });
+      })
+    );
+    const { user } = renderWithProviders(<App />, { route: "/profile" });
+    await user.upload(await screen.findByLabelText("Ajouter la photo"), photoFile());
+    const rail = screen.getByRole("navigation", { name: "Espaces" });
+    await waitFor(() => {
+      expect(rail.querySelector("img")).toHaveAttribute("src", signedUrl("users/me/1.webp"));
+    });
+  });
+
   it("sans stockage configure, pas de choix de photo", async () => {
     profileServer();
     renderWithProviders(<App />, { route: "/profile" });

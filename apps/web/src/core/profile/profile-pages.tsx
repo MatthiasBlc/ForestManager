@@ -75,6 +75,12 @@ export function ProfilePage() {
   const queryClient = useQueryClient();
   const logout = useLogout();
   const [exportOpen, setExportOpen] = useState(false);
+  // L'espace perso sans photo prend l'avatar du compte (rail, selecteur).
+  const refreshAvatar = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["me"] }),
+      queryClient.invalidateQueries({ queryKey: ["spaces"] }),
+    ]);
   if (!me.data) return null;
   const { preferences } = me.data;
   return (
@@ -89,11 +95,11 @@ export function ProfilePage() {
             hasImage={me.data.avatarUrl !== null}
             onUploaded={async (uploadId) => {
               await api.put("/me/avatar", { uploadId }, imageResponseSchema);
-              await queryClient.invalidateQueries({ queryKey: ["me"] });
+              await refreshAvatar();
             }}
             onRemove={async () => {
               await api.delete("/me/avatar", undefined, imageResponseSchema);
-              await queryClient.invalidateQueries({ queryKey: ["me"] });
+              await refreshAvatar();
             }}
           />
         </div>

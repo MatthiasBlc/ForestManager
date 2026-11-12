@@ -194,6 +194,34 @@ describe("avatar d'un espace", () => {
   });
 });
 
+describe("icone de l'espace perso", () => {
+  it("prend l'avatar du compte tant que l'espace n'a pas sa propre photo", async () => {
+    const owner = await createUser();
+    const client = await loginAs(owner, app);
+    const personalUrl = async () =>
+      (await client.get(`/spaces/${owner.personalSpaceId}`)).body.avatarUrl as string | null;
+    expect(await personalUrl()).toBeNull();
+
+    const avatar = (await client.put("/me/avatar", { uploadId: await upload(client) })).body.url;
+    expect(await personalUrl()).toBe(avatar);
+    const list = (await client.get("/spaces")).body.data as { id: string; avatarUrl: string }[];
+    expect(list.find((s) => s.id === owner.personalSpaceId)?.avatarUrl).toBe(avatar);
+
+    const own = await client.put(`/spaces/${owner.personalSpaceId}/avatar`, {
+      uploadId: await upload(client),
+    });
+    expect(await personalUrl()).toBe(own.body.url);
+  });
+
+  it("ne donne pas l'avatar du proprietaire a un espace de groupe", async () => {
+    const owner = await createUser();
+    const space = await createSpace(owner.id);
+    const client = await loginAs(owner, app);
+    await client.put("/me/avatar", { uploadId: await upload(client) });
+    expect((await client.get(`/spaces/${space.id}`)).body.avatarUrl).toBeNull();
+  });
+});
+
 describe("sweepStorage", () => {
   it("efface les envois abandonnes et les images que la base ne reference plus", async () => {
     // Bucket neuf : celui des tests garde les fichiers des executions precedentes
