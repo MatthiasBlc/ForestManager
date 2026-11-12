@@ -1,7 +1,8 @@
 // F-GENERER et son rapport [D110, D113, D184] : choisir le profil, la periode et
 // s'il faut remplacer les repas non verrouilles ; l'apercu ne change rien tant
-// qu'on ne garde pas ce planning ; les cases vides sont expliquees, et un repas
-// modifie entre-temps par un membre n'est pas ecrase.
+// qu'on ne garde pas ce planning ; les cases vides sont expliquees (en mode
+// "Remplacer", le repas actuel d'une case sans proposition reste, et le rapport
+// le dit), et un repas modifie entre-temps par un membre n'est pas ecrase.
 import {
   applyGenerationResultSchema,
   generationPreviewSchema,
@@ -222,7 +223,9 @@ function Report({
                   ? p.pick.kind === "RECIPE"
                     ? p.pick.recipe.title
                     : p.pick.idea.name
-                  : "Aucune recette"}
+                  : p.kept
+                    ? `${p.kept.text} (gardé)`
+                    : "Aucune recette"}
               </span>
             </li>
           ))}
@@ -232,7 +235,10 @@ function Report({
         <div role="note" className="fm-stack rounded-md bg-warning-soft px-3 py-2 text-sm">
           {empty.map((p) => (
             <p key={`${p.date}/${p.mealTime}`} className="m-0">
-              <b>{whenLabel(p.date, p.mealTime)} : laissé vide.</b>{" "}
+              <b>
+                {whenLabel(p.date, p.mealTime)} :{" "}
+                {p.kept ? "le repas actuel reste." : "laissé vide."}
+              </b>{" "}
               <span>{p.reason ? reasonText(p.reason) : null}</span>
             </p>
           ))}

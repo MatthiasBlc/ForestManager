@@ -135,6 +135,24 @@ describe("apercu (D110)", () => {
     ]);
   });
 
+  it("remplacer : une case sans proposition annonce le repas qui reste", async () => {
+    const f = await plannedGroup();
+    const owner = await loginAs(f.owner, app);
+    await owner.put(`${planOf(f.spaceId)}/meals/2026-11-09/LUNCH`, {
+      kind: "TEXT",
+      text: "Cantine",
+    });
+    const result = await preview(owner, f.spaceId, {
+      from: "2026-11-09",
+      to: "2026-11-09",
+      replace: true,
+    });
+    expect(result.proposals).toEqual([
+      expect.objectContaining({ mealTime: "LUNCH", pick: null, kept: { text: "Cantine" } }),
+      expect.objectContaining({ mealTime: "DINNER", pick: null, kept: null }),
+    ]);
+  });
+
   it("pool : recettes partagees comprises, ni recette de base ni recette masquee", async () => {
     const f = await plannedGroup();
     const owner = await loginAs(f.owner, app);

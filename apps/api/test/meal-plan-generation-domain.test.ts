@@ -85,8 +85,20 @@ describe("tirage", () => {
   it("sans aucune recette : chaque case vide, expliquee", () => {
     const result = generate(input({ recipes: [], from: "2026-11-09", to: "2026-11-09" }));
     expect(result.proposals).toEqual([
-      { date: "2026-11-09", mealTime: "LUNCH", pick: null, reason: { code: "NO_RECIPE" } },
-      { date: "2026-11-09", mealTime: "DINNER", pick: null, reason: { code: "NO_RECIPE" } },
+      {
+        date: "2026-11-09",
+        mealTime: "LUNCH",
+        pick: null,
+        reason: { code: "NO_RECIPE" },
+        keeps: false,
+      },
+      {
+        date: "2026-11-09",
+        mealTime: "DINNER",
+        pick: null,
+        reason: { code: "NO_RECIPE" },
+        keeps: false,
+      },
     ]);
   });
 });
@@ -161,6 +173,97 @@ describe("cases sautees : verrou, repas gardes, Pas de repas, exclusions", () =>
       })
     );
     expect(replaced.proposals).toHaveLength(1);
+  });
+
+  it("remplacer : une case sans proposition garde son repas, et le dit", () => {
+    const result = generate(
+      input({
+        from: "2026-11-09",
+        to: "2026-11-10",
+        mealTimes: ["DINNER"],
+        replace: true,
+        recipes: [],
+        meals: [
+          {
+            date: "2026-11-09",
+            mealTime: "DINNER",
+            kind: "TEXT",
+            recipeId: null,
+            tagIds: [],
+            locked: false,
+          },
+        ],
+      })
+    );
+    expect(result.proposals).toEqual([
+      expect.objectContaining({ date: "2026-11-09", pick: null, keeps: true }),
+      expect.objectContaining({ date: "2026-11-10", pick: null, keeps: false }),
+    ]);
+  });
+
+  it("remplacer : un repas qui peut rester compte dans les delais des autres cases", () => {
+    const result = generate(
+      input({
+        from: "2026-11-09",
+        to: "2026-11-09",
+        replace: true,
+        recipes: [recipe("crepes")],
+        profile: { cooldownDays: 1, useIdeas: false, rules: [], exclusions: [], pins: [] },
+        meals: [
+          {
+            date: "2026-11-09",
+            mealTime: "DINNER",
+            kind: "RECIPE",
+            recipeId: "crepes",
+            tagIds: [],
+            locked: false,
+          },
+        ],
+      })
+    );
+    // Le midi ne reprend pas les crepes du soir : si le soir restait vide, elles
+    // resteraient et le delai serait viole.
+    expect(result.proposals).toEqual([
+      expect.objectContaining({
+        mealTime: "LUNCH",
+        pick: null,
+        reason: { code: "COOLDOWN", days: 1 },
+      }),
+      expect.objectContaining({ mealTime: "DINNER", pick: { kind: "RECIPE", id: "crepes" } }),
+    ]);
+  });
+
+  it("remplacer : un repas qui peut rester compte dans les delais de tag", () => {
+    const result = generate(
+      input({
+        from: "2026-11-09",
+        to: "2026-11-09",
+        replace: true,
+        recipes: [recipe("crepes", ["sucre"]), recipe("gaufres", ["sucre"])],
+        profile: {
+          cooldownDays: 0,
+          useIdeas: false,
+          rules: [rule({ id: "r", tagId: "sucre", tagCooldownDays: 1 })],
+          exclusions: [],
+          pins: [],
+        },
+        meals: [
+          {
+            date: "2026-11-09",
+            mealTime: "DINNER",
+            kind: "RECIPE",
+            recipeId: "crepes",
+            tagIds: ["sucre"],
+            locked: false,
+          },
+        ],
+      })
+    );
+    expect(result.proposals[0]).toMatchObject({
+      mealTime: "LUNCH",
+      pick: null,
+      reason: { code: "TAG_COOLDOWN", tagIds: ["sucre"] },
+    });
   });
 
   it("une case exclue par le profil n'est pas generee (jour de la semaine)", () => {

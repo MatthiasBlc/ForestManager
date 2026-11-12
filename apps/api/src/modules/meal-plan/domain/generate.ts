@@ -10,6 +10,9 @@
 // Une regle limitee a un repas (midi ou soir) ne s'applique, ne compte et ne
 // rattrape que sur ce repas. Une recette de base n'est jamais proposee (D24) ;
 // une idee est proposee une fois au plus, sans regle de tag (D182).
+// "Remplacer" : un repas existant reste si sa case n'a pas de proposition ; il
+// compte donc dans les delais et les frequences tant que sa case n'est pas
+// pourvue (sinon l'enregistrement pourrait violer un delai annonce respecte).
 import type { Random } from "./random.ts";
 
 export type MealTime = "LUNCH" | "DINNER";
@@ -109,6 +112,8 @@ export interface Proposal {
   mealTime: MealTime;
   pick: MealPick | null;
   reason: EmptyReason | null;
+  /** Remplacer : la case n'a pas de proposition et son repas actuel reste. */
+  keeps: boolean;
 }
 
 export type GenerationWarning =
@@ -187,6 +192,9 @@ interface Target extends Cell {
   tagIds: readonly string[];
   weight: number;
   reason: EmptyReason | null;
+  /** Repas actuel de la case (remplacer) : il reste si la case n'est pas pourvue. */
+  current: Placement | null;
+  keeps: boolean;
   /** Place par le rattrapage : un rattrapage suivant ne le defait pas. */
   protected: boolean;
 }
@@ -247,15 +255,30 @@ export function generate(input: GenerationInput): GenerationResult {
           tagIds: [],
           weight: 0,
           reason: null,
+          current:
+            meal?.kind === "RECIPE" && meal.recipeId
+              ? {
+                  date,
+                  mealTime,
+                  pick: { kind: "RECIPE", id: meal.recipeId },
+                  tagIds: meal.tagIds,
+                }
+              : null,
+          keeps: meal !== undefined,
           protected: false,
         });
       }
     }
   }
 
-  const placements = (except: Target): Placement[] => [
+  /** Ce qui occupe une case a remplir : sa proposition, sinon son repas actuel. */
+  const occupant = (t: Target): Placement | null => (t.pick !== null ? t : t.current);
+  const placements = (except?: Target): Placement[] => [
     ...fixed,
-    ...targets.filter((t) => t !== except && t.pick !== null),
+    ...targets.flatMap((t) => {
+      const placed = t === except ? null : occupant(t);
+      return placed ? [placed] : [];
+    }),
   ];
 
   const windowOf = (rule: ProfileRule, date: string) =>
@@ -418,8 +441,7 @@ export function generate(input: GenerationInput): GenerationResult {
       windows.set(window.from, window);
     }
     for (const window of windows.values()) {
-      const all = [...fixed, ...targets.filter((t) => t.pick !== null)];
-      let count = countIn(all, rule, window);
+      let count = countIn(placements(), rule, window);
       if (count >= min) continue;
       const candidates = targets
         .filter(
@@ -461,6 +483,7 @@ export function generate(input: GenerationInput): GenerationResult {
       mealTime: t.mealTime,
       pick: t.pick,
       reason: t.pick ? null : t.reason,
+      keeps: t.pick === null && t.keeps,
     })),
     skipped,
     warnings,

@@ -48,7 +48,13 @@ interface Situation {
   /** Repas ecrits de la periode, par case. */
   inPeriod: Map<
     string,
-    { kind: ExistingMeal["kind"]; recipeId: string | null; locked: boolean; updatedAt: Date }
+    {
+      kind: ExistingMeal["kind"];
+      recipeId: string | null;
+      text: string | null;
+      locked: boolean;
+      updatedAt: Date;
+    }
   >;
   context: PlacedMeal[];
 }
@@ -83,6 +89,7 @@ async function loadSituation(
         mealTime: true,
         kind: true,
         recipeId: true,
+        text: true,
         locked: true,
         updatedAt: true,
       },
@@ -203,6 +210,15 @@ export async function previewGeneration(
             ? { kind: "IDEA", idea: { id: idea.id, name: idea.name } }
             : null,
         reason: p.reason ? reasonView(p.reason, tag) : null,
+        kept:
+          p.keeps && seen
+            ? {
+                text:
+                  (seen.recipeId ? situation.pool.get(seen.recipeId)?.title : undefined) ??
+                  seen.text ??
+                  "",
+              }
+            : null,
         seenUpdatedAt: seen ? seen.updatedAt.toISOString() : null,
       };
     }),

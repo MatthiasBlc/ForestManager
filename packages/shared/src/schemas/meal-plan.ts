@@ -381,6 +381,8 @@ export const proposalSchema = z.object({
   mealTime: mealTimeSchema,
   pick: proposedPickSchema.nullable(),
   reason: emptyReasonSchema.nullable(),
+  /** Remplacer : la case n'a pas de proposition et son repas actuel reste (son nom). */
+  kept: z.object({ text: z.string() }).nullable(),
   /** Etat de la case au tirage (`updatedAt`, null si vide) : "Garder" n'ecrase pas une case modifiee depuis. */
   seenUpdatedAt: z.iso.datetime().nullable(),
 });

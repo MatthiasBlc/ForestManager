@@ -37,6 +37,7 @@ function previewFor(profileId: string, over: Partial<GenerationPreview> = {}): G
         mealTime: "DINNER",
         pick: { kind: "RECIPE", recipe: { id: DAHL, title: "Dahl de lentilles" } },
         reason: null,
+        kept: null,
         seenUpdatedAt: null,
       },
       {
@@ -44,6 +45,7 @@ function previewFor(profileId: string, over: Partial<GenerationPreview> = {}): G
         mealTime: "LUNCH",
         pick: { kind: "IDEA", idea: { id: IDEA, name: "Raclette" } },
         reason: null,
+        kept: null,
         seenUpdatedAt: "2026-11-05T10:00:00.000Z",
       },
       {
@@ -51,6 +53,7 @@ function previewFor(profileId: string, over: Partial<GenerationPreview> = {}): G
         mealTime: "DINNER",
         pick: null,
         reason: { code: "PIN", tag: { id: FISH, name: "Poisson" } },
+        kept: null,
         seenUpdatedAt: null,
       },
     ],
@@ -148,6 +151,34 @@ describe("F-GENERER", () => {
         { profileId: summer.id, from: "2026-11-16", to: "2026-11-22", replace: true },
       ]);
     });
+  });
+
+  it("remplacer : une case sans proposition annonce le repas qui reste", async () => {
+    const standard = buildProfile({ name: "Standard", isDefault: true });
+    const s = mealPlanServer({ myRole: "OWNER", profiles: [standard] });
+    s.plan.preview = previewFor(standard.id, {
+      replace: true,
+      warnings: [],
+      proposals: [
+        {
+          date: "2026-11-09",
+          mealTime: "DINNER",
+          pick: null,
+          reason: { code: "COOLDOWN", days: 3 },
+          kept: { text: "Crêpes" },
+          seenUpdatedAt: "2026-11-05T10:00:00.000Z",
+        },
+      ],
+    });
+    const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/meal-plan` });
+    await user.click(await screen.findByRole("button", { name: "Générer" }));
+    const sheet = await screen.findByRole("dialog", { name: "Générer le planning" });
+    await within(sheet).findByRole("radio", { name: /Standard/ });
+    await user.click(within(sheet).getByRole("button", { name: "Générer" }));
+    const report = await screen.findByRole("dialog", { name: "Planning proposé" });
+    expect(within(report).getByText("Crêpes (gardé)")).toBeInTheDocument();
+    expect(within(report).queryByText("Aucune recette")).not.toBeInTheDocument();
+    expect(within(report).getByText("Lundi 9, soir : le repas actuel reste.")).toBeInTheDocument();
   });
 
   it("signale les repas modifies entre-temps, non remplaces", async () => {
