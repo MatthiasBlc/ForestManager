@@ -236,7 +236,8 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
   - PR #35 `Developement` -> `master` ouverte (**ne pas fusionner** : la fusion deploie la prod) ; travail direct sur `Developement` pendant la preprod.
   - Defauts du premier deploy, corriges : stack Portainer arretee (500 sans message ; `deploy.sh` la demarre), Portainer efface tous les conteneurs quand `compose up` echoue (frontend en `service_started`, sante verifiee apres coup par `HEALTH_URL`), `SESSION_SECRET` V1 < 32 caracteres (regenere par le proprietaire), detail de l'erreur Portainer affiche dans le log. `ADMIN_SESSION_SECRET` retire (jamais lu par l'API V2).
   - **Preprod V2 en ligne le 2026-11-12** (run 43204936079) : migrations et seed, super admin + 2FA, A04, evenement de test recu par Bugsink, brouillon 2.0.0 (vide par construction, notes a ecrire avant la prod), inscription, photo (MinIO), export : OK sur telephone.
-  - Reste : temps reel (SSE) a travers Cloudflare et Traefik, second deploy (seed rejoue, session gardee, stack arretee redemarree), feuille de recette (`15-Plan-Tests.md` S10), retrait du raccourci `deploy-only`.
+  - Temps reel et second deploy (seed rejoue sans doublon, session gardee, stack arretee redemarree) verifies ; raccourci `deploy-only` retire.
+  - **Prochaine etape** : feuille de recette sur telephone (artefact `25-Recette-Preprod.html`, resultats lisibles par `ArtifactData`), puis cloture de C7.
 - Tout est publie et committe au 2026-11-05 : DS v10, Acces v39, Recettes v35, Planning v26, Admin v26, Permissions v5 (v6 le 2026-11-09), Parcours v6 (v7 le 2026-11-09), Modele de donnees v5 (v6 le 2026-11-09, page regeneree en D165). Maquettes revues dans Chrome le 2026-11-05 (B5b, voir `archive/16-Maquettes-ECARTS.md`).
   - Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact) : relire l'artefact (action read sur l'URL), puis publier avec `root` = le dossier du canevas, `file_path` = un fichier modifie, `files` = les autres (`project/...`).
   - Les numeros de version des artefacts avancent aussi a la simple consultation : comparer le contenu en ligne au commit avant d'ecraser.
@@ -254,3 +255,4 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
   - Maquettes Recettes : https://claude.ai/artifact/D3NXrW3qfML3cWURVAARLJ (`16-Maquettes/2-Recettes/project/`)
   - Maquettes Planning et profil : https://claude.ai/artifact/8SoeKigajmFtEK4q8RPRrY (`16-Maquettes/3-Planning-Profil/project/`)
   - Maquettes Administration : https://claude.ai/artifact/BW2txaUya8r2YnpHH8GF17 (`16-Maquettes/4-Administration/project/`)
+  - Recette preprod V2 (cases partagees en base de l'artefact) : https://claude.ai/artifact/2qh3jK9cbLwFEpdc3M6oAn (`25-Recette-Preprod.html`)

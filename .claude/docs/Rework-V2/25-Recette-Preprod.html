@@ -1,0 +1,294 @@
+<title>Recette preprod V2</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap">
+<style>
+  /* Mise en page : une colonne etroite facon carnet de terrain, sections = domaines de l'app, chaque ligne a trois etats. */
+  :root {
+    --bg: #f5f6f2;
+    --surface: #ffffff;
+    --fg: #1d2420;
+    --muted: #5f6b63;
+    --line: #dde2da;
+    --accent: #2f6b4a;
+    --accent-soft: #e3efe7;
+    --ok: #2f7d4f;
+    --ok-soft: #dff0e5;
+    --ko: #b23b2e;
+    --ko-soft: #f8e1dd;
+    --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+    --font-body: "Figtree", "Segoe UI", system-ui, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121714; --surface: #1a211d; --fg: #e6ece7; --muted: #9aa79f; --line: #2c3530;
+      --accent: #7cc49b; --accent-soft: #20352a; --ok: #7cc49b; --ok-soft: #1f3528; --ko: #ef8a7c; --ko-soft: #3a211e;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121714; --surface: #1a211d; --fg: #e6ece7; --muted: #9aa79f; --line: #2c3530;
+    --accent: #7cc49b; --accent-soft: #20352a; --ok: #7cc49b; --ok-soft: #1f3528; --ko: #ef8a7c; --ko-soft: #3a211e;
+    color-scheme: dark;
+  }
+  body {
+    background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+    padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 20px 48px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; display: grid; gap: 28px; }
+  header { display: grid; gap: 10px; }
+  .eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+  h1 { font-family: var(--font-display); font-size: clamp(26px, 6vw, 34px); line-height: 1.1; margin: 0; text-wrap: balance; }
+  .lead { color: var(--muted); margin: 0; max-width: 62ch; }
+  .lead a { color: var(--accent); }
+  .tally {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+    padding-block: 10px; border-bottom: 1px solid var(--line); display: grid; gap: 8px;
+  }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+  .tally-row { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; font-variant-numeric: tabular-nums; }
+  .tally-row strong { font-family: var(--font-display); font-size: 20px; }
+  .pill { font-size: 13px; padding: 2px 10px; border-radius: 999px; font-weight: 600; }
+  .pill.ok { background: var(--ok-soft); color: var(--ok); }
+  .pill.ko { background: var(--ko-soft); color: var(--ko); }
+  .pill.todo { background: var(--accent-soft); color: var(--muted); }
+  .bar { height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; display: flex; }
+  .bar span { display: block; height: 100%; }
+  .bar .b-ok { background: var(--ok); }
+  .bar .b-ko { background: var(--ko); }
+  .status-msg { font-size: 13px; color: var(--muted); margin: 0; }
+  .status-msg.warn { color: var(--ko); }
+  section { display: grid; gap: 10px; }
+  section h2 { font-family: var(--font-display); font-size: 19px; margin: 0; display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+  section h2 small { font-family: var(--font-body); font-size: 13px; color: var(--muted); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .hint { font-size: 13px; color: var(--muted); margin: -4px 0 0; }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  li.item { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: grid; gap: 8px; min-width: 0; }
+  li.item[data-status="ok"] { border-color: var(--ok); }
+  li.item[data-status="ko"] { border-color: var(--ko); background: var(--ko-soft); }
+  .item-title { font-weight: 600; margin: 0; }
+  .item-how { margin: 0; color: var(--muted); font-size: 14px; }
+  .item-how b { color: var(--fg); font-weight: 600; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .controls button {
+    font: inherit; font-size: 14px; font-weight: 600; min-height: 40px; padding: 0 14px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer;
+  }
+  .controls button:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .controls button[aria-pressed="true"].b-ok { background: var(--ok); border-color: var(--ok); color: var(--surface); }
+  .controls button[aria-pressed="true"].b-ko { background: var(--ko); border-color: var(--ko); color: var(--surface); }
+  .controls button:disabled { opacity: .5; cursor: default; }
+  .when { font-size: 12px; color: var(--muted); margin-left: auto; font-variant-numeric: tabular-nums; }
+  textarea {
+    font: inherit; font-size: 14px; width: 100%; box-sizing: border-box; min-height: 44px; resize: vertical;
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--bg); color: var(--fg);
+  }
+  footer { font-size: 13px; color: var(--muted); }
+  @media (prefers-reduced-motion: no-preference) { li.item { transition: border-color .15s, background .15s; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">Forest Manager V2 · C7.7</span>
+    <h1>Recette de la preprod</h1>
+    <p class="lead">Sur ton téléphone Android (Chrome), avec un second compte ouvert sur l'ordinateur pour les tests à deux. Pour chaque ligne, touche <b>OK</b> ou <b>Échec</b> ; en cas d'échec, décris ce que tu vois. Tout est enregistré et partagé entre tes appareils.<br>
+    Preprod : <a href="https://preprod-forestmanager.matthias-bouloc.fr" target="_blank" rel="noopener">preprod-forestmanager.matthias-bouloc.fr</a></p>
+  </header>
+
+  <div class="tally" aria-live="polite">
+    <div class="tally-row">
+      <strong id="t-done">0 / 0</strong>
+      <span class="pill ok" id="t-ok">0 OK</span>
+      <span class="pill ko" id="t-ko">0 échec</span>
+      <span class="pill todo" id="t-todo">0 à faire</span>
+    </div>
+    <div class="bar" aria-hidden="true"><span class="b-ok" id="b-ok"></span><span class="b-ko" id="b-ko"></span></div>
+    <p class="status-msg" id="status">Chargement des résultats enregistrés…</p>
+  </div>
+
+  <main id="sections" class="wrap"></main>
+
+  <footer>Source : <code>15-Plan-Tests.md</code> S4 et S10, plan C7.7. Les lignes déjà vérifiées le 12 novembre sont cochées d'avance.</footer>
+</div>
+
+<script>
+const SECTIONS = [
+  { id: "deja", title: "Déjà vérifié", hint: "Fait pendant la mise en preprod du 12 novembre.", items: [
+    ["d-inscription", "Inscription et arrivée dans l'espace perso", "Créer un compte utilisateur depuis le téléphone."],
+    ["d-photo", "Photo de recette prise avec l'appareil", "Envoi vers MinIO, photo visible après rechargement."],
+    ["d-export", "Export de mes données", "Profil, export : le fichier se télécharge."],
+    ["d-temps-reel", "Temps réel entre deux appareils", "Modifier une recette sur le téléphone : l'ordinateur se met à jour sans recharger."],
+    ["d-admin", "Admin : connexion avec double authentification", "Modules disponibles, événement de test reçu par Bugsink, brouillon 2.0.0."],
+    ["d-redeploy", "Second déploiement sans perte", "Session gardée, recette et photo présentes, un seul brouillon 2.0.0."],
+  ]},
+  { id: "installation", title: "Installation", items: [
+    ["i-installer", "Installer l'application sur l'écran d'accueil", "Chrome, menu <b>⋮</b>, <b>Installer l'application</b>. L'icône Forest Manager apparaît ; l'app s'ouvre sans barre d'adresse."],
+    ["i-maj", "Bandeau de nouvelle version", "Après le prochain déploiement, rouvrir l'app installée : le bandeau <b>Nouvelle version disponible</b> apparaît et le toucher recharge."],
+  ]},
+  { id: "gestes", title: "Gestes tactiles", items: [
+    ["g-sheet", "Fermer une feuille en la glissant", "Ouvrir un panneau qui monte du bas (filtres, actions), le faire glisser vers le bas : il se ferme."],
+    ["g-appui-long", "Appui long", "Appui long sur une recette ou un repas : le menu d'actions s'ouvre, sans sélectionner de texte."],
+    ["g-tirer", "Tirer pour rafraîchir", "Sur le planning, tirer la page vers le bas : l'indicateur apparaît et les données se rechargent."],
+    ["g-portions", "Changer les portions", "Sur une recette, toucher plusieurs fois + et − : les quantités suivent sans décalage."],
+  ]},
+  { id: "cuisine", title: "Mode cuisine", items: [
+    ["c-ecran", "L'écran reste allumé", "Ouvrir le mode cuisine d'une recette, poser le téléphone 3 minutes sans y toucher : l'écran ne s'éteint pas."],
+    ["c-lecture", "Lisible à bout de bras", "Passer d'une étape à l'autre ; texte et quantités se lisent à 50 cm."],
+  ]},
+  { id: "photos", title: "Photos", items: [
+    ["p-avatar", "Avatar depuis la galerie", "Profil, changer l'avatar avec une image de la galerie : il s'affiche partout (barre, membres)."],
+    ["p-remplacer", "Remplacer puis retirer une photo de recette", "Changer la photo, puis la retirer : la recette suit à chaque fois, sans image cassée."],
+  ]},
+  { id: "espaces", title: "Espaces à deux comptes", hint: "Second compte connecté sur l'ordinateur (inscription avec un autre alias).", items: [
+    ["e-lien", "Inviter par lien", "Créer un espace, générer un lien, l'ouvrir avec le second compte : il rejoint l'espace."],
+    ["e-partage", "Partager une recette", "Partager une recette perso dans l'espace : le membre la voit et ne peut pas la modifier."],
+    ["e-suggestion", "Suggestion et notification", "Le membre suggère une modification : ta cloche s'allume sans recharger. Accepter : une nouvelle révision apparaît."],
+    ["e-adapter", "Adapter une recette", "Adapter une recette pour un autre espace, modifier l'adaptation : l'original n'a pas bougé."],
+  ]},
+  { id: "recettes", title: "Recettes", items: [
+    ["r-composee", "Recette composée", "Lier une sauce à un plat, changer les portions : les quantités de la sauce suivent."],
+    ["r-import-url", "Importer depuis un lien", "Coller le lien d'une recette d'un site connu : le formulaire se préremplit, corriger puis enregistrer."],
+    ["r-import-texte", "Importer un texte collé", "Coller une recette copiée depuis un message : ingrédients et étapes reconnus."],
+  ]},
+  { id: "planning", title: "Planning", items: [
+    ["pl-activer", "Activer le Planning dans un espace", "Paramètres de l'espace, modules : activer le Planning ; il apparaît dans la navigation."],
+    ["pl-semaine", "Remplir et générer une semaine", "Placer deux repas à la main, en verrouiller un, générer le reste : le repas verrouillé ne bouge pas."],
+  ]},
+  { id: "hors-ligne", title: "Hors ligne", items: [
+    ["o-avion", "Lecture en mode avion", "Ouvrir une recette et le planning, passer en mode avion, recharger : tout reste lisible, bandeau <b>Hors ligne</b>, boutons de modification désactivés."],
+    ["o-retour", "Retour du réseau", "Couper le mode avion : le bandeau disparaît et les modifications refonctionnent."],
+  ]},
+  { id: "compte", title: "Compte et données", items: [
+    ["a-apparence", "Apparence qui persiste", "Profil, Apparence : changer d'ambiance et de mode, se déconnecter puis se reconnecter : le choix est conservé."],
+    ["a-export-espace", "Exporter puis restaurer un espace", "Exporter un espace (Markdown avec photos), le supprimer, le restaurer depuis la liste des espaces."],
+    ["a-bugsink", "Aucune erreur inattendue remontée", "À la fin de la recette, ouvrir le projet <b>forestmanager-preprod</b> dans Bugsink : seul l'événement de test doit y être."],
+  ]},
+];
+const PRECHECKED = new Set(SECTIONS[0].items.map((i) => i[0]));
+const ALL = SECTIONS.flatMap((s) => s.items.map((i) => i[0]));
+
+let results = {};
+let col = null;
+let canWrite = false;
+const pending = new Set();
+
+const $ = (id) => document.getElementById(id);
+const fmt = (iso) => {
+  try { return new Date(iso).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }); }
+  catch { return ""; }
+};
+
+function render() {
+  const root = $("sections");
+  root.textContent = "";
+  for (const s of SECTIONS) {
+    const sec = document.createElement("section");
+    const h2 = document.createElement("h2");
+    const done = s.items.filter(([id]) => results[id]?.status).length;
+    h2.textContent = s.title;
+    const small = document.createElement("small");
+    small.textContent = `${done} / ${s.items.length}`;
+    h2.append(small);
+    sec.append(h2);
+    if (s.hint) { const p = document.createElement("p"); p.className = "hint"; p.textContent = s.hint; sec.append(p); }
+    const ul = document.createElement("ul");
+    for (const [id, title, how] of s.items) ul.append(renderItem(id, title, how));
+    sec.append(ul);
+    root.append(sec);
+  }
+  renderTally();
+}
+
+function renderItem(id, title, how) {
+  const r = results[id] || {};
+  const li = document.createElement("li");
+  li.className = "item";
+  li.dataset.status = r.status || "";
+  const t = document.createElement("p"); t.className = "item-title"; t.textContent = title;
+  const h = document.createElement("p"); h.className = "item-how"; h.innerHTML = how;
+  const controls = document.createElement("div"); controls.className = "controls";
+  for (const [value, label, cls] of [["ok", "OK", "b-ok"], ["ko", "Échec", "b-ko"]]) {
+    const b = document.createElement("button");
+    b.type = "button"; b.id = `btn-${id}-${value}`; b.className = cls; b.textContent = label;
+    b.setAttribute("aria-pressed", String(r.status === value));
+    b.disabled = !canWrite || pending.has(id);
+    b.addEventListener("click", () => setStatus(id, r.status === value ? null : value));
+    controls.append(b);
+  }
+  if (r.at) { const w = document.createElement("span"); w.className = "when"; w.textContent = fmt(r.at); controls.append(w); }
+  li.append(t, h, controls);
+  if (r.status === "ko" || r.note) {
+    const ta = document.createElement("textarea");
+    ta.id = `note-${id}`; ta.placeholder = "Ce que tu vois (message, écran, étape)…";
+    ta.setAttribute("aria-label", `Note pour ${title}`);
+    ta.value = r.note || ""; ta.disabled = !canWrite;
+    ta.addEventListener("change", () => saveNote(id, ta.value.trim()));
+    li.append(ta);
+  }
+  return li;
+}
+
+function renderTally() {
+  const total = ALL.length;
+  const ok = ALL.filter((id) => results[id]?.status === "ok").length;
+  const ko = ALL.filter((id) => results[id]?.status === "ko").length;
+  $("t-done").textContent = `${ok + ko} / ${total}`;
+  $("t-ok").textContent = `${ok} OK`;
+  $("t-ko").textContent = `${ko} échec${ko > 1 ? "s" : ""}`;
+  $("t-todo").textContent = `${total - ok - ko} à faire`;
+  $("b-ok").style.width = `${(ok / total) * 100}%`;
+  $("b-ko").style.width = `${(ko / total) * 100}%`;
+}
+
+function setMsg(text, warn) { const m = $("status"); m.textContent = text; m.classList.toggle("warn", !!warn); }
+
+async function setStatus(id, status) {
+  if (!col || pending.has(id)) return;
+  pending.add(id);
+  const prev = results[id];
+  results = { ...results, [id]: { ...(prev || {}), status, at: new Date().toISOString() } };
+  render();
+  try {
+    await col.doc(id).set({ status, note: prev?.note || "", at: results[id].at });
+    setMsg("Enregistré.");
+  } catch (e) {
+    results = { ...results, [id]: prev };
+    setMsg("Impossible d'enregistrer : vérifie ta connexion puis réessaie.", true);
+  } finally { pending.delete(id); render(); }
+}
+
+async function saveNote(id, note) {
+  if (!col) return;
+  const prev = results[id] || {};
+  if ((prev.note || "") === note) return;
+  results = { ...results, [id]: { ...prev, note } };
+  try { await col.doc(id).set({ status: prev.status || null, note, at: prev.at || new Date().toISOString() }); setMsg("Note enregistrée."); }
+  catch { setMsg("La note n'a pas été enregistrée : vérifie ta connexion.", true); }
+}
+
+render();
+
+(async () => {
+  let db = null;
+  try { db = await window.claude?.use?.("db"); } catch { db = null; }
+  if (!db) {
+    setMsg("Lecture seule : connecte-toi à claude.ai pour cocher et partager les résultats.", true);
+    return;
+  }
+  col = db.collection("recette");
+  const timer = setTimeout(() => setMsg("Les résultats tardent à arriver. Recharge la page si rien ne s'affiche.", true), 10000);
+  col.onSnapshot((snap) => {
+    clearTimeout(timer);
+    const next = {};
+    for (const d of snap.docs) if (d.exists) next[d.id] = d.data();
+    results = next;
+    canWrite = true;
+    setMsg(snap.docs.length ? "Résultats à jour, partagés entre tes appareils." : "Aucun résultat enregistré pour l'instant.");
+    render();
+  }, () => {
+    clearTimeout(timer);
+    setMsg("Lecture des résultats impossible. Recharge la page.", true);
+  });
+})();
+</script>
