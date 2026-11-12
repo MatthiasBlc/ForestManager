@@ -833,3 +833,9 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 - **Constat** : dans l'espace perso, "Recettes" (recettes nees dans l'espace perso) et "Mes recettes" (toutes celles dont on est l'auteur, D82) menent a des pages presque identiques ; la premiere est contenue dans la seconde. Deux onglets sur quatre pour une meme chose.
 - **Options** : (a) un seul onglet "Mes recettes" avec un filtre par espace ; (b) garder les deux ; (c) reporter au tour mobile.
 - **Choix** : (a). La liste de l'espace perso (`recipes`) devient "Mes recettes" (`GET .../recipes/mine`, nouveau filtre `homeSpaceId`) avec une rangee de puces "Tous les espaces", "Perso", puis les groupes ; "Nouvelle recette" cree dans l'espace perso ; l'ancien chemin `recipes/mine` redirige. Un onglet libere sur mobile (place pour le Planning).
+
+### D208 - C7c avant l'etude UX mobile ; choix du plan C7c - VALIDEE (2026-11-12, proprietaire)
+
+- **Constat** : l'etude UX mobile (D205) doit porter sur l'application livree. C7c (D203, D204) raccourcit justement des chemins juges labyrinthiques (recettes ajoutees depuis l'espace, repas -> recette en un geste) ; faite apres, l'etude serait a refaire sur ces ecrans.
+- **Choix** : ordre C7c, etude UX mobile, cloture de C7, C7b (Discord, independant). Plan `26-Plan-C7c.md` ; C7b passe a `27-Plan-C7b.md`.
+- **Choix du plan** (selecteur) : ajout en lot **tout ou rien** (une transaction, refus = rien d'ajoute) ; **une ligne d'activite par lot** ("a ajoute 12 recettes", type `recipes.recipes.added`) ; **50 recettes** au plus par ajout ; feuille "Ajouter une recette" : **"Depuis mes recettes" en premier, puis "Creer"** qui ouvre un sous-menu Saisir / Un lien / Un texte colle (demande du proprietaire, a la place des deux groupes proposes).
