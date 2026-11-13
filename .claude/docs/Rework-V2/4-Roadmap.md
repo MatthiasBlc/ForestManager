@@ -122,7 +122,13 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
     - [x] Revue dans Chrome et cloture de C7c (`26-Plan-C7c.md` S2)
   - [x] Etude UX de la navigation mobile ("labyrinthe de menus", demande du proprietaire) [D205] : carte et constats `28-Etude-UX-Mobile.md` ; Accueil en tete du selecteur d'espaces [D206], onglet unique "Mes recettes" [D207] ; pas de bande d'espaces hors espace sur mobile, boutons libelles du Planning, "Plus" d'une entree devenu onglet [D209] ; TDD, verifie dans Chrome, ligne `nav-mobile` de la feuille de recette
   - [x] Cloture de C7 (`24-Plan-C7.md` S3)
-- [ ] C7b Connexion avec Discord avant la prod [D202] : inscription par Discord, liaison d'un compte existant depuis le profil, connexion ; plan a ecrire (`27-Plan-C7b.md`), decision et ligne du CDC, maquette, TDD ; lignes ajoutees a la feuille de recette ; plus tard peut-etre un bot Discord pour les notifications (V2.1 ou apres)
+- [ ] C7b Connexion avec Discord avant la prod [D202] : inscription par Discord, liaison d'un compte existant depuis le profil, connexion ; plan `27-Plan-C7b.md` [D210], ligne du CDC, maquette, TDD ; lignes ajoutees a la feuille de recette ; plus tard peut-etre un bot Discord pour les notifications (V2.1 ou apres)
+  - [x] Plan de C7b (`27-Plan-C7b.md`, D210)
+  - [ ] C7b.1 API : migration, client Discord, start / callback / pending / register, liaison et deliaison, definir un mot de passe, comptes sans mot de passe (connexion, email, suppression, admin) ; TDD
+  - [ ] C7b.0 Maquette (`29-Maquette-C7b.html`), validee par le proprietaire
+  - [ ] C7b.2 Web : bouton Discord, E-INSCRIPTION-DISCORD, profil (Compte Discord, definir un mot de passe), suppression sans mot de passe ; TDD
+  - [ ] C7b.3 E2E (faux Discord, parcours 17), variables dans les compose, `deploy.sh` et la CI ; action du proprietaire : application Discord et secrets
+  - [ ] Revue dans Chrome et cloture de C7b (`27-Plan-C7b.md` S3)
 - [ ] Seconde recette complete en preprod, sans echec ni remarque ouverte, puis feu vert explicite du proprietaire [D205] : condition d'entree de C8 (pas de date, la prod attend un produit fini)
 - [ ] C8 Mise en prod V2 (depuis ce poste [D201])
   - [ ] Accelerer la CI (2026-11-12 : `verify` ~9 min dont 6 min 48 de tests et couverture) : image de test en cache (buildx `type=gha` comme les images de prod), tests de l'API repartis en jobs paralleles, cache du lint

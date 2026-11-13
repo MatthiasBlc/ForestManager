@@ -6,7 +6,7 @@ Refonte de Forest Manager : clarifier les concepts de la V1, refaire l'interface
 
 1. Ce README.
 2. `4-Roadmap.md` : la premiere case non cochee est le point de reprise.
-3. Le plan de l'etape en cours (C7 : `24-Plan-C7.md`, C7c : `26-Plan-C7c.md` ; `17-Plan-C1.md` a `23-Plan-C6b.md` pour C1 a C6b, termines).
+3. Le plan de l'etape en cours (C7b : `27-Plan-C7b.md` ; C7 : `24-Plan-C7.md`, C7c : `26-Plan-C7c.md` ; `17-Plan-C1.md` a `23-Plan-C6b.md` pour C1 a C6b, termines).
 4. `1-CDC-V2.md` : S1 a S3 (vision, glossaire, roles) pour tout le monde, puis la section du module concerne.
 5. `3-Journal-des-Decisions.md` : seulement pour comprendre le pourquoi d'une regle (chercher le `D##`).
 
@@ -255,6 +255,7 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
   - **C7 termine le 2026-11-13** : `14-Architecture.md` S12 (suivi d'erreurs en place) et `15-Plan-Tests.md` S10 (feuille de recette, Android seul) a jour ; commits C7c et D209 deployes en preprod (run 43390233668, tout vert) ; les 7 lignes ouvertes (`g-appui-long` revue apres son correctif, `r-ajout-lot`, `pl-toucher`, `pl-glisser-doigt`, `pl-glisser-souris`, `pl-accueil`, `nav-mobile`) validees par le proprietaire sur telephone et ordinateur : feuille de recette a 30/30.
   - Secrets GitHub (2026-11-12) : `ADMIN_SESSION_SECRET` et `CORS_ORIGIN` ne sont plus lus par la CI ni le deploy (V1) ; suppression laissee au proprietaire.
   - **Prochaine etape** : **C7b connexion Discord (D202)**, en commencant par le plan `27-Plan-C7b.md` (C7 termine le 2026-11-13). Points 1 a 4 verifies en preprod (2026-11-12 et 13). A surveiller : le bandeau "Nouvelle version disponible" s'est affiche a chaque ouverture d'onglet pendant la verification, alors que la version servie etait la derniere ; a revoir si le proprietaire le constate aussi. (resultats dans la collection `recette` de l'artefact `25-Recette-Preprod.html`).
+- **Plan C7b ecrit le 2026-11-13** (`27-Plan-C7b.md`, D210, choix au selecteur). Le proprietaire demande d'enchainer le developpement Discord sans /clear. Prochaine etape : C7b.1 (API, TDD).
 - Tout est publie et committe au 2026-11-05 : DS v10, Acces v39, Recettes v35, Planning v26, Admin v26, Permissions v5 (v6 le 2026-11-09), Parcours v6 (v7 le 2026-11-09), Modele de donnees v5 (v6 le 2026-11-09, page regeneree en D165). Maquettes revues dans Chrome le 2026-11-05 (B5b, voir `archive/16-Maquettes-ECARTS.md`).
   - Chaque canevas se met a jour depuis sa copie locale `16-Maquettes/<canevas>/project/` a son URL (le dossier `ds/` n'existe que dans l'artefact) : relire l'artefact (action read sur l'URL), puis publier avec `root` = le dossier du canevas, `file_path` = un fichier modifie, `files` = les autres (`project/...`).
   - Les numeros de version des artefacts avancent aussi a la simple consultation : comparer le contenu en ligne au commit avant d'ecraser.
