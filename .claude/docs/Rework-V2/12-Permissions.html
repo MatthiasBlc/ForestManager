@@ -1,0 +1,1514 @@
+<title>Permissions Forest Manager</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap"
+/>
+<style>
+  /* Layout : en-tete + filtres collants, matrice par module en tableaux defilants, puis cas limites, decisions et questions. Ambiance Braise. */
+  :root {
+    --bg: #f5f3ef;
+    --surface: #fbfaf7;
+    --raised: #ffffff;
+    --line: #ddd6cb;
+    --line-strong: #918a7f;
+    --ink: #1f1d1a;
+    --muted: #5f5a53;
+    --accent: #b45f19;
+    --accent-soft: #f2e7dc;
+    --accent-text: #9f5619;
+    --on-accent: #ffffff;
+    --second-soft: #e5e8e9;
+    --second-text: #46607f;
+    --ok-soft: #e2ebe3;
+    --ok-text: #2d754b;
+    --warn-soft: #ede7d9;
+    --warn-text: #8a5d00;
+    --no-text: #8a847b;
+    --f-display: "Sora", "Segoe UI", system-ui, sans-serif;
+    --f-body: "Manrope", "Segoe UI", system-ui, sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #16181b;
+      --surface: #1f2226;
+      --raised: #282c31;
+      --line: #32363c;
+      --line-strong: #74777c;
+      --ink: #eceae6;
+      --muted: #a6a39e;
+      --accent: #e8913a;
+      --accent-soft: #4b3a2a;
+      --accent-text: #e89541;
+      --on-accent: #121417;
+      --second-soft: #383f4a;
+      --second-text: #93abc9;
+      --ok-soft: #30463d;
+      --ok-text: #6cc490;
+      --warn-soft: #4b422e;
+      --warn-text: #e8b44a;
+      --no-text: #8d8a85;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #16181b;
+    --surface: #1f2226;
+    --raised: #282c31;
+    --line: #32363c;
+    --line-strong: #74777c;
+    --ink: #eceae6;
+    --muted: #a6a39e;
+    --accent: #e8913a;
+    --accent-soft: #4b3a2a;
+    --accent-text: #e89541;
+    --on-accent: #121417;
+    --second-soft: #383f4a;
+    --second-text: #93abc9;
+    --ok-soft: #30463d;
+    --ok-text: #6cc490;
+    --warn-soft: #4b422e;
+    --warn-text: #e8b44a;
+    --no-text: #8d8a85;
+    color-scheme: dark;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto;
+    height: env(safe-area-inset-top, 0px);
+    z-index: 10;
+    background: var(--bg);
+  }
+  .wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 24px 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--f-display);
+    margin: 0;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+  h1 {
+    font-size: clamp(26px, 4vw, 36px);
+  }
+  h2 {
+    font-size: 21px;
+  }
+  h3 {
+    font-size: 16px;
+  }
+  p {
+    margin: 0;
+    max-width: 72ch;
+  }
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  .small {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .bar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 5;
+    background: var(--bg);
+    padding-block: 10px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .lbl {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    min-width: 64px;
+  }
+  .pill {
+    font: 600 13px/18px var(--f-body);
+    min-height: 36px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: var(--raised);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .pill[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+  }
+  .pill:focus-visible,
+  input:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--accent-text);
+    outline-offset: 2px;
+  }
+  input[type="search"] {
+    font: 400 16px/22px var(--f-body);
+    min-height: 40px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid var(--line-strong);
+    background: var(--raised);
+    color: var(--ink);
+    width: min(360px, 100%);
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 14px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .c {
+    display: inline-block;
+    min-width: 56px;
+    text-align: center;
+    font: 700 12px/18px var(--f-body);
+    padding: 3px 6px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .c-Y {
+    background: var(--ok-soft);
+    color: var(--ok-text);
+  }
+  .c-A {
+    background: var(--accent-soft);
+    color: var(--accent-text);
+  }
+  .c-S {
+    background: var(--second-soft);
+    color: var(--second-text);
+  }
+  .c-C {
+    background: var(--warn-soft);
+    color: var(--warn-text);
+  }
+  .c-N {
+    color: var(--no-text);
+    font-weight: 500;
+  }
+  section.mod {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    scroll-margin-top: 140px;
+  }
+  .tbl {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 860px;
+    font-size: 14px;
+  }
+  th,
+  td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--line);
+    text-align: left;
+    vertical-align: top;
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  th {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    background: var(--bg);
+    font-weight: 700;
+  }
+  th.a,
+  td.a {
+    text-align: center;
+    width: 72px;
+  }
+  th.hl,
+  td.hl {
+    background: var(--accent-soft);
+  }
+  td.act {
+    min-width: 220px;
+    font-weight: 600;
+    position: sticky;
+    left: 0;
+    background: var(--surface);
+  }
+  td.act.hl {
+    background: var(--surface);
+  }
+  td.ref {
+    font: 500 12px/18px var(--f-mono);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  td.note {
+    color: var(--muted);
+    font-size: 13px;
+    min-width: 220px;
+  }
+  .empty {
+    padding: 16px;
+    color: var(--muted);
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .card b {
+    font-size: 15px;
+  }
+  .tag {
+    font: 600 12px/16px var(--f-mono);
+    color: var(--accent-text);
+  }
+  .opt {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+  }
+  .opt.rec {
+    border-color: var(--accent-text);
+    background: var(--accent-soft);
+  }
+  .opt span {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .count {
+    font-size: 13px;
+    color: var(--muted);
+  }
+</style>
+
+<div class="wrap">
+  <header style="display: flex; flex-direction: column; gap: 8px">
+    <div class="eyebrow">Rework V2 - roadmap B2 - statut : voir le journal des decisions</div>
+    <h1>Qui peut faire quoi</h1>
+    <p>
+      La matrice des permissions de Forest Manager V2, module par module. Choisis un acteur pour
+      voir ce qu'il peut faire, ou un module pour te concentrer dessus. Les droits sont toujours
+      verifies cote serveur.
+    </p>
+  </header>
+
+  <div class="bar" role="region" aria-label="Filtres">
+    <div class="row">
+      <span class="lbl">Acteur</span>
+      <div class="row" id="f-actor"></div>
+    </div>
+    <div class="row">
+      <span class="lbl">Module</span>
+      <div class="row" id="f-mod"></div>
+    </div>
+    <div class="row">
+      <input
+        type="search"
+        id="f-q"
+        placeholder="Chercher une action (ex : suggestion, lien)"
+        aria-label="Chercher une action"
+      /><label class="small"
+        ><input type="checkbox" id="f-only" /> Seulement ce que l'acteur peut faire</label
+      ><span class="count" id="count"></span>
+    </div>
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <div id="matrix" style="display: flex; flex-direction: column; gap: 28px"></div>
+
+  <section style="display: flex; flex-direction: column; gap: 12px">
+    <h2>Cas limites</h2>
+    <div class="cards" id="edge"></div>
+  </section>
+  <section style="display: flex; flex-direction: column; gap: 12px">
+    <h2>Decisions</h2>
+    <p class="small">Introduites par cette matrice. Statut : voir le journal des decisions.</p>
+    <div class="cards" id="dec"></div>
+  </section>
+  <section style="display: flex; flex-direction: column; gap: 12px">
+    <h2>Questions (toutes tranchees)</h2>
+    <div class="cards" id="qs"></div>
+  </section>
+</div>
+
+<script>
+  (function () {
+    "use strict";
+    var D = {
+      actors: [
+        ["VIS", "Visiteur", "Personne non connectee."],
+        ["CON", "Connecte", "Utilisateur connecte, non membre de l'espace concerne."],
+        ["MEM", "Membre", "MEMBER de l'espace concerne."],
+        ["MOD", "Moderateur", "MODERATOR de l'espace concerne."],
+        [
+          "OWN",
+          "Owner",
+          "OWNER de l'espace concerne (un seul par espace GROUP ; seul membre de son espace perso).",
+        ],
+        [
+          "ANC",
+          "Ancien",
+          'Ancien membre de l\'espace, ou compte supprime (auteur affiche "ancien membre").',
+        ],
+        [
+          "ADM",
+          "Super admin",
+          "AdminUser de la plateforme, session isolee, 2FA, chaque action tracee dans l'audit.",
+        ],
+      ],
+      codes: { Y: "Oui", N: "-", A: "Auteur", S: "Soi", C: "Cond." },
+      help: {
+        Y: "Autorise.",
+        N: "Interdit.",
+        A: "Seulement s'il est l'auteur de la recette (et encore membre de l'espace concerne).",
+        S: "Seulement pour lui-meme (son compte, son invitation, sa suggestion).",
+        C: "Autorise sous condition : voir la note.",
+      },
+      modules: [
+        ["compte", "Compte"],
+        ["perso", "Espace perso"],
+        ["groupe", "Espace groupe"],
+        ["modules", "Modules"],
+        ["recettes", "Recettes"],
+        ["composees", "Recettes composees"],
+        ["suggestions", "Suggestions"],
+        ["tags", "Tags"],
+        ["referentiels", "Ingredients et unites"],
+        ["planning", "Planning"],
+        ["notifs", "Notifications et activite"],
+        ["admin", "Administration"],
+      ],
+      rules: [
+        {
+          m: "compte",
+          a: "Creer un compte",
+          c: ["Y", "N", "N", "N", "N", "N", "N"],
+          ref: "F-ACC-1",
+          n: "L'espace perso est cree en meme temps.",
+        },
+        {
+          m: "compte",
+          a: 'Se connecter, "rester connecte" 30 jours',
+          c: ["Y", "N", "N", "N", "N", "N", "N"],
+          ref: "F-ACC-2, D13",
+          n: "",
+        },
+        {
+          m: "compte",
+          a: 'Verifier son email, "mot de passe oublie"',
+          c: ["C", "N", "N", "N", "N", "N", "N"],
+          ref: "F-ACC-3, D21",
+          n: "Seulement si un SMTP est configure ; sinon l'ecran n'apparait pas.",
+        },
+        {
+          m: "compte",
+          a: "Modifier son profil, son mot de passe, son apparence (ambiance, mode, densite)",
+          c: ["N", "S", "S", "S", "S", "N", "N"],
+          ref: "F-ACC-4, D32",
+          n: "",
+        },
+        {
+          m: "compte",
+          a: "Voir le profil d'un autre utilisateur (username, avatar)",
+          c: ["N", "C", "Y", "Y", "Y", "N", "Y"],
+          ref: "D50",
+          n: "Seulement s'il partage au moins un espace avec lui. Pas d'annuaire ni de recherche globale d'utilisateurs.",
+        },
+        {
+          m: "compte",
+          a: "Exporter ses propres recettes",
+          c: ["N", "S", "S", "S", "S", "N", "N"],
+          ref: "D37",
+          n: "Toutes les recettes dont il est l'auteur, quel que soit l'espace.",
+        },
+        {
+          m: "compte",
+          a: "Supprimer son compte",
+          c: ["N", "S", "S", "S", "S", "N", "N"],
+          ref: "F-ACC-5, D20, D51",
+          n: "Recettes partagees conservees, auteur anonymise ; s'il est OWNER d'espaces, transfert automatique (D51).",
+        },
+        {
+          m: "compte",
+          a: "Reinitialiser le mot de passe d'un utilisateur",
+          c: ["N", "N", "N", "N", "N", "N", "Y"],
+          ref: "D21, D134",
+          n: "Utile sans SMTP : mot de passe temporaire de 24 h a usage unique, a changer a la connexion (D134).",
+        },
+        {
+          m: "perso",
+          a: "Voir et utiliser son espace perso",
+          c: ["N", "N", "N", "N", "S", "N", "C"],
+          ref: "D02, D52",
+          n: "Personne d'autre que lui. Le super admin seulement pour une moderation motivee (D52).",
+        },
+        {
+          m: "perso",
+          a: "Changer l'avatar et la teinte de son espace perso",
+          c: ["N", "N", "N", "N", "S", "N", "N"],
+          ref: "D02",
+          n: "",
+        },
+        {
+          m: "perso",
+          a: "Inviter quelqu'un dans son espace perso",
+          c: ["N", "N", "N", "N", "N", "N", "N"],
+          ref: "CDC S3.2",
+          n: "Impossible : l'espace perso n'a qu'un membre.",
+        },
+        {
+          m: "perso",
+          a: "Supprimer son espace perso",
+          c: ["N", "N", "N", "N", "N", "N", "N"],
+          ref: "D02",
+          n: "Seulement avec la suppression du compte.",
+        },
+        {
+          m: "perso",
+          a: "Demander l'acces a un module, activer un module accorde",
+          c: ["N", "N", "N", "N", "S", "N", "N"],
+          ref: "D33",
+          n: "Memes regles qu'un groupe.",
+        },
+        {
+          m: "groupe",
+          a: "Creer un espace groupe",
+          c: ["N", "Y", "Y", "Y", "Y", "Y", "N"],
+          ref: "F-SPC-1, D51",
+          n: "Tout utilisateur connecte. Il en devient OWNER. Plafond anti-abus : 20 espaces possedes.",
+        },
+        {
+          m: "groupe",
+          a: "Voir le contenu de l'espace (modules actifs, recettes, planning)",
+          c: ["N", "N", "Y", "Y", "Y", "N", "C"],
+          ref: "D03, D52",
+          n: "Super admin : seulement pour une moderation motivee et tracee (D52).",
+        },
+        {
+          m: "groupe",
+          a: "Voir la liste des membres et leurs roles",
+          c: ["N", "N", "Y", "Y", "Y", "N", "Y"],
+          ref: "F-SPC-4",
+          n: "",
+        },
+        {
+          m: "groupe",
+          a: "Rejoindre par un lien d'invitation",
+          c: ["N", "C", "N", "N", "N", "C", "N"],
+          ref: "D07",
+          n: "Lien valide (non expire, non revoque, usages restants). Un membre exclu ne peut pas revenir par un lien, seulement par invitation directe.",
+        },
+        {
+          m: "groupe",
+          a: "Creer, revoquer un lien d'invitation",
+          c: ["N", "N", "N", "Y", "Y", "N", "N"],
+          ref: "D07, CDC S3.1",
+          n: "",
+        },
+        {
+          m: "groupe",
+          a: "Inviter par username exact",
+          c: ["N", "N", "N", "Y", "Y", "N", "N"],
+          ref: "D07",
+          n: "",
+        },
+        {
+          m: "groupe",
+          a: "Accepter ou refuser une invitation recue",
+          c: ["N", "S", "N", "N", "N", "S", "N"],
+          ref: "F-SPC-3",
+          n: "",
+        },
+        {
+          m: "groupe",
+          a: "Annuler une invitation envoyee",
+          c: ["N", "N", "N", "Y", "Y", "N", "N"],
+          ref: "F-SPC-2",
+          n: "",
+        },
+        {
+          m: "groupe",
+          a: "Exclure un MEMBER",
+          c: ["N", "N", "N", "Y", "Y", "N", "N"],
+          ref: "D06, D53",
+          n: "",
+        },
+        {
+          m: "groupe",
+          a: "Exclure un MODERATOR",
+          c: ["N", "N", "N", "N", "Y", "N", "N"],
+          ref: "D53",
+          n: "Un moderateur n'exclut jamais un autre moderateur.",
+        },
+        {
+          m: "groupe",
+          a: "Promouvoir MEMBER -> MODERATOR, retrograder MODERATOR -> MEMBER",
+          c: ["N", "N", "N", "N", "Y", "N", "N"],
+          ref: "D06",
+          n: "",
+        },
+        {
+          m: "groupe",
+          a: "Transferer la propriete a un membre",
+          c: ["N", "N", "N", "N", "Y", "N", "N"],
+          ref: "D06, D92",
+          n: "Le nouvel OWNER doit accepter ; l'ancien devient MODERATOR.",
+        },
+        {
+          m: "groupe",
+          a: "Quitter l'espace",
+          c: ["N", "N", "S", "S", "C", "N", "N"],
+          ref: "D06, D22",
+          n: "L'OWNER doit d'abord transferer la propriete. Le dernier membre qui part supprime l'espace (delai de 30 jours).",
+        },
+        {
+          m: "groupe",
+          a: "Renommer, changer description, avatar et teinte",
+          c: ["N", "N", "N", "Y", "Y", "N", "N"],
+          ref: "CDC S3.1",
+          n: "",
+        },
+        {
+          m: "groupe",
+          a: "Supprimer l'espace (masque, restaurable 30 jours, puis purge)",
+          c: ["N", "N", "N", "N", "Y", "N", "Y"],
+          ref: "D22",
+          n: "Membres prevenus. Super admin : moderation, avec motif.",
+        },
+        {
+          m: "groupe",
+          a: "Restaurer un espace supprime pendant les 30 jours",
+          c: ["N", "N", "N", "N", "Y", "N", "Y"],
+          ref: "D22",
+          n: "",
+        },
+        {
+          m: "groupe",
+          a: "Exporter toutes les recettes de l'espace",
+          c: ["N", "N", "N", "N", "Y", "N", "N"],
+          ref: "D37",
+          n: "Une fois par jour, inscrit dans le fil d'activite.",
+        },
+        {
+          m: "groupe",
+          a: "Voir le fil d'activite de l'espace",
+          c: ["N", "N", "Y", "Y", "Y", "N", "N"],
+          ref: "F-SPC-7",
+          n: "",
+        },
+        {
+          m: "modules",
+          a: "Voir les modules actifs de l'espace",
+          c: ["N", "N", "Y", "Y", "Y", "N", "Y"],
+          ref: "D33",
+          n: "",
+        },
+        {
+          m: "modules",
+          a: "Voir le catalogue des modules de la plateforme (statuts disponible, beta, bientot)",
+          c: ["N", "N", "Y", "Y", "Y", "N", "Y"],
+          ref: "D33, D54",
+          n: "Lecture pour tous les membres ; seul l'OWNER agit.",
+        },
+        {
+          m: "modules",
+          a: "Demander l'acces a un module pour l'espace",
+          c: ["N", "N", "N", "N", "Y", "N", "N"],
+          ref: "D33",
+          n: "",
+        },
+        {
+          m: "modules",
+          a: "Annuler sa demande en attente",
+          c: ["N", "N", "N", "N", "Y", "N", "N"],
+          ref: "D33",
+          n: "",
+        },
+        {
+          m: "modules",
+          a: "Accepter ou refuser une demande d'acces",
+          c: ["N", "N", "N", "N", "N", "N", "Y"],
+          ref: "D33",
+          n: "",
+        },
+        {
+          m: "modules",
+          a: "Accorder ou retirer un module de sa propre initiative",
+          c: ["N", "N", "N", "N", "N", "N", "Y"],
+          ref: "D33",
+          n: "Retrait : donnees conservees et masquees (voir cas limites).",
+        },
+        {
+          m: "modules",
+          a: "Activer ou desactiver un module accorde",
+          c: ["N", "N", "N", "N", "Y", "N", "N"],
+          ref: "D33",
+          n: "Desactiver masque le module pour tous ; ses donnees restent.",
+        },
+        {
+          m: "recettes",
+          a: "Voir une recette visible dans l'espace (origine ou partagee), son historique, ses compteurs",
+          c: ["N", "N", "Y", "Y", "Y", "N", "C"],
+          ref: "D03, D05, D39",
+          n: "Super admin : moderation motivee (D52).",
+        },
+        {
+          m: "recettes",
+          a: "Creer une recette dans l'espace, l'importer par URL ou par texte",
+          c: ["N", "N", "Y", "Y", "Y", "N", "N"],
+          ref: "F-REC-4, D28",
+          n: "Dans l'espace perso : son OWNER.",
+        },
+        {
+          m: "recettes",
+          a: "Modifier une recette (cree une revision)",
+          c: ["N", "N", "A", "Y", "Y", "N", "N"],
+          ref: "D05, D06, D57, D122",
+          n: "Recettes de l'espace d'origine : auteur, MOD et OWNER de l'espace d'origine. Les moderateurs d'un espace ou elle est seulement partagee ne la modifient pas. Super admin : jamais (lecture et moderation seulement, D52, D122).",
+        },
+        {
+          m: "recettes",
+          a: "Restaurer une revision anterieure",
+          c: ["N", "N", "A", "Y", "Y", "N", "N"],
+          ref: "D05, D55",
+          n: "Memes droits que modifier.",
+        },
+        {
+          m: "recettes",
+          a: "Partager dans un autre espace (par reference)",
+          c: ["N", "N", "C", "C", "C", "N", "N"],
+          ref: "D03, D81",
+          n: "Auteur : directement. Autre membre : demande acceptee par l'auteur, ou directement si l'auteur a autorise les membres de cet espace. Etre membre des deux espaces. Auteur parti : les MOD / OWNER de l'espace d'origine decident.",
+        },
+        {
+          m: "recettes",
+          a: "Accepter ou refuser une demande de partage ; autoriser les membres d'un espace a partager ses recettes",
+          c: ["N", "N", "A", "C", "C", "N", "N"],
+          ref: "D81",
+          n: "Auteur. MOD / OWNER de l'espace d'origine seulement si l'auteur n'en est plus membre.",
+        },
+        {
+          m: "recettes",
+          a: "Retirer une recette d'un espace ou elle est partagee",
+          c: ["N", "N", "A", "Y", "Y", "N", "Y"],
+          ref: "F-REC-9, D122",
+          n: "Auteur, ou MOD / OWNER de cet espace de partage. Super admin : moderation, motif obligatoire et audit ; la recette reste chez son auteur (D52, D122).",
+        },
+        {
+          m: "recettes",
+          a: "Adapter pour un espace (copie liee a l'original)",
+          c: ["N", "N", "Y", "Y", "Y", "N", "N"],
+          ref: "D17",
+          n: "Il faut voir l'original et etre membre de l'espace cible. L'adaptation lui appartient.",
+        },
+        {
+          m: "recettes",
+          a: 'Comparer une adaptation avec l\'original, marquer "vu"',
+          c: ["N", "N", "Y", "Y", "Y", "N", "N"],
+          ref: "D17",
+          n: "Comparer : tout membre qui voit l'adaptation. Marquer vu : ceux qui peuvent modifier l'adaptation.",
+        },
+        {
+          m: "recettes",
+          a: "Supprimer une recette (disparait de tous les espaces)",
+          c: ["N", "N", "A", "Y", "Y", "N", "Y"],
+          ref: "F-REC-10, D57",
+          n: "Auteur. MOD / OWNER de l'espace d'origine seulement si l'auteur n'en est plus membre. Super admin : moderation, avec motif (D52, D122).",
+        },
+        {
+          m: "recettes",
+          a: 'Marquer une recette comme "base" (exclue de la generation)',
+          c: ["N", "N", "A", "Y", "Y", "N", "N"],
+          ref: "D24",
+          n: "Memes droits que modifier.",
+        },
+        {
+          m: "recettes",
+          a: "Mode cuisine, cocher les ingredients, changer les portions affichees",
+          c: ["N", "N", "Y", "Y", "Y", "N", "N"],
+          ref: "F-REC-12",
+          n: "Rien n'est enregistre sur la recette.",
+        },
+        {
+          m: "recettes",
+          a: "Recette d'un auteur parti : la reprendre (modifier, trancher, retirer, supprimer)",
+          c: ["N", "N", "N", "Y", "Y", "N", "N"],
+          ref: "D18, D57",
+          n: "MOD et OWNER de l'espace d'origine.",
+        },
+        {
+          m: "recettes",
+          a: "Acceder a ses anciennes recettes apres avoir quitte l'espace",
+          c: ["N", "N", "N", "N", "N", "C", "N"],
+          ref: "D18, D59",
+          n: "Non dans l'espace quitte ; il garde celles dont l'origine est un autre espace. S'il revient, il retrouve ses droits d'auteur (D59).",
+        },
+        {
+          m: "composees",
+          a: "Ajouter un bloc lie a une autre recette",
+          c: ["N", "N", "A", "Y", "Y", "N", "N"],
+          ref: "D24",
+          n: "Droit de modifier la recette composee ET voir la sous-recette.",
+        },
+        {
+          m: "composees",
+          a: "Voir le contenu d'une sous-recette liee",
+          c: ["N", "N", "C", "C", "C", "N", "N"],
+          ref: "D24, D26",
+          n: 'Seulement si elle est visible dans l\'espace ; sinon le bloc affiche "recette non disponible" avec son nom.',
+        },
+        {
+          m: "composees",
+          a: "Partager une recette composee (partage auto des sous-recettes)",
+          c: ["N", "N", "A", "N", "N", "N", "N"],
+          ref: "D26, D81",
+          n: "Les sous-recettes dont il est l'auteur sont partagees avec elle ; celles d'un autre ne le sont pas et s'affichent \"non disponible\" (liste affichee avant de valider).",
+        },
+        {
+          m: "composees",
+          a: "Modifier une sous-recette depuis la recette composee",
+          c: ["N", "N", "A", "Y", "Y", "N", "N"],
+          ref: "D24",
+          n: "Non : on ouvre la sous-recette, avec ses propres droits. Le lien est vivant.",
+        },
+        {
+          m: "suggestions",
+          a: "Suggerer une modification",
+          c: ["N", "N", "C", "C", "C", "N", "N"],
+          ref: "D04",
+          n: "Tout membre qui voit la recette, sauf son auteur.",
+        },
+        {
+          m: "suggestions",
+          a: "Voir les suggestions d'une recette",
+          c: ["N", "N", "Y", "Y", "Y", "N", "N"],
+          ref: "D04",
+          n: "",
+        },
+        {
+          m: "suggestions",
+          a: "Retirer sa propre suggestion en attente",
+          c: ["N", "N", "S", "S", "S", "N", "N"],
+          ref: "D04",
+          n: "",
+        },
+        {
+          m: "suggestions",
+          a: "Accepter (nouvelle revision) ou refuser une suggestion",
+          c: ["N", "N", "A", "Y", "Y", "N", "N"],
+          ref: "D04, D18",
+          n: "Auteur. MOD / OWNER de l'espace d'origine seulement si l'auteur n'en est plus membre.",
+        },
+        {
+          m: "suggestions",
+          a: "Transformer sa suggestion refusee en adaptation",
+          c: ["N", "N", "S", "S", "S", "N", "N"],
+          ref: "D04, D17, D140",
+          n: "L'adaptation est la seule copie possible (D140).",
+        },
+        {
+          m: "tags",
+          a: "Creer, renommer, fusionner, traduire un tag global",
+          c: ["N", "N", "N", "N", "N", "N", "Y"],
+          ref: "F-REF-1, D34",
+          n: "",
+        },
+        {
+          m: "tags",
+          a: "Poser ou retirer un tag global sur une recette",
+          c: ["N", "N", "A", "Y", "Y", "N", "N"],
+          ref: "D19",
+          n: "Les tags globaux suivent la recette : memes droits que modifier.",
+        },
+        {
+          m: "tags",
+          a: "Creer un tag d'espace (en taguant une recette)",
+          c: ["N", "N", "Y", "Y", "Y", "N", "N"],
+          ref: "D08, D19",
+          n: "",
+        },
+        {
+          m: "tags",
+          a: "Poser ou retirer un tag d'espace sur une recette visible dans l'espace",
+          c: ["N", "N", "Y", "Y", "Y", "N", "N"],
+          ref: "D19, D27",
+          n: "Propre a cet espace : n'affecte pas les autres espaces ou la recette est partagee.",
+        },
+        {
+          m: "tags",
+          a: "Renommer, fusionner, supprimer un tag d'espace",
+          c: ["N", "N", "N", "Y", "Y", "N", "N"],
+          ref: "D08",
+          n: "",
+        },
+        {
+          m: "referentiels",
+          a: "Utiliser un ingredient, une unite, un rayon existant",
+          c: ["N", "N", "Y", "Y", "Y", "N", "N"],
+          ref: "F-REF-3, F-REF-4",
+          n: "",
+        },
+        {
+          m: "referentiels",
+          a: "Creer un ingredient a la volee (utilisable tout de suite)",
+          c: ["N", "N", "Y", "Y", "Y", "N", "N"],
+          ref: "D09",
+          n: 'Marque "nouveau" pour la file admin.',
+        },
+        {
+          m: "referentiels",
+          a: "Fusionner, renommer, traduire les ingredients",
+          c: ["N", "N", "N", "N", "N", "N", "Y"],
+          ref: "D09, D34",
+          n: "",
+        },
+        {
+          m: "referentiels",
+          a: "Gerer unites, conversions et rayons",
+          c: ["N", "N", "N", "N", "N", "N", "Y"],
+          ref: "D36",
+          n: "",
+        },
+        {
+          m: "planning",
+          a: "Voir le planning (semaines passees comprises), les idees de repas",
+          c: ["N", "N", "Y", "Y", "Y", "N", "N"],
+          ref: "CDC S4.6",
+          n: "Si le module est accorde et actif.",
+        },
+        {
+          m: "planning",
+          a: "Modifier un repas (recette, texte libre, portions, commentaire), echanger, verrouiller",
+          c: ["N", "N", "C", "Y", "Y", "N", "N"],
+          ref: "F-MPL-3, D58",
+          n: "Role minimal regle par l'OWNER ; MEMBER par defaut.",
+        },
+        {
+          m: "planning",
+          a: "Remplacer un repas par la generation (un seul repas)",
+          c: ["N", "N", "C", "Y", "Y", "N", "N"],
+          ref: "D58",
+          n: "Memes droits que modifier un repas.",
+        },
+        {
+          m: "planning",
+          a: "Regler le planning (repas de la journee, portions, debut de semaine)",
+          c: ["N", "N", "N", "Y", "Y", "N", "N"],
+          ref: "D11, D58",
+          n: "Calendrier continu, pas de planning a creer (D180).",
+        },
+        {
+          m: "planning",
+          a: "Regler le role minimal pour modifier un repas",
+          c: ["N", "N", "N", "N", "Y", "N", "N"],
+          ref: "F-MPL-3, D58",
+          n: "",
+        },
+        {
+          m: "planning",
+          a: "Gerer les jeux de parametres de generation (regles, exclusions, epinglages)",
+          c: ["N", "N", "N", "Y", "Y", "N", "N"],
+          ref: "D58",
+          n: "",
+        },
+        {
+          m: "planning",
+          a: "Generer tout un planning",
+          c: ["N", "N", "N", "Y", "Y", "N", "N"],
+          ref: "D58",
+          n: "Les repas verrouilles ne bougent pas.",
+        },
+        {
+          m: "planning",
+          a: "Ajouter une idee de repas",
+          c: ["N", "N", "Y", "Y", "Y", "N", "N"],
+          ref: "CDC S4.6",
+          n: "",
+        },
+        {
+          m: "planning",
+          a: "Modifier, supprimer une idee",
+          c: ["N", "N", "C", "Y", "Y", "N", "N"],
+          ref: "CDC S4.6",
+          n: "Membre : seulement ses propres idees.",
+        },
+        {
+          m: "planning",
+          a: "Convertir une idee en recette",
+          c: ["N", "N", "Y", "Y", "Y", "N", "N"],
+          ref: "F-MPL-4, D182",
+          n: "Auteur : celui qui convertit ; l'idee est ensuite retiree.",
+        },
+        {
+          m: "planning",
+          a: "Liste de courses (V2.1) : creer, cocher, archiver",
+          c: ["N", "N", "C", "Y", "Y", "N", "N"],
+          ref: "F-SHP-4, D141",
+          n: "Role minimal regle par l'OWNER ; MEMBER par defaut, comme le planning (D141).",
+        },
+        {
+          m: "notifs",
+          a: "Recevoir les notifications qui le concernent",
+          c: ["N", "Y", "Y", "Y", "Y", "N", "N"],
+          ref: "F-NOT-1",
+          n: "",
+        },
+        {
+          m: "notifs",
+          a: "Regler ses preferences par categorie et par espace",
+          c: ["N", "S", "S", "S", "S", "N", "N"],
+          ref: "F-NOT-2",
+          n: "",
+        },
+        {
+          m: "notifs",
+          a: "Voir le journal d'audit de la plateforme",
+          c: ["N", "N", "N", "N", "N", "N", "Y"],
+          ref: "CDC S3.3",
+          n: "",
+        },
+        {
+          m: "admin",
+          a: "Tableau de bord, file des demandes de modules, file des nouveaux ingredients",
+          c: ["N", "N", "N", "N", "N", "N", "Y"],
+          ref: "CDC S4.9",
+          n: "",
+        },
+        {
+          m: "admin",
+          a: "Moderer une recette ou un espace (masquer, supprimer) avec motif",
+          c: ["N", "N", "N", "N", "N", "N", "Y"],
+          ref: "CDC S3.3, D52",
+          n: "",
+        },
+        {
+          m: "admin",
+          a: "Gerer le changelog",
+          c: ["N", "N", "N", "N", "N", "N", "Y"],
+          ref: "CDC S4.10",
+          n: "",
+        },
+        {
+          m: "admin",
+          a: "Se connecter a la place d'un utilisateur",
+          c: ["N", "N", "N", "N", "N", "N", "N"],
+          ref: "D52",
+          n: "Interdit, y compris pour le super admin.",
+        },
+      ],
+      edge: [
+        [
+          "Dernier OWNER qui veut partir",
+          "Il doit transferer la propriete ou supprimer l'espace. S'il est le dernier membre, partir supprime l'espace (restaurable 30 jours).",
+          "D06, D22",
+        ],
+        [
+          "OWNER qui supprime son compte",
+          "Transfert automatique au MODERATOR le plus ancien, sinon au MEMBER le plus ancien ; seul : espace supprime avec delai.",
+          "D51",
+        ],
+        [
+          "Auteur parti puis revenu",
+          "Il retrouve ses droits d'auteur ; les modifications faites entre-temps par les moderateurs restent dans l'historique.",
+          "D57, D59",
+        ],
+        [
+          "Membre exclu",
+          "Acces coupe immediatement (y compris temps reel) ; ses recettes restent, reprises par les moderateurs ; ses suggestions en attente sont annulees ; il ne revient que par invitation directe.",
+          "D18, D53",
+        ],
+        [
+          "Sous-recette liee non visible",
+          'Le bloc affiche "recette non disponible" avec son nom ; pas de quantites depliees ; la liste de courses signale les ingredients manquants.',
+          "D24, D26",
+        ],
+        [
+          "Recette composee retiree d'un espace",
+          "On propose de retirer aussi les sous-recettes partagees automatiquement avec elle, si aucune autre recette de l'espace ne les utilise.",
+          "D26",
+        ],
+        [
+          "Espace d'origine supprime alors que la recette est partagee ailleurs",
+          "La recette est rapatriee dans l'espace perso de son auteur, ses partages et adaptations restent. Si l'auteur n'existe plus : elle reste dans les espaces de partage, geree par leurs moderateurs.",
+          "D22, D83",
+        ],
+        [
+          "Original d'une adaptation supprime",
+          'L\'adaptation vit seule, le lien affiche "original supprime".',
+          "D17",
+        ],
+        [
+          "Module desactive ou retire avec des donnees",
+          "Donnees conservees indefiniment et masquees ; reactivation ou nouvel acces = tout revient ; elles partent seulement avec l'espace.",
+          "D33, D85",
+        ],
+        [
+          "Suggestion en attente quand la recette change",
+          "La suggestion reste basee sur sa revision ; le diff est recalcule sur la version courante et les conflits sont signales ; elle reste tranchable.",
+          "D04, D05",
+        ],
+        [
+          "Changement de role pendant une action",
+          "Les droits sont verifies a chaque requete cote serveur ; l'interface se met a jour par le temps reel.",
+          "CDC S6.2",
+        ],
+        [
+          "Lien d'invitation utilise apres expiration ou revocation",
+          "Refuse avec un message clair ; l'utilisateur peut demander un nouveau lien a un moderateur.",
+          "D07",
+        ],
+        [
+          "Compte supprime auteur de suggestions ou d'idees",
+          "Ses suggestions en attente sont annulees ; ses idees de repas restent, auteur anonymise.",
+          "D20",
+        ],
+      ],
+      decisions: [
+        [
+          "D50",
+          "Pas d'annuaire d'utilisateurs",
+          "Un profil (username, avatar) n'est visible que par les personnes qui partagent un espace avec lui. Aucune recherche globale ; invitation par lien ou username exact (D07).",
+        ],
+        [
+          "D51",
+          "Suppression du compte d'un OWNER",
+          "La propriete de chaque espace passe automatiquement au MODERATOR le plus ancien, sinon au MEMBER le plus ancien ; les membres sont prevenus. S'il etait seul, l'espace est supprime avec le delai de 30 jours (D22). Plafond anti-abus : 20 espaces possedes par utilisateur.",
+        ],
+        [
+          "D52",
+          "Acces du super admin au contenu",
+          "Pas de navigation libre dans les espaces. Acces seulement pour une moderation (signalement, demande d'un utilisateur), avec un motif saisi et trace dans l'audit. Jamais de connexion a la place d'un utilisateur.",
+        ],
+        [
+          "D53",
+          "Exclusion des moderateurs",
+          "Un MODERATOR exclut des MEMBER ; seul l'OWNER exclut ou retrograde un MODERATOR.",
+        ],
+        [
+          "D54",
+          "Catalogue des modules visible par tous les membres",
+          "Lecture du catalogue et des statuts pour tous les membres ; seul l'OWNER demande l'acces et active.",
+        ],
+        [
+          "D55",
+          "Restaurer une revision",
+          "Meme droit que modifier la recette (auteur, ou MOD / OWNER de l'espace d'origine).",
+        ],
+        [
+          "D81",
+          "Partager la recette d'un autre (remplace D56)",
+          "Tout membre demande le partage ; l'auteur accepte, ou fait confiance une fois pour toutes aux membres d'un espace. Exemple : partager dans Famille une recette creee par sa compagne dans Foyer.",
+        ],
+        [
+          "D57",
+          "Recette d'un auteur parti",
+          "MOD et OWNER de l'espace d'origine peuvent la modifier, trancher ses suggestions, la retirer et la supprimer. Ses partages dans d'autres espaces restent ; les moderateurs de ces espaces peuvent seulement les retirer.",
+        ],
+        [
+          "D58",
+          "Droits du planning",
+          "Modifier un repas : role minimal regle par l'OWNER, MEMBER par defaut. Regler le planning, gerer les parametres et generer tout un planning : MODERATOR et OWNER ; regler le role minimal : OWNER.",
+        ],
+        [
+          "D59",
+          "Retour d'un ancien membre",
+          "Le lien auteur d'une recette n'est jamais casse (sauf compte supprime, anonymise) : un auteur qui revient retrouve ses droits d'auteur sur ses recettes de l'espace.",
+        ],
+      ],
+      questions: [
+        [
+          "P1",
+          "D83",
+          "Espace d'origine supprime alors que ses recettes sont partagees ailleurs : que deviennent-elles ?",
+          [
+            [
+              "Rapatriees dans l'espace perso de l'auteur",
+              "L'auteur garde son contenu, partages et adaptations restent.",
+              true,
+            ],
+            [
+              "Supprimees avec l'espace",
+              "Elles disparaissent de partout (restaurables 30 jours avec l'espace).",
+              false,
+            ],
+            [
+              "Au choix de l'OWNER",
+              "L'ecran de suppression liste les recettes partagees ailleurs et l'OWNER choisit.",
+              false,
+            ],
+          ],
+        ],
+        [
+          "P2",
+          "D85",
+          "Donnees d'un module desactive par l'OWNER ou retire par le super admin : combien de temps les garder ?",
+          [
+            ["Indefiniment, masquees", "Reactiver redonne tout ; aucun risque de perte.", true],
+            [
+              "12 mois, avec preavis",
+              "Purge apres 12 mois, l'OWNER est prevenu et peut exporter.",
+              false,
+            ],
+            ["Supprimees a la desactivation", "Apres confirmation forte de l'OWNER.", false],
+          ],
+        ],
+        [
+          "P3",
+          "D56, amendee par D81",
+          "Qui peut partager une recette dans un autre espace (D56) ?",
+          [
+            ["L'auteur seulement", "Les autres membres l'adaptent pour leur espace.", true],
+            [
+              "Aussi les MOD / OWNER de l'espace d'origine",
+              "Utile pour diffuser une recette du groupe.",
+              false,
+            ],
+            [
+              "Tout membre qui la voit",
+              "Le plus ouvert, mais l'auteur ne controle plus ou va son contenu.",
+              false,
+            ],
+          ],
+        ],
+        [
+          "P4",
+          "D54",
+          "Catalogue des modules (D54) : qui le voit et qui demande ?",
+          [
+            [
+              "Tous les membres le voient, l'OWNER demande",
+              "Les membres decouvrent les modules et peuvent en parler a l'OWNER.",
+              true,
+            ],
+            ["L'OWNER seul", "Comme ecrit dans D33.", false],
+            [
+              "Tout membre demande, l'OWNER valide avant envoi",
+              "Plus de demandes, une etape de plus.",
+              false,
+            ],
+          ],
+        ],
+        [
+          "P5",
+          "D58",
+          "Role minimal par defaut pour modifier un repas du planning (D58) ?",
+          [
+            ["MEMBER", "Tout le monde remplit le planning de la famille.", true],
+            [
+              "MODERATOR",
+              "Seuls les moderateurs l'organisent ; les membres proposent des idees.",
+              false,
+            ],
+          ],
+        ],
+        [
+          "P6",
+          "D52",
+          "Acces du super admin au contenu des espaces (D52) ?",
+          [
+            [
+              "Pour une moderation, avec motif et audit",
+              "Equilibre entre vie privee et capacite d'agir.",
+              true,
+            ],
+            [
+              "Libre, trace dans l'audit",
+              "Plus simple a operer, moins respectueux de la vie privee.",
+              false,
+            ],
+            [
+              "Aucun acces",
+              "Seulement les signalements et les metadonnees ; impossible de verifier un contenu.",
+              false,
+            ],
+          ],
+        ],
+        [
+          "P7",
+          "D51",
+          "Suppression du compte d'un OWNER (D51) ?",
+          [
+            [
+              "Transfert automatique au plus ancien moderateur",
+              "Les groupes continuent sans intervention.",
+              true,
+            ],
+            [
+              "Bloquee tant qu'il n'a pas transfere",
+              "Il doit choisir lui-meme un successeur pour chaque espace.",
+              false,
+            ],
+          ],
+        ],
+      ],
+    };
+    var st = { actor: "all", mod: "all", q: "", only: false };
+    try {
+      var s = JSON.parse(localStorage.getItem("fm-perms") || "null");
+      if (s) st = Object.assign(st, s);
+    } catch (e) {}
+    function esc(t) {
+      return String(t).replace(/[&<>"]/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+      });
+    }
+    function pills(id, items, cur, key) {
+      document.getElementById(id).innerHTML = items
+        .map(function (it) {
+          return (
+            '<button type="button" class="pill" data-k="' +
+            key +
+            '" data-v="' +
+            it[0] +
+            '" aria-pressed="' +
+            (it[0] === cur) +
+            '"' +
+            (it[2] ? ' title="' + esc(it[2]) + '"' : "") +
+            ">" +
+            esc(it[1]) +
+            "</button>"
+          );
+        })
+        .join("");
+    }
+    function render() {
+      pills(
+        "f-actor",
+        [["all", "Tous"]].concat(
+          D.actors.map(function (a) {
+            return [a[0], a[1], a[2]];
+          })
+        ),
+        st.actor,
+        "actor"
+      );
+      pills("f-mod", [["all", "Tous"]].concat(D.modules), st.mod, "mod");
+      document.getElementById("f-q").value = st.q;
+      document.getElementById("f-only").checked = st.only;
+      document.getElementById("f-only").disabled = st.actor === "all";
+      document.getElementById("legend").innerHTML = Object.keys(D.codes)
+        .map(function (k) {
+          return (
+            '<span><span class="c c-' +
+            k +
+            '">' +
+            D.codes[k] +
+            "</span> " +
+            esc(D.help[k]) +
+            "</span>"
+          );
+        })
+        .join("");
+      var ai = D.actors
+        .map(function (a) {
+          return a[0];
+        })
+        .indexOf(st.actor);
+      var q = st.q.trim().toLowerCase(),
+        total = 0;
+      var html = D.modules
+        .filter(function (m) {
+          return st.mod === "all" || st.mod === m[0];
+        })
+        .map(function (m) {
+          var rows = D.rules.filter(function (r) {
+            if (r.m !== m[0]) return false;
+            if (q && (r.a + " " + r.n + " " + r.ref).toLowerCase().indexOf(q) < 0) return false;
+            if (st.only && ai >= 0 && r.c[ai] === "N") return false;
+            return true;
+          });
+          total += rows.length;
+          if (!rows.length && (q || st.only)) return "";
+          var head =
+            "<tr><th>Action</th>" +
+            D.actors
+              .map(function (a, i) {
+                return (
+                  '<th class="a' +
+                  (i === ai ? " hl" : "") +
+                  '" title="' +
+                  esc(a[2]) +
+                  '">' +
+                  esc(a[1]) +
+                  "</th>"
+                );
+              })
+              .join("") +
+            "<th>Source</th><th>Note</th></tr>";
+          var body = rows
+            .map(function (r) {
+              return (
+                '<tr><td class="act">' +
+                esc(r.a) +
+                "</td>" +
+                r.c
+                  .map(function (c, i) {
+                    return (
+                      '<td class="a' +
+                      (i === ai ? " hl" : "") +
+                      '"><span class="c c-' +
+                      c +
+                      '">' +
+                      D.codes[c] +
+                      "</span></td>"
+                    );
+                  })
+                  .join("") +
+                '<td class="ref">' +
+                esc(r.ref) +
+                '</td><td class="note">' +
+                esc(r.n) +
+                "</td></tr>"
+              );
+            })
+            .join("");
+          return (
+            '<section class="mod" id="m-' +
+            m[0] +
+            '"><h2>' +
+            esc(m[1]) +
+            '</h2><div class="tbl"><table><thead>' +
+            head +
+            "</thead><tbody>" +
+            (body || '<tr><td class="empty" colspan="10">Aucune action.</td></tr>') +
+            "</tbody></table></div></section>"
+          );
+        })
+        .join("");
+      document.getElementById("matrix").innerHTML =
+        html || '<p class="small">Aucune action ne correspond a ces filtres.</p>';
+      document.getElementById("count").textContent = total + " action" + (total > 1 ? "s" : "");
+      try {
+        localStorage.setItem("fm-perms", JSON.stringify(st));
+      } catch (e) {}
+    }
+    document.getElementById("edge").innerHTML = D.edge
+      .map(function (e) {
+        return (
+          '<div class="card"><b>' +
+          esc(e[0]) +
+          "</b><p>" +
+          esc(e[1]) +
+          '</p><span class="tag">' +
+          esc(e[2]) +
+          "</span></div>"
+        );
+      })
+      .join("");
+    document.getElementById("dec").innerHTML = D.decisions
+      .map(function (d) {
+        return (
+          '<div class="card"><span class="tag">' +
+          d[0] +
+          "</span><b>" +
+          esc(d[1]) +
+          '</b><p class="small">' +
+          esc(d[2]) +
+          "</p></div>"
+        );
+      })
+      .join("");
+    document.getElementById("qs").innerHTML = D.questions
+      .map(function (q) {
+        return (
+          '<div class="card"><span class="tag">' +
+          q[0] +
+          " - tranchee : " +
+          esc(q[1]) +
+          "</span><b>" +
+          esc(q[2]) +
+          "</b>" +
+          q[3]
+            .map(function (o) {
+              return (
+                '<div class="opt' +
+                (o[2] ? " rec" : "") +
+                '"><b>' +
+                esc(o[0]) +
+                (o[2] ? " (recommande)" : "") +
+                "</b><span>" +
+                esc(o[1]) +
+                "</span></div>"
+              );
+            })
+            .join("") +
+          "</div>"
+        );
+      })
+      .join("");
+    document.addEventListener("click", function (e) {
+      var b = e.target.closest("button[data-k]");
+      if (!b) return;
+      st[b.dataset.k] = b.dataset.v;
+      if (st.actor === "all") st.only = false;
+      render();
+    });
+    document.getElementById("f-q").addEventListener("input", function (e) {
+      st.q = e.target.value;
+      render();
+    });
+    document.getElementById("f-only").addEventListener("change", function (e) {
+      st.only = e.target.checked;
+      render();
+    });
+    render();
+  })();
+</script>

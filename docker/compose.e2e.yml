@@ -1,0 +1,135 @@
+# Parcours E2E (local et CI) [D197] : front en image de production (nginx,
+# bundle de production : service worker, CSP et proxy SSE reels) devant une API
+# en NODE_ENV=test (routes /api/v1/__test, limites de debit coupees), base et
+# stockage en memoire. Independant des stacks de dev et de test.
+#
+#   npm run e2e                          tous les parcours (mobile, puis desktop pour les (D))
+#   npm run e2e -- --project=mobile      arguments passes a `playwright test`
+#   npm run e2e:down                     arreter la stack
+#
+# Rapport et traces des echecs : e2e/playwright-report/ et e2e/test-results/.
+
+name: forestmanager-e2e # impose aussi par -p dans les scripts (sinon COMPOSE_PROJECT_NAME du .env gagne)
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: forestmanager_e2e
+    command: postgres -c fsync=off -c synchronous_commit=off -c full_page_writes=off
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test -d forestmanager_e2e"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  s3:
+    image: rustfs/rustfs:1.0.3
+    environment:
+      RUSTFS_ACCESS_KEY: test-access-key
+      RUSTFS_SECRET_KEY: test-secret-key-not-for-production
+    tmpfs:
+      - /data:uid=10001,gid=10001
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://127.0.0.1:9000/health"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  fake-discord:
+    # Faux Discord [D210] : le navigateur (page d'autorisation) et l'API (jeton,
+    # profil) l'appellent par ce nom ; le parcours 17 choisit le profil.
+    image: node:22-alpine
+    command: ["node", "/fake-discord/server.ts"]
+    volumes:
+      - ./docker/fake-discord:/fake-discord:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:4000/health"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  api:
+    # Image de dev : elle contient `apps/api/test` (routes de test et fabriques),
+    # absent de l'image de production.
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+      target: dev
+    init: true
+    command: ["sh", "docker/api-start.sh", "test"]
+    environment:
+      NODE_ENV: test
+      PORT: 3001
+      DATABASE_URL: postgresql://test:test@postgres:5432/forestmanager_e2e
+      SESSION_SECRET: e2e-session-secret-not-for-production
+      APP_URL: http://localhost
+      TRUST_PROXY: 1
+      LOG_LEVEL: warn
+      MINIO_ENDPOINT: s3
+      MINIO_ACCESS_KEY: test-access-key
+      MINIO_SECRET_KEY: test-secret-key-not-for-production
+      MINIO_BUCKET: forestmanager-images-e2e
+      # Adresse publique de production, la seule ouverte par la CSP du nginx :
+      # Playwright sert ces requetes par le RustFS de la stack (e2e/support/storage.ts).
+      MINIO_PUBLIC_URL: https://s3.matthias-bouloc.fr
+      # Faux Discord de la stack (docker/fake-discord) [D210].
+      DISCORD_CLIENT_ID: e2e-client
+      DISCORD_CLIENT_SECRET: e2e-secret-not-for-production
+      DISCORD_BASE_URL: http://fake-discord:4000
+      DISCORD_CDN_URL: http://fake-discord:4000
+    networks:
+      default:
+        aliases:
+          - forestmanager-backend # nom vise par docker/web.nginx.conf
+    depends_on:
+      postgres:
+        condition: service_healthy
+      s3:
+        condition: service_healthy
+      fake-discord:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:3001/health"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+      target: prod
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1/"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  e2e:
+    build:
+      context: .
+      dockerfile: docker/e2e.Dockerfile
+    init: true
+    ipc: host # recommande par Playwright pour Chromium
+    # Meme espace reseau que le nginx : le navigateur ouvre http://localhost.
+    network_mode: "service:web"
+    # Rapports ecrits dans e2e/ avec l'utilisateur de l'hote (pas de fichiers root).
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    environment:
+      HOME: /tmp
+      CI: ${CI:-}
+    volumes:
+      - ./e2e:/app/e2e
+    depends_on:
+      web:
+        condition: service_healthy
+    profiles: [run] # jamais demarre par `up` : lance par `run`

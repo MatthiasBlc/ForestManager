@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Ingrédients</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div class="fm-root" style="min-height: 1100px; display: flex; flex-wrap: wrap; align-items: stretch; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+  <dc-import name="AdminNav" active="ing" hint-size="248px,1100px"></dc-import>
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px; max-width: 1192px;">
+    <header style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px;">
+      <div style="flex: 1 1 360px; display: flex; flex-direction: column; gap: 4px;">
+        <h1 style="margin: 0; font-family: var(--font-display); font-size: 26px; line-height: 32px;">Ingrédients</h1>
+        <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">Les nouveaux ingrédients sont déjà utilisables dans les recettes. Ici, on les vérifie, on les traduit et on fusionne les doublons.</p>
+      </div>
+      <x-import component-from-global-scope="ForestUI.Button" icon="plus">Ajouter un ingrédient</x-import>
+    </header>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start;">
+      <section aria-label="Liste des ingrédients" style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <x-import component-from-global-scope="ForestUI.Chip" default-selected="{{yes}}">Nouveaux (4)</x-import>
+          <x-import component-from-global-scope="ForestUI.Chip">Vérifiés (486)</x-import>
+          <x-import component-from-global-scope="ForestUI.Chip">Sans traduction (31)</x-import>
+          <x-import component-from-global-scope="ForestUI.Chip">Sans rayon (12)</x-import>
+        </div>
+        <x-import component-from-global-scope="ForestUI.Field" label="Rechercher un ingrédient" placeholder="Nom en français ou en anglais"></x-import>
+        <ul style="list-style: none; margin: 0; padding: 0; background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden;">
+          <sc-for list="{{items}}" as="i" hint-placeholder-count="4">
+            <li style="{{i.rowStyle}}">
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+                <b style="font-size: 15px; line-height: 22px;">{{i.name}}</b>
+                <span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">{{i.meta}}</span>
+              </div>
+              <sc-if value="{{i.dup}}" hint-placeholder-val="{{false}}">
+                <x-import component-from-global-scope="ForestUI.Badge" tone="warning">Doublon probable</x-import>
+              </sc-if>
+              <x-import component-from-global-scope="ForestUI.Badge" tone="accent">Nouveau</x-import>
+            </li>
+          </sc-for>
+        </ul>
+      </section>
+
+      <section aria-labelledby="detail" style="flex: 1 1 460px; min-width: 0; background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column; gap: 18px;">
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+            <h2 id="detail" style="margin: 0; font-family: var(--font-display); font-size: 22px; line-height: 28px;">tomates cerises</h2>
+            <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">Créé par Léa hier, à l'import d'une recette · utilisé dans 1 recette</span>
+          </div>
+          <x-import component-from-global-scope="ForestUI.Badge" tone="accent">Nouveau</x-import>
+        </div>
+
+        <div role="note" style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 16px; border-radius: var(--radius-md); background: var(--warning-soft); color: var(--ink);">
+          <span style="flex: 1 1 240px; font-size: 14px; line-height: 20px;"><b>Doublon probable</b> de « tomate cerise » (vérifié, utilisé dans 7 recettes).</span>
+          <a href="A05b-Fusion-ingredient.dc.html" class="fm-btn fm-btn-secondary" style="text-decoration: none;">Fusionner…</a>
+        </div>
+
+        <fieldset style="border: 0; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+          <legend style="font-size: 14px; line-height: 20px; font-weight: 600; margin-bottom: 8px;">Noms par langue</legend>
+          <x-import component-from-global-scope="ForestUI.Field" label="Français (singulier)" default-value="tomates cerises" hint="Saisi au pluriel à l'import"></x-import>
+          <x-import component-from-global-scope="ForestUI.Field" label="Français (pluriel)" default-value=""></x-import>
+          <x-import component-from-global-scope="ForestUI.Field" label="Anglais (singulier)" default-value="" placeholder="cherry tomato" hint="Manquant"></x-import>
+          <x-import component-from-global-scope="ForestUI.Field" label="Anglais (pluriel)" default-value="" placeholder="cherry tomatoes"></x-import>
+        </fieldset>
+
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+          <div class="fm-field">
+            <label class="fm-label" for="aisle">Rayon</label>
+            <select id="aisle" class="fm-input"><option>Fruits et légumes</option><option>Épicerie salée</option><option>Surgelés</option></select>
+          </div>
+          <div class="fm-field">
+            <label class="fm-label" for="unit">Unité par défaut</label>
+            <select id="unit" class="fm-input"><option>g</option><option>pièce</option><option>barquette</option></select>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <span style="font-size: 14px; line-height: 20px; font-weight: 600;">Poids par unité</span>
+          <span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">Sert à additionner « 12 pièces » et « 200 g » dans une liste de courses.</span>
+          <div style="display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden;">
+            <div style="display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-bottom: 1px solid var(--line);"><span style="flex: 1; font-size: 15px;">1 pièce</span><span style="font-family: var(--font-mono); font-size: 14px;">= 15 g</span><x-import component-from-global-scope="ForestUI.IconButton" icon="pencil" label="Modifier le poids d'une pièce"></x-import></div>
+            <div style="display: flex; align-items: center; gap: 12px; padding: 8px 12px;"><span style="flex: 1; font-size: 15px;">1 barquette</span><span style="font-family: var(--font-mono); font-size: 14px;">= 250 g</span><x-import component-from-global-scope="ForestUI.IconButton" icon="pencil" label="Modifier le poids d'une barquette"></x-import></div>
+          </div>
+          <x-import component-from-global-scope="ForestUI.Button" variant="ghost" size="sm" icon="plus">Ajouter une unité</x-import>
+        </div>
+
+        <div style="display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; padding-top: 4px; border-top: 1px solid var(--line);">
+          <x-import component-from-global-scope="ForestUI.Button">Enregistrer</x-import>
+          <x-import component-from-global-scope="ForestUI.Button" variant="primary" icon="check">Marquer comme vérifié</x-import>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const row = 'display: flex; align-items: center; gap: 10px; padding: 12px 16px; min-height: 56px; box-sizing: border-box; border-bottom: 1px solid var(--line);';
+    const items = [
+      { name: 'tomates cerises', meta: 'par Léa, hier · 1 recette', dup: true, sel: true },
+      { name: 'cébette', meta: 'par Sam, il y a 2 jours · 2 recettes', dup: false },
+      { name: 'kecap manis', meta: 'par Noe, il y a 3 jours · 1 recette', dup: false },
+      { name: 'sumac', meta: 'par Claire, il y a 5 jours · 1 recette', dup: false }
+    ];
+    return {
+      yes: true,
+      items: items.map((i) => ({ ...i, rowStyle: row + (i.sel ? ' background: var(--accent-soft);' : '') }))
+    };
+  }
+}
+</script>
+</body>
+</html>

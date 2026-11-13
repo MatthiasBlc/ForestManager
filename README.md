@@ -26,13 +26,15 @@ Application de gestion de communautes pour le partage de recettes. Communautes p
 - **Ingredients normalises** : base d'ingredients avec unites, autocomplete intelligent
 - **Feed d'activite** : activite communautaire et personnelle
 - **Notifications temps reel** : 5 categories, preferences par communaute, WebSocket, groupement intelligent
+- **Planning de repas** : planning communautaire avec grille, verrouillage de slots, archives, idees de repas
+- **Generation automatique** : algorithme de generation avec parametres personnalisables, regles par tag/recette, exclusions, epinglages, frequences, cooldowns
 - **SuperAdmin** : dashboard admin isole, authentification 2FA (TOTP), gestion tags/ingredients/unites/communautes/features
 
 ## Stack technique
 
 | Couche          | Technologies                                                          |
 | --------------- | --------------------------------------------------------------------- |
-| Frontend        | React 18, TypeScript, Vite, TailwindCSS, daisyUI, React Router, Axios |
+| Frontend        | React 18, TypeScript, Vite, TailwindCSS, daisyUI, React Router, fetch |
 | Backend         | Node.js, Express, TypeScript, Prisma ORM, Socket.IO                   |
 | Base de donnees | PostgreSQL 15                                                         |
 | Stockage        | MinIO (compatible S3)                                                 |
@@ -203,7 +205,7 @@ ForestManager/
       pages/                # Pages React (Dashboard, Recipes, Communities, Profile...)
       components/           # Composants reutilisables (Layout, Navbar, modals, cards...)
       contexts/             # Contexts React (AuthContext, AdminAuthContext)
-      network/              # Client API (Axios)
+      network/              # Client API (fetch natif)
       models/               # Types TypeScript
       hooks/                # Custom hooks
   docker-compose.yml        # Configuration dev
@@ -224,7 +226,6 @@ Copier `.env.example` vers `.env` et renseigner les valeurs :
 | `POSTGRES_DB`          | Nom de la base de donnees                  | `forestmanager_db`      |
 | `PORT`                 | Port du backend                            | `3001`                  |
 | `SESSION_SECRET`       | Secret sessions utilisateur (min 32 chars) | -                       |
-| `ADMIN_SESSION_SECRET` | Secret sessions admin (min 32 chars)       | -                       |
 | `CORS_ORIGIN`          | Origine CORS autorisee                     | `http://localhost:3000` |
 | `VITE_BACKEND_URL`     | URL du backend (frontend)                  | `http://localhost:3001` |
 
@@ -241,23 +242,22 @@ L'application est deployee via Docker avec Traefik comme reverse proxy et Portai
 
 ### GitHub Secrets requis
 
-| Secret                 | Description                        |
-| ---------------------- | ---------------------------------- |
-| `REGISTRY_URL`         | URL du registry Docker             |
-| `REGISTRY_USERNAME`    | Utilisateur du registry            |
-| `REGISTRY_PASSWORD`    | Mot de passe du registry           |
-| `IMAGE_NAME`           | Prefixe des images Docker          |
-| `PORTAINER_URL`        | URL de Portainer                   |
-| `PORTAINER_API`        | Cle API Portainer                  |
-| `STACK_ID`             | ID de la stack Portainer           |
-| `ENDPOINT_ID`          | ID de l'endpoint Portainer         |
-| `POSTGRES_USER`        | Utilisateur PostgreSQL (prod)      |
-| `POSTGRES_PASSWORD`    | Mot de passe PostgreSQL (prod)     |
-| `POSTGRES_DB`          | Nom de la base (prod)              |
-| `SESSION_SECRET`       | Secret sessions utilisateur (prod) |
-| `ADMIN_SESSION_SECRET` | Secret sessions admin (prod)       |
-| `CORS_ORIGIN`          | Origine CORS autorisee (prod)      |
-| `API_URL`              | URL publique de l'API              |
+| Secret              | Description                        |
+| ------------------- | ---------------------------------- |
+| `REGISTRY_URL`      | URL du registry Docker             |
+| `REGISTRY_USERNAME` | Utilisateur du registry            |
+| `REGISTRY_PASSWORD` | Mot de passe du registry           |
+| `IMAGE_NAME`        | Prefixe des images Docker          |
+| `PORTAINER_URL`     | URL de Portainer                   |
+| `PORTAINER_API`     | Cle API Portainer                  |
+| `STACK_ID`          | ID de la stack Portainer           |
+| `ENDPOINT_ID`       | ID de l'endpoint Portainer         |
+| `POSTGRES_USER`     | Utilisateur PostgreSQL (prod)      |
+| `POSTGRES_PASSWORD` | Mot de passe PostgreSQL (prod)     |
+| `POSTGRES_DB`       | Nom de la base (prod)              |
+| `SESSION_SECRET`    | Secret sessions utilisateur (prod) |
+| `CORS_ORIGIN`       | Origine CORS autorisee (prod)      |
+| `API_URL`           | URL publique de l'API              |
 
 ### Pipeline CI/CD
 
@@ -289,24 +289,12 @@ Le script demande un username et un mot de passe, puis genere un QR code TOTP a 
 
 ## Documentation
 
-| Document                                           | Description                        |
-| -------------------------------------------------- | ---------------------------------- |
-| [Architecture](docs/mvp/ARCHITECTURE.md)           | Architecture technique et patterns |
-| [Specification API](docs/mvp/API_SPECIFICATION.md) | Contrat REST complet               |
-| [Regles metier](docs/mvp/BUSINESS_RULES.md)        | Regles metier detaillees           |
-| [User Stories](docs/mvp/USER_STORIES.md)           | Fonctionnalites utilisateur        |
-| [Roadmap MVP](docs/mvp/DEVELOPMENT_ROADMAP.md)     | Plan de developpement (archive)    |
+Toute la documentation projet est dans [`.claude/docs/`](.claude/docs/README.md) :
 
-### Features post-MVP
-
-| Feature            | Spec                                                                     | Description                                    |
-| ------------------ | ------------------------------------------------------------------------ | ---------------------------------------------- |
-| Tags Rework        | [SPEC](docs/features/tags-rework/SPEC_TAGS_REWORK.md)                    | Systeme de tags scope-aware (global/community) |
-| Ingredients Rework | [SPEC](docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md)      | Base ingredients avec unites et moderation     |
-| Recipe Rework v2   | [SPEC](docs/features/recipe-rework-v2/SPEC_RECIPE_REWORK_V2.md)          | Etapes numerotees, temps, portions             |
-| Notifications      | [SPEC](docs/features/notifications-rework/SPEC_NOTIFICATIONS_REWORK.md)  | Notifications temps reel (WebSocket)           |
-| Input Validation   | [SPEC](docs/features/input-validation-security/SPEC_INPUT_VALIDATION.md) | Validation et securite renforcees              |
-| Photo Upload       | [SPEC](docs/features/photo-upload/SPEC_PHOTO_UPLOAD.md)                  | Upload images via MinIO                        |
+| Dossier                                       | Contenu                                                |
+| --------------------------------------------- | ------------------------------------------------------ |
+| [Rework-V2](.claude/docs/Rework-V2/README.md) | Chantier en cours : analyse V1, cahier des charges V2  |
+| [V1](.claude/docs/V1/README.md)               | Archive : specs des features V1, references techniques |
 
 ## Auteur
 

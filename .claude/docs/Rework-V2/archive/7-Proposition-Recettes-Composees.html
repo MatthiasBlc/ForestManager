@@ -1,0 +1,333 @@
+<title>Recettes composees</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout : colonne de lecture, chaque demo est une maquette interactive dans un cadre "ecran" */
+:root {
+  --bg: #f3f5f2; --surface: #ffffff; --ink: #18221c; --muted: #5b6a60; --line: #d8dfd9;
+  --pine: #2f6b4a; --pine-soft: #e1eee6;
+  --link: #7a4a12; --link-soft: #f6ead8;
+  --warn: #9a6200; --warn-soft: #fbefd9;
+  --f-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111612; --surface: #182019; --ink: #e5ece6; --muted: #9aaa9f; --line: #2c372f;
+    --pine: #7cc49b; --pine-soft: #1f3327; --link: #e9b877; --link-soft: #34281a;
+    --warn: #e8bf6a; --warn-soft: #3a2f17; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111612; --surface: #182019; --ink: #e5ece6; --muted: #9aaa9f; --line: #2c372f;
+  --pine: #7cc49b; --pine-soft: #1f3327; --link: #e9b877; --link-soft: #34281a;
+  --warn: #e8bf6a; --warn-soft: #3a2f17; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 940px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 32px 64px; display: flex; flex-direction: column; gap: 48px; }
+h1, h2, h3 { font-family: var(--f-display); margin: 0; line-height: 1.15; text-wrap: balance; }
+h1 { font-size: clamp(28px, 4.5vw, 40px); }
+h2 { font-size: 23px; }
+h3 { font-size: 17px; font-weight: 500; }
+p { margin: 0; max-width: 70ch; }
+section { display: flex; flex-direction: column; gap: 14px; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+.lede { font-size: 17px; }
+.small { font-size: 13px; color: var(--muted); }
+.note { font-size: 13px; color: var(--muted); border-left: 2px solid var(--line); padding-left: 10px; }
+.screen { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.grow { flex: 1 1 auto; }
+.title { font-family: var(--f-display); font-size: 21px; font-weight: 700; }
+.chip { font-size: 12px; padding: 2px 9px; border-radius: 999px; background: var(--pine-soft); color: var(--pine); font-weight: 600; white-space: nowrap; }
+.chip.base { background: var(--link-soft); color: var(--link); }
+.chip.warn { background: var(--warn-soft); color: var(--warn); }
+button { font: inherit; cursor: pointer; }
+.btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 6px 12px; font-size: 13.5px; }
+.btn:hover { border-color: var(--pine); }
+.btn.primary { background: var(--pine); border-color: var(--pine); color: var(--surface); }
+.btn:focus-visible, .seg button:focus-visible { outline: 2px solid var(--pine); outline-offset: 2px; }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.stepper button { border: 0; background: var(--bg); color: var(--ink); width: 34px; height: 32px; font-size: 17px; }
+.stepper span { padding: 0 12px; font-variant-numeric: tabular-nums; font-weight: 600; min-width: 92px; text-align: center; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); color: var(--muted); padding: 6px 12px; font-size: 13px; }
+.seg button[aria-pressed="true"] { background: var(--pine); color: var(--surface); }
+.block { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.block > header { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 14px; background: var(--bg); }
+.block.rec { border-color: var(--link); }
+.block.rec > header { background: var(--link-soft); }
+.kind { font-family: var(--f-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.block.rec .kind { color: var(--link); }
+.bname { font-weight: 600; }
+.qty { font-family: var(--f-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
+.block .body { padding: 10px 14px 14px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 16px; }
+.block ul, .block ol { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; font-size: 14px; }
+.ing b { font-family: var(--f-mono); font-weight: 500; font-variant-numeric: tabular-nums; }
+.changed { background: var(--warn-soft); border-radius: 4px; padding: 0 3px; }
+.toggle { border: 0; background: transparent; color: var(--link); text-decoration: underline; font-size: 13px; padding: 0; }
+.twocol { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+.mini { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.mini h3 { font-size: 15.5px; font-weight: 700; }
+.list { display: flex; flex-direction: column; gap: 6px; }
+.pick { display: flex; flex-direction: column; gap: 6px; border: 1px dashed var(--line); border-radius: 10px; padding: 12px; }
+.pick button { text-align: left; }
+.shop { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; }
+.shop li { display: flex; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.shop li:last-child { border-bottom: 0; }
+.shop .q { font-family: var(--f-mono); font-variant-numeric: tabular-nums; min-width: 96px; }
+.shop .from { margin-left: auto; color: var(--muted); font-size: 12.5px; text-align: right; }
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.rule { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; background: var(--surface); display: flex; flex-direction: column; gap: 6px; }
+.choice { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.choice .rule.rec { border-color: var(--pine); box-shadow: 0 0 0 1px var(--pine) inset; }
+@media (max-width: 700px) {
+  .block .body, .twocol { grid-template-columns: minmax(0, 1fr); }
+  .stepper span { min-width: 74px; }
+}
+@media (prefers-reduced-motion: no-preference) { .changed { transition: background 0.3s; } }
+</style>
+
+<div class="wrap">
+
+<section>
+  <div class="eyebrow">Proposition - Rework V2 - maquette de principe, pas le design final</div>
+  <h1>Des recettes faites d'autres recettes</h1>
+  <p class="lede">Une recette devient une suite de <b>blocs</b>. Un bloc est soit <b>local</b> (ses propres ingredients et etapes), soit un <b>lien vers une autre recette</b> avec la quantite utilisee. Une recette simple garde un seul bloc local, et son ecran ne change pas.</p>
+  <p class="small">Chaque recette a un <b>rendement</b> : "4 personnes" par defaut, ou "300 ml" pour une sauce. Le lien dit combien on en utilise ; tout le reste se calcule.</p>
+</section>
+
+<section>
+  <div class="eyebrow">1. Lire une recette composee</div>
+  <h2>Saumon teriyaki et brocolis</h2>
+  <p>Change le nombre de personnes : la quantite de sauce suit, et les ingredients de la sauce aussi quand tu deplies le bloc.</p>
+  <div class="screen" id="demo1"></div>
+</section>
+
+<section>
+  <div class="eyebrow">2. Une meme sauce dans deux plats</div>
+  <h2>Corriger la sauce une fois</h2>
+  <p>La sauce teriyaki sert dans deux plats. Modifie-la et regarde ce que voient les deux plats selon le type de lien.</p>
+  <div class="screen" id="demo2"></div>
+</section>
+
+<section>
+  <div class="eyebrow">3. Composer sans rien reecrire</div>
+  <h2>Escalope milanaise et compotee de tomates cerises</h2>
+  <p>On part d'une recette vide et on ajoute des blocs : des liens vers deux recettes existantes, puis un bloc local pour le dressage.</p>
+  <div class="screen" id="demo3"></div>
+</section>
+
+<section>
+  <div class="eyebrow">4. Liste de courses</div>
+  <h2>Les liens se deplient pour les courses</h2>
+  <p>Semaine avec "Poulet teriyaki et riz" pour 4 et "Saumon teriyaki et brocolis" pour 2. La liste additionne les vrais ingredients, sauce comprise.</p>
+  <div class="screen" id="demo4"></div>
+</section>
+
+<section>
+  <div class="eyebrow">5. Regles</div>
+  <h2>Ce qui encadre les liens</h2>
+  <div class="rules">
+    <div class="rule"><h3>Pas de boucle</h3><p class="small">Une recette ne peut pas se contenir elle-meme, meme par une chaine. Trois niveaux au maximum (plat -> sauce -> fond).</p></div>
+    <div class="rule"><h3>Partage</h3><p class="small">Partager un plat partage ses sous-recettes ; l'ecran de partage les liste avant de valider (decision prise).</p></div>
+    <div class="rule"><h3>Suppression</h3><p class="small">"Sauce teriyaki est utilisee dans 2 recettes." Si on supprime quand meme, les plats affichent "recette supprimee" et proposent de recuperer son contenu en bloc local.</p></div>
+    <div class="rule"><h3>Recette de base</h3><p class="small">Une sauce peut etre marquee "base" : on la trouve et on la lie, mais le generateur de planning ne la propose pas comme repas.</p></div>
+    <div class="rule"><h3>Suggestions</h3><p class="small">Sur un plat, on suggere sur ses blocs et ses liens (quantite, ajout, retrait). Le contenu de la sauce se suggere sur la sauce.</p></div>
+    <div class="rule"><h3>Adaptation</h3><p class="small">Pour une sauce differente dans un plat, on adapte la sauce et on fait pointer le lien vers l'adaptation.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">6. A trancher</div>
+  <h2>Quel lien veux-tu ?</h2>
+  <div class="choice">
+    <div class="rule rec"><span class="chip">Recommande</span><h3>Lien vivant</h3><p class="small">Le plat montre toujours la sauce actuelle. C'est ce qui repond a "la meme sauce partout".</p></div>
+    <div class="rule"><h3>Lien fige</h3><p class="small">Le plat garde la version du moment ; un badge propose la nouvelle. Stable, mais il faut mettre a jour chaque plat a la main.</p></div>
+    <div class="rule"><h3>Blocs locaux d'abord</h3><p class="small">V2.0 avec sections locales seulement ; les liens en V2.1, le modele etant prevu pour.</p></div>
+  </div>
+</section>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var R = {
+    teriyaki: { name: "Sauce teriyaki", base: true, yield: 300, unit: "ml",
+      ing: [["sauce soja", 100, "ml"], ["mirin", 60, "ml"], ["eau", 80, "ml"], ["sucre", 2, "c. a soupe"], ["gingembre frais", 10, "g"], ["ail", 1, "gousse"], ["fecule de mais", 1, "c. a cafe"]],
+      steps: ["Melanger soja, mirin, eau et sucre dans une casserole.", "Ajouter gingembre et ail rapes, porter a fremissement.", "Lier avec la fecule delayee, cuire 2 min."] },
+    escalope: { name: "Escalope milanaise", yield: 4, unit: "pers.",
+      ing: [["escalope de veau", 4, "piece"], ["farine", 50, "g"], ["oeuf", 2, "piece"], ["chapelure", 100, "g"], ["parmesan rape", 40, "g"], ["beurre", 40, "g"]],
+      steps: ["Aplatir les escalopes.", "Paner : farine, oeuf battu, chapelure et parmesan.", "Cuire au beurre 3 min par face."] },
+    compotee: { name: "Compotee de tomates cerises", yield: 4, unit: "pers.",
+      ing: [["tomate cerise", 500, "g"], ["huile d'olive", 2, "c. a soupe"], ["sucre", 1, "c. a cafe"], ["thym", 2, "brin"]],
+      steps: ["Faire revenir les tomates dans l'huile.", "Ajouter sucre et thym, compoter 15 min a feu doux."] }
+  };
+  var DISHES = {
+    saumon: { name: "Saumon teriyaki et brocolis", yield: 2, unit: "pers.", blocks: [
+      { kind: "rec", ref: "teriyaki", qty: 150 },
+      { kind: "loc", title: "Saumon et brocolis", ing: [["pave de saumon", 2, "piece"], ["brocoli", 300, "g"]], steps: ["Cuire les brocolis 6 min a la vapeur.", "Saisir le saumon 3 min par face."] },
+      { kind: "loc", title: "Assemblage", ing: [["sesame", 1, "c. a soupe"]], steps: ["Napper le saumon de sauce.", "Parsemer de sesame, servir avec les brocolis."] } ] },
+    poulet: { name: "Poulet teriyaki et riz", yield: 4, unit: "pers.", blocks: [
+      { kind: "rec", ref: "teriyaki", qty: 200 },
+      { kind: "loc", title: "Poulet et riz", ing: [["blanc de poulet", 600, "g"], ["riz", 300, "g"], ["huile neutre", 1, "c. a soupe"]], steps: ["Cuire le riz.", "Dorer le poulet en morceaux."] },
+      { kind: "loc", title: "Assemblage", ing: [], steps: ["Laquer le poulet avec la sauce 3 min."] } ] }
+  };
+
+  function fmt(n) {
+    var r = Math.round(n * 10) / 10;
+    return String(r).replace(".", ",");
+  }
+  function plural(unit, n) {
+    if (unit === "piece" || unit === "gousse" || unit === "brin") return n > 1 ? unit + "s" : unit;
+    return unit;
+  }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function ingLi(i, f, hl) {
+    var q = i[1] * f;
+    return '<li class="ing' + (hl ? ' changed' : '') + '"><b>' + fmt(q) + " " + esc(plural(i[2], q)) + "</b> " + esc(i[0]) + "</li>";
+  }
+  function blockHtml(b, f, open, id, extra) {
+    if (b.kind === "rec") {
+      var s = R[b.ref], used = b.qty * f, sf = used / s.yield;
+      var h = '<div class="block rec"><header><span class="kind">Recette liee</span><span class="bname">' + esc(s.name) + '</span>' +
+        (s.base ? '<span class="chip base">base</span>' : '') + (extra || '') +
+        '<span class="grow"></span><span class="qty">' + fmt(used) + " " + esc(s.unit) + (s.unit === "ml" ? " (rend " + s.yield + " ml)" : "") + '</span>' +
+        '<button class="toggle" type="button" data-toggle="' + id + '">' + (open ? "Replier" : "Deplier") + "</button></header>";
+      if (open) {
+        h += '<div class="body"><ul>' + s.ing.map(function (i) { return ingLi(i, sf, i.hl); }).join("") + "</ul><ol>" +
+          s.steps.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + "</ol></div>";
+      }
+      return h + "</div>";
+    }
+    return '<div class="block"><header><span class="kind">Bloc local</span><span class="bname">' + esc(b.title) + '</span></header><div class="body"><ul>' +
+      (b.ing.length ? b.ing.map(function (i) { return ingLi(i, f); }).join("") : '<li class="small">aucun ingredient</li>') + "</ul><ol>" +
+      b.steps.map(function (t) { return "<li>" + esc(t) + "</li>"; }).join("") + "</ol></div></div>";
+  }
+
+  /* Demo 1 */
+  var d1 = { servings: 2, open: { b0: true } };
+  function render1() {
+    var dish = DISHES.saumon, f = d1.servings / dish.yield;
+    var h = '<div class="row"><span class="title grow">' + esc(dish.name) + '</span>' +
+      '<div class="stepper" role="group" aria-label="Nombre de personnes"><button type="button" data-d1="-" aria-label="Moins">-</button><span>' + d1.servings + " pers.</span>" +
+      '<button type="button" data-d1="+" aria-label="Plus">+</button></div></div><div class="list">';
+    dish.blocks.forEach(function (b, i) { h += blockHtml(b, f, !!d1.open["b" + i], "b" + i); });
+    document.getElementById("demo1").innerHTML = h + '</div><p class="note">Le lien affiche la quantite de sauce pour ce plat. Deplie, il montre les ingredients de la sauce deja mis a l\'echelle.</p>';
+  }
+  document.getElementById("demo1").addEventListener("click", function (e) {
+    var t = e.target.closest("button"); if (!t) return;
+    if (t.dataset.d1 === "+") d1.servings = Math.min(12, d1.servings + 1);
+    if (t.dataset.d1 === "-") d1.servings = Math.max(1, d1.servings - 1);
+    if (t.dataset.toggle) d1.open[t.dataset.toggle] = !d1.open[t.dataset.toggle];
+    render1();
+  });
+
+  /* Demo 2 */
+  var d2 = { mode: "live", edited: false };
+  function sauceVersion(edited) {
+    return R.teriyaki.ing.map(function (i) {
+      if (edited && i[0] === "sucre") { var n = ["miel", 2, "c. a soupe"]; n.hl = true; return n; }
+      return i;
+    });
+  }
+  function render2() {
+    var current = sauceVersion(d2.edited);
+    var h = '<div class="row"><div class="seg" role="group" aria-label="Type de lien">' +
+      '<button type="button" data-mode="live" aria-pressed="' + (d2.mode === "live") + '">Lien vivant</button>' +
+      '<button type="button" data-mode="frozen" aria-pressed="' + (d2.mode === "frozen") + '">Lien fige</button></div><span class="grow"></span>' +
+      '<button type="button" class="btn ' + (d2.edited ? "" : "primary") + '" data-edit="1">' + (d2.edited ? "Annuler la modification" : "Remplacer le sucre par du miel") + "</button></div>";
+    h += '<div class="mini"><div class="row"><h3 class="grow">Sauce teriyaki</h3><span class="chip base">base</span><span class="small">' + (d2.edited ? "revision 2" : "revision 1") + '</span></div><ul class="shop">' +
+      current.map(function (i) { return '<li class="' + (i.hl ? "changed" : "") + '"><span class="q">' + fmt(i[1]) + " " + esc(plural(i[2], i[1])) + "</span>" + esc(i[0]) + "</li>"; }).join("") + "</ul></div>";
+    h += '<div class="twocol">';
+    ["poulet", "saumon"].forEach(function (k) {
+      var dish = DISHES[k], b = dish.blocks[0], seen = d2.mode === "live" ? current : sauceVersion(false);
+      var sf = b.qty / R.teriyaki.yield;
+      var badge = d2.mode === "frozen" && d2.edited ? '<span class="chip warn">nouvelle version de la sauce</span>' : (d2.mode === "live" && d2.edited ? '<span class="chip">a jour</span>' : "");
+      h += '<div class="mini"><h3>' + esc(dish.name) + '</h3><div class="row"><span class="small grow">Sauce teriyaki, ' + b.qty + " ml</span>" + badge + '</div><ul class="shop">' +
+        seen.filter(function (i) { return i[0] === "sucre" || i[0] === "miel" || i[0] === "sauce soja"; })
+          .map(function (i) { return '<li class="' + (i.hl && d2.mode === "live" ? "changed" : "") + '"><span class="q">' + fmt(i[1] * sf) + " " + esc(i[2]) + "</span>" + esc(i[0]) + "</li>"; }).join("") +
+        "</ul>" + (d2.mode === "frozen" && d2.edited ? '<button type="button" class="btn" disabled>Passer a la nouvelle version</button>' : "") + "</div>";
+    });
+    h += "</div>";
+    h += '<p class="note">' + (d2.mode === "live"
+      ? "Lien vivant : les deux plats voient tout de suite le miel. Une seule correction, partout."
+      : "Lien fige : chaque plat garde le sucre et affiche un badge ; il faut passer chaque plat a la nouvelle version a la main.") + "</p>";
+    document.getElementById("demo2").innerHTML = h;
+  }
+  document.getElementById("demo2").addEventListener("click", function (e) {
+    var t = e.target.closest("button"); if (!t || t.disabled) return;
+    if (t.dataset.mode) d2.mode = t.dataset.mode;
+    if (t.dataset.edit) d2.edited = !d2.edited;
+    render2();
+  });
+
+  /* Demo 3 */
+  var d3 = { blocks: [], picking: false, open: {} };
+  var CATALOG = [["escalope", 4], ["compotee", 4], ["teriyaki", 100]];
+  function render3() {
+    var h = '<div class="row"><span class="title grow">Escalope milanaise et compotee de tomates cerises</span><span class="chip">4 pers.</span></div><div class="list">';
+    if (!d3.blocks.length) h += '<p class="small">Recette vide. Ajoute un premier bloc.</p>';
+    d3.blocks.forEach(function (b, i) {
+      var rm = ' <button type="button" class="toggle" data-rm="' + i + '">Retirer</button>';
+      if (b.kind === "rec") h += blockHtml(b, 1, !!d3.open["c" + i], "c" + i, rm);
+      else h += blockHtml(b, 1, true, "c" + i);
+    });
+    h += "</div>";
+    if (d3.picking) {
+      h += '<div class="pick"><span class="small">Lier une recette existante (recherche dans tes espaces)</span>' +
+        CATALOG.map(function (c) {
+          var s = R[c[0]];
+          return '<button type="button" class="btn" data-add="' + c[0] + '" data-q="' + c[1] + '">' + esc(s.name) + ' <span class="small">- rend ' + s.yield + " " + esc(s.unit) + "</span></button>";
+        }).join("") + '<button type="button" class="toggle" data-cancel="1">Annuler</button></div>';
+    } else {
+      var hasLocal = d3.blocks.some(function (b) { return b.kind === "loc"; });
+      h += '<div class="row"><button type="button" class="btn primary" data-pick="1">+ Lier une recette</button>' +
+        (hasLocal ? "" : '<button type="button" class="btn" data-local="1">+ Bloc local "Dressage"</button>') + "</div>";
+    }
+    document.getElementById("demo3").innerHTML = h;
+  }
+  document.getElementById("demo3").addEventListener("click", function (e) {
+    var t = e.target.closest("button"); if (!t) return;
+    if (t.dataset.pick) d3.picking = true;
+    if (t.dataset.cancel) d3.picking = false;
+    if (t.dataset.add) { d3.blocks.push({ kind: "rec", ref: t.dataset.add, qty: Number(t.dataset.q) }); d3.picking = false; }
+    if (t.dataset.local) d3.blocks.push({ kind: "loc", title: "Dressage", ing: [["roquette", 60, "g"], ["citron", 1, "piece"]], steps: ["Dresser l'escalope, la compotee a cote.", "Ajouter la roquette et un quartier de citron."] });
+    if (t.dataset.rm) d3.blocks.splice(Number(t.dataset.rm), 1);
+    if (t.dataset.toggle) d3.open[t.dataset.toggle] = !d3.open[t.dataset.toggle];
+    render3();
+  });
+
+  /* Demo 4 */
+  function expand(dish, servings) {
+    var out = [], f = servings / dish.yield;
+    dish.blocks.forEach(function (b) {
+      if (b.kind === "rec") {
+        var s = R[b.ref], sf = (b.qty * f) / s.yield;
+        s.ing.forEach(function (i) { out.push([i[0], i[1] * sf, i[2], dish.name + " (via " + s.name + ")"]); });
+      } else b.ing.forEach(function (i) { out.push([i[0], i[1] * f, i[2], dish.name]); });
+    });
+    return out;
+  }
+  function render4() {
+    var all = expand(DISHES.poulet, 4).concat(expand(DISHES.saumon, 2)), agg = {}, order = [];
+    all.forEach(function (i) {
+      var k = i[0] + "|" + i[2];
+      if (!agg[k]) { agg[k] = { name: i[0], unit: i[2], q: 0, from: [] }; order.push(k); }
+      agg[k].q += i[1];
+      if (agg[k].from.indexOf(i[3]) < 0) agg[k].from.push(i[3]);
+    });
+    var h = '<ul class="shop">' + order.map(function (k) {
+      var a = agg[k];
+      return '<li><span class="q">' + fmt(a.q) + " " + esc(plural(a.unit, a.q)) + "</span><span>" + esc(a.name) + '</span><span class="from">' + esc(a.from.join(" + ")) + "</span></li>";
+    }).join("") + "</ul>";
+    document.getElementById("demo4").innerHTML = h + '<p class="note">350 ml de sauce au total (200 + 150) : la liste en deduit 116,7 ml de soja, 70 ml de mirin, etc. Les conversions d\'unites viendront avec le module courses.</p>';
+  }
+
+  render1(); render2(); render3(); render4();
+})();
+</script>

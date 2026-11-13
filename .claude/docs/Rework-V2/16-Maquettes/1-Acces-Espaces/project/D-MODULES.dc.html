@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Modules - bureau</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="fm-root" data-space="1" style="container-type: inline-size; min-height: 900px; display: flex; flex-wrap: wrap; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+<div style="display: flex; flex: 0 0 auto;">
+<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="famille"></x-import>
+</div>
+<div style="display: flex; flex: 0 0 240px; min-height: 900px;">
+<x-import component-from-global-scope="ForestUI.ModuleNav" space-name="Famille" subtitle="6 membres" items="{{nav}}" active-id="settings" style="width: 100%;"></x-import>
+</div>
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column;">
+<x-import component-from-global-scope="ForestUI.TopBar" title="Modules" unread="{{unread}}" user="Matthias"></x-import>
+<main style="padding: 24px; display: flex; flex-direction: column; gap: 18px; max-width: 1040px;">
+<div style="display: flex; flex-direction: column; gap: 6px;">
+<h1 style="margin: 0; font: 700 26px/32px var(--font-display);">Modules de Famille</h1>
+<p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">Active ou désactive les modules accordés à Famille. Désactiver un module le cache pour tous ; ses données sont gardées.</p>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: var(--radius-lg); background: var(--surface-raised); border: 1px solid var(--line);">
+<div style="display: flex; gap: 12px; align-items: center;"><span style="width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--accent-soft); color: var(--accent-text); display: grid; place-items: center;"><x-import component-from-global-scope="ForestUI.Icon" name="book-open"></x-import></span><h2 style="flex: 1; margin: 0; font: 600 17px/22px var(--font-display);">Recettes</h2><x-import component-from-global-scope="ForestUI.Badge" tone="success">Inclus</x-import></div>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted);">Les recettes de l'espace, leurs partages et adaptations.</p>
+</section>
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: var(--radius-lg); background: var(--surface-raised); border: 1px solid var(--line);">
+<div style="display: flex; gap: 12px; align-items: center;"><span style="width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--accent-soft); color: var(--accent-text); display: grid; place-items: center;"><x-import component-from-global-scope="ForestUI.Icon" name="calendar"></x-import></span><h2 style="flex: 1; margin: 0; font: 600 17px/22px var(--font-display);">Planning des repas</h2><x-import component-from-global-scope="ForestUI.Badge" tone="accent">Accordé</x-import></div>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted);">Accordé le 12 septembre. Les repas de la semaine, à la main ou générés.</p>
+<x-import component-from-global-scope="ForestUI.Switch" label="Actif pour les membres" default-checked="{{yes}}"></x-import>
+</section>
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: var(--radius-lg); background: var(--surface); border: 1px solid var(--line);">
+<div style="display: flex; gap: 12px; align-items: center;"><span style="width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--surface-raised); color: var(--ink-muted); display: grid; place-items: center;"><x-import component-from-global-scope="ForestUI.Icon" name="shopping-basket"></x-import></span><h2 style="flex: 1; margin: 0; font: 600 17px/22px var(--font-display);">Liste de courses</h2><x-import component-from-global-scope="ForestUI.Badge" tone="warning">Bientôt</x-import></div>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted);">La liste tirée du planning, rangée par rayon. Tu pourras la demander à sa sortie.</p>
+</section>
+<section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: var(--radius-lg); background: var(--surface); border: 1px solid var(--line);">
+<div style="display: flex; gap: 12px; align-items: center;"><span style="width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--surface-raised); color: var(--ink-muted); display: grid; place-items: center;"><x-import component-from-global-scope="ForestUI.Icon" name="sparkles"></x-import></span><h2 style="flex: 1; margin: 0; font: 600 17px/22px var(--font-display);">Listes de films</h2><x-import component-from-global-scope="ForestUI.Badge" tone="warning">Bientôt</x-import></div>
+<p style="margin: 0; font-size: 14px; line-height: 20px; color: var(--ink-muted);">Ce que vous voulez regarder ensemble, et où le voir.</p>
+</section>
+</div>
+</main>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+yes: true, unread: 2,
+me: { id: 'me', name: 'Matthias' },
+spaces: [
+{ id: 'foyer', name: 'Foyer', tint: 5 },
+{ id: 'famille', name: 'Famille', tint: 1 },
+{ id: 'colloc', name: 'Colloc', tint: 2 },
+{ id: 'tom', name: 'TOM', tint: 3 },
+{ id: 'amis', name: 'Amis', tint: 4 }
+],
+nav: [
+{ id: 'recipes', label: 'Recettes', icon: 'book-open' },
+{ id: 'plan', label: 'Planning', icon: 'calendar' },
+{ id: 'members', label: 'Membres', icon: 'users' },
+{ id: 'settings', label: 'Réglages', icon: 'settings' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

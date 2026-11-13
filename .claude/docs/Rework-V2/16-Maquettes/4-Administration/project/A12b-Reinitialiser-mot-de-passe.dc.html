@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Réinitialiser un mot de passe</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div class="fm-root" style="min-height: 1000px; display: flex; flex-wrap: wrap; align-items: stretch; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+  <dc-import name="AdminNav" active="users" hint-size="248px,1000px"></dc-import>
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px; max-width: 1192px;">
+    <h1 style="margin: 0; font-family: var(--font-display); font-size: 26px; line-height: 32px;">Utilisateurs</h1>
+    <article style="background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 16px 20px; display: flex; align-items: center; gap: 12px;">
+      <x-import component-from-global-scope="ForestUI.Avatar" name="Sam" size="{{n36}}"></x-import>
+      <div style="display: flex; flex-direction: column;">
+        <b style="font-size: 15px; line-height: 22px;">Sam</b>
+        <span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">sam@exemple.fr · Famille, Colloc</span>
+      </div>
+    </article>
+  </main>
+  <x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" title="Nouveau mot de passe pour Sam" on-close="{{noop}}">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">Un mot de passe temporaire a été généré. Transmets-le à Sam toi-même, de vive voix ou par message : il ne sera plus affiché après fermeture.</p>
+      <div style="display: flex; gap: 8px; align-items: center; padding: 12px 14px; border-radius: var(--radius-md); background: var(--surface); border: 1px solid var(--line-strong);">
+        <code aria-label="Mot de passe temporaire" style="flex: 1; font-family: var(--font-mono); font-size: 20px; line-height: 28px; letter-spacing: 0.06em;">tison-7342-cendre</code>
+        <x-import component-from-global-scope="ForestUI.Button" size="sm">Copier</x-import>
+      </div>
+      <ul style="margin: 0; padding-left: 20px; font-size: 14px; line-height: 20px; display: flex; flex-direction: column; gap: 4px;">
+        <li>Valable 24 heures, une seule fois : à la connexion, Sam choisit son propre mot de passe.</li>
+        <li>Son mot de passe actuel reste valable jusque-là ; ensuite, ses autres sessions sont fermées.</li>
+        <li>Enregistré dans le journal d'audit.</li>
+      </ul>
+    </div>
+    <x-import component-from-global-scope="ForestUI.SheetFooter">
+      <a href="A12-Utilisateurs.dc.html" class="fm-btn fm-btn-primary" style="text-decoration: none;">C'est transmis</a>
+    </x-import>
+  </x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { yes: true, n36: 36, noop: () => {} };
+  }
+}
+</script>
+</body>
+</html>

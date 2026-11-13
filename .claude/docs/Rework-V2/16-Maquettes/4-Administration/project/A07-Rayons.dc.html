@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Rayons</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div class="fm-root" style="min-height: 1000px; display: flex; flex-wrap: wrap; align-items: stretch; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+  <dc-import name="AdminNav" active="rayons" hint-size="248px,1000px"></dc-import>
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px; max-width: 960px;">
+    <header style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px;">
+      <div style="flex: 1 1 360px; display: flex; flex-direction: column; gap: 4px;">
+        <h1 style="margin: 0; font-family: var(--font-display); font-size: 26px; line-height: 32px;">Rayons</h1>
+        <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">Chaque ingrédient a un rayon par défaut. L'ordre ci-dessous est celui de la liste de courses, comme un parcours en magasin.</p>
+      </div>
+      <x-import component-from-global-scope="ForestUI.Button" icon="plus">Ajouter un rayon</x-import>
+    </header>
+    <ol style="list-style: none; margin: 0; padding: 0; background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden;">
+      <sc-for list="{{aisles}}" as="a" hint-placeholder-count="9">
+        <li style="display: flex; align-items: center; gap: 12px; padding: 6px 8px 6px 16px; min-height: 56px; box-sizing: border-box; border-bottom: 1px solid var(--line);">
+          <span style="width: 24px; font-family: var(--font-mono); font-size: 13px; color: var(--ink-muted); font-variant-numeric: tabular-nums;">{{a.pos}}</span>
+          <div style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
+            <b style="font-size: 15px; line-height: 22px;">{{a.fr}}</b>
+            <span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">{{a.en}} · {{a.count}} ingrédients</span>
+          </div>
+          <x-import component-from-global-scope="ForestUI.IconButton" icon="chevron-down" label="Descendre {{a.fr}}"></x-import>
+          <x-import component-from-global-scope="ForestUI.IconButton" icon="pencil" label="Modifier {{a.fr}}"></x-import>
+        </li>
+      </sc-for>
+    </ol>
+    <div role="note" style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 14px 16px; border-radius: var(--radius-md); background: var(--warning-soft);">
+      <span style="flex: 1 1 260px; font-size: 14px; line-height: 20px;"><b>12 ingrédients sans rayon.</b> Ils apparaîtront dans « Autres » en fin de liste de courses.</span>
+      <a href="A05-Ingredients.dc.html" class="fm-btn fm-btn-secondary" style="text-decoration: none;">Les classer</a>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const list = [
+      ['Fruits et légumes', 'Fruit and vegetables', 96], ['Boulangerie', 'Bakery', 11], ['Boucherie', 'Butcher', 34], ['Poissonnerie', 'Fishmonger', 18],
+      ['Crèmerie', 'Dairy', 41], ['Épicerie salée', 'Savoury groceries', 128], ['Épicerie sucrée', 'Sweet groceries', 57], ['Surgelés', 'Frozen', 9], ['Boissons', 'Drinks', 15]
+    ];
+    return { aisles: list.map((a, i) => ({ pos: i + 1, fr: a[0], en: a[1], count: a[2] })) };
+  }
+}
+</script>
+</body>
+</html>

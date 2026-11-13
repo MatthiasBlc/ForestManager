@@ -1,0 +1,649 @@
+/* Complements propres a l'application (le design system ne les fournit pas). */
+
+/* Pile des toasts : en bas, au-dessus de la barre d'onglets sur mobile. */
+.fm-toasts {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--size-tabbar) + var(--space-4) + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: var(--z-toast, 60);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(100vw - 2 * var(--space-4), 420px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  outline: none;
+}
+@media (min-width: 768px) {
+  .fm-toasts {
+    bottom: var(--space-6);
+  }
+}
+
+/* Taille du texte (Profil > Apparence, D158) : le design system est en px, on agrandit
+   l'interface entiere comme un zoom, les requetes de conteneur s'adaptent. */
+body {
+  zoom: var(--text-scale, 1);
+}
+
+/* Densite compacte (D158) : espacements resserres ; les cibles tactiles restent a 44px. */
+[data-density="compact"] {
+  --space-3: 10px;
+  --space-4: 12px;
+  --space-5: 16px;
+  --space-6: 20px;
+}
+
+/* "Plus" de la barre d'onglets est un bouton (il ouvre une feuille) : meme rendu qu'un onglet. */
+.fm-tabbar button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--size-tabbar);
+  color: var(--ink-muted);
+  background: none;
+  border: 0;
+  font: 600 12px/16px var(--font-sans);
+  cursor: pointer;
+}
+.fm-tabbar button[aria-current="page"] {
+  color: var(--accent-text);
+}
+
+/* Le shell occupe tout l'ecran. */
+html,
+body,
+#root {
+  height: 100%;
+}
+/* Bandeaux (hors ligne) au-dessus, le shell prend le reste. */
+#root {
+  display: flex;
+  flex-direction: column;
+}
+#root > .fm-shell,
+#root > .fm-root:last-child {
+  flex: 1;
+  min-height: 0;
+}
+
+/* Page avec ses propres barres (detail, editeur : PageChrome) : sur mobile, l'en-tete
+   de la page remplace le rail comme le selecteur d'espace (D130). */
+.fm-shell-grid:has(> .contents > .fm-top) > .fm-rail {
+  display: none;
+}
+@container (min-width: 768px) {
+  .fm-shell-grid:has(> .contents > .fm-top) > .fm-rail {
+    display: flex;
+  }
+}
+
+/* Etapes numerotees (le reset de Tailwind retire les puces des listes). */
+.fm-block-body ol {
+  list-style: decimal;
+}
+
+/* Vignette d'espace a cote du choix de la photo (F-CREER-ESPACE, reglages). */
+.fm-space.fm-space-lg {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-lg);
+  font-size: 26px;
+}
+
+/* Barres propres a une page (PageChrome, D100) : `fm-page-top` prend la place de
+   l'en-tete du shell, `fm-page-bar` celle des onglets ; en bureau la barre reste,
+   sous le contenu (mode cuisine). `fm-mobile-only` / `fm-wide-only` : un seul des
+   deux emplacements d'une action est visible (Mode cuisine du detail). */
+.fm-shell-grid > * > .fm-page-top {
+  grid-area: top;
+}
+.fm-shell-grid > * > .fm-page-bar {
+  grid-area: tabbar;
+}
+.fm-wide-only {
+  display: none !important;
+}
+/* Sur mobile, une page a en-tete propre masque le rail (comme D130). */
+@container (max-width: 767.98px) {
+  .fm-shell-grid:has(> * > .fm-page-top) > .fm-rail,
+  .fm-shell-grid:has(> * > .fm-page-top) > * > .fm-rail {
+    display: none;
+  }
+}
+@container (min-width: 768px) {
+  .fm-shell-grid:has(> * > .fm-page-bar:not(.fm-mobile-only)) {
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: "rail top" "rail main" "rail tabbar";
+  }
+  .fm-shell-grid > * > .fm-page-bar {
+    grid-column: -2 / -1;
+    grid-row: 3;
+  }
+  .fm-shell-grid > * > .fm-page-top {
+    grid-column: -2 / -1;
+    grid-row: 1;
+  }
+  .fm-mobile-only {
+    display: none !important;
+  }
+  .fm-wide-only {
+    display: inline-flex !important;
+  }
+}
+@container (min-width: 1024px) {
+  .fm-shell-grid:has(> * > .fm-page-bar:not(.fm-mobile-only)) {
+    grid-template-areas: "rail nav top" "rail nav main" "rail nav tabbar";
+  }
+}
+
+/* ActionMenu pose dans une feuille (ActionList) : ni cadre ni ombre. */
+.fm-menu-flat {
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.fm-menu-flat button:disabled {
+  color: var(--ink-muted);
+  cursor: not-allowed;
+  background: transparent;
+}
+
+/* E-SUGGESTION-EDITION : lignes et etapes modifiees ou ajoutees. */
+.fm-mark-changed,
+.fm-mark-added {
+  margin-inline: calc(-1 * var(--space-3));
+  padding: var(--space-1) var(--space-3);
+}
+.fm-mark-changed {
+  background: var(--warning-soft);
+}
+.fm-mark-added {
+  background: var(--success-soft);
+}
+.fm-mark {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+
+/* Tableaux de l'administration (A03, A04, A11...) : lignes separees, en-tete discret. */
+/* position: relative : les libelles masques (.fm-sr) restent dans le tableau, qui
+   defile seul sur mobile, au lieu d'elargir la page. */
+.fm-table {
+  position: relative;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 20px;
+}
+.fm-table th {
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--ink-muted);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+/* En-tete de ligne (nom du tag, de l'espace...) : texte normal, pas le gris des colonnes. */
+.fm-table tbody th {
+  padding: 10px 12px;
+  color: var(--ink);
+  white-space: normal;
+  vertical-align: middle;
+}
+.fm-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+/* Case de repas dans la grille de bureau : colonnes etroites, le titre passe a la ligne
+   (3 lignes au plus) et les marques (portions, verrou) vont dessous. */
+.fm-slot-compact {
+  flex-wrap: wrap;
+  align-items: flex-start;
+  align-content: flex-start;
+  gap: var(--space-1) var(--space-2);
+  min-height: 72px;
+  padding: var(--space-2);
+  font-size: 13px;
+  line-height: 18px;
+}
+.fm-slot-compact > span {
+  flex-basis: 100%;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+/* Repas hors grille (accueil) : le moment a droite, discret. */
+/* Repas-recette en lien [D204] : pas de soulignement, pas de bulle native a l'appui long
+   (iOS), pas de selection du texte pendant le geste. */
+a.fm-slot {
+  text-decoration: none;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.fm-slot-when {
+  margin-left: auto;
+  flex: none;
+  font-weight: 500;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+.fm-slot-compact.fm-slot-empty {
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+}
+
+/* Glisser pour echanger [D204], style "Trello" : la case prise reste en creux, sa copie
+   soulevee suit le pointeur, la case survolee s'eclaire, l'echange s'anime. */
+.fm-slot[data-drag-id] {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.fm-slot[data-drag-lifted] {
+  transform: scale(1.03);
+  box-shadow: var(--shadow-md);
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.fm-slot[data-drag-source] {
+  opacity: 0.35;
+  border-style: dashed;
+  border-color: var(--line-strong);
+}
+.fm-slot[data-drop-over] {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  background: var(--accent-soft);
+}
+.fm-drag-ghost {
+  position: fixed;
+  z-index: 1000;
+  margin: 0;
+  pointer-events: none;
+  cursor: grabbing;
+  box-shadow: var(--shadow-md);
+  transform: translate(var(--fm-drag-x, 0), var(--fm-drag-y, 0)) rotate(2deg) scale(1.03);
+}
+.fm-slot-swapped {
+  animation: fm-slot-swap 0.35s ease-out;
+}
+@keyframes fm-slot-swap {
+  from {
+    transform: scale(0.92);
+    opacity: 0.4;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fm-slot[data-drag-lifted] {
+    transition: none;
+  }
+  .fm-slot-swapped {
+    animation: none;
+  }
+  .fm-drag-ghost {
+    transform: translate(var(--fm-drag-x, 0), var(--fm-drag-y, 0));
+  }
+}
+
+/* Stepper a sa taille dans une colonne flex (champ du formulaire), comme dans l'editeur de
+   recette, au lieu de s'etirer sur toute la largeur. */
+.fm-stepper {
+  align-self: flex-start;
+}
+
+/* PullToRefresh de l'application (D186) : defilement vertical natif garde, l'indicateur
+   n'est coupe qu'en haut (les anneaux de focus du contenu restent visibles). */
+.fm-ptr-native {
+  touch-action: auto;
+  overflow: visible;
+  clip-path: inset(0 -8px -8px -8px);
+}
+
+/* Ecrans hors espace (profil, notifications, nouveautes : ProfileLayout) : pas de
+   navigation des modules, donc ni colonne vide en bureau ni titre masque. */
+@container (min-width: 768px) {
+  .fm-shell-grid:not(:has(.fm-nav)) .fm-top-title {
+    display: block;
+  }
+}
+@container (min-width: 1024px) {
+  .fm-shell-grid:not(:has(.fm-nav)) {
+    grid-template-columns: var(--size-rail) minmax(0, 1fr);
+    grid-template-areas: "rail top" "rail main";
+  }
+}
+
+/* Loupe de la TopBar : le raccourci garde sa largeur (`.fm-search span` du design
+   system l'etirait autant que le libelle). */
+.fm-search .fm-kbd {
+  flex: none;
+}
+/* IconButton desactive (monter / descendre en bout de liste...) : le design system
+   ne le distinguait pas d'un bouton actif. */
+.fm-iconbtn[disabled] {
+  opacity: 0.35;
+  cursor: not-allowed;
+  background: transparent;
+}
+/* Intitule d'un groupe de choix quand une feuille en empile plusieurs (F-EXPORT). */
+.fm-choice-title {
+  margin: 0 0 calc(-1 * var(--space-2));
+  font: 600 14px/20px var(--font-sans);
+  color: var(--ink-muted);
+}
+/* Selecteur d'espace de la TopBar mobile : prend la largeur de son contenu (le
+   `flex: 1` du design system partageait la place avec l'espaceur et tronquait
+   le nom des la moitie de la barre). */
+.fm-top-space {
+  flex: 0 1 auto;
+}
+
+/* CommandPalette (F-RECHERCHE) : plein ecran sur mobile, centree en haut a partir
+   de 768px. Le style des lignes vient du design system (.fm-cmd-*). */
+.fm-cmd-layer .fm-cmd {
+  position: absolute;
+  inset: 0;
+  max-width: none;
+  border: 0;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  animation: fm-fade 0.15s ease-out;
+}
+.fm-cmd-results {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.fm-cmd-item {
+  scroll-margin: var(--space-2);
+}
+.fm-cmd-item svg {
+  flex: none;
+}
+.fm-cmd-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fm-cmd-item small {
+  flex: none;
+  max-width: 45%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fm-cmd-status {
+  margin: 0;
+  padding: var(--space-4);
+  color: var(--ink-muted);
+  font-size: 14px;
+}
+.fm-cmd-esc {
+  display: none;
+}
+.fm-cmd-close {
+  border: 0;
+  background: transparent;
+  color: var(--accent-text);
+  font: 600 15px/22px var(--font-sans);
+  min-height: var(--size-touch);
+  padding: 0 var(--space-1);
+  cursor: pointer;
+}
+@media (min-width: 768px) {
+  .fm-cmd-layer .fm-cmd {
+    inset: 12vh auto auto 50%;
+    transform: translateX(-50%);
+    width: min(560px, calc(100% - 32px));
+    max-height: 70vh;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+  }
+  .fm-cmd-esc {
+    display: inline;
+  }
+  .fm-cmd-close {
+    display: none;
+  }
+}
+
+/* Accueil a widgets (E-ACCUEIL, D-ACCUEIL) : une colonne en mobile, deux en bureau. */
+.fm-home-widgets {
+  display: grid;
+  gap: var(--space-4);
+  align-items: start;
+}
+.fm-home-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+@media (min-width: 1024px) {
+  .fm-home-widgets {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Contenu principal focalise par programme (feuille fermee sans declencheur) :
+   point de reprise du clavier, pas un arret de tabulation, donc sans contour. */
+main[tabindex="-1"]:focus-visible {
+  outline: none;
+}
+
+/* "Depuis mes recettes" (F-MES-RECETTES, D203) : lignes a case a cocher. */
+.fm-pick-list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fm-pick {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 52px;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.fm-pick:hover {
+  background: var(--surface);
+}
+.fm-pick:has(input:disabled) {
+  cursor: default;
+  opacity: 0.55;
+}
+.fm-pick input {
+  appearance: none;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  border: 2px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+}
+.fm-pick input:checked {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.fm-pick input:checked::after {
+  content: "";
+  width: 10px;
+  height: 6px;
+  border: solid var(--on-accent);
+  border-width: 0 0 2.5px 2.5px;
+  transform: translateY(-1px) rotate(-45deg);
+}
+.fm-pick input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.fm-pick-text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.fm-pick-text b {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fm-pick-text small {
+  color: var(--ink-muted);
+}
+.fm-pick-foot {
+  flex: 1;
+}
+.fm-pick-count {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Premier choix de F-AJOUT-RECETTE dans un espace de groupe (D208). */
+.fm-option-lead {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* D209 : hors espace (profil, notifications, nouveautes), pas de bande d'espaces
+   sur mobile : l'en-tete avec retour suffit ; le bureau garde son rail. */
+@container (max-width: 767.98px) {
+  .fm-shell-grid > .fm-rail-desktop {
+    display: none;
+  }
+}
+
+/* Bouton d'outil : icone et mot court dessous (barre du Planning, D209). */
+.fm-toolbtn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: var(--size-touch);
+  min-height: var(--size-touch);
+  padding: 2px var(--space-1);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--ink-muted);
+  font: 600 11px/14px var(--font-sans);
+  text-decoration: none;
+  cursor: pointer;
+}
+.fm-toolbtn:hover {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+/* Telephone etroit (360 px) : la barre du Planning tient sur une ligne. */
+@container (max-width: 399px) {
+  .fm-plan-tools {
+    gap: 2px;
+  }
+  .fm-plan-tools .fm-btn-sm {
+    padding: 0 var(--space-2);
+  }
+  .fm-plan-tools .fm-toolbtn {
+    min-width: 40px;
+    padding: 2px 0;
+  }
+}
+/* Connexion avec Discord [D210] : couleurs de la marque, identiques dans tous les themes. */
+.fm-btn-discord {
+  background: #5865f2;
+  color: #ffffff;
+  text-decoration: none;
+}
+.fm-btn-discord:hover {
+  background: #4752c4;
+}
+.fm-discord-logo {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  flex: none;
+}
+.fm-option-icon.fm-discord-icon {
+  background: #5865f2;
+  color: #ffffff;
+}
+.fm-or {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+.fm-or::before,
+.fm-or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+/*
+ * Images d'avatar et d'espace : elles remplissent toujours la pastille, recadrees
+ * au centre. En grille, leur `height: 100%` restait sans effet : une image non
+ * carree debordait (haut seul visible pour un avatar, ovale pour un espace, dont
+ * l'image prend l'arrondi sans etre masquee).
+ */
+.fm-avatar {
+  position: relative;
+}
+.fm-avatar img,
+.fm-space img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* Recadreur d'avatar [D211] : zone carree, fond sombre dans les deux themes. */
+.fm-crop {
+  position: relative;
+  width: 100%;
+  height: min(78vw, 360px);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #111;
+  touch-action: none;
+}
+.fm-crop-zoom {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-weight: 600;
+}
+.fm-crop-zoom input {
+  flex: 1;
+  accent-color: var(--accent);
+  min-height: var(--size-touch);
+}

@@ -1,0 +1,320 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Bureau-E-COMPARER-ORIGINAL.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "title": "E-COMPARER-ORIGINAL - Bureau",
+      "w": 1440,
+      "x": 4560,
+      "y": 4896
+    },
+    "Bureau-E-RECETTE-EDITION.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "title": "E-RECETTE-EDITION - Bureau",
+      "w": 1440,
+      "x": 3040,
+      "y": 4896
+    },
+    "Bureau-E-RECETTE.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "title": "E-RECETTE - Bureau",
+      "w": 1440,
+      "x": 1520,
+      "y": 4896
+    },
+    "Bureau-E-RECETTES.dc.html": {
+      "expand": "fill",
+      "h": 900,
+      "title": "E-RECETTES - Bureau",
+      "w": 1440,
+      "x": 0,
+      "y": 4896
+    },
+    "E-COMPARER-ORIGINAL.dc.html": {
+      "h": 844,
+      "title": "E-COMPARER-ORIGINAL - Comparer avec l'original",
+      "w": 390,
+      "x": 1880,
+      "y": 2448
+    },
+    "E-HISTORIQUE.dc.html": {
+      "h": 844,
+      "title": "E-HISTORIQUE - Historique des revisions",
+      "w": 390,
+      "x": 940,
+      "y": 3672
+    },
+    "E-MODE-CUISINE.dc.html": {
+      "h": 844,
+      "title": "E-MODE-CUISINE - Mode cuisine",
+      "w": 390,
+      "x": 2350,
+      "y": 0
+    },
+    "E-RECETTE-EDITION.dc.html": {
+      "h": 844,
+      "title": "E-RECETTE-EDITION - Editeur",
+      "w": 390,
+      "x": 1410,
+      "y": 1224
+    },
+    "E-RECETTE.dc.html": {
+      "h": 844,
+      "title": "E-RECETTE - Saumon teriyaki et brocolis",
+      "w": 390,
+      "x": 1410,
+      "y": 0
+    },
+    "E-RECETTES-HorsLigne.dc.html": {
+      "h": 844,
+      "title": "E-RECETTES - Hors ligne",
+      "w": 390,
+      "x": 940,
+      "y": 0
+    },
+    "E-RECETTES-Vide.dc.html": {
+      "h": 844,
+      "title": "E-RECETTES - Etat vide (Amis)",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "E-SUGGESTION-EDITION.dc.html": {
+      "h": 844,
+      "title": "E-SUGGESTION-EDITION - Rediger une suggestion",
+      "w": 390,
+      "x": 0,
+      "y": 3672
+    },
+    "E-SUGGESTION.dc.html": {
+      "h": 844,
+      "title": "E-SUGGESTION - Examiner une suggestion (Noe)",
+      "w": 390,
+      "x": 470,
+      "y": 3672
+    },
+    "F-ACTIONS.dc.html": {
+      "h": 844,
+      "title": "F-ACTIONS - Menu d'actions",
+      "w": 390,
+      "x": 1880,
+      "y": 0
+    },
+    "F-ADAPTER.dc.html": {
+      "h": 844,
+      "title": "F-ADAPTER - Adapter pour un espace",
+      "w": 390,
+      "x": 1410,
+      "y": 2448
+    },
+    "F-AJOUT-BLOC.dc.html": {
+      "h": 844,
+      "title": "F-AJOUT-BLOC - Ajouter un bloc",
+      "w": 390,
+      "x": 1880,
+      "y": 1224
+    },
+    "F-AJOUT-RECETTE.dc.html": {
+      "h": 844,
+      "title": "F-AJOUT-RECETTE - Nouvelle recette",
+      "w": 390,
+      "x": 0,
+      "y": 1224
+    },
+    "F-CONFIRMER.dc.html": {
+      "h": 844,
+      "title": "F-CONFIRMER - Quitter sans enregistrer",
+      "w": 390,
+      "x": 2820,
+      "y": 1224
+    },
+    "F-DEMANDE-PARTAGE.dc.html": {
+      "h": 844,
+      "title": "F-DEMANDE-PARTAGE - Demande recue (cote Lea)",
+      "w": 390,
+      "x": 940,
+      "y": 2448
+    },
+    "F-IMPORT-TEXTE.dc.html": {
+      "h": 844,
+      "title": "F-IMPORT-TEXTE - Coller un texte",
+      "w": 390,
+      "x": 940,
+      "y": 1224
+    },
+    "F-IMPORT-URL.dc.html": {
+      "h": 844,
+      "title": "F-IMPORT-URL - Import par lien (erreur)",
+      "w": 390,
+      "x": 470,
+      "y": 1224
+    },
+    "F-INGREDIENTS.dc.html": {
+      "h": 844,
+      "title": "F-INGREDIENTS - Ingredients a cocher",
+      "w": 390,
+      "x": 2820,
+      "y": 0
+    },
+    "F-LIER-RECETTE.dc.html": {
+      "h": 844,
+      "title": "F-LIER-RECETTE - Lier une recette",
+      "w": 390,
+      "x": 2350,
+      "y": 1224
+    },
+    "F-PARTAGER-Demande.dc.html": {
+      "h": 844,
+      "title": "F-PARTAGER - Demander le partage (recette de Lea)",
+      "w": 390,
+      "x": 470,
+      "y": 2448
+    },
+    "F-PARTAGER.dc.html": {
+      "h": 844,
+      "title": "F-PARTAGER - Partager sa recette",
+      "w": 390,
+      "x": 0,
+      "y": 2448
+    },
+    "Main.dc.html": {
+      "h": 844,
+      "title": "E-RECETTES - Recettes de Famille",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "E-RECETTES-Chargement.dc.html": {
+      "h": 844,
+      "title": "E-RECETTES - Chargement",
+      "w": 390,
+      "x": 3290,
+      "y": 0
+    },
+    "E-RECETTE-SousRecette.dc.html": {
+      "h": 844,
+      "title": "E-RECETTE - Sous-recette non disponible (TOM)",
+      "w": 390,
+      "x": 3760,
+      "y": 0
+    },
+    "E-RECETTE-EDITION-Idee.dc.html": {
+      "h": 844,
+      "title": "E-RECETTE-EDITION - Idee transformee en recette (arrive depuis E-IDEES du canevas Planning)",
+      "w": 390,
+      "x": 3290,
+      "y": 1224
+    },
+    "E-SUGGESTION-Refus.dc.html": {
+      "h": 844,
+      "title": "E-SUGGESTION - Refuser (motif)",
+      "w": 390,
+      "x": 1410,
+      "y": 3672
+    },
+    "E-SUGGESTION-Refusee.dc.html": {
+      "h": 844,
+      "title": "E-SUGGESTION - Refusee (cote Noe)",
+      "w": 390,
+      "x": 1880,
+      "y": 3672
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-11-03T15:11:57Z",
+    "v": 1
+  },
+  "designSystems": [
+    {
+      "artifact": "https://claude.ai/artifact/7Q9Uy9qGhUyPYt3bWVa5yc",
+      "copiedAt": "2026-11-04T15:00:00Z",
+      "namespace": "forestui",
+      "title": "Forest Manager",
+      "version": "1793798732-c3dc"
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "row1": {
+      "kind": "title1",
+      "maxW": 4150,
+      "text": "Lire et cuisiner une recette",
+      "w": 240,
+      "x": 0,
+      "y": -260
+    },
+    "row2": {
+      "kind": "title1",
+      "maxW": 3680,
+      "text": "Creer, importer, composer",
+      "w": 240,
+      "x": 0,
+      "y": 964
+    },
+    "row3": {
+      "kind": "title1",
+      "maxW": 2270,
+      "text": "Partager et adapter",
+      "w": 240,
+      "x": 0,
+      "y": 2188
+    },
+    "row4": {
+      "kind": "title1",
+      "maxW": 2270,
+      "text": "Suggestions et historique",
+      "w": 240,
+      "x": 0,
+      "y": 3412
+    },
+    "row5": {
+      "kind": "title1",
+      "maxW": 6000,
+      "text": "Versions bureau",
+      "w": 240,
+      "x": 0,
+      "y": 4636
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "E-RECETTES-Vide.dc.html",
+    "E-RECETTES-HorsLigne.dc.html",
+    "E-RECETTES-Chargement.dc.html",
+    "E-RECETTE.dc.html",
+    "F-ACTIONS.dc.html",
+    "E-MODE-CUISINE.dc.html",
+    "F-INGREDIENTS.dc.html",
+    "E-RECETTE-SousRecette.dc.html",
+    "F-AJOUT-RECETTE.dc.html",
+    "F-IMPORT-URL.dc.html",
+    "F-IMPORT-TEXTE.dc.html",
+    "E-RECETTE-EDITION.dc.html",
+    "F-AJOUT-BLOC.dc.html",
+    "F-LIER-RECETTE.dc.html",
+    "F-CONFIRMER.dc.html",
+    "E-RECETTE-EDITION-Idee.dc.html",
+    "F-PARTAGER.dc.html",
+    "F-PARTAGER-Demande.dc.html",
+    "F-DEMANDE-PARTAGE.dc.html",
+    "F-ADAPTER.dc.html",
+    "E-COMPARER-ORIGINAL.dc.html",
+    "E-SUGGESTION-EDITION.dc.html",
+    "E-SUGGESTION.dc.html",
+    "E-SUGGESTION-Refus.dc.html",
+    "E-SUGGESTION-Refusee.dc.html",
+    "E-HISTORIQUE.dc.html",
+    "Bureau-E-RECETTES.dc.html",
+    "Bureau-E-RECETTE.dc.html",
+    "Bureau-E-RECETTE-EDITION.dc.html",
+    "Bureau-E-COMPARER-ORIGINAL.dc.html"
+  ],
+  "pages": [],
+  "title": "Maquettes V2 - Recettes"
+}

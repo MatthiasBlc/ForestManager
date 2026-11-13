@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Code de vérification admin</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div class="fm-root" style="min-height: 900px; box-sizing: border-box; padding: 48px 16px; display: flex; align-items: center; justify-content: center; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+  <form style="width: 100%; max-width: 420px; box-sizing: border-box; padding: 32px; background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: 20px;">
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <h1 style="margin: 0; font-family: var(--font-display); font-size: 22px; line-height: 28px;">Code de vérification</h1>
+      <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">Saisis les 6 chiffres affichés par ton application d'authentification pour admin.matthias.</p>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <label for="totp" style="font-size: 14px; line-height: 20px; font-weight: 600;">Code à 6 chiffres</label>
+      <input id="totp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" value="482 91" style="font-family: var(--font-mono); font-size: 28px; line-height: 36px; letter-spacing: 0.3em; text-align: center; padding: 10px 12px; min-height: 60px; box-sizing: border-box; border-radius: var(--radius-md); border: 2px solid var(--focus); background: var(--surface-raised); color: var(--ink);">
+      <span style="font-size: 14px; line-height: 20px; color: var(--danger-text);">Code incorrect ou expiré. Attends le suivant et réessaie (2 essais restants).</span>
+    </div>
+    <x-import component-from-global-scope="ForestUI.Button" variant="primary" block="{{yes}}">Se connecter</x-import>
+    <a href="A01-Connexion.dc.html" style="align-self: center; font-size: 14px; line-height: 20px; font-weight: 600; min-height: 44px; display: inline-flex; align-items: center;">Revenir à l'identifiant</a>
+  </form>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { yes: true };
+  }
+}
+</script>
+</body>
+</html>

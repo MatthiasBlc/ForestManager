@@ -1,0 +1,92 @@
+// Point d'entree : charge l'environnement, ouvre la base, demarre HTTP, lance
+// les taches horaires et s'arrete proprement sur SIGTERM / SIGINT (docker stop).
+
+import { purgeExpiredAdminSessions } from "./core/admin/session.ts";
+import { purgeExpiredSessions } from "./core/auth/session.ts";
+import { loadEnv } from "./core/config/env.ts";
+import { createDb } from "./core/db/client.ts";
+import { createApp, createContext } from "./core/http/app.ts";
+import { createLogger } from "./core/http/logger.ts";
+import { createPageFetcher } from "./core/net/page-fetcher.ts";
+import { purgeDeletedSpaces } from "./core/spaces/service.ts";
+import { expireExports } from "./core/exports/service.ts";
+import { sweepStorage } from "./core/storage/images.ts";
+import { purgeNotifications } from "./core/notifications/service.ts";
+import { MODULES } from "./modules/index.ts";
+
+const env = loadEnv();
+const logger = createLogger(env);
+const db = createDb(env.DATABASE_URL);
+// Stack E2E (NODE_ENV=test) : routes de test [D79], absentes de l'image de production.
+const testRoutes =
+  env.NODE_ENV === "test" ? (await import("../test/e2e/routes.ts")).e2eRoutes : undefined;
+// Stack E2E aussi : l'import par lien lit les pages de fixtures servies par ces
+// routes, sur la boucle locale ; partout ailleurs l'anti-SSRF la refuse.
+const fetchPage = env.NODE_ENV === "test" ? createPageFetcher({ allowLoopback: true }) : undefined;
+const ctx = createContext({ env, db, logger, modules: MODULES, fetchPage });
+const app = createApp({ ...ctx, testRoutes });
+
+// En dev, le bucket du stockage local est cree au besoin (en preprod et prod il existe deja).
+if (ctx.storage && env.NODE_ENV !== "production") {
+  ctx.storage.ensureBucket().catch((error: unknown) => {
+    logger.error({ err: error }, "storage bucket unavailable");
+  });
+}
+
+const server = app.listen(env.PORT, () => {
+  logger.info({ port: env.PORT }, "API ready");
+});
+
+// Taches horaires : sessions expirees, espaces supprimes depuis plus de 30 jours [D22],
+// puis menage du stockage (apres la purge, qui libere des images) [D167],
+// notifications anciennes [D190] et exports expires (avant le menage, qui efface
+// alors leur archive) [D192].
+async function hourlyJobs(): Promise<void> {
+  const sessions = (await purgeExpiredSessions(db)) + (await purgeExpiredAdminSessions(db));
+  const spaces = await purgeDeletedSpaces(ctx);
+  const exports = await expireExports(ctx);
+  const files = await sweepStorage(ctx);
+  const notifications = await purgeNotifications(db);
+  if (sessions + spaces + exports + files + notifications > 0)
+    logger.info({ sessions, spaces, exports, files, notifications }, "purge done");
+}
+const jobs = setInterval(
+  () => {
+    hourlyJobs().catch((error: unknown) => {
+      logger.error({ err: error }, "hourly jobs failed");
+      ctx.errorTracking?.captureException(error);
+    });
+  },
+  60 * 60 * 1000
+);
+jobs.unref();
+
+// Rejets et exceptions non geres : journalises et envoyes au suivi d'erreurs [D196].
+// Une exception non geree laisse le processus dans un etat inconnu : on s'arrete
+// apres l'envoi (Docker relance le conteneur).
+process.on("unhandledRejection", (reason) => {
+  logger.error({ err: reason }, "unhandled rejection");
+  ctx.errorTracking?.captureException(reason);
+});
+process.on("uncaughtException", (error) => {
+  logger.fatal({ err: error }, "uncaught exception");
+  ctx.errorTracking?.captureException(error);
+  void (ctx.errorTracking?.flush(2000) ?? Promise.resolve()).finally(() => process.exit(1));
+});
+
+function shutdown(signal: string): void {
+  logger.info({ signal }, "shutting down");
+  clearInterval(jobs);
+  // Les flux SSE ouverts retiendraient l'arret : on les ferme d'abord.
+  ctx.realtime.closeAll();
+  server.close(() => {
+    void Promise.allSettled([db.$disconnect(), ctx.errorTracking?.flush(2000)]).finally(() =>
+      process.exit(0)
+    );
+  });
+  // Filet : les connexions keep-alive ne doivent pas bloquer l'arret.
+  setTimeout(() => process.exit(1), 10_000).unref();
+}
+
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);

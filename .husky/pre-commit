@@ -1,1 +1,7 @@
+# Charge la version Node du projet (.nvmrc) si nvm est installe : le hook ne depend pas du Node par defaut de l'hote
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+if [ -s "$NVM_DIR/nvm.sh" ]; then
+  . "$NVM_DIR/nvm.sh"
+  nvm use --silent || echo "pre-commit : Node du .nvmrc introuvable, Node courant utilise ($(node -v))"
+fi
 npx lint-staged

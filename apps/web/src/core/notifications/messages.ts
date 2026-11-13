@@ -1,0 +1,149 @@
+// Messages des notifications du socle et des modules (D34 : traduits cote client
+// a partir du type et des parametres). Un type inconnu donne un message neutre.
+import type { Notification } from "@fm/shared";
+
+import type {
+  NotificationCategoryLabel,
+  NotificationEnv,
+  NotificationRenderer,
+  NotificationView,
+} from "../../app/registry.ts";
+import { WEB_MODULES } from "../../modules/index.ts";
+import { REASON_LABELS } from "../admin/format.ts";
+import { moduleInfo } from "../modules/module-info.ts";
+import { others } from "./others.ts";
+
+/** Libelles des categories du socle (E-NOTIF-PREFERENCES). */
+const CORE_CATEGORIES: Record<string, NotificationCategoryLabel> = {
+  "core.members": {
+    label: "Invitations et membres",
+    hint: "Invitations reçues, arrivées dans tes espaces",
+  },
+  "core.releases": {
+    label: "Nouveautés de Forest Manager",
+    hint: "Une nouvelle version est disponible",
+  },
+};
+
+export function categoryLabel(key: string): NotificationCategoryLabel {
+  return (
+    CORE_CATEGORIES[key] ??
+    WEB_MODULES.map((module) => module.notificationCategories?.[key]).find(Boolean) ?? {
+      label: key,
+      hint: "",
+    }
+  );
+}
+
+function text(notification: Notification, key: string): string {
+  const value = notification.data?.[key];
+  return typeof value === "string" ? value : "";
+}
+
+/** Nom de l'espace : celui du lien, sinon celui garde dans les parametres. */
+function spaceName(notification: Notification): string {
+  return notification.space?.name ?? text(notification, "spaceName");
+}
+
+function verb(notification: Notification, one: string, many: string): string {
+  return notification.count > 1 ? many : one;
+}
+
+/** P08 : ce que le membre laisse en attente, dit seulement pour un depart seul. */
+function pendingText(notification: Notification): string {
+  const pending = notification.data?.pending;
+  if (notification.count > 1 || typeof pending !== "object" || pending === null) return "";
+  return Object.entries(pending)
+    .map(([key, count]) => {
+      const render = WEB_MODULES.map((module) => module.pendingTexts?.[key]).find(Boolean);
+      return render && typeof count === "number" ? ` ${render(count)}` : "";
+    })
+    .join("");
+}
+
+const spacePath = (n: Notification, path: string) => (n.space ? `/s/${n.space.id}/${path}` : null);
+
+const CORE: Record<string, NotificationRenderer> = {
+  "core.invitation.received": (n, env) => ({
+    text: `t'invite dans ${spaceName(n)}.`,
+    to: `/s/${env.personalSpaceId}/home`,
+  }),
+  "core.transfer.proposed": (n, env) => ({
+    text: `te propose de devenir propriétaire de ${spaceName(n)}.`,
+    to: `/s/${env.personalSpaceId}/home`,
+  }),
+  "core.transfer.accepted": (n) => ({
+    text: `est maintenant propriétaire de ${spaceName(n)}.`,
+    to: spacePath(n, "members"),
+  }),
+  "core.transfer.declined": (n) => ({
+    text: `a refusé de devenir propriétaire de ${spaceName(n)}.`,
+    to: spacePath(n, "members"),
+  }),
+  "core.member.joined": (n) => ({
+    text: `${others(n)}${verb(n, "a rejoint", "ont rejoint")} ${spaceName(n)}.`,
+    to: spacePath(n, "members"),
+  }),
+  "core.member.left": (n) => ({
+    text: `${others(n)}${verb(n, "a quitté", "ont quitté")} ${spaceName(n)}.${pendingText(n)}`,
+    to: spacePath(n, "members"),
+  }),
+  "core.member.excluded": (n) => ({
+    text: `Tu ne fais plus partie de ${spaceName(n)}.`,
+    actor: false,
+    to: null,
+  }),
+  "core.space.deleted": (n) => ({ text: `a supprimé ${spaceName(n)}.`, to: null }),
+  "core.space.restored": (n) => ({ text: `a restauré ${spaceName(n)}.`, to: spacePath(n, "") }),
+  "core.email.unverified": () => ({
+    text: "Confirme ton adresse e-mail : un lien t'a été envoyé.",
+    actor: false,
+    to: "/profile/account",
+  }),
+  "core.password.missing": () => ({
+    text: "Définis un mot de passe de secours : il te connectera si Discord n'est pas disponible.",
+    actor: false,
+    to: "/profile/password",
+  }),
+  "core.module.granted": (n) => ({
+    text: `Le module ${moduleInfo(text(n, "moduleCode")).name} est disponible pour ${spaceName(n)}.`,
+    actor: false,
+    to: spacePath(n, "modules"),
+  }),
+  "core.module.rejected": (n) => {
+    const reason = text(n, "reason");
+    return {
+      text: `Ta demande du module ${moduleInfo(text(n, "moduleCode")).name} pour ${spaceName(n)} a été refusée${reason ? ` : ${reason.replace(/[.!?]?$/, ".")}` : "."}`,
+      actor: false,
+      to: spacePath(n, "modules"),
+    };
+  },
+  "core.moderation.opened": (n) => {
+    const code = text(n, "reason");
+    const reason =
+      code in REASON_LABELS ? REASON_LABELS[code as keyof typeof REASON_LABELS] : "Autre";
+    const note = text(n, "note");
+    return {
+      text: `Un administrateur consulte ${spaceName(n)} en lecture seule pendant 30 minutes. Motif : ${reason}${note ? ` (${note})` : ""}.`,
+      actor: false,
+      to: null,
+    };
+  },
+  "core.release.published": (n) => ({
+    text: `La version ${text(n, "version")} est disponible : découvre les nouveautés.`,
+    actor: false,
+    to: "/news",
+  }),
+};
+
+export function renderNotification(
+  notification: Notification,
+  env: NotificationEnv
+): NotificationView {
+  const renderer =
+    CORE[notification.type] ??
+    WEB_MODULES.map((module) => module.notifications?.[notification.type]).find(Boolean);
+  if (!renderer) return { text: "Nouvelle notification.", actor: false, to: notification.url };
+  const view = renderer(notification, env);
+  return { ...view, actor: view.actor !== false && notification.actor !== null };
+}

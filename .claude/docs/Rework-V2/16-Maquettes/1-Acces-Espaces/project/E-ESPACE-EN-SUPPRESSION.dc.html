@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Famille en suppression</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="fm-root" data-space="1" style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
+<x-import component-from-global-scope="ForestUI.TopBar" title="Restaurer" space="{{space}}"></x-import>
+<div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 16px; padding: 24px;">
+<span style="width: 80px; height: 80px; border-radius: var(--radius-xl); background: var(--surface-raised); color: var(--ink-muted); border: 2px dashed var(--line-strong); display: grid; place-items: center; font: 700 32px/1 var(--font-display);">F</span>
+<x-import component-from-global-scope="ForestUI.Badge" tone="warning" icon="clock">Suppression dans 27 jours</x-import>
+<h1 style="margin: 0; font: 700 26px/32px var(--font-display);">Famille est en cours de suppression</h1>
+<p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted); max-width: 32ch;">Les membres ne la voient plus. Le 3 décembre, l'espace et ses recettes seront effacés pour de bon.</p>
+<div style="display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 320px;">
+<x-import component-from-global-scope="ForestUI.Button" variant="primary" block="{{yes}}" icon="refresh">Restaurer Famille</x-import>
+<x-import component-from-global-scope="ForestUI.Button" block="{{yes}}">Exporter les recettes</x-import>
+</div>
+<p style="margin: 0; font-size: 13px; line-height: 18px; color: var(--ink-muted);">Seul toi, propriétaire, vois cet écran.</p>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+yes: true,
+me: { id: 'me', name: 'Matthias' },
+space: { id: 'famille', name: 'Famille', tint: 1, deleting: { daysLeft: 27 } },
+spaces: [
+{ id: 'foyer', name: 'Foyer', tint: 5 },
+{ id: 'famille', name: 'Famille', tint: 1 },
+{ id: 'colloc', name: 'Colloc', tint: 2 },
+{ id: 'tom', name: 'TOM', tint: 3 },
+{ id: 'amis', name: 'Amis', tint: 4 }
+]
+};
+}
+}
+</script>
+</body>
+</html>

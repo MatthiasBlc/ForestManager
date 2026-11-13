@@ -1,0 +1,578 @@
+// Manifeste API du module Recettes [D33, D91]. Les routes se completent au fil de C3.
+import {
+  addMineBodySchema,
+  addMinePreviewSchema,
+  addMineResultSchema,
+  acceptSuggestionBodySchema,
+  adaptRecipeBodySchema,
+  convertSuggestionBodySchema,
+  createSuggestionBodySchema,
+  rejectSuggestionBodySchema,
+  suggestionParamsSchema,
+  suggestionSchema,
+  suggestionSummarySchema,
+  approveShareRequestBodySchema,
+  recipeComparisonSchema,
+  createRecipeBodySchema,
+  recipeLeavePreviewSchema,
+  recipeSharesBodySchema,
+  recipeSharingSchema,
+  shareRequestBodySchema,
+  shareRequestParamsSchema,
+  shareRequestResultSchema,
+  shareRequestSchema,
+  listSchema,
+  mergeTagBodySchema,
+  pageSchema,
+  mineRecipeListQuerySchema,
+  recipeListQuerySchema,
+  recipeParamsSchema,
+  recipeSchema,
+  recipeSpaceTagsBodySchema,
+  importRecipeBodySchema,
+  importedRecipeSchema,
+  attachImageBodySchema,
+  imageResponseSchema,
+  recipeRevisionSchema,
+  recipeSummarySchema,
+  restoreRevisionBodySchema,
+  revisionParamsSchema,
+  updateRecipeBodySchema,
+  spaceTagParamsSchema,
+  tagNameBodySchema,
+  tagSchema,
+} from "@fm/shared";
+import { Router, type Request } from "express";
+
+import type { Context } from "../../core/context.ts";
+import { currentUserId } from "../../core/http/auth.ts";
+import { handle, reply } from "../../core/http/validate.ts";
+import {
+  hasModulePermission,
+  moduleRequest,
+  requirePermission,
+} from "../../core/modules/guards.ts";
+import type { ApiModule } from "../../core/modules/registry.ts";
+import * as adaptation from "./adaptation.ts";
+import { recipeCatalog } from "./catalog.ts";
+import { provide } from "../services.ts";
+import { AppError } from "../../core/http/errors.ts";
+import { addableSql, authoredBySql, listRecipes } from "./list.ts";
+import { createRateLimiter } from "../../core/http/security.ts";
+import { importFromUrl } from "./import.ts";
+import * as photos from "./photos.ts";
+import { RECIPE_PERMISSIONS } from "./permissions.ts";
+import * as revisions from "./revisions.ts";
+import { searchRecipes } from "./search.ts";
+import { exportRecipes } from "./export.ts";
+import * as recipes from "./service.ts";
+import * as sharing from "./sharing.ts";
+import * as suggestions from "./suggestions.ts";
+import * as tags from "./tags.ts";
+import { RECIPE_WIDGETS } from "./widgets.ts";
+
+const tagParamsSchema = spaceTagParamsSchema.pick({ tagId: true });
+const recipeIdSchema = recipeParamsSchema.pick({ recipeId: true });
+const requestIdSchema = shareRequestParamsSchema.pick({ requestId: true });
+const suggestionIdSchema = suggestionParamsSchema.pick({ recipeId: true, suggestionId: true });
+const revisionIdSchema = revisionParamsSchema.pick({ recipeId: true, number: true });
+
+function actorOf(req: Request): recipes.RecipeActor {
+  return {
+    userId: currentUserId(req),
+    spaceId: moduleRequest(req).access.space.id,
+    moderate: hasModulePermission(req, "recipes.moderate"),
+  };
+}
+
+/** Ajouter ses recettes n'a pas de sens dans l'espace perso : elles y sont deja. */
+function refusePersonal(req: Request): void {
+  if (moduleRequest(req).access.space.kind === "PERSONAL") throw new AppError("SPACE_003");
+}
+
+function recipesRouter(ctx: Context): Router {
+  const router = Router();
+  const spaceOf = (req: Parameters<typeof moduleRequest>[0]) => moduleRequest(req).access.space.id;
+
+  // --- Recettes [F-REC-1, F-REC-4, F-REC-10, F-REC-11] ---
+
+  router.get(
+    "/",
+    requirePermission("recipes.view"),
+    handle({ query: recipeListQuerySchema }, async ({ query }, req, res) => {
+      reply(
+        res,
+        pageSchema(recipeSummarySchema),
+        await listRecipes(ctx, spaceOf(req), currentUserId(req), query)
+      );
+    })
+  );
+
+  // Import par lien (C3.8) : renvoie la recette lue, sans l'enregistrer.
+  router.post(
+    "/import",
+    requirePermission("recipes.create"),
+    createRateLimiter(ctx.env.NODE_ENV !== "test", { windowMs: 15 * 60 * 1000, limit: 20 }),
+    handle({ body: importRecipeBodySchema }, async ({ body }, _req, res) => {
+      reply(res, importedRecipeSchema, await importFromUrl(ctx, body.url));
+    })
+  );
+
+  router.post(
+    "/",
+    requirePermission("recipes.create"),
+    handle({ body: createRecipeBodySchema }, async ({ body }, req, res) => {
+      const { imported, ...content } = body;
+      const source = imported ? "IMPORT" : "CREATE";
+      const recipe = await recipes.createRecipe(ctx, actorOf(req), content, undefined, source);
+      reply(res, recipeSchema, recipe, 201);
+    })
+  );
+
+  // "Mes recettes" [D82] : recettes de l'utilisateur dans tous ses espaces.
+  router.get(
+    "/mine",
+    requirePermission("recipes.view"),
+    handle({ query: mineRecipeListQuerySchema }, async ({ query }, req, res) => {
+      const userId = currentUserId(req);
+      const { homeSpaceId, addable, ...filters } = query;
+      if (addable) refusePersonal(req);
+      const scope = addable ? addableSql(userId, spaceOf(req)) : authoredBySql(userId, homeSpaceId);
+      const page = await listRecipes(ctx, spaceOf(req), userId, filters, scope);
+      reply(res, pageSchema(recipeSummarySchema), page);
+    })
+  );
+
+  // "Depuis mes recettes" [D203, D208] : ajout en lot de ses recettes a un espace de groupe.
+  router.post(
+    "/add-mine/preview",
+    requirePermission("recipes.create"),
+    handle({ body: addMineBodySchema }, async ({ body }, req, res) => {
+      refusePersonal(req);
+      const preview = await sharing.previewAddMine(ctx, actorOf(req), body.recipeIds);
+      reply(res, addMinePreviewSchema, preview);
+    })
+  );
+
+  router.post(
+    "/add-mine",
+    requirePermission("recipes.create"),
+    handle({ body: addMineBodySchema }, async ({ body }, req, res) => {
+      refusePersonal(req);
+      const added = await sharing.addMine(ctx, actorOf(req), body.recipeIds);
+      reply(res, addMineResultSchema, { added });
+    })
+  );
+
+  // --- Partage [D03, D81, D84] : droits fins verifies par le service ---
+
+  router.get("/share-requests", requirePermission("recipes.view"), async (req, res) => {
+    const personal = moduleRequest(req).access.space.kind === "PERSONAL";
+    const data = await sharing.listShareRequests(ctx, actorOf(req), personal);
+    reply(res, listSchema(shareRequestSchema), { data });
+  });
+
+  router.post(
+    "/share-requests/:requestId/approve",
+    requirePermission("recipes.view"),
+    handle(
+      { params: requestIdSchema, body: approveShareRequestBodySchema },
+      async ({ params, body }, req, res) => {
+        await sharing.decideShareRequest(ctx, currentUserId(req), params.requestId, {
+          approve: true,
+          trustMembers: body.trustMembers,
+        });
+        res.status(204).end();
+      }
+    )
+  );
+
+  router.post(
+    "/share-requests/:requestId/reject",
+    requirePermission("recipes.view"),
+    handle({ params: requestIdSchema }, async ({ params }, req, res) => {
+      await sharing.decideShareRequest(ctx, currentUserId(req), params.requestId, {
+        approve: false,
+      });
+      res.status(204).end();
+    })
+  );
+
+  // Bandeau des suggestions a trancher [D166].
+  router.get("/suggestions", requirePermission("recipes.view"), async (req, res) => {
+    const personal = moduleRequest(req).access.space.kind === "PERSONAL";
+    const data = await suggestions.listSuggestionsToDecide(ctx, actorOf(req), personal);
+    reply(res, listSchema(suggestionSummarySchema), { data });
+  });
+
+  router.get("/leave-preview", requirePermission("recipes.view"), async (req, res) => {
+    reply(res, recipeLeavePreviewSchema, await sharing.leavePreview(ctx, actorOf(req)));
+  });
+
+  // --- Tags d'espace [D08, D19] ---
+
+  router.get("/tags", requirePermission("recipes.view"), async (req, res) => {
+    reply(res, listSchema(tagSchema), { data: await tags.listSpaceTags(ctx, spaceOf(req)) });
+  });
+
+  router.post(
+    "/tags",
+    requirePermission("recipes.tags.create"),
+    handle({ body: tagNameBodySchema }, async ({ body }, req, res) => {
+      const { tag, created } = await tags.findOrCreateSpaceTag(
+        ctx,
+        spaceOf(req),
+        body.name,
+        currentUserId(req)
+      );
+      reply(res, tagSchema, tag, created ? 201 : 200);
+    })
+  );
+
+  router.patch(
+    "/tags/:tagId",
+    requirePermission("recipes.tags.moderate"),
+    handle(
+      { params: tagParamsSchema, body: tagNameBodySchema },
+      async ({ params, body }, req, res) => {
+        reply(
+          res,
+          tagSchema,
+          await tags.renameSpaceTag(ctx, spaceOf(req), params.tagId, body.name)
+        );
+      }
+    )
+  );
+
+  router.post(
+    "/tags/:tagId/merge",
+    requirePermission("recipes.tags.moderate"),
+    handle(
+      { params: tagParamsSchema, body: mergeTagBodySchema },
+      async ({ params, body }, req, res) => {
+        await tags.mergeSpaceTag(ctx, spaceOf(req), params.tagId, body.intoTagId);
+        res.status(204).end();
+      }
+    )
+  );
+
+  router.delete(
+    "/tags/:tagId",
+    requirePermission("recipes.tags.moderate"),
+    handle({ params: tagParamsSchema }, async ({ params }, req, res) => {
+      await tags.deleteSpaceTag(ctx, spaceOf(req), params.tagId);
+      res.status(204).end();
+    })
+  );
+
+  router.get(
+    "/:recipeId",
+    requirePermission("recipes.view"),
+    handle({ params: recipeIdSchema }, async ({ params }, req, res) => {
+      reply(res, recipeSchema, await recipes.getRecipe(ctx, actorOf(req), params.recipeId));
+    })
+  );
+
+  // Droits fins (auteur, moderateur de l'espace d'origine) verifies par le service.
+  router.put(
+    "/:recipeId",
+    requirePermission("recipes.view"),
+    handle(
+      { params: recipeIdSchema, body: updateRecipeBodySchema },
+      async ({ params, body }, req, res) => {
+        const recipe = await recipes.updateRecipe(ctx, actorOf(req), params.recipeId, body);
+        reply(res, recipeSchema, recipe);
+      }
+    )
+  );
+
+  router.delete(
+    "/:recipeId",
+    requirePermission("recipes.view"),
+    handle({ params: recipeIdSchema }, async ({ params }, req, res) => {
+      await recipes.deleteRecipe(ctx, actorOf(req), params.recipeId);
+      res.status(204).end();
+    })
+  );
+
+  // Photo hors revisions, meme droit que modifier [D167].
+  router.put(
+    "/:recipeId/photo",
+    requirePermission("recipes.view"),
+    handle(
+      { params: recipeIdSchema, body: attachImageBodySchema },
+      async ({ params, body }, req, res) => {
+        const url = await photos.setPhoto(ctx, actorOf(req), params.recipeId, body.uploadId);
+        reply(res, imageResponseSchema, { url });
+      }
+    )
+  );
+
+  router.delete(
+    "/:recipeId/photo",
+    requirePermission("recipes.view"),
+    handle({ params: recipeIdSchema }, async ({ params }, req, res) => {
+      await photos.removePhoto(ctx, actorOf(req), params.recipeId);
+      reply(res, imageResponseSchema, { url: null });
+    })
+  );
+
+  router.put(
+    "/:recipeId/space-tags",
+    requirePermission("recipes.tags.create"),
+    handle(
+      { params: recipeIdSchema, body: recipeSpaceTagsBodySchema },
+      async ({ params, body }, req, res) => {
+        const recipe = await recipes.setSpaceTags(ctx, actorOf(req), params.recipeId, body.tagIds);
+        reply(res, recipeSchema, recipe);
+      }
+    )
+  );
+
+  router.get(
+    "/:recipeId/sharing",
+    requirePermission("recipes.view"),
+    handle({ params: recipeIdSchema }, async ({ params }, req, res) => {
+      reply(res, recipeSharingSchema, await sharing.getSharing(ctx, actorOf(req), params.recipeId));
+    })
+  );
+
+  router.put(
+    "/:recipeId/shares",
+    requirePermission("recipes.view"),
+    handle(
+      { params: recipeIdSchema, body: recipeSharesBodySchema },
+      async ({ params, body }, req, res) => {
+        const result = await sharing.setShares(ctx, actorOf(req), params.recipeId, body.spaceIds);
+        reply(res, recipeSharingSchema, result);
+      }
+    )
+  );
+
+  router.post(
+    "/:recipeId/share-requests",
+    requirePermission("recipes.view"),
+    handle(
+      { params: recipeIdSchema, body: shareRequestBodySchema },
+      async ({ params, body }, req, res) => {
+        const { status, created } = await sharing.requestShare(
+          ctx,
+          actorOf(req),
+          params.recipeId,
+          body
+        );
+        reply(res, shareRequestResultSchema, { status }, created ? 201 : 200);
+      }
+    )
+  );
+
+  router.delete(
+    "/:recipeId/share",
+    requirePermission("recipes.view"),
+    handle({ params: recipeIdSchema }, async ({ params }, req, res) => {
+      await sharing.removeFromSpace(ctx, actorOf(req), params.recipeId);
+      res.status(204).end();
+    })
+  );
+
+  // --- Revisions [F-REC-8, D55] : restaurer = meme droit que modifier (service) ---
+
+  router.get(
+    "/:recipeId/revisions",
+    requirePermission("recipes.view"),
+    handle({ params: recipeIdSchema }, async ({ params }, req, res) => {
+      const data = await revisions.listRevisions(ctx, actorOf(req), params.recipeId);
+      reply(res, listSchema(recipeRevisionSchema), { data });
+    })
+  );
+
+  router.post(
+    "/:recipeId/revisions/:number/restore",
+    requirePermission("recipes.view"),
+    handle(
+      { params: revisionIdSchema, body: restoreRevisionBodySchema },
+      async ({ params, body }, req, res) => {
+        const recipe = await revisions.restoreRevision(
+          ctx,
+          actorOf(req),
+          params.recipeId,
+          params.number,
+          body.revision
+        );
+        reply(res, recipeSchema, recipe);
+      }
+    )
+  );
+
+  // --- Suggestions [D04, D140, D166] : decideur et suggereur verifies par le service ---
+
+  router.get(
+    "/:recipeId/suggestions",
+    requirePermission("recipes.view"),
+    handle({ params: recipeIdSchema }, async ({ params }, req, res) => {
+      const data = await suggestions.listRecipeSuggestions(ctx, actorOf(req), params.recipeId);
+      reply(res, listSchema(suggestionSummarySchema), { data });
+    })
+  );
+
+  router.post(
+    "/:recipeId/suggestions",
+    requirePermission("recipes.view"),
+    handle(
+      { params: recipeIdSchema, body: createSuggestionBodySchema },
+      async ({ params, body }, req, res) => {
+        const created = await suggestions.createSuggestion(
+          ctx,
+          actorOf(req),
+          params.recipeId,
+          body
+        );
+        reply(res, suggestionSummarySchema, created, 201);
+      }
+    )
+  );
+
+  router.get(
+    "/:recipeId/suggestions/:suggestionId",
+    requirePermission("recipes.view"),
+    handle({ params: suggestionIdSchema }, async ({ params }, req, res) => {
+      const suggestion = await suggestions.getSuggestion(
+        ctx,
+        actorOf(req),
+        params.recipeId,
+        params.suggestionId
+      );
+      reply(res, suggestionSchema, suggestion);
+    })
+  );
+
+  router.post(
+    "/:recipeId/suggestions/:suggestionId/accept",
+    requirePermission("recipes.view"),
+    handle(
+      { params: suggestionIdSchema, body: acceptSuggestionBodySchema },
+      async ({ params, body }, req, res) => {
+        const recipe = await suggestions.acceptSuggestion(
+          ctx,
+          actorOf(req),
+          params.recipeId,
+          params.suggestionId,
+          body.revision
+        );
+        reply(res, recipeSchema, recipe);
+      }
+    )
+  );
+
+  router.post(
+    "/:recipeId/suggestions/:suggestionId/reject",
+    requirePermission("recipes.view"),
+    handle(
+      { params: suggestionIdSchema, body: rejectSuggestionBodySchema },
+      async ({ params, body }, req, res) => {
+        await suggestions.rejectSuggestion(
+          ctx,
+          actorOf(req),
+          params.recipeId,
+          params.suggestionId,
+          body.message
+        );
+        res.status(204).end();
+      }
+    )
+  );
+
+  router.post(
+    "/:recipeId/suggestions/:suggestionId/withdraw",
+    requirePermission("recipes.view"),
+    handle({ params: suggestionIdSchema }, async ({ params }, req, res) => {
+      await suggestions.withdrawSuggestion(ctx, actorOf(req), params.recipeId, params.suggestionId);
+      res.status(204).end();
+    })
+  );
+
+  router.post(
+    "/:recipeId/suggestions/:suggestionId/convert",
+    requirePermission("recipes.view"),
+    handle(
+      { params: suggestionIdSchema, body: convertSuggestionBodySchema },
+      async ({ params, body }, req, res) => {
+        const recipe = await suggestions.convertSuggestion(
+          ctx,
+          actorOf(req),
+          params.recipeId,
+          params.suggestionId,
+          body.targetSpaceId
+        );
+        reply(res, recipeSchema, recipe, 201);
+      }
+    )
+  );
+
+  // --- Adaptation [D17, D105, D140] : droits dans l'espace cible verifies par le service ---
+
+  router.post(
+    "/:recipeId/adapt",
+    requirePermission("recipes.view"),
+    handle(
+      { params: recipeIdSchema, body: adaptRecipeBodySchema },
+      async ({ params, body }, req, res) => {
+        const recipe = await adaptation.adaptRecipe(
+          ctx,
+          actorOf(req),
+          params.recipeId,
+          body.targetSpaceId
+        );
+        reply(res, recipeSchema, recipe, 201);
+      }
+    )
+  );
+
+  router.get(
+    "/:recipeId/compare",
+    requirePermission("recipes.view"),
+    handle({ params: recipeIdSchema }, async ({ params }, req, res) => {
+      const comparison = await adaptation.compareWithOriginal(ctx, actorOf(req), params.recipeId);
+      reply(res, recipeComparisonSchema, comparison);
+    })
+  );
+
+  router.post(
+    "/:recipeId/compare/seen",
+    requirePermission("recipes.view"),
+    handle({ params: recipeIdSchema }, async ({ params }, req, res) => {
+      await adaptation.markOriginalSeen(ctx, actorOf(req), params.recipeId);
+      res.status(204).end();
+    })
+  );
+
+  return router;
+}
+
+export const recipesModule: ApiModule = {
+  code: "recipes",
+  alwaysOn: true,
+  catalog: { status: "AVAILABLE", isDefault: true, sortOrder: 1 },
+  permissions: RECIPE_PERMISSIONS,
+  // Notifications et activite (C6.5) [D41] ; "Nouvelles recettes" coupee par defaut.
+  notificationCategories: { "recipes.sharing": {}, "recipes.new": { defaultEnabled: false } },
+  notificationTypes: {
+    "recipes.suggestion.created": { category: "recipes.sharing" },
+    "recipes.suggestion.accepted": { category: "recipes.sharing" },
+    "recipes.suggestion.rejected": { category: "recipes.sharing" },
+    "recipes.share-request.created": { category: "recipes.sharing" },
+    "recipes.share-request.approved": { category: "recipes.sharing" },
+    "recipes.share-request.rejected": { category: "recipes.sharing" },
+    "recipes.recipe.adapted": { category: "recipes.sharing" },
+    "recipes.recipe.created": { category: "recipes.new" },
+  },
+  activityTypes: ["recipes.recipe.created", "recipes.recipe.shared", "recipes.recipes.added"],
+  router: recipesRouter,
+  onMemberLeft: sharing.onMemberLeft,
+  onSpaceDeleted: sharing.onSpaceDeleted,
+  storageKeys: photos.storageKeys,
+  search: searchRecipes,
+  exportData: exportRecipes,
+  provides: { "recipes.catalog": provide("recipes.catalog", recipeCatalog) },
+  widgets: RECIPE_WIDGETS,
+};

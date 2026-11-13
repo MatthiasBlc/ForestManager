@@ -1,0 +1,274 @@
+<title>Ajouter mes recettes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Maquette C7c.0 : une rangee d'ecrans de telephone (390 px) dans l'ordre du parcours, jetons du theme Braise de Forest Manager. */
+:root {
+  --bg: #f5f3ef; --surface: #fbfaf7; --raised: #ffffff; --line: #ddd6cb; --line-strong: #918a7f;
+  --ink: #1f1d1a; --muted: #5f5a53; --overlay: rgba(28, 26, 22, 0.42);
+  --accent: #b45f19; --accent-soft: #f2e7dc; --accent-text: #9f5619; --on-accent: #ffffff;
+  --second-soft: #e5e8e9; --second-text: #46607f; --ok-soft: #e2ebe3; --ok-text: #2d754b;
+  --stage: #ebe7e0; --shadow: 0 -8px 32px rgba(40, 32, 20, 0.16); --toast: #1f1d1a; --on-toast: #f5f3ef;
+  --font-display: "Sora", "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #16181b; --surface: #1f2226; --raised: #282c31; --line: #32363c; --line-strong: #74777c;
+  --ink: #eceae6; --muted: #a6a39e; --overlay: rgba(8, 9, 10, 0.62);
+  --accent: #e8913a; --accent-soft: #4b3a2a; --accent-text: #e89541; --on-accent: #121417;
+  --second-soft: #383f4a; --second-text: #93abc9; --ok-soft: #30463d; --ok-text: #6cc490;
+  --stage: #0f1113; --shadow: 0 -8px 32px rgba(0, 0, 0, 0.55); --toast: #eceae6; --on-toast: #16181b;
+  color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #16181b; --surface: #1f2226; --raised: #282c31; --line: #32363c; --line-strong: #74777c;
+  --ink: #eceae6; --muted: #a6a39e; --overlay: rgba(8, 9, 10, 0.62);
+  --accent: #e8913a; --accent-soft: #4b3a2a; --accent-text: #e89541; --on-accent: #121417;
+  --second-soft: #383f4a; --second-text: #93abc9; --ok-soft: #30463d; --ok-text: #6cc490;
+  --stage: #0f1113; --shadow: 0 -8px 32px rgba(0, 0, 0, 0.55); --toast: #eceae6; --on-toast: #16181b;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--stage); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 40px; }
+header.page { max-width: 1240px; margin: 0 auto 24px; display: grid; gap: 6px; }
+header.page h1 { font: 700 26px/1.2 var(--font-display); margin: 0; text-wrap: balance; }
+header.page p { margin: 0; color: var(--muted); max-width: 70ch; }
+.flow { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 28px 20px; }
+figure { margin: 0; display: grid; gap: 10px; align-content: start; min-width: 0; }
+figcaption { display: grid; gap: 2px; }
+figcaption b { font: 600 15px/1.3 var(--font-display); }
+figcaption span { color: var(--muted); font-size: 14px; }
+.step { font: 500 12px/1 var(--font-mono); color: var(--accent-text); letter-spacing: .04em; }
+
+/* Telephone */
+.phone { position: relative; width: 100%; max-width: 360px; height: 700px; border-radius: 28px; overflow: hidden; background: var(--bg);
+  border: 1px solid var(--line); display: flex; flex-direction: column; }
+.top { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.space-dot { width: 30px; height: 30px; border-radius: 9px; background: #3f5fa8; color: #fff; display: grid; place-items: center; font: 700 13px var(--font-display); }
+.top b { font: 600 16px var(--font-display); flex: 1; }
+.list { padding: 16px; display: grid; gap: 10px; }
+.btn-main { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: 12px; border: 0;
+  background: var(--accent); color: var(--on-accent); font: 700 15px var(--font-sans); padding: 0 16px; }
+.btn-ghost { min-height: 44px; border-radius: 12px; border: 1px solid var(--line-strong); background: transparent; color: var(--ink); font: 600 15px var(--font-sans); padding: 0 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: grid; gap: 2px; }
+.card small { color: var(--muted); font-size: 13px; }
+.scrim { position: absolute; inset: 0; background: var(--overlay); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--raised); border-radius: 22px 22px 0 0; box-shadow: var(--shadow);
+  padding: 8px 16px 20px; display: flex; flex-direction: column; gap: 12px; max-height: 92%; }
+.sheet.tall { top: 44px; }
+.grab { width: 40px; height: 4px; border-radius: 4px; background: var(--line-strong); margin: 0 auto 4px; opacity: .6; }
+.sheet-head { display: flex; align-items: center; gap: 8px; }
+.sheet-head h2 { margin: 0; flex: 1; font: 600 17px/1.3 var(--font-display); text-wrap: balance; }
+.icon-btn { width: 36px; height: 36px; border-radius: 10px; border: 0; background: transparent; color: var(--ink); display: grid; place-items: center; }
+svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.option { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); text-align: left; width: 100%; font: inherit; }
+.option.lead { border-color: var(--accent); background: var(--accent-soft); }
+.option .ico { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); flex: none; }
+.option.lead .ico { background: var(--accent); color: var(--on-accent); }
+.option .txt { display: grid; flex: 1; min-width: 0; }
+.option .txt b { font-size: 15px; }
+.option .txt small { font-size: 14px; color: var(--muted); }
+.note { font-size: 14px; color: var(--muted); }
+.field { display: flex; align-items: center; gap: 8px; min-height: 44px; border: 1px solid var(--line-strong); border-radius: 12px; padding: 0 12px; color: var(--muted); background: var(--surface); }
+.chips { display: flex; gap: 6px; overflow: hidden; }
+.chip { flex: none; border-radius: 999px; border: 1px solid var(--line); padding: 5px 12px; font-size: 13px; font-weight: 600; background: var(--surface); color: var(--ink); }
+.chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.picks { flex: 1; overflow: auto; display: grid; align-content: start; gap: 2px; margin: 0 -4px; padding: 0 4px; }
+.pick { display: flex; align-items: center; gap: 12px; padding: 10px 8px; border-radius: 12px; cursor: pointer; }
+.pick:hover { background: var(--surface); }
+.pick input { appearance: none; width: 22px; height: 22px; border-radius: 7px; border: 2px solid var(--line-strong); display: grid; place-items: center; flex: none; margin: 0; background: var(--raised); }
+.pick input:checked { background: var(--accent); border-color: var(--accent); }
+.pick input:checked::after { content: ""; width: 10px; height: 6px; border: solid var(--on-accent); border-width: 0 0 2.5px 2.5px; transform: translateY(-1px) rotate(-45deg); }
+.pick input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pick .txt { display: grid; min-width: 0; flex: 1; }
+.pick .txt b { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pick .txt small { font-size: 13px; color: var(--muted); }
+.badge { font-size: 12px; font-weight: 700; border-radius: 999px; padding: 2px 8px; background: var(--second-soft); color: var(--second-text); flex: none; }
+.foot { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
+.foot .count { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.sub-group { display: grid; gap: 6px; }
+.sub-group h3 { margin: 0; font: 600 12px/16px var(--font-sans); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.sub { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+.sub .mark { width: 22px; height: 22px; border-radius: 999px; display: grid; place-items: center; flex: none; margin-top: 1px; }
+.sub .mark.yes { background: var(--ok-soft); color: var(--ok-text); }
+.sub .mark.no { background: var(--second-soft); color: var(--second-text); }
+.sub .mark svg { width: 14px; height: 14px; stroke-width: 2.5; }
+.sub .txt { display: grid; }
+.sub small { color: var(--muted); font-size: 13px; }
+.row2 { display: grid; grid-template-columns: auto 1fr; gap: 8px; }
+.toast { position: absolute; left: 16px; right: 16px; bottom: 20px; background: var(--toast); color: var(--on-toast); border-radius: 14px; padding: 12px 14px; display: flex; gap: 10px; align-items: center; font-weight: 600; }
+.new { outline: 2px solid var(--accent); outline-offset: -1px; }
+.empty { flex: 1; display: grid; place-content: center; text-align: center; gap: 10px; padding: 0 12px; }
+.empty .ico { margin: 0 auto; width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); }
+.empty b { font: 600 16px var(--font-display); }
+.empty p { margin: 0; color: var(--muted); font-size: 14px; }
+.questions { max-width: 1240px; margin: 32px auto 0; display: grid; gap: 8px; }
+.questions h2 { font: 600 18px var(--font-display); margin: 0; }
+.questions ul { margin: 0; padding-left: 20px; color: var(--muted); max-width: 80ch; display: grid; gap: 4px; }
+@media (prefers-reduced-motion: no-preference) { .pick input { transition: background .12s, border-color .12s; } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2z"/><path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></symbol>
+  <symbol id="i-text" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M8 12h8M8 16h5"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-dash" viewBox="0 0 24 24"><path d="M6 12h12"/></symbol>
+</svg>
+
+<header class="page">
+  <h1>Ajouter mes recettes à un espace</h1>
+  <p>Maquette C7c.0 (D203, D208). Parcours dans un espace de groupe, « Coloc », sur mobile. En bureau, les mêmes feuilles s'ouvrent en fenêtre centrée. Dans l'écran 3, les cases se cochent pour voir le compteur bouger.</p>
+</header>
+
+<div class="flow">
+  <figure>
+    <figcaption><span class="step">1 · F-AJOUT-RECETTE</span><b>Ajouter une recette</b><span>« Depuis mes recettes » en tête, mis en avant. « Créer » regroupe les trois façons d'écrire une recette.</span></figcaption>
+    <div class="phone">
+      <div class="top"><span class="space-dot">C</span><b>Coloc</b></div>
+      <div class="list">
+        <button class="btn-main" type="button"><svg><use href="#i-plus"/></svg>Ajouter une recette</button>
+        <div class="card"><b>Curry de pois chiches</b><small>4 pers. · 35 min</small></div>
+        <div class="card"><b>Pancakes du dimanche</b><small>6 pers. · 25 min</small></div>
+      </div>
+      <div class="scrim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="sheet-head"><h2>Ajouter une recette dans Coloc</h2><button class="icon-btn" type="button" aria-label="Fermer"><svg><use href="#i-x"/></svg></button></div>
+        <button class="option lead" type="button"><span class="ico"><svg><use href="#i-book"/></svg></span><span class="txt"><b>Depuis mes recettes</b><small>Celles que tu as déjà, en quelques cases à cocher</small></span><svg><use href="#i-chev"/></svg></button>
+        <button class="option" type="button"><span class="ico"><svg><use href="#i-plus"/></svg></span><span class="txt"><b>Créer</b><small>La saisir, importer un lien ou coller un texte</small></span><svg><use href="#i-chev"/></svg></button>
+      </div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><span class="step">2 · Sous-menu Créer</span><b>Créer une recette</b><span>Les trois choix d'aujourd'hui, inchangés. La flèche revient au premier niveau.</span></figcaption>
+    <div class="phone">
+      <div class="top"><span class="space-dot">C</span><b>Coloc</b></div>
+      <div class="list"><div class="card"><b>Curry de pois chiches</b><small>4 pers. · 35 min</small></div></div>
+      <div class="scrim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="sheet-head"><button class="icon-btn" type="button" aria-label="Retour"><svg><use href="#i-back"/></svg></button><h2>Créer une recette</h2><button class="icon-btn" type="button" aria-label="Fermer"><svg><use href="#i-x"/></svg></button></div>
+        <button class="option" type="button"><span class="ico"><svg><use href="#i-pencil"/></svg></span><span class="txt"><b>Saisir</b><small>Écrire la recette toi-même</small></span><svg><use href="#i-chev"/></svg></button>
+        <button class="option" type="button"><span class="ico"><svg><use href="#i-link"/></svg></span><span class="txt"><b>Un lien</b><small>Une page de recette sur le web</small></span></button>
+        <button class="option" type="button"><span class="ico"><svg><use href="#i-text"/></svg></span><span class="txt"><b>Un texte collé</b><small>Depuis un mail, une note, un PDF</small></span></button>
+        <span class="note">Dans les trois cas, tu vérifies tout dans l'éditeur avant d'enregistrer.</span>
+      </div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><span class="step">3 · F-MES-RECETTES</span><b>Choisir ses recettes</b><span>Seulement tes recettes qui ne sont pas déjà dans Coloc. Recherche et tags comme la liste. 50 au plus par ajout.</span></figcaption>
+    <div class="phone">
+      <div class="scrim" style="background: var(--overlay);"></div>
+      <div class="sheet tall">
+        <div class="grab"></div>
+        <div class="sheet-head"><button class="icon-btn" type="button" aria-label="Retour"><svg><use href="#i-back"/></svg></button><h2>Mes recettes à ajouter</h2><button class="icon-btn" type="button" aria-label="Fermer"><svg><use href="#i-x"/></svg></button></div>
+        <div class="field"><svg><use href="#i-search"/></svg>Rechercher</div>
+        <div class="chips"><span class="chip on">Toutes</span><span class="chip">Végé</span><span class="chip">Rapide</span><span class="chip">Dessert</span><span class="chip">Batch</span></div>
+        <div class="picks" id="picks">
+          <label class="pick"><input type="checkbox" id="p1" checked><span class="txt"><b>Saumon teriyaki et brocolis</b><small>Perso · 2 pers. · 35 min</small></span></label>
+          <label class="pick"><input type="checkbox" id="p2" checked><span class="txt"><b>Lasagnes bolognaise</b><small>Famille · 6 pers. · 1 h 30</small></span></label>
+          <label class="pick"><input type="checkbox" id="p3"><span class="txt"><b>Sauce teriyaki</b><small>Perso · rend 300 ml</small></span><span class="badge">Base</span></label>
+          <label class="pick"><input type="checkbox" id="p4" checked><span class="txt"><b>Dahl de lentilles corail</b><small>Perso · 4 pers. · 40 min</small></span></label>
+          <label class="pick"><input type="checkbox" id="p5"><span class="txt"><b>Tarte aux poireaux</b><small>Famille · 6 pers. · 55 min</small></span></label>
+          <label class="pick"><input type="checkbox" id="p6"><span class="txt"><b>Granola maison</b><small>Perso · 800 g · 30 min</small></span></label>
+          <label class="pick"><input type="checkbox" id="p7"><span class="txt"><b>Riz cantonais</b><small>Perso · 4 pers. · 25 min</small></span></label>
+        </div>
+        <div class="foot">
+          <div class="count"><span id="count">3 choisies</span><span>50 au plus</span></div>
+          <button class="btn-main" type="button" id="add">Ajouter 3 recettes</button>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><span class="step">4 · Confirmation (si des sous-recettes suivent)</span><b>Ce qui arrive avec</b><span>Sans sous-recette, l'ajout se fait dès « Ajouter », sans cet écran.</span></figcaption>
+    <div class="phone">
+      <div class="scrim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="sheet-head"><button class="icon-btn" type="button" aria-label="Retour"><svg><use href="#i-back"/></svg></button><h2>Ajouter 3 recettes à Coloc</h2></div>
+        <div class="sub-group">
+          <h3>Arrivent avec</h3>
+          <div class="sub"><span class="mark yes"><svg><use href="#i-check"/></svg></span><span class="txt"><b>Sauce teriyaki</b><small>Utilisée par Saumon teriyaki et brocolis</small></span></div>
+          <div class="sub"><span class="mark yes"><svg><use href="#i-check"/></svg></span><span class="txt"><b>Béchamel</b><small>Utilisée par Lasagnes bolognaise</small></span></div>
+        </div>
+        <div class="sub-group">
+          <h3>Restent dans leur espace</h3>
+          <div class="sub"><span class="mark no"><svg><use href="#i-dash"/></svg></span><span class="txt"><b>Pâte fraîche de Léa</b><small>Recette de Léa : elle seule peut la partager. Dans Coloc, elle sera marquée « non disponible » dans Lasagnes bolognaise.</small></span></div>
+        </div>
+        <span class="note">Ce sont les mêmes recettes, pas des copies : une modification se voit dans tous tes espaces.</span>
+        <div class="row2"><button class="btn-ghost" type="button">Retour</button><button class="btn-main" type="button">Ajouter</button></div>
+      </div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><span class="step">5 · Retour à la liste</span><b>Ajoutées</b><span>Toast, liste rechargée, recettes ajoutées en tête (tri « récentes »). Le fil de Coloc reçoit une seule ligne : « Matthias a ajouté 3 recettes ».</span></figcaption>
+    <div class="phone">
+      <div class="top"><span class="space-dot">C</span><b>Coloc</b></div>
+      <div class="list">
+        <button class="btn-main" type="button"><svg><use href="#i-plus"/></svg>Ajouter une recette</button>
+        <div class="card new"><b>Saumon teriyaki et brocolis</b><small>2 pers. · 35 min</small></div>
+        <div class="card new"><b>Lasagnes bolognaise</b><small>6 pers. · 1 h 30</small></div>
+        <div class="card new"><b>Dahl de lentilles corail</b><small>4 pers. · 40 min</small></div>
+        <div class="card"><b>Curry de pois chiches</b><small>4 pers. · 35 min</small></div>
+      </div>
+      <div class="toast"><svg><use href="#i-check"/></svg>3 recettes ajoutées à Coloc</div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><span class="step">6 · État vide</span><b>Rien à ajouter</b><span>Toutes tes recettes sont déjà là. Sans aucune recette, le texte devient « Tu n'as pas encore de recette » et le bouton reste « Créer ».</span></figcaption>
+    <div class="phone">
+      <div class="scrim"></div>
+      <div class="sheet tall">
+        <div class="grab"></div>
+        <div class="sheet-head"><button class="icon-btn" type="button" aria-label="Retour"><svg><use href="#i-back"/></svg></button><h2>Mes recettes à ajouter</h2><button class="icon-btn" type="button" aria-label="Fermer"><svg><use href="#i-x"/></svg></button></div>
+        <div class="empty">
+          <span class="ico"><svg><use href="#i-book"/></svg></span>
+          <b>Toutes tes recettes sont déjà dans Coloc</b>
+          <p>Crée-en une nouvelle : elle sera visible ici tout de suite.</p>
+          <button class="btn-main" type="button"><svg><use href="#i-plus"/></svg>Créer</button>
+        </div>
+      </div>
+    </div>
+  </figure>
+</div>
+
+<section class="questions">
+  <h2>Hors maquette, déjà tranché</h2>
+  <ul>
+    <li>Tout ou rien : si une recette n'est plus disponible au moment d'ajouter, rien n'est ajouté, la liste se recharge et la sélection garde les recettes encore disponibles.</li>
+    <li>Le bouton reste « Nouvelle recette » dans l'espace perso, sans « Depuis mes recettes ».</li>
+    <li>La palette (Ctrl K) gagne l'action « Ajouter mes recettes » dans un espace de groupe.</li>
+  </ul>
+</section>
+
+<script>
+(function () {
+  var picks = document.getElementById('picks');
+  var count = document.getElementById('count');
+  var add = document.getElementById('add');
+  function update() {
+    var n = picks.querySelectorAll('input:checked').length;
+    count.textContent = n + (n > 1 ? ' choisies' : ' choisie');
+    add.textContent = n === 0 ? 'Choisis au moins une recette' : 'Ajouter ' + n + (n > 1 ? ' recettes' : ' recette');
+    add.disabled = n === 0;
+    add.style.opacity = n === 0 ? '0.5' : '1';
+  }
+  picks.addEventListener('change', update);
+  update();
+})();
+</script>

@@ -1,124 +1,67 @@
 # Forest Manager
 
-App de gestion de communautes pour partage de recettes. Communautes privees (invite-only), recettes collaboratives avec propositions/variantes, admin plateforme via SuperAdmin.
+Plateforme d'espaces prives (famille, amis, colocs) organisee en modules. Module principal : recettes partagees. Modules suivants : planning de repas, liste de courses.
+
+## Etat actuel
+
+**Chantier en cours : Rework V2. CDC 1.0 valide le 2026-11-05 : phase de realisation. C1 (socle API), C2 (design system, shell, ecrans du socle) et C3 (Recettes) termines ; C4 (referentiels et admin) et C5 (planning) termines ; C6 (notifications, activite, temps reel, changelog) termine ; C6b (recherche, export, widgets) termine ; C7 (E2E, suivi d'erreurs, CI, preprod en ligne et recettee) termine ; C7b (connexion Discord, D202) en cours, plan `27-Plan-C7b.md` a ecrire, puis seconde recette et C8 ; preprod et prod se deploient depuis ce poste, pas a pas avec le proprietaire (D201).**
+Point de reprise : `.claude/docs/Rework-V2/README.md`, puis la premiere case non cochee de `4-Roadmap.md`.
+
+La V1 est obsolete et supprimee de l'arbre (reference : tag git `v1-final`).
+
+## Contexte de session
+
+Des que le contexte depasse 30 a 40 % et qu'un point de reprise propre existe (tache terminee, etat ecrit dans le `README.md` du chantier, travail committe), **marquer une pause et prevenir l'utilisateur** qu'il faut nettoyer le contexte (`/clear`) avant de continuer. Ne pas enchainer sur l'etape suivante.
 
 ## Stack
 
-React 18 + TS + Vite + TailwindCSS | Node.js + Express + TS | PostgreSQL + Prisma | Docker + GitHub Actions + Portainer
+Monorepo npm workspaces (npm 11) : `apps/api`, `apps/web`, `packages/shared`, `packages/test-utils`.
+Node 22 (types TS effaces nativement, pas de build API) + TypeScript 6 strict + Express 5 + Zod 4 | React 19 + Vite 8 | PostgreSQL 17 + Prisma (a partir de C1.4) | Vitest 5 | Docker + GitHub Actions + Portainer + Traefik.
+Cible complete et versions : `.claude/docs/Rework-V2/14-Architecture.md`.
+
+## Commandes
+
+Tout tourne sous Docker (`docker/`). Ne jamais lancer les tests hors Docker (env vars absentes). Lint, typecheck et format tournent sur l'hote (Node de `.nvmrc`).
+
+```bash
+npm run docker:up:build        # stack de dev (web :3000, API :3001) ; a relancer apres un changement de dependances
+npm run docker:logs            # logs
+npm run docker:down            # arreter (docker:clean supprime aussi la base de dev)
+npm test                       # tous les tests, dans docker/compose.test.yml (PostgreSQL de test en memoire)
+npm run test:api               # idem par projet : test:web, test:shared
+npm run test:down              # arreter la base de test
+npm run e2e                    # parcours Playwright dans docker/compose.e2e.yml (front en image prod) ; e2e:down pour arreter
+npm run lint && npm run typecheck
+npm run prisma:migrate         # migrations (a partir de C1.4) ; prisma:studio sur :5555
+npm run admin:create           # compte super admin dans la stack de dev (2FA a la premiere connexion)
+```
 
 ## Conventions
 
-- **Langue**: Code 100% anglais (variables, fonctions, modeles). Commentaires francais OK
-- **Accents**: Aucun dans le code/docs (ASCII only)
-- **Soft delete**: `deletedAt` sur entites principales (User, Community, Recipe...)
-- **Hard delete**: Tables pivot (RecipeTag, RecipeIngredient) via Cascade
-- **IDs**: UUID v4 partout
-- **Roles communaute**: MEMBER | MODERATOR
-- **Admin**: AdminUser (plateforme, isole du systeme user)
-- **Sessions**: 2 systemes isoles (user `connect.sid` 1h / admin `admin.sid` 30min)
-- **Securite admin**: 2FA TOTP obligatoire, rate limiting, audit log, sessions isolees
-
-## Commandes essentielles
-
-```bash
-npm run docker:up:build        # Demarrer dev
-npm run docker:logs            # Logs
-npm test                       # Tous les tests (backend + frontend)
-npm run test:backend           # Backend seul
-npm run test:frontend          # Frontend seul
-npx prisma migrate dev         # Migrations (dans container)
-npx prisma studio              # DB GUI :5555
-```
+- **TDD par defaut** (D151) : ecrire le test, le lancer et le voir echouer, puis le code minimal, puis nettoyer. Exceptions : outillage, configuration, Docker, CI.
+- **Langue** : code 100% anglais. Commentaires et docs en francais.
+- **Accents** : aucun dans le code et les docs (ASCII only).
+- **IDs** : UUID v4. UUID "not found" en test : `00000000-0000-4000-8000-000000000000`.
+- **Soft delete** (`deletedAt`) sur les entites principales ; hard delete en cascade sur les pivots.
+- **Codes erreur** : constantes centralisees dans `packages/shared/src/errors/index.ts`, jamais de string literal.
+- **Seed** : idempotent (upsert only, jamais de truncate). Preprod et prod sont persistantes et le seed tourne a chaque deploy.
+- **Admin** : `AdminUser` isole des users, session dediee 30 min, 2FA TOTP obligatoire.
 
 ## Git
 
-- **Main**: master
-- **Branche courante**: Developement
-- **Commits**: Ne JAMAIS ajouter de Co-Authored-By pour Claude
+- Flux : branche de travail -> PR vers `Developement` (code de preprod) -> PR `Developement` -> `master` (deploy preprod a chaque push sur la PR) -> fusion = prod (deploy auto au push sur `master`). Pendant la preprod V2, travail direct sur `Developement`. Le proprietaire pousse et fusionne.
+- Commit uniquement sur demande. **Jamais de Co-Authored-By pour Claude.**
 
-## Phase actuelle
+## Documentation
 
-MVP complet (phases 0-17). Voir `.claude/context/PROGRESS.md` pour les features en cours.
+Tout est dans `.claude/docs/` (index : `.claude/docs/README.md`). Regles :
 
-## Codes erreur
-
-**User API** : AUTH_001-012 | USER_001 | COMMUNITY_001-006 | RECIPE_001-009 | INVITE_001-006 | MEMBER_001-004 | PROPOSAL_001-004 | SHARE_001-006 | PUBLISH_001-003 | TAG_001-007 | INGREDIENT_003 | NOTIF_001-005 | IMPORT_001-003 | VALIDATION_001
-
-**Admin API** : ADMIN_001-011 | ADMIN_TAG_001-006 | ADMIN_ING_001-009 | ADMIN_UNIT_001-007 | ADMIN_REC_001-003 | ADMIN_COM_001-003 | ADMIN_FEAT_001-006
-
-## Regle: maintenir `.claude/` a jour
-
-Apres chaque modification (nouveau fichier, endpoint, migration, test, phase, branche), mettre a jour :
-
-- `.claude/context/` (PROGRESS, TESTS, API_MAP, DB_MODELS, FILE_MAP selon pertinence)
-- La **roadmap de la feature en cours** (cocher les taches dans `docs/features/*/ROADMAP.md`)
-
-Si une tache est en cours et que les tokens arrivent a leur limite, generer `.claude/context/RESUME.md` avec: tache en cours, etapes faites, etapes restantes, fichiers modifies, et tout contexte necessaire pour reprendre sans perte.
-
-### PROGRESS.md : garder le fichier compact
-
-- Juste un lien vers la phase en cours (spec + roadmap dans `docs/features/`)
-- Pas de duplication de la roadmap dans PROGRESS
-
-## Organisation docs/
-
-```
-docs/
-  0 - brainstorming futur.md       # Idees futures (transversal)
-  features/                         # Specs par feature post-MVP
-    tags-rework/
-      SPEC_TAGS_REWORK.md
-    ingredients-rework/
-      SPEC_INGREDIENTS_REWORK.md
-    recipe-rework-v2/
-      SPEC_RECIPE_REWORK_V2.md
-    notifications-rework/
-      SPEC_NOTIFICATIONS_REWORK.md
-    input-validation-security/
-      SPEC_INPUT_VALIDATION.md
-    photo-upload/
-      SPEC_PHOTO_UPLOAD.md
-      GUIDE_MINIO.md
-    audit-refactorisation/
-      SPEC_AUDIT_REFACTORISATION.md
-    recipe-import/
-      SPEC_RECIPE_IMPORT.md
-      ROADMAP.md
-    mobile-rework/                    # EN COURS
-      SPEC_MOBILE_REWORK.md
-      ROADMAP.md
-    e2e-testing/                      # PLANIFIE
-      SPEC_E2E_TESTING.md
-      ROADMAP.md
-```
-
-Chaque nouvelle feature a son dossier dans `docs/features/` avec au minimum une spec et une roadmap.
-
-## Contexte approfondi (lire selon le besoin)
-
-| Besoin                              | Fichier                                                             |
-| ----------------------------------- | ------------------------------------------------------------------- |
-| Avancement & phase en cours         | `.claude/context/PROGRESS.md`                                       |
-| Tests: commandes, inventaire, infra | `.claude/context/TESTS.md`                                          |
-| Endpoints API complets              | `.claude/context/API_MAP.md`                                        |
-| Schema DB & modeles Prisma          | `.claude/context/DB_MODELS.md`                                      |
-| Arborescence fichiers source        | `.claude/context/FILE_MAP.md`                                       |
-| Idees futures                       | `docs/0 - brainstorming futur.md`                                   |
-| **Feature : Recipe Import**         |                                                                     |
-| Spec Recipe Import                  | `docs/features/recipe-import/SPEC_RECIPE_IMPORT.md`                 |
-| Roadmap Recipe Import               | `docs/features/recipe-import/ROADMAP.md`                            |
-| **Feature : Mobile Rework**         |                                                                     |
-| Spec Mobile Rework                  | `docs/features/mobile-rework/SPEC_MOBILE_REWORK.md`                 |
-| Roadmap Mobile Rework               | `docs/features/mobile-rework/ROADMAP.md`                            |
-| **Feature : E2E Testing**           |                                                                     |
-| Spec E2E Testing                    | `docs/features/e2e-testing/SPEC_E2E_TESTING.md`                     |
-| Roadmap E2E Testing                 | `docs/features/e2e-testing/ROADMAP.md`                              |
-| **Specs features (reference)**      |                                                                     |
-| Tags Rework                         | `docs/features/tags-rework/SPEC_TAGS_REWORK.md`                     |
-| Ingredients Rework                  | `docs/features/ingredients-rework/SPEC_INGREDIENTS_REWORK.md`       |
-| Recipe Rework v2                    | `docs/features/recipe-rework-v2/SPEC_RECIPE_REWORK_V2.md`           |
-| Input Validation                    | `docs/features/input-validation-security/SPEC_INPUT_VALIDATION.md`  |
-| Notifications Rework                | `docs/features/notifications-rework/SPEC_NOTIFICATIONS_REWORK.md`   |
-| Photo Upload                        | `docs/features/photo-upload/SPEC_PHOTO_UPLOAD.md`                   |
-| Guide MinIO                         | `docs/features/photo-upload/GUIDE_MINIO.md`                         |
-| Audit Refactorisation               | `docs/features/audit-refactorisation/SPEC_AUDIT_REFACTORISATION.md` |
+- **Un chantier = un dossier** `.claude/docs/<Chantier>/` avec des fichiers numerotes : `README.md` (etat + ordre de lecture), `1-CDC`, `3-Journal-des-Decisions`, `4-Roadmap`, et les artefacts HTML.
+- **Le CDC porte la conclusion, le journal porte le debat.** Une decision = un numero `D##` dans le journal, reprise en une ligne dans le CDC.
+- **Roadmap** : cases `- [ ]` ; la premiere non cochee est le point de reprise. Cocher au fil de l'eau.
+- **Artefacts** : toujours ecrire la copie locale dans le dossier du chantier AVANT de publier (lisible hors ligne), puis publier depuis ce fichier.
+- **Un compteur ou un statut a un seul endroit** ; ailleurs on renvoie, on ne recopie pas.
+- **Chantier termine** -> son dossier part dans `.claude/docs/Archive/` et n'est plus lu par defaut. Dans un chantier en cours, une etude terminee (conclusions reportees au CDC et au journal) va dans son sous-dossier `archive/`.
+- **V1** : code et docs retires de l'arbre, lisibles dans le tag git `v1-final` (`git show v1-final:<chemin>`).
+- Ne pas recopier ce que le code dit deja (arborescence, liste d'endpoints, schema) : lire le code (`apps/api/prisma/schema.prisma`, les `routes.ts` de `apps/api/src/`).
+- Session interrompue : ecrire l'etat dans le `README.md` du chantier (section "Reprise").

@@ -1,0 +1,14 @@
+<!-- @dsCard group="Affichage" height=300 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>EmptyState</title>
+<style>body{margin:0;padding:16px;background:var(--bg);color:var(--ink);font-family:var(--font-sans)} .lbl{font:600 12px/16px var(--font-sans);letter-spacing:.04em;text-transform:uppercase;color:var(--ink-muted);margin:0 0 8px}</style>
+</head>
+<body class="fm-root">
+<div id="root"></div>
+<script>
+var U = window.ForestUI, h = React.createElement;
+ReactDOM.createRoot(document.getElementById('root')).render(h(U.EmptyState, {icon:'book-open', title:'Pas encore de recette dans Famille', action:h(U.Button, {variant:'primary', icon:'plus'}, 'Ajouter une recette')}, 'Ajoute une recette ou partage une des tiennes : tous les membres la verront ici.'));
+</script>
+</body>
+</html>

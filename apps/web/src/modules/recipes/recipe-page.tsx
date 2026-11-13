@@ -1,0 +1,459 @@
+// E-RECETTE : detail d'une recette (F-REC-1), portions avec mise a l'echelle,
+// ingredients a cocher, etapes ; blocs lies deplies a l'echelle (D24) ;
+// modifier, partager, retirer et supprimer selon les droits (D57, D81, F-REC-9).
+import { linkFactor, type LinkedBlock, type Recipe, type RecipeBlock, type Unit } from "@fm/shared";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router";
+
+import { spaceQuery } from "../../core/session/queries.ts";
+import { PageChrome } from "../../core/shell/page-chrome.tsx";
+import { useWriteGuard } from "../../pwa/use-write-guard.ts";
+import { TopBar } from "../../patterns/top-bar.tsx";
+import { ActionMenu } from "../../ui/action-menu.tsx";
+import { Button, IconButton } from "../../ui/button.tsx";
+import { Stepper } from "../../ui/controls.tsx";
+import { Badge, EmptyState, Skeleton } from "../../ui/display.tsx";
+import { Icon } from "../../ui/icon.tsx";
+import { IngredientRow } from "./components/ingredient-row.tsx";
+import { LINK_STATUS_TITLES } from "./draft.ts";
+import { cookSteps } from "./cook.ts";
+import { formatMinutes, plannedLabel, scaledAmount, unitLabel } from "./format.ts";
+import { recipeFailure, recipeQuery, unitsQuery, type RecipeFailure } from "./queries.ts";
+import { AdaptedFromNotice } from "./adaptation.tsx";
+import { useRecipeActions } from "./use-recipe-actions.tsx";
+import { RecipeSuggestionsBanner } from "./suggestions.tsx";
+import { pushRecentRecipe } from "../../core/search/recent.ts";
+
+export function RecipeNotFound({ spaceId }: { spaceId: string }) {
+  return (
+    <div className="p-4">
+      <EmptyState
+        icon="search"
+        title="Recette introuvable"
+        action={
+          <Link to={`/s/${spaceId}/recipes`} className="fm-btn fm-btn-primary">
+            Retour aux recettes
+          </Link>
+        }
+      >
+        Elle a été supprimée, ou elle n'est pas visible dans cet espace.
+      </EmptyState>
+    </div>
+  );
+}
+
+/** Ecran d'une page de recette en echec (voir `recipeFailure`). */
+export function RecipeUnavailable({
+  spaceId,
+  failure,
+  onRetry,
+}: {
+  spaceId: string;
+  failure: RecipeFailure;
+  onRetry: () => void;
+}) {
+  if (failure === "gone") return <RecipeNotFound spaceId={spaceId} />;
+  return (
+    <div className="p-4">
+      <EmptyState
+        icon="wifi-off"
+        title="Impossible de charger la recette"
+        action={<Button onClick={onRetry}>Réessayer</Button>}
+      >
+        Connexion impossible. Vérifie ton réseau.
+      </EmptyState>
+    </div>
+  );
+}
+
+/** Hors ligne, une recette jamais ouverte sur cet appareil n'est pas lisible (D35). */
+export function NotOffline({ spaceId }: { spaceId: string }) {
+  return (
+    <div className="p-4">
+      <EmptyState
+        icon="wifi-off"
+        title="Pas encore disponible hors ligne"
+        action={
+          <Link to={`/s/${spaceId}/recipes`} className="fm-btn fm-btn-secondary">
+            Retour aux recettes
+          </Link>
+        }
+      >
+        Seules les recettes déjà ouvertes sur cet appareil se consultent sans réseau.
+      </EmptyState>
+    </div>
+  );
+}
+
+function LocalBlockView({
+  block,
+  label,
+  units,
+  scale,
+}: {
+  block: Extract<RecipeBlock, { kind: "LOCAL" }>;
+  label: string;
+  units: readonly Unit[];
+  scale: number;
+}) {
+  return (
+    <section className="fm-block" aria-label={block.title ?? label}>
+      <div className="fm-block-head">
+        <div className="flex min-w-0 flex-1 flex-col">
+          {block.title ? <span className="fm-block-kind">Bloc</span> : null}
+          <b>{block.title ?? "Ingrédients et étapes"}</b>
+        </div>
+      </div>
+      <BlockBody block={block} units={units} scale={scale} />
+    </section>
+  );
+}
+
+export function BlockBody({
+  block,
+  units,
+  scale,
+}: {
+  block: Extract<RecipeBlock, { kind: "LOCAL" }>;
+  units: readonly Unit[];
+  scale: number;
+}) {
+  return (
+    <div className="fm-block-body">
+      <div>
+        {block.ingredients.map((line, i) => (
+          <IngredientRow
+            key={i}
+            amount={scaledAmount(line, units, scale)}
+            name={line.name}
+            note={line.note}
+          />
+        ))}
+      </div>
+      {block.steps.length > 0 ? (
+        <ol>
+          {block.steps.map((step, i) => (
+            <li key={i}>{step}</li>
+          ))}
+        </ol>
+      ) : null}
+    </div>
+  );
+}
+
+/** Bloc lie (lien vivant) : quantite utilisee, sous-recette repliable a l'echelle. */
+function LinkedBlockView({
+  block,
+  units,
+  scale,
+  spaceId,
+}: {
+  block: LinkedBlock;
+  units: readonly Unit[];
+  scale: number;
+  spaceId: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const { data: space } = useQuery(spaceQuery(spaceId));
+  const sub = block.recipe;
+  const title = sub?.title ?? LINK_STATUS_TITLES[block.status === "HIDDEN" ? "HIDDEN" : "DELETED"];
+  const unitOf = (id: string | null) => units.find((u) => u.id === id) ?? null;
+  const subScale = sub
+    ? scale *
+      linkFactor(
+        { quantity: block.quantity, unit: unitOf(block.unitId) },
+        { yieldQuantity: sub.yieldQuantity, yieldUnit: unitOf(sub.yieldUnitId) }
+      )
+    : 0;
+  return (
+    <section className="fm-block fm-block-linked" aria-label={title}>
+      <div className="fm-block-head">
+        <Icon name={sub ? "link" : "lock"} />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="fm-block-kind">Recette liée</span>
+          <b>{sub ? <Link to={`/s/${spaceId}/recipes/${sub.id}`}>{sub.title}</Link> : title}</b>
+        </div>
+        <span className="fm-block-qty">{scaledAmount(block, units, scale)}</span>
+        {sub ? (
+          <IconButton
+            icon={open ? "chevron-down" : "chevron-right"}
+            label={`${open ? "Replier" : "Déplier"} ${sub.title}`}
+            aria-expanded={open}
+            onClick={() => {
+              setOpen(!open);
+            }}
+          />
+        ) : null}
+      </div>
+      {!sub ? (
+        <div className="fm-block-body">
+          <p className="m-0 text-sm text-ink-muted">
+            {block.status === "HIDDEN"
+              ? `Cette recette liée n'est pas visible dans ${space?.name ?? "cet espace"} : ses ingrédients et ses étapes ne s'affichent pas ici.`
+              : "Cette recette liée a été supprimée : ses ingrédients et ses étapes ne s'affichent plus."}
+          </p>
+        </div>
+      ) : open ? (
+        <div className="fm-stack p-3">
+          {sub.blocks.map((child, i) =>
+            child.kind === "RECIPE" ? (
+              <LinkedBlockView
+                key={i}
+                block={child}
+                units={units}
+                scale={subScale}
+                spaceId={spaceId}
+              />
+            ) : sub.blocks.length > 1 || child.title ? (
+              <LocalBlockView
+                key={i}
+                block={child}
+                label={`${sub.title}, bloc ${i + 1}`}
+                units={units}
+                scale={subScale}
+              />
+            ) : (
+              <BlockBody key={i} block={child} units={units} scale={subScale} />
+            )
+          )}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function BlockView({
+  block,
+  index,
+  titled,
+  units,
+  scale,
+  spaceId,
+}: {
+  block: RecipeBlock;
+  index: number;
+  titled: boolean;
+  units: readonly Unit[];
+  scale: number;
+  spaceId: string;
+}) {
+  if (block.kind === "RECIPE") {
+    return <LinkedBlockView block={block} units={units} scale={scale} spaceId={spaceId} />;
+  }
+  return (
+    <LocalBlockView
+      block={block}
+      label={titled ? `Bloc ${index + 1}` : "Ingrédients et étapes"}
+      units={units}
+      scale={scale}
+    />
+  );
+}
+
+function RecipeView({
+  spaceId,
+  recipe,
+  units,
+}: {
+  spaceId: string;
+  recipe: Recipe;
+  units: readonly Unit[];
+}) {
+  const navigate = useNavigate();
+  const guard = useWriteGuard();
+  const [servings, setServings] = useState(recipe.yieldQuantity);
+  const actions = useRecipeActions({
+    spaceId,
+    recipe,
+    onGone: () => {
+      void navigate(`/s/${spaceId}/recipes`, { replace: true });
+    },
+  });
+  const sharedHere = recipe.homeSpaceId !== spaceId;
+  const yieldUnit = units.find((u) => u.id === recipe.yieldUnitId);
+  const titled = recipe.blocks.length > 1;
+  const composed = recipe.blocks.some((block) => block.kind === "RECIPE");
+  const cookTo =
+    cookSteps(recipe, units, 1).length > 0
+      ? `/s/${spaceId}/recipes/${recipe.id}/cook?servings=${servings}`
+      : null;
+
+  return (
+    <>
+      <PageChrome
+        top={
+          <TopBar
+            title="Recette"
+            onBack={() => {
+              void navigate(`/s/${spaceId}/recipes`);
+            }}
+          />
+        }
+        bottom={
+          cookTo ? (
+            <div className="fm-page-bar fm-mobile-only flex border-t border-line bg-surface px-4 py-3">
+              <Link to={cookTo} className="fm-btn fm-btn-primary fm-btn-block">
+                <Icon name="chef-hat" />
+                Mode cuisine
+              </Link>
+            </div>
+          ) : undefined
+        }
+      />
+      {recipe.imageUrl ? (
+        <img
+          src={recipe.imageUrl}
+          alt="Photo de la recette"
+          className="mx-auto block h-[220px] w-full max-w-3xl object-cover sm:h-[300px] sm:rounded-b-lg"
+        />
+      ) : (
+        <div
+          className="h-[150px]"
+          aria-hidden="true"
+          style={{ background: "linear-gradient(140deg, var(--accent-soft), var(--surface))" }}
+        />
+      )}
+      <article className="fm-stack mx-auto w-full max-w-3xl p-4" aria-labelledby="recipe-title">
+        <div className="flex items-start gap-1">
+          <div className="flex min-w-0 flex-1 flex-col gap-1">
+            <h1 id="recipe-title" className="m-0 font-display text-[26px] leading-8 font-bold">
+              {recipe.title}
+            </h1>
+            <span className="text-sm text-ink-muted">
+              par {recipe.author.username}
+              {sharedHere ? ` · ${recipe.homeSpace.name}` : ""} · révision {recipe.currentRevision}
+            </span>
+          </div>
+          {cookTo ? (
+            <Link to={cookTo} className="fm-btn fm-btn-primary fm-btn-sm fm-wide-only">
+              <Icon name="chef-hat" />
+              Mode cuisine
+            </Link>
+          ) : null}
+          {recipe.can.edit && guard.disabled ? (
+            <Button size="sm" icon="pencil" {...guard}>
+              Modifier
+            </Button>
+          ) : recipe.can.edit ? (
+            <Link
+              to={`/s/${spaceId}/recipes/${recipe.id}/edit`}
+              className="fm-btn fm-btn-secondary fm-btn-sm"
+            >
+              <Icon name="pencil" />
+              Modifier
+            </Link>
+          ) : null}
+          <ActionMenu
+            label="Actions de la recette"
+            trigger={<IconButton icon="more" label="Plus d'actions" />}
+            items={actions.items}
+            disabled={guard.disabled}
+            // Hors ligne : tout le menu ecrit ou lit ce qui n'est pas sur l'appareil.
+            onSelect={actions.select}
+          />
+        </div>
+        {recipe.hidden ? (
+          <div
+            role="note"
+            aria-labelledby="recipe-hidden-title"
+            className="flex flex-col gap-1 rounded-md bg-warning-soft px-4 py-3"
+          >
+            <b id="recipe-hidden-title">Masquée par la modération</b>
+            <span className="text-sm">
+              Motif : {recipe.hidden.reason}. Les autres membres ne la voient plus.
+            </span>
+          </div>
+        ) : null}
+        <AdaptedFromNotice spaceId={spaceId} recipe={recipe} />
+        <RecipeSuggestionsBanner spaceId={spaceId} recipeId={recipe.id} />
+        <div className="flex flex-wrap items-center gap-3">
+          <Stepper
+            label="Portions"
+            value={servings}
+            min={1}
+            max={Math.max(100, recipe.yieldQuantity)}
+            unit={yieldUnit ? unitLabel(yieldUnit, servings) : "pers."}
+            onChange={setServings}
+          />
+          {recipe.totalMinutes !== null ? (
+            <span className="inline-flex items-center gap-1.5 text-sm text-ink-muted">
+              <Icon name="clock" size={16} />
+              {formatMinutes(recipe.totalMinutes)}
+            </span>
+          ) : null}
+          {recipe.planning ? (
+            <span className="inline-flex items-center gap-1.5 text-sm text-ink-muted">
+              <Icon name="calendar" size={16} />
+              {plannedLabel(recipe.planning)}
+            </span>
+          ) : null}
+        </div>
+        {recipe.isBase || composed || recipe.tags.length > 0 ? (
+          <div className="flex flex-wrap gap-1.5">
+            {recipe.isBase ? <Badge tone="second">Base</Badge> : null}
+            {composed ? (
+              <Badge tone="second" icon="link">
+                Composée
+              </Badge>
+            ) : null}
+            {recipe.tags.map((tag) => (
+              <Badge key={tag.id} tone={tag.scope === "GLOBAL" ? "accent" : "neutral"}>
+                {tag.name}
+              </Badge>
+            ))}
+          </div>
+        ) : null}
+        {recipe.blocks.map((block, index) => (
+          <BlockView
+            key={index}
+            block={block}
+            index={index}
+            titled={titled}
+            units={units}
+            scale={servings / recipe.yieldQuantity}
+            spaceId={spaceId}
+          />
+        ))}
+        {recipe.notes ? (
+          <section className="fm-stack">
+            <h2 className="m-0 font-display text-base font-semibold">Notes</h2>
+            <p className="m-0 whitespace-pre-line">{recipe.notes}</p>
+          </section>
+        ) : null}
+        {recipe.sourceUrl ? (
+          <a href={recipe.sourceUrl} target="_blank" rel="noopener noreferrer nofollow">
+            Voir la source
+          </a>
+        ) : null}
+      </article>
+      {actions.sheets}
+    </>
+  );
+}
+
+export function RecipePage() {
+  const { spaceId = "", recipeId = "" } = useParams();
+  const recipe = useQuery(recipeQuery(spaceId, recipeId));
+  const units = useQuery(unitsQuery);
+  const title = recipe.data?.title;
+  useEffect(() => {
+    // Proposee ensuite par la palette vide (F-RECHERCHE).
+    if (title) pushRecentRecipe({ id: recipeId, title, spaceId });
+  }, [title, recipeId, spaceId]);
+  const failure = recipeFailure(recipe);
+  if (failure) {
+    return (
+      <RecipeUnavailable
+        spaceId={spaceId}
+        failure={failure}
+        onRetry={() => void recipe.refetch()}
+      />
+    );
+  }
+  if (!recipe.data && recipe.fetchStatus === "paused") return <NotOffline spaceId={spaceId} />;
+  if (!recipe.data || !units.data) return <Skeleton />;
+  return (
+    <RecipeView key={recipe.data.id} spaceId={spaceId} recipe={recipe.data} units={units.data} />
+  );
+}

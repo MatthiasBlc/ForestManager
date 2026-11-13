@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+# Deploy d'une stack Portainer [D147] : reprise de deploy_prod.sh de la V1.
+# Substitue les variables du compose (envsubst, liste explicite) puis met a jour
+# la stack existante par l'API Portainer (PUT, pull des images, prune).
+#
+#   COMPOSE_FILE=docker/compose.prod.yml TAG=sha-abc1234 docker/deploy.sh
+#
+# Changements V2 : variables substituees limitees a la liste (un "$" dans un
+# secret ou une URL du compose n'est plus avale), fichier temporaire supprime
+# meme en cas d'erreur, image fixee par TAG (retour arriere = redeployer un tag).
+set -euo pipefail
+
+COMPOSE_FILE=${COMPOSE_FILE:-docker/compose.prod.yml}
+DEPLOY_ENV=${DEPLOY_ENV:-production}
+export TAG=${TAG:-latest}
+
+echo "=== ForestManager deploy (${DEPLOY_ENV}, ${COMPOSE_FILE}, ${TAG}) ==="
+
+required_vars=(
+  PORTAINER_URL PORTAINER_API STACK_ID ENDPOINT_ID
+  POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB
+  SESSION_SECRET
+  MINIO_ACCESS_KEY MINIO_SECRET_KEY
+  REGISTRY_URL IMAGE_NAME
+)
+# Facultatives : vides, la fonction est coupee (suivi d'erreurs sans DSN [D196]).
+export SENTRY_DSN=${SENTRY_DSN:-}
+# Connexion avec Discord [D210] : sans les deux, les boutons Discord sont masques.
+export DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID:-}
+export DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET:-}
+
+for var in "${required_vars[@]}"; do
+  if [ -z "${!var:-}" ]; then
+    echo "ERROR: required variable ${var} is not set" >&2
+    exit 1
+  fi
+  export "${var?}"
+done
+
+if [ ! -f "${COMPOSE_FILE}" ]; then
+  echo "ERROR: ${COMPOSE_FILE} not found" >&2
+  exit 1
+fi
+
+# Variables du compose remplacees ; tout autre "$" reste tel quel.
+SUBST_VARS='${POSTGRES_USER} ${POSTGRES_PASSWORD} ${POSTGRES_DB} ${SESSION_SECRET} ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY} ${SENTRY_DSN} ${DISCORD_CLIENT_ID} ${DISCORD_CLIENT_SECRET} ${REGISTRY_URL} ${IMAGE_NAME} ${TAG}'
+STACK_FILE=$(mktemp)
+trap 'rm -f "${STACK_FILE}"' EXIT
+envsubst "${SUBST_VARS}" < "${COMPOSE_FILE}" > "${STACK_FILE}"
+
+PAYLOAD=$(jq -n --rawfile content "${STACK_FILE}" \
+  '{ prune: true, pullImage: true, stackFileContent: $content }')
+
+# Une stack arretee refuse la mise a jour (HTTP 500 sans message) : on la
+# demarre d'abord (Status 2 = inactive ; l'ancienne version tourne un instant).
+STATUS=$(curl -sS -f "${PORTAINER_URL}/api/stacks/${STACK_ID}" \
+  -H "X-API-Key: ${PORTAINER_API}" | jq -r '.Status')
+if [ "${STATUS}" = "2" ]; then
+  echo "Stack ${STACK_ID} is stopped, starting it before the update..."
+  # Un echec ici (ancienne version qui demarre mal) n'arrete pas : la mise a
+  # jour qui suit remplace de toute facon les conteneurs, et dira si ca bloque.
+  curl -sS -f -o /dev/null -X POST \
+    "${PORTAINER_URL}/api/stacks/${STACK_ID}/start?endpointId=${ENDPOINT_ID}" \
+    -H "X-API-Key: ${PORTAINER_API}" ||
+    echo "WARNING: start failed, trying the update anyway" >&2
+fi
+
+echo "Updating Portainer stack ${STACK_ID}..."
+RESPONSE=$(curl -sS -w "\n%{http_code}" -X PUT \
+  "${PORTAINER_URL}/api/stacks/${STACK_ID}?endpointId=${ENDPOINT_ID}" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: ${PORTAINER_API}" \
+  --data-binary "${PAYLOAD}")
+
+HTTP_CODE=$(echo "${RESPONSE}" | tail -n1)
+if [ "${HTTP_CODE}" -ge 200 ] && [ "${HTTP_CODE}" -lt 300 ]; then
+  echo "Deployment successful (HTTP ${HTTP_CODE})"
+else
+  # Message et detail de Portainer (sortie de docker compose : image introuvable,
+  # reseau, volume...) ; jamais le corps entier, qui peut citer la stack
+  # substituee. GitHub masque de toute facon les valeurs des secrets.
+  echo "ERROR: deployment failed (HTTP ${HTTP_CODE})" >&2
+  BODY=$(echo "${RESPONSE}" | sed '$d')
+  DETAIL=$(echo "${BODY}" |
+    jq -r '[.message, .details] | map(select(. != null and . != "")) | .[]' 2>/dev/null || true)
+  if [ -n "${DETAIL}" ]; then
+    echo "${DETAIL}" >&2
+  else
+    # Reponse hors format Portainer (proxy, page HTML...) : extrait brut.
+    echo "Raw response (${#BODY} bytes):" >&2
+    echo "${BODY}" | head -c 2000 >&2
+    echo >&2
+  fi
+  exit 1
+fi
+
+# Sante reelle apres le deploy, par Traefik et nginx comme un navigateur.
+# Portainer rend la main des que les conteneurs sont lances (le frontend
+# n'attend plus le healthcheck du backend) : en cas d'echec, les conteneurs
+# restent en place et leurs logs se lisent dans Portainer.
+if [ -n "${HEALTH_URL:-}" ]; then
+  echo "Waiting for ${HEALTH_URL}..."
+  for _ in $(seq 1 30); do
+    if curl -fsS -o /dev/null --max-time 5 "${HEALTH_URL}"; then
+      echo "Application is up"
+      exit 0
+    fi
+    sleep 10
+  done
+  echo "ERROR: ${HEALTH_URL} still failing after 5 min; read the backend logs in Portainer" >&2
+  exit 1
+fi

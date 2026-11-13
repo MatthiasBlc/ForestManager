@@ -1,0 +1,18 @@
+<!-- @dsCard group="Navigation" height=330 -->
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>TabBar</title>
+<style>body{margin:0;padding:16px;background:var(--bg);color:var(--ink);font-family:var(--font-sans)} .lbl{font:600 12px/16px var(--font-sans);letter-spacing:.04em;text-transform:uppercase;color:var(--ink-muted);margin:0 0 8px}</style>
+</head>
+<body class="fm-root">
+<div id="root"></div>
+<script>
+var U = window.ForestUI, h = React.createElement;
+var mods = [{id:'recipes', label:'Recettes', icon:'book-open'}, {id:'plan', label:'Planning', icon:'calendar'}, {id:'shop', label:'Courses', icon:'shopping-basket'}, {id:'films', label:'Films', icon:'sparkles'}, {id:'x', label:'Cinquieme', icon:'tag'}];
+ReactDOM.createRoot(document.getElementById('root')).render(h('div', {'data-space':'1', className:'fm-stack', style:{maxWidth:390}},
+  h('p', {className:'lbl'}, 'Un module'), h(U.TabBar, {activeId:'recipes', items:mods.slice(0,1)}),
+  h('p', {className:'lbl'}, 'Deux modules'), h(U.TabBar, {activeId:'plan', items:mods.slice(0,2)}),
+  h('p', {className:'lbl'}, 'Cinq modules : le 5e passe dans Plus'), h(U.TabBar, {activeId:'x', items:mods})));
+</script>
+</body>
+</html>
