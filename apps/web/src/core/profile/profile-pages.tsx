@@ -170,6 +170,7 @@ export function ProfilePage() {
           <p className="text-ink-muted">{me.data.email}</p>
           <ImagePicker
             kind="avatar"
+            crop="round"
             hasImage={me.data.avatarUrl !== null}
             onUploaded={async (uploadId) => {
               await api.put("/me/avatar", { uploadId }, imageResponseSchema);

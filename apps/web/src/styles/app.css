@@ -626,3 +626,24 @@ main[tabindex="-1"]:focus-visible {
   height: 100%;
   object-fit: cover;
 }
+/* Recadreur d'avatar [D211] : zone carree, fond sombre dans les deux themes. */
+.fm-crop {
+  position: relative;
+  width: 100%;
+  height: min(78vw, 360px);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #111;
+  touch-action: none;
+}
+.fm-crop-zoom {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-weight: 600;
+}
+.fm-crop-zoom input {
+  flex: 1;
+  accent-color: var(--accent);
+  min-height: var(--size-touch);
+}

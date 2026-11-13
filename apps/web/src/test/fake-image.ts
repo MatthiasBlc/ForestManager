@@ -3,3 +3,8 @@
 export function convertImage(file: Blob): Promise<Blob> {
   return Promise.resolve(new Blob([file], { type: "image/webp" }));
 }
+
+/** Decoupe simulee : un carre WebP. */
+export function cropImage(file: Blob): Promise<Blob> {
+  return Promise.resolve(new Blob([file], { type: "image/webp" }));
+}

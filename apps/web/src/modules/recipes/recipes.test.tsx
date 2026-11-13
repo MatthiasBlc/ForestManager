@@ -128,6 +128,8 @@ describe("editeur de recette (E-RECETTE-EDITION)", () => {
     await user.upload(screen.getByLabelText("Ajouter la photo"), photoFile());
     expect(await screen.findByRole("img", { name: "Photo de la recette" })).toBeInTheDocument();
     expect(s.recipes.calls.filter((c) => c.startsWith("photo"))).toEqual([]);
+    // Photo de recette : proportions gardees, pas de recadrage (D211).
+    expect(screen.queryByRole("dialog", { name: "Recadrer la photo" })).not.toBeInTheDocument();
 
     await user.type(screen.getByLabelText("Étape 1"), "Cuire.");
     await user.click(screen.getByRole("button", { name: "Enregistrer" }));

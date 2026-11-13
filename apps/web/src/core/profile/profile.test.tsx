@@ -92,6 +92,11 @@ describe("profil (E-PROFIL)", () => {
     );
     const { user } = renderWithProviders(<App />, { route: "/profile" });
     await user.upload(await screen.findByLabelText("Ajouter la photo"), photoFile());
+    // Recadrage avant l'envoi (D211) : rond, zoom au curseur.
+    const crop = await screen.findByRole("dialog", { name: "Recadrer la photo" });
+    expect(within(crop).getByRole("slider", { name: "Zoom" })).toHaveValue("1");
+    expect(bodies).toEqual([]);
+    await user.click(within(crop).getByRole("button", { name: "Utiliser cette photo" }));
     await waitFor(() => {
       expect(bodies).toEqual([{ uploadId: uploadIds[0] }]);
     });
@@ -122,10 +127,26 @@ describe("profil (E-PROFIL)", () => {
     );
     const { user } = renderWithProviders(<App />, { route: "/profile" });
     await user.upload(await screen.findByLabelText("Ajouter la photo"), photoFile());
-    const rail = screen.getByRole("navigation", { name: "Espaces" });
+    await user.click(await screen.findByRole("button", { name: "Utiliser cette photo" }));
+    // La feuille de recadrage se ferme une fois la photo rattachee.
+    const rail = await screen.findByRole("navigation", { name: "Espaces" });
     await waitFor(() => {
       expect(rail.querySelector("img")).toHaveAttribute("src", signedUrl("users/me/1.webp"));
     });
+  });
+
+  it("recadrage annule : rien n'est envoye (D211)", async () => {
+    profileServer();
+    const { uploadIds } = mockUploads();
+    const { user } = renderWithProviders(<App />, { route: "/profile" });
+    await user.upload(await screen.findByLabelText("Ajouter la photo"), photoFile());
+    const crop = await screen.findByRole("dialog", { name: "Recadrer la photo" });
+    await user.click(within(crop).getByRole("button", { name: "Annuler" }));
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: "Recadrer la photo" })).not.toBeInTheDocument();
+    });
+    expect(uploadIds).toEqual([]);
+    expect(screen.getByRole("button", { name: "Ajouter la photo" })).toBeEnabled();
   });
 
   it("rail des espaces reserve au bureau : pas de bande d'espaces sur mobile (D209)", async () => {

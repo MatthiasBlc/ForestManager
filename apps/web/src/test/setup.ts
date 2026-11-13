@@ -2,9 +2,12 @@
 import "@testing-library/jest-dom/vitest";
 
 import { cleanup, configure } from "@testing-library/react";
-import { afterAll, afterEach, beforeAll } from "vitest";
+import { afterAll, afterEach, beforeAll, vi } from "vitest";
 
 import { server } from "./server.ts";
+
+// jsdom ne charge ni ne mesure les images : recadreur simule partout (D211).
+vi.mock("react-easy-crop", () => import("./fake-cropper.tsx"));
 
 // Premier rendu d'un module charge a la demande : 1 s ne suffit pas quand les
 // fichiers de tests tournent en parallele.

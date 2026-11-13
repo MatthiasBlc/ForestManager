@@ -128,6 +128,7 @@ function SpacePhoto({ space }: { space: SpaceDetail }) {
       <SpaceIcon space={toVisual(space)} size="lg" />
       <ImagePicker
         kind="avatar"
+        crop="square"
         noun="la photo de l'espace"
         hasImage={space.avatarUrl !== null}
         onUploaded={async (uploadId) => {

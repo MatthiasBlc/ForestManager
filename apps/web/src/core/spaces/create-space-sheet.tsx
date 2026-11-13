@@ -85,6 +85,7 @@ export function CreateSpaceSheet({ open, onClose }: { open: boolean; onClose: ()
           />
           <ImagePicker
             kind="avatar"
+            crop="square"
             noun="la photo"
             hasImage={photo !== null}
             onUploaded={(uploadId, file) => {

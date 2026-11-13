@@ -9,7 +9,11 @@ import { convertImage } from "./image.ts";
 export type ImageKind = keyof typeof IMAGE_MAX_SIDE;
 
 export async function uploadImage(file: Blob, kind: ImageKind): Promise<string> {
-  const image = await convertImage(file, IMAGE_MAX_SIDE[kind]);
+  return uploadPrepared(await convertImage(file, IMAGE_MAX_SIDE[kind]));
+}
+
+/** Envoie une image deja preparee (convertie ou recadree [D211]). */
+export async function uploadPrepared(image: Blob): Promise<string> {
   const ticket = await api.post("/uploads", undefined, uploadTicketSchema);
   const form = new FormData();
   for (const [name, value] of Object.entries(ticket.fields)) form.append(name, value);

@@ -53,6 +53,7 @@ describe("creer un espace (F-CREER-ESPACE)", () => {
     await user.click(await screen.findByRole("button", { name: "Créer ou rejoindre un espace" }));
     const sheet = screen.getByRole("dialog", { name: "Créer un espace" });
     await user.upload(within(sheet).getByLabelText("Ajouter la photo"), photoFile());
+    await user.click(await screen.findByRole("button", { name: "Utiliser cette photo" }));
     expect(await within(sheet).findByRole("button", { name: "Retirer la photo" })).toBeEnabled();
     expect(bodies).toEqual([]);
     await user.type(within(sheet).getByLabelText("Nom de l'espace"), "Colloc");
@@ -192,6 +193,7 @@ describe("reglages, depart, suppression, transfert", () => {
     );
     const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/settings` });
     await user.upload(await screen.findByLabelText("Ajouter la photo de l'espace"), photoFile());
+    await user.click(await screen.findByRole("button", { name: "Utiliser cette photo" }));
     await waitFor(() => {
       expect(bodies).toEqual([{ uploadId: uploadIds[0] }]);
     });
