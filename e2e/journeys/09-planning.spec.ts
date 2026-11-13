@@ -25,9 +25,12 @@ const RECIPES = [
   "Hachis parmentier",
 ];
 
+/** Cases dont le nom accessible suit `name` : bouton, ou lien pour un repas-recette [D204]. */
+const slots = (page: Page, name: RegExp) =>
+  page.getByRole("button", { name }).or(page.getByRole("link", { name }));
+
 /** Un repas de la semaine affichee, par son nom accessible ("Mardi 9, midi : ..."). */
-const slot = (page: Page, when: string) =>
-  page.getByRole("button", { name: new RegExp(`^${when} : `) });
+const slot = (page: Page, when: string) => slots(page, new RegExp(`^${when} : `));
 
 test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page, scenario }) => {
   const { owner: lea, space } = await scenario("group", {
@@ -112,7 +115,7 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
   await expect(slot(page, "Mercredi 10, midi")).toHaveAccessibleName(
     "Mercredi 10, midi : Pas de repas"
   );
-  const planned = page.getByRole("button", {
+  const planned = page.getByRole("link", {
     name: new RegExp(`^\\S+ \\d+, (midi|soir) : (${RECIPES.join("|")})$`),
   });
   await expect(planned).toHaveCount(12);
@@ -135,12 +138,18 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
   );
 
   // 8. Rechargement : le planning garde est relu du serveur tel quel.
-  const before = await page
-    .getByRole("button", { name: /^\S+ \d+, (midi|soir) : / })
-    .allTextContents();
+  const every = slots(page, /^\S+ \d+, (midi|soir) : /);
+  const before = await every.allTextContents();
   await page.reload();
   await page.getByRole("button", { name: "Semaine", exact: true }).click();
   await expect(planned).toHaveCount(12);
-  await expect(page.getByRole("button", { name: /^\S+ \d+, (midi|soir) : / })).toHaveText(before);
+  await expect(every).toHaveText(before);
   await expect(tuesdayDinner).toHaveAccessibleName("Mardi 9, soir : Restes, 2 pers., verrouillé");
+
+  // 9. Toucher un repas-recette ouvre la recette [D204].
+  const first = planned.first();
+  const title = ((await first.getAttribute("aria-label")) ?? "").split(" : ")[1] ?? "";
+  await first.click();
+  await expect(page).toHaveURL(new RegExp(`/s/${space.id}/recipes/`));
+  await expect(page.getByRole("heading", { level: 1, name: title })).toBeVisible();
 });

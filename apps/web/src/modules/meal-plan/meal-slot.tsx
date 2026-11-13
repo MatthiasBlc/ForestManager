@@ -1,10 +1,13 @@
 // MealSlot (design system) : un repas de la grille. Recette (fond accent), texte,
-// vide (pointille) ou "Pas de repas" (barre). Toucher l'ouvre (F-REPAS porte ses actions,
-// pas d'appui long, D186) ; en bureau il se glisse sur un autre repas pour les echanger (D69).
-import type { DragEvent } from "react";
+// vide (pointille) ou "Pas de repas" (barre). Toucher un repas-recette ouvre la recette ;
+// appui long, clic droit ou touche Menu ouvrent F-REPAS [D204]. Les autres cases ouvrent
+// F-REPAS au toucher. En bureau, un repas se glisse sur un autre pour les echanger (D69).
+import { useId, type DragEvent, type MouseEvent, type ReactNode } from "react";
+import { Link } from "react-router";
 
 import { cx } from "../../ui/cx.ts";
 import { Icon } from "../../ui/icon.tsx";
+import { useLongPress } from "../../ui/use-long-press.ts";
 
 export type SlotKind = "recipe" | "text" | "empty" | "off";
 
@@ -26,6 +29,10 @@ export interface MealSlotProps {
   /** Hors de la grille (accueil) : `when` affiche a droite, pas seulement lu. */
   showWhen?: boolean;
   onOpen?: () => void;
+  /** Repas-recette : lien vers la recette (le toucher la suit au lieu de `onOpen`). */
+  href?: string;
+  /** Appui long, clic droit, touche Menu : F-REPAS quand la case est un lien. */
+  onMenu?: () => void;
   /** Glisser-deposer (bureau) : identifiant de la case. */
   dragId?: string;
   onDropFrom?: (sourceId: string) => void;
@@ -42,6 +49,8 @@ export function MealSlot({
   compact = false,
   showWhen = false,
   onOpen,
+  href,
+  onMenu,
   dragId,
   onDropFrom,
 }: MealSlotProps) {
@@ -72,25 +81,79 @@ export function MealSlot({
           },
         }
       : {};
-  return (
-    <button
-      type="button"
-      className={cx(
-        "fm-slot",
-        `fm-slot-${kind}`,
-        compact && "fm-slot-compact",
-        selected && "ring-2 ring-accent"
-      )}
-      aria-label={name}
-      onClick={onOpen}
-      {...drag}
-    >
+  const className = cx(
+    "fm-slot",
+    `fm-slot-${kind}`,
+    compact && "fm-slot-compact",
+    selected && "ring-2 ring-accent"
+  );
+  const content = (
+    <>
       {kind === "empty" ? <Icon name="plus" /> : null}
       {compact && kind === "empty" ? null : <span>{label}</span>}
       {servings && kind !== "empty" && kind !== "off" ? <small>{servings} p.</small> : null}
       {locked ? <Icon name="lock" /> : null}
       {showWhen ? <small className="fm-slot-when">{when}</small> : null}
+    </>
+  );
+  if (href) {
+    return (
+      <RecipeSlot href={href} name={name} className={className} onMenu={onMenu} drag={drag}>
+        {content}
+      </RecipeSlot>
+    );
+  }
+  return (
+    <button type="button" className={className} aria-label={name} onClick={onOpen} {...drag}>
+      {content}
     </button>
+  );
+}
+
+/** Case lien vers la recette, avec F-REPAS en geste secondaire. */
+function RecipeSlot({
+  href,
+  name,
+  className,
+  onMenu,
+  drag,
+  children,
+}: {
+  href: string;
+  name: string;
+  className: string;
+  onMenu: (() => void) | undefined;
+  drag: object;
+  children: ReactNode;
+}) {
+  const hintId = useId();
+  const press = useLongPress(() => onMenu?.());
+  if (!onMenu) {
+    return (
+      <Link to={href} className={className} aria-label={name} {...drag}>
+        {children}
+      </Link>
+    );
+  }
+  return (
+    <Link
+      to={href}
+      className={className}
+      aria-label={name}
+      aria-describedby={hintId}
+      {...drag}
+      {...press.handlers}
+      // Clic droit, touche Menu et Maj+F10 emettent tous `contextmenu`.
+      onContextMenu={(event: MouseEvent) => {
+        event.preventDefault();
+        onMenu();
+      }}
+    >
+      {children}
+      <span id={hintId} hidden>
+        Appui long ou clic droit : détails du repas
+      </span>
+    </Link>
   );
 }
 

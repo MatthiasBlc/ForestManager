@@ -53,7 +53,8 @@ test("parcours 12 : recette et planning lisibles hors ligne, ecritures desactive
   // La copie sur l'appareil s'ecrit au plus une fois par seconde : on la laisse finir.
   await waitForOfflineCopy(page, '"me"', `"detail","${gratin.id}"`);
   await page.goto(planningUrl);
-  const slot = page.getByRole("button", { name: /: Gratin dauphinois/ }).first();
+  // Repas-recette : un lien vers la recette ; F-REPAS par clic droit ou appui long [D204].
+  const slot = page.getByRole("link", { name: /: Gratin dauphinois/ }).first();
   await expect(slot).toBeVisible();
   await expect(page.getByText(OFFLINE)).toHaveCount(0);
   await waitForOfflineCopy(page, '"meals"');
@@ -64,7 +65,7 @@ test("parcours 12 : recette et planning lisibles hors ligne, ecritures desactive
   await expect(page.getByText(OFFLINE)).toBeVisible();
   await expect(slot).toBeVisible();
   await expectNoA11yViolations(page);
-  await slot.click();
+  await slot.click({ button: "right" });
   const sheet = page.getByRole("dialog");
   await expect(sheet.getByRole("button", { name: "Enregistrer" })).toBeDisabled();
   await expect(sheet.getByRole("button", { name: "Vider le repas" })).toBeDisabled();

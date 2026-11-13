@@ -1,5 +1,5 @@
-// Widgets d'accueil du Planning [D193] : prochains repas par espace, recettes
-// les plus cuisinees (D39).
+// Widgets d'accueil du Planning [D193] : prochains repas par espace (lien vers la recette
+// ou le planning du jour, lien "Planning" par espace, D204), recettes les plus cuisinees (D39).
 import { mostCookedWidgetSchema, upcomingMealsWidgetSchema, type MealTime } from "@fm/shared";
 import { Link, useNavigate } from "react-router";
 
@@ -23,12 +23,18 @@ export function Upcoming({ data }: { data: Record<string, unknown> }) {
     <div className="fm-stack">
       {parsed.data.spaces.map((space) => (
         <div key={space.spaceId} className="fm-stack gap-2">
-          <p className="m-0 text-sm font-semibold text-ink-muted">{space.spaceName}</p>
+          <div className="flex items-baseline justify-between gap-2">
+            <p className="m-0 text-sm font-semibold text-ink-muted">{space.spaceName}</p>
+            <Link
+              to={`/s/${space.spaceId}/meal-plan`}
+              className="text-sm"
+              aria-label={`Planning de ${space.spaceName}`}
+            >
+              Planning
+            </Link>
+          </div>
           {space.meals.length === 0 ? (
-            <p className="m-0 text-ink-muted">
-              Rien de prévu ces prochains jours.{" "}
-              <Link to={`/s/${space.spaceId}/meal-plan`}>Ouvrir le planning</Link>
-            </p>
+            <p className="m-0 text-ink-muted">Rien de prévu ces prochains jours.</p>
           ) : (
             space.meals.map((meal) => (
               <MealSlot
@@ -37,7 +43,12 @@ export function Upcoming({ data }: { data: Record<string, unknown> }) {
                 title={meal.title}
                 when={relativeWhen(meal.date, meal.mealTime)}
                 showWhen
-                onOpen={() => void navigate(`/s/${space.spaceId}/meal-plan?day=${meal.date}`)}
+                // Repas-recette : la recette ; repas texte : le planning du jour [D204].
+                {...(meal.recipeId
+                  ? { href: `/s/${space.spaceId}/recipes/${meal.recipeId}` }
+                  : {
+                      onOpen: () => void navigate(`/s/${space.spaceId}/meal-plan?day=${meal.date}`),
+                    })}
               />
             ))
           )}

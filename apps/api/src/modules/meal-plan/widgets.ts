@@ -34,21 +34,30 @@ export const MEAL_PLAN_WIDGETS: Readonly<Record<string, ApiWidget>> = {
               date: true,
               mealTime: true,
               text: true,
+              kind: true,
               recipeId: true,
-              recipe: { select: { title: true, deletedAt: true, hiddenAt: true } },
             },
           });
+          const ids = rows.flatMap((row) =>
+            row.kind === "RECIPE" && row.recipeId ? [row.recipeId] : []
+          );
+          const visible = await requiredService(ctx, "recipes.catalog").visible(
+            space.id,
+            input.userId,
+            ids
+          );
           return {
             spaceId: space.id,
             spaceName: space.name,
             meals: rows.map((row) => {
-              // Recette encore visible : son titre ; sinon le dernier titre connu [D184].
-              const live = row.recipe && !row.recipe.deletedAt && !row.recipe.hiddenAt;
+              // Recette encore visible dans l'espace : son titre et son lien ; sinon le
+              // dernier titre connu, sans lien [D184].
+              const recipe = row.recipeId ? visible.get(row.recipeId) : undefined;
               return {
                 date: toIsoDate(row.date),
                 mealTime: row.mealTime,
-                title: (live ? row.recipe?.title : null) ?? row.text ?? "",
-                recipeId: live ? row.recipeId : null,
+                title: recipe?.title ?? row.text ?? "",
+                recipeId: recipe?.id ?? null,
               };
             }),
           };

@@ -51,7 +51,10 @@ const WIDGETS: Record<string, Record<string, unknown>> = {
       {
         spaceId: famille.id,
         spaceName: "Famille",
-        meals: [{ date: isoDay(1), mealTime: "LUNCH", title: "Gratin", recipeId: RECIPE_ID }],
+        meals: [
+          { date: isoDay(1), mealTime: "LUNCH", title: "Gratin", recipeId: RECIPE_ID },
+          { date: isoDay(1), mealTime: "DINNER", title: "Restes", recipeId: null },
+        ],
       },
     ],
   },
@@ -113,7 +116,19 @@ describe("widgets d'accueil (E-ACCUEIL)", () => {
     ]);
     const meals = screen.getByRole("region", { name: "Prochains repas" });
     expect(within(meals).getByText("Famille")).toBeInTheDocument();
-    expect(within(meals).getByRole("button", { name: /Demain, midi.*Gratin/ })).toBeInTheDocument();
+    // Repas-recette : ouvre la recette ; repas texte : ouvre le planning du jour [D204].
+    expect(within(meals).getByRole("link", { name: "Demain, midi : Gratin" })).toHaveAttribute(
+      "href",
+      `/s/${famille.id}/recipes/${RECIPE_ID}`
+    );
+    expect(
+      within(meals).getByRole("button", { name: "Demain, soir : Restes" })
+    ).toBeInTheDocument();
+    // Lien vers le planning de chaque espace, qu'il y ait des repas ou non.
+    expect(within(meals).getByRole("link", { name: "Planning de Famille" })).toHaveAttribute(
+      "href",
+      `/s/${famille.id}/meal-plan`
+    );
     // Le moment du repas est lu a l'ecran, pas seulement dans le nom accessible.
     expect(within(meals).getByText("Demain, midi")).toBeInTheDocument();
     const cooked = screen.getByRole("region", { name: "Tes recettes les plus cuisinées" });

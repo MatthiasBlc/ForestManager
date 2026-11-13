@@ -1,5 +1,6 @@
 // E-PLANNING [P10, D180] : calendrier continu de l'espace, semaine par semaine.
-// Bureau : grille jours x repas, glisser pour echanger (D69). Mobile : "Jour |
+// Bureau : grille jours x repas, glisser pour echanger (D69). Un repas-recette s'ouvre
+// au toucher, F-REPAS par appui long ou clic droit [D204]. Mobile : "Jour |
 // Semaine" (D111) et mode echange (D112). Sans le droit de modifier : lecture seule.
 import {
   type Meal,
@@ -69,6 +70,9 @@ interface CalendarProps {
   /** Case dont on cherche la cible d'echange (mode echange). */
   swapFrom: MealCell | null;
   onCell: (cell: MealCell) => void;
+  /** F-REPAS d'un repas-recette (appui long, clic droit, touche Menu). */
+  onMenu: (cell: MealCell) => void;
+  spaceId: string;
   onDrop: (from: MealCell, to: MealCell) => void;
   today: string;
 }
@@ -85,7 +89,7 @@ function Cell({
   drag: boolean;
   compact?: boolean;
 }) {
-  const { meals, settings, swapFrom, onCell, onDrop } = props;
+  const { meals, settings, swapFrom, onCell, onMenu, onDrop, spaceId } = props;
   const meal = meals.get(cellId(cell));
   const kind = slotKind(meal);
   if (kind === "empty" && !settings.can.edit) return <EmptyCell />;
@@ -104,6 +108,15 @@ function Cell({
       onOpen={() => {
         onCell(cell);
       }}
+      // Repas-recette visible : toucher ouvre la recette, sauf pendant un echange [D204].
+      {...(meal?.recipe && !swapFrom
+        ? {
+            href: `/s/${spaceId}/recipes/${meal.recipe.id}`,
+            onMenu: () => {
+              onMenu(cell);
+            },
+          }
+        : {})}
       {...(drag && settings.can.edit
         ? {
             dragId: cellId(cell),
@@ -302,6 +315,8 @@ export function PlanningPage() {
       settings: settings.data,
       swapFrom,
       onCell,
+      onMenu: setOpen,
+      spaceId,
       onDrop: (a, b) => {
         swap.mutate({ a, b });
       },

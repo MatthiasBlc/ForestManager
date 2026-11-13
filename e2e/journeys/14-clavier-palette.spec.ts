@@ -157,7 +157,7 @@ test("parcours 14 : clavier seul et palette Ctrl K @desktop", async ({ page, sce
   }
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(new RegExp(`/s/${space.id}/meal-plan\\?day=${tuesday}`));
-  await expect(page.getByRole("button", { name: /, midi : Gratin dauphinois$/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /, midi : Gratin dauphinois$/ })).toBeVisible();
 
   // 5. "generer" : l'action ouvre F-GENERER ; Echap la ferme et rend le focus.
   await page.keyboard.press("Control+k");

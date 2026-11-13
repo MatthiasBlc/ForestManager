@@ -135,6 +135,76 @@ describe("E-PLANNING en bureau : grille semaine", () => {
   });
 });
 
+describe("repas-recette : toucher ouvre la recette, F-REPAS a part (D204)", () => {
+  const DAHL_ID = "00000000-0000-4000-8000-0000000000aa";
+  const dahl = (over: Partial<Parameters<typeof buildMeal>[0]> = {}) =>
+    buildMeal({
+      date: "2026-11-10",
+      mealTime: "LUNCH",
+      kind: "RECIPE",
+      title: "Dahl",
+      recipe: { id: DAHL_ID, imageUrl: null },
+      ...over,
+    });
+
+  it("bureau : la case est un lien vers la recette ; clic droit ou touche Menu ouvrent F-REPAS", async () => {
+    desktop();
+    const s = mealPlanServer({ meals: [dahl()] });
+    const { container } = renderWithProviders(<App />, { route: route(s.space.id) });
+    const slot = await screen.findByRole("link", { name: "Mardi 10, midi : Dahl" });
+    expect(slot).toHaveAttribute("href", `/s/${s.space.id}/recipes/${DAHL_ID}`);
+    expect(slot).toHaveAccessibleDescription("Appui long ou clic droit : détails du repas");
+    expect(await axeViolations(container)).toEqual([]);
+    // Clic droit (et touche Menu / Maj+F10, qui emettent le meme evenement).
+    fireEvent.contextMenu(slot);
+    expect(await screen.findByRole("dialog", { name: "Mardi 10, midi" })).toBeInTheDocument();
+  });
+
+  it("mobile : appui long sur la case ouvre F-REPAS sans suivre le lien", async () => {
+    const s = mealPlanServer({ meals: [dahl()] });
+    renderWithProviders(<App />, { route: route(s.space.id) });
+    const slot = await screen.findByRole("link", { name: "Mardi 10, midi : Dahl" });
+    fireEvent.pointerDown(slot, { clientX: 10, clientY: 10 });
+    expect(
+      await screen.findByRole("dialog", { name: "Mardi 10, midi" }, { timeout: 1500 })
+    ).toBeInTheDocument();
+    fireEvent.pointerUp(slot);
+    fireEvent.click(slot);
+    expect(screen.getByRole("dialog", { name: "Mardi 10, midi" })).toBeInTheDocument();
+  });
+
+  it("repas texte : toucher ouvre toujours F-REPAS", async () => {
+    const s = mealPlanServer({
+      meals: [buildMeal({ date: "2026-11-10", mealTime: "LUNCH", title: "Cantine" })],
+    });
+    const { user } = renderWithProviders(<App />, { route: route(s.space.id) });
+    await user.click(await screen.findByRole("button", { name: "Mardi 10, midi : Cantine" }));
+    expect(await screen.findByRole("dialog", { name: "Mardi 10, midi" })).toBeInTheDocument();
+  });
+
+  it("mode echange : une case recette redevient une cible a toucher", async () => {
+    const s = mealPlanServer({
+      meals: [dahl(), buildMeal({ date: "2026-11-10", mealTime: "DINNER", title: "Soupe" })],
+    });
+    const { user } = renderWithProviders(<App />, { route: route(s.space.id) });
+    await user.click(await screen.findByRole("button", { name: "Mardi 10, soir : Soupe" }));
+    await user.click(
+      within(await screen.findByRole("dialog", { name: "Mardi 10, soir" })).getByRole("button", {
+        name: "Échanger avec un autre repas",
+      })
+    );
+    await user.click(await screen.findByRole("button", { name: "Mardi 10, midi : Dahl" }));
+    await waitFor(() => {
+      expect(s.plan.swaps).toEqual([
+        {
+          a: { date: "2026-11-10", mealTime: "DINNER" },
+          b: { date: "2026-11-10", mealTime: "LUNCH" },
+        },
+      ]);
+    });
+  });
+});
+
 describe("E-PLANNING en mobile : Jour et Semaine (D111)", () => {
   it("vue Jour par defaut sur aujourd'hui ; un autre jour se choisit dans le bandeau", async () => {
     const s = mealPlanServer({
@@ -389,12 +459,12 @@ describe("lecture seule (F-MPL-3)", () => {
         }),
       ],
     });
-    const { user } = renderWithProviders(<App />, { route: route(s.space.id) });
+    renderWithProviders(<App />, { route: route(s.space.id) });
     expect(
       await screen.findByText("Seuls les modérateurs et le propriétaire modifient les repas.")
     ).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Ajouter un repas/ })).not.toBeInTheDocument();
-    await user.click(await screen.findByRole("button", { name: "Mardi 10, midi : Dahl" }));
+    fireEvent.contextMenu(await screen.findByRole("link", { name: "Mardi 10, midi : Dahl" }));
     const sheet = await screen.findByRole("dialog", { name: "Mardi 10, midi" });
     expect(within(sheet).getByText("Sans coriandre")).toBeInTheDocument();
     expect(within(sheet).getByRole("link", { name: "Voir la recette" })).toHaveAttribute(

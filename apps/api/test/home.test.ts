@@ -130,6 +130,38 @@ describe("GET /me/home", () => {
     ]);
   });
 
+  it("prochains repas : pas de lien vers une recette qui n'est plus visible dans l'espace", async () => {
+    const lea = await createUser();
+    const famille = await createSpace(lea.id, { name: "Famille" });
+    const amis = await createSpace(lea.id, { name: "Amis" });
+    await grantModule(famille.id, "meal-plan");
+    const client = await loginAs(lea, app);
+    // Recette d'un autre espace, jamais partagee dans "Famille" (ou retiree depuis).
+    const ailleurs = await createRecipe(client, amis.id, { title: "Tarte" });
+    await db.mealSlot.create({
+      data: {
+        spaceId: famille.id,
+        date: day(1),
+        mealTime: "LUNCH",
+        kind: "RECIPE",
+        recipeId: ailleurs.id,
+        text: "Tarte",
+      },
+    });
+
+    const upcoming = upcomingMealsWidgetSchema.parse(
+      data(await home(client), "meal-plan.upcoming")
+    );
+    expect(upcoming.spaces[0]?.meals).toEqual([
+      {
+        date: day(1).toISOString().slice(0, 10),
+        mealTime: "LUNCH",
+        title: "Tarte",
+        recipeId: null,
+      },
+    ]);
+  });
+
   it("recettes les plus cuisinees : repas passes planifies, les plus frequents d'abord", async () => {
     const lea = await createUser();
     const famille = await createSpace(lea.id);
