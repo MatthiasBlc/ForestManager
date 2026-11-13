@@ -1,6 +1,6 @@
 # Forest Manager V2 - Cahier des charges
 
-**Version : 1.4 (1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder ; 1.1 : module Planning revu au plan C5, D180 a D184, D11 amendee : midi et soir seulement ; 1.2 : plan C6, D187 a D189 : changelog en brouillon embarque, temps reel en SSE ; 1.3 : plan C6b, D192 : export en tache de fond, reimport en V2.1 ; 1.4 : etude UX mobile, D209) ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception** - 2026-11-13
+**Version : 1.5 (1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder ; 1.1 : module Planning revu au plan C5, D180 a D184, D11 amendee : midi et soir seulement ; 1.2 : plan C6, D187 a D189 : changelog en brouillon embarque, temps reel en SSE ; 1.3 : plan C6b, D192 : export en tache de fond, reimport en V2.1 ; 1.4 : etude UX mobile, D209 ; 1.5 : connexion avec Discord, D210) ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception** - 2026-11-13
 Statut de chaque decision : voir `3-Journal-des-Decisions.md`. Une ligne marquee `[Dxx]` renvoie a sa decision.
 Les questions de la phase A sont au S10 (toutes repondues). Tant qu'une question touche une section, cette section n'est pas validable.
 
@@ -84,6 +84,7 @@ Identifiants `F-<module>-<n>` pour que roadmap et tests s'y referent.
 
 - F-ACC-1 Inscription email + username + mot de passe. Verification de l'email si un SMTP est configure [D21] ; elle ne bloque rien (on peut rejoindre un espace sans email verifie), un rappel arrive par notification [D90].
 - F-ACC-2 Connexion avec option "rester connecte" (30 jours). Sans l'option : session 1 jour glissante [D13].
+- F-ACC-7 Connexion avec Discord, si configuree [D202, D210] : inscription par un ecran de confirmation (nom propose, email Discord verifie repris, photo copiee une fois), connexion, liaison et deliaison depuis le profil ; jamais de liaison automatique par email. Un compte cree par Discord n'a pas de mot de passe : il est invite a en definir un de secours (encart du profil, notification), change d'email apres en avoir defini un, ne delie Discord qu'avec un mot de passe et se supprime en tapant son nom. Le super admin n'est pas concerne.
 - F-ACC-3 Mot de passe oublie par email si un SMTP est configure ; sinon reinitialisation par un admin [D21] : mot de passe temporaire de 24 h a usage unique, transmis par l'admin lui-meme, a changer a la connexion ; l'ancien reste valable tant que le temporaire n'a pas servi, puis les autres sessions sont fermees [D134]. L'app demarre et fonctionne sans SMTP.
 - F-ACC-4 Profil : username, email, mot de passe, avatar, theme d'interface (S5.3).
 - F-ACC-5 Suppression du compte (RGPD) : les contenus partages dans des espaces GROUP restent, auteur anonymise, repris par les moderateurs [D20]. L'ecran montre les consequences espace par espace et propose l'export avant de demander le mot de passe [D116].

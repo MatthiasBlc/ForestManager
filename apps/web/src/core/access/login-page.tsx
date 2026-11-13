@@ -91,7 +91,10 @@ export function LoginPage() {
         />
       ) : null}
       <p className="text-ink-muted">
-        Pas encore de compte ? <Link to={registerLink}>Créer un compte</Link>
+        Pas encore de compte ?{" "}
+        <Link to={registerLink} className="text-accent-text underline">
+          Créer un compte
+        </Link>
       </p>
     </AuthLayout>
   );

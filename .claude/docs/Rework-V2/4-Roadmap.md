@@ -129,7 +129,8 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C7b.2 Web : bouton Discord, E-INSCRIPTION-DISCORD, profil (Compte Discord, definir un mot de passe), suppression sans mot de passe ; TDD
   - [x] C7b.3 E2E (faux Discord, parcours 17), variables dans les compose, `deploy.sh` et la CI
   - [ ] Action du proprietaire (a revoir ensemble) : application Discord (portail developpeur), redirections `<APP_URL>/api/v1/auth/discord/callback` pour le dev (`http://localhost:3000`), la preprod et la prod ; secrets GitHub `DEV_DISCORD_CLIENT_ID` / `DEV_DISCORD_CLIENT_SECRET` et `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET` ; pour le dev, les deux variables dans `.env`
-  - [ ] Revue dans Chrome et cloture de C7b (`27-Plan-C7b.md` S3)
+  - [x] Revue dans Chrome et cloture de C7b (`27-Plan-C7b.md` S3)
+  - [ ] Verification en preprod apres l'action du proprietaire (vraie application Discord) : lignes `acc-discord-*` et `acc-sans-mdp` de la feuille de recette
 - [ ] Seconde recette complete en preprod, sans echec ni remarque ouverte, puis feu vert explicite du proprietaire [D205] : condition d'entree de C8 (pas de date, la prod attend un produit fini)
 - [ ] C8 Mise en prod V2 (depuis ce poste [D201])
   - [ ] Accelerer la CI (2026-11-12 : `verify` ~9 min dont 6 min 48 de tests et couverture) : image de test en cache (buildx `type=gha` comme les images de prod), tests de l'API repartis en jobs paralleles, cache du lint

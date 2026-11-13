@@ -23,9 +23,10 @@ Conventions :
   5. E-BIENVENUE (D61) : 3 choix, tous passables : "Creer un espace" (F-CREER-ESPACE), "J'ai un lien d'invitation" (Field lien), "Ajouter ma premiere recette" (F-AJOUT-RECETTE). Lien "Plus tard".
   6. Arrivee sur l'espace perso (D02), module Recettes, EmptyState "Pas encore de recette".
 - **Connexion / mot de passe** : E-CONNEXION (email ou nom, mot de passe, "Rester connecte"). "Mot de passe oublie" visible seulement avec SMTP : E-MDP-OUBLIE -> email -> E-MDP-NOUVEAU. Sans SMTP : texte "Demande a l'administrateur de reinitialiser ton mot de passe".
+- **Avec Discord** (D202, D210, si configure) : "Continuer avec Discord" sous E-CONNEXION et E-INSCRIPTION (separateur "ou", suit "Rester connecte" et le lien d'invitation). Compte Discord deja relie : connexion directe. Sinon E-INSCRIPTION-DISCORD : nom propose depuis Discord (modifiable), email verifie par Discord repris (badge "Verifiee"), lien "Connecte-toi avec ton mot de passe, puis relie Discord depuis ton profil" (jamais de liaison par email) ; le compte n'a pas de mot de passe, photo Discord reprise. E-PROFIL : encart "Ajoute un mot de passe de secours" et notification tant qu'il n'y en a pas ; ligne "Compte Discord" (Relier, Delier refuse sans mot de passe) ; changement d'email apres un mot de passe ; suppression du compte en tapant son nom.
 - **Composants** : Field, Button, Switch, Toast, EmptyState.
 - **Notifications** : avec SMTP, rappel "Confirme ton adresse e-mail" (ouvre le compte, Button "Renvoyer le lien"), retire une fois l'adresse confirmee ; de meme apres un changement d'adresse (D90).
-- **Decisions** : D02, D13, D21, D34 (textes traduisibles), D61, D90.
+- **Decisions** : D02, D13, D21, D34 (textes traduisibles), D61, D90, D202, D210.
 
 ## P02 - Creer un espace groupe et inviter par lien
 

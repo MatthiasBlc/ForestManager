@@ -99,7 +99,10 @@ export function RegisterPage() {
         <DiscordButton href={discordStartUrl("login", { next })} />
       ) : null}
       <p className="text-ink-muted">
-        Déjà inscrit ? <Link to={loginLink}>Se connecter</Link>
+        Déjà inscrit ?{" "}
+        <Link to={loginLink} className="text-accent-text underline">
+          Se connecter
+        </Link>
       </p>
     </AuthLayout>
   );

@@ -59,7 +59,9 @@ export function DiscordRegisterPage() {
     return (
       <AuthLayout title="Créer ton compte">
         <FormAlert message={errorMessage(pending.error)} />
-        <Link to={loginLink}>Retour à la connexion</Link>
+        <Link to={loginLink} className="text-accent-text underline">
+          Retour à la connexion
+        </Link>
       </AuthLayout>
     );
   }
@@ -113,8 +115,10 @@ export function DiscordRegisterPage() {
       </form>
       <p className="text-ink-muted">
         Tu as déjà un compte Forest Manager ?{" "}
-        <Link to={loginLink}>Connecte-toi avec ton mot de passe</Link>, puis relie Discord depuis
-        ton profil.
+        <Link to={loginLink} className="text-accent-text underline">
+          Connecte-toi avec ton mot de passe
+        </Link>
+        , puis relie Discord depuis ton profil.
       </p>
     </AuthLayout>
   );

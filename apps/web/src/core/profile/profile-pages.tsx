@@ -357,11 +357,21 @@ export function PasswordPage() {
     }
   });
   if (!me.data) return null;
+  if (done === "defined") {
+    // Le compte a maintenant un mot de passe : pas de bascule vers le formulaire "changer".
+    return (
+      <ProfileLayout title="Définir un mot de passe" back="/profile">
+        <p role="status" className="rounded-md bg-success-soft px-3 py-2 text-success-text">
+          Mot de passe enregistré. Tu peux aussi te connecter avec lui.
+        </p>
+        <Link to="/profile" className="fm-btn fm-btn-secondary self-start">
+          Retour au profil
+        </Link>
+      </ProfileLayout>
+    );
+  }
   return (
-    <ProfileLayout
-      title={defining || done === "defined" ? "Définir un mot de passe" : "Mot de passe"}
-      back="/profile"
-    >
+    <ProfileLayout title={defining ? "Définir un mot de passe" : "Mot de passe"} back="/profile">
       <form className="fm-stack" onSubmit={(e) => void onSubmit(e)} noValidate>
         <FormAlert message={errors.root?.message} />
         {defining ? (
@@ -390,9 +400,7 @@ export function PasswordPage() {
         />
         {done ? (
           <p role="status" className="rounded-md bg-success-soft px-3 py-2 text-success-text">
-            {done === "defined"
-              ? "Mot de passe enregistré. Tu peux aussi te connecter avec lui."
-              : "Mot de passe changé. Tes autres appareils sont déconnectés."}
+            Mot de passe changé. Tes autres appareils sont déconnectés.
           </p>
         ) : null}
         <div>

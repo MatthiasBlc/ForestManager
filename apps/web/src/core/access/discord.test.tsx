@@ -212,6 +212,12 @@ describe("compte sans mot de passe", () => {
     await user.type(screen.getByLabelText("Nouveau mot de passe"), "un-secours-solide");
     await user.click(screen.getByRole("button", { name: "Enregistrer" }));
     expect(await screen.findByText(/Mot de passe enregistré/)).toBeInTheDocument();
+    // Pas de bascule vers le formulaire "changer" une fois le mot de passe defini.
+    expect(screen.queryByLabelText("Mot de passe actuel")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Retour au profil" })).toHaveAttribute(
+      "href",
+      "/profile"
+    );
     expect(bodies).toEqual([{ newPassword: "un-secours-solide" }]);
   });
 
