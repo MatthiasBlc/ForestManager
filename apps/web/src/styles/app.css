@@ -248,6 +248,59 @@ a.fm-slot {
   justify-content: center;
 }
 
+/* Glisser pour echanger [D204], style "Trello" : la case prise reste en creux, sa copie
+   soulevee suit le pointeur, la case survolee s'eclaire, l'echange s'anime. */
+.fm-slot[data-drag-id] {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.fm-slot[data-drag-lifted] {
+  transform: scale(1.03);
+  box-shadow: var(--shadow-md);
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.fm-slot[data-drag-source] {
+  opacity: 0.35;
+  border-style: dashed;
+  border-color: var(--line-strong);
+}
+.fm-slot[data-drop-over] {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  background: var(--accent-soft);
+}
+.fm-drag-ghost {
+  position: fixed;
+  z-index: 1000;
+  margin: 0;
+  pointer-events: none;
+  cursor: grabbing;
+  box-shadow: var(--shadow-md);
+  transform: translate(var(--fm-drag-x, 0), var(--fm-drag-y, 0)) rotate(2deg) scale(1.03);
+}
+.fm-slot-swapped {
+  animation: fm-slot-swap 0.35s ease-out;
+}
+@keyframes fm-slot-swap {
+  from {
+    transform: scale(0.92);
+    opacity: 0.4;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fm-slot[data-drag-lifted] {
+    transition: none;
+  }
+  .fm-slot-swapped {
+    animation: none;
+  }
+  .fm-drag-ghost {
+    transform: translate(var(--fm-drag-x, 0), var(--fm-drag-y, 0));
+  }
+}
+
 /* Stepper a sa taille dans une colonne flex (champ du formulaire), comme dans l'editeur de
    recette, au lieu de s'etirer sur toute la largeur. */
 .fm-stepper {

@@ -1,7 +1,8 @@
 // Parcours 9 : remplir le planning a la main, verrouiller un repas, generer le
-// reste de la semaine, puis regenerer en remplacant (21-Plan-C5 S4). Date du
-// navigateur figee au mardi 9 mars 2027 : la semaine affichee est connue.
-import type { Page } from "@playwright/test";
+// reste de la semaine, puis regenerer en remplacant (21-Plan-C5 S4), echanger deux
+// repas au doigt et ouvrir une recette [D204]. Date du navigateur figee au mardi
+// 9 mars 2027 : la semaine affichee est connue.
+import type { Locator, Page } from "@playwright/test";
 
 import { createRecipe } from "../support/recipes.ts";
 import { expect, expectNoA11yViolations, expectToast, loginAs, test } from "../support/test.ts";
@@ -31,6 +32,32 @@ const slots = (page: Page, name: RegExp) =>
 
 /** Un repas de la semaine affichee, par son nom accessible ("Mardi 9, midi : ..."). */
 const slot = (page: Page, when: string) => slots(page, new RegExp(`^${when} : `));
+
+/** Glisser au doigt : appui long, la case se souleve, puis deplacement (vrais evenements
+ * tactiles, Chromium) [D204]. */
+async function touchDrag(page: Page, from: Locator, to: Locator) {
+  await from.scrollIntoViewIfNeeded();
+  const [a, b] = await Promise.all([from.boundingBox(), to.boundingBox()]);
+  if (!a || !b) throw new Error("case hors de la page");
+  const start = { x: a.x + a.width / 2, y: a.y + a.height / 2 };
+  const end = { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+  const cdp = await page.context().newCDPSession(page);
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [start] });
+  await expect(from).toHaveAttribute("data-drag-lifted", "");
+  for (let step = 1; step <= 8; step += 1) {
+    await cdp.send("Input.dispatchTouchEvent", {
+      type: "touchMove",
+      touchPoints: [
+        {
+          x: start.x + ((end.x - start.x) * step) / 8,
+          y: start.y + ((end.y - start.y) * step) / 8,
+        },
+      ],
+    });
+  }
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
+  await cdp.detach();
+}
 
 test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page, scenario }) => {
   const { owner: lea, space } = await scenario("group", {
@@ -146,7 +173,26 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
   await expect(every).toHaveText(before);
   await expect(tuesdayDinner).toHaveAccessibleName("Mardi 9, soir : Restes, 2 pers., verrouillé");
 
-  // 9. Toucher un repas-recette ouvre la recette [D204].
+  // 9. Appui long sur "Pas de repas" de mercredi midi, glisse sur jeudi soir : les deux
+  // repas s'echangent, sans ouvrir F-REPAS, et le serveur le garde [D204].
+  const thursday = slot(page, "Jeudi 11, soir");
+  const moved = ((await thursday.getAttribute("aria-label")) ?? "").split(" : ")[1] ?? "";
+  await touchDrag(page, slot(page, "Mercredi 10, midi"), thursday);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  for (const reload of [false, true]) {
+    if (reload) {
+      await page.reload();
+      await page.getByRole("button", { name: "Semaine", exact: true }).click();
+    }
+    await expect(slot(page, "Jeudi 11, soir")).toHaveAccessibleName(
+      "Jeudi 11, soir : Pas de repas"
+    );
+    await expect(slot(page, "Mercredi 10, midi")).toHaveAccessibleName(
+      `Mercredi 10, midi : ${moved}`
+    );
+  }
+
+  // 10. Toucher un repas-recette ouvre la recette [D204].
   const first = planned.first();
   const title = ((await first.getAttribute("aria-label")) ?? "").split(" : ")[1] ?? "";
   await first.click();

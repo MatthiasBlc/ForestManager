@@ -55,6 +55,14 @@ export function PullToRefresh({
     const onMove = (event: TouchEvent) => {
       const touch = event.touches[0];
       if (state.start === null || !touch) return;
+      // Un repas souleve se glisse : le geste n'est pas un rafraichissement [D204].
+      if (
+        event.target instanceof Element &&
+        event.target.closest("[data-drag-lifted], [data-drag-source]")
+      ) {
+        set(0);
+        return;
+      }
       const distance = touch.clientY - state.start;
       if (distance <= 0) {
         set(0);

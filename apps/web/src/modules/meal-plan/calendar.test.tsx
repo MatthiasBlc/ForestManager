@@ -103,7 +103,7 @@ describe("E-PLANNING en bureau : grille semaine", () => {
     expect(screen.queryByRole("button", { name: /midi/ })).not.toBeInTheDocument();
   });
 
-  it("glisser un repas sur un autre les echange", async () => {
+  it("glisser un repas sur un autre a la souris les echange (style Trello)", async () => {
     desktop();
     const s = mealPlanServer({
       meals: [buildMeal({ date: "2026-11-10", mealTime: "LUNCH", title: "Soupe" })],
@@ -111,16 +111,17 @@ describe("E-PLANNING en bureau : grille semaine", () => {
     renderWithProviders(<App />, { route: route(s.space.id) });
     const from = await screen.findByRole("button", { name: "Mardi 10, midi : Soupe" });
     const to = screen.getByRole("button", { name: "Jeudi 12, soir : Ajouter un repas" });
-    const data = new Map<string, string>();
-    const dataTransfer = {
-      setData: (type: string, value: string) => data.set(type, value),
-      getData: (type: string) => data.get(type) ?? "",
-      effectAllowed: "move",
-      dropEffect: "move",
-    };
-    fireEvent.dragStart(from, { dataTransfer });
-    fireEvent.dragOver(to, { dataTransfer });
-    fireEvent.drop(to, { dataTransfer });
+    expect(screen.getByText(/Glisse un repas sur un autre pour les échanger/)).toBeInTheDocument();
+    const mouse = { pointerType: "mouse", button: 0 };
+    fireEvent.pointerDown(from, { ...mouse, clientX: 10, clientY: 10 });
+    fireEvent.pointerMove(to, { ...mouse, clientX: 200, clientY: 90 });
+    expect(from).toHaveAttribute("data-drag-source");
+    expect(to).toHaveAttribute("data-drop-over");
+    fireEvent.pointerUp(to, { ...mouse, clientX: 200, clientY: 90 });
+    // Echange affiche tout de suite, avant la reponse du serveur.
+    expect(
+      await screen.findByRole("button", { name: "Jeudi 12, soir : Soupe" })
+    ).toBeInTheDocument();
     await waitFor(() => {
       expect(s.plan.swaps).toEqual([
         {
@@ -129,9 +130,6 @@ describe("E-PLANNING en bureau : grille semaine", () => {
         },
       ]);
     });
-    expect(
-      await screen.findByRole("button", { name: "Jeudi 12, soir : Soupe" })
-    ).toBeInTheDocument();
   });
 });
 
@@ -160,17 +158,62 @@ describe("repas-recette : toucher ouvre la recette, F-REPAS a part (D204)", () =
     expect(await screen.findByRole("dialog", { name: "Mardi 10, midi" })).toBeInTheDocument();
   });
 
-  it("mobile : appui long sur la case ouvre F-REPAS sans suivre le lien", async () => {
+  it("mobile : appui long sur la case la souleve, F-REPAS s'ouvre au relachement sans suivre le lien", async () => {
     const s = mealPlanServer({ meals: [dahl()] });
     renderWithProviders(<App />, { route: route(s.space.id) });
     const slot = await screen.findByRole("link", { name: "Mardi 10, midi : Dahl" });
-    fireEvent.pointerDown(slot, { clientX: 10, clientY: 10 });
+    const finger = { pointerType: "touch", button: 0 };
+    fireEvent.pointerDown(slot, { ...finger, clientX: 10, clientY: 10 });
+    await waitFor(
+      () => {
+        expect(slot).toHaveAttribute("data-drag-lifted");
+      },
+      { timeout: 1500 }
+    );
+    fireEvent.pointerUp(slot, { ...finger, clientX: 10, clientY: 10 });
+    fireEvent.click(slot);
+    expect(await screen.findByRole("dialog", { name: "Mardi 10, midi" })).toBeInTheDocument();
+  });
+
+  it("lecture seule : l'appui long ouvre F-REPAS sans soulever la case", async () => {
+    const s = mealPlanServer({ meals: [dahl()], settings: { editRole: "MODERATOR" } });
+    renderWithProviders(<App />, { route: route(s.space.id) });
+    const slot = await screen.findByRole("link", { name: "Mardi 10, midi : Dahl" });
+    fireEvent.pointerDown(slot, { pointerType: "touch", button: 0, clientX: 10, clientY: 10 });
     expect(
       await screen.findByRole("dialog", { name: "Mardi 10, midi" }, { timeout: 1500 })
     ).toBeInTheDocument();
-    fireEvent.pointerUp(slot);
-    fireEvent.click(slot);
-    expect(screen.getByRole("dialog", { name: "Mardi 10, midi" })).toBeInTheDocument();
+    expect(slot).not.toHaveAttribute("data-drag-lifted");
+  });
+
+  it("mobile : appui long puis glisser au doigt echange deux repas", async () => {
+    const s = mealPlanServer({
+      meals: [dahl(), buildMeal({ date: "2026-11-10", mealTime: "DINNER", title: "Soupe" })],
+    });
+    renderWithProviders(<App />, { route: route(s.space.id) });
+    const from = await screen.findByRole("link", { name: "Mardi 10, midi : Dahl" });
+    const to = screen.getByRole("button", { name: "Mardi 10, soir : Soupe" });
+    expect(screen.getByText(/Appui long sur un repas, puis glisse-le/)).toBeInTheDocument();
+    const finger = { pointerType: "touch", button: 0 };
+    fireEvent.pointerDown(from, { ...finger, clientX: 10, clientY: 10 });
+    await waitFor(
+      () => {
+        expect(from).toHaveAttribute("data-drag-lifted");
+      },
+      { timeout: 1500 }
+    );
+    fireEvent.pointerMove(to, { ...finger, clientX: 10, clientY: 120 });
+    expect(to).toHaveAttribute("data-drop-over");
+    fireEvent.pointerUp(to, { ...finger, clientX: 10, clientY: 120 });
+    await waitFor(() => {
+      expect(s.plan.swaps).toEqual([
+        {
+          a: { date: "2026-11-10", mealTime: "LUNCH" },
+          b: { date: "2026-11-10", mealTime: "DINNER" },
+        },
+      ]);
+    });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("repas texte : toucher ouvre toujours F-REPAS", async () => {

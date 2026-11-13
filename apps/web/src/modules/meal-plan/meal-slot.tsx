@@ -1,17 +1,20 @@
 // MealSlot (design system) : un repas de la grille. Recette (fond accent), texte,
 // vide (pointille) ou "Pas de repas" (barre). Toucher un repas-recette ouvre la recette ;
 // appui long, clic droit ou touche Menu ouvrent F-REPAS [D204]. Les autres cases ouvrent
-// F-REPAS au toucher. En bureau, un repas se glisse sur un autre pour les echanger (D69).
-import { useId, type DragEvent, type MouseEvent, type ReactNode } from "react";
+// F-REPAS au toucher. Un repas se glisse sur un autre pour les echanger, a la souris ou
+// au doigt apres un appui long (`usePointerDrag`) [D204].
+import { useId, type MouseEvent, type ReactNode } from "react";
 import { Link } from "react-router";
 
 import { cx } from "../../ui/cx.ts";
 import { Icon } from "../../ui/icon.tsx";
 import { useLongPress } from "../../ui/use-long-press.ts";
+import type { usePointerDrag } from "../../ui/use-pointer-drag.ts";
+
+/** Gestes d'une case qu'on peut prendre (`usePointerDrag().source`). */
+export type DragSource = ReturnType<ReturnType<typeof usePointerDrag>["source"]>;
 
 export type SlotKind = "recipe" | "text" | "empty" | "off";
-
-const DRAG_TYPE = "application/x-fm-meal";
 
 export interface MealSlotProps {
   kind: SlotKind;
@@ -33,9 +36,12 @@ export interface MealSlotProps {
   href?: string;
   /** Appui long, clic droit, touche Menu : F-REPAS quand la case est un lien. */
   onMenu?: () => void;
-  /** Glisser-deposer (bureau) : identifiant de la case. */
-  dragId?: string;
-  onDropFrom?: (sourceId: string) => void;
+  /** Case qu'on peut prendre pour l'echanger (gere aussi appui long et clic droit). */
+  dragSource?: DragSource | undefined;
+  /** Case ou l'on peut lacher un repas : son identifiant. */
+  dropId?: string | undefined;
+  /** Vient d'etre echangee : courte animation. */
+  swapped?: boolean;
 }
 
 export function MealSlot({
@@ -51,8 +57,9 @@ export function MealSlot({
   onOpen,
   href,
   onMenu,
-  dragId,
-  onDropFrom,
+  dragSource,
+  dropId,
+  swapped = false,
 }: MealSlotProps) {
   const label = kind === "empty" ? placeholder : kind === "off" ? "Pas de repas" : (title ?? "");
   const name = [
@@ -62,30 +69,13 @@ export function MealSlot({
   ]
     .filter(Boolean)
     .join(", ");
-  const drag =
-    dragId && onDropFrom
-      ? {
-          draggable: kind !== "empty",
-          onDragStart: (event: DragEvent) => {
-            event.dataTransfer.setData(DRAG_TYPE, dragId);
-            event.dataTransfer.effectAllowed = "move";
-          },
-          onDragOver: (event: DragEvent) => {
-            event.preventDefault();
-            event.dataTransfer.dropEffect = "move";
-          },
-          onDrop: (event: DragEvent) => {
-            event.preventDefault();
-            const source = event.dataTransfer.getData(DRAG_TYPE);
-            if (source && source !== dragId) onDropFrom(source);
-          },
-        }
-      : {};
+  const drag = { ...(dropId ? { "data-drop-id": dropId } : {}), ...dragSource };
   const className = cx(
     "fm-slot",
     `fm-slot-${kind}`,
     compact && "fm-slot-compact",
-    selected && "ring-2 ring-accent"
+    selected && "ring-2 ring-accent",
+    swapped && "fm-slot-swapped"
   );
   const content = (
     <>
@@ -98,7 +88,14 @@ export function MealSlot({
   );
   if (href) {
     return (
-      <RecipeSlot href={href} name={name} className={className} onMenu={onMenu} drag={drag}>
+      <RecipeSlot
+        href={href}
+        name={name}
+        className={className}
+        onMenu={onMenu}
+        drag={drag}
+        draggable={!!dragSource}
+      >
         {content}
       </RecipeSlot>
     );
@@ -117,6 +114,7 @@ function RecipeSlot({
   className,
   onMenu,
   drag,
+  draggable,
   children,
 }: {
   href: string;
@@ -124,6 +122,8 @@ function RecipeSlot({
   className: string;
   onMenu: (() => void) | undefined;
   drag: object;
+  /** Les gestes du glisser remplacent l'appui long et le clic droit. */
+  draggable: boolean;
   children: ReactNode;
 }) {
   const hintId = useId();
@@ -141,13 +141,17 @@ function RecipeSlot({
       className={className}
       aria-label={name}
       aria-describedby={hintId}
-      {...drag}
-      {...press.handlers}
-      // Clic droit, touche Menu et Maj+F10 emettent tous `contextmenu`.
-      onContextMenu={(event: MouseEvent) => {
-        event.preventDefault();
-        onMenu();
-      }}
+      {...(draggable
+        ? drag
+        : {
+            ...drag,
+            ...press.handlers,
+            // Clic droit, touche Menu et Maj+F10 emettent tous `contextmenu`.
+            onContextMenu: (event: MouseEvent) => {
+              event.preventDefault();
+              onMenu();
+            },
+          })}
     >
       {children}
       <span id={hintId} hidden>

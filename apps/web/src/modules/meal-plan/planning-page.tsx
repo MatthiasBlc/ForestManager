@@ -1,7 +1,8 @@
 // E-PLANNING [P10, D180] : calendrier continu de l'espace, semaine par semaine.
-// Bureau : grille jours x repas, glisser pour echanger (D69). Un repas-recette s'ouvre
-// au toucher, F-REPAS par appui long ou clic droit [D204]. Mobile : "Jour |
-// Semaine" (D111) et mode echange (D112). Sans le droit de modifier : lecture seule.
+// Bureau : grille jours x repas. Mobile : "Jour | Semaine" (D111). Un repas-recette
+// s'ouvre au toucher, F-REPAS par appui long ou clic droit ; un repas se glisse sur un
+// autre pour les echanger, a la souris ou au doigt apres l'appui long [D204] ; "Echanger"
+// de F-REPAS reste (mode echange, D112). Sans le droit de modifier : lecture seule.
 import {
   type Meal,
   type MealCell,
@@ -10,7 +11,7 @@ import {
   type SpaceRole,
 } from "@fm/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
 
 import { spaceQuery } from "../../core/session/queries.ts";
@@ -23,6 +24,7 @@ import { SegmentedControl } from "../../ui/controls.tsx";
 import { cx } from "../../ui/cx.ts";
 import { EmptyState, Skeleton } from "../../ui/display.tsx";
 import { Icon } from "../../ui/icon.tsx";
+import { usePointerDrag } from "../../ui/use-pointer-drag.ts";
 import { useToast } from "../../ui/use-toast.ts";
 import {
   addDays,
@@ -73,7 +75,10 @@ interface CalendarProps {
   /** F-REPAS d'un repas-recette (appui long, clic droit, touche Menu). */
   onMenu: (cell: MealCell) => void;
   spaceId: string;
-  onDrop: (from: MealCell, to: MealCell) => void;
+  /** Glisser pour echanger, si l'on peut modifier (sinon `null`). */
+  drag: ReturnType<typeof usePointerDrag> | null;
+  /** Cases qui viennent d'etre echangees (animation). */
+  swapped: readonly string[];
   today: string;
 }
 
@@ -81,16 +86,15 @@ interface CalendarProps {
 function Cell({
   cell,
   props,
-  drag,
   compact = false,
 }: {
   cell: MealCell;
   props: CalendarProps;
-  drag: boolean;
   compact?: boolean;
 }) {
-  const { meals, settings, swapFrom, onCell, onMenu, onDrop, spaceId } = props;
-  const meal = meals.get(cellId(cell));
+  const { meals, settings, swapFrom, onCell, onMenu, drag, swapped, spaceId } = props;
+  const id = cellId(cell);
+  const meal = meals.get(id);
   const kind = slotKind(meal);
   if (kind === "empty" && !settings.can.edit) return <EmptyCell />;
   const servings =
@@ -105,6 +109,7 @@ function Cell({
       placeholder={swapFrom ? "Déplacer ici" : "Ajouter un repas"}
       selected={swapFrom !== null && cellId(swapFrom) === cellId(cell)}
       compact={compact}
+      swapped={swapped.includes(id)}
       onOpen={() => {
         onCell(cell);
       }}
@@ -117,14 +122,17 @@ function Cell({
             },
           }
         : {})}
-      {...(drag && settings.can.edit
-        ? {
-            dragId: cellId(cell),
-            onDropFrom: (source: string) => {
-              onDrop(parseCell(source), cell);
-            },
-          }
-        : {})}
+      // Une case vide recoit un repas mais ne se prend pas.
+      dropId={drag ? id : undefined}
+      dragSource={
+        drag && kind !== "empty"
+          ? drag.source(id, {
+              onMenu: () => {
+                onMenu(cell);
+              },
+            })
+          : undefined
+      }
     />
   );
 }
@@ -162,7 +170,7 @@ function WeekGrid(props: CalendarProps) {
               {MEAL_TIME_LABELS[mealTime]}
             </span>
             {days.map((date) => (
-              <Cell key={date} cell={{ date, mealTime }} props={props} drag compact />
+              <Cell key={date} cell={{ date, mealTime }} props={props} compact />
             ))}
           </div>
         ))}
@@ -209,7 +217,7 @@ function DayView({
           <span className="text-xs font-semibold tracking-wide text-ink-muted uppercase">
             {MEAL_TIME_LABELS[mealTime]}
           </span>
-          <Cell cell={{ date: day, mealTime }} props={props} drag={false} />
+          <Cell cell={{ date: day, mealTime }} props={props} />
         </div>
       ))}
     </div>
@@ -226,7 +234,7 @@ function WeekList(props: CalendarProps) {
           <DayHead iso={date} today={today} className="w-12 shrink-0" />
           <div className="flex min-w-0 flex-1 flex-col gap-1.5">
             {mealTimes.map((mealTime) => (
-              <Cell key={mealTime} cell={{ date, mealTime }} props={props} drag={false} />
+              <Cell key={mealTime} cell={{ date, mealTime }} props={props} />
             ))}
           </div>
         </div>
@@ -270,12 +278,43 @@ export function PlanningPage() {
     );
   };
 
+  const [swapped, setSwapped] = useState<string[]>([]);
+  useEffect(() => {
+    if (swapped.length === 0) return;
+    const timer = setTimeout(() => {
+      setSwapped([]);
+    }, 600);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [swapped]);
+
   const swap = useMutation({
     mutationFn: ({ a, b }: { a: MealCell; b: MealCell }) =>
       api.post(`/spaces/${spaceId}/meal-plan/meals/swap`, { a, b }),
+    // Echange affiche tout de suite ; la relecture corrige en cas de refus.
+    onMutate: async ({ a, b }) => {
+      await queryClient.cancelQueries({ queryKey: mealsKey(spaceId) });
+      const [idA, idB] = [cellId(a), cellId(b)];
+      queryClient.setQueriesData<Meal[]>({ queryKey: mealsKey(spaceId) }, (list) =>
+        list?.map((meal) => {
+          const at = cellId(meal);
+          if (at === idA) return { ...meal, date: b.date, mealTime: b.mealTime };
+          if (at === idB) return { ...meal, date: a.date, mealTime: a.mealTime };
+          return meal;
+        })
+      );
+      setSwapped([idA, idB]);
+    },
     onSettled: () => queryClient.invalidateQueries({ queryKey: mealsKey(spaceId) }),
     onError: (error) => {
       toast(errorMessage(error), { tone: "danger" });
+    },
+  });
+
+  const drag = usePointerDrag({
+    onDrop: (a, b) => {
+      swap.mutate({ a: parseCell(a), b: parseCell(b) });
     },
   });
 
@@ -317,9 +356,8 @@ export function PlanningPage() {
       onCell,
       onMenu: setOpen,
       spaceId,
-      onDrop: (a, b) => {
-        swap.mutate({ a, b });
-      },
+      drag: settings.data.can.edit && !swapFrom ? drag : null,
+      swapped,
       today,
     };
     // Mobile : tirer vers le bas relit la semaine affichee [D186].
@@ -453,10 +491,12 @@ export function PlanningPage() {
         <p className="m-0 text-sm text-ink-muted">{READ_ONLY_NOTE[settings.data.editRole]}</p>
       ) : null}
       {content}
-      {wide && canEdit ? (
+      {canEdit ? (
         <p className="m-0 text-sm text-ink-muted">
-          Glisse un repas sur un autre pour les échanger. Les repas verrouillés ne bougent pas à la
-          génération.
+          {wide
+            ? "Glisse un repas sur un autre pour les échanger."
+            : "Appui long sur un repas, puis glisse-le sur un autre pour les échanger."}{" "}
+          Les repas verrouillés ne bougent pas à la génération.
         </p>
       ) : null}
       {settings.data && open ? (

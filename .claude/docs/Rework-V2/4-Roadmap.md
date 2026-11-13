@@ -118,7 +118,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
     - [x] C7c.0 Maquette de F-AJOUT-RECETTE et F-MES-RECETTES, validee par le proprietaire (`26-Maquette-C7c.html`)
     - [x] C7c.1 Depuis mes recettes : filtre, apercu des sous-recettes, ajout en lot tout ou rien, activite groupee, feuille [D203]
     - [x] C7c.2 Repas au toucher [D204] : toucher un repas-recette ouvre la recette (planning et accueil), appui long / clic droit / Menu ouvrent F-REPAS, lien "Planning" par espace dans "Prochains repas" ; TDD
-    - [ ] C7c.3 Echange au glisser pointeur [D204] : echange au doigt sur mobile (appui long puis glisser) et glisser style Trello en bureau, meme code pointeur ; TDD, lignes ajoutees a la feuille de recette
+    - [x] C7c.3 Echange au glisser pointeur [D204] : echange au doigt sur mobile (appui long puis glisser) et glisser style Trello en bureau, meme code pointeur ; TDD, lignes ajoutees a la feuille de recette
     - [ ] Revue dans Chrome et cloture de C7c (`26-Plan-C7c.md` S2)
   - [ ] Etude UX de la navigation mobile ("labyrinthe de menus", demande du proprietaire) [D205] : parcourir toute l'application en emulation mobile, cartographier la profondeur de chaque ecran et les doublons, proposer des simplifications (selecteur), les inscrire au journal et au CDC, puis les realiser en TDD. Deja traites : Accueil en tete du selecteur d'espaces [D206], onglet unique "Mes recettes" dans l'espace perso [D207]
   - [ ] Cloture de C7 (`24-Plan-C7.md` S3)
