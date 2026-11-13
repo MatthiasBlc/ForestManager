@@ -58,7 +58,7 @@ Tranches verticales, tests ecrits d'abord [D151]. Ordre : C7b.1 (API), maquette,
 
 ### C7b.0 Maquette
 
-`29-Maquette-C7b.html` a cote du plan : bouton "Continuer avec Discord" (E-CONNEXION, E-INSCRIPTION), E-INSCRIPTION-DISCORD, section "Compte Discord" et "Definir un mot de passe" du profil, E-SUPPRESSION sans mot de passe. Validee par le proprietaire (selecteur) avant C7b.2.
+`29-Maquette-C7b.html` a cote du plan : bouton "Continuer avec Discord" (E-CONNEXION, E-INSCRIPTION), E-INSCRIPTION-DISCORD, section "Compte Discord" et "Definir un mot de passe" du profil, E-SUPPRESSION sans mot de passe. Validee par le proprietaire (selecteur) avant C7b.2 : fait le 2026-11-13 ; bouton aux couleurs de Discord, encart de secours toujours affiche tant qu'il n'y a pas de mot de passe.
 
 ### C7b.2 Web
 

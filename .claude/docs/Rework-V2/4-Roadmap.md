@@ -125,7 +125,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
 - [ ] C7b Connexion avec Discord avant la prod [D202] : inscription par Discord, liaison d'un compte existant depuis le profil, connexion ; plan `27-Plan-C7b.md` [D210], ligne du CDC, maquette, TDD ; lignes ajoutees a la feuille de recette ; plus tard peut-etre un bot Discord pour les notifications (V2.1 ou apres)
   - [x] Plan de C7b (`27-Plan-C7b.md`, D210)
   - [x] C7b.1 API : migration, client Discord, start / callback / pending / register, liaison et deliaison, definir un mot de passe, comptes sans mot de passe (connexion, email, suppression, admin) ; TDD
-  - [ ] C7b.0 Maquette (`29-Maquette-C7b.html`), validee par le proprietaire
+  - [x] C7b.0 Maquette (`29-Maquette-C7b.html`), validee par le proprietaire
   - [ ] C7b.2 Web : bouton Discord, E-INSCRIPTION-DISCORD, profil (Compte Discord, definir un mot de passe), suppression sans mot de passe ; TDD
   - [ ] C7b.3 E2E (faux Discord, parcours 17), variables dans les compose, `deploy.sh` et la CI ; action du proprietaire : application Discord et secrets
   - [ ] Revue dans Chrome et cloture de C7b (`27-Plan-C7b.md` S3)

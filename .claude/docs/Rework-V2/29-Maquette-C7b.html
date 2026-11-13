@@ -1,0 +1,231 @@
+<title>Connexion Discord</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Maquette C7b.0 : une rangee d'ecrans de telephone (390 px) dans l'ordre du parcours, jetons du theme Braise de Forest Manager. */
+:root {
+  --bg: #f5f3ef; --surface: #fbfaf7; --raised: #ffffff; --line: #ddd6cb; --line-strong: #918a7f;
+  --ink: #1f1d1a; --muted: #5f5a53; --overlay: rgba(28, 26, 22, 0.42);
+  --accent: #b45f19; --accent-soft: #f2e7dc; --accent-text: #9f5619; --on-accent: #ffffff;
+  --second-soft: #e5e8e9; --second-text: #46607f; --ok-soft: #e2ebe3; --ok-text: #2d754b;
+  --stage: #ebe7e0; --shadow: 0 -8px 32px rgba(40, 32, 20, 0.16); --toast: #1f1d1a; --on-toast: #f5f3ef;
+  --font-display: "Sora", "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #16181b; --surface: #1f2226; --raised: #282c31; --line: #32363c; --line-strong: #74777c;
+  --ink: #eceae6; --muted: #a6a39e; --overlay: rgba(8, 9, 10, 0.62);
+  --accent: #e8913a; --accent-soft: #4b3a2a; --accent-text: #e89541; --on-accent: #121417;
+  --second-soft: #383f4a; --second-text: #93abc9; --ok-soft: #30463d; --ok-text: #6cc490;
+  --stage: #0f1113; --shadow: 0 -8px 32px rgba(0, 0, 0, 0.55); --toast: #eceae6; --on-toast: #16181b;
+  color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #16181b; --surface: #1f2226; --raised: #282c31; --line: #32363c; --line-strong: #74777c;
+  --ink: #eceae6; --muted: #a6a39e; --overlay: rgba(8, 9, 10, 0.62);
+  --accent: #e8913a; --accent-soft: #4b3a2a; --accent-text: #e89541; --on-accent: #121417;
+  --second-soft: #383f4a; --second-text: #93abc9; --ok-soft: #30463d; --ok-text: #6cc490;
+  --stage: #0f1113; --shadow: 0 -8px 32px rgba(0, 0, 0, 0.55); --toast: #eceae6; --on-toast: #16181b;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--stage); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 40px; }
+header.page { max-width: 1240px; margin: 0 auto 24px; display: grid; gap: 6px; }
+header.page h1 { font: 700 26px/1.2 var(--font-display); margin: 0; text-wrap: balance; }
+header.page p { margin: 0; color: var(--muted); max-width: 70ch; }
+.flow { max-width: 1240px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 28px 20px; }
+figure { margin: 0; display: grid; gap: 10px; align-content: start; min-width: 0; }
+figcaption { display: grid; gap: 2px; }
+figcaption b { font: 600 15px/1.3 var(--font-display); }
+figcaption span { color: var(--muted); font-size: 14px; }
+.step { font: 500 12px/1 var(--font-mono); color: var(--accent-text); letter-spacing: .04em; }
+
+/* Telephone */
+.phone { position: relative; width: 100%; max-width: 360px; height: 700px; border-radius: 28px; overflow: hidden; background: var(--bg);
+  border: 1px solid var(--line); display: flex; flex-direction: column; }
+.top { display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.space-dot { width: 30px; height: 30px; border-radius: 9px; background: #3f5fa8; color: #fff; display: grid; place-items: center; font: 700 13px var(--font-display); }
+.top b { font: 600 16px var(--font-display); flex: 1; }
+.list { padding: 16px; display: grid; gap: 10px; }
+.btn-main { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: 12px; border: 0;
+  background: var(--accent); color: var(--on-accent); font: 700 15px var(--font-sans); padding: 0 16px; }
+.btn-ghost { min-height: 44px; border-radius: 12px; border: 1px solid var(--line-strong); background: transparent; color: var(--ink); font: 600 15px var(--font-sans); padding: 0 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: grid; gap: 2px; }
+.card small { color: var(--muted); font-size: 13px; }
+.scrim { position: absolute; inset: 0; background: var(--overlay); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--raised); border-radius: 22px 22px 0 0; box-shadow: var(--shadow);
+  padding: 8px 16px 20px; display: flex; flex-direction: column; gap: 12px; max-height: 92%; }
+.sheet.tall { top: 44px; }
+.grab { width: 40px; height: 4px; border-radius: 4px; background: var(--line-strong); margin: 0 auto 4px; opacity: .6; }
+.sheet-head { display: flex; align-items: center; gap: 8px; }
+.sheet-head h2 { margin: 0; flex: 1; font: 600 17px/1.3 var(--font-display); text-wrap: balance; }
+.icon-btn { width: 36px; height: 36px; border-radius: 10px; border: 0; background: transparent; color: var(--ink); display: grid; place-items: center; }
+svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.option { display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); text-align: left; width: 100%; font: inherit; }
+.toast { position: absolute; left: 16px; right: 16px; bottom: 20px; background: var(--toast); color: var(--on-toast); border-radius: 14px; padding: 12px 14px; display: flex; gap: 10px; align-items: center; font-weight: 600; }
+.note { font-size: 14px; color: var(--muted); }
+.questions { max-width: 1240px; margin: 32px auto 0; display: grid; gap: 8px; }
+.questions h2 { font: 600 18px var(--font-display); margin: 0; }
+.questions ul { margin: 0; padding-left: 20px; color: var(--muted); max-width: 80ch; display: grid; gap: 4px; }
+:root { --discord: #5865f2; --on-discord: #ffffff; --danger: #b3261e; --danger-soft: #f6e1df; --warn-soft: #f4ead2; --warn-text: #7a5410; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --danger: #f2827a; --danger-soft: #4a2826; --warn-soft: #463b22; --warn-text: #e6c37a; } }
+:root[data-theme="dark"] { --danger: #f2827a; --danger-soft: #4a2826; --warn-soft: #463b22; --warn-text: #e6c37a; }
+.body { padding: 20px 16px; display: grid; gap: 14px; align-content: start; overflow: auto; flex: 1; }
+.brand { font: 700 22px/1.2 var(--font-display); margin: 6px 0 2px; }
+.lbl { display: grid; gap: 6px; font-weight: 600; font-size: 14px; }
+.input { min-height: 44px; border: 1px solid var(--line-strong); border-radius: 12px; padding: 0 12px; display: flex; align-items: center; gap: 8px; background: var(--surface); color: var(--ink); font-weight: 500; }
+.input.empty { color: var(--muted); }
+.hint { font-size: 13px; color: var(--muted); font-weight: 500; }
+.switch { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; }
+.switch i { width: 40px; height: 24px; border-radius: 999px; background: var(--accent); position: relative; }
+.switch i::after { content: ""; position: absolute; right: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--on-accent); }
+.or { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; }
+.or::before, .or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.btn-discord { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 44px; border-radius: 12px; border: 0; background: var(--discord); color: var(--on-discord); font: 700 15px var(--font-sans); padding: 0 16px; width: 100%; }
+.btn-discord svg { fill: currentColor; stroke: none; width: 22px; height: 22px; }
+.btn-main, .btn-ghost { width: 100%; }
+.btn-danger { min-height: 44px; border-radius: 12px; border: 0; background: var(--danger); color: #fff; font: 700 15px var(--font-sans); padding: 0 16px; width: 100%; }
+.btn-danger[disabled] { opacity: .45; }
+.link { color: var(--accent-text); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+.who { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+.av { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #e8913a, #7a4bd1); color: #fff; display: grid; place-items: center; font: 700 16px var(--font-display); flex: none; }
+.who .txt { display: grid; }
+.who small { color: var(--muted); font-size: 13px; }
+.dbadge { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 3px 9px; background: var(--discord); color: var(--on-discord); }
+.dbadge svg { width: 14px; height: 14px; fill: currentColor; stroke: none; }
+.ok { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 2px 8px; background: var(--ok-soft); color: var(--ok-text); margin-left: auto; }
+.ok svg { width: 13px; height: 13px; stroke-width: 2.5; }
+.callout { border-radius: 14px; padding: 12px 14px; background: var(--warn-soft); color: var(--warn-text); display: grid; gap: 8px; font-size: 14px; }
+.callout b { font-size: 15px; }
+.callout .btn-main { min-height: 38px; font-size: 14px; }
+.rows { display: grid; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--surface); }
+.r { display: flex; align-items: center; gap: 12px; padding: 12px; border-top: 1px solid var(--line); min-height: 56px; }
+.r:first-child { border-top: 0; }
+.r .ico { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); flex: none; }
+.r .ico.d { background: var(--discord); color: var(--on-discord); }
+.r .ico.d svg { fill: currentColor; stroke: none; }
+.r .txt { display: grid; flex: 1; min-width: 0; }
+.r .txt b { font-size: 15px; }
+.r .txt small { color: var(--muted); font-size: 13px; }
+.mini { min-height: 34px; border-radius: 10px; border: 1px solid var(--line-strong); background: transparent; color: var(--ink); font: 600 14px var(--font-sans); padding: 0 12px; flex: none; }
+.mini.accent { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.conseq { display: grid; gap: 6px; font-size: 14px; }
+.conseq div { padding: 10px 12px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
+.conseq small { color: var(--muted); }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-discord" viewBox="0 0 24 24"><path d="M19.6 5.3A17 17 0 0 0 15.4 4l-.5 1.1a15.6 15.6 0 0 0-5.8 0L8.6 4a17 17 0 0 0-4.2 1.3C1.7 9.3 1 13.2 1.3 17.1a17.2 17.2 0 0 0 5.2 2.6l1.1-1.8a11 11 0 0 1-1.7-.8l.4-.3a12.2 12.2 0 0 0 11.4 0l.4.3a11 11 0 0 1-1.7.8l1.1 1.8a17.1 17.1 0 0 0 5.2-2.6c.4-4.5-.7-8.4-3.1-11.8ZM8.5 14.7c-1 0-1.9-1-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Zm7 0c-1 0-1.9-1-1.9-2.1s.8-2.1 1.9-2.1 1.9 1 1.9 2.1-.8 2.1-1.9 2.1Z"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+</svg>
+
+<header class="page">
+  <h1>Connexion avec Discord</h1>
+  <p>Maquette C7b.0 (D202, D210). Mobile ; en bureau, les mêmes écrans s'affichent dans la colonne centrée des pages d'accès et du profil. Le bouton Discord n'apparaît que si Discord est configuré sur le serveur.</p>
+</header>
+
+<div class="flow">
+  <figure>
+    <figcaption><span class="step">1 · E-CONNEXION</span><b>Se connecter</b><span>Discord sous le formulaire, séparé par « ou ». « Rester connecté » vaut aussi pour Discord. Même bouton sur E-INSCRIPTION.</span></figcaption>
+    <div class="phone">
+      <div class="body">
+        <p class="brand">Forest Manager</p>
+        <label class="lbl">E-mail ou nom d'utilisateur<span class="input empty">lea@exemple.fr</span></label>
+        <label class="lbl">Mot de passe<span class="input empty">••••••••••</span></label>
+        <span class="switch"><i></i>Rester connecté</span>
+        <button class="btn-main" type="button">Se connecter</button>
+        <div class="or">ou</div>
+        <button class="btn-discord" type="button"><svg><use href="#i-discord"/></svg>Continuer avec Discord</button>
+        <p class="note">Pas encore de compte ? <span class="link">Créer un compte</span></p>
+      </div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><span class="step">2 · E-INSCRIPTION-DISCORD</span><b>Créer ton compte</b><span>Première connexion d'un Discord inconnu. Nom proposé depuis Discord (modifiable), e-mail vérifié par Discord repris. Le lien du bas évite un doublon à qui a déjà un compte.</span></figcaption>
+    <div class="phone">
+      <div class="body">
+        <p class="brand">Créer ton compte</p>
+        <div class="who"><span class="av">L</span><span class="txt"><b>lea.martin</b><small>Connectée avec Discord · photo reprise</small></span><span class="dbadge"><svg><use href="#i-discord"/></svg>Discord</span></div>
+        <label class="lbl">Nom d'utilisateur<span class="input">lea_martin</span><span class="hint">Lettres, chiffres et _ ; visible par les membres de tes espaces.</span></label>
+        <label class="lbl">Adresse e-mail<span class="input">lea.martin@exemple.fr<span class="ok"><svg><use href="#i-check"/></svg>Vérifiée</span></span><span class="hint">Si tu la changes, un lien de confirmation t'est envoyé.</span></label>
+        <button class="btn-main" type="button">Créer mon compte</button>
+        <p class="note">Tu as déjà un compte Forest Manager ? <span class="link">Connecte-toi avec ton mot de passe</span>, puis relie Discord depuis ton profil.</p>
+      </div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><span class="step">3 · E-PROFIL, compte créé par Discord</span><b>Secours recommandé</b><span>Encart tant qu'aucun mot de passe n'est défini (et une notification au premier jour). « Délier » est refusé sans mot de passe.</span></figcaption>
+    <div class="phone">
+      <div class="top"><button class="icon-btn" type="button" aria-label="Retour"><svg><use href="#i-back"/></svg></button><b>Profil</b></div>
+      <div class="body">
+        <div class="who"><span class="av">L</span><span class="txt"><b>lea_martin</b><small>lea.martin@exemple.fr</small></span></div>
+        <div class="callout"><b>Ajoute un mot de passe de secours</b><span>Il te connectera si Discord n'est pas disponible ou si tu délies ton compte.</span><button class="btn-main" type="button">Définir un mot de passe</button></div>
+        <div class="rows">
+          <div class="r"><span class="ico"><svg><use href="#i-pencil"/></svg></span><span class="txt"><b>Nom et adresse e-mail</b><small>Changer d'e-mail demande un mot de passe</small></span></div>
+          <div class="r"><span class="ico"><svg><use href="#i-lock"/></svg></span><span class="txt"><b>Mot de passe</b><small>Aucun pour l'instant</small></span></div>
+          <div class="r"><span class="ico d"><svg><use href="#i-discord"/></svg></span><span class="txt"><b>Compte Discord</b><small>Relié à lea.martin</small></span><button class="mini" type="button">Délier</button></div>
+        </div>
+      </div>
+      <div class="toast">Définis d'abord un mot de passe.</div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><span class="step">4 · Définir un mot de passe</span><b>Mot de passe de secours</b><span>Même écran que « Mot de passe », sans le champ « actuel » quand il n'y en a pas. Mêmes règles de force ; les autres appareils sont déconnectés.</span></figcaption>
+    <div class="phone">
+      <div class="top"><button class="icon-btn" type="button" aria-label="Retour"><svg><use href="#i-back"/></svg></button><b>Définir un mot de passe</b></div>
+      <div class="body">
+        <p class="note">Tu te connectes aujourd'hui avec Discord. Ce mot de passe te servira de secours, avec ton nom d'utilisateur ou ton e-mail.</p>
+        <label class="lbl">Nouveau mot de passe<span class="input empty">10 caractères au moins</span></label>
+        <button class="btn-main" type="button">Enregistrer</button>
+      </div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><span class="step">5 · E-PROFIL, compte classique</span><b>Relier Discord</b><span>Ligne « Compte Discord » avec « Relier » : aller-retour chez Discord, puis retour au profil avec un message.</span></figcaption>
+    <div class="phone">
+      <div class="top"><button class="icon-btn" type="button" aria-label="Retour"><svg><use href="#i-back"/></svg></button><b>Profil</b></div>
+      <div class="body">
+        <div class="who"><span class="av">S</span><span class="txt"><b>sam</b><small>sam@exemple.fr</small></span></div>
+        <div class="rows">
+          <div class="r"><span class="ico"><svg><use href="#i-pencil"/></svg></span><span class="txt"><b>Nom et adresse e-mail</b></span></div>
+          <div class="r"><span class="ico"><svg><use href="#i-lock"/></svg></span><span class="txt"><b>Mot de passe</b></span></div>
+          <div class="r"><span class="ico d"><svg><use href="#i-discord"/></svg></span><span class="txt"><b>Compte Discord</b><small>Pour te connecter en un geste</small></span><button class="mini accent" type="button">Relier</button></div>
+        </div>
+      </div>
+      <div class="toast">Compte Discord relié</div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><span class="step">6 · E-SUPPRESSION sans mot de passe</span><b>Supprimer mon compte</b><span>Mêmes conséquences et export qu'aujourd'hui ; la confirmation demande de taper son nom d'utilisateur. Le bouton s'active quand il correspond.</span></figcaption>
+    <div class="phone">
+      <div class="top"><button class="icon-btn" type="button" aria-label="Retour"><svg><use href="#i-back"/></svg></button><b>Supprimer mon compte</b></div>
+      <div class="body">
+        <div class="conseq">
+          <div><b>Coloc</b><br><small>Propriété transmise à Sam</small></div>
+          <div><b>Espace perso</b><br><small>Supprimé avec tes recettes</small></div>
+        </div>
+        <label class="lbl">Pour confirmer, tape ton nom d'utilisateur : lea_martin<span class="input empty">lea_martin</span></label>
+        <button class="btn-danger" type="button" disabled>Supprimer définitivement</button>
+      </div>
+    </div>
+  </figure>
+</div>
+
+<section class="questions">
+  <h2>Tranché</h2>
+  <ul>
+    <li>Bouton Discord aux couleurs de Discord (violet, logo blanc).</li>
+    <li>Encart de secours (écran 3) toujours affiché tant qu'aucun mot de passe n'est défini.</li>
+  </ul>
+</section>
