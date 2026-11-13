@@ -20,7 +20,7 @@ describe("TabBar (D131)", () => {
     const onMore = vi.fn();
     render(
       <MemoryRouter>
-        <TabBar items={items} activeId="e" onMore={onMore} />
+        <TabBar items={items.slice(0, 4)} activeId="e" onMore={onMore} />
       </MemoryRouter>
     );
     const nav = screen.getByRole("navigation", { name: "Navigation" });
@@ -35,6 +35,17 @@ describe("TabBar (D131)", () => {
     expect(more).toHaveAttribute("aria-current", "page");
     await userEvent.click(more);
     expect(onMore).toHaveBeenCalledOnce();
+  });
+
+  it("sans onMore, pas de bouton Plus : toutes les entrees sont des onglets (D209)", () => {
+    render(
+      <MemoryRouter>
+        <TabBar items={items.slice(0, 3)} activeId="a" />
+      </MemoryRouter>
+    );
+    const nav = screen.getByRole("navigation", { name: "Navigation" });
+    expect(within(nav).getAllByRole("link")).toHaveLength(3);
+    expect(within(nav).queryByRole("button", { name: "Plus" })).not.toBeInTheDocument();
   });
 
   it("onglet courant marque", () => {
@@ -86,6 +97,17 @@ describe("SpaceRail", () => {
 });
 
 describe("SpaceSwitcher (D130)", () => {
+  it("desktopOnly : rail reserve au bureau, masque sur mobile (D209)", () => {
+    const { rerender } = render(
+      <SpaceRail spaces={[]} onSelect={() => undefined} onAdd={() => undefined} />
+    );
+    expect(screen.getByRole("navigation", { name: "Espaces" })).not.toHaveClass("fm-rail-desktop");
+    rerender(
+      <SpaceRail desktopOnly spaces={[]} onSelect={() => undefined} onAdd={() => undefined} />
+    );
+    expect(screen.getByRole("navigation", { name: "Espaces" })).toHaveClass("fm-rail-desktop");
+  });
+
   it("le nom accessible de chaque espace reprend tout son texte visible", () => {
     render(
       <SpaceSwitcher

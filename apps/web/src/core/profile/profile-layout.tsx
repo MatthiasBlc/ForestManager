@@ -1,4 +1,5 @@
-// Shell des ecrans du profil : rail des espaces, en-tete avec retour.
+// Shell des ecrans du profil : rail des espaces (bureau seulement, D209), en-tete
+// avec retour.
 import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useNavigate } from "react-router";
@@ -26,6 +27,7 @@ export function ProfileLayout({
     <AppShell
       rail={
         <SpaceRail
+          desktopOnly
           personal={visuals.find((v) => v.id === me.data?.personalSpaceId)}
           spaces={visuals.filter((v) => v.id !== me.data?.personalSpaceId)}
           onSelect={(id) => void navigate(`/s/${id}`)}

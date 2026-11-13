@@ -9,9 +9,9 @@ import { TAB_MAX } from "../../patterns/tab-bar.tsx";
 export interface SpaceNavigation {
   /** Toutes les entrees, dans l'ordre (barre du module). */
   items: NavItem[];
-  /** Onglets du bas (4 au plus). */
+  /** Onglets du bas : 4 au plus suivis de "Plus", ou 5 sans "Plus" (D209). */
   tabs: NavItem[];
-  /** Contenu de "Plus". */
+  /** Contenu de "Plus" (vide : pas de bouton "Plus"). */
   more: NavItem[];
 }
 
@@ -54,9 +54,9 @@ export function buildNavigation(
   const primary = space.kind === "PERSONAL" ? [home, ...moduleItems] : moduleItems;
   const secondary = space.kind === "PERSONAL" ? [settings] : [members, activity, settings];
   const tabs = primary.slice(0, TAB_MAX);
-  return {
-    items: [...primary, ...secondary],
-    tabs,
-    more: [...primary.slice(TAB_MAX), ...secondary],
-  };
+  const more = [...primary.slice(TAB_MAX), ...secondary];
+  // Un "Plus" d'une seule entree ne sert a rien : elle prend sa place d'onglet (D209).
+  if (more.length === 1)
+    return { items: [...primary, ...secondary], tabs: [...tabs, ...more], more: [] };
+  return { items: [...primary, ...secondary], tabs, more };
 }

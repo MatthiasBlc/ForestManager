@@ -25,6 +25,20 @@ describe("module Planning dans l'espace", () => {
     expect(links[0]).toHaveAttribute("href", `/s/${s.space.id}/meal-plan`);
   });
 
+  it("Idees, Profils et Reglages : icone et libelle court visibles (D209)", async () => {
+    const s = mealPlanServer({ myRole: "OWNER" });
+    renderWithProviders(<App />, { route: `/s/${s.space.id}/meal-plan` });
+    expect(await screen.findByRole("link", { name: "Idées de repas" })).toHaveTextContent(
+      /^Idées$/
+    );
+    expect(await screen.findByRole("link", { name: "Profils de génération" })).toHaveTextContent(
+      /^Profils$/
+    );
+    expect(await screen.findByRole("button", { name: "Réglages du planning" })).toHaveTextContent(
+      /^Réglages$/
+    );
+  });
+
   it("un membre ne voit pas les reglages", async () => {
     const s = mealPlanServer({ myRole: "MEMBER" });
     renderWithProviders(<App />, { route: `/s/${s.space.id}/meal-plan` });

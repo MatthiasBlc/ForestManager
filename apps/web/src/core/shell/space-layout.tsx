@@ -253,7 +253,11 @@ export function SpaceLayout() {
       tabbar={
         <>
           {chrome.claimed ? null : (
-            <TabBar items={nav.tabs} activeId={active?.id} onMore={() => setMoreOpen(true)} />
+            <TabBar
+              items={nav.tabs}
+              activeId={active?.id}
+              {...(nav.more.length > 0 ? { onMore: () => setMoreOpen(true) } : {})}
+            />
           )}
           {chrome.bottomSlot}
         </>

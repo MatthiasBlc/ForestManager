@@ -532,3 +532,47 @@ main[tabindex="-1"]:focus-visible {
   border-color: var(--accent);
   background: var(--accent-soft);
 }
+
+/* D209 : hors espace (profil, notifications, nouveautes), pas de bande d'espaces
+   sur mobile : l'en-tete avec retour suffit ; le bureau garde son rail. */
+@container (max-width: 767.98px) {
+  .fm-shell-grid > .fm-rail-desktop {
+    display: none;
+  }
+}
+
+/* Bouton d'outil : icone et mot court dessous (barre du Planning, D209). */
+.fm-toolbtn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: var(--size-touch);
+  min-height: var(--size-touch);
+  padding: 2px var(--space-1);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--ink-muted);
+  font: 600 11px/14px var(--font-sans);
+  text-decoration: none;
+  cursor: pointer;
+}
+.fm-toolbtn:hover {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+/* Telephone etroit (360 px) : la barre du Planning tient sur une ligne. */
+@container (max-width: 399px) {
+  .fm-plan-tools {
+    gap: 2px;
+  }
+  .fm-plan-tools .fm-btn-sm {
+    padding: 0 var(--space-2);
+  }
+  .fm-plan-tools .fm-toolbtn {
+    min-width: 40px;
+    padding: 2px 0;
+  }
+}

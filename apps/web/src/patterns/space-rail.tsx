@@ -10,9 +10,18 @@ export interface SpaceRailProps {
   activeId?: string;
   onSelect: (id: string) => void;
   onAdd: () => void;
+  /** Reserve au bureau : masque sur mobile, ou la barre du haut suffit (D209). */
+  desktopOnly?: boolean;
 }
 
-export function SpaceRail({ personal, spaces, activeId, onSelect, onAdd }: SpaceRailProps) {
+export function SpaceRail({
+  personal,
+  spaces,
+  activeId,
+  onSelect,
+  onAdd,
+  desktopOnly = false,
+}: SpaceRailProps) {
   const item = (space: SpaceVisual) => (
     <button
       key={space.id}
@@ -31,7 +40,7 @@ export function SpaceRail({ personal, spaces, activeId, onSelect, onAdd }: Space
     </button>
   );
   return (
-    <nav className="fm-rail" aria-label="Espaces">
+    <nav className={cx("fm-rail", desktopOnly && "fm-rail-desktop")} aria-label="Espaces">
       {personal ? item(personal) : null}
       {personal ? <span className="fm-rail-sep" aria-hidden="true" /> : null}
       {spaces.map(item)}

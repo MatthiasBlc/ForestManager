@@ -128,6 +128,14 @@ describe("profil (E-PROFIL)", () => {
     });
   });
 
+  it("rail des espaces reserve au bureau : pas de bande d'espaces sur mobile (D209)", async () => {
+    profileServer();
+    renderWithProviders(<App />, { route: "/profile" });
+    expect(await screen.findByRole("navigation", { name: "Espaces" })).toHaveClass(
+      "fm-rail-desktop"
+    );
+  });
+
   it("sans stockage configure, pas de choix de photo", async () => {
     profileServer();
     renderWithProviders(<App />, { route: "/profile" });

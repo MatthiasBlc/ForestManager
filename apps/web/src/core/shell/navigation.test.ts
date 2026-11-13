@@ -5,12 +5,12 @@ import { WEB_MODULES } from "../../modules/index.ts";
 import { buildNavigation } from "./navigation.ts";
 
 describe("buildNavigation", () => {
-  it("espace perso (D95, D207) : Accueil, Mes recettes (onglet unique), puis Reglages dans Plus", () => {
+  it("espace perso (D95, D207, D209) : Accueil, Mes recettes, Reglages en onglets, sans Plus", () => {
     const space = buildPersonalSpace(buildMe());
     const nav = buildNavigation(space, WEB_MODULES);
     expect(nav.items.map((i) => i.id)).toEqual(["home", "recipes", "settings"]);
-    expect(nav.tabs.map((i) => i.id)).toEqual(["home", "recipes"]);
-    expect(nav.more.map((i) => i.id)).toEqual(["settings"]);
+    expect(nav.tabs.map((i) => i.id)).toEqual(["home", "recipes", "settings"]);
+    expect(nav.more).toEqual([]);
     const recipes = nav.items.find((i) => i.id === "recipes");
     expect(recipes?.label).toBe("Mes recettes");
     expect(recipes?.to).toBe(`/s/${space.id}/recipes`);
@@ -42,5 +42,21 @@ describe("buildNavigation", () => {
     const nav = buildNavigation(space, modules);
     expect(nav.tabs.map((i) => i.id)).toEqual(["m1", "m2", "m3", "m4"]);
     expect(nav.more.map((i) => i.id)).toEqual(["m5", "members", "activity", "settings"]);
+  });
+
+  it("Plus a une seule entree : elle devient un onglet, meme apres 4 onglets (D209)", () => {
+    const fake = (code: string) => ({
+      code,
+      nav: () => [{ id: code, label: code, icon: "puzzle" as const, path: code }],
+      Routes: WEB_MODULES[0]!.Routes,
+    });
+    const modules = ["m1", "m2", "m3"].map(fake);
+    const space = {
+      ...buildPersonalSpace(buildMe()),
+      modules: modules.map((m, i) => ({ code: m.code, sortOrder: i })),
+    };
+    const nav = buildNavigation(space, modules);
+    expect(nav.tabs.map((i) => i.id)).toEqual(["home", "m1", "m2", "m3", "settings"]);
+    expect(nav.more).toEqual([]);
   });
 });

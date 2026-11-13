@@ -1,4 +1,5 @@
-// TabBar (mobile, D131) : 4 entrees au plus, puis "Plus" qui ouvre le reste en feuille.
+// TabBar (mobile, D131) : les onglets prepares par la navigation, puis "Plus" qui
+// ouvre le reste en feuille ; sans reste, pas de "Plus" (D209).
 import { Link } from "react-router";
 
 import { Icon } from "../ui/icon.tsx";
@@ -11,12 +12,13 @@ export function TabBar({
   activeId,
   onMore,
 }: {
-  /** Entrees principales (au-dela de 4, elles passent dans "Plus"). */
+  /** Onglets, deja limites par la navigation (TAB_MAX, ou un de plus sans "Plus"). */
   items: readonly NavItem[];
   activeId?: string;
-  onMore: () => void;
+  /** Absent : rien dans "Plus", pas de bouton. */
+  onMore?: () => void;
 }) {
-  const shown = items.slice(0, TAB_MAX);
+  const shown = items;
   const moreActive = !shown.some((item) => item.id === activeId) && activeId !== undefined;
   return (
     <nav className="fm-tabbar" aria-label="Navigation">
@@ -26,15 +28,17 @@ export function TabBar({
           {item.label}
         </Link>
       ))}
-      <button
-        type="button"
-        aria-current={moreActive ? "page" : undefined}
-        aria-haspopup="dialog"
-        onClick={onMore}
-      >
-        <Icon name="more" />
-        Plus
-      </button>
+      {onMore ? (
+        <button
+          type="button"
+          aria-current={moreActive ? "page" : undefined}
+          aria-haspopup="dialog"
+          onClick={onMore}
+        >
+          <Icon name="more" />
+          Plus
+        </button>
+      ) : null}
     </nav>
   );
 }

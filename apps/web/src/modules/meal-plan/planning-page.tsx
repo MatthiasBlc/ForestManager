@@ -411,7 +411,7 @@ export function PlanningPage() {
           {generateButton}
         </div>
       )}
-      <div className="flex flex-wrap items-center gap-1 lg:gap-2">
+      <div className="fm-plan-tools flex flex-wrap items-center gap-1 lg:gap-2">
         <IconButton
           icon="chevron-right"
           label="Semaine précédente"
@@ -442,27 +442,29 @@ export function PlanningPage() {
         >
           Aujourd'hui
         </Button>
-        <Link to="ideas" className="fm-iconbtn" aria-label="Idées de repas" title="Idées de repas">
+        {/* Icone et mot court : les icones seules ne se devinaient pas (D209). */}
+        <Link to="ideas" className="fm-toolbtn" aria-label="Idées de repas">
           <Icon name="lightbulb" />
+          <span>Idées</span>
         </Link>
         {settings.data?.can.manage ? (
-          <Link
-            to="profiles"
-            className="fm-iconbtn"
-            aria-label="Profils de génération"
-            title="Profils de génération"
-          >
+          <Link to="profiles" className="fm-toolbtn" aria-label="Profils de génération">
             <Icon name="puzzle" />
+            <span>Profils</span>
           </Link>
         ) : null}
         {settings.data?.can.manage ? (
-          <IconButton
-            icon="settings"
-            label="Réglages du planning"
+          <button
+            type="button"
+            className="fm-toolbtn"
+            aria-label="Réglages du planning"
             onClick={() => {
               setSettingsOpen(true);
             }}
-          />
+          >
+            <Icon name="settings" />
+            <span>Réglages</span>
+          </button>
         ) : null}
         {wide ? generateButton : null}
       </div>
