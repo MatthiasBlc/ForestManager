@@ -201,6 +201,8 @@ jobs:
           MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
           MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
           SENTRY_DSN: ${{ secrets.DEV_SENTRY_DSN }}
+          DISCORD_CLIENT_ID: ${{ secrets.DEV_DISCORD_CLIENT_ID }}
+          DISCORD_CLIENT_SECRET: ${{ secrets.DEV_DISCORD_CLIENT_SECRET }}
 
   # ========================================
   # Deploy prod (push sur master)
@@ -234,6 +236,8 @@ jobs:
           MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
           MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
+          DISCORD_CLIENT_SECRET: ${{ secrets.DISCORD_CLIENT_SECRET }}
 
   # ========================================
   # Tag de version apres la prod

@@ -62,6 +62,9 @@ services:
       # Suivi d'erreurs [D196] : vide = coupe (secret GitHub facultatif).
       - SENTRY_DSN=${SENTRY_DSN}
       - SENTRY_ENVIRONMENT=preprod
+      # Connexion avec Discord [D210] : facultative (vide = boutons masques).
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
+      - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
       - NODE_OPTIONS=--max-old-space-size=1024
     networks:
       internal-dev:

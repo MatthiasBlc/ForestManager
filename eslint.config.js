@@ -16,6 +16,8 @@ export default tseslint.config(
       "e2e/playwright-report/",
       "**/node_modules/",
       ".claude/",
+      // Faux Discord des E2E : lance tel quel par Node dans son conteneur, hors projets TS.
+      "docker/fake-discord/",
     ],
   },
   js.configs.recommended,

@@ -127,7 +127,8 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C7b.1 API : migration, client Discord, start / callback / pending / register, liaison et deliaison, definir un mot de passe, comptes sans mot de passe (connexion, email, suppression, admin) ; TDD
   - [x] C7b.0 Maquette (`29-Maquette-C7b.html`), validee par le proprietaire
   - [x] C7b.2 Web : bouton Discord, E-INSCRIPTION-DISCORD, profil (Compte Discord, definir un mot de passe), suppression sans mot de passe ; TDD
-  - [ ] C7b.3 E2E (faux Discord, parcours 17), variables dans les compose, `deploy.sh` et la CI ; action du proprietaire : application Discord et secrets
+  - [x] C7b.3 E2E (faux Discord, parcours 17), variables dans les compose, `deploy.sh` et la CI
+  - [ ] Action du proprietaire (a revoir ensemble) : application Discord (portail developpeur), redirections `<APP_URL>/api/v1/auth/discord/callback` pour le dev (`http://localhost:3000`), la preprod et la prod ; secrets GitHub `DEV_DISCORD_CLIENT_ID` / `DEV_DISCORD_CLIENT_SECRET` et `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET` ; pour le dev, les deux variables dans `.env`
   - [ ] Revue dans Chrome et cloture de C7b (`27-Plan-C7b.md` S3)
 - [ ] Seconde recette complete en preprod, sans echec ni remarque ouverte, puis feu vert explicite du proprietaire [D205] : condition d'entree de C8 (pas de date, la prod attend un produit fini)
 - [ ] C8 Mise en prod V2 (depuis ce poste [D201])

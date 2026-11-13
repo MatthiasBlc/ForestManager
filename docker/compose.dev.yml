@@ -77,6 +77,9 @@ services:
       CORS_ORIGIN: ${CORS_ORIGIN:-}
       APP_URL: http://localhost:3000
       SMTP_URL: ${SMTP_URL:-}
+      # Connexion avec Discord [D210] : application Discord de dev, facultative.
+      DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID:-}
+      DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET:-}
       MINIO_ENDPOINT: s3
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY:-forestmanager}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY:-forestmanager_dev_secret}

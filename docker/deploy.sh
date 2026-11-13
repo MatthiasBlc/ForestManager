@@ -25,6 +25,9 @@ required_vars=(
 )
 # Facultatives : vides, la fonction est coupee (suivi d'erreurs sans DSN [D196]).
 export SENTRY_DSN=${SENTRY_DSN:-}
+# Connexion avec Discord [D210] : sans les deux, les boutons Discord sont masques.
+export DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID:-}
+export DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET:-}
 
 for var in "${required_vars[@]}"; do
   if [ -z "${!var:-}" ]; then
@@ -40,7 +43,7 @@ if [ ! -f "${COMPOSE_FILE}" ]; then
 fi
 
 # Variables du compose remplacees ; tout autre "$" reste tel quel.
-SUBST_VARS='${POSTGRES_USER} ${POSTGRES_PASSWORD} ${POSTGRES_DB} ${SESSION_SECRET} ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY} ${SENTRY_DSN} ${REGISTRY_URL} ${IMAGE_NAME} ${TAG}'
+SUBST_VARS='${POSTGRES_USER} ${POSTGRES_PASSWORD} ${POSTGRES_DB} ${SESSION_SECRET} ${MINIO_ACCESS_KEY} ${MINIO_SECRET_KEY} ${SENTRY_DSN} ${DISCORD_CLIENT_ID} ${DISCORD_CLIENT_SECRET} ${REGISTRY_URL} ${IMAGE_NAME} ${TAG}'
 STACK_FILE=$(mktemp)
 trap 'rm -f "${STACK_FILE}"' EXIT
 envsubst "${SUBST_VARS}" < "${COMPOSE_FILE}" > "${STACK_FILE}"

@@ -40,6 +40,19 @@ services:
       timeout: 5s
       retries: 15
 
+  fake-discord:
+    # Faux Discord [D210] : le navigateur (page d'autorisation) et l'API (jeton,
+    # profil) l'appellent par ce nom ; le parcours 17 choisit le profil.
+    image: node:22-alpine
+    command: ["node", "/fake-discord/server.ts"]
+    volumes:
+      - ./docker/fake-discord:/fake-discord:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:4000/health"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
   api:
     # Image de dev : elle contient `apps/api/test` (routes de test et fabriques),
     # absent de l'image de production.
@@ -64,6 +77,11 @@ services:
       # Adresse publique de production, la seule ouverte par la CSP du nginx :
       # Playwright sert ces requetes par le RustFS de la stack (e2e/support/storage.ts).
       MINIO_PUBLIC_URL: https://s3.matthias-bouloc.fr
+      # Faux Discord de la stack (docker/fake-discord) [D210].
+      DISCORD_CLIENT_ID: e2e-client
+      DISCORD_CLIENT_SECRET: e2e-secret-not-for-production
+      DISCORD_BASE_URL: http://fake-discord:4000
+      DISCORD_CDN_URL: http://fake-discord:4000
     networks:
       default:
         aliases:
@@ -72,6 +90,8 @@ services:
       postgres:
         condition: service_healthy
       s3:
+        condition: service_healthy
+      fake-discord:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1:3001/health"]

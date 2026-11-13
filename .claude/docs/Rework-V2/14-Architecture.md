@@ -222,6 +222,9 @@ En place depuis C7.5 (regles : D196, D199), verifie en preprod le 2026-11-12 :
 - **API** : `@sentry/core` (`apps/api/src/core/monitoring/`), actif seulement si `SENTRY_DSN` est defini ; 5xx, rejets et exceptions non geres, taches horaires ; jamais les 4xx ni de donnee personnelle (l'utilisateur n'est qu'un UUID). `SENTRY_ENVIRONMENT` = preprod ou production.
 - **Web** : `@sentry/react` charge a la demande si `GET /api/v1/config` annonce `features.errorTracking` ; envoi par le **tunnel** `POST /api/v1/monitoring` (le front ne connait pas le DSN, la CSP ne change pas).
 - **Infra** : un seul Bugsink (`docker/bugsink/compose.yml` et sa notice), un projet par environnement ; secrets facultatifs `DEV_SENTRY_DSN` (preprod) et `SENTRY_DSN` (prod). Sans DSN, le suivi est coupe et rien ne casse.
+
+**Connexion avec Discord [D202, D210]** : `DISCORD_CLIENT_ID` et `DISCORD_CLIENT_SECRET` facultatives (sans elles, `features.discord` vaut false et les boutons sont masques) ; secrets GitHub `DEV_DISCORD_CLIENT_ID` / `DEV_DISCORD_CLIENT_SECRET` (preprod) et `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET` (prod), passes par `deploy.sh`. Redirection declaree chez Discord : `<APP_URL>/api/v1/auth/discord/callback`. `DISCORD_BASE_URL` / `DISCORD_CDN_URL` ne servent qu'au faux Discord des E2E (`docker/fake-discord/`).
+
 - **A13** : hote du DSN, environnement, bouton d'evenement de test.
 
 ## 13. CI/CD [D76, D147]

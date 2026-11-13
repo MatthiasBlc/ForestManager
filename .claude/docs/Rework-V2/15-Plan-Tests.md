@@ -85,6 +85,7 @@ Chaque parcours tourne en **mobile** (projet par defaut) ; ceux marques (D) tour
 14. Navigation au clavier seul sur les ecrans principaux (D) ; palette Ctrl K ; reprise du dernier espace et de la derniere entree (scenario detaille : `23-Plan-C6b.md` S4).
 15. Changer d'ambiance et de mode dans Profil > Apparence ; le choix persiste apres reconnexion.
 16. Notification en temps reel : un membre suggere, la cloche de l'autrice s'allume sans rechargement, la notification ouvre la suggestion et passe en lue ; une categorie coupee ne previent plus (scenario detaille : `22-Plan-C6.md` S4).
+17. Connexion avec Discord [D210] : inscription confirmee (nom propose, email verifie), encart de secours, reconnexion par Discord, puis liaison d'un compte classique depuis le profil et connexion par Discord. (D) Faux Discord de la stack (`docker/fake-discord/`, profil choisi par le parcours).
 
 ## 5. Donnees de test [D79]
 
