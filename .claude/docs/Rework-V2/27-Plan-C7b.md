@@ -22,13 +22,14 @@ Tranches au selecteur par le proprietaire (2026-11-13) :
 - **Creation** : toujours par un ecran de confirmation (evite le doublon silencieux d'un utilisateur existant qui clique sur Discord), avec le lien "Tu as deja un compte ? Connecte-toi puis relie Discord".
 - **Suppression sans mot de passe** : taper son nom d'utilisateur (facon GitHub).
 - **Avatar** : copie une seule fois dans le stockage a la creation, si le stockage est configure ; ensuite il ne suit plus Discord. Aucune image servie depuis Discord (CSP inchangee).
+- **Secours** (demande du proprietaire pendant C7b.1) : un compte cree par Discord est invite a definir un mot de passe de secours (notification `core.password.missing` vers "Mot de passe" du profil, retiree des qu'un mot de passe est defini, et encart du profil) et a verifier son email s'il ne l'est pas (rappel existant D90).
 
 Choix techniques (defauts annonces) :
 
 - **Schema** : colonnes sur `User` (un seul fournisseur, pas de table generique) : `discordId String? @unique`, `discordUsername String?` (affiche au profil, rafraichi a chaque connexion Discord), `passwordHash String?` (null = compte sans mot de passe). Anonymisation a la suppression : `discordId` et `discordUsername` remis a null.
 - **OAuth2** : client confidentiel (secret cote API), code d'autorisation, `state` aleatoire de 128 bits garde en session 10 minutes (avec l'intention `login` / `link`, `next` filtre comme `safeNext`, "rester connecte"), `prompt=none` (pas d'ecran d'autorisation si deja accorde). Jeton d'acces Discord utilise une fois puis oublie (rien stocke).
 - **Redirection** : `${APP_URL}/api/v1/auth/discord/callback` (nginx et le proxy Vite transmettent deja `/api`). Une application Discord par environnement (dev, preprod, prod) ou une seule avec trois redirections : au choix du proprietaire.
-- **Configuration** : `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` facultatives (absentes -> `features.discord = false`, boutons masques) ; `DISCORD_BASE_URL` (defaut `https://discord.com`) pour le faux Discord des E2E. Client injectable `AppDeps.discord` (echange du code, profil, avatar) ; faux client dans les tests de l'API.
+- **Configuration** : `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` facultatives (absentes -> `features.discord = false`, boutons masques) ; `DISCORD_BASE_URL` (defaut `https://discord.com`) et `DISCORD_CDN_URL` (defaut `https://cdn.discordapp.com`) pour le faux Discord des E2E. Client injectable `AppDeps.discord` (echange du code, profil, avatar) ; faux client dans les tests de l'API.
 - **Inscription en attente** : profil Discord (id, nom, email verifie ou non, hash d'avatar) garde en session 15 minutes, jamais renvoye tel quel au navigateur sauf ce que l'ecran affiche (`GET /auth/discord/pending`).
 - **Nom propose** : nom Discord ramene aux regles (`.` et caracteres hors `[a-zA-Z0-9_]` -> `_`, 30 au plus, complete a 3 avec `_`), suffixe numerique si pris ; modifiable.
 
@@ -38,7 +39,7 @@ Tranches verticales, tests ecrits d'abord [D151]. Ordre : C7b.1 (API), maquette,
 
 ### C7b.1 API
 
-- Partage (`packages/shared`) : codes `AUTH_015` (connexion Discord indisponible, annulee ou expiree), `AUTH_016` (ce compte Discord est deja relie a un autre compte), `AUTH_017` (definis d'abord un mot de passe : deliaison ou changement d'email sans mot de passe), `AUTH_018` (nom d'utilisateur incorrect, confirmation de suppression). `meSchema` : `hasPassword`, `discord: { username } | null`. Corps : `discordRegisterBodySchema` (`username`, `email`), `setPasswordBodySchema` (`newPassword`), `deleteAccountBodySchema` = `password` ou `username` (un des deux). `features.discord` dans `/config`.
+- Partage (`packages/shared`) : codes `AUTH_015` (connexion Discord indisponible, annulee ou expiree), `AUTH_016` (ce compte Discord est deja relie a un autre compte), `AUTH_017` (definis d'abord un mot de passe : deliaison ou changement d'email sans mot de passe), `AUTH_018` (nom d'utilisateur incorrect, confirmation de suppression). `meSchema` : `hasPassword`, `discord: { username } | null`. Corps : `discordRegisterBodySchema` (`username`, `email`), `changePasswordBodySchema` avec `currentPassword` facultatif (exige seulement si le compte a un mot de passe), `deleteAccountBodySchema` = `password` ou `username` (un des deux). `features.discord` dans `/config`.
 - Prisma : migration `discord` (colonnes ci-dessus, `passwordHash` nullable).
 - `core/auth/discord.ts` (client) et `discord-routes.ts` :
   - `GET /auth/discord/start?intent=login|link&next=&remember=` : 302 vers Discord (state en session). `link` exige une session complete.
@@ -50,7 +51,7 @@ Tranches verticales, tests ecrits d'abord [D151]. Ordre : C7b.1 (API), maquette,
   - `GET /auth/discord/pending` : nom propose, email (et s'il est verifie), avatar present ou non ; `AUTH_015` sans attente valable.
   - `POST /auth/discord/register` : meme regles que F-ACC-1 sans mot de passe (disponibilite du nom et de l'email, `AUTH_004` si l'email existe), espace perso et modules par defaut dans la meme transaction que `register` (code partage), email verifie si inchange, sinon email de verification ; avatar copie apres coup (echec journalise, sans effet). Session ouverte, attente consommee.
   - `DELETE /me/discord` : `AUTH_017` sans mot de passe.
-  - `POST /me/password` (definir) : seulement si `passwordHash` est null, sinon `AUTH_005` ; regles de force habituelles ; autres sessions fermees.
+  - Definir un mot de passe : `PUT /me/password` sans `currentPassword` quand le compte n'en a pas (sinon `AUTH_005`) ; regles de force habituelles ; autres sessions fermees ; rappel `core.password.missing` retire (aussi par le mot de passe oublie et le temporaire de l'admin).
 - Ajustements : `authenticate` (hash null -> `burn`, `AUTH_002` ; le mot de passe temporaire de l'admin reste valable), `changePassword` (`AUTH_017` sans mot de passe), `updateProfile` (changement d'email sans mot de passe -> `AUTH_017`), `deleteAccount` (mot de passe ou, sans mot de passe, nom d'utilisateur exact -> `AUTH_018`), anonymisation. Admin A-UTILISATEURS : marque "Discord" et "sans mot de passe" sur la fiche.
 - Rate limit : `start` et `callback` 20 / 15 min, `register` comme l'inscription.
 - Tests : `apps/api/test/auth-discord.test.ts` (faux client : connexion, inscription, liaison, deliaison, state invalide ou rejoue, attente expiree, email deja pris, nom propose, avatar), ajouts a `auth.test.ts` et `account-deletion.test.ts`, matrice des routes.

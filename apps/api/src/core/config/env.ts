@@ -40,6 +40,21 @@ const envSchema = z
     SENTRY_DSN: z.preprocess((value) => (value === "" ? undefined : value), z.url().optional()),
     /** Nom de l'environnement dans Bugsink (preprod, production) ; NODE_ENV par defaut. */
     SENTRY_ENVIRONMENT: z.string().min(1).optional(),
+    /**
+     * Connexion avec Discord [D202, D210] : application du portail developpeur.
+     * Facultatif : sans les deux, `features.discord` vaut false.
+     */
+    DISCORD_CLIENT_ID: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.string().optional()
+    ),
+    DISCORD_CLIENT_SECRET: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.string().optional()
+    ),
+    /** Discord lui-meme ; un faux Discord dans les E2E. */
+    DISCORD_BASE_URL: z.url().default("https://discord.com"),
+    DISCORD_CDN_URL: z.url().default("https://cdn.discordapp.com"),
   })
   .refine(
     (env) =>

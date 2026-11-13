@@ -100,6 +100,11 @@ const CORE: Record<string, NotificationRenderer> = {
     actor: false,
     to: "/profile/account",
   }),
+  "core.password.missing": () => ({
+    text: "Définis un mot de passe de secours : il te connectera si Discord n'est pas disponible.",
+    actor: false,
+    to: "/profile/password",
+  }),
   "core.module.granted": (n) => ({
     text: `Le module ${moduleInfo(text(n, "moduleCode")).name} est disponible pour ${spaceName(n)}.`,
     actor: false,

@@ -43,6 +43,13 @@ const DEFINITIONS = {
     message:
       "Ce mot de passe temporaire n'est plus valable. Demandez-en un nouveau à l'administrateur.",
   },
+  AUTH_015: {
+    status: 400,
+    message: "La connexion avec Discord a échoué ou a expiré. Réessayez.",
+  },
+  AUTH_016: { status: 409, message: "Ce compte Discord est déjà relié à un autre compte." },
+  AUTH_017: { status: 409, message: "Définissez d'abord un mot de passe." },
+  AUTH_018: { status: 403, message: "Nom d'utilisateur incorrect." },
 
   // --- Espaces, membres, invitations ---
   SPACE_001: { status: 404, message: "Espace introuvable." },

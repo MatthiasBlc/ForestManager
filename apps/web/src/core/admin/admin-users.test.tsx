@@ -23,6 +23,8 @@ const SAM: AdminUser = {
   createdAt: "2026-10-05T10:00:00.000Z",
   lastLoginAt: null,
   temporaryPasswordPending: false,
+  discord: false,
+  hasPassword: true,
 };
 
 function mockUsers({ email = false } = {}) {

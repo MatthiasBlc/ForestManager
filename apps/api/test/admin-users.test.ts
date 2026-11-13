@@ -70,6 +70,8 @@ describe("liste des comptes (A12)", () => {
       email: owner.email,
       spaces: [{ name: "Colloc", owner: true }],
       temporaryPasswordPending: false,
+      discord: false,
+      hasPassword: true,
     });
     expect(res.body.data[0].lastLoginAt).not.toBeNull();
     expect(res.body.data[1]).toMatchObject({

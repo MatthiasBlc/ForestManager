@@ -35,6 +35,7 @@ export const CORE_NOTIFICATION_TYPES = {
   "core.space.deleted": { category: "core.members" },
   "core.space.restored": { category: "core.members" },
   "core.email.unverified": { category: "core.platform" },
+  "core.password.missing": { category: "core.platform" },
   "core.module.granted": { category: "core.platform" },
   "core.module.rejected": { category: "core.platform" },
   "core.moderation.opened": { category: "core.platform" },

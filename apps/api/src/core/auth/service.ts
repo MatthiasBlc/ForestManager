@@ -27,13 +27,13 @@ function emailLocalPart(email: string): string {
   return email.split("@")[0] ?? "";
 }
 
-async function findActiveUser(ctx: Context, userId: string): Promise<UserRow> {
+export async function findActiveUser(ctx: Context, userId: string): Promise<UserRow> {
   const user = await ctx.db.user.findUnique({ where: { id: userId } });
   if (!user || user.deletedAt) throw new AppError("AUTH_001");
   return user;
 }
 
-async function findByUsername(ctx: Context, username: string) {
+export async function findByUsername(ctx: Context, username: string) {
   return ctx.db.user.findFirst({
     where: { username: { equals: username, mode: "insensitive" }, deletedAt: null },
   });
@@ -106,18 +106,37 @@ export async function getMe(ctx: Context, userId: string, mustChoosePassword = f
     },
     createdAt: user.createdAt.toISOString(),
     mustChoosePassword,
+    hasPassword: Boolean(user.passwordHash),
+    discord: user.discordId ? { username: user.discordUsername ?? "" } : null,
   };
 }
 
+export interface NewAccount {
+  email: string;
+  username: string;
+  /** null : compte cree par Discord, sans mot de passe [D210]. */
+  passwordHash: string | null;
+  /** Email deja verifie (par Discord) : ni email ni rappel de verification. */
+  emailVerified?: boolean;
+  discord?: { id: string; username: string };
+}
+
 /** Cree le compte, son espace perso et ses modules par defaut, en une transaction. */
-export async function register(ctx: Context, body: RegisterBody): Promise<string> {
-  assertStrongPassword(body.password, [body.username, emailLocalPart(body.email)]);
-  await assertAvailable(ctx, { username: body.username, email: body.email });
-  const passwordHash = await ctx.hasher.hash(body.password);
+export async function createAccount(ctx: Context, account: NewAccount): Promise<string> {
+  const { email, username } = account;
+  await assertAvailable(ctx, { username, email });
   try {
     const user = await ctx.db.$transaction(async (tx) => {
       const created = await tx.user.create({
-        data: { email: body.email, username: body.username, passwordHash },
+        data: {
+          email,
+          username,
+          passwordHash: account.passwordHash,
+          emailVerifiedAt: account.emailVerified ? new Date() : null,
+          discordId: account.discord?.id ?? null,
+          discordUsername: account.discord?.username ?? null,
+          lastLoginAt: account.discord ? new Date() : null,
+        },
       });
       const space = await tx.space.create({
         data: {
@@ -130,14 +149,24 @@ export async function register(ctx: Context, body: RegisterBody): Promise<string
       await grantDefaultModules(tx, space.id);
       return created;
     });
-    await sendVerification(ctx, user);
-    await remindVerification(ctx, user.id);
+    if (!account.emailVerified) {
+      await sendVerification(ctx, user);
+      await remindVerification(ctx, user.id);
+    }
     return user.id;
   } catch (error) {
     if (!isUniqueViolation(error)) throw error;
-    await assertAvailable(ctx, { username: body.username, email: body.email });
+    await assertAvailable(ctx, { username, email });
+    if (account.discord) throw new AppError("AUTH_016");
     throw error;
   }
+}
+
+export async function register(ctx: Context, body: RegisterBody): Promise<string> {
+  assertStrongPassword(body.password, [body.username, emailLocalPart(body.email)]);
+  await assertAvailable(ctx, { username: body.username, email: body.email });
+  const passwordHash = await ctx.hasher.hash(body.password);
+  return createAccount(ctx, { email: body.email, username: body.username, passwordHash });
 }
 
 /**
@@ -158,7 +187,11 @@ export async function authenticate(
     throw new AppError("AUTH_002");
   }
   let temporaryTokenId: string | null = null;
-  if (!(await ctx.hasher.verify(user.passwordHash, password))) {
+  // Compte sans mot de passe (Discord) : seul un temporaire de l'admin l'ouvre [D134, D210].
+  const valid = user.passwordHash
+    ? await ctx.hasher.verify(user.passwordHash, password)
+    : (await ctx.hasher.burn(password), false);
+  if (!valid) {
     temporaryTokenId = await matchTemporaryPassword(ctx, user.id, password);
     if (!temporaryTokenId) throw new AppError("AUTH_002");
   }
@@ -206,6 +239,7 @@ export async function choosePassword(
     return count === 1;
   });
   if (!used) throw new AppError("AUTH_014");
+  await clearPasswordReminder(ctx, userId);
   await destroyUserSessions(ctx.db, userId, currentSid);
 }
 
@@ -217,6 +251,8 @@ export async function updateProfile(
   const user = await findActiveUser(ctx, userId);
   const emailChanged = body.email !== undefined && body.email !== user.email;
   if (emailChanged) {
+    // Sans mot de passe, l'email (et donc "mot de passe oublie") ne change pas [D210].
+    if (!user.passwordHash) throw new AppError("AUTH_017");
     const ok = await ctx.hasher.verify(user.passwordHash, body.currentPassword ?? "");
     if (!ok) throw new AppError("AUTH_005");
   }
@@ -244,7 +280,10 @@ export async function updateProfile(
   }
 }
 
-/** Change le mot de passe et ferme les autres sessions du compte. */
+/**
+ * Change le mot de passe et ferme les autres sessions du compte. Un compte sans
+ * mot de passe (Discord) en definit un sans donner d'ancien [D210].
+ */
 export async function changePassword(
   ctx: Context,
   userId: string,
@@ -252,7 +291,10 @@ export async function changePassword(
   currentSid: string
 ): Promise<void> {
   const user = await findActiveUser(ctx, userId);
-  if (!(await ctx.hasher.verify(user.passwordHash, body.currentPassword))) {
+  if (
+    user.passwordHash &&
+    !(await ctx.hasher.verify(user.passwordHash, body.currentPassword ?? ""))
+  ) {
     throw new AppError("AUTH_005");
   }
   assertStrongPassword(body.newPassword, [user.username, emailLocalPart(user.email)]);
@@ -260,6 +302,7 @@ export async function changePassword(
     where: { id: user.id },
     data: { passwordHash: await ctx.hasher.hash(body.newPassword) },
   });
+  await clearPasswordReminder(ctx, user.id);
   await destroyUserSessions(ctx.db, user.id, currentSid);
 }
 
@@ -285,6 +328,13 @@ export async function updatePreferences(
 // --- Emails optionnels [D21] ---
 
 const VERIFY_REMINDER = "core.email.unverified";
+
+/** Rappel d'un compte cree par Discord : definir un mot de passe de secours [D210]. */
+export const PASSWORD_REMINDER = "core.password.missing";
+
+async function clearPasswordReminder(ctx: Context, userId: string): Promise<void> {
+  await ctx.db.notification.deleteMany({ where: { userId, type: PASSWORD_REMINDER } });
+}
 
 /** Rappel dans l'app tant que l'adresse n'est pas confirmee [D90] (un seul a la fois). */
 async function remindVerification(ctx: Context, userId: string): Promise<void> {
@@ -346,5 +396,6 @@ export async function resetPassword(ctx: Context, token: string, password: strin
     data: { emailVerifiedAt: new Date() },
   });
   await clearVerificationReminder(ctx, userId);
+  await clearPasswordReminder(ctx, userId);
   await destroyUserSessions(ctx.db, userId);
 }

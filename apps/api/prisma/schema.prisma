@@ -47,7 +47,9 @@ model User {
   id              String    @id @default(uuid())
   email           String    @unique // stocke en minuscules
   username        String    @unique
-  passwordHash    String
+  passwordHash    String? // null : compte cree par Discord sans mot de passe defini [D210]
+  discordId       String?   @unique // compte Discord relie [D202]
+  discordUsername String? // nom Discord, rafraichi a chaque connexion par Discord
   emailVerifiedAt DateTime? // null tant que non verifie ; ignore si aucun SMTP [D21]
   avatarKey       String? // cle MinIO
   locale          String    @default("fr") // [D34]

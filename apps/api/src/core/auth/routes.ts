@@ -188,7 +188,7 @@ export function authRouter(ctx: Context, rateLimit: boolean): Router {
     requireAuth,
     limit(15 * MINUTE, 10),
     handle({ body: deleteAccountBodySchema }, async ({ body }, req, res) => {
-      await deletion.deleteAccount(ctx, currentUserId(req), body.password);
+      await deletion.deleteAccount(ctx, currentUserId(req), body);
       await destroySession(req);
       res.clearCookie(SESSION_COOKIE, { path: "/" });
       res.status(204).end();

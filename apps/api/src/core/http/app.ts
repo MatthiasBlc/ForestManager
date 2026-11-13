@@ -10,6 +10,8 @@ import { activityRouter } from "../activity/routes.ts";
 import { APP_VERSION } from "../changelog/version.ts";
 import { changelogRouter } from "../changelog/routes.ts";
 import { adminRouter } from "../admin/routes.ts";
+import { createDiscordClient, type DiscordClient } from "../auth/discord.ts";
+import { discordRouter } from "../auth/discord-routes.ts";
 import { createPasswordHasher, type PasswordHasher } from "../auth/password.ts";
 import { authRouter } from "../auth/routes.ts";
 import { sessionMiddleware } from "../auth/session.ts";
@@ -54,6 +56,8 @@ export interface AppDeps {
   /** Lecture des pages web ; les tests autorisent leur serveur local. */
   fetchPage?: PageFetcher;
   hasher?: PasswordHasher;
+  /** Client Discord ; par defaut celui de DISCORD_CLIENT_ID / SECRET (null sans). */
+  discord?: DiscordClient | null;
   /** Suivi d'erreurs ; par defaut celui de SENTRY_DSN (null sans). */
   errorTracking?: ErrorTracking | null;
   hooks?: LifecycleHooks;
@@ -82,6 +86,7 @@ export function createContext(deps: AppDeps): Context {
     storage: deps.storage === undefined ? createStorage(env) : deps.storage,
     fetchPage: deps.fetchPage ?? createPageFetcher(),
     hasher: deps.hasher ?? createPasswordHasher(env.NODE_ENV === "test"),
+    discord: deps.discord === undefined ? createDiscordClient(env) : deps.discord,
     errorTracking: deps.errorTracking === undefined ? createErrorTracking(env) : deps.errorTracking,
     hooks: deps.hooks ?? hooksFrom(deps.modules),
     realtime: deps.realtime ?? createRealtime(),
@@ -125,6 +130,7 @@ export function createApp(deps: AppDeps): express.Express {
         email: ctx.mailer !== null,
         uploads: ctx.storage !== null,
         errorTracking: ctx.errorTracking !== null,
+        discord: ctx.discord !== null,
       },
       release: APP_VERSION,
       environment: ctx.errorTracking?.environment ?? env.NODE_ENV,
@@ -136,6 +142,7 @@ export function createApp(deps: AppDeps): express.Express {
   api.use(publishSpaceChanges(ctx));
   api.use(realtimeRouter(ctx));
   api.use(authRouter(ctx, rateLimit));
+  api.use(discordRouter(ctx, rateLimit));
   api.use(storageRouter(ctx, rateLimit));
   api.use(spacesRouter(ctx));
   api.use(invitationsRouter(ctx, rateLimit));

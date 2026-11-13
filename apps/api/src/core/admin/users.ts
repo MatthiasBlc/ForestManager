@@ -162,6 +162,8 @@ export async function listUsers(
       createdAt: user.createdAt.toISOString(),
       lastLoginAt: user.lastLoginAt?.toISOString() ?? null,
       temporaryPasswordPending: user.authTokens.length > 0,
+      discord: user.discordId !== null,
+      hasPassword: Boolean(user.passwordHash),
     })),
     total,
   };

@@ -33,7 +33,7 @@ import type { z } from "zod";
 /** Reponse de GET /config : fonctions coupees sauf mention contraire. */
 export function buildConfig(features: Partial<AppConfig["features"]> = {}): AppConfig {
   return appConfigSchema.parse({
-    features: { email: false, uploads: false, errorTracking: false, ...features },
+    features: { email: false, uploads: false, errorTracking: false, discord: false, ...features },
     release: "2.0.0",
     environment: "test",
   });
@@ -59,6 +59,8 @@ export function buildMe(over: Partial<Me> = {}): Me {
     username: "matthias",
     emailVerified: true,
     mustChoosePassword: false,
+    hasPassword: true,
+    discord: null,
     avatarUrl: null,
     personalSpaceId: uuid(),
     preferences: {

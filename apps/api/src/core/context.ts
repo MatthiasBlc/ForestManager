@@ -1,6 +1,7 @@
 // Dependances partagees par les routeurs et services du socle.
 import type { Logger } from "pino";
 
+import type { DiscordClient } from "./auth/discord.ts";
 import type { PasswordHasher } from "./auth/password.ts";
 import type { Env } from "./config/env.ts";
 import type { Db } from "./db/client.ts";
@@ -22,6 +23,8 @@ export interface Context {
   /** Lecture des pages web (import de recettes), protegee contre le SSRF. */
   fetchPage: PageFetcher;
   hasher: PasswordHasher;
+  /** Connexion avec Discord ; null sans DISCORD_CLIENT_ID / SECRET [D210]. */
+  discord: DiscordClient | null;
   /** Suivi d'erreurs (Bugsink) ; null sans SENTRY_DSN [D196]. */
   errorTracking: ErrorTracking | null;
   hooks: LifecycleHooks;

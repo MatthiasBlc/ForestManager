@@ -24,10 +24,20 @@ describe("socle HTTP", () => {
 
   it("GET /api/v1/config expose features.email selon SMTP_URL", async () => {
     const off = await request(app).get(`${API_PREFIX}/config`);
-    expect(off.body.features).toEqual({ email: false, uploads: true, errorTracking: false });
+    expect(off.body.features).toEqual({
+      email: false,
+      uploads: true,
+      errorTracking: false,
+      discord: false,
+    });
     const withSmtp = createTestApp({ env: { ...testEnv, SMTP_URL: "smtp://mail:25" } });
     const on = await request(withSmtp).get(`${API_PREFIX}/config`);
-    expect(on.body.features).toEqual({ email: true, uploads: true, errorTracking: false });
+    expect(on.body.features).toEqual({
+      email: true,
+      uploads: true,
+      errorTracking: false,
+      discord: false,
+    });
   });
 
   it("route inconnue : COMMON_003 au format unique", async () => {

@@ -29,6 +29,10 @@ export const adminUserSchema = z.object({
   lastLoginAt: isoDateTimeSchema.nullable(),
   /** Un mot de passe temporaire attend d'etre utilise. */
   temporaryPasswordPending: z.boolean(),
+  /** Compte Discord relie [D210]. */
+  discord: z.boolean(),
+  /** Faux pour un compte cree par Discord sans mot de passe defini. */
+  hasPassword: z.boolean(),
 });
 export type AdminUser = z.infer<typeof adminUserSchema>;
 

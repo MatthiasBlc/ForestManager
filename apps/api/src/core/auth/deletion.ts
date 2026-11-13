@@ -2,7 +2,7 @@
 // espaces, transfert automatique de propriete [D51], espace perso supprime.
 // Les consequences sont calculees avant, pour l'ecran de confirmation [D116].
 
-import { MAX_OWNED_SPACES, type AccountDeletionPreview } from "@fm/shared";
+import { MAX_OWNED_SPACES, type AccountDeletionPreview, type DeleteAccountBody } from "@fm/shared";
 
 import type { Context } from "../context.ts";
 import { Prisma } from "../db/client.ts";
@@ -77,10 +77,24 @@ export async function previewDeletion(
   return { spaces: await plan(ctx.db, userId, (key) => imageUrl(ctx, key)) };
 }
 
-export async function deleteAccount(ctx: Context, userId: string, password: string): Promise<void> {
+/**
+ * Confirmation : le mot de passe ; un compte sans mot de passe (Discord) tape
+ * son nom d'utilisateur, sans tenir compte de la casse [D210].
+ */
+export async function deleteAccount(
+  ctx: Context,
+  userId: string,
+  confirmation: DeleteAccountBody
+): Promise<void> {
   const user = await ctx.db.user.findUnique({ where: { id: userId } });
   if (!user || user.deletedAt) throw new AppError("AUTH_001");
-  if (!(await ctx.hasher.verify(user.passwordHash, password))) throw new AppError("AUTH_005");
+  if (user.passwordHash) {
+    if (!(await ctx.hasher.verify(user.passwordHash, confirmation.password ?? ""))) {
+      throw new AppError("AUTH_005");
+    }
+  } else if (confirmation.username?.toLowerCase() !== user.username.toLowerCase()) {
+    throw new AppError("AUTH_018");
+  }
 
   await ctx.db.$transaction(async (tx) => {
     const now = new Date();
@@ -132,7 +146,9 @@ export async function deleteAccount(ctx: Context, userId: string, password: stri
       data: {
         username: `deleted-${userId}`,
         email: `deleted-${userId}@invalid`,
-        passwordHash: "",
+        passwordHash: null,
+        discordId: null,
+        discordUsername: null,
         emailVerifiedAt: null,
         avatarKey: null,
         homeWidgets: Prisma.DbNull,

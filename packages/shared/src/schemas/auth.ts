@@ -93,7 +93,8 @@ export type UpdateProfileBody = z.infer<typeof updateProfileBodySchema>;
 
 /** Changer de mot de passe ferme les autres sessions. */
 export const changePasswordBodySchema = z.strictObject({
-  currentPassword: currentPasswordSchema,
+  /** Absent seulement pour un compte sans mot de passe (cree par Discord) [D210]. */
+  currentPassword: currentPasswordSchema.optional(),
   newPassword: passwordSchema,
 });
 export type ChangePasswordBody = z.infer<typeof changePasswordBodySchema>;
@@ -109,7 +110,36 @@ export const updatePreferencesBodySchema = preferencesSchema
 export type UpdatePreferencesBody = z.infer<typeof updatePreferencesBodySchema>;
 
 /** Suppression du compte : confirmee par le mot de passe [D116]. */
-export const deleteAccountBodySchema = z.strictObject({ password: currentPasswordSchema });
+/** Mot de passe ; un compte sans mot de passe tape son nom d'utilisateur [D210]. */
+export const deleteAccountBodySchema = z
+  .strictObject({
+    password: currentPasswordSchema.optional(),
+    username: z.string().trim().min(1).max(USERNAME_MAX).optional(),
+  })
+  .refine((body) => body.password !== undefined || body.username !== undefined, {
+    message: "password or username is required",
+  });
+export type DeleteAccountBody = z.infer<typeof deleteAccountBodySchema>;
+
+// --- Discord [D202, D210] ---
+
+/** Confirmation de l'inscription par Discord (E-INSCRIPTION-DISCORD). */
+export const discordRegisterBodySchema = z.strictObject({
+  username: usernameSchema,
+  email: emailSchema,
+});
+export type DiscordRegisterBody = z.infer<typeof discordRegisterBodySchema>;
+
+/** Inscription par Discord en attente de confirmation. */
+export const discordPendingSchema = z.object({
+  /** Nom propose, ramene aux regles et libre. */
+  username: z.string(),
+  /** Email Discord verifie, ou null : a saisir. */
+  email: z.string().nullable(),
+  emailVerified: z.boolean(),
+  discordUsername: z.string(),
+});
+export type DiscordPending = z.infer<typeof discordPendingSchema>;
 
 // --- Sorties ---
 
@@ -124,6 +154,10 @@ export const meSchema = z.object({
   createdAt: isoDateTimeSchema,
   /** Connecte avec un mot de passe temporaire : il doit en choisir un avant tout [D134]. */
   mustChoosePassword: z.boolean(),
+  /** Faux pour un compte cree par Discord tant qu'il n'a pas defini de mot de passe [D210]. */
+  hasPassword: z.boolean(),
+  /** Compte Discord relie, ou null. */
+  discord: z.object({ username: z.string() }).nullable(),
 });
 export type Me = z.infer<typeof meSchema>;
 
@@ -131,7 +165,13 @@ export const choosePasswordBodySchema = z.strictObject({ password: passwordSchem
 
 export const appConfigSchema = z.object({
   /** Emails [D21] et envoi de photos [D167] : facultatifs selon la configuration. */
-  features: z.object({ email: z.boolean(), uploads: z.boolean(), errorTracking: z.boolean() }),
+  features: z.object({
+    email: z.boolean(),
+    uploads: z.boolean(),
+    errorTracking: z.boolean(),
+    /** Connexion avec Discord configuree [D202]. */
+    discord: z.boolean(),
+  }),
   /** Version et environnement, repris par le SDK du navigateur [D196]. */
   release: z.string(),
   environment: z.string(),

@@ -7,6 +7,7 @@ import type { Request, RequestHandler } from "express";
 import session from "express-session";
 
 import type { Db } from "../db/client.ts";
+import type { DiscordProfile } from "./discord.ts";
 
 declare module "express-session" {
   interface SessionData {
@@ -16,6 +17,21 @@ declare module "express-session" {
      * qu'a choisir un nouveau mot de passe [D134].
      */
     passwordChoice?: string;
+    /** Aller-retour chez Discord en cours (state a usage unique) [D210]. */
+    discordOAuth?: {
+      state: string;
+      intent: "login" | "link";
+      next: string | null;
+      rememberMe: boolean;
+      expiresAt: number;
+    };
+    /** Inscription par Discord en attente de confirmation. */
+    discordSignup?: {
+      profile: DiscordProfile;
+      next: string | null;
+      rememberMe: boolean;
+      expiresAt: number;
+    };
     /** Session admin (cookie distinct) [D174]. */
     adminId?: string;
     /** Code TOTP valide : la session admin est complete. */
