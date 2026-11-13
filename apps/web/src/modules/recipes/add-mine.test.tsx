@@ -183,7 +183,7 @@ describe("Depuis mes recettes (F-MES-RECETTES, D203)", () => {
     for (const box of boxes.slice(0, 50)) await user.click(box);
     expect(within(picker).getByText("50 choisies")).toBeInTheDocument();
     expect(boxes[50]).toBeDisabled();
-    expect(within(picker).getByText("50 au plus par ajout")).toBeInTheDocument();
+    expect(within(picker).getByText("50 max")).toBeInTheDocument();
   });
 
   it("rien a ajouter : le dit et propose de creer", async () => {

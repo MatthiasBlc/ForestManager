@@ -515,9 +515,13 @@ main[tabindex="-1"]:focus-visible {
 .fm-pick-text small {
   color: var(--ink-muted);
 }
+.fm-pick-foot {
+  flex: 1;
+}
 .fm-pick-count {
   display: flex;
   justify-content: space-between;
+  gap: var(--space-3);
   color: var(--ink-muted);
   font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;

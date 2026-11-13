@@ -27,7 +27,7 @@ export function Upcoming({ data }: { data: Record<string, unknown> }) {
             <p className="m-0 text-sm font-semibold text-ink-muted">{space.spaceName}</p>
             <Link
               to={`/s/${space.spaceId}/meal-plan`}
-              className="text-sm"
+              className="text-sm text-accent-text underline"
               aria-label={`Planning de ${space.spaceName}`}
             >
               Planning

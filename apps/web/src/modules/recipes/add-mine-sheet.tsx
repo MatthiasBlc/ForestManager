@@ -314,12 +314,12 @@ export function AddMineSheet({
         ) : null}
         <FormAlert message={alert} />
         <SheetFooter>
-          <div className="fm-stack">
+          <div className="fm-stack fm-pick-foot">
             <div className="fm-pick-count">
               <span>
                 {n === 0 ? "Aucune choisie" : `${String(n)} ${plural(n, "choisie", "choisies")}`}
               </span>
-              <span>{ADD_MINE_MAX} au plus par ajout</span>
+              <span>{ADD_MINE_MAX} max</span>
             </div>
             <Button
               variant="primary"

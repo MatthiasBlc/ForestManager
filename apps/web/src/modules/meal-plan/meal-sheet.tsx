@@ -290,7 +290,7 @@ function MealForm({ spaceId, spaceName, cell, meal, defaultServings, onDone, onS
           />
           <Field
             label="Commentaire"
-            placeholder="Visible en touchant le repas"
+            placeholder="Visible dans les détails du repas"
             value={comment}
             maxLength={500}
             onChange={(event) => {
