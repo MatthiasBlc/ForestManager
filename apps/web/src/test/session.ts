@@ -13,6 +13,8 @@ export interface SessionOptions {
   email?: boolean;
   /** Envoi de photos [D167] : coupe par defaut (aucun choix de photo affiche). */
   uploads?: boolean;
+  /** Connexion avec Discord [D210] : coupee par defaut. */
+  discord?: boolean;
 }
 
 /** Installe une session ; renvoie l'utilisateur et ses espaces (perso en premier). */
@@ -21,10 +23,11 @@ export function mockSession({
   spaces,
   email = true,
   uploads = false,
+  discord = false,
 }: SessionOptions = {}) {
   const all = me ? (spaces ?? [buildPersonalSpace(me)]) : [];
   server.use(
-    http.get("/api/v1/config", () => HttpResponse.json(buildConfig({ email, uploads }))),
+    http.get("/api/v1/config", () => HttpResponse.json(buildConfig({ email, uploads, discord }))),
     http.get("/api/v1/me", () =>
       me ? HttpResponse.json(me) : HttpResponse.json(errorBody("AUTH_001"), { status: 401 })
     ),

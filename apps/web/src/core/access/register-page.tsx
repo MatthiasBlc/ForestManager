@@ -12,8 +12,10 @@ import { Button } from "../../ui/button.tsx";
 import { Field } from "../../ui/field.tsx";
 import { configQuery } from "../session/queries.ts";
 import { AuthLayout, FormAlert } from "./auth-layout.tsx";
+import { DiscordButton } from "./discord.tsx";
+import { discordStartUrl } from "./discord-url.ts";
 
-function VerifyEmailSent({ me, onContinue }: { me: Me; onContinue: () => void }) {
+export function VerifyEmailSent({ me, onContinue }: { me: Me; onContinue: () => void }) {
   return (
     <AuthLayout title="Confirme ton adresse">
       <p>
@@ -93,6 +95,9 @@ export function RegisterPage() {
           Créer mon compte
         </Button>
       </form>
+      {config.data?.features.discord ? (
+        <DiscordButton href={discordStartUrl("login", { next })} />
+      ) : null}
       <p className="text-ink-muted">
         Déjà inscrit ? <Link to={loginLink}>Se connecter</Link>
       </p>

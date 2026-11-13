@@ -576,3 +576,36 @@ main[tabindex="-1"]:focus-visible {
     padding: 2px 0;
   }
 }
+/* Connexion avec Discord [D210] : couleurs de la marque, identiques dans tous les themes. */
+.fm-btn-discord {
+  background: #5865f2;
+  color: #ffffff;
+  text-decoration: none;
+}
+.fm-btn-discord:hover {
+  background: #4752c4;
+}
+.fm-discord-logo {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+  flex: none;
+}
+.fm-option-icon.fm-discord-icon {
+  background: #5865f2;
+  color: #ffffff;
+}
+.fm-or {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+.fm-or::before,
+.fm-or::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}

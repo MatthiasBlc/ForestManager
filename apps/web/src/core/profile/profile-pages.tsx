@@ -1,9 +1,9 @@
 // E-PROFIL, compte (username, email), mot de passe [F-ACC-4].
 import { imageResponseSchema, meSchema } from "@fm/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
 
 import { api } from "../../lib/api.ts";
 import { errorMessage } from "../../i18n/index.ts";
@@ -16,6 +16,9 @@ import { Field } from "../../ui/field.tsx";
 import { Icon, type IconName } from "../../ui/icon.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { FormAlert } from "../access/auth-layout.tsx";
+import { DiscordLogo } from "../access/discord.tsx";
+import { discordStartUrl } from "../access/discord-url.ts";
+import { errors as errorMessages } from "../../i18n/fr/errors.ts";
 import { ExportSheet } from "../exports/export-sheet.tsx";
 import { configQuery, meQuery } from "../session/queries.ts";
 import { ProfileLayout } from "./profile-layout.tsx";
@@ -70,8 +73,81 @@ function Row({
   );
 }
 
+/** Encart tant que le compte (cree par Discord) n'a pas de mot de passe [D210]. */
+function BackupPasswordCallout() {
+  return (
+    <section
+      aria-labelledby="backup-password"
+      className="fm-stack gap-2 rounded-lg bg-warning-soft p-4 text-warning-text"
+    >
+      <b id="backup-password">Ajoute un mot de passe de secours</b>
+      <p>Il te connectera si Discord n'est pas disponible ou si tu délies ton compte.</p>
+      <Link to="/profile/password" className="fm-btn fm-btn-primary self-start">
+        Définir un mot de passe
+      </Link>
+    </section>
+  );
+}
+
+/** Ligne "Compte Discord" : relier (aller-retour chez Discord) ou delier [D210]. */
+function DiscordRow({ linkedAs }: { linkedAs: string | null }) {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+  const unlink = async () => {
+    setBusy(true);
+    try {
+      await api.delete("/me/discord");
+      await queryClient.invalidateQueries({ queryKey: ["me"] });
+      toast("Compte Discord délié", { tone: "success" });
+    } catch (error) {
+      toast(errorMessage(error), { tone: "danger" });
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <div className="fm-option">
+      <span className="fm-option-icon fm-discord-icon">
+        <DiscordLogo />
+      </span>
+      <span className="fm-option-text">
+        <b>Compte Discord</b>{" "}
+        <small>{linkedAs ? `Relié à ${linkedAs}` : "Pour te connecter en un geste"}</small>
+      </span>
+      {linkedAs ? (
+        <Button size="sm" variant="secondary" disabled={busy} onClick={() => void unlink()}>
+          Délier
+        </Button>
+      ) : (
+        <a href={discordStartUrl("link")} className="fm-btn fm-btn-sm fm-btn-primary">
+          Relier
+        </a>
+      )}
+    </div>
+  );
+}
+
+/** Message du retour de Discord (`?discord=linked` ou `?discordError=CODE`), une fois. */
+function useDiscordReturn() {
+  const [params, setParams] = useSearchParams();
+  const toast = useToast();
+  const linked = params.get("discord") === "linked";
+  const code = params.get("discordError");
+  useEffect(() => {
+    if (!linked && !code) return;
+    if (linked) toast("Compte Discord relié", { tone: "success" });
+    else if (code)
+      toast(code in errorMessages ? errorMessages[code as keyof typeof errorMessages] : code, {
+        tone: "danger",
+      });
+    setParams({}, { replace: true });
+  }, [linked, code, toast, setParams]);
+}
+
 export function ProfilePage() {
   const me = useQuery(meQuery);
+  const config = useQuery(configQuery);
   const queryClient = useQueryClient();
   const logout = useLogout();
   const [exportOpen, setExportOpen] = useState(false);
@@ -81,8 +157,10 @@ export function ProfilePage() {
       queryClient.invalidateQueries({ queryKey: ["me"] }),
       queryClient.invalidateQueries({ queryKey: ["spaces"] }),
     ]);
+  useDiscordReturn();
   if (!me.data) return null;
   const { preferences } = me.data;
+  const showDiscord = Boolean(config.data?.features.discord) || me.data.discord !== null;
   return (
     <ProfileLayout title="Profil">
       <div className="flex items-center gap-4">
@@ -104,6 +182,7 @@ export function ProfilePage() {
           />
         </div>
       </div>
+      {me.data.hasPassword ? null : <BackupPasswordCallout />}
       <nav aria-label="Réglages du profil" className="fm-options">
         <Row icon="pencil" label="Nom et adresse e-mail" to="/profile/account" />
         <Row
@@ -113,7 +192,13 @@ export function ProfilePage() {
           to="/profile/appearance"
         />
         <Row icon="bell" label="Notifications" to="/profile/notifications" />
-        <Row icon="lock" label="Mot de passe" to="/profile/password" />
+        <Row
+          icon="lock"
+          label="Mot de passe"
+          value={me.data.hasPassword ? undefined : "Aucun pour l'instant"}
+          to="/profile/password"
+        />
+        {showDiscord ? <DiscordRow linkedAs={me.data.discord?.username ?? null} /> : null}
         <Row icon="home" label="Langue" value="Français" />
         <Row
           icon="arrow-down"
@@ -217,7 +302,14 @@ export function AccountPage() {
           autoComplete="email"
           error={errors.email?.message}
           {...form.register("email")}
+          disabled={me.data?.hasPassword === false}
         />
+        {me.data?.hasPassword === false ? (
+          <p className="text-sm text-ink-muted">
+            Pour changer d'adresse :{" "}
+            <Link to="/profile/password">Définis d'abord un mot de passe</Link>.
+          </p>
+        ) : null}
         {config.data?.features.email && me.data && !me.data.emailVerified && !emailChanged ? (
           <VerifyReminder />
         ) : null}
@@ -242,15 +334,20 @@ export function AccountPage() {
 }
 
 export function PasswordPage() {
-  const [done, setDone] = useState(false);
+  const me = useQuery(meQuery);
+  const queryClient = useQueryClient();
+  // Compte cree par Discord : il definit un mot de passe de secours, sans l'actuel [D210].
+  const defining = me.data?.hasPassword === false;
+  const [done, setDone] = useState<"changed" | "defined" | null>(null);
   const form = useForm({ defaultValues: { currentPassword: "", newPassword: "" } });
   const { errors, isSubmitting } = form.formState;
-  const onSubmit = form.handleSubmit(async (body) => {
-    setDone(false);
+  const onSubmit = form.handleSubmit(async ({ currentPassword, newPassword }) => {
+    setDone(null);
     try {
-      await api.put("/me/password", body);
+      await api.put("/me/password", defining ? { newPassword } : { currentPassword, newPassword });
       form.reset();
-      setDone(true);
+      setDone(defining ? "defined" : "changed");
+      if (defining) await queryClient.invalidateQueries({ queryKey: ["me"] });
     } catch (error) {
       applyApiError(error, form.setError, {
         AUTH_005: "currentPassword",
@@ -259,17 +356,28 @@ export function PasswordPage() {
       });
     }
   });
+  if (!me.data) return null;
   return (
-    <ProfileLayout title="Mot de passe" back="/profile">
+    <ProfileLayout
+      title={defining || done === "defined" ? "Définir un mot de passe" : "Mot de passe"}
+      back="/profile"
+    >
       <form className="fm-stack" onSubmit={(e) => void onSubmit(e)} noValidate>
         <FormAlert message={errors.root?.message} />
-        <Field
-          label="Mot de passe actuel"
-          type="password"
-          autoComplete="current-password"
-          error={errors.currentPassword?.message}
-          {...form.register("currentPassword", { required: "Indique ton mot de passe actuel." })}
-        />
+        {defining ? (
+          <p className="text-ink-muted">
+            Tu te connectes avec Discord. Ce mot de passe te servira de secours, avec ton nom
+            d'utilisateur ou ton adresse e-mail.
+          </p>
+        ) : (
+          <Field
+            label="Mot de passe actuel"
+            type="password"
+            autoComplete="current-password"
+            error={errors.currentPassword?.message}
+            {...form.register("currentPassword", { required: "Indique ton mot de passe actuel." })}
+          />
+        )}
         <Field
           label="Nouveau mot de passe"
           type="password"
@@ -282,12 +390,14 @@ export function PasswordPage() {
         />
         {done ? (
           <p role="status" className="rounded-md bg-success-soft px-3 py-2 text-success-text">
-            Mot de passe changé. Tes autres appareils sont déconnectés.
+            {done === "defined"
+              ? "Mot de passe enregistré. Tu peux aussi te connecter avec lui."
+              : "Mot de passe changé. Tes autres appareils sont déconnectés."}
           </p>
         ) : null}
         <div>
           <Button type="submit" variant="primary" disabled={isSubmitting}>
-            Changer le mot de passe
+            {defining ? "Enregistrer" : "Changer le mot de passe"}
           </Button>
         </div>
       </form>

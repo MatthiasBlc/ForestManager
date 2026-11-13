@@ -225,6 +225,8 @@ export function UsersPage() {
                   <td>{user.lastLoginAt ? whenLabel(user.lastLoginAt) : "Jamais"}</td>
                   <td>
                     <div className="flex flex-wrap items-center justify-end gap-2">
+                      {user.discord ? <Badge tone="second">Discord</Badge> : null}
+                      {user.hasPassword ? null : <Badge>Sans mot de passe</Badge>}
                       {user.temporaryPasswordPending ? (
                         <Badge tone="warning">Temporaire en attente</Badge>
                       ) : null}

@@ -2,7 +2,7 @@
 import { accountDeletionPreviewSchema, type AccountDeletionPreview } from "@fm/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useNavigate } from "react-router";
 
 import { api } from "../../lib/api.ts";
@@ -14,6 +14,7 @@ import { Field } from "../../ui/field.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { FormAlert } from "../access/auth-layout.tsx";
 import { ExportSheet } from "../exports/export-sheet.tsx";
+import { meQuery } from "../session/queries.ts";
 import { ProfileLayout } from "./profile-layout.tsx";
 
 function effect(item: AccountDeletionPreview["spaces"][number]): string {
@@ -35,17 +36,22 @@ export function DeleteAccountPage() {
     staleTime: 0,
   });
   const [exportOpen, setExportOpen] = useState(false);
-  const form = useForm({ defaultValues: { password: "" } });
+  const me = useQuery(meQuery);
+  // Compte sans mot de passe (Discord) : il tape son nom d'utilisateur [D210].
+  const byName = me.data?.hasPassword === false;
+  const form = useForm({ defaultValues: { password: "", username: "" } });
   const { errors, isSubmitting } = form.formState;
-  const onSubmit = form.handleSubmit(async ({ password }) => {
+  const typed = useWatch({ control: form.control, name: "username" });
+  const nameMatches = typed.trim().toLowerCase() === me.data?.username.toLowerCase();
+  const onSubmit = form.handleSubmit(async ({ password, username }) => {
     try {
-      await api.delete("/me", { password });
+      await api.delete("/me", byName ? { username: username.trim() } : { password });
       queryClient.clear();
       queryClient.setQueryData(["me"], null);
       toast("Ton compte a été supprimé");
       void navigate("/", { replace: true });
     } catch (error) {
-      applyApiError(error, form.setError, { AUTH_005: "password" });
+      applyApiError(error, form.setError, { AUTH_005: "password", AUTH_018: "username" });
     }
   });
 
@@ -87,14 +93,30 @@ export function DeleteAccountPage() {
       <ExportSheet open={exportOpen} onClose={() => setExportOpen(false)} />
       <form className="fm-stack" onSubmit={(e) => void onSubmit(e)} noValidate>
         <FormAlert message={errors.root?.message} />
-        <Field
-          label="Mot de passe"
-          type="password"
-          autoComplete="current-password"
-          error={errors.password?.message}
-          {...form.register("password", { required: "Indique ton mot de passe." })}
-        />
-        <Button type="submit" variant="danger" block disabled={isSubmitting}>
+        {byName ? (
+          <Field
+            label={`Pour confirmer, tape ton nom d'utilisateur : ${me.data?.username ?? ""}`}
+            autoComplete="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            error={errors.username?.message}
+            {...form.register("username")}
+          />
+        ) : (
+          <Field
+            label="Mot de passe"
+            type="password"
+            autoComplete="current-password"
+            error={errors.password?.message}
+            {...form.register("password", { required: "Indique ton mot de passe." })}
+          />
+        )}
+        <Button
+          type="submit"
+          variant="danger"
+          block
+          disabled={isSubmitting || (byName && !nameMatches)}
+        >
           Supprimer définitivement mon compte
         </Button>
       </form>

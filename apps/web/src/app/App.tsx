@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router";
 
+import { DiscordRegisterPage } from "../core/access/discord-register-page.tsx";
 import { LoginPage } from "../core/access/login-page.tsx";
 import { ForgotPasswordPage, ResetPasswordPage } from "../core/access/password-pages.tsx";
 import { RegisterPage } from "../core/access/register-page.tsx";
@@ -76,6 +77,7 @@ export function App() {
           <Route element={<GuestOnly />}>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/register/discord" element={<DiscordRegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           </Route>
           <Route path="/reset-password" element={<ResetPasswordPage />} />
