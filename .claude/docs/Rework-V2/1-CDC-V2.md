@@ -210,7 +210,7 @@ Reprise de la V1 (page utilisateur, gestion admin), generation revue [D187] :
 - **Barre du module** : modules actifs de l'espace courant (Recettes, Planning, Courses, Membres, Reglages). Sur mobile : barre d'onglets en bas, 4 modules maximum puis "Plus" (membres, reglages et modules au-dela du quatrieme, dans l'ordre choisi par l'OWNER) [D131]. Espace perso : Accueil, Mes recettes, puis les autres modules et Plus [D95, D207].
 - **Zone de contenu** : liste / detail, avec panneau de detail lateral sur grand ecran et page pleine sur mobile.
 - **En-tete** : recherche, notifications, profil.
-- Dashboard d'accueil fait de **widgets** que l'utilisateur choisit et ordonne (prochains repas, recettes les plus cuisinees, recemment ajoutees, activite des groupes), dans une feuille "Personnaliser l'accueil" ; invitations et transferts en attente toujours en tete [D193].
+- Dashboard d'accueil fait de **widgets** que l'utilisateur choisit et ordonne (prochains repas, recettes les plus cuisinees, recemment ajoutees, activite des groupes), dans une feuille "Personnaliser l'accueil" ; invitations et transferts en attente toujours en tete [D193]. "Prochains repas" : un repas-recette ouvre la recette, un repas texte le planning du jour, lien "Planning" a cote du nom de chaque espace [D204].
 
 ### 5.3 Design system
 

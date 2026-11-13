@@ -113,13 +113,13 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] Apres le premier deploy preprod : verifier le statut du Planning dans A04 et le passer en "Disponible" si besoin (le seed n'ecrit le statut qu'a la creation)
   - [x] Retirer le raccourci temporaire `deploy-only` une fois le deploy preprod stable : revert du commit `3aa8cab` dans `ci.yml`, label supprime de la PR et du depot [D201]
   - [x] Suites de la recette preprod (detail : `README.md`, section Reprise, points 1 a 4) : generation "Remplacer" coherente avec l'apercu et les delais ; notification de suggestion lue une fois tranchee ; avatar sur l'icone de l'espace perso du rail (le tour mobile a sa propre case ci-dessous) ; faites le 2026-11-12, a revoir apres deploy
-  - [ ] C7c Ajouter ses recettes a un espace depuis l'espace [D203] : bouton "Ajouter une recette" ("Depuis mes recettes", puis "Creer" : saisir, lien, texte colle), feuille a selection multiple, partage par reference en lot, sous-recettes listees ; plan `26-Plan-C7c.md` [D208]
+  - [x] C7c Ajouter ses recettes a un espace depuis l'espace [D203] : bouton "Ajouter une recette" ("Depuis mes recettes", puis "Creer" : saisir, lien, texte colle), feuille a selection multiple, partage par reference en lot, sous-recettes listees ; plan `26-Plan-C7c.md` [D208]
     - [x] Plan de C7c (D208)
     - [x] C7c.0 Maquette de F-AJOUT-RECETTE et F-MES-RECETTES, validee par le proprietaire (`26-Maquette-C7c.html`)
     - [x] C7c.1 Depuis mes recettes : filtre, apercu des sous-recettes, ajout en lot tout ou rien, activite groupee, feuille [D203]
     - [x] C7c.2 Repas au toucher [D204] : toucher un repas-recette ouvre la recette (planning et accueil), appui long / clic droit / Menu ouvrent F-REPAS, lien "Planning" par espace dans "Prochains repas" ; TDD
     - [x] C7c.3 Echange au glisser pointeur [D204] : echange au doigt sur mobile (appui long puis glisser) et glisser style Trello en bureau, meme code pointeur ; TDD, lignes ajoutees a la feuille de recette
-    - [ ] Revue dans Chrome et cloture de C7c (`26-Plan-C7c.md` S2)
+    - [x] Revue dans Chrome et cloture de C7c (`26-Plan-C7c.md` S2)
   - [ ] Etude UX de la navigation mobile ("labyrinthe de menus", demande du proprietaire) [D205] : parcourir toute l'application en emulation mobile, cartographier la profondeur de chaque ecran et les doublons, proposer des simplifications (selecteur), les inscrire au journal et au CDC, puis les realiser en TDD. Deja traites : Accueil en tete du selecteur d'espaces [D206], onglet unique "Mes recettes" dans l'espace perso [D207]
   - [ ] Cloture de C7 (`24-Plan-C7.md` S3)
 - [ ] C7b Connexion avec Discord avant la prod [D202] : inscription par Discord, liaison d'un compte existant depuis le profil, connexion ; plan a ecrire (`27-Plan-C7b.md`), decision et ligne du CDC, maquette, TDD ; lignes ajoutees a la feuille de recette ; plus tard peut-etre un bot Discord pour les notifications (V2.1 ou apres)

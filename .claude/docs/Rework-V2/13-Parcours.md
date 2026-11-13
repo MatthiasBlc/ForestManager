@@ -93,8 +93,9 @@ Conventions :
   1. F-ADAPTER : choix de l'espace cible (un seul), Field titre pre-rempli ("Gratin de pates - version Colloc" modifiable). Button "Adapter".
   2. E-RECETTE-EDITION de l'adaptation, deja remplie ; Enregistrer cree une recette de l'espace cible liee a l'original.
   3. Plus tard, quand l'original change : Badge warning "Original modifie" sur la RecipeCard et un bandeau dans E-RECETTE avec "Comparer avec l'original" -> E-COMPARER-ORIGINAL (deux colonnes sur desktop, onglets Original / Adaptation sur mobile, differences surlignees). Button "Marquer comme vu" fait disparaitre le badge.
-- **Notifications** : partage -> activite de l'espace cible "X a partage Gratin de pates". Adaptation -> l'auteur de l'original recoit "Ta recette a ete adaptee dans Colloc" (sans le contenu si l'auteur n'est pas membre de Colloc).
-- **Decisions** : D03, D17, D26, D65.
+- **Depuis l'espace de groupe** (D203, D208) : E-RECETTES, "Ajouter une recette" -> F-AJOUT-RECETTE : "Depuis mes recettes" (en tete) ou "Creer" (Saisir / Un lien / Un texte colle). F-MES-RECETTES : mes recettes pas encore visibles dans l'espace, recherche et tags, cases, compteur "2 choisies", 50 max ; "Ajouter" confirme seulement si des sous-recettes suivent ; tout ou rien ; Toast "2 recettes ajoutees a Coloc".
+- **Notifications** : partage -> activite de l'espace cible "X a partage Gratin de pates" (un lot : "X a ajoute 12 recettes"). Adaptation -> l'auteur de l'original recoit "Ta recette a ete adaptee dans Colloc" (sans le contenu si l'auteur n'est pas membre de Colloc).
+- **Decisions** : D03, D17, D26, D65, D203, D208.
 
 ## P07 - Suggerer une modification, puis accepter ou refuser
 
@@ -142,13 +143,13 @@ Conventions :
   2. E-PLANNING mobile : jour par jour (SegmentedControl Jour / Semaine ; vue Jour par defaut sur mobile), une liste de MealSlot par repas. Desktop : grille jours x repas.
   3. Remplir : toucher un MealSlot vide -> F-REPAS : recherche de recette (espace d'abord, puis mes recettes avec "Partager dans l'espace" propose), ou texte libre + commentaire, ou "Pas de repas" (D181) ; Stepper portions ; Switch "Verrouiller". Button "Enregistrer".
   4. Generer : Button "Generer" -> F-GENERER : profil de generation (liste), periode, "Remplacer les repas non verrouilles" (Switch). Resultat : rapport (repas remplis, regles non tenues) dans la feuille, Button "Garder" / "Annuler".
-  5. Remplacer un repas : F-REPAS, "Proposer un autre repas" (relance la generation sur ce repas, confirmation). Pas d'appui long sur un MealSlot : F-REPAS porte ses actions (D186).
-  6. Echanger (D69) : desktop, glisser-deposer un MealSlot sur un autre ; mobile, F-REPAS "Echanger avec un autre repas" puis toucher le repas cible (mode selection avec bandeau, Annuler). Mobile : tirer vers le bas relit la semaine (D186).
+  5. Toucher un repas-recette ouvre E-RECETTE ; appui long, clic droit ou touche Menu ouvrent F-REPAS (D204). Remplacer un repas : F-REPAS, "Proposer un autre repas" (relance la generation sur ce repas, confirmation).
+  6. Echanger (D69, D204) : glisser un MealSlot sur un autre, a la souris (des quelques pixels) ou au doigt (appui long, la case se souleve, puis glisser) ; Echap ou relacher hors d'une case annule. F-REPAS "Echanger avec un autre repas" reste pour le clavier et les lecteurs d'ecran. Mobile : tirer vers le bas relit la semaine (D186).
   7. Verrouiller : ActionMenu "Verrouiller" (cadenas sur le MealSlot) ; la generation ne le touche pas.
   8. PullToRefresh sur E-PLANNING pour voir les modifications des autres membres.
 - **Droits** : modification selon le role minimal regle par l'espace (F-MPL-3, matrice B2) ; sinon lecture seule avec mention.
 - **Notifications** : activite "X a genere le planning" et notification "X a genere le planning de Famille" (ouvre la semaine generee) ; repas modifie par un autre membre : une seule notification regroupee par espace sur 24 h ("X et 2 autres ont modifie le planning"), categorie Planning.
-- **Decisions** : D11, F-MPL-1 a F-MPL-5, D69, D180, D181, D186.
+- **Decisions** : D11, F-MPL-1 a F-MPL-5, D69, D180, D181, D186, D204.
 
 ## P11 - Mode cuisine
 

@@ -150,10 +150,15 @@ const SECTIONS = [
     ["r-composee", "Recette composée", "Lier une sauce à un plat, changer les portions : les quantités de la sauce suivent."],
     ["r-import-url", "Importer depuis un lien", "Coller le lien d'une recette d'un site connu : le formulaire se préremplit, corriger puis enregistrer."],
     ["r-import-texte", "Importer un texte collé", "Coller une recette copiée depuis un message : ingrédients et étapes reconnus."],
+    ["r-ajout-lot", "Ajouter ses recettes à un espace", "Dans un espace de groupe, <b>Ajouter une recette</b>, <b>Depuis mes recettes</b> : cocher deux recettes dont une composée, <b>Ajouter</b> : la sous-recette est annoncée, puis les trois apparaissent dans l'espace."],
   ]},
   { id: "planning", title: "Planning", items: [
     ["pl-activer", "Activer le Planning dans un espace", "Paramètres de l'espace, modules : activer le Planning ; il apparaît dans la navigation."],
     ["pl-semaine", "Remplir et générer une semaine", "Placer deux repas à la main, en verrouiller un, générer le reste : le repas verrouillé ne bouge pas."],
+    ["pl-toucher", "Toucher un repas", "Toucher un repas-recette : la recette s'ouvre. Appui long sur ce repas : la feuille du repas s'ouvre, sans ouvrir la recette."],
+    ["pl-glisser-doigt", "Échanger deux repas au doigt", "Appui long sur un repas, la case se soulève, la glisser sur un autre repas : ils s'échangent. La page défile normalement sans appui long."],
+    ["pl-glisser-souris", "Échanger deux repas à la souris", "Sur ordinateur, glisser un repas sur un autre (ou sur une case vide) : ils s'échangent ; Échap pendant le glisser annule."],
+    ["pl-accueil", "Prochains repas de l'accueil", "Accueil : toucher un repas-recette ouvre la recette, un repas texte ouvre le planning du jour, le lien <b>Planning</b> ouvre la semaine de l'espace."],
   ]},
   { id: "hors-ligne", title: "Hors ligne", items: [
     ["o-avion", "Lecture en mode avion", "Ouvrir une recette et le planning, passer en mode avion, recharger : tout reste lisible, bandeau <b>Hors ligne</b>, boutons de modification désactivés."],
