@@ -100,7 +100,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C6b.3 Widgets d'accueil et feuille "Personnaliser" [D193]
   - [x] Revue visuelle de C6b dans Chrome (bureau et mobile)
   - [x] Cloture de C6b (`23-Plan-C6b.md` S3)
-- [ ] C7 E2E complets, suivi d'erreurs, CI, preprod (plan : `24-Plan-C7.md`)
+- [x] C7 E2E complets, suivi d'erreurs, CI, preprod (plan : `24-Plan-C7.md`)
   - [x] C7.0 Plan de C7 (D195 a D198 ; D197 a relire par le proprietaire)
   - [x] C7.1 Socle E2E : workspace `e2e/`, `docker/compose.e2e.yml`, route de test, parcours 1 [D197, D79]
   - [x] C7.2 Parcours du socle : 2, 8, 10, 11, 13, 15
@@ -108,7 +108,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C7.4 Parcours du Planning, du temps reel et du clavier : 9, 14, 16
   - [x] C7.5 Suivi d'erreurs : SDK Sentry front et back, tunnel, test depuis A13, compose Bugsink [D75, D179, D196]
   - [x] C7.6 CI complete (couverture, cles i18n, job E2E) et premier passage sur GitHub (reporte depuis C1.10) [D78] ; puis etat ecrit et push : **changement d'ordinateur** [D198]
-  - [ ] C7.7 Preprod, depuis ce poste [D201] : deploy par pull request vers `master`, verification, feuille de recette (`24-Plan-C7.md` S2)
+  - [x] C7.7 Preprod, depuis ce poste [D201] : deploy par pull request vers `master`, verification, feuille de recette (`24-Plan-C7.md` S2)
   - [x] Actions du proprietaire avant le premier deploy preprod (2026-11-12) : secrets GitHub `MINIO_ACCESS_KEY` et `MINIO_SECRET_KEY` deja presents (cles V1) [D167] ; stack Bugsink dans Portainer et secret `DEV_SENTRY_DSN` [D196]
   - [x] Apres le premier deploy preprod : verifier le statut du Planning dans A04 et le passer en "Disponible" si besoin (le seed n'ecrit le statut qu'a la creation)
   - [x] Retirer le raccourci temporaire `deploy-only` une fois le deploy preprod stable : revert du commit `3aa8cab` dans `ci.yml`, label supprime de la PR et du depot [D201]
@@ -121,7 +121,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
     - [x] C7c.3 Echange au glisser pointeur [D204] : echange au doigt sur mobile (appui long puis glisser) et glisser style Trello en bureau, meme code pointeur ; TDD, lignes ajoutees a la feuille de recette
     - [x] Revue dans Chrome et cloture de C7c (`26-Plan-C7c.md` S2)
   - [x] Etude UX de la navigation mobile ("labyrinthe de menus", demande du proprietaire) [D205] : carte et constats `28-Etude-UX-Mobile.md` ; Accueil en tete du selecteur d'espaces [D206], onglet unique "Mes recettes" [D207] ; pas de bande d'espaces hors espace sur mobile, boutons libelles du Planning, "Plus" d'une entree devenu onglet [D209] ; TDD, verifie dans Chrome, ligne `nav-mobile` de la feuille de recette
-  - [ ] Cloture de C7 (`24-Plan-C7.md` S3)
+  - [x] Cloture de C7 (`24-Plan-C7.md` S3)
 - [ ] C7b Connexion avec Discord avant la prod [D202] : inscription par Discord, liaison d'un compte existant depuis le profil, connexion ; plan a ecrire (`27-Plan-C7b.md`), decision et ligne du CDC, maquette, TDD ; lignes ajoutees a la feuille de recette ; plus tard peut-etre un bot Discord pour les notifications (V2.1 ou apres)
 - [ ] Seconde recette complete en preprod, sans echec ni remarque ouverte, puis feu vert explicite du proprietaire [D205] : condition d'entree de C8 (pas de date, la prod attend un produit fini)
 - [ ] C8 Mise en prod V2 (depuis ce poste [D201])
