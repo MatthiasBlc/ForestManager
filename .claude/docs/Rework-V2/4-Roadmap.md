@@ -128,7 +128,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] C7b.0 Maquette (`29-Maquette-C7b.html`), validee par le proprietaire
   - [x] C7b.2 Web : bouton Discord, E-INSCRIPTION-DISCORD, profil (Compte Discord, definir un mot de passe), suppression sans mot de passe ; TDD
   - [x] C7b.3 E2E (faux Discord, parcours 17), variables dans les compose, `deploy.sh` et la CI
-  - [ ] Action du proprietaire (a revoir ensemble) : application Discord (portail developpeur), redirections `<APP_URL>/api/v1/auth/discord/callback` pour le dev (`http://localhost:3000`), la preprod et la prod ; secrets GitHub `DEV_DISCORD_CLIENT_ID` / `DEV_DISCORD_CLIENT_SECRET` et `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET` ; pour le dev, les deux variables dans `.env`
+  - [x] Action du proprietaire (2026-11-13) : application Discord (portail developpeur), redirections `<APP_URL>/api/v1/auth/discord/callback` pour le dev (`http://localhost:3000`), la preprod et la prod ; secrets GitHub `DEV_DISCORD_CLIENT_ID` / `DEV_DISCORD_CLIENT_SECRET` et `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET` ; pour le dev, les deux variables dans `.env`
   - [x] Revue dans Chrome et cloture de C7b (`27-Plan-C7b.md` S3)
   - [x] Retour de test : photo d'espace ovale ; affichage corrige et avatars recadres par l'utilisateur a l'envoi [D211]
   - [ ] Verification en preprod apres l'action du proprietaire (vraie application Discord) : lignes `acc-discord-*` et `acc-sans-mdp` de la feuille de recette
