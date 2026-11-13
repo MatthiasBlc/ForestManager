@@ -215,7 +215,14 @@ Journaux structures **pino** conserves (JSON en prod, lisibles en dev), identifi
 | **GlitchTip**                | Auto-heberge (ou SaaS gratuit limite) | Gratuit                                      | Web + worker + PostgreSQL + Valkey/Redis | Compatible avec les SDK Sentry. Plusieurs conteneurs, environ 0,5 a 1 Go de RAM.                                                             |
 | **Bugsink**                  | Auto-heberge                          | Gratuit (usage perso)                        | Un seul conteneur (SQLite ou PostgreSQL) | Compatible avec les SDK Sentry, tres leger, simple sous Portainer. Interface plus sobre.                                                     |
 
-Proposition : **SDK Sentry dans le code** (front et back, protocole standard) et **Bugsink auto-heberge** sur l'infrastructure existante. Aucune donnee chez un tiers, aucune carte, un conteneur de plus. Changer d'outil ne demande que de changer le DSN.
+Choix : **SDK Sentry dans le code** (front et back, protocole standard) et **Bugsink auto-heberge** sur l'infrastructure existante. Aucune donnee chez un tiers, aucune carte, un conteneur de plus. Changer d'outil ne demande que de changer le DSN.
+
+En place depuis C7.5 (regles : D196, D199), verifie en preprod le 2026-11-12 :
+
+- **API** : `@sentry/core` (`apps/api/src/core/monitoring/`), actif seulement si `SENTRY_DSN` est defini ; 5xx, rejets et exceptions non geres, taches horaires ; jamais les 4xx ni de donnee personnelle (l'utilisateur n'est qu'un UUID). `SENTRY_ENVIRONMENT` = preprod ou production.
+- **Web** : `@sentry/react` charge a la demande si `GET /api/v1/config` annonce `features.errorTracking` ; envoi par le **tunnel** `POST /api/v1/monitoring` (le front ne connait pas le DSN, la CSP ne change pas).
+- **Infra** : un seul Bugsink (`docker/bugsink/compose.yml` et sa notice), un projet par environnement ; secrets facultatifs `DEV_SENTRY_DSN` (preprod) et `SENTRY_DSN` (prod). Sans DSN, le suivi est coupe et rien ne casse.
+- **A13** : hote du DSN, environnement, bouton d'evenement de test.
 
 ## 13. CI/CD [D76, D147]
 

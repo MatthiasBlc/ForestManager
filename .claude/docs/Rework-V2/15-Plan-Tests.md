@@ -142,7 +142,9 @@ La matrice des permissions est couverte a **100 % des couples route x role** par
 
 ## 10. Tests manuels
 
-Une **feuille de recette** courte avant chaque mise en prod : installation sur un vrai iPhone et un vrai Android, gestes tactiles, mode cuisine (ecran allume), photo prise avec l'appareil, notifications temps reel entre deux appareils.
+Une **feuille de recette** courte avant chaque mise en prod : installation sur un vrai telephone, gestes tactiles, mode cuisine (ecran allume), photo prise avec l'appareil, notifications temps reel entre deux appareils. Android (Chrome) seulement pour l'instant : Safari et iPhone sont ignores jusqu'aux E2E WebKit (V2.1, D195).
+
+Feuille en place depuis C7.7 : artefact `25-Recette-Preprod.html` (resultats partages dans sa base, collection `recette`). Chaque fonctionnalite livree apres C7.7 y ajoute ses lignes ; la seconde recette complete, sans echec ni remarque ouverte, conditionne C8 [D205].
 
 ## 11. Decisions
 
