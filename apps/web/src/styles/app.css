@@ -609,3 +609,20 @@ main[tabindex="-1"]:focus-visible {
   height: 1px;
   background: var(--line);
 }
+/*
+ * Images d'avatar et d'espace : elles remplissent toujours la pastille, recadrees
+ * au centre. En grille, leur `height: 100%` restait sans effet : une image non
+ * carree debordait (haut seul visible pour un avatar, ovale pour un espace, dont
+ * l'image prend l'arrondi sans etre masquee).
+ */
+.fm-avatar {
+  position: relative;
+}
+.fm-avatar img,
+.fm-space img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
