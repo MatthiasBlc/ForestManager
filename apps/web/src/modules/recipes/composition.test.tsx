@@ -88,7 +88,8 @@ describe("detail d'une recette composee", () => {
     const base = plat(sub);
     const recipe: Recipe = {
       ...base,
-      totalMinutes: 20,
+      // Total renvoye par l'API, sous-recette comprise : la fiche ne l'ajoute pas une 2e fois.
+      totalMinutes: 50,
       blocks: base.blocks.map((block) =>
         block.kind === "RECIPE" ? { ...block, quantity: 8, unitId: null } : block
       ),

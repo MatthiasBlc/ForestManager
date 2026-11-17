@@ -20,7 +20,6 @@ import { LINK_STATUS_TITLES } from "./draft.ts";
 import { cookSteps } from "./cook.ts";
 import {
   byline,
-  composedMinutes,
   formatMinutes,
   linkedAmount,
   plannedLabel,
@@ -320,7 +319,8 @@ function RecipeView({
   const yieldUnit = units.find((u) => u.id === recipe.yieldUnitId);
   const titled = recipe.blocks.length > 1;
   const composed = recipe.blocks.some((block) => block.kind === "RECIPE");
-  const minutes = composedMinutes(recipe);
+  // Total renvoye par l'API, sous-recettes comprises (comme sur la carte).
+  const minutes = recipe.totalMinutes;
   const cookTo =
     cookSteps(recipe, units, 1).length > 0
       ? `/s/${spaceId}/recipes/${recipe.id}/cook?servings=${servings}`

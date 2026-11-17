@@ -158,7 +158,7 @@ export interface LinkedRecipe {
   title: string;
   yieldQuantity: number;
   yieldUnitId: string | null;
-  /** Temps propres de la sous-recette (sans ses propres liens) ; null si aucun. */
+  /** Temps total de la sous-recette, ses propres sous-recettes comprises ; null si aucun. */
   totalMinutes: number | null;
   isBase: boolean;
   blocks: RecipeBlock[];
@@ -216,7 +216,7 @@ const recipeBaseShape = {
   imageUrl: z.string().nullable(),
   yieldQuantity: z.number(),
   yieldUnitId: uuidSchema.nullable(),
-  /** Somme des temps renseignes ; null si aucun. */
+  /** Somme des temps renseignes, sous-recettes visibles comprises ; null si aucun. */
   totalMinutes: z.number().int().nullable(),
   isBase: z.boolean(),
   author: userSummarySchema,

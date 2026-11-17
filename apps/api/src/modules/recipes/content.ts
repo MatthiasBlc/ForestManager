@@ -216,6 +216,27 @@ export function totalMinutes(row: {
   return times.length === 0 ? null : times.reduce((sum, value) => sum + value, 0);
 }
 
+/**
+ * Temps d'une recette avec ses sous-recettes visibles (recursif) : la carte et la
+ * fiche d'une recette composee affichent le meme total. Null si aucun temps.
+ */
+export function withLinkedMinutes(
+  own: number | null,
+  blocks: readonly { subRecipeId: string | null }[],
+  links: ReadonlyMap<string, LoadedLink>,
+  seen: ReadonlySet<string> = new Set()
+): number | null {
+  const parts = [own];
+  for (const block of blocks) {
+    const loaded = block.subRecipeId ? links.get(block.subRecipeId) : undefined;
+    if (!loaded || loaded.status !== "AVAILABLE" || seen.has(loaded.row.id)) continue;
+    const next = new Set(seen).add(loaded.row.id);
+    parts.push(withLinkedMinutes(totalMinutes(loaded.row), loaded.row.blocks, links, next));
+  }
+  const times = parts.filter((value): value is number => value !== null);
+  return times.length === 0 ? null : times.reduce((sum, value) => sum + value, 0);
+}
+
 const tagInclude = {
   select: {
     id: true,
@@ -318,7 +339,7 @@ function toLinkedBlock(block: BlockRow, links: ReadonlyMap<string, LoadedLink>):
             title: loaded.row.title,
             yieldQuantity: loaded.row.yieldQuantity,
             yieldUnitId: loaded.row.yieldUnitId,
-            totalMinutes: totalMinutes(loaded.row),
+            totalMinutes: withLinkedMinutes(totalMinutes(loaded.row), loaded.row.blocks, links),
             isBase: loaded.row.isBase,
             blocks: loaded.row.blocks.map((sub) => toBlock(sub, links)),
           }
@@ -371,6 +392,7 @@ export function toRecipe(
 ): Recipe {
   return {
     ...toSummaryBase(ctx, row),
+    totalMinutes: withLinkedMinutes(totalMinutes(row), row.blocks, links),
     description: row.description,
     notes: row.notes,
     sourceUrl: row.sourceUrl,

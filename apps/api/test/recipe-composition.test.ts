@@ -67,10 +67,13 @@ describe("bloc lie (D24, D107)", () => {
       "Gratiner 20 min.",
     ]);
     expect(res.body.blocks[1].kind).toBe("LOCAL");
+    // Temps du plat : le sien (45) et celui de la sauce (45), sur la fiche comme sur la carte.
+    expect(res.body.totalMinutes).toBe(90);
 
     const list = await client.get(base);
     const summary = list.body.data.find((r: { id: string }) => r.id === plat.id);
     expect(summary.isComposed).toBe(true);
+    expect(summary.totalMinutes).toBe(90);
     expect((await client.get(`${base}/${sauce.id}`)).body.usedBy).toBe(1);
 
     // Lien vivant : corriger la sauce corrige le plat.

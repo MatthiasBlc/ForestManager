@@ -11,7 +11,8 @@ import {
 import type { Context } from "../../core/context.ts";
 import { Prisma } from "../../core/db/client.ts";
 import { AppError } from "../../core/http/errors.ts";
-import { summaryInclude, toSummary } from "./content.ts";
+import { loadLinks } from "./composition.ts";
+import { summaryInclude, toSummary, withLinkedMinutes } from "./content.ts";
 
 /** Temps total ; une recette sans temps passe apres les autres au tri par temps. */
 const TOTAL = Prisma.sql`(CASE WHEN num_nonnulls(r."prepMinutes", r."cookMinutes", r."restMinutes") = 0 THEN NULL
@@ -175,9 +176,18 @@ export async function listRecipes(
     include: summaryInclude(spaceId),
   });
   const byId = new Map(recipes.map((recipe) => [recipe.id, recipe]));
+  // Recettes composees : leur temps compte celui des sous-recettes visibles ici.
+  const linkBlocks = await ctx.db.recipeBlock.findMany({
+    where: { recipeId: { in: recipes.filter((r) => r.blocks.length > 0).map((r) => r.id) } },
+    select: { recipeId: true, subRecipeId: true },
+  });
+  const links = await loadLinks(ctx.db, linkBlocks, spaceId);
   const data = page.flatMap((row) => {
     const recipe = byId.get(row.id);
-    return recipe ? [toSummary(ctx, recipe)] : [];
+    if (!recipe) return [];
+    const blocks = linkBlocks.filter((block) => block.recipeId === recipe.id);
+    const summary = toSummary(ctx, recipe);
+    return [{ ...summary, totalMinutes: withLinkedMinutes(summary.totalMinutes, blocks, links) }];
   });
   return { data, nextCursor };
 }

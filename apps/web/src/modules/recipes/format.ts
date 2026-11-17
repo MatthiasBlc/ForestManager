@@ -7,7 +7,6 @@ import {
   type DiffEntry,
   type DiffField,
   type FieldValue,
-  type RecipeBlock,
   type RecipeIngredient,
   type Unit,
 } from "@fm/shared";
@@ -96,20 +95,6 @@ export function linkedAmount(
   const quantity = (block.quantity ?? 0) * scale;
   const unit = units.find((u) => u.id === yieldUnitId);
   return formatYield(unit?.metric ? kitchenRound(quantity) : quantity, unit);
-}
-
-/** Temps d'une recette, sous-recettes liees comprises [R5] ; null si aucun temps. */
-export function composedMinutes(recipe: {
-  totalMinutes: number | null;
-  blocks: readonly RecipeBlock[];
-}): number | null {
-  const parts = [
-    recipe.totalMinutes,
-    ...recipe.blocks.map((block) =>
-      block.kind === "RECIPE" && block.recipe ? composedMinutes(block.recipe) : null
-    ),
-  ].filter((value): value is number => value !== null);
-  return parts.length === 0 ? null : parts.reduce((sum, value) => sum + value, 0);
 }
 
 /** Espace a citer apres l'auteur : l'espace perso porte le nom de son auteur, inutile de le repeter [R2]. */
