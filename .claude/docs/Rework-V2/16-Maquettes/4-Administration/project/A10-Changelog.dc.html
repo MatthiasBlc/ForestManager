@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Changelog</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div class="fm-root" style="min-height: 1000px; display: flex; flex-wrap: wrap; align-items: stretch; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+  <dc-import name="AdminNav" active="changelog" hint-size="248px,1000px"></dc-import>
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px; max-width: 1192px;">
+    <header style="display: flex; flex-direction: column; gap: 4px;">
+      <h1 style="margin: 0; font-family: var(--font-display); font-size: 26px; line-height: 32px;">Changelog</h1>
+      <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">Chaque déploiement en production prépare un brouillon à partir des commits. Relis-le, reformule pour les utilisateurs, puis publie.</p>
+    </header>
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start;">
+      <nav aria-label="Versions" style="flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 8px;">
+        <sc-for list="{{versions}}" as="v" hint-placeholder-count="4">
+          <a href="#version" style="{{v.style}}">
+            <span style="display: flex; align-items: center; gap: 8px;"><b style="font-family: var(--font-mono); font-size: 15px;">{{v.version}}</b><x-import component-from-global-scope="ForestUI.Badge" tone="{{v.tone}}">{{v.state}}</x-import></span>
+            <span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">{{v.meta}}</span>
+          </a>
+        </sc-for>
+      </nav>
+
+      <section id="version" aria-labelledby="draft" style="flex: 999 1 560px; min-width: 0; background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 24px; display: flex; flex-direction: column; gap: 18px;">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+          <h2 id="draft" style="flex: 1; margin: 0; font-family: var(--font-display); font-size: 22px; line-height: 28px;">Version 2.1.0</h2>
+          <x-import component-from-global-scope="ForestUI.Badge" tone="warning">Brouillon</x-import>
+        </div>
+        <x-import component-from-global-scope="ForestUI.Field" label="Titre" default-value="Les recettes composées arrivent"></x-import>
+        <sc-for list="{{sections}}" as="s" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <span style="font-size: 14px; line-height: 20px; font-weight: 600;">{{s.label}}</span>
+            <sc-for list="{{s.items}}" as="it" hint-placeholder-count="2">
+              <div style="display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 12px; border: 1px solid var(--line); border-radius: var(--radius-md);">
+                <span style="flex: 1; min-width: 0; font-size: 15px; line-height: 22px;">{{it.text}}</span>
+                <x-import component-from-global-scope="ForestUI.IconButton" icon="pencil" label="Reformuler"></x-import>
+                <x-import component-from-global-scope="ForestUI.IconButton" icon="trash" label="Retirer cette ligne"></x-import>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+        <x-import component-from-global-scope="ForestUI.Switch" label="Prévenir tous les utilisateurs par une notification" default-checked="{{yes}}"></x-import>
+        <div style="display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; padding-top: 8px; border-top: 1px solid var(--line);">
+          <x-import component-from-global-scope="ForestUI.Button">Enregistrer le brouillon</x-import>
+          <x-import component-from-global-scope="ForestUI.Button" variant="primary">Publier la version</x-import>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const base = 'display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: var(--radius-md); text-decoration: none; color: var(--ink); border: 1px solid var(--line);';
+    const versions = [
+      { version: '2.1.0', state: 'Brouillon', tone: 'warning', meta: 'Préparée au déploiement du 3 nov.', sel: true },
+      { version: '2.0.1', state: 'Publiée', tone: 'success', meta: '2 nov. · 2 corrections' },
+      { version: '2.0.0', state: 'Publiée', tone: 'success', meta: '31 oct. · la nouvelle version' },
+      { version: '1.9.4', state: 'Masquée', tone: 'neutral', meta: 'Ancienne application' }
+    ];
+    return {
+      yes: true,
+      versions: versions.map((v) => ({ ...v, style: base + (v.sel ? ' background: var(--accent-soft); border-color: transparent;' : ' background: var(--surface-raised);') })),
+      sections: [
+        { label: 'Nouveautés', items: [ { text: 'Une recette peut en contenir d’autres : la sauce teriyaki sert dans plusieurs plats.' }, { text: 'Adapte une recette pour un autre espace sans toucher à l’originale.' } ] },
+        { label: 'Améliorations', items: [ { text: 'Le planning se remplit plus vite sur téléphone.' } ] },
+        { label: 'Corrections', items: [ { text: 'Les quantités en cuillères s’additionnent correctement dans la liste.' } ] }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

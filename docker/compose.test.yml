@@ -1,0 +1,68 @@
+# Tests (local et CI) : PostgreSQL de test en memoire + conteneur qui lance Vitest.
+# Independant de la stack de dev. Lancer depuis la racine via les scripts npm (test*).
+#
+#   npm test            tous les projets Vitest
+#   npm run test:api    projet @fm/api
+#   npm run test:down   arreter la base de test
+
+name: forestmanager-test # impose aussi par -p dans les scripts (sinon COMPOSE_PROJECT_NAME du .env gagne)
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: forestmanager_test
+    # Base jetable : durabilite coupee pour aller plus vite.
+    command: postgres -c fsync=off -c synchronous_commit=off -c full_page_writes=off
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test -d forestmanager_test"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  # Stockage S3 jetable [D167] (RustFS : les images MinIO ne sont plus publiques).
+  s3:
+    image: rustfs/rustfs:1.0.3
+    environment:
+      RUSTFS_ACCESS_KEY: test-access-key
+      RUSTFS_SECRET_KEY: test-secret-key-not-for-production
+    tmpfs:
+      - /data:uid=10001,gid=10001
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://127.0.0.1:9000/health"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  tests:
+    # Image de dev de l'API : elle contient les dependances de tout le monorepo.
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+      target: dev
+    init: true
+    environment:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://test:test@postgres:5432/forestmanager_test
+      SESSION_SECRET: test-session-secret-not-for-production
+      MINIO_ENDPOINT: s3
+      MINIO_ACCESS_KEY: test-access-key
+      MINIO_SECRET_KEY: test-secret-key-not-for-production
+      MINIO_BUCKET: forestmanager-images-test
+      MINIO_PUBLIC_URL: http://s3:9000
+      # Cache de Vite hors de l'arbre monte (sinon dossiers root sur l'hote).
+      VITE_CACHE_DIR: /tmp/vite
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      s3:
+        condition: service_healthy
+    entrypoint: ["sh", "docker/test-entrypoint.sh"]
+    command: ["npx", "vitest", "run", "--configLoader", "runner"]

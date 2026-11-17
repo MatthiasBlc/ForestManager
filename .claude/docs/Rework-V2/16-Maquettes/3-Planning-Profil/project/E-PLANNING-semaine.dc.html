@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Planning - semaine</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="fm-root" data-space="1" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+<x-import component-from-global-scope="ForestUI.TopBar" title="Planning" space="{{space}}" on-space="{{noop}}" unread="{{three}}"></x-import>
+<div style="flex-grow: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 16px;">
+<x-import component-from-global-scope="ForestUI.SegmentedControl" label="Vue du planning" options="{{views}}" default-value="week" style="align-self: flex-start;"></x-import>
+<div style="display: flex; align-items: center; gap: 8px;">
+<h1 style="margin: 0; flex-grow: 1; font-family: var(--font-display); font-size: 22px; line-height: 28px;">Du 2 au 8 novembre</h1>
+<x-import component-from-global-scope="ForestUI.Button" variant="secondary" size="sm" icon="sparkles">Générer</x-import>
+</div>
+<div style="display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface-raised); overflow: hidden;">
+<sc-for list="{{week}}" as="d" hint-placeholder-count="7">
+<div style="display: flex; align-items: flex-start; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--line);">
+<sc-if value="{{d.today}}" hint-placeholder-val="{{false}}">
+<span aria-current="date" style="flex: none; width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--accent); color: var(--on-accent); display: flex; flex-direction: column; align-items: center; justify-content: center;"><span style="font-size: 11px; line-height: 14px; font-weight: 700; letter-spacing: 0.04em;">{{d.day}}</span><span style="font-size: 16px; line-height: 20px; font-weight: 700;">{{d.num}}</span></span>
+</sc-if>
+<sc-if value="{{d.other}}" hint-placeholder-val="{{true}}">
+<span style="flex: none; width: 44px; height: 44px; border-radius: var(--radius-md); background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center;"><span style="font-size: 11px; line-height: 14px; font-weight: 700; letter-spacing: 0.04em; color: var(--ink-muted);">{{d.day}}</span><span style="font-size: 16px; line-height: 20px; font-weight: 700;">{{d.num}}</span></span>
+</sc-if>
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 6px; padding-top: 4px;">
+<sc-for list="{{d.meals}}" as="m" hint-placeholder-count="2">
+<sc-if value="{{m.recipe}}" hint-placeholder-val="{{true}}">
+<a href="F-REPAS.dc.html" aria-label="{{m.aria}}" style="display: inline-flex; align-items: center; gap: 4px; max-width: 100%; min-height: 36px; padding: 0 10px; border-radius: var(--radius-full); background: var(--accent-soft); color: var(--accent-text); font-size: 13px; line-height: 18px; font-weight: 600; text-decoration: none;"><span style="font-size: 11px; font-weight: 700; opacity: 0.8;">{{m.when}}</span><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{m.title}}</span></a>
+</sc-if>
+<sc-if value="{{m.text}}" hint-placeholder-val="{{false}}">
+<a href="F-REPAS.dc.html" aria-label="{{m.aria}}" style="display: inline-flex; align-items: center; gap: 4px; max-width: 100%; min-height: 36px; padding: 0 10px; border-radius: var(--radius-full); background: var(--surface); border: 1px solid var(--line); color: var(--ink); font-size: 13px; line-height: 18px; font-weight: 600; text-decoration: none;"><span style="font-size: 11px; font-weight: 700; color: var(--ink-muted);">{{m.when}}</span><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{m.title}}</span></a>
+</sc-if>
+<sc-if value="{{m.empty}}" hint-placeholder-val="{{false}}">
+<a href="F-REPAS.dc.html" aria-label="{{m.aria}}" style="display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 10px; border-radius: var(--radius-full); border: 1px dashed var(--line-strong); color: var(--ink-muted); font-size: 13px; line-height: 18px; font-weight: 600; text-decoration: none;"><x-import component-from-global-scope="ForestUI.Icon" name="plus" size="{{fourteen}}"></x-import>{{m.when}}</a>
+</sc-if>
+</sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+<span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">Touche un repas pour l’ouvrir. Pour le détail d’une journée, passe en vue Jour.</span>
+</div>
+<x-import component-from-global-scope="ForestUI.TabBar" items="{{tabs}}" active-id="plan"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var r = function (when, title, day) { return { recipe: true, when: when, title: title, aria: day + ' ' + when.toLowerCase() + ' : ' + title }; };
+    var t = function (when, title, day) { return { text: true, when: when, title: title, aria: day + ' ' + when.toLowerCase() + ' : ' + title }; };
+    var e = function (when, day) { return { empty: true, when: when, aria: day + ' ' + when.toLowerCase() + ' : ajouter un repas' }; };
+    var week = [
+      { day: 'LUN', num: '2', name: 'Lundi', meals: [r('Midi', 'Tarte aux pommes', 'Lundi'), r('Soir', 'Dahl de lentilles corail', 'Lundi')] },
+      { day: 'MAR', num: '3', name: 'Mardi', today: true, meals: [r('Midi', 'Saumon teriyaki et brocolis', 'Mardi'), e('Soir', 'Mardi')] },
+      { day: 'MER', num: '4', name: 'Mercredi', meals: [t('Midi', 'Restes du dimanche', 'Mercredi'), r('Soir', 'Gratin de pâtes', 'Mercredi')] },
+      { day: 'JEU', num: '5', name: 'Jeudi', meals: [e('Soir', 'Jeudi')] },
+      { day: 'VEN', num: '6', name: 'Vendredi', meals: [r('Midi', 'Poulet teriyaki et riz', 'Vendredi'), t('Soir', 'Pizza maison', 'Vendredi')] },
+      { day: 'SAM', num: '7', name: 'Samedi', meals: [e('Midi', 'Samedi'), r('Soir', 'Escalope milanaise et compotée de tomates cerises', 'Samedi')] },
+      { day: 'DIM', num: '8', name: 'Dimanche', meals: [e('Midi', 'Dimanche'), e('Soir', 'Dimanche')] }
+    ].map(function (d) { return Object.assign({ other: !d.today }, d); });
+    return {
+      three: 3, fourteen: 14, week: week,
+      noop: function () {},
+      views: [{ value: 'day', label: 'Jour' }, { value: 'week', label: 'Semaine' }],
+      space: { id: 'f', name: 'Famille', tint: 1 },
+      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Changer d'espace</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="fm-root" data-space="1" style="position: relative; width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans); overflow: hidden;">
+<x-import component-from-global-scope="ForestUI.TopBar" title="Recettes" space="{{current}}" unread="{{unread}}"></x-import>
+<div style="flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+<h1 style="margin: 0; font: 700 26px/32px var(--font-display);">Recettes</h1>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
+<x-import component-from-global-scope="ForestUI.RecipeCard" title="Saumon teriyaki et brocolis" meta="2 pers. - 35 min"></x-import>
+<x-import component-from-global-scope="ForestUI.RecipeCard" title="Gratin de pâtes" meta="4 pers. - 50 min"></x-import>
+</div>
+</div>
+<x-import component-from-global-scope="ForestUI.TabBar" items="{{tabs}}" active-id="recipes"></x-import>
+<x-import component-from-global-scope="ForestUI.SpaceSwitcher" open="{{yes}}" contained="{{yes}}" personal="{{me}}" spaces="{{spaces}}" active-id="famille" on-close="{{noop}}"></x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {
+yes: true, noop: () => {}, unread: 2,
+current: { id: 'famille', name: 'Famille', tint: 1 },
+me: { id: 'me', name: 'Matthias', hint: 'Espace perso' },
+spaces: [
+{ id: 'foyer', name: 'Foyer', tint: 5, hint: '2 membres' },
+{ id: 'famille', name: 'Famille', tint: 1, hint: '6 membres' },
+{ id: 'colloc', name: 'Colloc', tint: 2, hint: '3 membres' },
+{ id: 'tom', name: 'TOM', tint: 3, hint: '11 membres', unread: true },
+{ id: 'amis', name: 'Amis', tint: 4, hint: '5 membres' }
+],
+tabs: [
+{ id: 'recipes', label: 'Recettes', icon: 'book-open' },
+{ id: 'plan', label: 'Planning', icon: 'calendar' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

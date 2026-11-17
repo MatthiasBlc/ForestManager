@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Tags globaux</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div class="fm-root" style="min-height: 1000px; display: flex; flex-wrap: wrap; align-items: stretch; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+  <dc-import name="AdminNav" active="tags" hint-size="248px,1000px"></dc-import>
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px; max-width: 1060px;">
+    <header style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 16px;">
+      <div style="flex: 1 1 360px; display: flex; flex-direction: column; gap: 4px;">
+        <h1 style="margin: 0; font-family: var(--font-display); font-size: 26px; line-height: 32px;">Tags globaux</h1>
+        <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">Une liste courte, commune à tous les espaces et traduite. Les tags propres à chaque espace sont gérés par ses modérateurs, pas ici.</p>
+      </div>
+      <x-import component-from-global-scope="ForestUI.Button" icon="plus">Nouveau tag global</x-import>
+    </header>
+    <div style="overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface-raised);">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px; line-height: 20px;">
+        <thead>
+          <tr style="text-align: left; color: var(--ink-muted); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase;">
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Français</th>
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Anglais</th>
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Recettes</th>
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;"><span class="fm-sr">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{tags}}" as="t" hint-placeholder-count="9">
+            <tr>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">{{t.fr}}</td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line);">
+                <sc-if value="{{t.hasEn}}" hint-placeholder-val="{{true}}"><span>{{t.en}}</span></sc-if>
+                <sc-if value="{{t.noEn}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="ForestUI.Badge" tone="warning">À traduire</x-import></sc-if>
+              </td>
+              <td style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; color: var(--ink-muted);">{{t.count}}</td>
+              <td style="padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap;">
+                <x-import component-from-global-scope="ForestUI.IconButton" icon="pencil" label="Renommer ou traduire {{t.fr}}"></x-import>
+                <x-import component-from-global-scope="ForestUI.IconButton" icon="git-branch" label="Fusionner {{t.fr}} dans un autre tag"></x-import>
+              </td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin: 0; font-size: 13px; line-height: 18px; color: var(--ink-muted);">Supprimer un tag global le retire de toutes les recettes. Fusionner déplace ses recettes vers l'autre tag ; l'action est enregistrée dans le journal d'audit.</p>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const list = [
+      ['Végétarien', 'Vegetarian', 48], ['Vegan', 'Vegan', 12], ['Sans gluten', 'Gluten-free', 9], ['Rapide', 'Quick', 61], ['Entrée', 'Starter', 23],
+      ['Plat', 'Main course', 104], ['Dessert', 'Dessert', 37], ['Apéritif', '', 14], ['Petit-déjeuner', 'Breakfast', 8]
+    ];
+    return { tags: list.map((t) => ({ fr: t[0], en: t[1], count: t[2], hasEn: !!t[1], noEn: !t[1] })) };
+  }
+}
+</script>
+</body>
+</html>

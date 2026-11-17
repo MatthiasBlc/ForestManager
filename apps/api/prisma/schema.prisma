@@ -1,0 +1,1171 @@
+// =============================================================================
+// Forest Manager V2 - schema de l'API
+// =============================================================================
+// Copie du schema cible (.claude/docs/Rework-V2/11-Modele-Donnees/schema.prisma),
+// une section a la fois : C1 = socle (sections 1 a 3) + AdminUser reduit.
+// Chaque etape suivante (C3 a C6) ajoute ses modeles et relations par sa
+// propre migration. Index partiels et CHECK : en SQL dans les migrations.
+// =============================================================================
+
+generator client {
+  provider               = "prisma-client"
+  output                 = "../src/generated/prisma"
+  runtime                = "nodejs"
+  moduleFormat           = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// =============================================================================
+// 1. SOCLE - COMPTES
+// =============================================================================
+
+enum Ambiance {
+  BRAISE
+  SOUSBOIS
+  POTAGER
+}
+
+enum ColorMode {
+  SYSTEM
+  LIGHT
+  DARK
+}
+
+enum Density {
+  COMFORTABLE
+  COMPACT
+}
+
+/// Utilisateur. Un compte supprime est anonymise, pas efface [D20] :
+/// username et email remplaces, deletedAt renseigne, contenus partages conserves.
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique // stocke en minuscules
+  username        String    @unique
+  passwordHash    String? // null : compte cree par Discord sans mot de passe defini [D210]
+  discordId       String?   @unique // compte Discord relie [D202]
+  discordUsername String? // nom Discord, rafraichi a chaque connexion par Discord
+  emailVerifiedAt DateTime? // null tant que non verifie ; ignore si aucun SMTP [D21]
+  avatarKey       String? // cle MinIO
+  locale          String    @default("fr") // [D34]
+  ambiance        Ambiance  @default(BRAISE) // [D32]
+  colorMode       ColorMode @default(SYSTEM) // [D32]
+  density         Density   @default(COMFORTABLE)
+  textScale       Int       @default(100) // pourcentage : 90, 100, 115, 130
+  homeWidgets     Json? // accueil : liste ordonnee des cles de widgets choisis ; null = choix par defaut du registre (CDC S5.2)
+  lastLoginAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime? // compte supprime et anonymise [D20]
+
+  personalSpace        Space?                   @relation("PersonalSpace")
+  memberships          Membership[]
+  authTokens           AuthToken[]
+  invitationsSent      SpaceInvitation[]        @relation("InvitationSender")
+  invitationsRecv      SpaceInvitation[]        @relation("InvitationInvitee")
+  inviteLinks          SpaceInviteLink[]
+  moduleRequests       ModuleAccessRequest[]
+  ownershipOffersSent  SpaceOwnershipTransfer[] @relation("TransferFrom")
+  ownershipOffersRecv  SpaceOwnershipTransfer[] @relation("TransferTo")
+  ingredientsCreated   Ingredient[]
+  tagsCreated          Tag[]
+  recipesAuthored      Recipe[]                 @relation("RecipeAuthor")
+  recipeRevisions      RecipeRevision[]
+  sharesMade           RecipeShare[]            @relation("ShareSharedBy")
+  sharesRemoved        RecipeShare[]            @relation("ShareRemovedBy")
+  sharesApproved       RecipeShare[]            @relation("ShareApprovedBy")
+  shareRequests        RecipeShareRequest[]     @relation("ShareRequester")
+  shareRequestsDecided RecipeShareRequest[]     @relation("ShareRequestDecider")
+  suggestions          RecipeSuggestion[]       @relation("SuggestionProposer")
+  suggestionsDecided   RecipeSuggestion[]       @relation("SuggestionDecider")
+  mealSlotsUpdated     MealSlot[]
+  mealIdeas            MealIdea[]
+  notifications        Notification[]           @relation("NotificationRecipient")
+  notificationsActed   Notification[]           @relation("NotificationActor")
+  notificationPrefs    NotificationPreference[]
+  activities           ActivityEvent[]
+  exports              DataExport[]
+
+  @@index([deletedAt])
+}
+
+enum AuthTokenKind {
+  VERIFY_EMAIL
+  RESET_PASSWORD
+  TEMP_PASSWORD // genere par un admin sans SMTP : 24 h, usage unique [D134]
+}
+
+/// Jeton a usage unique (verification d'email, mot de passe oublie) [D21].
+/// Seul le hash est stocke. TEMP_PASSWORD [D134] : tokenHash = hash du mot de
+/// passe temporaire, expiresAt = creation + 24 h. Il n'ouvre qu'une session
+/// restreinte au choix d'un nouveau mot de passe ; l'ancien passwordHash reste
+/// valable jusque-la. A l'enregistrement du nouveau : usedAt renseigne,
+/// passwordHash remplace, autres sessions fermees.
+model AuthToken {
+  id        String        @id @default(uuid())
+  userId    String
+  kind      AuthTokenKind
+  tokenHash String        @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime      @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, kind])
+}
+
+/// Store express-session des utilisateurs (duree selon "rester connecte" [D13]).
+model UserSession {
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt DateTime
+  userId    String? // ferme toutes les sessions d'un compte (mot de passe change, suppression) [D148]
+
+  @@index([expiresAt])
+  @@index([userId])
+}
+
+// =============================================================================
+// 2. SOCLE - ESPACES, MEMBRES, INVITATIONS
+// =============================================================================
+
+enum SpaceKind {
+  PERSONAL
+  GROUP
+}
+
+enum SpaceRole {
+  MEMBER
+  MODERATOR
+  OWNER
+}
+
+/// Espace : perso (un par utilisateur, un seul membre) ou groupe [D02].
+model Space {
+  id             String    @id @default(uuid())
+  kind           SpaceKind
+  name           String
+  description    String?
+  avatarKey      String? // icone dans le rail ; sinon initiales sur la teinte
+  tintIndex      Int       @default(1) // teinte d'espace 1 a 5 [D32]
+  personalUserId String?   @unique // renseigne seulement pour PERSONAL
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime? // suppression demandee : espace masque [D22]
+  purgeAfter     DateTime? // deletedAt + 30 jours ; restaurable avant [D22]
+
+  personalUser       User?                    @relation("PersonalSpace", fields: [personalUserId], references: [id])
+  memberships        Membership[]
+  inviteLinks        SpaceInviteLink[]
+  invitations        SpaceInvitation[]
+  modules            SpaceModule[]
+  moduleRequests     ModuleAccessRequest[]
+  ownershipTransfers SpaceOwnershipTransfer[]
+  tags               Tag[]
+  recipes            Recipe[]                 @relation("RecipeHomeSpace")
+  recipeSpaceTags    RecipeSpaceTag[]
+  shares             RecipeShare[]
+  shareRequestsIn    RecipeShareRequest[]     @relation("ShareRequestTarget")
+  shareRequestsFrom  RecipeShareRequest[]     @relation("ShareRequestSource")
+  suggestions        RecipeSuggestion[]
+  moderationAccesses ModerationAccess[]
+  mealSettings       MealPlanSettings?
+  mealSlots          MealSlot[]
+  mealIdeas          MealIdea[]
+  generationProfiles MealGenerationProfile[]
+  notifications      Notification[]
+  notificationPrefs  NotificationPreference[]
+  activities         ActivityEvent[]
+  exports            DataExport[]
+
+  @@index([deletedAt])
+  @@index([purgeAfter])
+}
+
+/// Appartenance a un espace. Un depart garde la ligne (leftAt) pour l'historique ;
+/// revenir reactive la meme ligne. Exactement un OWNER actif par espace [D06]
+/// (index partiel, voir fin de fichier).
+model Membership {
+  id                  String    @id @default(uuid())
+  spaceId             String
+  userId              String
+  role                SpaceRole @default(MEMBER)
+  joinedAt            DateTime  @default(now())
+  leftAt              DateTime?
+  /// Exclusion par un moderateur [D53] : on ne revient que par invitation directe [D07, D149].
+  excludedAt          DateTime?
+  /// Confiance de l'auteur [D81] : les autres membres de cet espace peuvent partager
+  /// ses recettes ailleurs sans lui demander (il est simplement informe).
+  allowMembersToShare Boolean   @default(false)
+
+  space Space @relation(fields: [spaceId], references: [id])
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([spaceId, userId])
+  @@index([userId, leftAt])
+  @@index([spaceId, role])
+}
+
+/// Lien d'invitation [D07] : expiration obligatoire (1, 7 ou 30 jours [D94]),
+/// nombre de personnes (maxUses null = illimite), revocable.
+/// Seul le hash du code est stocke ; le lien complet n'est montre qu'a la creation.
+model SpaceInviteLink {
+  id          String    @id @default(uuid())
+  spaceId     String
+  createdById String
+  codeHash    String    @unique
+  expiresAt   DateTime // creation + 1, 7 ou 30 jours [D94]
+  maxUses     Int? // null = illimite
+  useCount    Int       @default(0)
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  space     Space @relation(fields: [spaceId], references: [id])
+  createdBy User  @relation(fields: [createdById], references: [id])
+
+  @@index([spaceId, revokedAt])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+}
+
+/// Invitation directe par username exact [D07] (pas de recherche par prefixe).
+/// Une seule PENDING par (espace, invite) : index partiel.
+model SpaceInvitation {
+  id          String           @id @default(uuid())
+  spaceId     String
+  inviterId   String
+  inviteeId   String
+  status      InvitationStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  respondedAt DateTime?
+
+  space   Space @relation(fields: [spaceId], references: [id])
+  inviter User  @relation("InvitationSender", fields: [inviterId], references: [id])
+  invitee User  @relation("InvitationInvitee", fields: [inviteeId], references: [id])
+
+  @@index([inviteeId, status])
+  @@index([spaceId, status])
+}
+
+enum OwnershipTransferStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
+}
+
+/// Proposition de transfert de propriete [D92] : le destinataire (membre actif)
+/// accepte ou refuse ; a l'acceptation il devient OWNER et l'ancien OWNER
+/// MODERATOR. Une seule PENDING par espace : index partiel. Le transfert
+/// automatique a la suppression du compte d'un OWNER [D51] ne passe pas par ici.
+model SpaceOwnershipTransfer {
+  id          String                  @id @default(uuid())
+  spaceId     String
+  fromUserId  String
+  toUserId    String
+  status      OwnershipTransferStatus @default(PENDING)
+  createdAt   DateTime                @default(now())
+  respondedAt DateTime?
+
+  space    Space @relation(fields: [spaceId], references: [id])
+  fromUser User  @relation("TransferFrom", fields: [fromUserId], references: [id])
+  toUser   User  @relation("TransferTo", fields: [toUserId], references: [id])
+
+  @@index([toUserId, status])
+  @@index([spaceId, status])
+}
+
+// =============================================================================
+// 3. SOCLE - MODULES [D10] [D33] [D40]
+// =============================================================================
+// Le registre des modules (routes, permissions, notifications, widgets, libelles
+// traduits) vit dans le code. La base ne porte que leur disponibilite et les acces.
+
+enum ModuleStatus {
+  AVAILABLE
+  BETA
+  COMING_SOON
+  RETIRED
+}
+
+/// Catalogue des modules de la plateforme. `code` = identifiant du registre.
+model Module {
+  code      String       @id // "recipes", "meal-plan", "shopping"...
+  status    ModuleStatus @default(COMING_SOON)
+  isDefault Boolean      @default(false) // accorde et actif a la creation d'un espace (Recettes) [D33]
+  sortOrder Int          @default(0)
+  updatedAt DateTime     @updatedAt
+
+  spaces   SpaceModule[]
+  requests ModuleAccessRequest[]
+}
+
+/// Acces d'un espace a un module [D33]. L'acces est attache a l'espace, pas a
+/// la personne. grantedAt = accorde ; enabled = active par l'OWNER ; sortOrder =
+/// ordre de la barre des modules choisi par l'OWNER (4 onglets mobiles puis "Plus") [D131].
+/// Monetisation future : une colonne `planId` nullable s'ajoutera ici.
+model SpaceModule {
+  id               String    @id @default(uuid())
+  spaceId          String
+  moduleCode       String
+  grantedAt        DateTime  @default(now())
+  grantedByAdminId String? // null = accorde d'office (module par defaut)
+  revokedAt        DateTime? // retire par un super admin ; donnees conservees
+  enabled          Boolean   @default(false)
+  enabledChangedAt DateTime?
+  sortOrder        Int       @default(0) // ordre choisi par l'OWNER [D131]
+
+  space     Space      @relation(fields: [spaceId], references: [id])
+  module    Module     @relation(fields: [moduleCode], references: [code])
+  grantedBy AdminUser? @relation(fields: [grantedByAdminId], references: [id])
+
+  @@unique([spaceId, moduleCode])
+}
+
+enum AccessRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+/// Demande d'acces a un module par l'OWNER d'un espace [D33].
+/// Une seule PENDING par (espace, module) : index partiel.
+model ModuleAccessRequest {
+  id               String              @id @default(uuid())
+  spaceId          String
+  moduleCode       String
+  requestedById    String
+  message          String?
+  status           AccessRequestStatus @default(PENDING)
+  decidedByAdminId String?
+  decidedAt        DateTime?
+  decisionNote     String?
+  createdAt        DateTime            @default(now())
+
+  space       Space      @relation(fields: [spaceId], references: [id])
+  module      Module     @relation(fields: [moduleCode], references: [code])
+  requestedBy User       @relation(fields: [requestedById], references: [id])
+  decidedBy   AdminUser? @relation(fields: [decidedByAdminId], references: [id])
+
+  @@index([status, createdAt])
+  @@index([spaceId])
+}
+
+// =============================================================================
+// 4. REFERENTIELS (globaux, traduits) [D09] [D34] [D36]
+// =============================================================================
+// C3 : tables, seed et usages par les recettes [D160] ; gestion admin en C4.
+
+enum UnitDimension {
+  MASS // base : gramme
+  VOLUME // base : millilitre (les cuilleres sont des volumes)
+  COUNT // piece, tranche, gousse...
+  NONE // "a gout", "selon besoin" : pas de quantite convertible
+}
+
+/// Unite de mesure. toBase = combien d'unites de base vaut 1 unite
+/// (1 kg = 1000 g, 1 c. a soupe = 15 ml). null pour COUNT et NONE.
+/// metric : unite metrique remplacable par une plus lisible (g <-> kg).
+model Unit {
+  id        String        @id @default(uuid())
+  code      String        @unique // "g", "kg", "ml", "tbsp", "piece"...
+  dimension UnitDimension
+  toBase    Float?
+  metric    Boolean       @default(false)
+  sortOrder Int           @default(0)
+
+  translations      UnitTranslation[]
+  ingredientWeights IngredientUnitWeight[]
+  defaultFor        Ingredient[]
+  recipeYields      Recipe[]               @relation("RecipeYieldUnit")
+  blockSubUnits     RecipeBlock[]          @relation("BlockSubUnit")
+  recipeIngredients RecipeIngredient[]
+}
+
+model UnitTranslation {
+  unitId       String
+  locale       String
+  name         String // "cuillere a soupe"
+  namePlural   String?
+  abbreviation String // "c. a soupe"
+
+  unit Unit @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@id([unitId, locale])
+}
+
+/// Rayon du magasin (fruits et legumes, boucherie...) pour la liste de courses [D36].
+model Aisle {
+  id        String @id @default(uuid())
+  code      String @unique
+  sortOrder Int    @default(0)
+
+  translations AisleTranslation[]
+  ingredients  Ingredient[]
+}
+
+model AisleTranslation {
+  aisleId String
+  locale  String
+  name    String
+
+  aisle Aisle @relation(fields: [aisleId], references: [id], onDelete: Cascade)
+
+  @@id([aisleId, locale])
+}
+
+enum IngredientStatus {
+  ACTIVE // verifie par l'admin
+  NEW // cree a la volee, utilisable tout de suite, a revoir [D09]
+  MERGED // fusionne (mergedIntoId) : synonyme propose a la saisie, remplace par la cible [D120]
+}
+
+/// Ingredient du catalogue global. Utilisable des sa creation [D09].
+model Ingredient {
+  id            String           @id @default(uuid())
+  status        IngredientStatus @default(NEW)
+  defaultUnitId String?
+  aisleId       String? // rayon par defaut [D36]
+  mergedIntoId  String?
+  createdById   String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  defaultUnit  Unit?                   @relation(fields: [defaultUnitId], references: [id])
+  aisle        Aisle?                  @relation(fields: [aisleId], references: [id])
+  mergedInto   Ingredient?             @relation("IngredientMerge", fields: [mergedIntoId], references: [id])
+  mergedFrom   Ingredient[]            @relation("IngredientMerge")
+  createdBy    User?                   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  translations IngredientTranslation[]
+  unitWeights  IngredientUnitWeight[]
+  usedIn       RecipeIngredient[]
+
+  @@index([status])
+}
+
+/// Nom d'un ingredient dans une langue [D34]. normalized = minuscules, sans
+/// accents ni espaces superflus : sert a l'autocompletion et a l'unicite.
+model IngredientTranslation {
+  ingredientId String
+  locale       String
+  name         String
+  namePlural   String?
+  normalized   String
+
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+
+  @@id([ingredientId, locale])
+  @@unique([locale, normalized])
+  // Autocompletion par ressemblance (pg_trgm) : declare ici pour que Prisma ne le supprime pas.
+  @@index([normalized(ops: raw("gin_trgm_ops"))], type: Gin, map: "IngredientTranslation_normalized_trgm_idx")
+}
+
+/// Poids d'une unite pour un ingredient donne (1 oeuf = 60 g) [D36].
+model IngredientUnitWeight {
+  ingredientId String
+  unitId       String
+  grams        Float
+
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  unit       Unit       @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@id([ingredientId, unitId])
+}
+
+enum TagScope {
+  GLOBAL // liste courte curee par l'admin, traduite [D34]
+  SPACE // creee librement par les membres d'un espace [D08]
+}
+
+/// Tag. Les tags d'espace ont un slug unique dans leur espace ; les tags
+/// globaux un slug unique (index partiel, voir la migration).
+model Tag {
+  id           String    @id @default(uuid())
+  scope        TagScope
+  spaceId      String? // renseigne seulement pour SPACE
+  name         String
+  slug         String // minuscules, sans accents
+  createdById  String?
+  mergedIntoId String?
+  createdAt    DateTime  @default(now())
+  deletedAt    DateTime?
+
+  space        Space?               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  createdBy    User?                @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  mergedInto   Tag?                 @relation("TagMerge", fields: [mergedIntoId], references: [id])
+  mergedFrom   Tag[]                @relation("TagMerge")
+  recipes      RecipeGlobalTag[]
+  spaceRecipes RecipeSpaceTag[]
+  translations TagTranslation[]
+  mealRules    MealGenerationRule[]
+  mealPins     MealSlotPin[]
+
+  @@unique([spaceId, slug])
+  @@index([scope, deletedAt])
+}
+
+model TagTranslation {
+  tagId  String
+  locale String
+  name   String
+
+  tag Tag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([tagId, locale])
+}
+
+// =============================================================================
+// 5. MODULE RECETTES [D03] [D04] [D05] [D17] [D19] [D24] [D26] [D30] [D39]
+// =============================================================================
+// C3.2 : recettes, blocs, revisions, tags. Partage (C3.5) et suggestions (C3.6)
+// ajoutent leurs tables et relations.
+
+/// Recette. Une seule source de verite : elle vit dans son espace d'origine
+/// (homeSpaceId) et apparait ailleurs par RecipeShare [D03] (C3.5).
+/// Rendement : yieldQuantity dans yieldUnit (null = portions) [D24].
+/// Adaptation (C3.6) : copie liee a l'original et a sa revision de depart [D17].
+/// Compteurs (fois planifiee, derniere fois cuisinee) calcules depuis MealSlot [D39].
+model Recipe {
+  id                  String    @id @default(uuid())
+  homeSpaceId         String
+  authorId            String
+  title               String
+  description         String?
+  notes               String?
+  sourceUrl           String?
+  imageKey            String?
+  yieldQuantity       Float     @default(4)
+  yieldUnitId         String?
+  prepMinutes         Int?
+  cookMinutes         Int?
+  restMinutes         Int?
+  isBase              Boolean   @default(false) // sauce, pate... : pas proposee seule au generateur [D24]
+  currentRevision     Int       @default(1)
+  adaptedFromId       String?
+  adaptedFromRevision Int?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime?
+  /// Masquee par la moderation [D122, D178] : invisible pour tous sauf son auteur, qui voit le motif.
+  hiddenAt            DateTime?
+  hiddenReason        String?
+
+  homeSpace   Space    @relation("RecipeHomeSpace", fields: [homeSpaceId], references: [id])
+  author      User     @relation("RecipeAuthor", fields: [authorId], references: [id])
+  yieldUnit   Unit?    @relation("RecipeYieldUnit", fields: [yieldUnitId], references: [id])
+  adaptedFrom Recipe?  @relation("RecipeAdaptation", fields: [adaptedFromId], references: [id])
+  adaptations Recipe[] @relation("RecipeAdaptation")
+
+  blocks        RecipeBlock[]        @relation("RecipeBlocks")
+  usedIn        RecipeBlock[]        @relation("BlockSubRecipe")
+  revisions     RecipeRevision[]
+  globalTags    RecipeGlobalTag[]
+  spaceTags     RecipeSpaceTag[]
+  shares        RecipeShare[]        @relation("ShareRecipe")
+  sharedVia     RecipeShare[]        @relation("ShareVia")
+  shareRequests RecipeShareRequest[]
+  suggestions   RecipeSuggestion[]
+  mealSlots     MealSlot[]
+  mealRules     MealGenerationRule[]
+
+  @@index([homeSpaceId, deletedAt])
+  @@index([authorId, deletedAt])
+  @@index([adaptedFromId])
+}
+
+enum BlockKind {
+  LOCAL // ses propres ingredients et etapes
+  RECIPE // lien vivant vers une autre recette [D24] (C3.4)
+}
+
+/// Bloc d'une recette. Une recette simple = un bloc LOCAL sans titre.
+/// RECIPE : subRecipeId + subQuantity dans l'unite de rendement de la
+/// sous-recette (subUnitId, null = portions). Pas de boucle, 3 niveaux maximum
+/// (verifie par l'application).
+model RecipeBlock {
+  id          String    @id @default(uuid())
+  recipeId    String
+  position    Int
+  kind        BlockKind
+  title       String?
+  subRecipeId String?
+  subQuantity Float?
+  subUnitId   String?
+
+  recipe    Recipe  @relation("RecipeBlocks", fields: [recipeId], references: [id], onDelete: Cascade)
+  subRecipe Recipe? @relation("BlockSubRecipe", fields: [subRecipeId], references: [id])
+  subUnit   Unit?   @relation("BlockSubUnit", fields: [subUnitId], references: [id])
+
+  ingredients RecipeIngredient[]
+  steps       RecipeStep[]
+
+  @@unique([recipeId, position])
+  @@index([subRecipeId])
+}
+
+model RecipeIngredient {
+  id           String  @id @default(uuid())
+  blockId      String
+  position     Int
+  ingredientId String
+  quantity     Float? // null = "a gout"
+  unitId       String?
+  note         String? // "finement hache"
+  optional     Boolean @default(false)
+
+  block      RecipeBlock @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  ingredient Ingredient  @relation(fields: [ingredientId], references: [id])
+  unit       Unit?       @relation(fields: [unitId], references: [id])
+
+  @@unique([blockId, position])
+  @@index([ingredientId])
+}
+
+model RecipeStep {
+  id       String @id @default(uuid())
+  blockId  String
+  position Int
+  text     String
+
+  block RecipeBlock @relation(fields: [blockId], references: [id], onDelete: Cascade)
+
+  @@unique([blockId, position])
+}
+
+enum RevisionSource {
+  CREATE
+  EDIT
+  SUGGESTION // suggestion acceptee [D04]
+  RESTORE
+  IMPORT
+}
+
+/// Instantane complet d'une recette a un moment donne [D05] [D30] :
+/// { title, yield, times, isBase, blocks: [{ kind, title, sub, ingredients, steps }] }.
+/// Les tags ne sont pas versionnes (propres a chaque espace [D19]).
+model RecipeRevision {
+  id           String         @id @default(uuid())
+  recipeId     String
+  number       Int
+  snapshot     Json
+  source       RevisionSource
+  authorId     String
+  suggestionId String?        @unique
+  createdAt    DateTime       @default(now())
+
+  recipe     Recipe            @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  author     User              @relation(fields: [authorId], references: [id])
+  suggestion RecipeSuggestion? @relation(fields: [suggestionId], references: [id])
+
+  @@unique([recipeId, number])
+}
+
+/// Tag global attache a la recette elle-meme [D19].
+model RecipeGlobalTag {
+  recipeId String
+  tagId    String
+
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([recipeId, tagId])
+  @@index([tagId])
+}
+
+/// Tag d'espace attache a la recette DANS un espace [D19] : la meme recette
+/// partagee peut etre taguee differemment dans chaque espace.
+model RecipeSpaceTag {
+  recipeId String
+  spaceId  String
+  tagId    String
+
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  space  Space  @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([recipeId, spaceId, tagId])
+  @@index([spaceId, tagId])
+}
+
+/// Partage par reference d'une recette dans un autre espace [D03].
+/// Partager une recette composee partage aussi ses sous-recettes du meme auteur
+/// (viaRecipeId) [D26]. Retirer d'un espace = removedAt ; repartager reactive la ligne.
+model RecipeShare {
+  id           String    @id @default(uuid())
+  recipeId     String
+  spaceId      String
+  sharedById   String
+  sharedAt     DateTime  @default(now())
+  viaRecipeId  String? // partagee automatiquement avec cette recette composee [D26]
+  approvedById String? // decideur d'une demande acceptee [D81]
+  removedAt    DateTime?
+  removedById  String?
+
+  recipe     Recipe  @relation("ShareRecipe", fields: [recipeId], references: [id], onDelete: Cascade)
+  space      Space   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  via        Recipe? @relation("ShareVia", fields: [viaRecipeId], references: [id], onDelete: SetNull)
+  sharedBy   User    @relation("ShareSharedBy", fields: [sharedById], references: [id])
+  removedBy  User?   @relation("ShareRemovedBy", fields: [removedById], references: [id])
+  approvedBy User?   @relation("ShareApprovedBy", fields: [approvedById], references: [id])
+
+  @@unique([recipeId, spaceId])
+  @@index([spaceId, removedAt])
+}
+
+enum ShareRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+/// Demande de partage d'une recette dont on n'est pas l'auteur [D81] : le
+/// demandeur la voit dans sourceSpace et est membre de targetSpace ; l'auteur
+/// (ou les moderateurs de l'espace d'origine si l'auteur est parti) accepte ou refuse.
+/// Si l'auteur fait confiance aux membres de sourceSpace (Membership.allowMembersToShare),
+/// le partage est immediat et aucune demande n'est creee.
+/// Une seule PENDING par (recette, espace cible) : index partiel (migration).
+model RecipeShareRequest {
+  id            String             @id @default(uuid())
+  recipeId      String
+  sourceSpaceId String
+  targetSpaceId String
+  requesterId   String
+  message       String? // "Un mot pour Lea", 280 caracteres [D165]
+  status        ShareRequestStatus @default(PENDING)
+  decidedById   String?
+  decidedAt     DateTime?
+  createdAt     DateTime           @default(now())
+
+  recipe      Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  sourceSpace Space  @relation("ShareRequestSource", fields: [sourceSpaceId], references: [id], onDelete: Cascade)
+  targetSpace Space  @relation("ShareRequestTarget", fields: [targetSpaceId], references: [id], onDelete: Cascade)
+  requester   User   @relation("ShareRequester", fields: [requesterId], references: [id])
+  decidedBy   User?  @relation("ShareRequestDecider", fields: [decidedById], references: [id])
+
+  @@index([recipeId, status])
+  @@index([targetSpaceId, status])
+}
+
+// =============================================================================
+// ADMIN (reduit en C1 : seulement ce qu'exigent les relations du socle ; C4 complete)
+// =============================================================================
+
+model AdminUser {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  username     String    @unique
+  password     String
+  totpSecret   String
+  totpEnabled  Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastLoginAt  DateTime?
+  /// Dernier pas de temps TOTP accepte : un code ne sert qu'une fois (rejeu refuse) [D174].
+  totpLastStep Int?
+
+  moduleGrants       SpaceModule[]
+  requestsDecided    ModuleAccessRequest[]
+  auditLogs          AdminAuditLog[]
+  moderationAccesses ModerationAccess[]
+}
+
+/// Sessions admin, isolees de celles des utilisateurs : 30 min non glissantes [D174].
+model AdminSession {
+  id        String   @id
+  sid       String   @unique
+  data      String
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}
+
+/// Journal d'audit admin. action = cle texte ("auth.login", "ingredient.merged"...).
+/// Ni UPDATE ni DELETE : un trigger les refuse en base [D128].
+model AdminAuditLog {
+  id         String   @id @default(uuid())
+  adminId    String
+  action     String
+  targetType String?
+  targetId   String?
+  data       Json?
+  createdAt  DateTime @default(now())
+
+  admin AdminUser @relation(fields: [adminId], references: [id])
+
+  @@index([adminId, createdAt])
+  @@index([action, createdAt])
+  @@index([createdAt])
+}
+
+enum ModerationReason {
+  MEMBER_REPORT // signalement d'un membre
+  OWNER_REQUEST // demande de l'OWNER
+  EXTERNAL_REPORT // contenu illicite signale hors de l'application
+  OTHER
+}
+
+/// Acces de moderation d'un admin a un espace [D52, D121, D122, D178] : lecture
+/// seule pendant 30 minutes, motif obligatoire. C6 y branche la notification de l'OWNER.
+model ModerationAccess {
+  id        String           @id @default(uuid())
+  adminId   String
+  spaceId   String
+  reason    ModerationReason
+  note      String
+  openedAt  DateTime         @default(now())
+  expiresAt DateTime
+
+  admin AdminUser @relation(fields: [adminId], references: [id])
+  space Space     @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([adminId, spaceId, expiresAt])
+  @@index([spaceId, openedAt])
+}
+
+// =============================================================================
+// Suggestions (C3.6) [D04, D140, D166]
+// =============================================================================
+
+enum SuggestionStatus {
+  PENDING
+  ACCEPTED // nouvelle revision creee
+  REJECTED // rien n'est cree [D04]
+  WITHDRAWN // retiree par son auteur
+  CONVERTED // transformee en adaptation par son auteur [D140]
+  CANCELLED // auteur parti ou exclu de l'espace de la suggestion
+}
+
+/// Suggestion de modification [D04]. proposed = instantane complet propose
+/// (meme forme que RecipeRevision.snapshot) ; le diff se calcule contre
+/// baseRevision. spaceId = espace ou la suggestion a ete faite.
+/// decisionMessage = mot facultatif du decideur au refus [D166].
+model RecipeSuggestion {
+  id                String           @id @default(uuid())
+  recipeId          String
+  spaceId           String
+  proposerId        String
+  baseRevision      Int
+  proposed          Json
+  message           String?
+  status            SuggestionStatus @default(PENDING)
+  decidedById       String?
+  decidedAt         DateTime?
+  decisionMessage   String?
+  convertedRecipeId String?
+  createdAt         DateTime         @default(now())
+
+  recipe    Recipe          @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+  space     Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  proposer  User            @relation("SuggestionProposer", fields: [proposerId], references: [id])
+  decidedBy User?           @relation("SuggestionDecider", fields: [decidedById], references: [id])
+  revision  RecipeRevision?
+
+  @@index([recipeId, status])
+  @@index([proposerId])
+}
+
+// =============================================================================
+// 6. MODULE PLANNING [D02] [D11] [D180 a D184] (C5)
+// =============================================================================
+
+enum MealTime {
+  LUNCH
+  DINNER
+}
+
+enum Weekday {
+  MON
+  TUE
+  WED
+  THU
+  FRI
+  SAT
+  SUN
+}
+
+/// Reglages du planning d'un espace [D11] ; pas de ligne = valeurs par defaut.
+/// editRole : role minimal pour modifier un repas, regle par l'OWNER [D58].
+model MealPlanSettings {
+  spaceId         String     @id
+  mealTimes       MealTime[] @default([LUNCH, DINNER])
+  defaultServings Int        @default(4)
+  editRole        SpaceRole  @default(MEMBER)
+  weekStartsOn    Weekday    @default(MON)
+  updatedAt       DateTime   @updatedAt
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+}
+
+enum MealSlotKind {
+  RECIPE
+  TEXT
+  SKIPPED // "Pas de repas" : la generation le saute [D181]
+}
+
+/// Calendrier continu par espace [D180] : une ligne par repas rempli ou marque,
+/// une case vide n'a pas de ligne. Le passe tient lieu d'archives.
+model MealSlot {
+  id          String       @id @default(uuid())
+  spaceId     String
+  date        DateTime     @db.Date
+  mealTime    MealTime
+  kind        MealSlotKind
+  recipeId    String?
+  /// TEXT : le repas ; RECIPE : dernier titre connu, affiche si la recette devient invisible [D184].
+  text        String?
+  comment     String?
+  servings    Int? // null = defaultServings de l'espace
+  locked      Boolean      @default(false) // la generation ne le remplace pas ; suit le repas a l'echange [D184]
+  updatedById String?
+  updatedAt   DateTime     @updatedAt
+
+  space     Space   @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  recipe    Recipe? @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+  updatedBy User?   @relation(fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@unique([spaceId, date, mealTime])
+  @@index([recipeId, date]) // compteurs "fois planifiee", "derniere fois" [D39]
+}
+
+/// Idee de repas : nom et commentaire, retiree une fois convertie en recette [F-MPL-4, D182].
+model MealIdea {
+  id          String    @id @default(uuid())
+  spaceId     String
+  name        String
+  comment     String?
+  createdById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  space     Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  createdBy User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([spaceId, deletedAt])
+}
+
+/// Jeu de parametres de generation (V1 : MealGenerationParams). Toujours exactement
+/// un profil par defaut par espace, "Standard" cree d'office [D183] (index partiel).
+model MealGenerationProfile {
+  id           String    @id @default(uuid())
+  spaceId      String
+  name         String
+  description  String?
+  cooldownDays Int       @default(3)
+  useIdeas     Boolean   @default(true)
+  isDefault    Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  space      Space                @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  exclusions MealSlotExclusion[]
+  rules      MealGenerationRule[]
+  pins       MealSlotPin[]
+
+  @@index([spaceId, deletedAt])
+}
+
+model MealSlotExclusion {
+  profileId String
+  weekday   Weekday
+  mealTime  MealTime
+
+  profile MealGenerationProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@id([profileId, weekday, mealTime])
+}
+
+enum FrequencyPer {
+  PER_WEEK // semaine du calendrier (weekStartsOn) [D184]
+  PER_PERIOD // periode generee
+}
+
+/// Regle de generation : sur un tag (global ou de l'espace) OU sur une recette,
+/// jamais les deux (CHECK SQL).
+model MealGenerationRule {
+  id              String        @id @default(uuid())
+  profileId       String
+  position        Int           @default(0) // ordre de declaration (conflits de minimums)
+  tagId           String?
+  recipeId        String?
+  weight          Float         @default(1) // 0 a 2 : paliers ou mode avance [D184]
+  mealTime        MealTime? // null = tous les repas
+  frequencyMin    Int?
+  frequencyMax    Int?
+  frequencyPer    FrequencyPer?
+  tagCooldownDays Int?
+
+  profile MealGenerationProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  tag     Tag?                  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  recipe  Recipe?               @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@index([profileId])
+}
+
+/// Epinglage d'un tag sur un repas de la semaine ; jamais sur un repas exclu.
+model MealSlotPin {
+  profileId String
+  weekday   Weekday
+  mealTime  MealTime
+  tagId     String
+
+  profile MealGenerationProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  tag     Tag                   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([profileId, weekday, mealTime])
+}
+
+// =============================================================================
+// Notifications et activite (C6.1) [D41, D118, D190]
+// =============================================================================
+// Types et categories : cles texte declarees par le socle et les modules
+// (@fm/shared notifications), validees au demarrage. Pas d'enum en base.
+
+/// Notification d'un utilisateur. `count` : evenements regroupes par `groupKey`
+/// sur 24 h tant qu'elle n'est pas lue ("Sam et 2 autres") [D190].
+model Notification {
+  id         String    @id @default(uuid())
+  userId     String
+  spaceId    String?
+  moduleCode String?
+  type       String
+  category   String
+  actorId    String?
+  targetType String?
+  targetId   String?
+  data       Json? // parametres du message traduit cote client [D34]
+  url        String?
+  groupKey   String?
+  count      Int       @default(1)
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  user  User   @relation("NotificationRecipient", fields: [userId], references: [id], onDelete: Cascade)
+  actor User?  @relation("NotificationActor", fields: [actorId], references: [id], onDelete: SetNull)
+  space Space? @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt, createdAt])
+  @@index([userId, groupKey, createdAt])
+  @@index([createdAt])
+}
+
+/// Preference par categorie, globale (spaceId null) ou par espace [D118].
+/// Unicite par deux index partiels (migration).
+model NotificationPreference {
+  id        String   @id @default(uuid())
+  userId    String
+  spaceId   String?
+  category  String
+  enabled   Boolean  @default(true)
+  updatedAt DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  space Space? @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Fil d'activite d'un espace (F-SPC-7).
+model ActivityEvent {
+  id         String   @id @default(uuid())
+  spaceId    String
+  actorId    String?
+  moduleCode String?
+  type       String
+  targetType String?
+  targetId   String?
+  data       Json?
+  createdAt  DateTime @default(now())
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([spaceId, createdAt])
+}
+
+// =============================================================================
+// Changelog (C6.6) [D187, D127]
+// =============================================================================
+
+enum ChangelogStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
+}
+
+/// Version du changelog : brouillon cree au demarrage depuis release.json
+/// (commits classes par la CI), reformule et publie par l'admin dans A10.
+/// notifiedAt : date de la notification "nouvelle version". HIDDEN tient lieu
+/// de suppression (pas de deletedAt).
+model ChangelogEntry {
+  id          String          @id @default(uuid())
+  version     String          @unique
+  title       String
+  content     Json
+  status      ChangelogStatus @default(DRAFT)
+  publishedAt DateTime?
+  notifiedAt  DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([status, publishedAt])
+}
+
+// =============================================================================
+// Export de donnees (C6b.2) [D37, D192]
+// =============================================================================
+
+enum ExportScope {
+  MY_RECIPES
+  SPACE
+}
+
+enum ExportFormat {
+  JSON
+  MARKDOWN
+}
+
+enum ExportStatus {
+  PENDING
+  READY
+  FAILED
+  EXPIRED
+}
+
+/// Export de donnees [D37, D192] : ses recettes, ou tout l'espace (OWNER, un par
+/// espace sur 24 h glissantes). L'archive zip est generee par l'API juste apres
+/// la demande, gardee 24 h dans le stockage (fileKey), puis EXPIRED et effacee
+/// par la tache horaire. Supprime avec l'espace purge ou le compte supprime.
+model DataExport {
+  id            String       @id @default(uuid())
+  scope         ExportScope
+  requestedById String
+  spaceId       String?
+  format        ExportFormat @default(JSON)
+  includePhotos Boolean      @default(false)
+  status        ExportStatus @default(PENDING)
+  fileKey       String?
+  expiresAt     DateTime?
+  createdAt     DateTime     @default(now())
+
+  requestedBy User   @relation(fields: [requestedById], references: [id], onDelete: Cascade)
+  space       Space? @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+
+  @@index([spaceId, createdAt])
+  @@index([requestedById, createdAt])
+}

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Recherche Ctrl K</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:var(--bg)}
+</style>
+</helmet>
+<div class="fm-root" data-space="1" style="position: relative; min-height: 900px; display: flex; flex-wrap: wrap; align-items: stretch; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+<x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{me}}" active-id="f"></x-import>
+<div style="flex: 0 0 240px; display: flex; min-width: 0;">
+<x-import component-from-global-scope="ForestUI.ModuleNav" space-name="Famille" subtitle="6 membres" items="{{nav}}" active-id="plan" style="flex-grow: 1;"></x-import>
+</div>
+<div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column;">
+<x-import component-from-global-scope="ForestUI.TopBar" title="Planning" unread="{{three}}" user="Matthias"></x-import>
+<main style="padding: 24px;">
+<h1 style="margin: 0; font-family: var(--font-display); font-size: 26px; line-height: 32px;">Semaine du 2 au 8 novembre</h1>
+</main>
+</div>
+<div aria-hidden="true" style="position: absolute; inset: 0; background: var(--overlay);"></div>
+<div style="position: absolute; top: 96px; left: 50%; transform: translateX(-50%); width: min(560px, calc(100% - 32px));">
+<x-import component-from-global-scope="ForestUI.CommandPalette" default-query="gra" groups="{{groups}}"></x-import>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      three: 3,
+      groups: [
+        { label: 'Recettes', items: [
+          { id: 'r1', label: 'Gratin de pâtes', icon: 'book-open', hint: 'Foyer · par Léa' },
+          { id: 'r2', label: 'Gratin de pâtes au beurre', icon: 'git-branch', hint: 'Colloc · adaptation' }
+        ] },
+        { label: 'Ingrédients', items: [
+          { id: 'i1', label: 'Graines de sésame', icon: 'search', hint: '3 recettes' }
+        ] }
+      ],
+      me: { id: 'me', name: 'Matthias' },
+      spaces: [{ id: 'foyer', name: 'Foyer', tint: 5 }, { id: 'f', name: 'Famille', tint: 1 }, { id: 'c', name: 'Colloc', tint: 2 }, { id: 't', name: 'TOM', tint: 3 }, { id: 'a', name: 'Amis', tint: 4 }],
+      nav: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }, { id: 'members', label: 'Membres', icon: 'users' }, { id: 'settings', label: 'Réglages', icon: 'settings' }]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Espaces</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div class="fm-root" style="min-height: 1000px; display: flex; flex-wrap: wrap; align-items: stretch; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+  <dc-import name="AdminNav" active="espaces" hint-size="248px,1000px"></dc-import>
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px; max-width: 1192px;">
+    <header style="display: flex; flex-direction: column; gap: 4px;">
+      <h1 style="margin: 0; font-family: var(--font-display); font-size: 26px; line-height: 32px;">Espaces</h1>
+      <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">Les espaces sont privés : tu vois leurs informations générales, pas leur contenu. Ouvrir le contenu demande un motif de modération, enregistré dans le journal d'audit.</p>
+    </header>
+    <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
+      <x-import component-from-global-scope="ForestUI.Field" label="Rechercher un espace" placeholder="Nom de l'espace ou de son OWNER" style="flex: 1 1 320px;"></x-import>
+      <x-import component-from-global-scope="ForestUI.SegmentedControl" label="Filtrer les espaces" options="{{filters}}" default-value="groups"></x-import>
+    </div>
+    <div style="overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--surface-raised);">
+      <table style="width: 100%; min-width: 820px; border-collapse: collapse; font-size: 14px; line-height: 20px;">
+        <thead>
+          <tr style="text-align: left; color: var(--ink-muted); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase;">
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Espace</th>
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">OWNER</th>
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Membres</th>
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Recettes</th>
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">Modules</th>
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;">État</th>
+            <th style="padding: 10px 16px; border-bottom: 1px solid var(--line); font-weight: 600;"><span class="fm-sr">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <sc-for list="{{spaces}}" as="s" hint-placeholder-count="6">
+            <tr>
+              <td style="padding: 8px 16px; border-bottom: 1px solid var(--line);">
+                <span style="display: inline-flex; align-items: center; gap: 10px; font-weight: 600;"><x-import component-from-global-scope="ForestUI.Avatar" name="{{s.name}}" tint="{{s.tint}}" size="{{n32}}"></x-import>{{s.name}}</span>
+              </td>
+              <td style="padding: 8px 16px; border-bottom: 1px solid var(--line);">{{s.owner}}</td>
+              <td style="padding: 8px 16px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums;">{{s.members}}</td>
+              <td style="padding: 8px 16px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums;">{{s.recipes}}</td>
+              <td style="padding: 8px 16px; border-bottom: 1px solid var(--line); color: var(--ink-muted);">{{s.modules}}</td>
+              <td style="padding: 8px 16px; border-bottom: 1px solid var(--line);"><x-import component-from-global-scope="ForestUI.Badge" tone="{{s.tone}}">{{s.state}}</x-import></td>
+              <td style="padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap;">
+                <sc-if value="{{s.deleting}}" hint-placeholder-val="{{false}}"><x-import component-from-global-scope="ForestUI.Button" variant="ghost" size="sm">Restaurer</x-import></sc-if>
+                <a href="A09b-Moderation-motif.dc.html" class="fm-btn fm-btn-ghost fm-btn-sm" style="text-decoration: none;">Modérer…</a>
+              </td>
+            </tr>
+          </sc-for>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin: 0; font-size: 13px; line-height: 18px; color: var(--ink-muted);">« Restaurer » ne sert que sur demande de l'OWNER pendant les 30 jours ; à la purge, les recettes partagées ailleurs reviennent dans l'espace perso de leur auteur.</p>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const ok = { tone: 'success', state: 'Actif', deleting: false };
+    return {
+      n32: 32,
+      filters: [ { value: 'groups', label: 'Groupes (9)' }, { value: 'perso', label: 'Perso (34)' }, { value: 'deleting', label: 'En suppression (1)' } ],
+      spaces: [
+        { name: 'Famille', tint: 1, owner: 'Matthias', members: 6, recipes: 58, modules: 'Recettes, Planning', ...ok },
+        { name: 'TOM', tint: 3, owner: 'Jeanne', members: 11, recipes: 96, modules: 'Recettes', ...ok },
+        { name: 'Colloc', tint: 2, owner: 'Matthias', members: 3, recipes: 41, modules: 'Recettes', ...ok },
+        { name: 'Amis', tint: 4, owner: 'Paul', members: 5, recipes: 17, modules: 'Recettes', ...ok },
+        { name: 'Foyer', tint: 5, owner: 'Matthias', members: 2, recipes: 33, modules: 'Recettes, Planning (accordé)', ...ok },
+        { name: 'Vacances 2025', tint: 2, owner: 'Claire', members: 7, recipes: 12, modules: 'Recettes', tone: 'warning', state: 'Purge dans 12 j', deleting: true }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

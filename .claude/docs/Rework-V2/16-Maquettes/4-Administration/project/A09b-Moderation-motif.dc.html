@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Accès de modération à un espace</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div class="fm-root" style="min-height: 1000px; display: flex; flex-wrap: wrap; align-items: stretch; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+  <dc-import name="AdminNav" active="espaces" hint-size="248px,1000px"></dc-import>
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 20px; max-width: 1192px;">
+    <h1 style="margin: 0; font-family: var(--font-display); font-size: 26px; line-height: 32px;">Espaces</h1>
+    <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">TOM · OWNER Jeanne · 11 membres · 96 recettes</p>
+  </main>
+  <x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" title="Ouvrir le contenu de TOM" on-close="{{noop}}">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">Les espaces sont privés. Tu n'y accèdes que pour une modération, avec un motif.</p>
+      <div class="fm-field">
+        <label class="fm-label" for="reason">Motif</label>
+        <select id="reason" class="fm-input">
+          <option>Signalement d'un membre</option>
+          <option>Demande de l'OWNER</option>
+          <option>Contenu illicite signalé hors de l'application</option>
+          <option>Autre</option>
+        </select>
+      </div>
+      <x-import component-from-global-scope="ForestUI.Field" label="Précision" multiline="{{yes}}" default-value="Sam signale que la recette « Gâteau du week-end » contient des propos insultants envers un membre." hint="Obligatoire. Enregistrée dans le journal d'audit."></x-import>
+      <ul style="margin: 0; padding: 14px 16px 14px 34px; border-radius: var(--radius-md); background: var(--surface); font-size: 14px; line-height: 20px; display: flex; flex-direction: column; gap: 4px;">
+        <li>Accès en lecture seule pendant 30 minutes.</li>
+        <li>Seules les actions de modération sont possibles : masquer ou supprimer un contenu, avec le même motif.</li>
+        <li>Jeanne, OWNER de TOM, sera informée de cet accès et de son motif.</li>
+      </ul>
+      <div style="display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;">
+        <a href="A09-Espaces.dc.html" class="fm-btn fm-btn-secondary" style="text-decoration: none;">Annuler</a>
+        <x-import component-from-global-scope="ForestUI.Button" variant="primary" icon="lock">Ouvrir en lecture seule</x-import>
+      </div>
+    </div>
+  </x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { yes: true, noop: () => {} };
+  }
+}
+</script>
+</body>
+</html>

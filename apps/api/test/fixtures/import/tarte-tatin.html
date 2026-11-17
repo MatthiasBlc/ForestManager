@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <title>Tarte tatin - blog de fixtures</title>
+    <!-- Page de reference des imports (15-Plan-Tests S5) : JSON-LD dans un @graph,
+         une ligne a quantite en plage ("2 a 3") que l'editeur signale a verifier. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          { "@type": "WebPage", "name": "Tarte tatin" },
+          {
+            "@type": "Recipe",
+            "name": "Tarte tatin",
+            "recipeYield": "6 personnes",
+            "prepTime": "PT20M",
+            "cookTime": "PT45M",
+            "recipeIngredient": ["6 pommes", "100 g de sucre", "2 à 3 cuillères de beurre"],
+            "recipeInstructions": [
+              { "@type": "HowToStep", "text": "Faire un caramel avec le sucre et le beurre." },
+              { "@type": "HowToStep", "text": "Ranger les pommes, couvrir de pâte, cuire." }
+            ]
+          }
+        ]
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Tarte tatin</h1>
+  </body>
+</html>

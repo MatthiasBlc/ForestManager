@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Créer le planning</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div class="fm-root" data-space="5" style="width: 390px; height: 844px; position: relative; overflow: hidden; display: flex; flex-direction: column; container-type: inline-size; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+<x-import component-from-global-scope="ForestUI.TopBar" title="Planning" space="{{space}}" on-space="{{noop}}"></x-import>
+<div style="flex-grow: 1;"></div>
+<x-import component-from-global-scope="ForestUI.TabBar" items="{{tabs}}" active-id="plan"></x-import>
+<x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" contained="{{yes}}" title="Créer le planning" on-close="{{noop}}">
+<div style="display: flex; flex-direction: column; gap: 18px;">
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+<div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;">
+<span style="font-size: 14px; line-height: 20px; font-weight: 600;">Du</span>
+<button type="button" class="fm-input" aria-label="Du : lundi 2 novembre, ouvrir le calendrier" style="display: flex; align-items: center; gap: 8px; text-align: left; cursor: pointer; font-family: var(--font-sans);"><x-import component-from-global-scope="ForestUI.Icon" name="calendar" size="{{eighteen}}"></x-import><span style="flex-grow: 1; white-space: nowrap;">lun. 2 nov.</span></button>
+</div>
+<div style="display: flex; flex-direction: column; gap: 4px; min-width: 0;">
+<span style="font-size: 14px; line-height: 20px; font-weight: 600;">Au</span>
+<button type="button" class="fm-input" aria-label="Au : dimanche 8 novembre, ouvrir le calendrier" style="display: flex; align-items: center; gap: 8px; text-align: left; cursor: pointer; font-family: var(--font-sans);"><x-import component-from-global-scope="ForestUI.Icon" name="calendar" size="{{eighteen}}"></x-import><span style="flex-grow: 1; white-space: nowrap;">dim. 8 nov.</span></button>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<span style="font-size: 14px; line-height: 20px; font-weight: 600;">Repas à planifier</span>
+<div style="display: flex; flex-wrap: wrap; gap: 8px;">
+<x-import component-from-global-scope="ForestUI.Chip">Petit-déjeuner</x-import>
+<x-import component-from-global-scope="ForestUI.Chip" default-selected="{{yes}}">Midi</x-import>
+<x-import component-from-global-scope="ForestUI.Chip">Goûter</x-import>
+<x-import component-from-global-scope="ForestUI.Chip" default-selected="{{yes}}">Soir</x-import>
+</div>
+</div>
+<div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+<div style="display: flex; flex-direction: column;">
+<span style="font-size: 14px; line-height: 20px; font-weight: 600;">Portions par repas</span>
+<span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">Modifiable repas par repas</span>
+</div>
+<x-import component-from-global-scope="ForestUI.Stepper" label="Portions par repas" default-value="{{two}}" unit="pers."></x-import>
+</div>
+</div>
+<x-import component-from-global-scope="ForestUI.SheetFooter">
+<x-import component-from-global-scope="ForestUI.Button" variant="primary">Créer le planning</x-import>
+</x-import>
+</x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      yes: true, two: 2, eighteen: 18, noop: function () {},
+      space: { id: 'foyer', name: 'Foyer', tint: 5 },
+      tabs: [{ id: 'recipes', label: 'Recettes', icon: 'book-open' }, { id: 'plan', label: 'Planning', icon: 'calendar' }]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Comparer avec l'original, bureau</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&amp;family=Manrope:wght@400;500;600;700&amp;family=IBM+Plex+Mono:wght@500&amp;display=swap">
+<style>body{margin:0} a{color:var(--accent-text)} a:hover{color:var(--ink)}</style>
+</helmet>
+<div class="fm-root" data-space="2" style="container-type: inline-size; min-height: 900px; display: flex; flex-wrap: wrap; align-items: stretch; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+  <x-import component-from-global-scope="ForestUI.SpaceRail" spaces="{{spaces}}" personal="{{personal}}" active-id="c"></x-import>
+  <x-import component-from-global-scope="ForestUI.ModuleNav" space-name="Colloc" subtitle="3 membres" items="{{nav}}" active-id="recipes"></x-import>
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column;">
+    <x-import component-from-global-scope="ForestUI.TopBar" title="Comparer" unread="{{unread}}" user="Matthias Bouloc"></x-import>
+    <main style="padding: 24px; display: flex; flex-direction: column; gap: 16px; max-width: 1120px; width: 100%; box-sizing: border-box;">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+        <h1 style="margin: 0 auto 0 0; font: 700 26px/32px var(--font-display);">Comparer avec l'original</h1>
+        <x-import component-from-global-scope="ForestUI.Button" icon="pencil">Modifier l'adaptation</x-import>
+        <x-import component-from-global-scope="ForestUI.Button" variant="primary" icon="check">Marquer comme vu</x-import>
+      </div>
+      <div role="status" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 10px; background: var(--warning-soft); color: var(--warning-text); font-size: 14px; line-height: 20px;">
+        <x-import component-from-global-scope="ForestUI.Badge" tone="warning">Original modifié</x-import>
+        <span>Léa a changé sa recette le 2 novembre. Rien ne change ici tant que tu ne le reportes pas.</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+        <section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 14px; background: var(--surface-raised); border: 1px solid var(--line);">
+          <span class="fm-block-kind">Ton adaptation · Colloc</span>
+          <b style="font: 600 18px/24px var(--font-display);">Gratin de pâtes au beurre</b>
+          <span style="font-size: 14px; color: var(--ink-muted);">4 pers. · cuisson 25 min</span>
+          <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 15px; line-height: 22px;">
+            <li>500 g de pâtes</li>
+            <li style="background: var(--accent-soft); color: var(--accent-text); border-radius: 4px; padding: 0 4px;">10 g de beurre</li>
+            <li style="background: var(--accent-soft); color: var(--accent-text); border-radius: 4px; padding: 0 4px;">150 g de gruyère</li>
+            <li>1 gousse d'ail</li>
+          </ul>
+          <ol style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 15px; line-height: 22px;">
+            <li>Cuire les pâtes al dente.</li>
+            <li style="background: var(--warning-soft); border-radius: 4px; padding: 0 4px;">Enfourner 25 min à 200 °C.</li>
+          </ol>
+        </section>
+        <section style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line);">
+          <span class="fm-block-kind">Original · Foyer, par Léa · révision 3</span>
+          <b style="font: 600 18px/24px var(--font-display);">Gratin de pâtes</b>
+          <span style="font-size: 14px; color: var(--ink-muted);">4 pers. · cuisson 35 min</span>
+          <ul style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 15px; line-height: 22px;">
+            <li>500 g de pâtes</li>
+            <li>10 cl de crème fraîche</li>
+            <li>150 g d'emmental</li>
+            <li>1 gousse d'ail</li>
+          </ul>
+          <ol style="margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 15px; line-height: 22px;">
+            <li>Cuire les pâtes al dente.</li>
+            <li style="background: var(--warning-soft); border-radius: 4px; padding: 0 4px;">Enfourner 35 min à 200 °C.</li>
+            <li style="background: var(--warning-soft); border-radius: 4px; padding: 0 4px;">Gratiner 5 min sous le gril.</li>
+          </ol>
+        </section>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 14px; line-height: 20px; color: var(--ink-muted);">
+        <span><span style="display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--accent-soft); vertical-align: -1px;"></span> Changé par Colloc</span>
+        <span><span style="display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--warning-soft); vertical-align: -1px;"></span> Changé dans l'original depuis ton adaptation</span>
+        <a href="E-SUGGESTION-EDITION.dc.html">Proposer une de tes modifications à Léa</a>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      unread: 1,
+      personal: { id: 'me', name: 'Matthias' },
+      spaces: [
+        { id: 'foyer', name: 'Foyer', tint: 5 },
+        { id: 'f', name: 'Famille', tint: 1 },
+        { id: 'c', name: 'Colloc', tint: 2 },
+        { id: 't', name: 'TOM', tint: 3 },
+        { id: 'a', name: 'Amis', tint: 4 }
+      ],
+      nav: [
+        { id: 'recipes', label: 'Recettes', icon: 'book-open' },
+        { id: 'members', label: 'Membres', icon: 'users' },
+        { id: 'settings', label: 'Réglages', icon: 'settings' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

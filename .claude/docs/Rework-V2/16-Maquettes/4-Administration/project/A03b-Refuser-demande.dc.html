@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Refuser une demande d'accès</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div class="fm-root" style="min-height: 1000px; display: flex; flex-wrap: wrap; align-items: stretch; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+  <dc-import name="AdminNav" active="demandes" hint-size="248px,1000px"></dc-import>
+  <main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 32px 40px 48px; display: flex; flex-direction: column; gap: 24px; max-width: 1192px;">
+    <h1 style="margin: 0; font-family: var(--font-display); font-size: 26px; line-height: 32px;">Demandes d'accès aux modules</h1>
+    <article style="background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px; display: flex; gap: 14px;">
+      <x-import component-from-global-scope="ForestUI.Avatar" name="Colloc" tint="{{n2}}" size="{{n44}}"></x-import>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <b style="font-family: var(--font-display); font-size: 17px; line-height: 22px;">Colloc demande le Planning</b>
+        <span style="font-size: 14px; line-height: 20px; color: var(--ink-muted);">Demandée par Matthias, OWNER, il y a 2 jours</span>
+      </div>
+    </article>
+  </main>
+  <x-import component-from-global-scope="ForestUI.Sheet" open="{{yes}}" title="Refuser la demande de Colloc" on-close="{{noop}}">
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <p style="margin: 0; font-size: 15px; line-height: 22px; color: var(--ink-muted);">Matthias recevra une notification avec ce motif. Il pourra refaire une demande plus tard.</p>
+      <x-import component-from-global-scope="ForestUI.Field" label="Motif du refus" multiline="{{yes}}" default-value="Le Planning est en beta et limité pour l'instant aux espaces déjà actifs. Refais la demande dans un mois." hint="Obligatoire. Visible par l'OWNER et enregistré dans le journal d'audit."></x-import>
+      <div style="display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap;">
+        <a href="A03-Demandes.dc.html" class="fm-btn fm-btn-secondary" style="text-decoration: none;">Annuler</a>
+        <x-import component-from-global-scope="ForestUI.Button" variant="danger">Refuser la demande</x-import>
+      </div>
+    </div>
+  </x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { yes: true, n2: 2, n44: 44, noop: () => {} };
+  }
+}
+</script>
+</body>
+</html>

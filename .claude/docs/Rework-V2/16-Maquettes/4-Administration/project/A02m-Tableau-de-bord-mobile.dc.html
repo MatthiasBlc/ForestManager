@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Tableau de bord admin, mobile</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/forestui/tokens.css">
+<link rel="stylesheet" href="ds/forestui/components/bundle.css">
+<script src="ds/forestui/components/bundle.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:var(--accent-text)}a:hover{color:var(--ink)}
+</style>
+</helmet>
+<div class="fm-root" style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); font-family: var(--font-sans);">
+  <header style="display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 16px; min-height: 56px; border-bottom: 1px solid var(--line);">
+    <div style="width: 32px; height: 32px; border-radius: var(--radius-md); background: var(--accent); color: var(--on-accent); display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 13px;">FM</div>
+    <b style="flex: 1; font-family: var(--font-display); font-size: 18px; line-height: 24px;">Admin</b>
+    <x-import component-from-global-scope="ForestUI.IconButton" icon="bell" label="Notifications admin" count="{{n2}}"></x-import>
+    <x-import component-from-global-scope="ForestUI.IconButton" icon="more" label="Menu de l'administration"></x-import>
+  </header>
+  <div style="flex: 1; overflow: hidden; padding: 16px; display: flex; flex-direction: column; gap: 20px;">
+    <div style="display: flex; flex-direction: column; gap: 2px;">
+      <h1 style="margin: 0; font-family: var(--font-display); font-size: 24px; line-height: 30px;">Tableau de bord</h1>
+      <span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">Session admin, expire dans 24 min</span>
+    </div>
+    <section aria-labelledby="todo-m" style="display: flex; flex-direction: column; gap: 10px;">
+      <h2 id="todo-m" style="margin: 0; font-family: var(--font-display); font-size: 17px; line-height: 22px;">À traiter</h2>
+      <a href="A03-Demandes.dc.html" style="text-decoration: none; color: var(--ink); min-height: 64px; box-sizing: border-box; display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg);">
+        <span style="font-family: var(--font-display); font-size: 26px; line-height: 30px; font-weight: 700; color: var(--accent-text); min-width: 24px;">2</span>
+        <span style="flex: 1; display: flex; flex-direction: column;"><b style="font-size: 15px; line-height: 20px;">Demandes de modules</b><span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">Colloc, TOM : Planning</span></span>
+        <x-import component-from-global-scope="ForestUI.Icon" name="chevron-right"></x-import>
+      </a>
+      <a href="A05-Ingredients.dc.html" style="text-decoration: none; color: var(--ink); min-height: 64px; box-sizing: border-box; display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg);">
+        <span style="font-family: var(--font-display); font-size: 26px; line-height: 30px; font-weight: 700; color: var(--accent-text); min-width: 24px;">4</span>
+        <span style="flex: 1; display: flex; flex-direction: column;"><b style="font-size: 15px; line-height: 20px;">Nouveaux ingrédients</b><span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">1 doublon probable</span></span>
+        <x-import component-from-global-scope="ForestUI.Icon" name="chevron-right"></x-import>
+      </a>
+      <a href="A09-Espaces.dc.html" style="text-decoration: none; color: var(--ink); min-height: 64px; box-sizing: border-box; display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg);">
+        <span style="font-family: var(--font-display); font-size: 26px; line-height: 30px; font-weight: 700; color: var(--warning-text); min-width: 24px;">1</span>
+        <span style="flex: 1; display: flex; flex-direction: column;"><b style="font-size: 15px; line-height: 20px;">Espace en suppression</b><span style="font-size: 13px; line-height: 18px; color: var(--ink-muted);">Purge dans 12 jours</span></span>
+        <x-import component-from-global-scope="ForestUI.Icon" name="chevron-right"></x-import>
+      </a>
+    </section>
+    <section aria-labelledby="etat-m" style="display: flex; flex-direction: column; gap: 10px;">
+      <h2 id="etat-m" style="margin: 0; font-family: var(--font-display); font-size: 17px; line-height: 22px;">État des services</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <x-import component-from-global-scope="ForestUI.Badge" tone="warning">E-mails non configurés</x-import>
+        <x-import component-from-global-scope="ForestUI.Badge" tone="neutral">3 erreurs cette semaine</x-import>
+        <x-import component-from-global-scope="ForestUI.Badge" tone="success">Photos en ligne</x-import>
+        <x-import component-from-global-scope="ForestUI.Badge" tone="neutral">Version 2.0.0</x-import>
+      </div>
+    </section>
+    <section aria-labelledby="recent-m" style="display: flex; flex-direction: column; gap: 10px;">
+      <h2 id="recent-m" style="margin: 0; font-family: var(--font-display); font-size: 17px; line-height: 22px;">Dernières actions</h2>
+      <ul style="list-style: none; margin: 0; padding: 0; background: var(--surface-raised); border: 1px solid var(--line); border-radius: var(--radius-lg);">
+        <li style="padding: 10px 14px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column;"><span style="font-size: 14px; line-height: 20px;">Planning accordé à Foyer</span><span style="font-size: 12px; line-height: 16px; color: var(--ink-muted);">Aujourd'hui, 14 h 02</span></li>
+        <li style="padding: 10px 14px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column;"><span style="font-size: 14px; line-height: 20px;">« sauce soya » fusionné dans « sauce soja »</span><span style="font-size: 12px; line-height: 16px; color: var(--ink-muted);">Aujourd'hui, 11 h 40</span></li>
+        <li style="padding: 10px 14px; display: flex; flex-direction: column;"><span style="font-size: 14px; line-height: 20px;">Accès de modération à TOM</span><span style="font-size: 12px; line-height: 16px; color: var(--ink-muted);">Hier, 18 h 03</span></li>
+      </ul>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { n2: 2 };
+  }
+}
+</script>
+</body>
+</html>

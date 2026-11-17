@@ -1,54 +1,25 @@
-# Dependencies
+# Contexte de build Docker = racine du depot.
+# Les etapes prod copient des dossiers precis ; ce fichier allege le contexte.
+
 **/node_modules
-**/.pnp
-**/.pnp.js
-
-# Build outputs
 **/dist
-**/build
-**/.next
-**/out
-
-# Git
-**/.git
-**/.gitignore
-
-# Tests
-**/__tests__
-**/*.test.*
-**/*.spec.*
 **/coverage
+**/.vite
+**/.cache
+**/.eslintcache
+**/*.log
 
-# Documentation
-**/README.md
-**/docs
-
-# Environment files
+.git
+.husky
+.claude
 **/.env
 **/.env.*
-!**/.env.example
+!.env.example
 
-# IDE
-**/.vscode
-**/.idea
-**/*.swp
-**/*.swo
-
-# Logs
-**/logs
-**/*.log
-**/npm-debug.log*
-
-# OS files
+.vscode
+.idea
 **/.DS_Store
-**/Thumbs.db
+**/src/generated
 
-# Docker files (we don't need these in the context)
-**/docker-compose*.yml
-**/Dockerfile*
-**/.dockerignore
-
-# Misc
-**/.eslintcache
-**/.cache
-**/tmp
+**/test-results
+**/playwright-report
