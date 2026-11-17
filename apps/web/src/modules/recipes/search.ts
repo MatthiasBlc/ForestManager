@@ -18,6 +18,16 @@ export const RECIPE_SEARCH_GROUPS: Readonly<Record<string, SearchGroupView>> = {
       to: `/s/${item.spaceId}/recipes/${item.id}`,
     }),
   },
+  // Un tag ouvre la liste de l'espace filtree sur lui [D216].
+  "recipes.tags": {
+    label: "Tags",
+    render: (item) => ({
+      label: item.title,
+      icon: "tag",
+      hint: `${plural(Number(item.data.recipeCount ?? 0), "recette", "recettes")} · ${item.spaceName}`,
+      to: `/s/${item.spaceId}/recipes?tag=${item.id}`,
+    }),
+  },
   // Un ingredient ouvre la liste de l'espace filtree sur lui (nom porte par l'etat).
   "recipes.ingredients": {
     label: "Ingrédients",

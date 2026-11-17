@@ -232,6 +232,40 @@ describe("recherche globale (F-RECHERCHE)", () => {
     });
   });
 
+  it("un tag ouvre la liste de l'espace filtree sur lui (D216)", async () => {
+    const s = recipeServer({ recipes: [buildRecipe({ title: "Gratin" })] });
+    const veggie = s.recipes.globalTags[0]!;
+    searchServer(() => [
+      {
+        key: "recipes.tags",
+        items: [
+          {
+            id: veggie.id,
+            title: "Végétarien",
+            spaceId: s.space.id,
+            spaceName: "Famille",
+            data: { recipeCount: 2 },
+          },
+        ],
+      },
+    ]);
+    const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/members` });
+    await screen.findByRole("heading", { name: "Membres de Famille" });
+    await user.keyboard("{Control>}k{/Control}");
+    const dialog = await screen.findByRole("dialog", { name: "Recherche" });
+    await user.type(within(dialog).getByRole("combobox"), "vege");
+    const option = await within(dialog).findByRole("option", { name: /Végétarien/ });
+    expect(option).toHaveTextContent("2 recettes · Famille");
+    await user.click(option);
+
+    expect(
+      await screen.findByRole("button", { name: "Végétarien, retirer le filtre" })
+    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(s.recipes.queries.at(-1)?.get("tagIds")).toBe(veggie.id);
+    });
+  });
+
   it("une action ouvre sa feuille par l'adresse (inviter)", async () => {
     const s = recipeServer({ myRole: "OWNER" });
     searchServer(() => []);

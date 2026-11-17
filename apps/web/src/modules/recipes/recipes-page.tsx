@@ -17,7 +17,7 @@ import {
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router";
 
 import { meQuery, spaceQuery, spacesQuery } from "../../core/session/queries.ts";
@@ -277,6 +277,25 @@ export function RecipesPage() {
       { replace: true }
     );
   };
+  // Tag choisi dans la recherche globale (?tag=) [D216] : devient un filtre actif,
+  // une fois par arrivee, puis l'adresse est nettoyee.
+  const tagParam = params.get("tag");
+  const [seenTag, setSeenTag] = useState<string | null>(null);
+  if (tagParam !== seenTag) {
+    setSeenTag(tagParam);
+    if (tagParam) setTagIds([tagParam]);
+  }
+  useEffect(() => {
+    if (!tagParam) return;
+    setParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        next.delete("tag");
+        return next;
+      },
+      { replace: true }
+    );
+  }, [tagParam, setParams]);
   const q = useDebounced(search.trim());
   const online = useOnline();
   const guard = useWriteGuard();

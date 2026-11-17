@@ -137,6 +137,34 @@ describe("GET /search", () => {
     expect(group((await client.get("/search?q=pate")).body, "recipes.ingredients")).toEqual([]);
   });
 
+  it("trouve les tags de l'espace courant qui ont des recettes, avec leur nombre (D216)", async () => {
+    const lea = await createUser();
+    const famille = await createSpace(lea.id, { name: "Famille" });
+    const client = await loginAs(lea, app);
+    const base = `/spaces/${famille.id}/recipes`;
+    const hiver = (await client.post(`${base}/tags`, { name: "Hiver" })).body.id as string;
+    await client.post(`${base}/tags`, { name: "Hivernal" });
+    const gratin = await createRecipe(client, famille.id, { title: "Gratin" });
+    const soupe = await createRecipe(client, famille.id, { title: "Soupe" });
+    for (const recipe of [gratin, soupe]) {
+      await client.put(`${base}/${recipe.id}/space-tags`, { tagIds: [hiver] });
+    }
+
+    const res = await client.get(`/search?q=hiv&spaceId=${famille.id}`);
+    const tags = group(res.body, "recipes.tags");
+    // "Hivernal" n'a aucune recette : il ne donnerait rien.
+    expect(tags).toEqual([
+      expect.objectContaining({
+        id: hiver,
+        title: "Hiver",
+        spaceId: famille.id,
+        spaceName: "Famille",
+        data: { recipeCount: 2 },
+      }),
+    ]);
+    expect(group((await client.get("/search?q=hiv")).body, "recipes.tags")).toEqual([]);
+  });
+
   it("trouve les membres des espaces partages et les espaces par leur nom", async () => {
     const lea = await createUser({ username: "lea_m1" });
     const sam = await createUser({ username: "samuel_m1" });
