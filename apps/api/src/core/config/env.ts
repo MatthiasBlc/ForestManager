@@ -17,7 +17,7 @@ const envSchema = z
     /** Emails optionnels [D21] : sans SMTP_URL, `features.email` vaut false. */
     SMTP_URL: z.string().optional(),
     SMTP_FROM: z.string().default("Forest Manager <no-reply@forestmanager.local>"),
-    /** Nombre de proxys devant l'API (Traefik en preprod et prod). */
+    /** Nombre de proxys devant l'API : 2 en preprod et prod (Traefik, puis le nginx du front). */
     TRUST_PROXY: z.coerce.number().int().min(0).default(0),
     LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).optional(),
     /**
