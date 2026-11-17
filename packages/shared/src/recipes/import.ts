@@ -6,6 +6,7 @@ import {
   RECIPE_LINES_MAX,
   RECIPE_STEP_MAX,
   RECIPE_TITLE_MAX,
+  RECIPE_URL_MAX,
   RECIPE_YIELD_MAX,
 } from "../schemas/recipes.ts";
 
@@ -28,6 +29,8 @@ export interface ImportedRecipe {
   cookMinutes: number | null;
   restMinutes: number | null;
   sourceUrl: string | null;
+  /** Photo de la page, lien http(s) ; null pour un texte colle. */
+  imageUrl: string | null;
   ingredients: ImportedIngredient[];
   steps: string[];
 }
@@ -291,20 +294,88 @@ function yieldOf(value: unknown): number | null {
   return null;
 }
 
+// "sel, poivre", "sel et poivre noir" : sans quantite, une liste d'assaisonnements
+// donne une ligne "a gout" par assaisonnement (D4). Ailleurs, la virgule garde son
+// sens de precision ("oignon, emince").
+const SEASONING =
+  /^(?:sel(?: fin)?|gros sel|fleur de sel|poivre(?: noir| blanc| du moulin)?|noix de muscade|muscade|piment d['’]espelette|paprika|cumin|herbes de provence)$/iu;
+
+function splitSeasonings(ingredient: ImportedIngredient): ImportedIngredient[] {
+  if (ingredient.quantity !== null) return [ingredient];
+  const text = ingredient.note ? `${ingredient.name}, ${ingredient.note}` : ingredient.name;
+  const parts = text.split(/\s*,\s*|\s+et\s+/u).filter(Boolean);
+  if (parts.length < 2 || !parts.every((part) => SEASONING.test(part))) return [ingredient];
+  return parts.map((name) => ({
+    raw: ingredient.raw,
+    quantity: null,
+    unitCode: "to-taste",
+    name,
+    note: null,
+    check: false,
+  }));
+}
+
+// Formules de fin sans geste ("C'est pret !", "Deguster.") : pas des etapes (D13).
+const FILLER_STEP =
+  /^(?:c['’]est\s+pr[eê]ts?|d[ée]gust(?:er|ez)|bon\s+app[ée]tit|(?:et\s+)?voil[aà])\s*[!.…]*$/iu;
+
+/**
+ * Etapes coupees au milieu d'une phrase par la page ("Etaler la pate dans un
+ * moule," puis "la piquer...") : recousues (D13).
+ */
+function joinBrokenSteps(steps: readonly string[]): string[] {
+  const joined: string[] = [];
+  for (const step of steps) {
+    const previous = joined.at(-1);
+    if (previous !== undefined && (/[,;:]$/u.test(previous) || /^\p{Ll}/u.test(step))) {
+      joined[joined.length - 1] = `${previous} ${step}`;
+    } else {
+      joined.push(step);
+    }
+  }
+  return joined;
+}
+
+// Suffixes publicitaires des titres ("Quiche lorraine : la meilleure recette").
+const TITLE_SUFFIX =
+  /\s*[:|–—-]\s*(?:la\s+)?(?:meilleure\s+recette|recette\s+(?:facile|rapide|inratable|traditionnelle|originale|maison|de\s+grand-m[eè]re))\b.*$/iu;
+
+function cleanTitle(title: string): string {
+  return title.replace(TITLE_SUFFIX, "").trim() || title;
+}
+
 const stripStepNumber = (step: string) =>
   step.replace(/^(?:[ée]tape\s*\d+\s*[:.)-]?|\d+\s*[.)])\s*/iu, "").trim();
 
 function finish(recipe: ImportedRecipe): ImportedRecipe {
   return {
     ...recipe,
-    title: recipe.title ? clip(recipe.title, RECIPE_TITLE_MAX) : null,
-    ingredients: recipe.ingredients.filter((i) => i.name).slice(0, RECIPE_LINES_MAX),
-    steps: recipe.steps
-      .map(stripStepNumber)
-      .filter(Boolean)
+    title: recipe.title ? clip(cleanTitle(recipe.title), RECIPE_TITLE_MAX) : null,
+    ingredients: recipe.ingredients
+      .filter((i) => i.name)
+      .flatMap(splitSeasonings)
+      .slice(0, RECIPE_LINES_MAX),
+    steps: joinBrokenSteps(
+      recipe.steps.map(stripStepNumber).filter((step) => step && !FILLER_STEP.test(step))
+    )
       .map((step) => clip(step, RECIPE_STEP_MAX))
       .slice(0, RECIPE_LINES_MAX),
   };
+}
+
+/** Premiere photo http(s) : lien, tableau, ImageObject ({ url }). */
+function imageOf(value: unknown, depth = 0): string | null {
+  if (depth > 3 || !value) return null;
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const found = imageOf(item, depth + 1);
+      if (found) return found;
+    }
+    return null;
+  }
+  if (typeof value === "object") return imageOf((value as Record<string, unknown>).url, depth + 1);
+  const url = textOf(value).trim();
+  return /^https?:\/\/\S+$/i.test(url) && url.length <= RECIPE_URL_MAX ? url : null;
 }
 
 /** Recette JSON-LD -> recette importee. */
@@ -321,6 +392,7 @@ export function fromJsonLd(recipe: unknown, sourceUrl: string | null): ImportedR
     cookMinutes: cook,
     restMinutes: null,
     sourceUrl,
+    imageUrl: imageOf(data.image),
     ingredients: (Array.isArray(lines) ? lines : [])
       .map(textOf)
       .filter(Boolean)
@@ -339,7 +411,15 @@ const SERVINGS = [
   /^(?:pour\s+)?(\d+)\s*(?:personnes?|pers\.?|parts?|portions?|couverts?)\b/iu,
   /^(?:portions?|parts?|personnes?|nombre de personnes)\s*:?\s*(\d+)/iu,
 ];
-const TIME = /^(pr[ée]paration|cuisson|repos|temps(?:\s+total)?)\s*:?\s*(.+)$/iu;
+const TIME_KIND = "pr[ée]paration|cuisson|repos|temps(?:\\s+total)?";
+const TIME_VALUE =
+  "\\d+\\s*h(?:eures?)?(?:\\s*\\d+\\s*(?:min(?:utes?)?)?)?|\\d+\\s*min(?:utes?|\\.)?";
+// Une ou plusieurs durees sur la ligne ("Preparation : 20 min - Cuisson : 1 h 15", D5).
+const TIME_ITEM = new RegExp(`(${TIME_KIND})\\s*:?\\s*(${TIME_VALUE})`, "giu");
+const TIME_LINE = new RegExp(
+  `^(?:(?:${TIME_KIND})\\s*:?\\s*(?:${TIME_VALUE}))(?:\\s*[-–—|/,;•·]?\\s*(?:${TIME_KIND})\\s*:?\\s*(?:${TIME_VALUE}))*\\s*$`,
+  "iu"
+);
 const NUMBERED_STEP = /^(?:[ée]tape\s*\d+|\d+\s*[.)])\s/iu;
 
 function looksLikeIngredient(line: string): boolean {
@@ -359,6 +439,7 @@ export function parseRecipeText(text: string): ImportedRecipe {
     cookMinutes: null,
     restMinutes: null,
     sourceUrl: null,
+    imageUrl: null,
     ingredients: [],
     steps: [],
   };
@@ -383,14 +464,16 @@ export function parseRecipeText(text: string): ImportedRecipe {
       recipe.yieldQuantity = Number(servings[1]);
       continue;
     }
-    const time = TIME.exec(line);
-    const minutes = time?.[2] ? parseTextDuration(time[2]) : null;
-    if (time?.[1] && minutes !== null) {
-      const kind = time[1].toLowerCase();
-      if (kind.startsWith("cuisson")) recipe.cookMinutes = minutes;
-      else if (kind.startsWith("repos")) recipe.restMinutes = minutes;
-      else if (kind.startsWith("temps")) recipe.prepMinutes ??= minutes;
-      else recipe.prepMinutes = minutes;
+    if (TIME_LINE.test(line)) {
+      for (const [, kindText = "", value = ""] of line.matchAll(TIME_ITEM)) {
+        const minutes = parseTextDuration(value);
+        if (minutes === null) continue;
+        const kind = kindText.toLowerCase();
+        if (kind.startsWith("cuisson")) recipe.cookMinutes = minutes;
+        else if (kind.startsWith("repos")) recipe.restMinutes = minutes;
+        else if (kind.startsWith("temps")) recipe.prepMinutes ??= minutes;
+        else recipe.prepMinutes = minutes;
+      }
       continue;
     }
     const empty = recipe.ingredients.length === 0 && recipe.steps.length === 0;

@@ -108,13 +108,12 @@ function decompress(res: http.IncomingMessage): Readable {
   return res;
 }
 
-function readText(res: http.IncomingMessage, maxBytes: number): Promise<string> {
+function readBytes(res: http.IncomingMessage, maxBytes: number): Promise<Buffer> {
   const declared = Number(res.headers["content-length"] ?? 0);
   if (declared > maxBytes) {
     res.destroy();
     return Promise.reject(new PageFetchError("UNREACHABLE", "too large"));
   }
-  const charset = /charset=["']?([\w-]+)/i.exec(res.headers["content-type"] ?? "")?.[1];
   const stream = decompress(res);
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
@@ -133,21 +132,34 @@ function readText(res: http.IncomingMessage, maxBytes: number): Promise<string> 
     stream.on("error", fail);
     res.on("error", fail);
     stream.on("end", () => {
-      const body = Buffer.concat(chunks);
-      try {
-        resolve(new TextDecoder(charset ?? "utf-8").decode(body));
-      } catch {
-        resolve(new TextDecoder("utf-8").decode(body)); // jeu de caracteres inconnu
-      }
+      resolve(Buffer.concat(chunks));
     });
   });
 }
 
-export function createPageFetcher(options: PageFetcherOptions = {}): PageFetcher {
+async function readText(res: http.IncomingMessage, maxBytes: number): Promise<string> {
+  const charset = /charset=["']?([\w-]+)/i.exec(res.headers["content-type"] ?? "")?.[1];
+  const body = await readBytes(res, maxBytes);
+  try {
+    return new TextDecoder(charset ?? "utf-8").decode(body);
+  } catch {
+    return new TextDecoder("utf-8").decode(body); // jeu de caracteres inconnu
+  }
+}
+
+/**
+ * Ressource http(s) lue apres les redirections, par le meme chemin protege :
+ * `accept` est envoye au serveur, `expected` verifie le type recu.
+ */
+function createFetcher<T>(
+  options: PageFetcherOptions,
+  defaults: { maxBytes: number; accept: string },
+  read: (res: http.IncomingMessage, url: string, maxBytes: number) => Promise<T>
+): (input: string) => Promise<T> {
   const {
     allowLoopback = false,
     timeoutMs = 10_000,
-    maxBytes = 3 * 1024 * 1024,
+    maxBytes = defaults.maxBytes,
     maxRedirects = 5,
   } = options;
   const allowed = (address: string) =>
@@ -192,7 +204,7 @@ export function createPageFetcher(options: PageFetcherOptions = {}): PageFetcher
           signal,
           headers: {
             "user-agent": "ForestManager/2.0 (import de recettes)",
-            accept: "text/html,application/xhtml+xml;q=0.9,*/*;q=0.5",
+            accept: defaults.accept,
             "accept-language": "fr,en;q=0.5",
             "accept-encoding": "gzip, deflate, br",
           },
@@ -230,12 +242,48 @@ export function createPageFetcher(options: PageFetcherOptions = {}): PageFetcher
         res.resume();
         throw new PageFetchError("UNREACHABLE", String(status));
       }
+      return read(res, url.toString(), maxBytes);
+    }
+    throw new PageFetchError("UNREACHABLE", "too many redirects");
+  };
+}
+
+export function createPageFetcher(options: PageFetcherOptions = {}): PageFetcher {
+  return createFetcher(
+    options,
+    { maxBytes: 3 * 1024 * 1024, accept: "text/html,application/xhtml+xml;q=0.9,*/*;q=0.5" },
+    async (res, url, maxBytes) => {
       if (!/html/i.test(res.headers["content-type"] ?? "")) {
         res.destroy();
         throw new PageFetchError("NOT_HTML");
       }
-      return { url: url.toString(), html: await readText(res, maxBytes) };
+      return { url, html: await readText(res, maxBytes) };
     }
-    throw new PageFetchError("UNREACHABLE", "too many redirects");
-  };
+  );
+}
+
+export interface FetchedImage {
+  contentType: string;
+  body: Buffer;
+}
+
+export type ImageFetcher = (url: string) => Promise<FetchedImage>;
+
+/** Types d'image que le navigateur sait reconvertir avant l'envoi (D13). */
+const IMAGE_TYPES = /^image\/(jpeg|png|webp|gif|avif)$/i;
+
+/** Photo d'une recette importee : meme protection, 8 Mo au plus. */
+export function createImageFetcher(options: PageFetcherOptions = {}): ImageFetcher {
+  return createFetcher(
+    options,
+    { maxBytes: 8 * 1024 * 1024, accept: "image/avif,image/webp,image/jpeg,image/png;q=0.9" },
+    async (res, _url, maxBytes) => {
+      const contentType = (res.headers["content-type"] ?? "").split(";")[0]?.trim() ?? "";
+      if (!IMAGE_TYPES.test(contentType)) {
+        res.destroy();
+        throw new PageFetchError("NOT_HTML", "not an image");
+      }
+      return { contentType: contentType.toLowerCase(), body: await readBytes(res, maxBytes) };
+    }
+  );
 }

@@ -8,8 +8,8 @@ export interface DraftLocalBlock {
   kind: "LOCAL";
   key: string;
   title: string;
-  /** `note` et `optional` ne sont pas edites ici, mais gardes tels quels. */
-  lines: (IngredientLine & { key: string; note?: string | null; optional?: boolean })[];
+  /** `optional` n'est pas edite ici, mais garde tel quel ; `check` marque une ligne importee douteuse. */
+  lines: (IngredientLine & { key: string; optional?: boolean; check?: boolean })[];
   steps: { key: string; text: string }[];
 }
 
@@ -165,6 +165,7 @@ export function draftFromImport(imported: ImportedRecipe, units: readonly Unit[]
             name: line.name,
             ingredientId: null,
             note: line.note,
+            check: line.check,
           })),
           emptyLine(),
         ],
@@ -255,7 +256,7 @@ export function draftToBody(draft: Draft, ids: ReadonlyMap<string, string>): Cre
                 ingredientId: line.ingredientId ?? ids.get(line.key) ?? "",
                 quantity: parseQuantity(line.quantity),
                 unitId: line.unitId || null,
-                note: line.note ?? null,
+                note: line.note?.trim() || null,
                 optional: line.optional ?? false,
               })),
             steps: block.steps.map((step) => step.text.trim()).filter(Boolean),

@@ -77,6 +77,15 @@ async function send(method: string, path: string, body?: unknown): Promise<Respo
   }
 }
 
+function failure(res: Response, json: unknown): ApiRequestError {
+  const parsed = apiErrorSchema.safeParse(json);
+  if (parsed.success) {
+    const { code, message, details } = parsed.data.error;
+    return new ApiRequestError(code, res.status, message, details);
+  }
+  return new ApiRequestError("COMMON_001", res.status, "Une erreur inattendue est survenue.");
+}
+
 async function request<T extends z.ZodType | undefined>(
   method: string,
   path: string,
@@ -86,14 +95,7 @@ async function request<T extends z.ZodType | undefined>(
   const res = await send(method, path, body);
   const text = await res.text();
   const json: unknown = text ? JSON.parse(text) : undefined;
-  if (!res.ok) {
-    const parsed = apiErrorSchema.safeParse(json);
-    if (parsed.success) {
-      const { code, message, details } = parsed.data.error;
-      throw new ApiRequestError(code, res.status, message, details);
-    }
-    throw new ApiRequestError("COMMON_001", res.status, "Une erreur inattendue est survenue.");
-  }
+  if (!res.ok) throw failure(res, json);
   if (!schema) return undefined as never;
   const result = schema.safeParse(json);
   if (!result.success) {
@@ -117,4 +119,17 @@ export const api = {
     request("PUT", path, body, schema as T),
   delete: <T extends z.ZodType | undefined = undefined>(path: string, body?: unknown, schema?: T) =>
     request("DELETE", path, body, schema as T),
+  /** Reponse binaire (photo d'une recette importee, D13). */
+  postForBlob: async (path: string, body?: unknown): Promise<Blob> => {
+    const res = await send("POST", path, body);
+    if (res.ok) return res.blob();
+    const text = await res.text();
+    let json: unknown;
+    try {
+      json = text ? JSON.parse(text) : undefined;
+    } catch {
+      json = undefined;
+    }
+    throw failure(res, json);
+  },
 };

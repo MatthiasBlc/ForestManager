@@ -9,7 +9,7 @@ import type { Mailer } from "./mail/mailer.ts";
 import type { ErrorTracking } from "./monitoring/error-tracking.ts";
 import type { LifecycleHooks } from "./modules/hooks.ts";
 import type { ApiModule } from "./modules/registry.ts";
-import type { PageFetcher } from "./net/page-fetcher.ts";
+import type { ImageFetcher, PageFetcher } from "./net/page-fetcher.ts";
 import type { Realtime } from "./realtime/hub.ts";
 import type { Storage } from "./storage/storage.ts";
 
@@ -22,6 +22,8 @@ export interface Context {
   storage: Storage | null;
   /** Lecture des pages web (import de recettes), protegee contre le SSRF. */
   fetchPage: PageFetcher;
+  /** Photo d'une recette importee, meme protection (D13). */
+  fetchImage: ImageFetcher;
   hasher: PasswordHasher;
   /** Connexion avec Discord ; null sans DISCORD_CLIENT_ID / SECRET [D210]. */
   discord: DiscordClient | null;

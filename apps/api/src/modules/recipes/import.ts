@@ -11,7 +11,11 @@ import {
 
 import type { Context } from "../../core/context.ts";
 import { AppError } from "../../core/http/errors.ts";
-import { PageFetchError, type FetchedPage } from "../../core/net/page-fetcher.ts";
+import {
+  PageFetchError,
+  type FetchedImage,
+  type FetchedPage,
+} from "../../core/net/page-fetcher.ts";
 
 const FAILURES = {
   BLOCKED: "RECIPE_015",
@@ -30,4 +34,19 @@ export async function importFromUrl(ctx: Context, url: string): Promise<Imported
   const recipe = findJsonLdRecipe(extractJsonLd(page.html));
   if (!recipe) throw new AppError("RECIPE_017");
   return fromJsonLd(recipe, page.url.length <= RECIPE_URL_MAX ? page.url : url);
+}
+
+/**
+ * Photo d'une recette importee (D13) : lue par l'API (meme anti-SSRF), renvoyee
+ * telle quelle au navigateur, qui la convertit et l'envoie comme une photo choisie.
+ */
+export async function importImage(ctx: Context, url: string): Promise<FetchedImage> {
+  try {
+    return await ctx.fetchImage(url);
+  } catch (error) {
+    if (error instanceof PageFetchError) {
+      throw new AppError(error.reason === "BLOCKED" ? "RECIPE_015" : "RECIPE_016");
+    }
+    throw error;
+  }
 }

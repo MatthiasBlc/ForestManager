@@ -23,6 +23,8 @@ import { PageChrome } from "../../core/shell/page-chrome.tsx";
 import { spaceQuery } from "../../core/session/queries.ts";
 import { errorMessage } from "../../i18n/index.ts";
 import { api } from "../../lib/api.ts";
+import { uploadImage } from "../../lib/upload.ts";
+import { useUploadsEnabled } from "../../patterns/use-uploads.ts";
 import { ImagePicker } from "../../patterns/image-picker.tsx";
 import { TopBar } from "../../patterns/top-bar.tsx";
 import { Button, IconButton } from "../../ui/button.tsx";
@@ -59,7 +61,7 @@ import {
 import { scaledAmount } from "./format.ts";
 import { useOnline } from "../../pwa/use-online.ts";
 import type { RecipePrefill } from "./prefill.ts";
-import { RecipeNotFound, RecipeUnavailable } from "./recipe-page.tsx";
+import { RecipeReadOnly, RecipeUnavailable } from "./recipe-page.tsx";
 import {
   globalTagsQuery,
   recipeFailure,
@@ -185,10 +187,13 @@ function BlockEditor({
               units={units}
               error={errors[line.key]}
               mark={markOf(marks[line.key], units)}
+              check={line.check}
               onChange={(value) => {
                 onChange({
                   ...block,
-                  lines: block.lines.map((l) => (l.key === line.key ? { ...l, ...value } : l)),
+                  lines: block.lines.map((l) =>
+                    l.key === line.key ? { ...l, ...value, check: false } : l
+                  ),
                 });
               }}
               onRemove={
@@ -423,7 +428,10 @@ function Editor({
   const [base] = useState(() => (suggest && recipe ? draftFromRecipe(recipe) : null));
   const marks = base ? suggestionMarks(base, draft) : {};
   const toCheck = imported?.ingredients.filter((line) => line.check).length ?? 0;
-  const [errors, setErrors] = useState<DraftErrors>({ lines: {} });
+  // Erreurs montrees apres un premier essai d'enregistrement, puis recalculees a
+  // chaque saisie : une erreur corrigee disparait aussitot (D3).
+  const [submitted, setSubmitted] = useState(false);
+  const errors: DraftErrors = submitted ? draftErrors(draft) : { lines: {} };
   const [failure, setFailure] = useState<string>();
   const [saving, setSaving] = useState(false);
   const online = useOnline();
@@ -431,6 +439,29 @@ function Editor({
   const [addOpen, setAddOpen] = useState(false);
   const [linkOpen, setLinkOpen] = useState(false);
   const [photo, setPhoto] = useState<PendingPhoto | null>(null);
+
+  // Import par lien : la photo de la page est reprise comme une photo choisie (D13).
+  // Facultative : un echec laisse simplement la recette sans photo.
+  const uploads = useUploadsEnabled();
+  const importedImage = recipe ? null : (imported?.imageUrl ?? null);
+  useEffect(() => {
+    if (!importedImage || !uploads) return;
+    const run = { cancelled: false };
+    void (async () => {
+      try {
+        const image = await api.postForBlob(`/spaces/${spaceId}/recipes/import/image`, {
+          url: importedImage,
+        });
+        const uploadId = await uploadImage(image, "photo");
+        if (!run.cancelled) setPhoto({ uploadId, preview: URL.createObjectURL(image) });
+      } catch {
+        // Photo injoignable ou illisible : rien a signaler.
+      }
+    })();
+    return () => {
+      run.cancelled = true;
+    };
+  }, [importedImage, uploads, spaceId]);
 
   // Apercu local d'une photo en attente : libere quand elle change ou a la sortie.
   useEffect(
@@ -458,7 +489,7 @@ function Editor({
 
   const save = async () => {
     const found = draftErrors(draft);
-    setErrors(found);
+    setSubmitted(true);
     setFailure(undefined);
     if (hasErrors(found)) return;
     setSaving(true);
@@ -608,7 +639,8 @@ function Editor({
         <FormAlert message={failure} />
         {suggest && recipe ? (
           <>
-            <p role="status" className="m-0 rounded-md bg-accent-soft px-3 py-2 text-accent-text">
+            {/* Information, pas une alerte : couleur secondaire, pas l'accent (rouge en Potager) [R11]. */}
+            <p role="status" className="m-0 rounded-md bg-second-soft px-3 py-2 text-second-text">
               Mode suggestion : {recipe.author.username} verra tes changements et décidera.
             </p>
             <Field
@@ -837,7 +869,9 @@ export function RecipeEditorPage({ suggest = false }: { suggest?: boolean }) {
   }
   if (!space.data || !units.data || (recipeId && !recipe.data)) return <Skeleton />;
   // Modifier : le droit de modifier ; suggerer : tout membre sauf l'auteur (API, RECIPE_012).
-  if (recipe.data && !suggest && !recipe.data.can.edit) return <RecipeNotFound spaceId={spaceId} />;
+  if (recipe.data && !suggest && !recipe.data.can.edit) {
+    return <RecipeReadOnly spaceId={spaceId} recipe={recipe.data} />;
+  }
   return (
     <Editor
       key={recipe.data ? `${recipe.data.id}@${recipe.data.currentRevision}` : "new"}

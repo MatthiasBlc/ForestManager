@@ -40,6 +40,8 @@ const NOT_FOUND = "00000000-0000-4000-8000-000000000000";
 
 // Import sans reseau : une page avec une recette JSON-LD.
 const app = createTestApp({
+  fetchImage: () =>
+    Promise.resolve({ contentType: "image/jpeg", body: Buffer.from([0xff, 0xd8, 0xff]) }),
   fetchPage: (url) =>
     Promise.resolve({
       url,
@@ -102,6 +104,7 @@ const B2_MIN_ROLE: Record<RecipeKey, SpaceRole> = {
 const B2_ROUTES: Record<string, RecipeKey> = {
   "GET /": "recipes.view",
   "POST /import": "recipes.create",
+  "POST /import/image": "recipes.create",
   "POST /": "recipes.create",
   "GET /mine": "recipes.view",
   "POST /add-mine/preview": "recipes.create",
@@ -223,6 +226,8 @@ type Call = (c: Client, s: Scenario) => Promise<Response>;
 const CALLS: Record<string, Call> = {
   "GET /": (c, s) => c.get(s.base),
   "POST /import": (c, s) => c.post(`${s.base}/import`, { url: "https://example.org/soupe" }),
+  "POST /import/image": (c, s) =>
+    c.post(`${s.base}/import/image`, { url: "https://example.org/soupe.jpg" }),
   "POST /": async (c, s) => c.post(s.base, await recipeBody(s.subject)),
   "GET /mine": (c, s) => c.get(`${s.base}/mine`),
   "POST /add-mine/preview": async (c, s) =>

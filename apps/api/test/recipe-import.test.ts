@@ -6,7 +6,11 @@ import { gzipSync } from "node:zlib";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { createPageFetcher, isPublicAddress } from "../src/core/net/page-fetcher.ts";
+import {
+  createImageFetcher,
+  createPageFetcher,
+  isPublicAddress,
+} from "../src/core/net/page-fetcher.ts";
 import { createTestApp, createClient, loginAs } from "./helpers/app.ts";
 import { db } from "./helpers/db.ts";
 import { createSpace, createUser } from "./helpers/factories.ts";
@@ -18,6 +22,8 @@ const RECIPE_PAGE = `<!doctype html><html><head><title>Curry</title>
 "recipeIngredient":["2 pièce(s) Aubergine","selon le goût Poivre et sel"],
 "recipeInstructions":[{"@type":"HowToStep","text":"Couper l'aubergine."}]}]}</script>
 </head><body>...</body></html>`;
+
+const PHOTO = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3, 4]);
 
 let server: Server;
 let base = "";
@@ -31,6 +37,12 @@ beforeAll(async () => {
     switch (req.url) {
       case "/recipe":
         send(200, RECIPE_PAGE);
+        break;
+      case "/photo.jpg":
+        send(200, PHOTO, { "content-type": "image/jpeg" });
+        break;
+      case "/to-photo":
+        send(302, "", { location: "/photo.jpg" });
         break;
       case "/gzip":
         send(200, gzipSync(RECIPE_PAGE), { "content-encoding": "gzip" });
@@ -85,6 +97,7 @@ afterAll(async () => {
 // Le serveur de fixtures est local : seule l'adresse de bouclage est permise en plus.
 const app = createTestApp({
   fetchPage: createPageFetcher({ allowLoopback: true, timeoutMs: 1500 }),
+  fetchImage: createImageFetcher({ allowLoopback: true, timeoutMs: 1500 }),
 });
 
 async function member() {
@@ -130,7 +143,8 @@ describe("POST /spaces/:id/recipes/import", () => {
       sourceUrl: `${base}/recipe`,
       steps: ["Couper l'aubergine."],
     });
-    expect(res.body.ingredients).toHaveLength(2);
+    // "Poivre et sel" donne deux lignes a gout (D4).
+    expect(res.body.ingredients).toHaveLength(3);
     expect(await db.recipe.count({ where: { homeSpaceId: m.space.id } })).toBe(0);
   });
 
@@ -195,6 +209,34 @@ describe("POST /spaces/:id/recipes/import", () => {
       (await anonymous.post(`/spaces/${m.space.id}/recipes/import`, { url: `${base}/recipe` })).body
         .error.code
     ).toBe("AUTH_001");
+  });
+});
+
+describe("POST /spaces/:id/recipes/import/image (D13)", () => {
+  it("renvoie la photo de la page, par le meme chemin protege", async () => {
+    const m = await member();
+    const res = await m.client
+      .post(`/spaces/${m.space.id}/recipes/import/image`, { url: `${base}/to-photo` })
+      .buffer(true);
+    expect(res.status).toBe(200);
+    expect(res.headers["content-type"]).toBe("image/jpeg");
+    expect(Buffer.compare(res.body as Buffer, PHOTO)).toBe(0);
+  });
+
+  it("refuse ce qui n'est pas une image, une adresse locale, un non-membre", async () => {
+    const m = await member();
+    const image = (url: string) =>
+      m.client.post(`/spaces/${m.space.id}/recipes/import/image`, { url });
+    expect((await image(`${base}/recipe`)).body.error.code).toBe("RECIPE_016");
+    expect((await image(`${base}/to-private`)).body.error.code).toBe("RECIPE_015");
+    const outsider = await loginAs(await createUser(), app);
+    expect(
+      (
+        await outsider.post(`/spaces/${m.space.id}/recipes/import/image`, {
+          url: `${base}/photo.jpg`,
+        })
+      ).body.error.code
+    ).toBe("SPACE_001");
   });
 });
 

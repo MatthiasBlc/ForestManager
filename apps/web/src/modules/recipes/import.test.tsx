@@ -3,13 +3,16 @@
 import { errorBody, type ImportedRecipe } from "@fm/shared";
 import { screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../../app/App.tsx";
 import { unitId } from "../../test/fixtures.ts";
 import { recipeServer } from "../../test/recipe-server.ts";
 import { renderWithProviders } from "../../test/render.tsx";
 import { server } from "../../test/server.ts";
+import { mockUploads } from "../../test/uploads.ts";
+
+vi.mock("../../lib/image.ts", () => import("../../test/fake-image.ts"));
 
 beforeEach(() => {
   localStorage.clear();
@@ -22,6 +25,7 @@ const CURRY: ImportedRecipe = {
   cookMinutes: 25,
   restMinutes: null,
   sourceUrl: "https://exemple.fr/curry",
+  imageUrl: null,
   ingredients: [
     {
       raw: "2 c. à soupe d'huile",
@@ -83,6 +87,21 @@ describe("importer un lien (F-IMPORT-URL)", () => {
     expect(screen.getByLabelText("Source (lien)")).toHaveValue("https://exemple.fr/curry");
     expect(screen.getByLabelText("Étape 2")).toHaveValue("Cuire 25 min.");
 
+    // D2 : la ligne douteuse porte son badge, qui tombe des qu'on la touche (D103).
+    const persil = screen.getByRole("group", { name: "Ingrédient 3" });
+    expect(within(persil).getByText("À vérifier")).toBeInTheDocument();
+    expect(
+      within(screen.getByRole("group", { name: "Ingrédient 1" })).queryByText("À vérifier")
+    ).not.toBeInTheDocument();
+    // D4 : la precision importee se lit et se modifie.
+    const oignon = screen.getByRole("group", { name: "Ingrédient 2" });
+    const note = within(oignon).getByLabelText("Précision");
+    expect(note).toHaveValue("émincé");
+    await user.clear(note);
+    await user.type(note, "haché");
+    await user.type(within(persil).getByLabelText("Quantité"), "1");
+    expect(within(persil).queryByText("À vérifier")).not.toBeInTheDocument();
+
     await user.click(screen.getByRole("button", { name: "Enregistrer" }));
     expect(await screen.findByRole("heading", { name: "Curry d'aubergine" })).toBeInTheDocument();
     const body = s.recipes.bodies.create as Record<string, unknown> & {
@@ -98,9 +117,38 @@ describe("importer un lien (F-IMPORT-URL)", () => {
     });
     expect(body.blocks[0]?.ingredients).toMatchObject([
       { quantity: 2, unitId: unitId("tbsp") },
-      { quantity: 1, unitId: null, note: "émincé" },
-      { quantity: null, unitId: null },
+      { quantity: 1, unitId: null, note: "haché" },
+      { quantity: 1, unitId: null },
     ]);
+  });
+
+  it("reprend la photo de la page, rattachee a l'enregistrement (D13)", async () => {
+    const s = recipeServer();
+    const { uploadIds } = mockUploads();
+    const asked: unknown[] = [];
+    server.use(
+      http.post(`/api/v1/spaces/${s.space.id}/recipes/import`, () =>
+        HttpResponse.json({ ...CURRY, imageUrl: "https://exemple.fr/curry.jpg" })
+      ),
+      http.post(`/api/v1/spaces/${s.space.id}/recipes/import/image`, async ({ request }) => {
+        asked.push(await request.json());
+        return new HttpResponse(new Uint8Array([0xff, 0xd8, 0xff]), {
+          headers: { "content-type": "image/jpeg" },
+        });
+      })
+    );
+    const { user, sheet } = await openAddSheet(s.space.id);
+    await user.click(within(sheet).getByRole("button", { name: /Un lien/ }));
+    const dialog = await screen.findByRole("dialog", { name: "Importer depuis un lien" });
+    await user.click(within(dialog).getByLabelText("Lien de la recette"));
+    await user.paste("https://exemple.fr/curry");
+    await user.click(within(dialog).getByRole("button", { name: "Importer" }));
+
+    expect(await screen.findByRole("img", { name: "Photo de la recette" })).toBeInTheDocument();
+    expect(asked).toEqual([{ url: "https://exemple.fr/curry.jpg" }]);
+    await user.click(screen.getByRole("button", { name: "Enregistrer" }));
+    expect(await screen.findByRole("heading", { name: "Curry d'aubergine" })).toBeInTheDocument();
+    expect(s.recipes.bodies.photo).toEqual({ uploadId: uploadIds[0] });
   });
 
   it("explique un echec et propose de coller le texte", async () => {

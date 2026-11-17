@@ -59,7 +59,7 @@ import { provide } from "../services.ts";
 import { AppError } from "../../core/http/errors.ts";
 import { addableSql, authoredBySql, listRecipes } from "./list.ts";
 import { createRateLimiter } from "../../core/http/security.ts";
-import { importFromUrl } from "./import.ts";
+import { importFromUrl, importImage } from "./import.ts";
 import * as photos from "./photos.ts";
 import { RECIPE_PERMISSIONS } from "./permissions.ts";
 import * as revisions from "./revisions.ts";
@@ -115,6 +115,16 @@ function recipesRouter(ctx: Context): Router {
     createRateLimiter(ctx.env.NODE_ENV !== "test", { windowMs: 15 * 60 * 1000, limit: 20 }),
     handle({ body: importRecipeBodySchema }, async ({ body }, _req, res) => {
       reply(res, importedRecipeSchema, await importFromUrl(ctx, body.url));
+    })
+  );
+
+  router.post(
+    "/import/image",
+    requirePermission("recipes.create"),
+    createRateLimiter(ctx.env.NODE_ENV !== "test", { windowMs: 15 * 60 * 1000, limit: 20 }),
+    handle({ body: importRecipeBodySchema }, async ({ body }, _req, res) => {
+      const image = await importImage(ctx, body.url);
+      res.status(200).type(image.contentType).set("cache-control", "no-store").send(image.body);
     })
   );
 

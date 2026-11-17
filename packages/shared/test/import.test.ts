@@ -127,7 +127,8 @@ describe("JSON-LD", () => {
     expect(recipe.ingredients.map((i) => [i.quantity, i.unitCode, i.name])).toEqual([
       [2, "piece", "Aubergine"],
       [1, "sachet", "Noix de cajou"],
-      [null, "to-taste", "Poivre et sel"],
+      [null, "to-taste", "Poivre"],
+      [null, "to-taste", "sel"],
     ]);
   });
 
@@ -155,6 +156,44 @@ describe("JSON-LD", () => {
       cookMinutes: null,
       steps: ["Pétrir.", "Cuire."],
     });
+  });
+
+  it("recette Marmiton : etapes recousues, formules de fin ecartees, titre et photo (D13)", () => {
+    const recipe = fromJsonLd(
+      {
+        "@type": "Recipe",
+        name: "Quiche lorraine : la meilleure recette",
+        image: ["https://assets.marmiton.org/quiche.jpg", "https://assets.marmiton.org/q2.jpg"],
+        recipeInstructions: [
+          { "@type": "HowToStep", text: "Préchauffer le four à 180°C." },
+          { "@type": "HowToStep", text: "Etaler la pâte dans un moule," },
+          { "@type": "HowToStep", text: "la piquer avec une fourchette." },
+          { "@type": "HowToStep", text: "Enfourner 45 min" },
+          { "@type": "HowToStep", text: "C'est prêt !" },
+          { "@type": "HowToStep", text: "Déguster." },
+          { "@type": "HowToStep", text: "Bon appétit !" },
+        ],
+      },
+      null
+    );
+    expect(recipe.title).toBe("Quiche lorraine");
+    expect(recipe.imageUrl).toBe("https://assets.marmiton.org/quiche.jpg");
+    expect(recipe.steps).toEqual([
+      "Préchauffer le four à 180°C.",
+      "Etaler la pâte dans un moule, la piquer avec une fourchette.",
+      "Enfourner 45 min",
+    ]);
+  });
+
+  it("photo en ImageObject ; sans photo ni lien http, rien", () => {
+    const photo = (image: unknown) => fromJsonLd({ "@type": "Recipe", name: "X", image }, null);
+    expect(photo({ "@type": "ImageObject", url: "https://exemple.fr/a.webp" }).imageUrl).toBe(
+      "https://exemple.fr/a.webp"
+    );
+    expect(photo([{ url: "https://exemple.fr/b.jpg" }]).imageUrl).toBe("https://exemple.fr/b.jpg");
+    expect(photo("javascript:alert(1)").imageUrl).toBeNull();
+    expect(photo(undefined).imageUrl).toBeNull();
+    expect(parseRecipeText("Tarte\n- 1 oeuf").imageUrl).toBeNull();
   });
 });
 
@@ -221,16 +260,41 @@ Mélanger et gratiner 20 min.`);
       "crème",
       "gruyère râpé",
       "ail",
-      "sel, poivre",
+      "sel",
+      "poivre",
     ]);
-    // Sans quantite, la virgule separe une liste, pas une note ("oignon, emince").
-    expect(recipe.ingredients.at(-1)).toMatchObject({ quantity: null, note: null, check: true });
+    // Assaisonnements connus : deux lignes "a gout", rien a verifier (D4).
+    expect(recipe.ingredients.slice(-2)).toMatchObject([
+      { quantity: null, unitCode: "to-taste", note: null, check: false },
+      { quantity: null, unitCode: "to-taste", note: null, check: false },
+    ]);
     // Une fois les etapes commencees, une ligne courte reste une etape.
     expect(recipe.steps).toEqual([
       "Cuire les pâtes al dente.",
       "Frotter le plat avec l'ail",
       "Mélanger et gratiner 20 min.",
     ]);
+  });
+
+  it("separe les assaisonnements d'une puce ; une vraie precision reste une note (D4)", () => {
+    const recipe = parseRecipeText(
+      "Quiche\nIngrédients\n- sel, poivre\n- Sel et poivre noir\n- 1 oignon, émincé\n- persil, ciselé"
+    );
+    expect(recipe.ingredients.map((i) => [i.name, i.note])).toEqual([
+      ["sel", null],
+      ["poivre", null],
+      ["Sel", null],
+      ["poivre noir", null],
+      ["oignon", "émincé"],
+      ["persil", "ciselé"],
+    ]);
+  });
+
+  it("lit deux temps sur une meme ligne (D5)", () => {
+    const recipe = parseRecipeText(
+      "Quiche\nPréparation : 20 min - Cuisson : 1 h 15\nRepos : 30 min | Temps total : 2 h 05\nIngrédients\n- 3 oeufs"
+    );
+    expect(recipe).toMatchObject({ prepMinutes: 20, cookMinutes: 75, restMinutes: 30, steps: [] });
   });
 
   it("ignore les separateurs ; texte vide = recette vide", () => {

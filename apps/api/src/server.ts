@@ -7,7 +7,7 @@ import { loadEnv } from "./core/config/env.ts";
 import { createDb } from "./core/db/client.ts";
 import { createApp, createContext } from "./core/http/app.ts";
 import { createLogger } from "./core/http/logger.ts";
-import { createPageFetcher } from "./core/net/page-fetcher.ts";
+import { createImageFetcher, createPageFetcher } from "./core/net/page-fetcher.ts";
 import { purgeDeletedSpaces } from "./core/spaces/service.ts";
 import { expireExports } from "./core/exports/service.ts";
 import { sweepStorage } from "./core/storage/images.ts";
@@ -23,7 +23,9 @@ const testRoutes =
 // Stack E2E aussi : l'import par lien lit les pages de fixtures servies par ces
 // routes, sur la boucle locale ; partout ailleurs l'anti-SSRF la refuse.
 const fetchPage = env.NODE_ENV === "test" ? createPageFetcher({ allowLoopback: true }) : undefined;
-const ctx = createContext({ env, db, logger, modules: MODULES, fetchPage });
+const fetchImage =
+  env.NODE_ENV === "test" ? createImageFetcher({ allowLoopback: true }) : undefined;
+const ctx = createContext({ env, db, logger, modules: MODULES, fetchPage, fetchImage });
 const app = createApp({ ...ctx, testRoutes });
 
 // En dev, le bucket du stockage local est cree au besoin (en preprod et prod il existe deja).

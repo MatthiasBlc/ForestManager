@@ -35,7 +35,12 @@ import { homeRouter } from "../home/routes.ts";
 import { invitationsRouter } from "../spaces/invitations-routes.ts";
 import { storageRouter } from "../storage/routes.ts";
 import { createStorage, type Storage } from "../storage/storage.ts";
-import { createPageFetcher, type PageFetcher } from "../net/page-fetcher.ts";
+import {
+  createImageFetcher,
+  createPageFetcher,
+  type ImageFetcher,
+  type PageFetcher,
+} from "../net/page-fetcher.ts";
 import { spacesRouter } from "../spaces/routes.ts";
 import { requireAuth } from "./auth.ts";
 import { errorHandler, notFoundHandler } from "./errors.ts";
@@ -55,6 +60,7 @@ export interface AppDeps {
   storage?: Storage | null;
   /** Lecture des pages web ; les tests autorisent leur serveur local. */
   fetchPage?: PageFetcher;
+  fetchImage?: ImageFetcher;
   hasher?: PasswordHasher;
   /** Client Discord ; par defaut celui de DISCORD_CLIENT_ID / SECRET (null sans). */
   discord?: DiscordClient | null;
@@ -85,6 +91,7 @@ export function createContext(deps: AppDeps): Context {
     mailer: deps.mailer === undefined ? createMailer(env) : deps.mailer,
     storage: deps.storage === undefined ? createStorage(env) : deps.storage,
     fetchPage: deps.fetchPage ?? createPageFetcher(),
+    fetchImage: deps.fetchImage ?? createImageFetcher(),
     hasher: deps.hasher ?? createPasswordHasher(env.NODE_ENV === "test"),
     discord: deps.discord === undefined ? createDiscordClient(env) : deps.discord,
     errorTracking: deps.errorTracking === undefined ? createErrorTracking(env) : deps.errorTracking,

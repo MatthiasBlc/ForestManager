@@ -19,6 +19,8 @@ export interface IngredientLine {
   name: string;
   /** null tant que le nom n'a pas ete choisi dans les propositions. */
   ingredientId: string | null;
+  /** Precision ("emince") : son champ ne s'affiche que si la ligne en a une. */
+  note?: string | null;
 }
 
 interface Row {
@@ -46,6 +48,7 @@ export function QuantityInput({
   units,
   error,
   mark,
+  check = false,
   onChange,
   onRemove,
 }: {
@@ -55,6 +58,8 @@ export function QuantityInput({
   error?: string;
   /** Mode suggestion : ligne modifiee (avec la quantite d'avant) ou ajoutee. */
   mark?: { kind: "changed" | "added"; before?: string };
+  /** Import : ligne douteuse a relire (D103). */
+  check?: boolean;
   onChange: (value: IngredientLine) => void;
   onRemove?: () => void;
 }) {
@@ -180,6 +185,23 @@ export function QuantityInput({
         </div>
         {onRemove ? <IconButton icon="x" label={`Retirer ${label}`} onClick={onRemove} /> : null}
       </div>
+      {value.note !== undefined && value.note !== null ? (
+        <input
+          className="fm-input fm-qty-note"
+          aria-label="Précision"
+          placeholder="Précision"
+          maxLength={120}
+          value={value.note}
+          onChange={(event) => {
+            onChange({ ...value, note: event.target.value });
+          }}
+        />
+      ) : null}
+      {check ? (
+        <div className="fm-mark">
+          <Badge tone="warning">À vérifier</Badge>
+        </div>
+      ) : null}
       {mark ? (
         <div className="fm-mark">
           {mark.kind === "added" ? (
