@@ -43,3 +43,6 @@ apps/api/src/generated/
 
 # Notes de version calculees par la CI (C6.6, D187)
 apps/api/release.json
+
+# Rapports blob des morceaux de tests (CI)
+.vitest/

@@ -21,12 +21,18 @@ export default defineConfig({
         "apps/web/src/test/**",
       ],
       // Seuils par zone, bloquants (mesure du 2026-11-11 : shared 99,7 / 92,
-      // api 95,8 / 83,1, web 91,4 / 80,8 en lignes / branches).
-      thresholds: {
-        "packages/shared/src/**": { lines: 90, branches: 85 },
-        "apps/api/src/**": { lines: 80, branches: 70 },
-        "apps/web/src/**": { lines: 60, branches: 50 },
-      },
+      // api 95,8 / 83,1, web 91,4 / 80,8 en lignes / branches). En CI, la suite
+      // est decoupee en morceaux (VITEST_SHARD) : chacun ne couvre qu'une partie,
+      // les seuils se controlent a la fusion des rapports (--merge-reports).
+      ...(process.env["VITEST_SHARD"]
+        ? {}
+        : {
+            thresholds: {
+              "packages/shared/src/**": { lines: 90, branches: 85 },
+              "apps/api/src/**": { lines: 80, branches: 70 },
+              "apps/web/src/**": { lines: 60, branches: 50 },
+            },
+          }),
     },
   },
 });

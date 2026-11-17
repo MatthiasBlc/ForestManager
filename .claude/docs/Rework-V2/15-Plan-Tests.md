@@ -122,7 +122,7 @@ Des seuils qui protegent sans pousser a tester pour le chiffre :
 | `apps/api` (services et routes)   | 80 %   | 70 %     |
 | `apps/web` (composants et ecrans) | 60 %   | 50 %     |
 
-Seuils appliques par `vitest.config.ts` (`npm run test:coverage`, bloquant en CI). Mesure du 2026-11-11 (lignes / branches) : shared 99,7 / 92,1, api 95,8 / 83,1, web 91,4 / 80,8 ; aucun ecart [D200].
+Seuils appliques par `vitest.config.ts` (`npm run test:coverage` sur le poste ; en CI, controles a la fusion des 3 morceaux, `npm run test:merge`, bloquant). Mesure du 2026-11-11 (lignes / branches) : shared 99,7 / 92,1, api 95,8 / 83,1, web 91,4 / 80,8 ; aucun ecart [D200].
 
 La matrice des permissions est couverte a **100 % des couples route x role** par les tests generes (section 3).
 
