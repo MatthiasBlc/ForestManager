@@ -118,23 +118,26 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
     "Mercredi 10, midi : Pas de repas"
   );
 
-  // 5. Generer cette semaine sans remplacer : 11 cases proposees, 3 laissees.
+  // 5. Generer cette semaine sans remplacer : lundi est passe et reste vide (D8) ;
+  // 9 cases proposees, 3 laissees.
   await page.getByRole("button", { name: "Générer", exact: true }).click();
   sheet = page.getByRole("dialog", { name: "Générer le planning" });
   await expect(sheet.getByRole("radio", { name: /Standard/ })).toBeChecked();
   await expectNoA11yViolations(page);
   await sheet.getByRole("button", { name: "Générer", exact: true }).click();
   sheet = page.getByRole("dialog", { name: "Planning proposé" });
-  await expect(sheet.getByText("11 repas proposés sur 11")).toBeVisible();
+  await expect(sheet.getByText("9 repas proposés sur 9")).toBeVisible();
   await expect(
     sheet.getByText("Laissés tels quels : 1 verrouillé, 1 déjà rempli, 1 « Pas de repas ».")
   ).toBeVisible();
   await expectNoA11yViolations(page);
   await sheet.getByRole("button", { name: "Garder ce planning" }).click();
-  await expectToast(page, "11 repas ajoutés au planning");
+  await expectToast(page, "9 repas ajoutés au planning");
 
-  // 6. Les 14 cases sont remplies, les trois repas de depart n'ont pas change.
-  await expect(empty).toHaveCount(0);
+  // 6. Mardi a dimanche sont remplis (lundi, passe, reste vide), les trois repas
+  // de depart n'ont pas change.
+  await expect(empty).toHaveCount(2);
+  await expect(slot(page, "Lundi 8, midi")).toHaveAccessibleName(/: Ajouter un repas$/);
   await expect(slot(page, "Mardi 9, midi")).toHaveAccessibleName(
     "Mardi 9, midi : Gratin dauphinois"
   );
@@ -145,7 +148,7 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
   const planned = page.getByRole("link", {
     name: new RegExp(`^\\S+ \\d+, (midi|soir) : (${RECIPES.join("|")})$`),
   });
-  await expect(planned).toHaveCount(12);
+  await expect(planned).toHaveCount(10);
 
   // 7. Regenerer en remplacant : le repas verrouille et "Pas de repas" restent.
   await page.getByRole("button", { name: "Générer", exact: true }).click();
@@ -153,12 +156,12 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
   await sheet.getByRole("switch", { name: /^Remplacer les repas non verrouillés/ }).click();
   await sheet.getByRole("button", { name: "Générer", exact: true }).click();
   sheet = page.getByRole("dialog", { name: "Planning proposé" });
-  await expect(sheet.getByText("12 repas proposés sur 12")).toBeVisible();
+  await expect(sheet.getByText("10 repas proposés sur 10")).toBeVisible();
   await expect(
     sheet.getByText("Laissés tels quels : 1 verrouillé, 1 « Pas de repas ».")
   ).toBeVisible();
   await sheet.getByRole("button", { name: "Garder ce planning" }).click();
-  await expectToast(page, "12 repas ajoutés au planning");
+  await expectToast(page, "10 repas ajoutés au planning");
   await expect(tuesdayDinner).toHaveAccessibleName("Mardi 9, soir : Restes, 2 pers., verrouillé");
   await expect(slot(page, "Mercredi 10, midi")).toHaveAccessibleName(
     "Mercredi 10, midi : Pas de repas"
@@ -169,7 +172,7 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
   const before = await every.allTextContents();
   await page.reload();
   await page.getByRole("button", { name: "Semaine", exact: true }).click();
-  await expect(planned).toHaveCount(12);
+  await expect(planned).toHaveCount(10);
   await expect(every).toHaveText(before);
   await expect(tuesdayDinner).toHaveAccessibleName("Mardi 9, soir : Restes, 2 pers., verrouillé");
 

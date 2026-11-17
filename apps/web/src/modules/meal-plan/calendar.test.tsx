@@ -75,6 +75,17 @@ describe("E-PLANNING en bureau : grille semaine", () => {
     expect(await axeViolations(container)).toEqual([]);
   });
 
+  it("ouvert par ?day= (widget d'accueil) : le jour vise est mis en avant [R10]", async () => {
+    desktop();
+    const s = mealPlanServer();
+    const { container } = renderWithProviders(<App />, {
+      route: `${route(s.space.id)}?day=2026-11-12`,
+    });
+    await screen.findByRole("button", { name: /^Jeudi 12, midi/ });
+    const selected = [...container.querySelectorAll("[data-selected]")];
+    expect(selected.map((head) => head.textContent)).toEqual(["JEU12"]);
+  });
+
   it("navigue de semaine en semaine et revient a aujourd'hui", async () => {
     desktop();
     const s = mealPlanServer();

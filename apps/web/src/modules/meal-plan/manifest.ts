@@ -22,6 +22,9 @@ export const mealPlanModule: WebModule = {
   actions: mealPlanActions,
   widgets: {
     "meal-plan.upcoming": { title: "Prochains repas", Component: Upcoming },
-    "meal-plan.most-cooked": { title: "Tes recettes les plus cuisinées", Component: MostCooked },
+    "meal-plan.most-cooked": {
+      title: "Les plus cuisinées dans tes espaces",
+      Component: MostCooked,
+    },
   },
 };

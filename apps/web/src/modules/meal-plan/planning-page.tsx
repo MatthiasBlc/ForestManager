@@ -80,6 +80,8 @@ interface CalendarProps {
   /** Cases qui viennent d'etre echangees (animation). */
   swapped: readonly string[];
   today: string;
+  /** Jour choisi (`?day=`, lien du widget d'accueil) : mis en avant dans la grille [R10]. */
+  selectedDay: string | null;
 }
 
 /** Une case : MealSlot, ou case vide inerte en lecture seule. */
@@ -137,16 +139,28 @@ function Cell({
   );
 }
 
-function DayHead({ iso, today, className }: { iso: string; today: string; className?: string }) {
+function DayHead({
+  iso,
+  today,
+  selected = false,
+  className,
+}: {
+  iso: string;
+  today: string;
+  selected?: boolean;
+  className?: string;
+}) {
   const { day, num } = shortDay(iso);
   return (
     <span
       className={cx(
         "flex flex-col rounded-md px-2 py-1",
         className,
-        iso === today ? "bg-accent-soft text-accent-text" : "text-ink-muted"
+        iso === today ? "bg-accent-soft text-accent-text" : "text-ink-muted",
+        selected && "ring-2 ring-accent"
       )}
       {...(iso === today ? { "aria-current": "date" as const } : {})}
+      {...(selected ? { "data-selected": "" } : {})}
     >
       <b className="text-xs tracking-wide">{day}</b>
       <span className={cx("text-lg font-bold", iso !== today && "text-ink")}>{num}</span>
@@ -156,13 +170,18 @@ function DayHead({ iso, today, className }: { iso: string; today: string; classN
 
 /** Bureau : grille jours x repas. */
 function WeekGrid(props: CalendarProps) {
-  const { days, mealTimes, today } = props;
+  const { days, mealTimes, today, selectedDay } = props;
   return (
     <div className="rounded-lg border border-line bg-surface">
       <div className="grid grid-cols-[44px_repeat(7,minmax(0,1fr))] gap-1.5 p-2">
         <span />
         {days.map((iso) => (
-          <DayHead key={iso} iso={iso} today={today} />
+          <DayHead
+            key={iso}
+            iso={iso}
+            today={today}
+            selected={iso === selectedDay && iso !== today}
+          />
         ))}
         {mealTimes.map((mealTime) => (
           <div key={mealTime} className="contents">
@@ -359,6 +378,7 @@ export function PlanningPage() {
       drag: settings.data.can.edit && !swapFrom ? drag : null,
       swapped,
       today,
+      selectedDay: params.get("day"),
     };
     // Mobile : tirer vers le bas relit la semaine affichee [D186].
     content = wide ? (

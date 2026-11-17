@@ -21,7 +21,7 @@ import { Button } from "../../ui/button.tsx";
 import { RadioGroup, SegmentedControl, Switch } from "../../ui/controls.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
-import { addDays, periodLabel, whenLabel } from "./dates.ts";
+import { addDays, periodLabel, todayIso, whenLabel } from "./dates.ts";
 import { reasonText, skippedText, warningText } from "./format.ts";
 import { mealsKey, profilesQuery } from "./queries.ts";
 
@@ -31,14 +31,24 @@ function plural(count: number, one: string, many: string): string {
   return `${String(count)} ${count > 1 ? many : one}`;
 }
 
-/** Message apres "Garder ce planning". */
-function appliedMessage(written: number, conflicts: number): string {
-  if (conflicts === 0) return `${plural(written, "repas ajouté", "repas ajoutés")} au planning`;
+/** Message apres "Garder ce planning" : ajoutes (case vide) et remplaces, comptes a part [R9]. */
+function appliedMessage(added: number, replaced: number, conflicts: number): string {
+  const parts = [
+    ...(added > 0 || replaced === 0 ? [plural(added, "repas ajouté", "repas ajoutés")] : []),
+    ...(replaced > 0
+      ? [
+          added > 0
+            ? plural(replaced, "remplacé", "remplacés")
+            : plural(replaced, "repas remplacé", "repas remplacés"),
+        ]
+      : []),
+  ].join(" et ");
+  if (conflicts === 0) return `${parts} au planning`;
   const kept =
     conflicts > 1
       ? `${String(conflicts)} repas modifiés entre-temps par un membre n'ont pas été remplacés.`
       : "1 repas modifié entre-temps par un membre n'a pas été remplacé.";
-  return `${plural(written, "repas ajouté", "repas ajoutés")}. ${kept}`;
+  return `${parts}. ${kept}`;
 }
 
 function Options({
@@ -56,8 +66,13 @@ function Options({
   const [span, setSpan] = useState<Span>("this");
   const [replace, setReplace] = useState(false);
   const chosen = profileId ?? profiles.data?.find((p) => p.isDefault)?.id;
-  const from = span === "next" ? addDays(weekStart, 7) : weekStart;
+  // Les jours passes ne sont jamais regeneres : l'historique et les compteurs
+  // "planifiee N fois" restent vrais (D8).
+  const today = todayIso();
+  const start = span === "next" ? addDays(weekStart, 7) : weekStart;
+  const from = start < today ? today : start;
   const to = span === "this" ? addDays(weekStart, 6) : addDays(weekStart, 13);
+  const past = from > to;
   const run = useMutation({
     mutationFn: () =>
       api.post(
@@ -113,7 +128,9 @@ function Options({
           value={span}
           onChange={setSpan}
         />
-        <span className="text-sm text-ink-muted">{periodLabel(from, to)}</span>
+        <span className="text-sm text-ink-muted">
+          {past ? "Période passée : rien à générer." : periodLabel(from, to)}
+        </span>
       </div>
       <Switch
         label="Remplacer les repas non verrouillés (sinon : seulement les repas vides)"
@@ -125,7 +142,7 @@ function Options({
           variant="primary"
           block
           icon="sparkles"
-          disabled={!chosen || run.isPending || guard.disabled}
+          disabled={!chosen || past || run.isPending || guard.disabled}
           aria-describedby={guard["aria-describedby"]}
           onClick={() => {
             run.mutate();
@@ -181,7 +198,12 @@ function Report({
     },
     onSuccess: async (result) => {
       await queryClient.invalidateQueries({ queryKey: mealsKey(spaceId) });
-      toast(appliedMessage(result.data.length, result.conflicts.length), {
+      // Une case vue occupee au tirage (`seenUpdatedAt`) a ete remplacee, pas ajoutee.
+      const occupied = new Set(
+        picked.filter((p) => p.seenUpdatedAt !== null).map((p) => `${p.date}/${p.mealTime}`)
+      );
+      const replaced = result.data.filter((m) => occupied.has(`${m.date}/${m.mealTime}`)).length;
+      toast(appliedMessage(result.data.length - replaced, replaced, result.conflicts.length), {
         tone: result.conflicts.length > 0 ? "warning" : "success",
       });
       onDone();

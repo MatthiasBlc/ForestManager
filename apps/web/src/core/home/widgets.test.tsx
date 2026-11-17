@@ -111,7 +111,7 @@ describe("widgets d'accueil (E-ACCUEIL)", () => {
     const titles = await screen.findAllByRole("heading", { level: 2 });
     expect(titles.map((h) => h.textContent)).toEqual([
       "Prochains repas",
-      "Tes recettes les plus cuisinées",
+      "Les plus cuisinées dans tes espaces",
       "Récemment ajoutées dans tes espaces",
     ]);
     const meals = screen.getByRole("region", { name: "Prochains repas" });
@@ -131,7 +131,7 @@ describe("widgets d'accueil (E-ACCUEIL)", () => {
     );
     // Le moment du repas est lu a l'ecran, pas seulement dans le nom accessible.
     expect(within(meals).getByText("Demain, midi")).toBeInTheDocument();
-    const cooked = screen.getByRole("region", { name: "Tes recettes les plus cuisinées" });
+    const cooked = screen.getByRole("region", { name: "Les plus cuisinées dans tes espaces" });
     expect(within(cooked).getByRole("link", { name: /Dahl corail.*9 fois/ })).toHaveAttribute(
       "href",
       `/s/${famille.id}/recipes/${RECIPE_ID}`

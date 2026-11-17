@@ -84,13 +84,14 @@ describe("F-GENERER", () => {
     await user.click(await screen.findByRole("button", { name: "Générer" }));
     const sheet = await screen.findByRole("dialog", { name: "Générer le planning" });
     expect(await within(sheet).findByRole("radio", { name: /Standard/ })).toBeChecked();
-    expect(within(sheet).getByText("Du lundi 9 au dimanche 15 novembre")).toBeInTheDocument();
+    // D8 : on est mardi 10 ; lundi est passe, il n'est pas regenere.
+    expect(within(sheet).getByText("Du mardi 10 au dimanche 15 novembre")).toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
     await user.click(within(sheet).getByRole("button", { name: "Générer" }));
 
     await waitFor(() => {
       expect(s.plan.generations).toEqual([
-        { profileId: standard.id, from: "2026-11-09", to: "2026-11-15", replace: false },
+        { profileId: standard.id, from: "2026-11-10", to: "2026-11-15", replace: false },
       ]);
     });
     const report = await screen.findByRole("dialog", { name: "Planning proposé" });
@@ -130,7 +131,8 @@ describe("F-GENERER", () => {
         },
       ]);
     });
-    expect(await screen.findByText("2 repas ajoutés au planning")).toBeInTheDocument();
+    // Raclette prend la place d'un repas existant : remplace, pas ajoute [R9].
+    expect(await screen.findByText("1 repas ajouté et 1 remplacé au planning")).toBeInTheDocument();
   });
 
   it("autre profil, semaine suivante, remplacer les repas non verrouilles", async () => {
