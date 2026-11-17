@@ -26,7 +26,14 @@ import {
   scaledAmount,
   unitLabel,
 } from "./format.ts";
-import { recipeFailure, recipeQuery, unitsQuery, type RecipeFailure } from "./queries.ts";
+import {
+  recipeFailure,
+  recipeQuery,
+  tagCatalogQuery,
+  unitsQuery,
+  type RecipeFailure,
+} from "./queries.ts";
+import { sortByFamily } from "./tag-groups.ts";
 import { AdaptedFromNotice } from "./adaptation.tsx";
 import { useRecipeActions } from "./use-recipe-actions.tsx";
 import { RecipeSuggestionsBanner } from "./suggestions.tsx";
@@ -302,6 +309,8 @@ function RecipeView({
 }) {
   const navigate = useNavigate();
   const guard = useWriteGuard();
+  // Badges des tags dans l'ordre des familles [D216].
+  const catalog = useQuery(tagCatalogQuery(spaceId));
   // Retour du mode cuisine : memes portions qu'avant (`?servings=`) [R7].
   const [params] = useSearchParams();
   const asked = Number(params.get("servings"));
@@ -438,7 +447,7 @@ function RecipeView({
                 Composée
               </Badge>
             ) : null}
-            {recipe.tags.map((tag) => (
+            {sortByFamily(recipe.tags, catalog.data).map((tag) => (
               <Badge key={tag.id} tone={tag.scope === "GLOBAL" ? "accent" : "neutral"}>
                 {tag.name}
               </Badge>

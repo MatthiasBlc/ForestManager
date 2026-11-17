@@ -456,7 +456,7 @@ describe("liste, recherche, filtres et tri (F-REC-11)", () => {
 });
 
 describe("tags d'une recette (D19)", () => {
-  it("tout membre pose les tags d'espace ; la fusion d'un tag suit sur les recettes", async () => {
+  it("seul qui peut modifier la recette pose ses tags d'espace (D216) ; la fusion suit", async () => {
     const f = await groupFixture();
     const author = await loginAs(f.member, app);
     const recipe = await createRecipe(author, f.spaceId);
@@ -465,7 +465,8 @@ describe("tags d'une recette (D19)", () => {
     const hiver = (await extra.post(tags, { name: "Hiver" })).body.id as string;
     const froid = (await extra.post(tags, { name: "Froid" })).body.id as string;
     const path = `/spaces/${f.spaceId}/recipes/${recipe.id}/space-tags`;
-    const res = await extra.put(path, { tagIds: [hiver, froid] });
+    expect((await extra.put(path, { tagIds: [hiver] })).body.error.code).toBe("SPACE_002");
+    const res = await author.put(path, { tagIds: [hiver, froid] });
     expect(res.status).toBe(200);
     expect(res.body.tags.map((t: { name: string }) => t.name).sort()).toEqual(["Froid", "Hiver"]);
 
@@ -477,7 +478,7 @@ describe("tags d'une recette (D19)", () => {
     const otherSpaceTag = await loginAs(f.outsider, app).then((c) =>
       c.post(`/spaces/${f.outsider.personalSpaceId}/recipes/tags`, { name: "Ailleurs" })
     );
-    expect((await extra.put(path, { tagIds: [otherSpaceTag.body.id] })).body.error.code).toBe(
+    expect((await author.put(path, { tagIds: [otherSpaceTag.body.id] })).body.error.code).toBe(
       "VALIDATION_001"
     );
   });
@@ -491,9 +492,9 @@ describe("tags d'une recette (D19)", () => {
     expect(read.body.tags).toEqual([expect.objectContaining({ id: veggie, scope: "GLOBAL" })]);
     expect(
       (
-        await (
-          await loginAs(f.extra, app)
-        ).put(`/spaces/${f.spaceId}/recipes/${recipe.id}/space-tags`, { tagIds: [veggie] })
+        await author.put(`/spaces/${f.spaceId}/recipes/${recipe.id}/space-tags`, {
+          tagIds: [veggie],
+        })
       ).body.error.code
     ).toBe("VALIDATION_001");
   });

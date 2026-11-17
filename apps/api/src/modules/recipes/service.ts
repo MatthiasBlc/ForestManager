@@ -333,14 +333,17 @@ export async function deleteRecipe(
   await ctx.db.recipe.update({ where: { id: recipeId }, data: { deletedAt: new Date() } });
 }
 
-/** Tags d'espace poses sur une recette visible, par tout membre [D19, D27]. */
+/**
+ * Tags d'espace d'une recette visible, par qui peut la modifier [D216] (amende
+ * D19 : un membre qui ne peut pas modifier la recette ne la tague pas).
+ */
 export async function setSpaceTags(
   ctx: Context,
   actor: RecipeActor,
   recipeId: string,
   tagIds: string[]
 ): Promise<Recipe> {
-  await findVisible(ctx, actor, recipeId);
+  await findEditable(ctx, actor, recipeId);
   await checkTags(ctx.db, tagIds, actor.spaceId, "tagIds");
   await ctx.db.$transaction([
     ctx.db.recipeSpaceTag.deleteMany({ where: { recipeId, spaceId: actor.spaceId } }),

@@ -249,6 +249,41 @@ describe("editeur de recette (E-RECETTE-EDITION)", () => {
     await user.click(await screen.findByRole("button", { name: "Enregistrer la révision 5" }));
     expect(await screen.findByText(/modifiée entre-temps/)).toBeInTheDocument();
   });
+
+  it("une section Tags : choisis retirables, Ajouter des tags, creer un tag d'espace (D216)", async () => {
+    const s = recipeServer();
+    const [veggie] = s.recipes.globalTags;
+    const sunday = s.recipes.spaceTags[0]!;
+    const recipe = buildRecipe({ title: "Gratin", tags: [veggie!, sunday] });
+    s.recipes.recipes.push({ ...recipe, homeSpaceId: s.space.id });
+    const { user } = renderWithProviders(<App />, {
+      route: `/s/${s.space.id}/recipes/${recipe.id}/edit`,
+    });
+    const section = await screen.findByRole("group", { name: "Tags" });
+    expect(
+      await within(section).findByText(/Plat du dimanche est un tag de Famille/)
+    ).toBeInTheDocument();
+    await user.click(within(section).getByRole("button", { name: "Végétarien, retirer le tag" }));
+    await user.click(within(section).getByRole("button", { name: "Ajouter des tags" }));
+    const sheet = screen.getByRole("dialog", { name: "Tags de la recette" });
+    await user.click(within(sheet).getByRole("button", { name: "Rapide" }));
+    await user.type(within(sheet).getByRole("searchbox", { name: "Chercher un tag" }), "Raclette");
+    await user.click(
+      within(sheet).getByRole("button", { name: /^Créer le tag « Raclette » dans Famille/ })
+    );
+    expect(await within(sheet).findByRole("button", { name: "Raclette" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    await user.click(within(sheet).getByRole("button", { name: "OK" }));
+    await user.click(screen.getByRole("button", { name: "Enregistrer la révision 2" }));
+    await screen.findByRole("heading", { name: "Gratin", level: 1 });
+    const raclette = s.recipes.spaceTags.find((tag) => tag.name === "Raclette")!;
+    expect(s.recipes.bodies.update).toMatchObject({
+      globalTagIds: [s.recipes.globalTags[1]!.id],
+      spaceTagIds: [sunday.id, raclette.id],
+    });
+  });
 });
 
 describe("detail d'une recette (E-RECETTE)", () => {

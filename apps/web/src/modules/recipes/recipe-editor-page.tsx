@@ -11,7 +11,6 @@ import {
   suggestionSummarySchema,
   type ImportedRecipe,
   type Recipe,
-  type Tag,
   type Unit,
 } from "@fm/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -29,7 +28,7 @@ import { ImagePicker } from "../../patterns/image-picker.tsx";
 import { TopBar } from "../../patterns/top-bar.tsx";
 import { ActionMenu } from "../../ui/action-menu.tsx";
 import { Button, IconButton } from "../../ui/button.tsx";
-import { Chip, Stepper, Switch } from "../../ui/controls.tsx";
+import { Stepper, Switch } from "../../ui/controls.tsx";
 import { Badge, Skeleton } from "../../ui/display.tsx";
 import { cx } from "../../ui/cx.ts";
 import { Field } from "../../ui/field.tsx";
@@ -39,6 +38,7 @@ import { useToast } from "../../ui/use-toast.ts";
 import { AddBlockSheet, LinkRecipeSheet } from "./components/link-recipe-sheet.tsx";
 import { ImportTextSheet, ImportUrlSheet, type ImportSheet } from "./import-sheets.tsx";
 import { QuantityInput } from "./components/quantity-input.tsx";
+import { RecipeTagsField } from "./components/recipe-tags-field.tsx";
 import {
   clearDraft,
   draftErrors,
@@ -66,12 +66,10 @@ import { useOnline } from "../../pwa/use-online.ts";
 import type { RecipePrefill } from "./prefill.ts";
 import { RecipeReadOnly, RecipeUnavailable } from "./recipe-page.tsx";
 import {
-  globalTagsQuery,
   recipeFailure,
   recipeQuery,
   recipesKey,
   recipeSuggestionsQuery,
-  spaceTagsQuery,
   unitsQuery,
 } from "./queries.ts";
 
@@ -284,38 +282,6 @@ function BlockEditor({
   );
 }
 
-function TagPicker({
-  label,
-  tags,
-  selected,
-  onChange,
-}: {
-  label: string;
-  tags: readonly Tag[];
-  selected: readonly string[];
-  onChange: (ids: string[]) => void;
-}) {
-  if (tags.length === 0) return null;
-  return (
-    <div className="flex flex-col gap-2" role="group" aria-label={label}>
-      <span className="fm-label">{label}</span>
-      <div className="flex flex-wrap gap-2">
-        {tags.map((tag) => (
-          <Chip
-            key={tag.id}
-            selected={selected.includes(tag.id)}
-            onToggle={(on) => {
-              onChange(on ? [...selected, tag.id] : selected.filter((id) => id !== tag.id));
-            }}
-          >
-            {tag.name}
-          </Chip>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 /** Photo choisie pour une recette pas encore creee : rattachee a l'enregistrement. */
 interface PendingPhoto {
   uploadId: string;
@@ -439,8 +405,6 @@ function Editor({
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const globalTags = useQuery(globalTagsQuery);
-  const spaceTags = useQuery(spaceTagsQuery(spaceId));
   const key = `${draftKey(spaceId, recipe)}${suggest ? ":suggest" : ""}`;
   // Un import ou un pre-remplissage remplace le brouillon garde d'une nouvelle recette.
   const [restored] = useState(() => (imported || prefill ? null : readDraft(key)));
@@ -813,24 +777,13 @@ function Editor({
           Ajouter un bloc
         </Button>
         {suggest ? null : (
-          <>
-            <TagPicker
-              label="Tags"
-              tags={globalTags.data ?? []}
-              selected={draft.globalTagIds}
-              onChange={(ids) => {
-                update({ globalTagIds: ids });
-              }}
-            />
-            <TagPicker
-              label={`Tags de ${spaceName}`}
-              tags={spaceTags.data ?? []}
-              selected={draft.spaceTagIds}
-              onChange={(ids) => {
-                update({ spaceTagIds: ids });
-              }}
-            />
-          </>
+          <RecipeTagsField
+            spaceId={spaceId}
+            spaceName={spaceName}
+            globalTagIds={draft.globalTagIds}
+            spaceTagIds={draft.spaceTagIds}
+            onChange={update}
+          />
         )}
         <Switch
           label="Recette de base (sauce, pâte…) : pas proposée seule au planning"

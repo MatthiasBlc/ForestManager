@@ -171,14 +171,15 @@ describe("partage par reference (D03, F-REC-5)", () => {
     expect(await titlesIn(w.asMatthias, w.famille.id)).toEqual(["Gratin de pates"]);
   });
 
-  it("chaque espace a ses propres tags sur une recette partagee (D19)", async () => {
+  it("chaque espace a ses propres tags sur une recette partagee (D19, D216)", async () => {
     const w = await world();
     const gratin = await createRecipe(w.asLea, w.foyer.id);
     await share(w.asLea, w.foyer.id, gratin.id, [w.famille.id]);
     const tag = await w.asMatthias.post(`${recipesOf(w.famille.id)}/tags`, { name: "Noel" });
-    await w.asMatthias.put(`${recipesOf(w.famille.id)}/${gratin.id}/space-tags`, {
-      tagIds: [tag.body.id],
-    });
+    const path = `${recipesOf(w.famille.id)}/${gratin.id}/space-tags`;
+    // Matthias ne peut pas modifier la recette de Lea : il ne la tague pas [D216].
+    expect((await w.asMatthias.put(path, { tagIds: [tag.body.id] })).status).toBe(403);
+    await w.asLea.put(path, { tagIds: [tag.body.id] });
 
     const inFamille = await w.asMatthias.get(`${recipesOf(w.famille.id)}/${gratin.id}`);
     expect(inFamille.body.tags.map((t: { name: string }) => t.name)).toEqual(["Noel"]);
