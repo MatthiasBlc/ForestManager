@@ -91,7 +91,6 @@ body,
 .fm-space.fm-space-lg {
   width: 64px;
   height: 64px;
-  border-radius: var(--radius-lg);
   font-size: 26px;
 }
 
@@ -640,6 +639,10 @@ main[tabindex="-1"]:focus-visible {
   overflow: hidden;
   background: #111;
   touch-action: none;
+}
+/* Photo d'espace : masque au meme arrondi que l'icone (30 %) [D213]. */
+.fm-crop-square .reactEasyCrop_CropArea {
+  border-radius: 30%;
 }
 .fm-crop-zoom {
   display: flex;

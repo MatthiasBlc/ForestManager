@@ -863,3 +863,9 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 - **Constat** : l'import (lien ou texte colle, F-IMP-1/2) n'existe qu'a la creation. Une fiche creee vide comme idee, puis redigee ailleurs, ne peut pas recevoir l'import : il faut tout ressaisir ou creer une seconde fiche.
 - **Options** : acces par le menu "..." de l'editeur, ou par un encart quand la fiche est vide ; l'import remplace le contenu en gardant le reste, ne complete que les champs vides, ou remplace tout titre compris.
 - **Choix** : entree "Importer un lien" / "Importer un texte" dans le menu "..." de l'editeur en modification (invisible au quotidien). L'import remplace ingredients, etapes, portions, temps et lien ; titre, tags, notes et photo restent, la photo de la page n'est reprise que si la fiche n'en a pas. Rien n'est enregistre avant "Enregistrer" ; badges "A verifier" comme a la creation [D103] ; la revision porte la source IMPORT (l'historique garde l'ancienne version).
+
+### D213 - Icones d'espace en carre arrondi, comme Discord - VALIDEE (2026-11-17, proprietaire au selecteur, amende D211)
+
+- **Constat** : les icones d'espace etaient rondes et devenaient des carres arrondis au survol et a l'ouverture ; le recadrage d'une photo d'espace (D211) utilisait un masque carre a angles vifs, qui ne correspond a aucune des deux formes affichees.
+- **Options** : masque carre arrondi ou rond ; icones rondes qui changent de forme, ou carre arrondi en permanence.
+- **Choix** (demande du proprietaire) : icones d'espace en carre arrondi en permanence (30 % de la taille), espace perso compris ; pastille blanche courte au survol et barre pour l'espace ouvert, comme Discord ; masque du recadrage d'une photo d'espace au meme arrondi. L'avatar de compte reste rond (masque rond de D211).

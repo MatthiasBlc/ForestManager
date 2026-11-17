@@ -750,7 +750,8 @@ textarea.fm-input {
   flex: none;
   width: 40px;
   height: 40px;
-  border-radius: var(--radius-full);
+  /* Carre a coins arrondis en permanence, comme Discord [D213] ; 30 % suit la taille. */
+  border-radius: 30%;
   border: 0;
   padding: 0;
   cursor: pointer;
@@ -759,7 +760,6 @@ textarea.fm-input {
   font: 700 15px/1 var(--font-display);
   background: var(--tint, var(--surface-raised));
   color: var(--tint-ink, var(--ink));
-  transition: border-radius 0.18s;
 }
 .fm-space img {
   width: 100%;
@@ -767,10 +767,7 @@ textarea.fm-input {
   object-fit: cover;
   border-radius: inherit;
 }
-.fm-space:hover,
-.fm-space[aria-current="true"] {
-  border-radius: var(--radius-lg);
-}
+/* Pastille au survol, barre pour l'espace ouvert [D213]. */
 .fm-space[aria-current="true"]::before {
   content: "";
   position: absolute;
@@ -780,6 +777,18 @@ textarea.fm-input {
   height: 4px;
   border-radius: 4px 4px 0 0;
   background: var(--ink);
+}
+@media (hover: hover) {
+  .fm-space:not(.fm-space-static):not(.fm-space-add):not([aria-current="true"]):hover::before {
+    content: "";
+    position: absolute;
+    left: 15px;
+    right: 15px;
+    bottom: -8px;
+    height: 4px;
+    border-radius: 4px 4px 0 0;
+    background: var(--ink);
+  }
 }
 .fm-space-dot {
   position: absolute;
@@ -819,6 +828,15 @@ textarea.fm-input {
     right: auto;
     top: 10px;
     bottom: 10px;
+    width: 4px;
+    height: auto;
+    border-radius: 0 4px 4px 0;
+  }
+  .fm-space:not(.fm-space-static):not(.fm-space-add):not([aria-current="true"]):hover::before {
+    left: -12px;
+    right: auto;
+    top: 18px;
+    bottom: 18px;
     width: 4px;
     height: auto;
     border-radius: 0 4px 4px 0;
