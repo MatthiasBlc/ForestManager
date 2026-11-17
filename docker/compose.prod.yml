@@ -68,6 +68,10 @@ services:
       - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
       - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
       - NODE_OPTIONS=--max-old-space-size=1024
+      # pg_dump avant les migrations a chaque demarrage, garde 14 jours [D76].
+      - BACKUP_DIR=/backups
+    volumes:
+      - postgres_backups:/backups
     networks:
       - internal
       - minio-net
@@ -118,3 +122,4 @@ networks:
 
 volumes:
   postgres17_data:
+  postgres_backups:

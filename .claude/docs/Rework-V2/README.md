@@ -280,7 +280,7 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
   1. Verifier que la CI #30 est verte et deployee en preprod, puis en preprod : la carte "Pates sauce tomate" de "Revue duo" affiche 50 min ; apres une connexion admin, le journal d'audit montre une vraie IP (plus `172.19.0.8`).
   2. Fait le 2026-11-17 : aujourd'hui en fond accent clair dans le bandeau des jours du Planning (non deploye).
   3. Cote proprietaire : D12 sur un vrai telephone (fait le 2026-11-17, conforme), lien du 12/11 absent de "Coloc recette" (R13), puis feu vert explicite pour la prod [D205].
-  4. C8 : commencer par le `pg_dump` avant chaque deploy prod [D76], puis CI plus rapide, menage des images et du registry.
+  4. C8 : `pg_dump` avant chaque deploy prod [D76] fait le 2026-11-17 (au demarrage de l'API, verifie en local : dump, restauration, echec, purge) ; ensuite CI plus rapide, menage des images et du registry.
   - Comptes de revue en preprod : revue2a867 (OWNER de "Revue duo", Planning accorde) et revue2b867 ; mots de passe hors depot dans `/tmp/claude-1003/-home-bouloc-Repo-ForestManager/de8bf2d4-7430-4c85-87af-3aa878491c99/scratchpad/preprod-comptes.txt` (efface au redemarrage du poste) (a regenerer par l'admin si perdus : Utilisateurs, "Reinitialiser").
 - Methode : copie locale d'abord, puis publication ; commits en francais, autonomes, sans Co-Authored-By ; taches independantes en agents paralleles.
 - Artefacts :

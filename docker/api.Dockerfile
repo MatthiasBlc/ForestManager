@@ -45,7 +45,12 @@ RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev --workspace=@fm/api
 # ---------- prod ----------
 FROM ${NODE_IMAGE} AS prod
 # tini : PID 1 qui relaie les signaux (arret propre) et ramasse les zombies.
-RUN apk add --no-cache tini
+# postgresql17-client : pg_dump avant les migrations de la prod [D76], meme
+# version majeure que le serveur.
+RUN apk add --no-cache tini postgresql17-client
+# Point de montage des sauvegardes : un volume nomme vide herite de ce
+# proprietaire, l'API (utilisateur node) peut donc y ecrire.
+RUN mkdir /backups && chown node:node /backups
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NPM_CONFIG_UPDATE_NOTIFIER=false PRISMA_HIDE_UPDATE_MESSAGE=1

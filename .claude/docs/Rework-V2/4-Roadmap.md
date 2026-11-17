@@ -141,7 +141,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] Deploy preprod, revue des lignes concernees (2026-11-17 ; reste et ecart : section 4 de `30-Recette-2.md`)
 - [ ] C8 Mise en prod V2 (depuis ce poste [D201])
   - [ ] Accelerer la CI (2026-11-12 : `verify` ~9 min dont 6 min 48 de tests et couverture) : image de test en cache (buildx `type=gha` comme les images de prod), tests de l'API repartis en jobs paralleles, cache du lint
-  - [ ] `pg_dump` avant chaque deploy prod, garde 14 jours [D76] : absent de `ci.yml`, a ecrire avant la prod
+  - [x] `pg_dump` avant chaque deploy prod, garde 14 jours [D76] : au demarrage de l'API, avant les migrations (2026-11-17, `14-Architecture.md`)
   - [ ] Menage des images (2026-11-12) : rien ne purge aujourd'hui. Registry `registry:2` auto-heberge : etape CI qui garde les 10 derniers `sha-*` par image + `latest` (DELETE par digest, jamais un digest encore tague), puis `garbage-collect --delete-untagged` periodique dans le conteneur du registry. Serveur : `docker image prune` des images inutilisees de plus de quelques jours (les derniers tags restent pour un retour arriere)
   - [ ] Menage du registry, cote proprietaire (a revoir ensemble) : suppression deja activee ; le service `registry-gc` actuel ne tourne qu'au deploy de la stack, il faut une tache planifiee de nuit (ou registry en lecture seule pendant le collect) ; CI en `provenance: false` avant tout `--delete-untagged` (bug de `distribution` qui efface les sous-images d'un index tague) ; `REGISTRY_HTTP_DEBUG_ADDR` a retirer du reseau `proxy`
   - [ ] A faire par le proprietaire (a revoir ensemble) : retirer la lecture publique des buckets V1 `forestmanager-images-preprod` / `-prod` (`mc anonymous set none`) [D167]
