@@ -251,4 +251,36 @@ describe("enregistrer une recette importee", () => {
     const revision = await db.recipeRevision.findFirstOrThrow({ where: { recipeId: res.body.id } });
     expect(revision.source).toBe("IMPORT");
   });
+
+  // D212 : import dans une recette existante, l'historique garde l'ancienne version.
+  it("modifier apres un import : revision suivante de source IMPORT", async () => {
+    const m = await member();
+    const body = await recipeBody(m.client);
+    const created = await m.client.post(`/spaces/${m.space.id}/recipes`, body);
+    const res = await m.client.put(`/spaces/${m.space.id}/recipes/${created.body.id}`, {
+      ...body,
+      revision: 1,
+      imported: true,
+    });
+    expect(res.status).toBe(200);
+    const revisions = await db.recipeRevision.findMany({
+      where: { recipeId: created.body.id },
+      orderBy: { number: "asc" },
+    });
+    expect(revisions.map((r) => r.source)).toEqual(["CREATE", "IMPORT"]);
+  });
+
+  it("modifier sans import : revision EDIT", async () => {
+    const m = await member();
+    const body = await recipeBody(m.client);
+    const created = await m.client.post(`/spaces/${m.space.id}/recipes`, body);
+    await m.client.put(`/spaces/${m.space.id}/recipes/${created.body.id}`, {
+      ...body,
+      revision: 1,
+    });
+    const last = await db.recipeRevision.findFirstOrThrow({
+      where: { recipeId: created.body.id, number: 2 },
+    });
+    expect(last.source).toBe("EDIT");
+  });
 });

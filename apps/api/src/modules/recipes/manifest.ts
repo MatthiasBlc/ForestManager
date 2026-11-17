@@ -290,7 +290,14 @@ function recipesRouter(ctx: Context): Router {
     handle(
       { params: recipeIdSchema, body: updateRecipeBodySchema },
       async ({ params, body }, req, res) => {
-        const recipe = await recipes.updateRecipe(ctx, actorOf(req), params.recipeId, body);
+        const { imported, ...content } = body;
+        const recipe = await recipes.updateRecipe(
+          ctx,
+          actorOf(req),
+          params.recipeId,
+          content,
+          imported ? "IMPORT" : "EDIT"
+        );
         reply(res, recipeSchema, recipe);
       }
     )

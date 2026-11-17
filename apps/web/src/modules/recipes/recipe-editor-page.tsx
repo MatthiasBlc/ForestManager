@@ -27,6 +27,7 @@ import { uploadImage } from "../../lib/upload.ts";
 import { useUploadsEnabled } from "../../patterns/use-uploads.ts";
 import { ImagePicker } from "../../patterns/image-picker.tsx";
 import { TopBar } from "../../patterns/top-bar.tsx";
+import { ActionMenu } from "../../ui/action-menu.tsx";
 import { Button, IconButton } from "../../ui/button.tsx";
 import { Chip, Stepper, Switch } from "../../ui/controls.tsx";
 import { Badge, Skeleton } from "../../ui/display.tsx";
@@ -36,6 +37,7 @@ import { Icon } from "../../ui/icon.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { AddBlockSheet, LinkRecipeSheet } from "./components/link-recipe-sheet.tsx";
+import { ImportTextSheet, ImportUrlSheet, type ImportSheet } from "./import-sheets.tsx";
 import { QuantityInput } from "./components/quantity-input.tsx";
 import {
   clearDraft,
@@ -48,6 +50,7 @@ import {
   emptyDraft,
   emptyLine,
   hasErrors,
+  mergeImport,
   newKey,
   readDraft,
   suggestionMarks,
@@ -328,14 +331,18 @@ function PhotoField({
   recipe,
   pending,
   onPending,
+  fromPage,
 }: {
   spaceId: string;
   recipe?: Recipe;
   pending: PendingPhoto | null;
   onPending: (photo: PendingPhoto | null) => void;
+  /** Import dans une recette existante [D212] : photo de la page, reprise si la fiche n'en a pas. */
+  fromPage?: string | null;
 }) {
   const queryClient = useQueryClient();
   const [imageUrl, setImageUrl] = useState(recipe?.imageUrl ?? null);
+  const uploads = useUploadsEnabled();
   const shown = recipe ? imageUrl : (pending?.preview ?? null);
 
   const saved = async (url: string | null) => {
@@ -347,6 +354,33 @@ function PhotoField({
     await queryClient.invalidateQueries({ queryKey: [...recipesKey(spaceId), "list"] });
   };
   const path = recipe ? `/spaces/${spaceId}/recipes/${recipe.id}/photo` : null;
+  // Comme une photo choisie : rattachee tout de suite, hors revisions [D167].
+  useEffect(() => {
+    if (!fromPage || !recipe || imageUrl || !uploads) return;
+    const run = { cancelled: false };
+    void (async () => {
+      try {
+        const image = await api.postForBlob(`/spaces/${spaceId}/recipes/import/image`, {
+          url: fromPage,
+        });
+        const uploadId = await uploadImage(image, "photo");
+        if (run.cancelled) return;
+        const { url } = await api.put(
+          `/spaces/${spaceId}/recipes/${recipe.id}/photo`,
+          { uploadId },
+          imageResponseSchema
+        );
+        await saved(url);
+      } catch {
+        // Photo injoignable ou illisible : la fiche reste sans photo.
+      }
+    })();
+    return () => {
+      run.cancelled = true;
+    };
+    // `saved` et `imageUrl` volontairement hors dependances : un seul essai par import.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fromPage, recipe, uploads, spaceId]);
 
   return (
     <div className="fm-stack gap-2">
@@ -427,7 +461,17 @@ function Editor({
   // Mode suggestion : ce que la suggestion change, ligne par ligne.
   const [base] = useState(() => (suggest && recipe ? draftFromRecipe(recipe) : null));
   const marks = base ? suggestionMarks(base, draft) : {};
-  const toCheck = imported?.ingredients.filter((line) => line.check).length ?? 0;
+  // Import dans la recette existante (menu "...") [D212].
+  const [importSheet, setImportSheet] = useState<ImportSheet>(null);
+  const [reimported, setReimported] = useState<ImportedRecipe | null>(null);
+  const shownImport = reimported ?? (recipe ? undefined : imported);
+  const onReimport = (read: ImportedRecipe) => {
+    setDraft((current) => mergeImport(current, read, units));
+    setDirty(true);
+    setReimported(read);
+    setImportSheet(null);
+  };
+  const toCheck = shownImport?.ingredients.filter((line) => line.check).length ?? 0;
   // Erreurs montrees apres un premier essai d'enregistrement, puis recalculees a
   // chaque saisie : une erreur corrigee disparait aussitot (D3).
   const [submitted, setSubmitted] = useState(false);
@@ -536,7 +580,11 @@ function Editor({
       let saved = recipe
         ? await api.put(
             `/spaces/${spaceId}/recipes/${recipe.id}`,
-            { ...parsed.data, revision: recipe.currentRevision },
+            {
+              ...parsed.data,
+              revision: recipe.currentRevision,
+              ...(reimported ? { imported: true } : {}),
+            },
             recipeSchema
           )
         : await api.post(
@@ -609,6 +657,22 @@ function Editor({
             // Hors ligne : le brouillon reste sur l'appareil, l'envoi attend le reseau (D106).
             actionDisabled={saving || !online}
             onAction={() => void save()}
+            menu={
+              recipe && !suggest ? (
+                <ActionMenu
+                  label="Actions de l'éditeur"
+                  trigger={<IconButton icon="more" label="Plus d'actions" />}
+                  items={[
+                    { id: "url", label: "Importer un lien", icon: "link" },
+                    { id: "text", label: "Importer un texte", icon: "copy" },
+                  ]}
+                  disabled={!online}
+                  onSelect={(id) => {
+                    setImportSheet(id === "url" ? "url" : "text");
+                  }}
+                />
+              ) : undefined
+            }
           />
         }
       />
@@ -623,7 +687,7 @@ function Editor({
             </span>
           </p>
         ) : null}
-        {imported && !recipe ? (
+        {shownImport ? (
           <p role="status" className="m-0 rounded-md bg-accent-soft px-3 py-2 text-accent-text">
             <b>Recette importée.</b> Vérifie tout avant d'enregistrer
             {toCheck > 0
@@ -654,7 +718,13 @@ function Editor({
           </>
         ) : null}
         {suggest ? null : (
-          <PhotoField spaceId={spaceId} recipe={recipe} pending={photo} onPending={setPhoto} />
+          <PhotoField
+            spaceId={spaceId}
+            recipe={recipe}
+            pending={photo}
+            onPending={setPhoto}
+            fromPage={reimported?.imageUrl ?? null}
+          />
         )}
         <Field
           label="Titre"
@@ -815,6 +885,29 @@ function Editor({
           update({ blocks: [...draft.blocks, { ...block, key: newKey() }] });
         }}
       />
+      {recipe ? (
+        <>
+          <ImportUrlSheet
+            open={importSheet === "url"}
+            onClose={() => {
+              setImportSheet(null);
+            }}
+            onPasteText={() => {
+              setImportSheet("text");
+            }}
+            spaceId={spaceId}
+            onImported={onReimport}
+          />
+          <ImportTextSheet
+            open={importSheet === "text"}
+            onClose={() => {
+              setImportSheet(null);
+            }}
+            spaceId={spaceId}
+            onImported={onReimport}
+          />
+        </>
+      ) : null}
       <Sheet
         open={confirmOpen}
         onClose={() => {

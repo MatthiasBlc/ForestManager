@@ -120,6 +120,8 @@ export type CreateRecipeBody = z.input<typeof createRecipeBodySchema>;
 export const updateRecipeBodySchema = z.strictObject({
   ...recipeContentShape,
   revision: z.number().int().min(1),
+  /** Contenu remplace par un import dans la recette existante : revision IMPORT [D212]. */
+  imported: z.boolean().optional(),
 });
 export type UpdateRecipeBody = z.input<typeof updateRecipeBodySchema>;
 

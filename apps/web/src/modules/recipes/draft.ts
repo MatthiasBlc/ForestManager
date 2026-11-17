@@ -178,6 +178,25 @@ export function draftFromImport(imported: ImportedRecipe, units: readonly Unit[]
   };
 }
 
+/**
+ * Import dans une recette existante [D212] : ingredients, etapes, portions, temps
+ * et lien viennent de l'import ; titre, notes, tags et recette de base restent.
+ * Un texte colle (sans lien ni portions) garde ceux de la fiche.
+ */
+export function mergeImport(draft: Draft, imported: ImportedRecipe, units: readonly Unit[]): Draft {
+  const read = draftFromImport(imported, units);
+  return {
+    ...draft,
+    yieldQuantity: imported.yieldQuantity ?? draft.yieldQuantity,
+    yieldUnitId: imported.yieldQuantity === null ? draft.yieldUnitId : null,
+    prepMinutes: read.prepMinutes,
+    cookMinutes: read.cookMinutes,
+    restMinutes: read.restMinutes,
+    sourceUrl: imported.sourceUrl ?? draft.sourceUrl,
+    blocks: read.blocks,
+  };
+}
+
 /** "1,5" -> 1.5 ; "" -> null ; NaN si illisible. */
 export function parseQuantity(text: string): number | null {
   const clean = text.trim().replace(",", ".");

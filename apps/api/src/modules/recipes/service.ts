@@ -247,11 +247,13 @@ export async function updateRecipe(
   ctx: Context,
   actor: RecipeActor,
   recipeId: string,
-  input: RecipeContent & { revision: number }
+  input: RecipeContent & { revision: number },
+  /** IMPORT : contenu remplace par un import [D212]. */
+  source: "EDIT" | "IMPORT" = "EDIT"
 ): Promise<Recipe> {
   const current = await findEditable(ctx, actor, recipeId);
   const keepLinks = new Set(current.blocks.flatMap((b) => (b.subRecipeId ? [b.subRecipeId] : [])));
-  await writeRevision(ctx, actor, recipeId, input, input.revision, "EDIT", keepLinks);
+  await writeRevision(ctx, actor, recipeId, input, input.revision, source, keepLinks);
   return getRecipe(ctx, actor, recipeId);
 }
 

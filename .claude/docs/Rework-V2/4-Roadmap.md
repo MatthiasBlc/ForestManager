@@ -148,7 +148,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [ ] Menage du registry, cote proprietaire (a revoir ensemble) : suppression deja activee ; le service `registry-gc` actuel ne tourne qu'au deploy de la stack, il faut une tache planifiee de nuit (ou registry en lecture seule pendant le collect) ; CI deja en `provenance: false` (841253e), mais pas de `--delete-untagged` tant que des tags gardes sont d'anciennes images avec index (`31-Mise-en-prod.md` S6) (bug de `distribution` qui efface les sous-images d'un index tague) ; `REGISTRY_HTTP_DEBUG_ADDR` a retirer du reseau `proxy`
   - [ ] Vraie IP des clients derriere Cloudflare, cote proprietaire, un autre jour (pas d'acces a Traefik le 2026-11-17), **non bloquant pour la prod** : `trustedIPs` de Traefik a regler (`TRUST_PROXY=3` deja fait) ; reglage, enjeux et verification dans `14-Architecture.md` S13
   - [ ] A faire par le proprietaire (a revoir ensemble) : retirer la lecture publique des buckets V1 `forestmanager-images-preprod` / `-prod` (`mc anonymous set none`) [D167]
-- [ ] Importer dans une recette existante [D212] : API (`imported` a la modification, revision IMPORT), editeur (menu "...", feuilles d'import reutilisees, fusion), TDD, E2E
+- [x] Importer dans une recette existante [D212] (2026-11-17) : API (`imported` a la modification, revision IMPORT), editeur (menu "...", feuilles d'import reutilisees, fusion), TDD, E2E
 - [ ] C9 Module liste de courses (V2.1)
 - [ ] Reimport du JSON d'export dans F-AJOUT-RECETTE (V2.1) [D192]
 - [ ] E2E WebKit (Safari) (V2.1) [D195]
