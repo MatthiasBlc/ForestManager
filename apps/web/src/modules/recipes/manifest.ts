@@ -1,4 +1,5 @@
 // Manifeste web du module Recettes : navigation, routes et section de F-QUITTER (D84).
+import { hasMinRole } from "@fm/shared";
 import { lazy } from "react";
 
 import type { WebModule } from "../../app/registry.ts";
@@ -37,4 +38,17 @@ export const recipesModule: WebModule = {
   widgets: {
     "recipes.recent": { title: "Récemment ajoutées dans tes espaces", Component: RecentRecipes },
   },
+  // Tags de l'espace : moderateurs (recipes.tags.moderate) [D216].
+  settingsLinks: (space) =>
+    hasMinRole(space.myRole, "MODERATOR")
+      ? [
+          {
+            id: "recipes.tags",
+            label: "Tags de l'espace",
+            hint: "Familles, renommer, fusionner",
+            icon: "tag",
+            path: "recipes/tags",
+          },
+        ]
+      : [],
 };

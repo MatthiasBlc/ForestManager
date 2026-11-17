@@ -196,6 +196,61 @@ export function recipeServer({
       state.spaceTags.push(tag);
       return HttpResponse.json(tag, { status: 201 });
     }),
+    // Tags de l'espace (E-TAGS-ESPACE) [D216].
+    http.patch(`${base}/tags/:tagId`, async ({ params, request }) => {
+      const body = (await request.json()) as { name?: string; familyId?: string | null };
+      state.bodies.patchTag = body;
+      const tag = state.spaceTags.find((t) => t.id === params.tagId);
+      if (!tag) return notFound();
+      if (body.name !== undefined) tag.name = body.name;
+      if (body.familyId !== undefined) {
+        state.familyOf = Object.fromEntries(
+          Object.entries({ ...state.familyOf, [tag.id]: body.familyId }).filter(
+            (entry): entry is [string, string] => entry[1] !== null
+          )
+        );
+      }
+      return HttpResponse.json(tag);
+    }),
+    http.post(`${base}/tags/:tagId/merge`, async ({ params, request }) => {
+      state.bodies.mergeTag = await request.json();
+      state.spaceTags = state.spaceTags.filter((t) => t.id !== params.tagId);
+      return new HttpResponse(null, { status: 204 });
+    }),
+    http.delete(`${base}/tags/:tagId`, ({ params }) => {
+      state.calls.push(`delete-tag:${String(params.tagId)}`);
+      state.spaceTags = state.spaceTags.filter((t) => t.id !== params.tagId);
+      return new HttpResponse(null, { status: 204 });
+    }),
+    http.post(`${base}/tag-families`, async ({ request }) => {
+      const { name } = (await request.json()) as { name: string };
+      state.bodies.createFamily = { name };
+      const family: TagFamily = { id: uuid(), scope: "SPACE", name };
+      state.tagFamilies.push(family);
+      return HttpResponse.json(family, { status: 201 });
+    }),
+    http.put(`${base}/tag-families/order`, async ({ request }) => {
+      const { ids } = (await request.json()) as { ids: string[] };
+      state.bodies.familyOrder = { ids };
+      state.tagFamilies = ids.flatMap((id) => state.tagFamilies.filter((f) => f.id === id));
+      return HttpResponse.json({ data: state.tagFamilies });
+    }),
+    http.patch(`${base}/tag-families/:familyId`, async ({ params, request }) => {
+      const { name } = (await request.json()) as { name: string };
+      state.bodies.renameFamily = { name };
+      const family = state.tagFamilies.find((f) => f.id === params.familyId);
+      if (!family) return notFound();
+      family.name = name;
+      return HttpResponse.json(family);
+    }),
+    http.delete(`${base}/tag-families/:familyId`, ({ params }) => {
+      state.calls.push(`delete-family:${String(params.familyId)}`);
+      state.tagFamilies = state.tagFamilies.filter((f) => f.id !== params.familyId);
+      state.familyOf = Object.fromEntries(
+        Object.entries(state.familyOf).filter(([, familyId]) => familyId !== params.familyId)
+      );
+      return new HttpResponse(null, { status: 204 });
+    }),
     http.get(base, ({ request }) => {
       const params = new URL(request.url).searchParams;
       state.queries.push(params);

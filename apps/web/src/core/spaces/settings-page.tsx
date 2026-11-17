@@ -325,6 +325,20 @@ export function SettingsPage({ space }: { space: SpaceDetail }) {
           </span>
           <Icon name="chevron-right" className="fm-option-go" />
         </Link>
+        {WEB_MODULES.filter((module) => space.modules.some((m) => m.code === module.code))
+          .flatMap((module) => module.settingsLinks?.(space) ?? [])
+          .map((link) => (
+            <Link key={link.id} to={`/s/${space.id}/${link.path}`} className="fm-option">
+              <span className="fm-option-icon">
+                <Icon name={link.icon} />
+              </span>
+              <span className="fm-option-text">
+                <b>{link.label}</b>
+                <small>{link.hint}</small>
+              </span>
+              <Icon name="chevron-right" className="fm-option-go" />
+            </Link>
+          ))}
       </section>
 
       {group && canIn(space, "space.export") ? (
