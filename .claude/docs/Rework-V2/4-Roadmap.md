@@ -132,13 +132,14 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] Revue dans Chrome et cloture de C7b (`27-Plan-C7b.md` S3)
   - [x] Retour de test : photo d'espace ovale ; affichage corrige et avatars recadres par l'utilisateur a l'envoi [D211]
   - [x] Verification en preprod : Discord actif et redirection correcte (2026-11-13) ; l'aller-retour reel chez Discord est considere comme bon par le proprietaire et sera teste apres la mise en prod (lignes `acc-discord-*` et `acc-sans-mdp` de la feuille de recette, hors seconde recette)
-- [ ] Seconde recette complete en preprod, sans echec ni remarque ouverte, puis feu vert explicite du proprietaire [D205] : condition d'entree de C8 (pas de date, la prod attend un produit fini)
+- [x] Seconde recette complete en preprod, sans echec ni remarque ouverte, puis feu vert explicite du proprietaire [D205] : condition d'entree de C8 (pas de date, la prod attend un produit fini) ; feu vert donne le 2026-11-17
   - [x] Passage de Claude dans Chrome (2026-11-13) : `30-Recette-2.md`
   - [x] Tri par le proprietaire (2026-11-13) : tout corriger avant la prod
   - [x] Lignes du proprietaire (telephone, deux appareils, admin, Bugsink) : jugees bonnes (2026-11-13)
   - [x] Defauts D1 a D15 corriges (detail : section 4 de `30-Recette-2.md`)
   - [x] Remarques R1 a R18 (detail : section 4 de `30-Recette-2.md`)
   - [x] Deploy preprod, revue des lignes concernees (2026-11-17 ; reste et ecart : section 4 de `30-Recette-2.md`)
+  - [x] Derniers points revus en preprod (R12, R13, D13, 2026-11-17) puis feu vert du proprietaire (fin de `30-Recette-2.md`)
 - [ ] C8 Mise en prod V2 (depuis ce poste [D201])
   - [x] Accelerer la CI (2026-11-12 : `verify` ~9 min dont 6 min 48 de tests et couverture) : image de test en cache (buildx `type=gha` comme les images de prod), tests de l'API repartis en jobs paralleles, cache du lint ; **2026-11-17** : CI #31 = ~14 min en serie (verify 8 min 24 dont 6 min de tests, e2e 4 min 16, build 1 min) ; fait : verify, tests en 3 morceaux (couverture fusionnee) et e2e en parallele (attendu ~6 a 7 min ; local : morceaux de 53, 57 et 85 s, fusion 4 s, 1646 tests) ; mesure CI #33 (2026-11-17) : 9 min 39 au lieu de ~14, vert, dont ~1 min 30 de builds sans cache (`package.json` modifie, ponctuel) et ~2 min 50 d'attente d'un runner pour le deploy ; chemin critique tests (~4 min 30) puis coverage (1 min 46, surtout la reconstruction de l'image de test). Non fait : image de test en cache (~50 s par job), cache du lint (verify hors chemin critique)
   - [x] `pg_dump` avant chaque deploy prod, garde 14 jours [D76] : au demarrage de l'API, avant les migrations (2026-11-17, `14-Architecture.md`)

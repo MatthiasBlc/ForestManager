@@ -151,3 +151,12 @@ Tests du proprietaire sur un vrai telephone (2026-11-17) : conformes, dont le de
 Deploy preprod du 2026-11-17 (CI #31, `9e61d88`) : carte "Pates sauce tomate" de "Revue duo" a 50 min et repere d'aujourd'hui dans le bandeau des jours du Planning (fond accent clair, theme sombre, 390 px) conformes. IP reelle au journal d'audit : a verifier par le proprietaire apres une connexion admin.
 
 Journal d'audit apres connexion admin (2026-11-17, 10 h 30) : IP `172.71.127.93`, plus `172.19.0.8`, mais c'est un noeud Cloudflare (le site passe par Cloudflare : chaine Cloudflare, Traefik, nginx du front, API). Tranche par le proprietaire : Traefik fait confiance aux plages de Cloudflare (`forwardedHeaders.trustedIPs`, config du serveur) et `TRUST_PROXY` passe a 3 en preprod et prod. Non falsifiable : un appel direct au serveur voit son `X-Forwarded-For` ecrase par Traefik.
+
+Derniers points non revus en preprod (2026-11-17, Chrome bureau 1092 x 684) : tous conformes.
+
+- R12 : F-REPAS en bureau a `max-height: calc(100% - 48px)` ; a 684 px de haut la fenetre prend toute la hauteur et defile pour une vraie raison (contenu 669 px pour 568 visibles) ; plus de barre a partir d'environ 785 px de haut.
+- R13 : un lien de 7 jours cree dans "Coloc recette" (testrecette1, mot de passe reinitialise depuis l'admin) apparait dans "Liens actifs" avec sa date en toutes lettres ("Cree le 17 novembre"), puis disparait une fois revoque. Le lien du 12/11 n'est pas liste : l'API ne renvoie que les liens actifs (ni revoques, ni expires, ni epuises) et le fil d'activite ne trace pas les liens ; le plus probable est qu'il ait ete epuise par l'arrivee de testrecette2 le 12/11. Seule une requete en base le prouverait.
+- D13 : import de la quiche lorraine Marmiton : titre "Quiche lorraine maison" (suffixe retire), photo reprise, 8 etapes propres (phrase coupee recousue, ni "C'est pret" ni "Deguster") suivies de la ligne vide habituelle de l'editeur, 3 badges "A verifier" sur les lignes (D2). Recette non enregistree.
+- D8, R9, R10 : deja revus en preprod (paragraphe "Planning revu ensuite en preprod" ci-dessus).
+
+Feu vert explicite du proprietaire pour la prod donne le 2026-11-17 [D205] : seconde recette close.
