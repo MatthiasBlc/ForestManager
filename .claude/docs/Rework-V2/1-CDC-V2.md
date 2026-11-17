@@ -1,6 +1,6 @@
 # Forest Manager V2 - Cahier des charges
 
-**Version : 1.5 (1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder ; 1.1 : module Planning revu au plan C5, D180 a D184, D11 amendee : midi et soir seulement ; 1.2 : plan C6, D187 a D189 : changelog en brouillon embarque, temps reel en SSE ; 1.3 : plan C6b, D192 : export en tache de fond, reimport en V2.1 ; 1.4 : etude UX mobile, D209 ; 1.5 : connexion avec Discord, D210, avatars recadres, D211 ; 1.6 : import dans une recette existante, D212 ; 1.7 : delai de recette par tag, D214 ; repas manuel verrouille, D215) ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception** - 2026-11-17
+**Version : 1.8 (1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder ; 1.1 : module Planning revu au plan C5, D180 a D184, D11 amendee : midi et soir seulement ; 1.2 : plan C6, D187 a D189 : changelog en brouillon embarque, temps reel en SSE ; 1.3 : plan C6b, D192 : export en tache de fond, reimport en V2.1 ; 1.4 : etude UX mobile, D209 ; 1.5 : connexion avec Discord, D210, avatars recadres, D211 ; 1.6 : import dans une recette existante, D212 ; 1.7 : delai de recette par tag, D214 ; repas manuel verrouille, D215 ; 1.8 : affichage des tags et familles, D216) ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception** - 2026-11-17
 Statut de chaque decision : voir `3-Journal-des-Decisions.md`. Une ligne marquee `[Dxx]` renvoie a sa decision.
 Les questions de la phase A sont au S10 (toutes repondues). Tant qu'une question touche une section, cette section n'est pas validable.
 
@@ -119,7 +119,7 @@ Cycle de vie [D03][D04][D05] :
 - F-REC-8 **Historique des revisions** consultable, avec restauration (meme droit que modifier [D55]). Le bouton d'enregistrement annonce la revision creee ("Enregistrer la revision 5") [D102]. Quitter l'editeur sans enregistrer garde un brouillon sur l'appareil [D104].
 - F-REC-9 Retirer une recette d'un espace de partage (auteur ou moderateur de cet espace) sans la supprimer.
 - F-REC-10 Supprimer une recette (auteur ; MOD et OWNER de l'espace d'origine si l'auteur n'en est plus membre [D57]) : elle disparait de tous les espaces ou elle est partagee, apres confirmation listant ces espaces.
-- F-REC-11 Recherche et filtres : texte, tags, ingredients, temps max, auteur, espace. Tri.
+- F-REC-11 Recherche et filtres : texte, tags, ingredients, temps max, auteur, espace. Tri. Filtres dans une feuille, seuls les filtres actifs restent en tete de liste [D216].
 - F-REC-12 Vue cuisine : etapes en grand, ecran maintenu allume, cochage des ingredients. Sur mobile, le detail d'une recette a un en-tete avec retour et une seule action principale fixee en bas (Mode cuisine) [D100].
 - F-REC-13 Compteurs : nombre de fois planifiee, derniere fois cuisinee, nombre d'adaptations, espaces de partage. Pas de suivi des vues [D39].
 
@@ -128,7 +128,8 @@ Ce que l'on supprime de la V1 : la recette perso jumelle creee automatiquement, 
 ### 4.4 Referentiels (tags, ingredients, unites) [D08][D09]
 
 - F-REF-1 Tags globaux : liste courte et curee par l'admin (ex : vegetarien, dessert, rapide).
-- F-REF-2 Tags d'espace : propres a chaque espace, y compris sur une recette partagee [D19]. Tout membre peut en creer en taguant une recette ; ils sont immediatement utilisables. Les moderateurs les renomment, fusionnent, suppriment.
+- F-REF-2 Tags d'espace : propres a chaque espace, y compris sur une recette partagee [D19]. Qui peut modifier la recette la tague dans l'editeur avec les tags de l'espace ou il l'ouvre, et cree un tag d'espace a la volee ; ils sont immediatement utilisables. Les moderateurs les renomment, fusionnent, suppriment dans Reglages de l'espace > Tags [D216].
+- F-REF-6 Familles de tags (Saison, Categorie...) : globales (admin) ou d'espace (moderateurs), ordonnees ; un tag a au plus une famille. Un seul composant de choix de tags partout (feuille avec recherche et familles) ; filtre OU dans une famille, ET entre familles ; deux premiers tags en texte sur les cartes ; au partage, les tags d'espace d'origine de la recette sont proposes (coches) pour l'espace cible, crees s'ils n'y existent pas [D216].
 - F-REF-3 Ingredients : catalogue global. Un ingredient inconnu est cree a la volee et utilisable tout de suite ; l'admin fusionne les doublons a posteriori (le statut sert au tri de la file admin, pas a bloquer). Un ingredient fusionne devient un synonyme de la cible : propose a la saisie, remplace par la cible [D120].
 - F-REF-4 Unites : catalogue global gere par l'admin, par dimension (poids, volume, piece, qualitatif ; les cuilleres sont des volumes) avec un facteur vers l'unite de base, et un poids par ingredient et par unite pour passer des pieces aux grammes [D46]. Sert aux recettes composees et a la liste de courses [D36].
 - F-REF-5 Rayons : chaque ingredient a un rayon par defaut (fruits et legumes, boucherie...), gere par l'admin, utilise par la future liste de courses [D36]. Les rayons sont ordonnes selon le parcours en magasin ; sans rayon, l'ingredient va dans "Autres" [D125].

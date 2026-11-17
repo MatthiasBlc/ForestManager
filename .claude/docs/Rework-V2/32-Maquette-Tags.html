@@ -1,0 +1,361 @@
+<title>Tags de Forest Manager</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Maquette de l'etude des tags (32-Etude-Tags.md) : ecrans de telephone (360 px) cote a cote, jetons du theme Braise. */
+:root {
+  --bg: #f5f3ef; --surface: #fbfaf7; --raised: #ffffff; --line: #ddd6cb; --line-strong: #918a7f;
+  --ink: #1f1d1a; --muted: #5f5a53; --overlay: rgba(28, 26, 22, 0.42);
+  --accent: #b45f19; --accent-soft: #f2e7dc; --accent-text: #9f5619; --on-accent: #ffffff;
+  --second-soft: #e5e8e9; --second-text: #46607f; --danger-soft: #f6e1df; --danger-text: #a3271f;
+  --stage: #ebe7e0; --shadow: 0 -8px 32px rgba(40, 32, 20, 0.16);
+  --img1: #c9a27a; --img2: #8fa37c; --img3: #b98466; --img4: #a9a088;
+  --font-display: "Sora", "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #16181b; --surface: #1f2226; --raised: #282c31; --line: #32363c; --line-strong: #74777c;
+  --ink: #eceae6; --muted: #a6a39e; --overlay: rgba(8, 9, 10, 0.62);
+  --accent: #e8913a; --accent-soft: #4b3a2a; --accent-text: #e89541; --on-accent: #121417;
+  --second-soft: #383f4a; --second-text: #93abc9; --danger-soft: #4a2826; --danger-text: #f2827a;
+  --stage: #0f1113; --shadow: 0 -8px 32px rgba(0, 0, 0, 0.55);
+  --img1: #6b543d; --img2: #4c5a42; --img3: #64463a; --img4: #57513f;
+  color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #16181b; --surface: #1f2226; --raised: #282c31; --line: #32363c; --line-strong: #74777c;
+  --ink: #eceae6; --muted: #a6a39e; --overlay: rgba(8, 9, 10, 0.62);
+  --accent: #e8913a; --accent-soft: #4b3a2a; --accent-text: #e89541; --on-accent: #121417;
+  --second-soft: #383f4a; --second-text: #93abc9; --danger-soft: #4a2826; --danger-text: #f2827a;
+  --stage: #0f1113; --shadow: 0 -8px 32px rgba(0, 0, 0, 0.55);
+  --img1: #6b543d; --img2: #4c5a42; --img3: #64463a; --img4: #57513f;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--stage); color: var(--ink); font-family: var(--font-sans); font-size: 15px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 40px; }
+header.page, .flow, .notes { max-width: 1240px; margin-inline: auto; }
+header.page { margin-bottom: 24px; display: grid; gap: 6px; }
+header.page h1 { font: 700 26px/1.2 var(--font-display); margin: 0; text-wrap: balance; }
+header.page p { margin: 0; color: var(--muted); max-width: 75ch; }
+h2.group { font: 600 18px/1.3 var(--font-display); margin: 36px auto 14px; max-width: 1240px; }
+.flow { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 28px 20px; }
+figure { margin: 0; display: grid; gap: 10px; align-content: start; min-width: 0; }
+figcaption { display: grid; gap: 2px; }
+figcaption b { font: 600 15px/1.3 var(--font-display); }
+figcaption span { color: var(--muted); font-size: 14px; }
+.step { font: 500 12px/1 var(--font-mono); color: var(--accent-text); letter-spacing: .04em; }
+.step.before { color: var(--danger-text); }
+
+/* Telephone */
+.phone { position: relative; width: 100%; max-width: 360px; height: 700px; border-radius: 28px; overflow: hidden; background: var(--bg);
+  border: 1px solid var(--line); display: flex; flex-direction: column; }
+.top { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.space-dot { width: 30px; height: 30px; border-radius: 9px; background: #3f7a5a; color: #fff; display: grid; place-items: center; font: 700 13px var(--font-display); }
+.top b { font: 600 16px var(--font-display); flex: 1; }
+.body { padding: 14px 16px; display: grid; gap: 12px; align-content: start; overflow: hidden; flex: 1; }
+svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.btn-main { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: 12px; border: 0;
+  background: var(--accent); color: var(--on-accent); font: 700 15px var(--font-sans); padding: 0 16px; }
+.btn-ghost { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; border-radius: 12px; border: 1px solid var(--line-strong);
+  background: transparent; color: var(--ink); font: 600 15px var(--font-sans); padding: 0 14px; }
+.searchbar { display: flex; gap: 8px; }
+.input { min-height: 44px; border: 1px solid var(--line-strong); border-radius: 12px; padding: 0 12px; display: flex; align-items: center; gap: 8px;
+  background: var(--surface); color: var(--ink); font-weight: 500; flex: 1; min-width: 0; }
+.input.empty { color: var(--muted); }
+.count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; border-radius: 999px; background: var(--accent); color: var(--on-accent);
+  font: 700 12px var(--font-sans); padding: 0 6px; }
+
+/* Pastilles */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips.row { flex-wrap: nowrap; overflow: hidden; mask-image: linear-gradient(90deg, #000 85%, transparent); }
+.chip { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line-strong);
+  background: var(--raised); color: var(--ink); font: 600 14px/20px var(--font-sans); white-space: nowrap; flex: none; }
+.chip.on { background: var(--accent-soft); color: var(--accent-text); border-color: var(--accent-text); }
+.chip small { color: var(--muted); font-weight: 500; font-size: 12px; font-variant-numeric: tabular-nums; }
+.chip.on small { color: var(--accent-text); }
+.chip svg { width: 16px; height: 16px; }
+.chip.add { border-style: dashed; color: var(--accent-text); }
+.chip.dim { opacity: .45; }
+
+/* Cartes */
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.rcard { border-radius: 14px; overflow: hidden; background: var(--surface); border: 1px solid var(--line); }
+.rcard .img { aspect-ratio: 4 / 3; max-width: 100%; }
+.rcard .t { padding: 8px 10px 10px; display: grid; gap: 1px; }
+.rcard b { font-size: 14px; line-height: 1.25; }
+.rcard small { color: var(--muted); font-size: 12px; }
+.rcard .tags { color: var(--accent-text); font-weight: 600; }
+
+/* Feuilles */
+.scrim { position: absolute; inset: 0; background: var(--overlay); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--raised); border-radius: 22px 22px 0 0; box-shadow: var(--shadow);
+  padding: 8px 16px 16px; display: flex; flex-direction: column; gap: 12px; max-height: 92%; }
+.sheet.tall { top: 56px; }
+.grab { width: 40px; height: 4px; border-radius: 4px; background: var(--line-strong); margin: 0 auto 2px; opacity: .6; }
+.sheet-head { display: flex; align-items: center; gap: 8px; }
+.sheet-head h3 { margin: 0; flex: 1; font: 600 17px/1.3 var(--font-display); }
+.icon-btn { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; color: var(--ink); }
+.scroll { display: grid; gap: 14px; overflow: hidden; flex: 1; align-content: start; }
+.fam { display: grid; gap: 8px; }
+.fam > span { font: 700 12px/1 var(--font-sans); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); display: flex; gap: 8px; }
+.fam > span em { font-style: normal; font-weight: 600; text-transform: none; letter-spacing: 0; }
+.foot { display: flex; gap: 10px; border-top: 1px solid var(--line); padding-top: 12px; }
+.foot .btn-main { flex: 1; }
+.switch { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; justify-content: space-between; }
+.switch i { width: 40px; height: 24px; border-radius: 999px; background: var(--line-strong); position: relative; flex: none; }
+.switch i::after { content: ""; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--raised); }
+.seg { display: flex; border: 1px solid var(--line-strong); border-radius: 12px; overflow: hidden; }
+.seg span { flex: 1; text-align: center; padding: 8px 4px; font-weight: 600; font-size: 14px; }
+.seg span.on { background: var(--accent-soft); color: var(--accent-text); }
+.create { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 14px; border: 1px dashed var(--accent-text); color: var(--accent-text); font-weight: 700; }
+.hint { font-size: 13px; color: var(--muted); }
+
+/* Formulaires et lignes */
+.lbl { display: grid; gap: 6px; font-weight: 600; font-size: 14px; }
+.field { min-height: 48px; border: 1px solid var(--line-strong); border-radius: 12px; padding: 0 12px; display: flex; align-items: center; gap: 8px; background: var(--surface); font-weight: 600; }
+.field span { flex: 1; }
+.field svg { color: var(--muted); }
+.rows { display: grid; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--surface); }
+.r { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-top: 1px solid var(--line); min-height: 48px; }
+.r:first-child { border-top: 0; }
+.r .txt { display: grid; flex: 1; min-width: 0; }
+.r .txt b { font-size: 15px; }
+.r small { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.r .more { color: var(--muted); }
+.sec { font: 600 15px var(--font-display); display: flex; align-items: center; gap: 8px; }
+.sec .btn-ghost { min-height: 34px; font-size: 13px; padding: 0 10px; margin-left: auto; }
+.badge { display: inline-flex; align-items: center; min-height: 26px; padding: 0 10px; border-radius: 999px; font-size: 13px; font-weight: 700; background: var(--second-soft); color: var(--second-text); }
+.badge.a { background: var(--accent-soft); color: var(--accent-text); }
+.hero { height: 150px; background: linear-gradient(140deg, var(--img1), var(--img3)); }
+h4 { margin: 0; font: 700 21px/1.25 var(--font-display); }
+.pal { padding: 12px; display: grid; gap: 8px; }
+.pal .grp { font: 700 12px var(--font-sans); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 4px 4px 0; }
+.pal .it { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; }
+.pal .it.sel { background: var(--accent-soft); }
+.pal .ico { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; background: var(--second-soft); color: var(--second-text); flex: none; }
+.pal .it div { display: grid; flex: 1; }
+.pal .it small { color: var(--muted); font-size: 13px; }
+
+.notes { margin-top: 36px; display: grid; gap: 8px; }
+.notes h2 { font: 600 18px var(--font-display); margin: 0; }
+.notes ul { margin: 0; padding-left: 20px; color: var(--muted); max-width: 85ch; display: grid; gap: 4px; }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.2"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M17 3a2.8 2.8 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></symbol>
+  <symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></symbol>
+</svg>
+
+<header class="page">
+  <h1>Affichage des tags</h1>
+  <p>Maquette de l'étude des tags (proposition recommandée : feuille de filtres et familles de tags). Données de l'espace « Le Nid » : 18 tags globaux, 11 catégories et 4 paliers ; noms des catégories et nombres de recettes donnés pour l'exemple. Mobile ; en bureau, les mêmes feuilles s'ouvrent en fenêtre centrée.</p>
+</header>
+
+<h2 class="group">Liste des recettes</h2>
+<div class="flow">
+  <figure>
+    <figcaption><span class="step before">AVANT</span><b>35 pastilles sur une rangée</b><span>Toutes, 18 tags globaux, 15 tags de l'espace, Bases. Sur mobile, la rangée défile sans fin ; en bureau, 4 à 5 lignes avant la première recette.</span></figcaption>
+    <div class="phone">
+      <div class="top"><span class="space-dot">LN</span><b>Le Nid</b></div>
+      <div class="body">
+        <div class="btn-main"><svg><use href="#i-plus"/></svg>Ajouter une recette</div>
+        <div class="input empty"><svg><use href="#i-search"/></svg>Rechercher une recette</div>
+        <div class="chips row"><span class="chip on">Toutes</span><span class="chip">Air fryer</span><span class="chip">Apéritif</span><span class="chip">Automne</span><span class="chip">Batch cooking</span><span class="chip">Congelable</span></div>
+        <div class="grid">
+          <div class="rcard"><div class="img" style="background:var(--img1)"></div><div class="t"><b>Gratin dauphinois</b><small>6 pers. · 1 h 15</small></div></div>
+          <div class="rcard"><div class="img" style="background:var(--img2)"></div><div class="t"><b>Soupe de potiron</b><small>4 pers. · 40 min</small></div></div>
+          <div class="rcard"><div class="img" style="background:var(--img3)"></div><div class="t"><b>Pâtes carbonara</b><small>4 pers. · 20 min</small></div></div>
+          <div class="rcard"><div class="img" style="background:var(--img4)"></div><div class="t"><b>Curry de lentilles</b><small>4 pers. · 35 min</small></div></div>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><span class="step">A · E-RECETTES</span><b>Recherche et « Filtres »</b><span>Une seule rangée : les filtres actifs, retirables d'un toucher. Sous chaque titre, les deux premiers tags (ordre des familles).</span></figcaption>
+    <div class="phone">
+      <div class="top"><span class="space-dot">LN</span><b>Le Nid</b></div>
+      <div class="body">
+        <div class="btn-main"><svg><use href="#i-plus"/></svg>Ajouter une recette</div>
+        <div class="searchbar"><div class="input empty"><svg><use href="#i-search"/></svg>Rechercher</div><div class="btn-ghost"><svg><use href="#i-filter"/></svg>Filtres<span class="count">3</span></div></div>
+        <div class="chips"><span class="chip on">Hiver<svg><use href="#i-x"/></svg></span><span class="chip on">Automne<svg><use href="#i-x"/></svg></span><span class="chip on">Gratins<svg><use href="#i-x"/></svg></span></div>
+        <small class="hint">12 recettes</small>
+        <div class="grid">
+          <div class="rcard"><div class="img" style="background:var(--img1)"></div><div class="t"><b>Gratin dauphinois</b><small>6 pers. · 1 h 15</small><small class="tags">Gratins · Incontournable</small></div></div>
+          <div class="rcard"><div class="img" style="background:var(--img3)"></div><div class="t"><b>Gratin de chou-fleur</b><small>4 pers. · 50 min</small><small class="tags">Gratins · Régulier</small></div></div>
+          <div class="rcard"><div class="img" style="background:var(--img2)"></div><div class="t"><b>Tartiflette</b><small>6 pers. · 1 h</small><small class="tags">Gratins · Occasionnel</small></div></div>
+          <div class="rcard"><div class="img" style="background:var(--img4)"></div><div class="t"><b>Gratin de crozets</b><small>4 pers. · 45 min</small><small class="tags">Gratins · À tester</small></div></div>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><span class="step">A · F-FILTRES</span><b>Feuille de filtres</b><span>Tags par famille avec leur nombre de recettes ; ceux sans recette ne sont pas montrés. Dans une famille on additionne (Hiver ou Automne), entre familles on croise (et Gratins).</span></figcaption>
+    <div class="phone">
+      <div class="top"><span class="space-dot">LN</span><b>Le Nid</b></div>
+      <div class="scrim"></div>
+      <div class="sheet tall">
+        <div class="grab"></div>
+        <div class="sheet-head"><h3>Filtres</h3><span class="icon-btn"><svg><use href="#i-x"/></svg></span></div>
+        <div class="input empty"><svg><use href="#i-search"/></svg>Chercher un tag</div>
+        <div class="scroll">
+          <div class="fam"><span>Saison</span><div class="chips"><span class="chip on">Hiver <small>42</small></span><span class="chip">Printemps <small>31</small></span><span class="chip">Été <small>28</small></span><span class="chip on">Automne <small>45</small></span></div></div>
+          <div class="fam"><span>Catégorie <em>· Le Nid</em></span><div class="chips"><span class="chip">Pâtes <small>24</small></span><span class="chip on">Gratins <small>12</small></span><span class="chip">Soupes <small>15</small></span><span class="chip">Salades <small>14</small></span><span class="chip">Tartes <small>9</small></span><span class="chip">Volaille <small>18</small></span><span class="chip">Poisson <small>11</small></span><span class="chip">+ 4</span></div></div>
+          <div class="fam"><span>Palier <em>· Le Nid</em></span><div class="chips"><span class="chip">Incontournable <small>23</small></span><span class="chip">Régulier <small>61</small></span><span class="chip">Occasionnel <small>48</small></span><span class="chip">À tester <small>25</small></span></div></div>
+          <div class="fam"><span>Moment</span><div class="chips"><span class="chip">Midi <small>80</small></span><span class="chip">Soir <small>97</small></span></div></div>
+          <div class="fam"><span>Pratique</span><div class="chips"><span class="chip">Rapide <small>37</small></span><span class="chip">Congelable <small>29</small></span><span class="chip">Air fryer <small>8</small></span></div></div>
+          <div class="switch">Bases seulement (sauces, pâtes…)<i></i></div>
+        </div>
+        <div class="foot"><div class="btn-ghost">Effacer</div><div class="btn-main">Voir 12 recettes</div></div>
+      </div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><span class="step">B · VARIANTE</span><b>A + raccourcis</b><span>Sans filtre actif, la rangée propose les tags les plus utilisés de l'espace. Un geste de moins pour eux, mais la rangée peut encore déborder.</span></figcaption>
+    <div class="phone">
+      <div class="top"><span class="space-dot">LN</span><b>Le Nid</b></div>
+      <div class="body">
+        <div class="btn-main"><svg><use href="#i-plus"/></svg>Ajouter une recette</div>
+        <div class="searchbar"><div class="input empty"><svg><use href="#i-search"/></svg>Rechercher</div><div class="btn-ghost"><svg><use href="#i-filter"/></svg>Filtres</div></div>
+        <div class="chips row"><span class="chip">Soir</span><span class="chip">Midi</span><span class="chip">Régulier</span><span class="chip">Automne</span><span class="chip">Hiver</span></div>
+        <div class="grid">
+          <div class="rcard"><div class="img" style="background:var(--img1)"></div><div class="t"><b>Gratin dauphinois</b><small>6 pers. · 1 h 15</small><small class="tags">Gratins · Incontournable</small></div></div>
+          <div class="rcard"><div class="img" style="background:var(--img2)"></div><div class="t"><b>Soupe de potiron</b><small>4 pers. · 40 min</small><small class="tags">Soupes · Régulier</small></div></div>
+          <div class="rcard"><div class="img" style="background:var(--img3)"></div><div class="t"><b>Pâtes carbonara</b><small>4 pers. · 20 min</small><small class="tags">Pâtes · Incontournable</small></div></div>
+          <div class="rcard"><div class="img" style="background:var(--img4)"></div><div class="t"><b>Curry de lentilles</b><small>4 pers. · 35 min</small><small class="tags">Plats mijotés · À tester</small></div></div>
+        </div>
+      </div>
+    </div>
+  </figure>
+</div>
+
+<h2 class="group">Le même choix de tags partout</h2>
+<div class="flow">
+  <figure>
+    <figcaption><span class="step">E-RECETTE-EDITION</span><b>Section « Tags » de l'éditeur</b><span>Une section au lieu de deux : les tags choisis, retirables, et « Ajouter des tags ».</span></figcaption>
+    <div class="phone">
+      <div class="top"><span class="icon-btn"><svg><use href="#i-back"/></svg></span><b>Modifier la recette</b></div>
+      <div class="body">
+        <label class="lbl">Titre<span class="field"><span>Gratin dauphinois</span></span></label>
+        <div class="sec">Tags</div>
+        <div class="chips"><span class="chip on">Hiver<svg><use href="#i-x"/></svg></span><span class="chip on">Automne<svg><use href="#i-x"/></svg></span><span class="chip on">Soir<svg><use href="#i-x"/></svg></span><span class="chip on">Gratins<svg><use href="#i-x"/></svg></span><span class="chip on">Incontournable<svg><use href="#i-x"/></svg></span><span class="chip add"><svg><use href="#i-plus"/></svg>Ajouter des tags</span></div>
+        <small class="hint">Gratins et Incontournable sont des tags de Le Nid : ils ne suivent pas la recette dans les autres espaces.</small>
+        <div class="switch">Recette de base (sauce, pâte…)<i></i></div>
+      </div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><span class="step">F-TAGS</span><b>Ajouter des tags, en créer un</b><span>Même feuille que les filtres, sans les nombres. Si la recherche ne trouve rien, on crée le tag dans l'espace (un membre ; aujourd'hui impossible depuis l'app).</span></figcaption>
+    <div class="phone">
+      <div class="top"><span class="icon-btn"><svg><use href="#i-back"/></svg></span><b>Modifier la recette</b></div>
+      <div class="scrim"></div>
+      <div class="sheet tall">
+        <div class="grab"></div>
+        <div class="sheet-head"><h3>Tags de la recette</h3><span class="icon-btn"><svg><use href="#i-x"/></svg></span></div>
+        <div class="input"><svg><use href="#i-search"/></svg>raclette</div>
+        <div class="scroll">
+          <div class="create"><svg><use href="#i-plus"/></svg>Créer le tag « Raclette » dans Le Nid</div>
+          <p class="hint" style="margin:0">Aucun tag ne s'appelle ainsi. Le nouveau tag va dans « Autres » ; un modérateur pourra le ranger dans une famille.</p>
+          <div class="fam"><span>Déjà choisis</span><div class="chips"><span class="chip on">Hiver</span><span class="chip on">Automne</span><span class="chip on">Soir</span><span class="chip on">Gratins</span><span class="chip on">Incontournable</span></div></div>
+        </div>
+        <div class="foot"><div class="btn-main">OK</div></div>
+      </div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><span class="step">F-REGLE · F-EPINGLER</span><b>Planning : un tag en un champ</b><span>Le champ ouvre la même feuille en choix unique (sans « OK » : toucher un tag le choisit et ferme).</span></figcaption>
+    <div class="phone">
+      <div class="top"><span class="space-dot">LN</span><b>Profil Automne</b></div>
+      <div class="scrim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="sheet-head"><h3>Nouvelle règle</h3><span class="icon-btn"><svg><use href="#i-x"/></svg></span></div>
+        <div class="seg"><span class="on">Un tag</span><span>Une recette</span></div>
+        <label class="lbl">Tag<span class="field"><svg><use href="#i-tag"/></svg><span>Gratins</span><svg><use href="#i-chev"/></svg></span></label>
+        <label class="lbl">Poids<div class="seg"><span>Rare</span><span>Moins</span><span class="on">Normal</span><span>Plus</span><span>Souvent</span></div></label>
+        <label class="lbl">Fréquence<span class="field"><span>1 à 2 fois par semaine</span><svg><use href="#i-chev"/></svg></span></label>
+        <div class="foot"><div class="btn-main">Enregistrer</div></div>
+      </div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><span class="step">E-RECETTE</span><b>Fiche recette</b><span>Badges triés par famille. « Modifier » ouvre la feuille des tags, y compris sur une recette partagée (seulement les tags de cet espace).</span></figcaption>
+    <div class="phone">
+      <div class="hero"></div>
+      <div class="body">
+        <h4>Gratin dauphinois</h4>
+        <small class="hint">6 pers. · 1 h 15 · Léa</small>
+        <div class="sec">Tags<span class="btn-ghost"><svg><use href="#i-pencil"/></svg>Modifier</span></div>
+        <div class="chips"><span class="badge a">Hiver</span><span class="badge a">Automne</span><span class="badge a">Soir</span><span class="badge">Gratins</span><span class="badge">Incontournable</span></div>
+        <div class="sec">Ingrédients</div>
+        <div class="rows"><div class="r"><div class="txt"><b>1,2 kg pommes de terre</b></div></div><div class="r"><div class="txt"><b>50 cl crème entière</b></div></div><div class="r"><div class="txt"><b>2 gousses d'ail</b></div></div></div>
+      </div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><span class="step">E-TAGS-ESPACE</span><b>Réglages de l'espace &gt; Tags</b><span>Modérateurs : familles de l'espace dans l'ordre (glisser), tags avec leur nombre de recettes ; « … » pour renommer, changer de famille, fusionner, supprimer. Les familles globales se règlent dans l'admin.</span></figcaption>
+    <div class="phone">
+      <div class="top"><span class="icon-btn"><svg><use href="#i-back"/></svg></span><b>Tags de Le Nid</b></div>
+      <div class="body">
+        <div class="btn-ghost"><svg><use href="#i-plus"/></svg>Nouvelle famille</div>
+        <div class="sec"><svg style="color:var(--muted)"><use href="#i-grip"/></svg>Catégorie<span class="icon-btn" style="margin-left:auto"><svg><use href="#i-dots"/></svg></span></div>
+        <div class="rows">
+          <div class="r"><div class="txt"><b>Pâtes</b><small>24 recettes</small></div><svg class="more"><use href="#i-dots"/></svg></div>
+          <div class="r"><div class="txt"><b>Gratins</b><small>12 recettes</small></div><svg class="more"><use href="#i-dots"/></svg></div>
+          <div class="r"><div class="txt"><b>Soupes</b><small>15 recettes</small></div><svg class="more"><use href="#i-dots"/></svg></div>
+        </div>
+        <div class="sec"><svg style="color:var(--muted)"><use href="#i-grip"/></svg>Palier<span class="icon-btn" style="margin-left:auto"><svg><use href="#i-dots"/></svg></span></div>
+        <div class="rows">
+          <div class="r"><div class="txt"><b>Incontournable</b><small>23 recettes</small></div><svg class="more"><use href="#i-dots"/></svg></div>
+          <div class="r"><div class="txt"><b>Régulier</b><small>61 recettes</small></div><svg class="more"><use href="#i-dots"/></svg></div>
+        </div>
+        <div class="sec">Autres</div>
+        <div class="rows"><div class="r"><div class="txt"><b>Raclette</b><small>1 recette · créé par Léa</small></div><svg class="more"><use href="#i-dots"/></svg></div></div>
+      </div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption><span class="step">RECHERCHE</span><b>Les tags dans la recherche</b><span>Un groupe « Tags » : toucher un tag ouvre la liste des recettes de l'espace, filtrée sur ce tag.</span></figcaption>
+    <div class="phone">
+      <div class="top"><span class="space-dot">LN</span><b>Le Nid</b></div>
+      <div class="scrim"></div>
+      <div class="sheet tall">
+        <div class="input"><svg><use href="#i-search"/></svg>hiv</div>
+        <div class="pal">
+          <span class="grp">Tags</span>
+          <div class="it sel"><span class="ico"><svg><use href="#i-tag"/></svg></span><div><b>Hiver</b><small>42 recettes dans Le Nid</small></div></div>
+          <span class="grp">Recettes</span>
+          <div class="it"><span class="ico" style="background:var(--img1)"></span><div><b>Salade d'hiver aux agrumes</b><small>Le Nid</small></div></div>
+          <div class="it"><span class="ico" style="background:var(--img3)"></span><div><b>Pot-au-feu d'hiver</b><small>Le Nid</small></div></div>
+        </div>
+      </div>
+    </div>
+  </figure>
+</div>
+
+<section class="notes">
+  <h2>Ce qui change sous le capot</h2>
+  <ul>
+    <li>Familles : table <code>TagFamily</code> (globale ou d'espace, nom, position) et <code>Tag.familyId</code> facultatif ; familles globales dans l'admin, familles d'espace par les modérateurs.</li>
+    <li>La liste des tags d'un espace renvoie le nombre de recettes par tag ; le filtre combine OU dans une famille et ET entre familles.</li>
+    <li>Un seul composant de choix de tags (filtres, éditeur, fiche, planning, « Depuis mes recettes ») remplace les quatre actuels.</li>
+    <li>Création, renommage, fusion et suppression des tags d'espace : les routes existent déjà, il manque les écrans.</li>
+  </ul>
+</section>

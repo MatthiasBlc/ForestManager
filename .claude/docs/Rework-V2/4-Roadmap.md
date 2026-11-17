@@ -151,7 +151,18 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
 - [x] Importer dans une recette existante [D212] (2026-11-17) : API (`imported` a la modification, revision IMPORT), editeur (menu "...", feuilles d'import reutilisees, fusion), TDD, E2E
 - [x] Delai de recette propre aux recettes d'un tag [D214] (2026-11-17)
 - [x] Repas choisi a la main verrouille d'office [D215] (2026-11-17)
-- [ ] Affichage des tags partout ou un utilisateur voit une liste de tags (filtres des listes de recettes, editeur, regles du planning, recherche...), harmonise : trop de pastilles, scroll horizontal sans fin sur mobile ; etude, options, choix au selecteur (demande du proprietaire, 2026-11-17)
+- [x] Etude de l'affichage des tags (demande du proprietaire, 2026-11-17) : `32-Etude-Tags.md`, maquette `32-Maquette-Tags.html` (https://claude.ai/artifact/9uWV3b9eBZqmoRFW5vNSqS), choix au selecteur [D216]
+- [ ] Tags harmonises [D216] (TDD)
+  - [ ] Familles de tags : modele `TagFamily` + `Tag.familyId`, API (familles globales dans l'admin, familles d'espace par les moderateurs), nombre de recettes par tag dans la liste des tags d'un espace, seed inchange (familles des tags globaux reglees par l'admin)
+  - [ ] Filtre OU dans une famille, ET entre familles (API de la liste et filtre hors ligne)
+  - [ ] Composant de choix de tags (feuille : recherche, familles, choix multiple ou unique, creation d'un tag d'espace)
+  - [ ] Liste des recettes et "Depuis mes recettes" : bouton "Filtres", filtres actifs retirables, feuille de filtres (Bases, espace d'origine) ; deux tags en texte sur les cartes
+  - [ ] Editeur : une section Tags (globaux + tags de l'espace ou il est ouvert, y compris un espace de partage) ; API : seul qui peut modifier la recette change ses tags d'espace
+  - [ ] Partage (F-PARTAGER, "Depuis mes recettes") : tags d'espace d'origine proposes en cases cochees, poses ou crees dans l'espace cible
+  - [ ] Planning : regle et epinglage par le champ "Tag" (choix unique)
+  - [ ] Reglages de l'espace > Tags (moderateurs) ; admin : familles globales
+  - [ ] Recherche globale : groupe "Tags"
+  - [ ] E2E, verification dans Chrome (mobile et bureau)
 - [ ] Cartes de recette en bureau : bouton "..." en haut a droite de l'image, qui ouvre au clic gauche le meme menu que le clic droit (demande du proprietaire, 2026-11-17 ; points horizontaux ou verticaux a trancher)
 - [ ] Ordre des espaces dans le rail par glisser-deposer (attention UI / UX : souris, doigt, clavier) ; l'espace perso reste toujours en haut, le bouton "+" toujours en bas (demande du proprietaire, 2026-11-17)
 - [ ] Fleche de retour d'une recette ouverte depuis le planning : revenir au planning (meme semaine, meme vue), pas a la liste des recettes ; de meme, une recette ouverte depuis un widget de l'accueil revient a l'accueil ; verifier les autres origines (recherche, notifications, activite) (demande du proprietaire, 2026-11-17)
