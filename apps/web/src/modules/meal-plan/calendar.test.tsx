@@ -283,6 +283,9 @@ describe("E-PLANNING en mobile : Jour et Semaine (D111)", () => {
       await screen.findByRole("heading", { name: "Mercredi 11 novembre" })
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Mercredi 11, soir : Pizza" })).toBeInTheDocument();
+    // Aujourd'hui garde un repere visuel quand un autre jour est choisi (fond accent clair)
+    expect(screen.getByRole("button", { name: /MAR 10/ })).toHaveClass("bg-accent-soft");
+    expect(screen.getByRole("button", { name: /JEU 12/ })).not.toHaveClass("bg-accent-soft");
   });
 
   it("vue Semaine : une ligne par jour, toucher un repas l'ouvre", async () => {

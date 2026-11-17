@@ -218,7 +218,11 @@ function DayView({
               {...(iso === today ? { "aria-current": "date" as const } : {})}
               className={cx(
                 "flex flex-col items-center rounded-md py-1",
-                iso === day ? "bg-accent text-on-accent" : "bg-surface"
+                iso === day
+                  ? "bg-accent text-on-accent"
+                  : iso === today
+                    ? "bg-accent-soft text-accent-text"
+                    : "bg-surface"
               )}
               onClick={() => {
                 onDay(iso);
