@@ -1,5 +1,5 @@
 // RecipeCard du design system : photo (ou fond teinte), titre, portions et temps,
-// badges d'etat. Toucher ou Entree ouvre la recette ; appui long, clic droit,
+// badges d'etat, deux premiers tags. Toucher ou Entree ouvre la recette ; appui long, clic droit,
 // touche Menu ou Maj+F10 ouvrent ses actions (F-ACTIONS).
 import { Badge, type Tone } from "../../../ui/display.tsx";
 import type { IconName } from "../../../ui/icon.tsx";
@@ -16,6 +16,7 @@ export function RecipeCard({
   meta,
   image,
   badges = [],
+  tags,
   onOpen,
   onActions,
 }: {
@@ -23,6 +24,8 @@ export function RecipeCard({
   meta?: string;
   image?: string | null;
   badges?: readonly CardBadge[];
+  /** Deux premiers tags, ordre des familles [D216] ("Pates · Hiver"). */
+  tags?: readonly string[];
   onOpen: () => void;
   onActions?: () => void;
 }) {
@@ -75,6 +78,9 @@ export function RecipeCard({
       <div className="fm-rcard-body">
         <b>{title}</b>
         {meta ? <small>{meta}</small> : null}
+        {tags && tags.length > 0 ? (
+          <small className="fm-rcard-tags">{tags.slice(0, 2).join(" · ")}</small>
+        ) : null}
       </div>
     </article>
   );

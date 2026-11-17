@@ -410,6 +410,19 @@ describe("liste, recherche, filtres et tri (F-REC-11)", () => {
     expect(titles(await list([veggie, plain]))).toEqual([]);
   });
 
+  it('premiere page : nombre total de recettes filtrees ("Voir N recettes", D216)', async () => {
+    const { f, owner, veggie } = await library();
+    const base = `/spaces/${f.spaceId}/recipes`;
+    expect((await owner.get(base)).body.total).toBe(4);
+    const first = await owner.get(`${base}?tagIds=${veggie}&limit=1`);
+    expect(first.body).toMatchObject({ total: 2, data: [expect.anything()] });
+    const next = await owner.get(
+      `${base}?tagIds=${veggie}&limit=1&cursor=${first.body.nextCursor}`
+    );
+    expect(next.body.total).toBeUndefined();
+    expect((await owner.get(`${base}/mine`)).body.total).toEqual(expect.any(Number));
+  });
+
   it("pagine par curseur sans doublon ni oubli, quel que soit le tri", async () => {
     const { f, owner } = await library();
     for (const sort of ["recent", "title", "time"]) {
@@ -437,6 +450,7 @@ describe("liste, recherche, filtres et tri (F-REC-11)", () => {
     expect((await outsider.get(`/spaces/${f.outsider.personalSpaceId}/recipes`)).body).toEqual({
       data: [],
       nextCursor: null,
+      total: 0,
     });
   });
 });

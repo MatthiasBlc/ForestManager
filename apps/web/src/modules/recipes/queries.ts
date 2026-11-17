@@ -2,13 +2,12 @@
 import {
   ingredientSchema,
   listSchema,
-  pageSchema,
   recipeComparisonSchema,
   recipeLeavePreviewSchema,
   recipeRevisionSchema,
   recipeSchema,
   recipeSharingSchema,
-  recipeSummarySchema,
+  recipePageSchema,
   shareRequestSchema,
   suggestionSchema,
   suggestionSummarySchema,
@@ -36,7 +35,7 @@ export interface RecipeFilters {
   addable?: boolean;
 }
 
-const recipePage = pageSchema(recipeSummarySchema);
+const recipePage = recipePageSchema;
 
 export const recipesKey = (spaceId: string) => ["spaces", spaceId, "recipes"] as const;
 

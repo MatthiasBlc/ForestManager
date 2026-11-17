@@ -23,18 +23,17 @@ import {
   shareRequestSchema,
   listSchema,
   mergeTagBodySchema,
-  pageSchema,
   mineRecipeListQuerySchema,
   recipeListQuerySchema,
   recipeParamsSchema,
   recipeSchema,
+  recipePageSchema,
   recipeSpaceTagsBodySchema,
   importRecipeBodySchema,
   importedRecipeSchema,
   attachImageBodySchema,
   imageResponseSchema,
   recipeRevisionSchema,
-  recipeSummarySchema,
   restoreRevisionBodySchema,
   revisionParamsSchema,
   updateRecipeBodySchema,
@@ -106,11 +105,7 @@ function recipesRouter(ctx: Context): Router {
     "/",
     requirePermission("recipes.view"),
     handle({ query: recipeListQuerySchema }, async ({ query }, req, res) => {
-      reply(
-        res,
-        pageSchema(recipeSummarySchema),
-        await listRecipes(ctx, spaceOf(req), currentUserId(req), query)
-      );
+      reply(res, recipePageSchema, await listRecipes(ctx, spaceOf(req), currentUserId(req), query));
     })
   );
 
@@ -155,7 +150,7 @@ function recipesRouter(ctx: Context): Router {
       if (addable) refusePersonal(req);
       const scope = addable ? addableSql(userId, spaceOf(req)) : authoredBySql(userId, homeSpaceId);
       const page = await listRecipes(ctx, spaceOf(req), userId, filters, scope);
-      reply(res, pageSchema(recipeSummarySchema), page);
+      reply(res, recipePageSchema, page);
     })
   );
 

@@ -201,7 +201,9 @@ describe("mes recettes (D82) et recettes partagees", () => {
     s.add({ title: "Dahl de lentilles" });
     const { user } = renderWithProviders(<App />, { route: `/s/${s.personal.id}/recipes` });
     await screen.findByRole("article", { name: "Dahl de lentilles" });
-    const spaces = screen.getByRole("group", { name: "Espaces" });
+    // Dans la feuille de filtres [D216].
+    await user.click(screen.getByRole("button", { name: "Filtres" }));
+    const spaces = screen.getByRole("group", { name: "Espace d'origine" });
     expect(within(spaces).getByRole("button", { name: "Tous les espaces" })).toHaveAttribute(
       "aria-pressed",
       "true"
@@ -215,6 +217,14 @@ describe("mes recettes (D82) et recettes partagees", () => {
     await waitFor(() => {
       expect(s.recipes.queries.at(-1)?.get("homeSpaceId")).toBe(s.personal.id);
     });
+    await user.click(screen.getByRole("button", { name: /^Voir/ }));
+    await user.click(
+      within(screen.getByRole("group", { name: "Filtres actifs" })).getByRole("button", {
+        name: "Perso, retirer le filtre",
+      })
+    );
+    expect(screen.queryByRole("group", { name: "Filtres actifs" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Filtres" })).toBeInTheDocument();
   });
 
   it("l'ancien lien Mes recettes mene a l'onglet unique (D207)", async () => {

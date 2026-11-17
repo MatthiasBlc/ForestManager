@@ -23,12 +23,12 @@ import { errorMessage } from "../../i18n/index.ts";
 import { api, ApiRequestError } from "../../lib/api.ts";
 import { useDebounced } from "../../lib/use-debounced.ts";
 import { Button, IconButton } from "../../ui/button.tsx";
-import { Chip } from "../../ui/controls.tsx";
 import { Badge, EmptyState, Skeleton } from "../../ui/display.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
+import { ActiveFilters, FiltersButton, FiltersSheet, type ActiveFilter } from "./filters-sheet.tsx";
 import { recipeMeta } from "./format.ts";
-import { globalTagsQuery, recipesKey, recipesQuery, unitsQuery } from "./queries.ts";
+import { recipesKey, recipesQuery, tagCatalogQuery, unitsQuery } from "./queries.ts";
 
 const plural = (n: number, one: string, many: string) => (n > 1 ? many : one);
 
@@ -56,15 +56,17 @@ export function AddMineSheet({
   const toast = useToast();
   const [search, setSearch] = useState("");
   const [tagIds, setTagIds] = useState<string[]>([]);
+  const [baseOnly, setBaseOnly] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   // Selection dans l'ordre des clics : l'ajout et l'activite gardent cet ordre.
   const [selected, setSelected] = useState<RecipeSummary[]>([]);
   const [withIt, setWithIt] = useState<AddMinePreview["withIt"] | null>(null);
   const [alert, setAlert] = useState<string>();
   const q = useDebounced(search.trim());
-  const filtered = q !== "" || tagIds.length > 0;
+  const filtered = q !== "" || tagIds.length > 0 || baseOnly;
 
   const list = useInfiniteQuery({
-    ...recipesQuery(spaceId, { mine: true, addable: true, q, tagIds }),
+    ...recipesQuery(spaceId, { mine: true, addable: true, q, tagIds, base: baseOnly }),
     enabled: open,
     placeholderData: keepPreviousData,
   });
@@ -77,11 +79,24 @@ export function AddMineSheet({
   const hasRecipes = (anyMine.data?.pages[0]?.data.length ?? 1) > 0;
   const units = useQuery(unitsQuery);
   const spaces = useQuery(spacesQuery);
-  const tags = useQuery(globalTagsQuery);
+  // Tags globaux seulement : mes recettes nees ailleurs n'ont pas les tags de cet espace [D216].
+  const catalog = useQuery({ ...tagCatalogQuery(spaceId), enabled: open });
+  const tagName = (id: string) => catalog.data?.tags.find((tag) => tag.id === id)?.name ?? "Tag";
+  const active: ActiveFilter[] = [
+    ...tagIds.map((id) => ({
+      key: id,
+      label: tagName(id),
+      onRemove: () => {
+        setTagIds((current) => current.filter((other) => other !== id));
+      },
+    })),
+    ...(baseOnly ? [{ key: "base", label: "Bases", onRemove: () => setBaseOnly(false) }] : []),
+  ];
 
   const reset = () => {
     setSearch("");
     setTagIds([]);
+    setBaseOnly(false);
     setSelected([]);
     setWithIt(null);
     setAlert(undefined);
@@ -281,7 +296,7 @@ export function AddMineSheet({
           />
           <input
             type="search"
-            className="fm-input flex-1"
+            className="fm-input min-w-0 flex-1"
             aria-label="Rechercher"
             placeholder="Rechercher"
             value={search}
@@ -289,32 +304,14 @@ export function AddMineSheet({
               setSearch(event.target.value);
             }}
           />
+          <FiltersButton
+            count={active.length}
+            onClick={() => {
+              setFiltersOpen(true);
+            }}
+          />
         </div>
-        {(tags.data ?? []).length > 0 ? (
-          <div className="fm-chip-row" role="group" aria-label="Tags">
-            <Chip
-              selected={tagIds.length === 0}
-              onToggle={() => {
-                setTagIds([]);
-              }}
-            >
-              Toutes
-            </Chip>
-            {(tags.data ?? []).map((tag) => (
-              <Chip
-                key={tag.id}
-                selected={tagIds.includes(tag.id)}
-                onToggle={(on) => {
-                  setTagIds((current) =>
-                    on ? [...current, tag.id] : current.filter((id) => id !== tag.id)
-                  );
-                }}
-              >
-                {tag.name}
-              </Chip>
-            ))}
-          </div>
-        ) : null}
+        <ActiveFilters filters={active} />
         {content}
         {list.hasNextPage ? (
           <Button
@@ -348,6 +345,25 @@ export function AddMineSheet({
           </div>
         </SheetFooter>
       </div>
+      <FiltersSheet
+        open={filtersOpen}
+        onClose={() => {
+          setFiltersOpen(false);
+        }}
+        catalog={catalog.data}
+        spaceName={spaceName}
+        counts={false}
+        include={(tag) => tag.scope === "GLOBAL"}
+        tagIds={tagIds}
+        onTagIds={setTagIds}
+        baseOnly={baseOnly}
+        onBaseOnly={setBaseOnly}
+        total={list.data?.pages[0]?.total}
+        onClear={() => {
+          setTagIds([]);
+          setBaseOnly(false);
+        }}
+      />
     </Sheet>
   );
 }

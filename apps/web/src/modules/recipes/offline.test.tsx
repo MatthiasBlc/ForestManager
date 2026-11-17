@@ -85,8 +85,11 @@ describe("filtre par tags hors ligne (D216)", () => {
       setOnline(false);
     });
     await screen.findByText(/Disponibles hors ligne/);
-    await user.click(screen.getByRole("button", { name: "Incontournable" }));
-    await user.click(screen.getByRole("button", { name: "Regulier" }));
+    await user.click(screen.getByRole("button", { name: "Filtres" }));
+    const sheet = screen.getByRole("dialog", { name: "Filtres" });
+    await user.click(within(sheet).getByRole("button", { name: /^Incontournable/ }));
+    await user.click(within(sheet).getByRole("button", { name: /^Regulier/ }));
+    await user.click(within(sheet).getByRole("button", { name: "Voir les recettes" }));
     expect(screen.getByRole("article", { name: "Dahl de lentilles" })).toBeInTheDocument();
     expect(screen.getByRole("article", { name: "Tarte aux pommes" })).toBeInTheDocument();
   });

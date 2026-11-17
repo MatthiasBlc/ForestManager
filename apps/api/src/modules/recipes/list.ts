@@ -5,8 +5,8 @@ import {
   normalizeName,
   tagFilterGroups,
   type RecipeListQuery,
+  type RecipePage,
   type RecipeSort,
-  type RecipeSummary,
 } from "@fm/shared";
 
 import type { Context } from "../../core/context.ts";
@@ -162,9 +162,16 @@ export async function listRecipes(
   viewerId: string,
   query: RecipeListQuery,
   scope: Prisma.Sql = visibleInSql(spaceId)
-): Promise<{ data: RecipeSummary[]; nextCursor: string | null }> {
+): Promise<RecipePage> {
   const sort = SORTS[query.sort];
   const where = filters(scope, spaceId, viewerId, query, await tagGroupsOf(ctx, query.tagIds));
+  // Premiere page seulement : nombre de recettes filtrees, avant le curseur.
+  const total = query.cursor
+    ? undefined
+    : (
+        await ctx.db.$queryRaw<{ count: number }[]>`
+          SELECT count(*)::int AS count FROM "Recipe" r WHERE ${Prisma.join(where, " AND ")}`
+      )[0]?.count;
   if (query.cursor) {
     const cursor = decodeCursor(query.cursor, sort);
     where.push(
@@ -204,5 +211,5 @@ export async function listRecipes(
     const summary = toSummary(ctx, recipe);
     return [{ ...summary, totalMinutes: withLinkedMinutes(summary.totalMinutes, blocks, links) }];
   });
-  return { data, nextCursor };
+  return total === undefined ? { data, nextCursor } : { data, nextCursor, total };
 }

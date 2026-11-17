@@ -83,6 +83,31 @@ describe("feuille Ajouter une recette (F-AJOUT-RECETTE, D208)", () => {
     expect(within(sheet).queryByRole("button", { name: /Depuis mes recettes/ })).toBeNull();
     expect(within(sheet).queryByRole("button", { name: "Retour" })).toBeNull();
   });
+
+  it("filtre ses recettes par la feuille de filtres : tags globaux, Bases (D216)", async () => {
+    const s = recipeServer();
+    const [saumon] = mine(s, ["Saumon", "Granola", "Dahl"]);
+    const quick = s.recipes.globalTags[1]!;
+    saumon!.tags = [quick];
+    const { user, picker } = await openMine(s);
+    await within(picker).findByRole("checkbox", { name: /Dahl/ });
+    await user.click(within(picker).getByRole("button", { name: "Filtres" }));
+    const filters = screen.getByRole("dialog", { name: "Filtres" });
+    // Tags globaux seulement : les tags de Famille ne sont pas sur mes recettes d'ailleurs.
+    expect(within(filters).queryByRole("button", { name: "Plat du dimanche" })).toBeNull();
+    await user.click(within(filters).getByRole("button", { name: "Rapide" }));
+    await user.click(within(filters).getByRole("button", { name: "Voir les recettes" }));
+    await waitFor(() => {
+      expect(within(picker).queryByRole("checkbox", { name: /Dahl/ })).not.toBeInTheDocument();
+    });
+    expect(within(picker).getByRole("checkbox", { name: /Saumon/ })).toBeInTheDocument();
+    await user.click(
+      within(within(picker).getByRole("group", { name: "Filtres actifs" })).getByRole("button", {
+        name: "Rapide, retirer le filtre",
+      })
+    );
+    expect(await within(picker).findByRole("checkbox", { name: /Dahl/ })).toBeInTheDocument();
+  });
 });
 
 describe("Depuis mes recettes (F-MES-RECETTES, D203)", () => {

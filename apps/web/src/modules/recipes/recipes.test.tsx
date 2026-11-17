@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../../app/App.tsx";
 import { axeViolations } from "../../test/axe.ts";
-import { buildRecipe, unitId } from "../../test/fixtures.ts";
+import { buildRecipe, unitId, uuid } from "../../test/fixtures.ts";
 import { recipeServer } from "../../test/recipe-server.ts";
 import { renderWithProviders } from "../../test/render.tsx";
 import { mockUploads, photoFile } from "../../test/uploads.ts";
@@ -41,29 +41,59 @@ describe("liste des recettes (E-RECETTES)", () => {
     ).toBeInTheDocument();
     // R8 : rien a chercher ni a filtrer.
     expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
-    expect(screen.queryByRole("group", { name: "Filtres" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Filtres" })).not.toBeInTheDocument();
   });
 
-  it("recherche et filtre par tag ou par base", async () => {
+  it("recherche, puis feuille de filtres : tags par famille, Bases, filtres actifs retirables (D216)", async () => {
     const s = recipeServer({
       recipes: [buildRecipe({ title: "Gratin de pâtes" }), buildRecipe({ title: "Dahl" })],
     });
+    const [veggie, quick] = s.recipes.globalTags;
+    const saison = { id: uuid(), scope: "GLOBAL" as const, name: "Régime" };
+    s.recipes.tagFamilies.push(saison);
+    s.recipes.familyOf[veggie!.id] = saison.id;
+    s.recipes.recipes[1]!.tags = [veggie!, quick!];
     const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/recipes` });
-    await screen.findByRole("article", { name: "Dahl" });
+    // Cartes : les deux premiers tags, famille d'abord.
+    const dahl = await screen.findByRole("article", { name: "Dahl" });
+    expect(within(dahl).getByText("Végétarien · Rapide")).toBeInTheDocument();
+
     await user.type(screen.getByRole("searchbox", { name: "Rechercher une recette" }), "gratin");
     await waitFor(() => {
       expect(screen.queryByRole("article", { name: "Dahl" })).not.toBeInTheDocument();
     });
     expect(s.recipes.queries.at(-1)?.get("q")).toBe("gratin");
+    await user.clear(screen.getByRole("searchbox", { name: "Rechercher une recette" }));
 
-    await user.click(screen.getByRole("button", { name: "Végétarien" }));
+    await user.click(screen.getByRole("button", { name: "Filtres" }));
+    const sheet = screen.getByRole("dialog", { name: "Filtres" });
+    // Tag sans recette masque ; famille "Régime" puis "Autres".
+    expect(
+      within(sheet).queryByRole("button", { name: /Plat du dimanche/ })
+    ).not.toBeInTheDocument();
+    await user.click(
+      within(within(sheet).getByRole("group", { name: "Régime" })).getByRole("button", {
+        name: "Végétarien, 1 recette",
+      })
+    );
     await waitFor(() => {
-      expect(s.recipes.queries.at(-1)?.get("tagIds")).toBe(s.recipes.globalTags[0]?.id);
+      expect(s.recipes.queries.at(-1)?.get("tagIds")).toBe(veggie!.id);
     });
-    await user.click(screen.getByRole("button", { name: "Bases" }));
+    await user.click(within(sheet).getByRole("switch", { name: /Bases seulement/ }));
     await waitFor(() => {
       expect(s.recipes.queries.at(-1)?.get("base")).toBe("true");
     });
+    await user.click(within(sheet).getByRole("button", { name: "Voir 0 recette" }));
+    expect(screen.queryByRole("dialog", { name: "Filtres" })).not.toBeInTheDocument();
+
+    // Filtres actifs sous la recherche, retirables un par un ; le bouton compte les filtres.
+    const active = screen.getByRole("group", { name: "Filtres actifs" });
+    expect(screen.getByRole("button", { name: "Filtres (2)" })).toBeInTheDocument();
+    await user.click(within(active).getByRole("button", { name: "Bases, retirer le filtre" }));
+    expect(await screen.findByRole("article", { name: "Dahl" })).toBeInTheDocument();
+    await user.click(within(active).getByRole("button", { name: "Végétarien, retirer le filtre" }));
+    expect(await screen.findByRole("article", { name: "Gratin de pâtes" })).toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Filtres actifs" })).not.toBeInTheDocument();
   });
 
   it("Ajouter une recette > Creer > Saisir ouvre l'editeur (F-AJOUT-RECETTE)", async () => {

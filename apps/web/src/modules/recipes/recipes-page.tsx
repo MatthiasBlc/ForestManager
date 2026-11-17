@@ -1,5 +1,5 @@
-// E-RECETTES : recettes de l'espace (F-REC-11) avec recherche, filtres par tag,
-// "Bases" ; dans l'espace perso, "Mes recettes" de tous les espaces (D82), filtrees
+// E-RECETTES : recettes de l'espace (F-REC-11) avec recherche et feuille de
+// filtres (tags par famille, "Bases", D216) ; dans l'espace perso, "Mes recettes" de tous les espaces (D82), filtrees
 // par espace d'origine (onglet unique, D207) ; recettes partagees ;
 // bandeau des demandes de partage ; etats vide, chargement, erreur ; F-AJOUT-RECETTE.
 import {
@@ -26,25 +26,19 @@ import { isNetworkError } from "../../lib/api.ts";
 import { useOnline } from "../../pwa/use-online.ts";
 import { useWriteGuard } from "../../pwa/use-write-guard.ts";
 import { Button, IconButton } from "../../ui/button.tsx";
-import { Chip } from "../../ui/controls.tsx";
 import { EmptyState, Skeleton } from "../../ui/display.tsx";
 import { Icon, type IconName } from "../../ui/icon.tsx";
 import { Sheet } from "../../ui/sheet.tsx";
 import { AddMineSheet } from "./add-mine-sheet.tsx";
 import { RecipeCard, type CardBadge } from "./components/recipe-card.tsx";
+import { ActiveFilters, FiltersButton, FiltersSheet, type ActiveFilter } from "./filters-sheet.tsx";
 import { recipeMeta } from "./format.ts";
 import { ImportTextSheet, ImportUrlSheet, type ImportSheet } from "./import-sheets.tsx";
-import {
-  globalTagsQuery,
-  recipesKey,
-  recipesQuery,
-  spaceTagsQuery,
-  tagCatalogQuery,
-  unitsQuery,
-} from "./queries.ts";
+import { recipesKey, recipesQuery, tagCatalogQuery, unitsQuery } from "./queries.ts";
 import { RecipeActionsSheet } from "./recipe-actions-sheet.tsx";
 import { ShareRequestsBanner } from "./sharing.tsx";
 import { SuggestionsToDecideBanner } from "./suggestions.tsx";
+import { homeLabel, sortByFamily } from "./tag-groups.ts";
 import { useDebounced } from "../../lib/use-debounced.ts";
 import { useUrlFlag } from "../../lib/use-url-flag.ts";
 
@@ -215,12 +209,14 @@ function RecipeGrid({
   recipes,
   units,
   badges,
+  tags,
   onOpen,
   onActions,
 }: {
   recipes: readonly RecipeSummary[];
   units: readonly Unit[];
   badges: (recipe: RecipeSummary) => CardBadge[];
+  tags: (recipe: RecipeSummary) => string[];
   onOpen: (recipe: RecipeSummary) => void;
   onActions: (recipe: RecipeSummary) => void;
 }) {
@@ -234,6 +230,7 @@ function RecipeGrid({
             meta={recipeMeta(recipe, units)}
             image={recipe.imageUrl}
             badges={badges(recipe)}
+            tags={tags(recipe)}
             onOpen={() => {
               onOpen(recipe);
             }}
@@ -255,13 +252,12 @@ export function RecipesPage() {
   const [homeSpaceId, setHomeSpaceId] = useState<string | null>(null);
   const spaces = useQuery(spacesQuery);
   const units = useQuery(unitsQuery);
-  const globalTags = useQuery(globalTagsQuery);
-  const spaceTags = useQuery(spaceTagsQuery(spaceId));
-  // Familles des tags : filtre hors ligne OU dans une famille [D216].
+  // Familles des tags : feuille de filtres, ordre sur les cartes, filtre hors ligne [D216].
   const catalog = useQuery(tagCatalogQuery(spaceId));
   const [search, setSearch] = useState("");
   const [tagIds, setTagIds] = useState<string[]>([]);
   const [baseOnly, setBaseOnly] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [addStep, setAddStep] = useState<AddStep | null>(null);
   const [importSheet, setImportSheet] = useState<ImportSheet>(null);
   const [actionsFor, setActionsFor] = useState<{ spaceId: string; recipe: RecipeSummary }>();
@@ -302,8 +298,8 @@ export function RecipesPage() {
   });
 
   const spaceName = space.data?.name ?? "";
-  const tagFiltered = q !== "" || tagIds.length > 0 || baseOnly || ingredientId !== null;
-  const filtered = tagFiltered || homeSpaceId !== null;
+  const filtered =
+    q !== "" || tagIds.length > 0 || baseOnly || ingredientId !== null || homeSpaceId !== null;
   // Espaces ou je peux avoir des recettes : perso d'abord, puis les groupes actifs.
   const homeChoices = mine
     ? [...(spaces.data ?? [])]
@@ -311,7 +307,32 @@ export function RecipesPage() {
         .sort((a, b) => (a.kind === b.kind ? 0 : a.kind === "PERSONAL" ? -1 : 1))
     : [];
   const recipes = list.data?.pages.flatMap((page) => page.data) ?? [];
-  const tags = [...(globalTags.data ?? []), ...(spaceTags.data ?? [])];
+  const tagsOf = (recipe: RecipeSummary) =>
+    sortByFamily(recipe.tags, catalog.data).map((tag) => tag.name);
+  const tagName = (id: string) => catalog.data?.tags.find((tag) => tag.id === id)?.name ?? "Tag";
+  const clearFilters = () => {
+    setTagIds([]);
+    setBaseOnly(false);
+    setHomeSpaceId(null);
+    clearIngredient();
+  };
+  const homeSpace = homeChoices.find((choice) => choice.id === homeSpaceId);
+  const active: ActiveFilter[] = [
+    ...(ingredientId
+      ? [{ key: "ingredient", label: `Avec ${ingredientName}`, onRemove: clearIngredient }]
+      : []),
+    ...(homeSpace
+      ? [{ key: "home", label: homeLabel(homeSpace), onRemove: () => setHomeSpaceId(null) }]
+      : []),
+    ...tagIds.map((id) => ({
+      key: id,
+      label: tagName(id),
+      onRemove: () => {
+        setTagIds((ids) => ids.filter((other) => other !== id));
+      },
+    })),
+    ...(baseOnly ? [{ key: "base", label: "Bases", onRemove: () => setBaseOnly(false) }] : []),
+  ];
   // "Mes recettes" ouvre chaque recette dans son espace d'origine.
   const open = (recipe: RecipeSummary) => {
     void navigate(`/s/${mine ? recipe.homeSpaceId : spaceId}/recipes/${recipe.id}`);
@@ -361,6 +382,7 @@ export function RecipesPage() {
               ...badgesOf(recipe, spaceId, mine, spaces.data ?? []),
               { label: "Hors ligne", tone: "warning" },
             ]}
+            tags={tagsOf}
             onOpen={(recipe) => {
               const where = available.find((item) => item.recipe.id === recipe.id);
               void navigate(`/s/${where?.spaceId ?? spaceId}/recipes/${recipe.id}`);
@@ -393,9 +415,7 @@ export function RecipesPage() {
           <Button
             onClick={() => {
               setSearch("");
-              setTagIds([]);
-              setBaseOnly(false);
-              setHomeSpaceId(null);
+              clearFilters();
             }}
           >
             Effacer les filtres
@@ -429,6 +449,7 @@ export function RecipesPage() {
           recipes={recipes}
           units={units.data}
           badges={(recipe) => badgesOf(recipe, spaceId, mine, spaces.data ?? [])}
+          tags={tagsOf}
           onOpen={open}
           onActions={showActions}
         />
@@ -472,7 +493,7 @@ export function RecipesPage() {
           <div className="flex items-center gap-2">
             <input
               type="search"
-              className="fm-input flex-1"
+              className="fm-input min-w-0 flex-1"
               aria-label="Rechercher une recette"
               placeholder="Rechercher une recette"
               value={search}
@@ -480,73 +501,36 @@ export function RecipesPage() {
                 setSearch(event.target.value);
               }}
             />
-          </div>
-          {homeChoices.length > 1 ? (
-            <div className="fm-chip-row" role="group" aria-label="Espaces">
-              <Chip
-                selected={homeSpaceId === null}
-                onToggle={() => {
-                  setHomeSpaceId(null);
-                }}
-              >
-                Tous les espaces
-              </Chip>
-              {homeChoices.map((choice) => (
-                <Chip
-                  key={choice.id}
-                  selected={homeSpaceId === choice.id}
-                  onToggle={(on) => {
-                    setHomeSpaceId(on ? choice.id : null);
-                  }}
-                >
-                  {choice.kind === "PERSONAL" ? "Perso" : choice.name}
-                </Chip>
-              ))}
-            </div>
-          ) : null}
-          <div className="fm-chip-row" role="group" aria-label="Filtres">
-            <Chip
-              selected={!tagFiltered}
-              onToggle={() => {
-                setTagIds([]);
-                setBaseOnly(false);
-                setSearch("");
-                clearIngredient();
+            <FiltersButton
+              count={active.length}
+              onClick={() => {
+                setFiltersOpen(true);
               }}
-            >
-              Toutes
-            </Chip>
-            {ingredientId ? (
-              <button
-                type="button"
-                className="fm-chip"
-                aria-pressed="true"
-                // Le nom commence par le texte visible (axe label-content-name-mismatch).
-                aria-label={`Avec ${ingredientName}, retirer le filtre`}
-                onClick={clearIngredient}
-              >
-                Avec {ingredientName}
-                <Icon name="x" size={16} />
-              </button>
-            ) : null}
-            {tags.map((tag) => (
-              <Chip
-                key={tag.id}
-                selected={tagIds.includes(tag.id)}
-                onToggle={(on) => {
-                  setTagIds((ids) => (on ? [...ids, tag.id] : ids.filter((id) => id !== tag.id)));
-                }}
-              >
-                {tag.name}
-              </Chip>
-            ))}
-            <Chip selected={baseOnly} onToggle={setBaseOnly}>
-              Bases
-            </Chip>
+            />
           </div>
+          <ActiveFilters filters={active} />
         </>
       )}
       {content}
+      <FiltersSheet
+        open={filtersOpen}
+        onClose={() => {
+          setFiltersOpen(false);
+        }}
+        catalog={catalog.data}
+        spaceName={spaceName}
+        // "Mes recettes" couvre plusieurs espaces : les nombres de l'espace perso seraient faux.
+        counts={!mine}
+        tagIds={tagIds}
+        onTagIds={setTagIds}
+        baseOnly={baseOnly}
+        onBaseOnly={setBaseOnly}
+        homeChoices={homeChoices}
+        homeSpaceId={homeSpaceId}
+        onHomeSpaceId={setHomeSpaceId}
+        total={online ? list.data?.pages[0]?.total : undefined}
+        onClear={clearFilters}
+      />
       <AddRecipeSheet
         step={addStep === "root" || addStep === "create" ? addStep : null}
         onStep={setAddStep}

@@ -408,6 +408,26 @@ textarea.fm-input {
   color: var(--accent-text);
   border-color: var(--accent-text);
 }
+/* Nombre de recettes d'un tag dans la feuille de filtres [D216]. */
+.fm-chip-count {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+.fm-chip[aria-pressed="true"] .fm-chip-count {
+  color: inherit;
+}
+/* Nombre de filtres actifs dans le bouton "Filtres". */
+.fm-filters-count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: var(--on-accent);
+  font: 700 12px/20px var(--font-sans);
+  text-align: center;
+}
 
 /* ---------- Avatar ---------- */
 .fm-avatar {
@@ -1094,6 +1114,12 @@ textarea.fm-input {
   color: var(--ink-muted);
   font-size: 13px;
   line-height: 18px;
+}
+/* Deux premiers tags sous le titre [D216] : une ligne, coupee si trop longue. */
+.fm-rcard-body .fm-rcard-tags {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .fm-rcard-more {
   position: absolute;

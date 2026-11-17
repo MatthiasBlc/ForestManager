@@ -2,7 +2,13 @@
 // C3.2 : blocs LOCAL seulement ; les blocs RECIPE (lien vivant) arrivent en C3.4.
 import { z } from "zod";
 
-import { cursorQuerySchema, isoDateTimeSchema, userSummarySchema, uuidSchema } from "./common.ts";
+import {
+  cursorQuerySchema,
+  isoDateTimeSchema,
+  pageSchema,
+  userSummarySchema,
+  uuidSchema,
+} from "./common.ts";
 import { tagSchema } from "./referentials.ts";
 
 export const RECIPE_TITLE_MAX = 120;
@@ -232,6 +238,12 @@ export const recipeSummarySchema = z.object({
   isComposed: z.boolean(),
 });
 export type RecipeSummary = z.infer<typeof recipeSummarySchema>;
+
+/** Page de la liste ; la premiere porte le nombre total de recettes filtrees ("Voir N recettes", D216). */
+export const recipePageSchema = pageSchema(recipeSummarySchema).extend({
+  total: z.number().int().optional(),
+});
+export type RecipePage = z.infer<typeof recipePageSchema>;
 
 export const recipeSchema = z.object({
   ...recipeBaseShape,

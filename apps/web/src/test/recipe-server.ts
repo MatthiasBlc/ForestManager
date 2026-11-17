@@ -217,7 +217,7 @@ export function recipeServer({
         )
         .filter((r) => params.get("base") !== "true" || r.isBase)
         .map(toSummary);
-      return HttpResponse.json({ data, nextCursor: null });
+      return HttpResponse.json({ data, nextCursor: null, total: data.length });
     }),
     http.post(base, async ({ request }) => {
       const body = (await request.json()) as CreateRecipeBody;
@@ -441,6 +441,7 @@ export function recipeServer({
         const data = state.addable
           .filter((r) => r.title.toLowerCase().includes(q))
           .filter((r) => tagIds.every((id) => r.tags.some((t) => t.id === id)))
+          .filter((r) => params.get("base") !== "true" || r.isBase)
           .map(toSummary);
         return HttpResponse.json({ data, nextCursor: null });
       }
