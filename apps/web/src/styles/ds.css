@@ -985,6 +985,9 @@ textarea.fm-input {
 .fm-shell-main {
   overflow-y: auto;
   min-width: 0;
+  /* Contient les elements en position absolue (textes `sr-only`...) : sans cela,
+     places par rapport a la page, ils allongent le document et la fenetre defile. */
+  position: relative;
 }
 @container (min-width: 768px) {
   .fm-shell-grid {
