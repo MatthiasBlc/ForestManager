@@ -72,6 +72,7 @@ const AUDIT_PREFIXES: Readonly<Record<string, AuditCategory>> = {
   unit: "REFERENTIALS",
   aisle: "REFERENTIALS",
   tag: "REFERENTIALS",
+  "tag-family": "REFERENTIALS",
   user: "ACCOUNTS",
   space: "MODERATION",
   recipe: "MODERATION",

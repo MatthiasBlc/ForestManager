@@ -39,6 +39,12 @@ import {
   revisionParamsSchema,
   updateRecipeBodySchema,
   spaceTagParamsSchema,
+  spaceTagPatchBodySchema,
+  tagCatalogSchema,
+  tagFamilyNameBodySchema,
+  tagFamilyOrderBodySchema,
+  tagFamilyParamsSchema,
+  tagFamilySchema,
   tagNameBodySchema,
   tagSchema,
 } from "@fm/shared";
@@ -219,7 +225,50 @@ function recipesRouter(ctx: Context): Router {
     reply(res, recipeLeavePreviewSchema, await sharing.leavePreview(ctx, actorOf(req)));
   });
 
-  // --- Tags d'espace [D08, D19] ---
+  // --- Tags d'espace [D08, D19] et familles [D216] ---
+
+  router.get("/tag-catalog", requirePermission("recipes.view"), async (req, res) => {
+    reply(res, tagCatalogSchema, await tags.tagCatalog(ctx, spaceOf(req), currentUserId(req)));
+  });
+
+  router.post(
+    "/tag-families",
+    requirePermission("recipes.tags.moderate"),
+    handle({ body: tagFamilyNameBodySchema }, async ({ body }, req, res) => {
+      reply(res, tagFamilySchema, await tags.createSpaceFamily(ctx, spaceOf(req), body.name), 201);
+    })
+  );
+
+  // Declaree avant /tag-families/:familyId pour que "order" ne soit pas lu comme un id.
+  router.put(
+    "/tag-families/order",
+    requirePermission("recipes.tags.moderate"),
+    handle({ body: tagFamilyOrderBodySchema }, async ({ body }, req, res) => {
+      const data = await tags.reorderSpaceFamilies(ctx, spaceOf(req), body.ids);
+      reply(res, listSchema(tagFamilySchema), { data });
+    })
+  );
+
+  router.patch(
+    "/tag-families/:familyId",
+    requirePermission("recipes.tags.moderate"),
+    handle(
+      { params: tagFamilyParamsSchema, body: tagFamilyNameBodySchema },
+      async ({ params, body }, req, res) => {
+        const family = await tags.renameSpaceFamily(ctx, spaceOf(req), params.familyId, body.name);
+        reply(res, tagFamilySchema, family);
+      }
+    )
+  );
+
+  router.delete(
+    "/tag-families/:familyId",
+    requirePermission("recipes.tags.moderate"),
+    handle({ params: tagFamilyParamsSchema }, async ({ params }, req, res) => {
+      await tags.deleteSpaceFamily(ctx, spaceOf(req), params.familyId);
+      res.status(204).end();
+    })
+  );
 
   router.get("/tags", requirePermission("recipes.view"), async (req, res) => {
     reply(res, listSchema(tagSchema), { data: await tags.listSpaceTags(ctx, spaceOf(req)) });
@@ -243,13 +292,9 @@ function recipesRouter(ctx: Context): Router {
     "/tags/:tagId",
     requirePermission("recipes.tags.moderate"),
     handle(
-      { params: tagParamsSchema, body: tagNameBodySchema },
+      { params: tagParamsSchema, body: spaceTagPatchBodySchema },
       async ({ params, body }, req, res) => {
-        reply(
-          res,
-          tagSchema,
-          await tags.renameSpaceTag(ctx, spaceOf(req), params.tagId, body.name)
-        );
+        reply(res, tagSchema, await tags.updateSpaceTag(ctx, spaceOf(req), params.tagId, body));
       }
     )
   );

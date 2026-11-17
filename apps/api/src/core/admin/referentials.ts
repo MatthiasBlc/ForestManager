@@ -1,6 +1,6 @@
 // Admin, referentiels (C4.3) : ingredients (verification, traduction, rayon, unite
 // par defaut, poids par piece) et fusion [D09, D46, D120], unites, rayons [D125],
-// tags globaux. Les noms sont saisis en francais et en anglais [D34]. Chaque
+// tags globaux et leurs familles [D216]. Les noms sont saisis en francais et en anglais [D34]. Chaque
 // ecriture est auditee dans la meme transaction. Le seed ne reecrit rien de tout
 // ca (update: {}), voir referentials/seed.ts.
 
@@ -12,6 +12,7 @@ import {
   type AdminIngredientItem,
   type AdminIngredientTab,
   type AdminTag,
+  type AdminTagFamily,
   type AdminUnit,
   type UnitDimension,
 } from "@fm/shared";
@@ -619,6 +620,7 @@ export async function listTags(ctx: Context): Promise<AdminTag[]> {
       fr: row.translations.find((t) => t.locale === FR)?.name ?? row.name,
       en: row.translations.find((t) => t.locale === EN)?.name ?? null,
       recipeCount: row._count.recipes,
+      familyId: row.familyId,
     }))
     .sort((a, b) => a.fr.localeCompare(b.fr, "fr"));
 }
@@ -666,19 +668,31 @@ async function writeTagTranslations(tx: Tx, tagId: string, fr: string, en: strin
   }
 }
 
-export async function createTag(
-  ctx: Context,
-  adminId: string,
-  body: { fr: string; en: string | null }
-): Promise<AdminTag> {
+/** Famille globale existante, sinon ADMIN_008 ; null et absent passent tels quels. */
+async function checkGlobalFamily(tx: Tx, familyId: string | null | undefined) {
+  if (!familyId) return;
+  const family = await tx.tagFamily.findFirst({ where: { id: familyId, scope: "GLOBAL" } });
+  if (!family) throw new AppError("ADMIN_008");
+}
+
+interface TagBody {
+  fr: string;
+  en: string | null;
+  familyId?: string | null | undefined;
+}
+
+export async function createTag(ctx: Context, adminId: string, body: TagBody): Promise<AdminTag> {
   const id = await ctx.db.$transaction(async (tx) => {
     await assertTagNameFree(tx, body.fr);
+    await checkGlobalFamily(tx, body.familyId);
     // Le slug reste unique meme parmi les tags supprimes (index partiel global).
     const slug = await uniqueCode(
       slugify(body.fr),
       async (s) => (await tx.tag.findFirst({ where: { scope: "GLOBAL", slug: s } })) !== null
     );
-    const tag = await tx.tag.create({ data: { scope: "GLOBAL", name: body.fr, slug } });
+    const tag = await tx.tag.create({
+      data: { scope: "GLOBAL", name: body.fr, slug, familyId: body.familyId ?? null },
+    });
     await writeTagTranslations(tx, tag.id, body.fr, body.en);
     await audit(tx, {
       adminId,
@@ -697,12 +711,19 @@ export async function updateTag(
   ctx: Context,
   adminId: string,
   id: string,
-  body: { fr: string; en: string | null }
+  body: TagBody
 ): Promise<AdminTag> {
   await ctx.db.$transaction(async (tx) => {
     await liveTag(tx, id);
     await assertTagNameFree(tx, body.fr, id);
-    await tx.tag.update({ where: { id }, data: { name: body.fr } });
+    await checkGlobalFamily(tx, body.familyId);
+    await tx.tag.update({
+      where: { id },
+      data: {
+        name: body.fr,
+        ...(body.familyId === undefined ? {} : { familyId: body.familyId }),
+      },
+    });
     await writeTagTranslations(tx, id, body.fr, body.en);
     await audit(tx, {
       adminId,
@@ -757,6 +778,152 @@ export async function deleteTag(ctx: Context, adminId: string, id: string): Prom
       targetType: "tag",
       targetId: id,
       data: { name: tag.name, recipeCount: count },
+    });
+  });
+}
+
+// --- Familles de tags globales [D216] ---
+
+const globalFamily = { scope: "GLOBAL" } as const;
+
+export async function listTagFamilies(ctx: Context): Promise<AdminTagFamily[]> {
+  const rows = await ctx.db.tagFamily.findMany({
+    where: globalFamily,
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    include: {
+      translations: { where: { locale: { in: [FR, EN] } } },
+      _count: { select: { tags: { where: { deletedAt: null, mergedIntoId: null } } } },
+    },
+  });
+  return rows.map((row) => ({
+    id: row.id,
+    fr: row.translations.find((t) => t.locale === FR)?.name ?? row.name,
+    en: row.translations.find((t) => t.locale === EN)?.name ?? null,
+    tagCount: row._count.tags,
+  }));
+}
+
+async function tagFamilyById(ctx: Context, id: string): Promise<AdminTagFamily> {
+  const found = (await listTagFamilies(ctx)).find((f) => f.id === id);
+  if (!found) throw new AppError("ADMIN_008");
+  return found;
+}
+
+async function liveFamily(tx: Tx, id: string) {
+  const family = await tx.tagFamily.findFirst({ where: { id, ...globalFamily } });
+  if (!family) throw new AppError("ADMIN_008");
+  return family;
+}
+
+/** Une autre famille globale porte deja ce nom (sans casse ni accents). */
+async function assertFamilyNameFree(tx: Tx, name: string, exceptId?: string) {
+  const others = await tx.tagFamily.findMany({
+    where: { ...globalFamily, ...(exceptId ? { id: { not: exceptId } } : {}) },
+    select: { name: true },
+  });
+  const wanted = normalizeName(name);
+  if (others.some((f) => normalizeName(f.name) === wanted)) throw new AppError("ADMIN_009");
+}
+
+async function writeFamilyTranslations(tx: Tx, familyId: string, fr: string, en: string | null) {
+  await tx.tagFamilyTranslation.upsert({
+    where: { familyId_locale: { familyId, locale: FR } },
+    create: { familyId, locale: FR, name: fr },
+    update: { name: fr },
+  });
+  if (en) {
+    await tx.tagFamilyTranslation.upsert({
+      where: { familyId_locale: { familyId, locale: EN } },
+      create: { familyId, locale: EN, name: en },
+      update: { name: en },
+    });
+  } else {
+    await tx.tagFamilyTranslation.deleteMany({ where: { familyId, locale: EN } });
+  }
+}
+
+/** Nouvelle famille en fin de liste. */
+export async function createTagFamily(
+  ctx: Context,
+  adminId: string,
+  body: { fr: string; en: string | null }
+): Promise<AdminTagFamily> {
+  const id = await ctx.db.$transaction(async (tx) => {
+    await assertFamilyNameFree(tx, body.fr);
+    const last = await tx.tagFamily.aggregate({ where: globalFamily, _max: { sortOrder: true } });
+    const family = await tx.tagFamily.create({
+      data: { scope: "GLOBAL", name: body.fr, sortOrder: (last._max.sortOrder ?? -1) + 1 },
+    });
+    await writeFamilyTranslations(tx, family.id, body.fr, body.en);
+    await audit(tx, {
+      adminId,
+      action: "tag-family.created",
+      targetType: "tag-family",
+      targetId: family.id,
+      data: { name: body.fr },
+    });
+    return family.id;
+  });
+  return tagFamilyById(ctx, id);
+}
+
+export async function updateTagFamily(
+  ctx: Context,
+  adminId: string,
+  id: string,
+  body: { fr: string; en: string | null }
+): Promise<AdminTagFamily> {
+  await ctx.db.$transaction(async (tx) => {
+    await liveFamily(tx, id);
+    await assertFamilyNameFree(tx, body.fr, id);
+    await tx.tagFamily.update({ where: { id }, data: { name: body.fr } });
+    await writeFamilyTranslations(tx, id, body.fr, body.en);
+    await audit(tx, {
+      adminId,
+      action: "tag-family.updated",
+      targetType: "tag-family",
+      targetId: id,
+      data: { name: body.fr },
+    });
+  });
+  return tagFamilyById(ctx, id);
+}
+
+/** Ordre des familles : la liste complete, chacune une fois. */
+export async function reorderTagFamilies(
+  ctx: Context,
+  adminId: string,
+  ids: string[]
+): Promise<AdminTagFamily[]> {
+  await ctx.db.$transaction(async (tx) => {
+    const all = await tx.tagFamily.findMany({ where: globalFamily, select: { id: true } });
+    const known = new Set(all.map((f) => f.id));
+    if (
+      new Set(ids).size !== ids.length ||
+      ids.length !== known.size ||
+      ids.some((i) => !known.has(i))
+    ) {
+      throw new AppError("ADMIN_016");
+    }
+    for (const [index, familyId] of ids.entries()) {
+      await tx.tagFamily.update({ where: { id: familyId }, data: { sortOrder: index } });
+    }
+    await audit(tx, { adminId, action: "tag-family.reordered", data: { ids } });
+  });
+  return listTagFamilies(ctx);
+}
+
+/** Suppression : ses tags restent, sans famille ("Autres"). */
+export async function deleteTagFamily(ctx: Context, adminId: string, id: string): Promise<void> {
+  await ctx.db.$transaction(async (tx) => {
+    const family = await liveFamily(tx, id);
+    await tx.tagFamily.delete({ where: { id } });
+    await audit(tx, {
+      adminId,
+      action: "tag-family.deleted",
+      targetType: "tag-family",
+      targetId: id,
+      data: { name: family.name },
     });
   });
 }

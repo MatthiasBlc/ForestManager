@@ -133,9 +133,9 @@ export function mockReferentialsApi() {
     aisles: [...AISLES],
     unclassified: 12,
     tags: [
-      { id: id(501), fr: "Végétarien", en: "Vegetarian", recipeCount: 48 },
-      { id: id(502), fr: "Apéritif", en: null, recipeCount: 14 },
-      { id: id(503), fr: "Rapide", en: "Quick", recipeCount: 61 },
+      { id: id(501), fr: "Végétarien", en: "Vegetarian", recipeCount: 48, familyId: null },
+      { id: id(502), fr: "Apéritif", en: null, recipeCount: 14, familyId: null },
+      { id: id(503), fr: "Rapide", en: "Quick", recipeCount: 61, familyId: null },
     ] as AdminTag[],
   };
   const record = async (request: Request) => {
@@ -254,7 +254,7 @@ export function mockReferentialsApi() {
     http.get("/api/v1/admin/tags", () => HttpResponse.json({ data: state.tags })),
     http.post("/api/v1/admin/tags", async ({ request }) => {
       const body = (await record(request)) as { fr: string; en: string | null };
-      const created = { id: id(599), fr: body.fr, en: body.en, recipeCount: 0 };
+      const created = { id: id(599), fr: body.fr, en: body.en, recipeCount: 0, familyId: null };
       state.tags = [...state.tags, created];
       return HttpResponse.json(created, { status: 201 });
     }),

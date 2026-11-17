@@ -1,9 +1,20 @@
 // Tags d'espace du module Recettes [D08, D19] : tout membre en cree (en taguant),
-// les moderateurs renomment, fusionnent, suppriment.
-import { normalizeName, type Tag } from "@fm/shared";
+// les moderateurs renomment, fusionnent, suppriment, rangent en familles [D216].
+// Catalogue d'un espace : familles et tags avec leur nombre de recettes.
+import {
+  normalizeName,
+  type CatalogTag,
+  type Tag,
+  type TagCatalog,
+  type TagFamily,
+} from "@fm/shared";
 
 import type { Context } from "../../core/context.ts";
+import { Prisma } from "../../core/db/client.ts";
 import { AppError } from "../../core/http/errors.ts";
+import { visibleInSql } from "./list.ts";
+
+const LOCALE = "fr"; // francais seul en V2.0 [D34]
 
 const slugOf = (name: string) => normalizeName(name).replace(/ /g, "-");
 
@@ -60,17 +71,22 @@ async function activeTag(ctx: Context, spaceId: string, tagId: string) {
   return tag;
 }
 
-export async function renameSpaceTag(
+/** Renomme et/ou range dans une famille de l'espace (null : sans famille). */
+export async function updateSpaceTag(
   ctx: Context,
   spaceId: string,
   tagId: string,
-  name: string
+  body: { name?: string | undefined; familyId?: string | null | undefined }
 ): Promise<Tag> {
   await activeTag(ctx, spaceId, tagId);
+  if (body.familyId) await spaceFamily(ctx, spaceId, body.familyId);
   try {
     const row = await ctx.db.tag.update({
       where: { id: tagId },
-      data: { name: name.trim(), slug: slugOf(name) },
+      data: {
+        ...(body.name === undefined ? {} : { name: body.name.trim(), slug: slugOf(body.name) }),
+        ...(body.familyId === undefined ? {} : { familyId: body.familyId }),
+      },
     });
     return toTag(row);
   } catch (error) {
@@ -105,4 +121,167 @@ export async function deleteSpaceTag(ctx: Context, spaceId: string, tagId: strin
     ctx.db.recipeSpaceTag.deleteMany({ where: { tagId } }),
     ctx.db.tag.update({ where: { id: tagId }, data: { deletedAt: new Date() } }),
   ]);
+}
+
+// --- Familles d'espace [D216] ---
+
+async function spaceFamily(ctx: Context, spaceId: string, familyId: string) {
+  const family = await ctx.db.tagFamily.findFirst({
+    where: { id: familyId, scope: "SPACE", spaceId },
+  });
+  if (!family) throw new AppError("RECIPE_018");
+  return family;
+}
+
+function toFamily(row: { id: string; scope: "GLOBAL" | "SPACE"; name: string }): TagFamily {
+  return { id: row.id, scope: row.scope, name: row.name };
+}
+
+async function listSpaceFamilies(ctx: Context, spaceId: string): Promise<TagFamily[]> {
+  const rows = await ctx.db.tagFamily.findMany({
+    where: { scope: "SPACE", spaceId },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+  });
+  return rows.map(toFamily);
+}
+
+/** Une autre famille de l'espace porte deja ce nom (sans casse ni accents). */
+async function assertFamilyNameFree(
+  ctx: Context,
+  spaceId: string,
+  name: string,
+  exceptId?: string
+) {
+  const others = await ctx.db.tagFamily.findMany({
+    where: { scope: "SPACE", spaceId, ...(exceptId ? { id: { not: exceptId } } : {}) },
+    select: { name: true },
+  });
+  const wanted = normalizeName(name);
+  if (others.some((f) => normalizeName(f.name) === wanted)) throw new AppError("RECIPE_019");
+}
+
+/** Nouvelle famille en fin de liste. */
+export async function createSpaceFamily(
+  ctx: Context,
+  spaceId: string,
+  name: string
+): Promise<TagFamily> {
+  await assertFamilyNameFree(ctx, spaceId, name);
+  const last = await ctx.db.tagFamily.aggregate({
+    where: { scope: "SPACE", spaceId },
+    _max: { sortOrder: true },
+  });
+  const row = await ctx.db.tagFamily.create({
+    data: {
+      scope: "SPACE",
+      spaceId,
+      name: name.trim(),
+      sortOrder: (last._max.sortOrder ?? -1) + 1,
+    },
+  });
+  return toFamily(row);
+}
+
+export async function renameSpaceFamily(
+  ctx: Context,
+  spaceId: string,
+  familyId: string,
+  name: string
+): Promise<TagFamily> {
+  await spaceFamily(ctx, spaceId, familyId);
+  await assertFamilyNameFree(ctx, spaceId, name, familyId);
+  const row = await ctx.db.tagFamily.update({
+    where: { id: familyId },
+    data: { name: name.trim() },
+  });
+  return toFamily(row);
+}
+
+/** Ordre des familles de l'espace : la liste complete, chacune une fois. */
+export async function reorderSpaceFamilies(
+  ctx: Context,
+  spaceId: string,
+  ids: string[]
+): Promise<TagFamily[]> {
+  const known = new Set((await listSpaceFamilies(ctx, spaceId)).map((f) => f.id));
+  if (
+    new Set(ids).size !== ids.length ||
+    ids.length !== known.size ||
+    ids.some((i) => !known.has(i))
+  ) {
+    throw new AppError("RECIPE_020");
+  }
+  await ctx.db.$transaction(
+    ids.map((id, index) => ctx.db.tagFamily.update({ where: { id }, data: { sortOrder: index } }))
+  );
+  return listSpaceFamilies(ctx, spaceId);
+}
+
+/** Suppression : ses tags restent, sans famille ("Autres"). */
+export async function deleteSpaceFamily(
+  ctx: Context,
+  spaceId: string,
+  familyId: string
+): Promise<void> {
+  await spaceFamily(ctx, spaceId, familyId);
+  await ctx.db.tagFamily.delete({ where: { id: familyId } });
+}
+
+// --- Catalogue [D216] ---
+
+/**
+ * Familles globales puis de l'espace, dans leur ordre ; tags globaux et de
+ * l'espace avec leur famille et le nombre de recettes visibles ici par `viewerId`
+ * (une recette masquee ne compte que pour son auteur, comme dans la liste).
+ */
+export async function tagCatalog(
+  ctx: Context,
+  spaceId: string,
+  viewerId: string
+): Promise<TagCatalog> {
+  const visible = Prisma.sql`${visibleInSql(spaceId)} AND r."deletedAt" IS NULL
+    AND (r."hiddenAt" IS NULL OR r."authorId" = ${viewerId})`;
+  const [globalFamilies, spaceFamilies, tags, counts] = await Promise.all([
+    ctx.db.tagFamily.findMany({
+      where: { scope: "GLOBAL" },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      include: { translations: { where: { locale: LOCALE } } },
+    }),
+    listSpaceFamilies(ctx, spaceId),
+    ctx.db.tag.findMany({
+      where: {
+        OR: [{ scope: "GLOBAL" }, { scope: "SPACE", spaceId }],
+        deletedAt: null,
+        mergedIntoId: null,
+      },
+      include: { translations: { where: { locale: LOCALE } } },
+    }),
+    ctx.db.$queryRaw<{ tagId: string; count: number }[]>`
+      SELECT t."tagId", count(*)::int AS count FROM (
+        SELECT g."tagId", g."recipeId" FROM "RecipeGlobalTag" g
+        UNION ALL
+        SELECT s."tagId", s."recipeId" FROM "RecipeSpaceTag" s WHERE s."spaceId" = ${spaceId}
+      ) t JOIN "Recipe" r ON r.id = t."recipeId"
+      WHERE ${visible}
+      GROUP BY t."tagId"`,
+  ]);
+  const countOf = new Map(counts.map((row) => [row.tagId, row.count]));
+  const catalogTags: CatalogTag[] = tags
+    .map((row) => ({
+      id: row.id,
+      scope: row.scope,
+      name: row.translations[0]?.name ?? row.name,
+      familyId: row.familyId,
+      recipeCount: countOf.get(row.id) ?? 0,
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  return {
+    families: [
+      ...globalFamilies.map((row) =>
+        toFamily({ ...row, name: row.translations[0]?.name ?? row.name })
+      ),
+      ...spaceFamilies,
+    ],
+    tags: catalogTags,
+  };
 }
