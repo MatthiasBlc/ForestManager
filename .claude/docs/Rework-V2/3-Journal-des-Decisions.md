@@ -875,3 +875,8 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 - **Constat** : le delai avant de reproposer une recette (7 jours dans les profils du Nid) vaut pour tout le profil. Certaines recettes reviennent par nature plus souvent ("Soupe du moment") : il faudrait baisser le delai de tout le profil, ou renoncer a les voir revenir.
 - **Options** : delai par recette (regle de recette) ; delai propre aux recettes d'un tag (regle de tag) ; plusieurs delais au niveau du profil.
 - **Choix** : champ "Delai propre a ses recettes" sur une regle de tag (0 a 30 jours, 0 : sans delai), qui remplace le delai du profil pour les recettes portant ce tag ; plusieurs tags avec un delai : le plus court l'emporte. Independant du delai de tag (jours entre deux recettes du tag) et des frequences. Regle de tag seulement (contrainte en base et a la validation) ; la copie d'un profil le garde.
+
+### D215 - Repas choisi a la main verrouille d'office - VALIDEE (2026-11-17, demande du proprietaire)
+
+- **Constat** : l'usage courant est de placer quelques repas a la main puis de completer avec la generation. Un repas saisi a la main n'etait pas verrouille : en mode "Remplacer", la generation pouvait l'ecraser, sauf a penser a cocher "Verrouiller" a chaque fois.
+- **Choix** : un nouveau repas (recette ou texte libre) est verrouille d'office dans la feuille du repas ; la glissiere reste decochable. Un repas existant garde son etat (un repas place par la generation reste deverrouille).

@@ -150,8 +150,10 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [ ] A faire par le proprietaire (a revoir ensemble) : retirer la lecture publique des buckets V1 `forestmanager-images-preprod` / `-prod` (`mc anonymous set none`) [D167]
 - [x] Importer dans une recette existante [D212] (2026-11-17) : API (`imported` a la modification, revision IMPORT), editeur (menu "...", feuilles d'import reutilisees, fusion), TDD, E2E
 - [x] Delai de recette propre aux recettes d'un tag [D214] (2026-11-17)
-- [ ] Affichage des tags dans les listes de recettes (trop de pastilles, scroll horizontal sans fin sur mobile) : etude, options, choix au selecteur (demande du proprietaire, 2026-11-17)
+- [x] Repas choisi a la main verrouille d'office [D215] (2026-11-17)
+- [ ] Affichage des tags partout ou un utilisateur voit une liste de tags (filtres des listes de recettes, editeur, regles du planning, recherche...), harmonise : trop de pastilles, scroll horizontal sans fin sur mobile ; etude, options, choix au selecteur (demande du proprietaire, 2026-11-17)
 - [ ] Cartes de recette en bureau : bouton "..." en haut a droite de l'image, qui ouvre au clic gauche le meme menu que le clic droit (demande du proprietaire, 2026-11-17 ; points horizontaux ou verticaux a trancher)
+- [ ] Ordre des espaces dans le rail par glisser-deposer (attention UI / UX : souris, doigt, clavier) ; l'espace perso reste toujours en haut, le bouton "+" toujours en bas (demande du proprietaire, 2026-11-17)
 - [ ] C9 Module liste de courses (V2.1)
 - [ ] Reimport du JSON d'export dans F-AJOUT-RECETTE (V2.1) [D192]
 - [ ] E2E WebKit (Safari) (V2.1) [D195]

@@ -1,4 +1,4 @@
-// Parcours 9 : remplir le planning a la main, verrouiller un repas, generer le
+// Parcours 9 : remplir le planning a la main (verrouille d'office, D215), generer le
 // reste de la semaine, puis regenerer en remplacant (21-Plan-C5 S4), echanger deux
 // repas au doigt et ouvrir une recette [D204]. Date du navigateur figee au mardi
 // 9 mars 2027 : la semaine affichee est connue.
@@ -86,6 +86,10 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
   await sheet.getByRole("searchbox", { name: "Recette" }).fill("gratin");
   await sheet.getByRole("option", { name: "Gratin dauphinois" }).click();
   await expectNoA11yViolations(page);
+  // Verrouille d'office [D215] ; decoche ici pour que la generation puisse le remplacer.
+  const lock = sheet.getByRole("switch", { name: /^Verrouiller/ });
+  await expect(lock).toBeChecked();
+  await lock.click();
   await sheet.getByRole("button", { name: "Enregistrer" }).click();
   await expect(sheet).toBeHidden();
   await expect(slot(page, "Mardi 9, midi")).toHaveAccessibleName(
@@ -101,7 +105,7 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
   await servings.getByRole("button", { name: "Moins" }).click();
   await servings.getByRole("button", { name: "Moins" }).click();
   await expect(servings.locator("output")).toHaveText("2 pers.");
-  await sheet.getByRole("switch", { name: /^Verrouiller/ }).click();
+  await expect(sheet.getByRole("switch", { name: /^Verrouiller/ })).toBeChecked();
   await sheet.getByRole("button", { name: "Enregistrer" }).click();
   await expect(sheet).toBeHidden();
   const tuesdayDinner = slot(page, "Mardi 9, soir");
