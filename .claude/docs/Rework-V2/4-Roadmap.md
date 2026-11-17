@@ -155,8 +155,8 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
 - [ ] Tags harmonises [D216] (TDD)
   - [x] Familles de tags : modele `TagFamily` + `Tag.familyId`, API (familles globales dans l'admin, familles d'espace par les moderateurs), nombre de recettes par tag dans la liste des tags d'un espace, seed inchange (familles des tags globaux reglees par l'admin) ; fait le 2026-11-17 : catalogue `GET .../recipes/tag-catalog` (familles globales puis d'espace, tags avec famille et nombre de recettes), `PATCH .../tags/:tagId` prend `familyId`
   - [x] Filtre OU dans une famille, ET entre familles (API de la liste et filtre hors ligne) ; fait le 2026-11-17 : logique commune `matchesTagFilter` dans `packages/shared`, un tag sans famille compte comme sa propre famille
-  - [ ] Composant de choix de tags (feuille : recherche, familles, choix multiple ou unique, creation d'un tag d'espace)
-  - [ ] Liste des recettes et "Depuis mes recettes" : bouton "Filtres", filtres actifs retirables, feuille de filtres (Bases, espace d'origine) ; deux tags en texte sur les cartes
+  - [x] Composant de choix de tags (feuille : recherche, familles, choix multiple ou unique, creation d'un tag d'espace) ; fait le 2026-11-17 : `TagSheet` (`modules/recipes/components/tag-sheet.tsx`)
+  - [x] Liste des recettes et "Depuis mes recettes" : bouton "Filtres", filtres actifs retirables, feuille de filtres (Bases, espace d'origine) ; deux tags en texte sur les cartes ; fait le 2026-11-17 : la premiere page de la liste porte `total` ("Voir N recettes") ; dans "Mes recettes", pas de nombres par tag (ils ne vaudraient que pour l'espace perso)
   - [ ] Editeur : une section Tags (globaux + tags de l'espace ou il est ouvert, y compris un espace de partage) ; API : seul qui peut modifier la recette change ses tags d'espace
   - [ ] Partage (F-PARTAGER, "Depuis mes recettes") : tags d'espace d'origine proposes en cases cochees, poses ou crees dans l'espace cible
   - [ ] Planning : regle et epinglage par le champ "Tag" (choix unique)
