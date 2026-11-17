@@ -343,10 +343,11 @@ textarea.fm-input {
   cursor: pointer;
   white-space: nowrap;
 }
+/* Choix actif bien visible sur tous les themes (comme une puce choisie) [R11]. */
 .fm-seg button[aria-pressed="true"] {
-  background: var(--surface-raised);
-  color: var(--ink);
-  box-shadow: var(--shadow-sm);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  box-shadow: inset 0 0 0 1px var(--accent-text);
 }
 
 /* ---------- Badge & Chip ---------- */
@@ -527,6 +528,10 @@ textarea.fm-input {
 .fm-sheet-foot .fm-btn {
   flex: 1;
 }
+/* Pied avec un champ au-dessus du bouton (F-LIER-RECETTE) : le bouton passe a la ligne. */
+.fm-sheet-foot:has(> .fm-stack) {
+  flex-wrap: wrap;
+}
 @container (min-width: 768px) {
   .fm-sheet {
     left: 50%;
@@ -534,6 +539,8 @@ textarea.fm-input {
     bottom: auto;
     top: 50%;
     width: min(520px, calc(100% - 48px));
+    /* Fenetre centree : presque toute la hauteur, pas 88 % (defilement pour quelques pixels, R12). */
+    max-height: calc(100% - 48px);
     transform: translate(-50%, -50%);
     border-radius: var(--radius-lg);
     animation: fm-fade 0.2s ease-out;
@@ -967,25 +974,25 @@ textarea.fm-input {
     grid-template-rows: auto minmax(0, 1fr);
   }
   .fm-shell-grid > .fm-rail,
-.fm-shell-grid > * > .fm-rail {
+  .fm-shell-grid > * > .fm-rail {
     grid-row: 1 / -1;
   }
   .fm-shell-grid > .fm-tabbar,
-.fm-shell-grid > * > .fm-tabbar {
+  .fm-shell-grid > * > .fm-tabbar {
     display: none;
   }
   .fm-shell-grid > .fm-top,
-.fm-shell-grid > * > .fm-top,
+  .fm-shell-grid > * > .fm-top,
   .fm-shell-grid > .fm-shell-main,
-.fm-shell-grid > * > .fm-shell-main {
+  .fm-shell-grid > * > .fm-shell-main {
     grid-column: -2 / -1;
   }
   .fm-shell-grid > .fm-top,
-.fm-shell-grid > * > .fm-top {
+  .fm-shell-grid > * > .fm-top {
     grid-row: 1;
   }
   .fm-shell-grid > .fm-shell-main,
-.fm-shell-grid > * > .fm-shell-main {
+  .fm-shell-grid > * > .fm-shell-main {
     grid-row: 2;
   }
   .fm-top-title {
@@ -1003,7 +1010,7 @@ textarea.fm-input {
     grid-template-columns: var(--size-rail) var(--size-sidebar) minmax(0, 1fr);
   }
   .fm-shell-grid > .fm-nav,
-.fm-shell-grid > * > .fm-nav {
+  .fm-shell-grid > * > .fm-nav {
     display: flex;
     grid-row: 1 / -1;
   }
@@ -1121,10 +1128,13 @@ textarea.fm-input {
   text-decoration: line-through;
   color: var(--ink-muted);
 }
+/* Largeur fixe : les noms restent alignes meme avec une unite longue ("1 ½ c. a soupe")
+   qui passe alors a la ligne dans sa colonne [R7]. */
 .fm-ing-qty {
   font: 500 14px/20px var(--font-mono);
   font-variant-numeric: tabular-nums;
-  min-width: 76px;
+  flex: none;
+  width: 112px;
 }
 .fm-ing-name {
   font-size: 15px;
@@ -1634,18 +1644,18 @@ textarea.fm-input {
     grid-template-areas: "rail top" "rail main";
   }
   .fm-shell-grid > .fm-rail,
-.fm-shell-grid > * > .fm-rail,
+  .fm-shell-grid > * > .fm-rail,
   .fm-shell-grid:has(> .fm-top-has-space, > * > .fm-top-has-space) > .fm-rail,
-.fm-shell-grid:has(> .fm-top-has-space, > * > .fm-top-has-space) > * > .fm-rail {
+  .fm-shell-grid:has(> .fm-top-has-space, > * > .fm-top-has-space) > * > .fm-rail {
     display: flex;
     grid-area: rail;
   }
   .fm-shell-grid > .fm-top,
-.fm-shell-grid > * > .fm-top {
+  .fm-shell-grid > * > .fm-top {
     grid-area: top;
   }
   .fm-shell-grid > .fm-shell-main,
-.fm-shell-grid > * > .fm-shell-main {
+  .fm-shell-grid > * > .fm-shell-main {
     grid-area: main;
   }
   .fm-top-space {
@@ -1657,7 +1667,7 @@ textarea.fm-input {
     grid-template-areas: "rail nav top" "rail nav main";
   }
   .fm-shell-grid > .fm-nav,
-.fm-shell-grid > * > .fm-nav {
+  .fm-shell-grid > * > .fm-nav {
     grid-area: nav;
   }
 }
@@ -1752,4 +1762,32 @@ textarea.fm-input {
 }
 .fm-radio-swatches i:first-child {
   margin-left: 0;
+}
+
+/* Precision d'une ligne d'ingredient (D4) : sous la ligne, alignee sur l'ingredient */
+.fm-qty-note {
+  font-size: 14px;
+  min-height: 36px;
+}
+
+/* Rangee de puces (filtres, espaces, tags) : defile au doigt sans barre (une barre
+   classique de Chrome bureau passait au-dessus du voile des feuilles, D12) ; avec
+   une souris, les puces passent a la ligne (R8). */
+.fm-chip-row {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.fm-chip-row::-webkit-scrollbar {
+  display: none;
+}
+.fm-chip-row > * {
+  flex-shrink: 0;
+}
+@media (pointer: fine) {
+  .fm-chip-row {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
 }

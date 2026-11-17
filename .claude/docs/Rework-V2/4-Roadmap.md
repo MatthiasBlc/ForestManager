@@ -133,6 +133,12 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] Retour de test : photo d'espace ovale ; affichage corrige et avatars recadres par l'utilisateur a l'envoi [D211]
   - [x] Verification en preprod : Discord actif et redirection correcte (2026-11-13) ; l'aller-retour reel chez Discord est considere comme bon par le proprietaire et sera teste apres la mise en prod (lignes `acc-discord-*` et `acc-sans-mdp` de la feuille de recette, hors seconde recette)
 - [ ] Seconde recette complete en preprod, sans echec ni remarque ouverte, puis feu vert explicite du proprietaire [D205] : condition d'entree de C8 (pas de date, la prod attend un produit fini)
+  - [x] Passage de Claude dans Chrome (2026-11-13) : `30-Recette-2.md`
+  - [x] Tri par le proprietaire (2026-11-13) : tout corriger avant la prod
+  - [x] Lignes du proprietaire (telephone, deux appareils, admin, Bugsink) : jugees bonnes (2026-11-13)
+  - [x] Defauts D1 a D15 corriges (detail : section 4 de `30-Recette-2.md`)
+  - [x] Remarques R1 a R18 (detail : section 4 de `30-Recette-2.md`)
+  - [ ] Deploy preprod, revue des lignes concernees
 - [ ] C8 Mise en prod V2 (depuis ce poste [D201])
   - [ ] Accelerer la CI (2026-11-12 : `verify` ~9 min dont 6 min 48 de tests et couverture) : image de test en cache (buildx `type=gha` comme les images de prod), tests de l'API repartis en jobs paralleles, cache du lint
   - [ ] `pg_dump` avant chaque deploy prod, garde 14 jours [D76] : absent de `ci.yml`, a ecrire avant la prod
