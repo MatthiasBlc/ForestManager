@@ -17,14 +17,17 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { FormAlert } from "../../core/access/auth-layout.tsx";
+import { spaceQuery } from "../../core/session/queries.ts";
 import { errorMessage } from "../../i18n/index.ts";
 import { api } from "../../lib/api.ts";
 import { useWriteGuard } from "../../pwa/use-write-guard.ts";
 import { Button } from "../../ui/button.tsx";
 import { Chip, SegmentedControl, Stepper, Switch } from "../../ui/controls.tsx";
+import { Icon } from "../../ui/icon.tsx";
 import { OptionList } from "../../ui/option-list.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
-import { globalTagsQuery, spaceTagsQuery } from "../recipes/queries.ts";
+import { TagSheet } from "../recipes/components/tag-sheet.tsx";
+import { tagCatalogQuery } from "../recipes/queries.ts";
 import { useDebounced } from "../../lib/use-debounced.ts";
 import { WEIGHT_STEP_LABELS } from "./format.ts";
 import { profilesKey } from "./queries.ts";
@@ -34,7 +37,10 @@ type MealChoice = "ALL" | MealTime;
 
 const isStep = (weight: number) => (WEIGHT_STEPS as readonly number[]).includes(weight);
 
-/** Choix d'un tag (global ou de l'espace) en pastilles : reste court meme avec beaucoup de tags. */
+/**
+ * Choix d'un tag (global ou de l'espace) : un champ qui ouvre la feuille de tags
+ * en choix unique ; toucher un tag le choisit et ferme [D216].
+ */
 export function TagChoice({
   spaceId,
   value,
@@ -46,23 +52,42 @@ export function TagChoice({
   onChange: (id: string) => void;
   label?: string;
 }) {
-  const global = useQuery(globalTagsQuery);
-  const local = useQuery(spaceTagsQuery(spaceId));
-  const tags = [...(global.data ?? []), ...(local.data ?? [])];
-  if (!global.data || !local.data) return <p className="m-0 text-sm text-ink-muted">Chargement…</p>;
+  const [open, setOpen] = useState(false);
+  const catalog = useQuery(tagCatalogQuery(spaceId));
+  const space = useQuery(spaceQuery(spaceId));
+  const chosen = catalog.data?.tags.find((tag) => tag.id === value);
   return (
-    <div className="flex flex-wrap gap-2" role="group" aria-label={label}>
-      {tags.map((tag) => (
-        <Chip
-          key={tag.id}
-          selected={tag.id === value}
-          onToggle={() => {
-            onChange(tag.id);
-          }}
-        >
-          {tag.name}
-        </Chip>
-      ))}
+    <div role="group" aria-label={label}>
+      <button
+        type="button"
+        className="fm-option w-full text-left"
+        aria-label={chosen ? `${chosen.name}, changer le tag` : "Choisir un tag"}
+        onClick={() => {
+          setOpen(true);
+        }}
+      >
+        <span className="fm-option-icon">
+          <Icon name="tag" />
+        </span>
+        <span className="fm-option-text">
+          <b>{chosen ? chosen.name : "Choisir un tag"}</b>
+        </span>
+        <Icon name="chevron-right" className="fm-option-go" />
+      </button>
+      <TagSheet
+        open={open}
+        onClose={() => {
+          setOpen(false);
+        }}
+        title="Choisir un tag"
+        mode="single"
+        catalog={catalog.data}
+        spaceName={space.data?.name ?? ""}
+        selected={value ? [value] : []}
+        onChange={([id]) => {
+          if (id) onChange(id);
+        }}
+      />
     </div>
   );
 }

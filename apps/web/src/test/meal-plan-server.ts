@@ -253,7 +253,10 @@ export function mealPlanServer({
     http.get("/api/v1/tags", () => HttpResponse.json({ data: tags })),
     http.get(`/api/v1/spaces/${s.space.id}/recipes/tags`, () => HttpResponse.json({ data: [] })),
     http.get(`/api/v1/spaces/${s.space.id}/recipes/tag-catalog`, () =>
-      HttpResponse.json({ families: [], tags: [] })
+      HttpResponse.json({
+        families: [],
+        tags: tags.map((tag) => ({ ...tag, familyId: null, recipeCount: 0 })),
+      })
     ),
     http.get(`/api/v1/spaces/${s.space.id}/recipes`, ({ request }) =>
       HttpResponse.json({
