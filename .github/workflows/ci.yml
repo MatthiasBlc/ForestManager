@@ -205,6 +205,11 @@ jobs:
           target: prod
           push: ${{ env.PUSH == 'true' }}
           tags: ${{ steps.tags.outputs.tags }}
+          # Image simple, sans index ni attestation : un `garbage-collect
+          # --delete-untagged` du registry effacerait les sous-images d'un index.
+          provenance: false
+          # Reperes du menage du serveur (job registry-prune).
+          labels: forestmanager.image=${{ matrix.image }}
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
 
@@ -277,6 +282,50 @@ jobs:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           DISCORD_CLIENT_ID: ${{ secrets.DISCORD_CLIENT_ID }}
           DISCORD_CLIENT_SECRET: ${{ secrets.DISCORD_CLIENT_SECRET }}
+
+  # ========================================
+  # Menage du registry apres un deploy reussi
+  # ========================================
+  # Garde les 10 derniers `sha-*` par image et `latest` (docker/registry-prune.sh) ;
+  # un echec ne casse pas la CI, le deploy est deja fait.
+  registry-prune:
+    runs-on: ubuntu-latest
+    needs: [deploy-preprod, deploy-prod]
+    if: always() && (needs.deploy-preprod.result == 'success' || needs.deploy-prod.result == 'success')
+    continue-on-error: true
+    concurrency:
+      group: registry-prune
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prune old image tags
+        run: PROTECT_TAG="sha-${GITHUB_SHA::7}" ./docker/registry-prune.sh
+        env:
+          KEEP: 10
+          # Premier passage a blanc : liste ce qui serait supprime ; a retirer
+          # apres relecture du log par le proprietaire.
+          DRY_RUN: 1
+          REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
+          REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+          REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
+          IMAGE_NAME: ${{ secrets.IMAGE_NAME }}
+
+      # Images du serveur que plus aucun conteneur n'utilise, de plus de 3 jours,
+      # et seulement les notres (label pose au build) : le serveur porte d'autres
+      # stacks. Un retour arriere re-tire son tag du registry.
+      - name: Prune unused images on the server
+        run: |
+          FILTERS=$(jq -cn '{dangling: ["false"], until: ["72h"], label: ["forestmanager.image"]}')
+          curl -sS -f -X POST -G \
+            "${PORTAINER_URL}/api/endpoints/${ENDPOINT_ID}/docker/images/prune" \
+            --data-urlencode "filters=${FILTERS}" \
+            -H "X-API-Key: ${PORTAINER_API}" |
+            jq -r '"images supprimees : \((.ImagesDeleted // []) | length), espace libere : \(.SpaceReclaimed / 1048576 | floor) Mo"'
+        env:
+          PORTAINER_URL: ${{ secrets.PORTAINER_URL }}
+          PORTAINER_API: ${{ secrets.PORTAINER_API }}
+          ENDPOINT_ID: ${{ secrets.ENDPOINT_ID }}
 
   # ========================================
   # Tag de version apres la prod
