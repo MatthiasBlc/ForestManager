@@ -75,9 +75,16 @@ type Tx = Parameters<Parameters<Context["db"]["$transaction"]>[0]>[0];
 
 /** Accorde (ou rend) l'acces ; l'etat "active" choisi par l'OWNER est conserve [D85]. */
 async function upsertGrant(tx: Tx, adminId: string, spaceId: string, moduleCode: string) {
+  // Nouveau module : range apres ceux de l'espace, pas a egalite avec le premier.
+  const last = await tx.spaceModule.aggregate({ where: { spaceId }, _max: { sortOrder: true } });
   await tx.spaceModule.upsert({
     where: { spaceId_moduleCode: { spaceId, moduleCode } },
-    create: { spaceId, moduleCode, grantedByAdminId: adminId },
+    create: {
+      spaceId,
+      moduleCode,
+      grantedByAdminId: adminId,
+      sortOrder: (last._max.sortOrder ?? -1) + 1,
+    },
     update: { revokedAt: null, grantedByAdminId: adminId, grantedAt: new Date() },
   });
 }
@@ -110,6 +117,8 @@ async function decide(
       targetId: id,
       data: {
         spaceId: request.spaceId,
+        // Nom de l'espace au moment de la decision : le journal se lit seul.
+        spaceName: (await tx.space.findUnique({ where: { id: request.spaceId } }))?.name ?? null,
         moduleCode: request.moduleCode,
         ...(note ? { note } : {}),
       },
@@ -265,7 +274,7 @@ export async function grantToSpace(
       action: "module.granted",
       targetType: "Space",
       targetId: spaceId,
-      data: { moduleCode: code },
+      data: { moduleCode: code, spaceName: space.name },
     });
   });
   await moduleDecided(ctx, spaceId, code, true, null);
@@ -286,12 +295,13 @@ export async function revokeFromSpace(
       data: { revokedAt: new Date() },
     });
     if (count === 0) throw new AppError("MODULE_005");
+    const space = await tx.space.findUnique({ where: { id: spaceId } });
     await audit(tx, {
       adminId,
       action: "module.revoked",
       targetType: "Space",
       targetId: spaceId,
-      data: { moduleCode: code },
+      data: { moduleCode: code, spaceName: space?.name ?? null },
     });
   });
 }

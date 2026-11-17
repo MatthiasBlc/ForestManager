@@ -1,5 +1,7 @@
 import type { ModerationReason } from "@fm/shared";
 
+import { moduleInfo } from "../modules/module-info.ts";
+
 // Dates de l'administration, comme les maquettes : "Aujourd'hui, 14 h 02", "Hier, 21 h 15", "28 oct.".
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -109,12 +111,13 @@ export function auditTarget(entry: {
   if (entry.action.endsWith(".merged") && text(data.name) && text(data.intoName)) {
     return `${String(data.name)} → ${String(data.intoName)}`;
   }
-  const named =
-    text(data.name) ??
-    text(data.username) ??
-    text(data.title) ??
-    text(data.code) ??
-    text(data.moduleCode);
+  // Module accorde, retire ou demande : "Planning des repas → Foyer", pas le code.
+  const moduleCode = text(data.moduleCode);
+  if (moduleCode) {
+    const name = moduleInfo(moduleCode).name;
+    return text(data.spaceName) ? `${name} → ${String(data.spaceName)}` : name;
+  }
+  const named = text(data.name) ?? text(data.username) ?? text(data.title) ?? text(data.code);
   if (named) return named;
   if (text(data.version)) return `Version ${String(data.version)}`;
   if (entry.action.startsWith("auth.")) return "Session admin";

@@ -97,7 +97,7 @@ describe("file des demandes", () => {
       action: "module-request.approved",
       targetType: "ModuleAccessRequest",
       targetId: requestId,
-      data: { spaceId: space.id, moduleCode: "meal-plan" },
+      data: { spaceId: space.id, spaceName: "Colloc", moduleCode: "meal-plan" },
     });
 
     // Une demande deja traitee ne se traite pas deux fois.
@@ -197,7 +197,18 @@ describe("catalogue", () => {
     expect(granted.status).toBe(201);
     const request = await db.moduleAccessRequest.findUniqueOrThrow({ where: { id: requestId } });
     expect(request.status).toBe("APPROVED");
-    expect((await lastAudit())?.action).toBe("module.granted");
+    expect(await lastAudit()).toMatchObject({
+      action: "module.granted",
+      data: { moduleCode: "meal-plan", spaceName: "Colloc" },
+    });
+    // Un module accorde se range apres ceux que l'espace a deja, jamais devant.
+    const order = await db.spaceModule.findMany({
+      where: { spaceId: space.id },
+      orderBy: [{ sortOrder: "asc" }, { moduleCode: "desc" }],
+    });
+    expect(order.map((m) => m.moduleCode).at(-1)).toBe("meal-plan");
+    const [first, last] = [order[0]?.sortOrder ?? 0, order.at(-1)?.sortOrder ?? 0];
+    expect(last).toBeGreaterThan(first);
     const twice = await client.post("/admin/modules/meal-plan/grants", { spaceId: space.id });
     expect(twice.body.error.code).toBe("MODULE_008");
 

@@ -73,6 +73,13 @@ describe("tableau de bord (A02)", () => {
   });
 });
 
+const GRANTED = buildAuditEntry({
+  action: "module.granted",
+  category: "MODULES",
+  targetType: "Space",
+  data: { moduleCode: "meal-plan", spaceName: "Revue duo" },
+});
+
 describe("journal d'audit (A11)", () => {
   it("liste, filtre par categorie et charge les plus anciennes", async () => {
     mockAdminApi();
@@ -82,8 +89,8 @@ describe("journal d'audit (A11)", () => {
         const params = new URL(request.url).searchParams;
         queries.push(params.toString());
         const offset = Number(params.get("offset") ?? 0);
-        const data = offset === 0 ? [OPENED, MERGED] : [buildAuditEntry()];
-        return HttpResponse.json({ data, total: 3 });
+        const data = offset === 0 ? [OPENED, MERGED, GRANTED] : [buildAuditEntry()];
+        return HttpResponse.json({ data, total: 4 });
       })
     );
     const { user, container } = renderWithProviders(<App />, { route: "/admin/audit" });
@@ -94,12 +101,16 @@ describe("journal d'audit (A11)", () => {
     expect(within(table).getByRole("row", { name: /Ingrédient fusionné/ })).toHaveTextContent(
       "3 recettes mises à jour"
     );
-    expect(screen.getByText("2 entrées sur 3")).toBeInTheDocument();
+    // Module accorde : le module et l'espace, pas le code technique.
+    expect(within(table).getByRole("row", { name: /Module accordé/ })).toHaveTextContent(
+      "Planning des repas → Revue duo"
+    );
+    expect(screen.getByText("3 entrées sur 4")).toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
 
     await user.click(screen.getByRole("button", { name: "Voir les plus anciennes" }));
     expect(await within(table).findByRole("row", { name: /Connexion/ })).toBeInTheDocument();
-    expect(screen.getByText("3 entrées sur 3")).toBeInTheDocument();
+    expect(screen.getByText("4 entrées sur 4")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Voir les plus anciennes" })).toBeNull();
 
     await user.click(screen.getByRole("button", { name: "Modération" }));

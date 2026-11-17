@@ -203,8 +203,8 @@ export function UsersPage() {
                 <th scope="col">Espaces</th>
                 <th scope="col">Inscription</th>
                 <th scope="col">Dernière connexion</th>
-                <th scope="col">
-                  <span className="fm-sr">Actions</span>
+                <th scope="col" className="text-right">
+                  Mot de passe
                 </th>
               </tr>
             </thead>
@@ -220,9 +220,13 @@ export function UsersPage() {
                       </div>
                     </div>
                   </th>
-                  <td>{spacesLabel(user)}</td>
-                  <td>{whenLabel(user.createdAt)}</td>
-                  <td>{user.lastLoginAt ? whenLabel(user.lastLoginAt) : "Jamais"}</td>
+                  {/* Colonnes lisibles sans defilement : espaces sur une largeur minimale,
+                      dates sur une ligne. */}
+                  <td className="min-w-44">{spacesLabel(user)}</td>
+                  <td className="whitespace-nowrap">{whenLabel(user.createdAt)}</td>
+                  <td className="whitespace-nowrap">
+                    {user.lastLoginAt ? whenLabel(user.lastLoginAt) : "Jamais"}
+                  </td>
                   <td>
                     <div className="flex flex-wrap items-center justify-end gap-2">
                       {user.discord ? <Badge tone="second">Discord</Badge> : null}
@@ -239,7 +243,7 @@ export function UsersPage() {
                           reset.mutate(user);
                         }}
                       >
-                        Réinitialiser le mot de passe
+                        Réinitialiser
                       </Button>
                     </div>
                   </td>
