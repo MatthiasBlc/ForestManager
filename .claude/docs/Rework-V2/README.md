@@ -36,6 +36,7 @@ Refonte de Forest Manager : clarifier les concepts de la V1, refaire l'interface
 | `26-Maquette-C7c.html`        | Maquette de C7c.0 (ajouter ses recettes a un espace), publiee en artefact.                                    |
 | `28-Etude-UX-Mobile.md`       | Etude UX de la navigation mobile : carte des gestes par ecran, constats, choix (D209).                        |
 | `30-Recette-2.md`             | Seconde recette preprod par Claude (2026-11-13) : resultat par ligne, defauts D1 a D15, remarques R1 a R18.   |
+| `31-Mise-en-prod.md`          | Deroule du jour de la prod (C8) : verifications faites, fusion, controles, retour arriere, menage apres.      |
 | `archive/`                    | Etudes terminees (phase A et B5b) : leurs conclusions sont dans le CDC et le journal. Ne pas lire par defaut. |
 
 `archive/` contient : l'analyse de la V1 (`2-Analyse-V1.html`), les etudes adaptations (5) et recettes composees (6, 7), les directions visuelles (8), la revue du brainstorming (9), les ecarts des maquettes traites en B5b.
@@ -51,7 +52,7 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
 
 ## Reprise
 
-- Derniere session : 2026-11-11. Contexte remis a zero apres cette session : tout l'etat est ici et dans les fichiers cites.
+- Derniere session : 2026-11-17. Seconde recette close et feu vert du proprietaire ; C8 en cours : CI #34 verte, log du menage a blanc relu et `DRY_RUN` retire ; reste le deroule de `31-Mise-en-prod.md` (premier menage reel, fusion de la PR #35, verification). Le detail des etapes recentes est dans `4-Roadmap.md` (C7b a C8) et `30-Recette-2.md`.
 - Fait : etude (A), design system (B4), modele de donnees (B1), permissions (B2), parcours (B3), architecture (B6), tests (B8), maquettes (B5). Version et couverture du CDC : son en-tete.
 - Fait aussi : decisions D01 a D142 (journal). Points ouverts B9 tranches le 2026-11-05 (D140 a D142) : copie independante supprimee, liste de courses a role minimal reglable, schema mis a jour avec les decisions des maquettes, super admin sans modification de recette, statuts des documents au journal, D37 et D130 definitifs, D12 et D14 non utilises.
 - CDC 1.0 valide par le proprietaire le 2026-11-05 (B9) : la phase d'etude est terminee, le code est autorise.

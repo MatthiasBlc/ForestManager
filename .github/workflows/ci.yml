@@ -303,9 +303,6 @@ jobs:
         run: PROTECT_TAG="sha-${GITHUB_SHA::7}" ./docker/registry-prune.sh
         env:
           KEEP: 10
-          # Premier passage a blanc : liste ce qui serait supprime ; a retirer
-          # apres relecture du log par le proprietaire.
-          DRY_RUN: 1
           REGISTRY_URL: ${{ secrets.REGISTRY_URL }}
           REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
