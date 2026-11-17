@@ -175,7 +175,12 @@ describe("ingredients (A05)", () => {
       en: { name: "Kecap manis" },
     });
     expect(res.status).toBe(201);
-    expect(res.body).toMatchObject({ status: "ACTIVE", en: { name: "Kecap manis" } });
+    // Initiale en minuscule dans les deux langues [R3].
+    expect(res.body).toMatchObject({
+      status: "ACTIVE",
+      fr: { name: "kecap manis" },
+      en: { name: "kecap manis" },
+    });
     expect(await lastAudit()).toMatchObject({
       action: "ingredient.created",
       targetType: "ingredient",
@@ -190,7 +195,7 @@ describe("ingredients (A05)", () => {
     const aisle = await db.aisle.findFirstOrThrow({ where: { code: "dairy" } });
     const piece = await unitId("piece");
     const body = fullBody({
-      fr: { name: "œuf", namePlural: "œufs" },
+      fr: { name: "Œuf", namePlural: "Œufs" },
       en: { name: "egg", namePlural: "eggs" },
       aisleId: aisle.id,
       defaultUnitId: piece,

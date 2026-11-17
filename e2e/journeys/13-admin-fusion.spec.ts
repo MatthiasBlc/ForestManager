@@ -14,11 +14,11 @@ test(
     await loginAs(leaPage, lea);
     await createRecipe(leaPage, lea.personalSpaceId, {
       title: "Gratin",
-      ingredients: [[1, "kg", "Pomme de terre"]],
+      ingredients: [[1, "kg", "pomme de terre"]],
     });
     const puree = await createRecipe(leaPage, lea.personalSpaceId, {
       title: "Purée",
-      ingredients: [[800, "g", "Patate"]],
+      ingredients: [[800, "g", "patate"]],
     });
 
     // Connexion en deux etapes.
@@ -38,28 +38,28 @@ test(
     // Les deux ingredients crees par Lea attendent dans "Nouveaux".
     await page.goto("/admin/ingredients");
     await expect(page.getByRole("heading", { name: "Ingrédients", level: 1 })).toBeVisible();
-    await expect(page.getByRole("button", { name: /^Pomme de terre/ })).toBeVisible();
-    await page.getByRole("button", { name: /^Patate/ }).click();
+    await expect(page.getByRole("button", { name: /^pomme de terre/ })).toBeVisible();
+    await page.getByRole("button", { name: /^patate/ }).click();
     await expectNoA11yViolations(page);
 
-    // Fusion de "Patate" dans "Pomme de terre".
+    // Fusion de "patate" dans "pomme de terre".
     await page.getByRole("button", { name: /^Fusionner/ }).click();
-    const sheet = page.getByRole("dialog", { name: "Fusionner « Patate »" });
+    const sheet = page.getByRole("dialog", { name: "Fusionner « patate »" });
     await sheet.getByLabel("Chercher un autre ingrédient").fill("Pomme");
-    await sheet.getByRole("radio", { name: /Pomme de terre/ }).check();
+    await sheet.getByRole("radio", { name: /pomme de terre/ }).check();
     await expect(
-      sheet.getByText("La recette « Purée » de lea utilisera « Pomme de terre »", { exact: false })
+      sheet.getByText("La recette « Purée » de lea utilisera « pomme de terre »", { exact: false })
     ).toBeVisible();
     await expectNoA11yViolations(page);
     await sheet.getByRole("button", { name: "Fusionner", exact: true }).click();
-    await expectToast(page, "« Patate » fusionné dans « Pomme de terre »");
-    await expect(page.getByRole("button", { name: /^Patate/ })).toHaveCount(0);
-    await expect(page.getByText("Synonymes : Patate")).toBeVisible();
+    await expectToast(page, "« patate » fusionné dans « pomme de terre »");
+    await expect(page.getByRole("button", { name: /^patate/ })).toHaveCount(0);
+    await expect(page.getByText("Synonymes : patate")).toBeVisible();
     await expectNoA11yViolations(page);
 
     // Chez Lea, la puree utilise maintenant l'ingredient garde, quantite inchangee.
     await leaPage.goto(`/s/${lea.personalSpaceId}/recipes/${puree.id}`);
     await expect(leaPage.getByRole("heading", { name: "Purée" })).toBeVisible();
-    await expect(leaPage.getByRole("checkbox", { name: /800 g Pomme de terre/ })).toBeVisible();
+    await expect(leaPage.getByRole("checkbox", { name: /800 g pomme de terre/ })).toBeVisible();
   }
 );

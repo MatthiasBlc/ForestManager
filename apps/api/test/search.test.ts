@@ -130,7 +130,7 @@ describe("GET /search", () => {
 
     const res = await client.get(`/search?q=pate&spaceId=${famille.id}`);
     const ingredients = group(res.body, "recipes.ingredients");
-    expect(ingredients.map((i) => i.title)).toEqual(["Pâtes"]);
+    expect(ingredients.map((i) => i.title)).toEqual(["pâtes"]);
     expect(ingredients[0]).toMatchObject({ spaceId: famille.id, data: { recipeCount: 2 } });
 
     // Sans espace courant : l'espace perso, ou rien n'utilise les pates.

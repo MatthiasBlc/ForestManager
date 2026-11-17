@@ -132,7 +132,7 @@ describe("POST /me/exports", () => {
         title: "Montage",
         ingredients: [
           {
-            name: "Pâtes à lasagne",
+            name: "pâtes à lasagne",
             quantity: 12,
             unit: "piece",
             note: "precuites",
@@ -174,7 +174,7 @@ describe("POST /me/exports", () => {
     const markdown = strFromU8(files["gratin-de-pates.md"]!);
     expect(markdown).toContain("# Gratin de pâtes");
     expect(markdown).toContain("![Gratin de pâtes](photos/gratin-de-pates.webp)");
-    expect(markdown).toContain("- 500 g Pâtes");
+    expect(markdown).toContain("- 500 g pâtes");
     expect(markdown).toContain("1. Cuire les pates.");
 
     const activity = await db.activityEvent.findFirst({

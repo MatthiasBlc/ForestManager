@@ -144,3 +144,16 @@ export function normalizeName(name: string): string {
     .replace(/\p{M}/gu, "")
     .replace(/\s+/g, " ");
 }
+
+/**
+ * Nom d'ingredient tel qu'il est enregistre : espaces reduits, initiale en minuscule
+ * ("beurre", pas "Beurre") pour se fondre dans une liste [R3]. Un sigle ("AOP") ou un nom
+ * d'une lettre est garde tel quel.
+ */
+export function ingredientDisplayName(name: string): string {
+  const clean = name.trim().replace(/\s+/g, " ");
+  // Initiale majuscule suivie d'une minuscule ("Beurre", "Œuf") ; pas "AOP" ni "7up".
+  const match = /^(\p{Lu})(?=\p{Ll})/u.exec(clean);
+  if (!match) return clean;
+  return match[0].toLowerCase() + clean.slice(match[0].length);
+}

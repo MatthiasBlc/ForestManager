@@ -1,6 +1,12 @@
 // Referentiels vus par les membres [D09, D120, D160] : unites, ingredients
 // (autocompletion et creation a la volee), tags globaux.
-import { normalizeName, type Ingredient, type Tag, type Unit } from "@fm/shared";
+import {
+  ingredientDisplayName,
+  normalizeName,
+  type Ingredient,
+  type Tag,
+  type Unit,
+} from "@fm/shared";
 
 import type { Context } from "../core/context.ts";
 
@@ -87,7 +93,7 @@ export async function findOrCreateIngredient(
   name: string,
   userId: string
 ): Promise<{ ingredient: Ingredient; created: boolean }> {
-  const display = name.trim().replace(/\s+/g, " ");
+  const display = ingredientDisplayName(name);
   const normalized = normalizeName(display);
   const existing = async () => {
     const translation = await ctx.db.ingredientTranslation.findUnique({

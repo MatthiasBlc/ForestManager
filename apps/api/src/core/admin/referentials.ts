@@ -5,6 +5,7 @@
 // ca (update: {}), voir referentials/seed.ts.
 
 import {
+  ingredientDisplayName,
   normalizeName,
   type AdminAisle,
   type AdminIngredient,
@@ -219,8 +220,9 @@ interface NameInput {
 }
 
 function translationData(locale: string, names: NameInput) {
-  const name = names.name.replace(/\s+/g, " ");
-  return { locale, name, namePlural: names.namePlural, normalized: normalizeName(name) };
+  const name = ingredientDisplayName(names.name);
+  const namePlural = names.namePlural === null ? null : ingredientDisplayName(names.namePlural);
+  return { locale, name, namePlural, normalized: normalizeName(name) };
 }
 
 export async function createIngredient(

@@ -10,7 +10,7 @@ test("parcours 6 : sauce liee, portions recalculees, lien vivant", async ({ page
   // Les deux recettes rendent 4 portions.
   const sauce = await createRecipe(page, home, {
     title: "Sauce tomate",
-    ingredients: [[800, "g", "Tomates"]],
+    ingredients: [[800, "g", "tomates"]],
     steps: ["Mijoter 20 minutes."],
   });
   const lasagnes = await createRecipe(page, home, {
@@ -44,7 +44,7 @@ test("parcours 6 : sauce liee, portions recalculees, lien vivant", async ({ page
   await expect(page.getByRole("article").getByText("Composée", { exact: true })).toBeVisible();
   const linked = page.getByRole("region", { name: "Sauce tomate" });
   await linked.getByRole("button", { name: "Déplier Sauce tomate" }).click();
-  await expect(linked.getByRole("checkbox", { name: "400 g Tomates" })).toBeVisible();
+  await expect(linked.getByRole("checkbox", { name: "400 g tomates" })).toBeVisible();
   await expect(linked.getByText("Mijoter 20 minutes.")).toBeVisible();
   await expect(page.getByRole("checkbox", { name: "250 g Feuilles de lasagne" })).toBeVisible();
   await expectNoA11yViolations(page);
@@ -54,7 +54,7 @@ test("parcours 6 : sauce liee, portions recalculees, lien vivant", async ({ page
   for (let i = 0; i < 4; i += 1) await servings.getByRole("button", { name: "Plus" }).click();
   await expect(servings.getByRole("status")).toHaveText(/^8/);
   await expect(page.getByRole("checkbox", { name: "500 g Feuilles de lasagne" })).toBeVisible();
-  await expect(linked.getByRole("checkbox", { name: "800 g Tomates" })).toBeVisible();
+  await expect(linked.getByRole("checkbox", { name: "800 g tomates" })).toBeVisible();
 
   // La sauce change : 600 g de tomates et une cuisson plus longue.
   await page.goto(`/s/${home}/recipes/${sauce.id}/edit`);
@@ -65,12 +65,12 @@ test("parcours 6 : sauce liee, portions recalculees, lien vivant", async ({ page
     .fill("600");
   await page.getByRole("textbox", { name: "Étape 1" }).fill("Mijoter 30 minutes.");
   await page.getByRole("button", { name: "Enregistrer la révision 2" }).click();
-  await expect(page.getByRole("checkbox", { name: "600 g Tomates" })).toBeVisible();
+  await expect(page.getByRole("checkbox", { name: "600 g tomates" })).toBeVisible();
 
   // Le plat suit sans avoir ete touche : il reste a sa revision 2.
   await page.goto(dishUrl);
   await expect(page.getByText(/· révision 2$/)).toBeVisible();
   await linked.getByRole("button", { name: "Déplier Sauce tomate" }).click();
-  await expect(linked.getByRole("checkbox", { name: "300 g Tomates" })).toBeVisible();
+  await expect(linked.getByRole("checkbox", { name: "300 g tomates" })).toBeVisible();
   await expect(linked.getByText("Mijoter 30 minutes.")).toBeVisible();
 });

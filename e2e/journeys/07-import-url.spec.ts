@@ -46,7 +46,7 @@ test("parcours 7 : import par lien, correction, enregistrement", async ({ page, 
 
   // Enregistree telle que corrigee, avec sa source.
   await expect(page.getByRole("heading", { name: "Tarte tatin de Lea" })).toBeVisible();
-  await expect(page.getByRole("checkbox", { name: "40 g Beurre" })).toBeVisible();
+  await expect(page.getByRole("checkbox", { name: "40 g beurre" })).toBeVisible();
   await expect(page.getByRole("checkbox", { name: /100 g Sucre/i })).toBeVisible();
   await expect(page.getByText("Ranger les pommes, couvrir de pâte, cuire.")).toBeVisible();
   await expect(page.getByRole("link", { name: "Voir la source" })).toHaveAttribute("href", FIXTURE);

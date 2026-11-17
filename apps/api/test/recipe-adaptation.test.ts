@@ -186,7 +186,7 @@ describe("comparer avec l'original (E-COMPARER-ORIGINAL)", () => {
       adaptation: { title: "Gratin au beurre" },
       canMarkSeen: false,
     });
-    expect(res.body.base.blocks[0].ingredients[0]).toMatchObject({ name: "Pâtes", quantity: 500 });
+    expect(res.body.base.blocks[0].ingredients[0]).toMatchObject({ name: "pâtes", quantity: 500 });
   });
 
   it("marquer comme vu aligne l'adaptation sur l'original actuel", async () => {

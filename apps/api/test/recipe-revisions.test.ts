@@ -100,8 +100,8 @@ describe("restaurer une revision (D55)", () => {
     expect(res.body).toMatchObject({ title: "Gratin de pates", currentRevision: 3 });
     expect(res.body.blocks[0].steps).toEqual(["Cuire les pates.", "Gratiner 20 min."]);
     expect(res.body.blocks[0].ingredients.map((l: { name: string }) => l.name)).toEqual([
-      "Pâtes",
-      "Sel",
+      "pâtes",
+      "sel",
     ]);
     const history = (await client.get(`${path}/revisions`)).body.data;
     expect(history.map((r: { number: number; source: string }) => [r.number, r.source])).toEqual([

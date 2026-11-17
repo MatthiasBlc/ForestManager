@@ -83,6 +83,22 @@ describe("normalizeName", () => {
   });
 });
 
+describe("ingredientDisplayName [R3]", () => {
+  it("met l'initiale en minuscule, comme dans une liste d'ingredients", async () => {
+    const { ingredientDisplayName } = await import("../src/units/index.ts");
+    expect(ingredientDisplayName("Beurre")).toBe("beurre");
+    expect(ingredientDisplayName("  Échalote   grise ")).toBe("échalote grise");
+    expect(ingredientDisplayName("Œuf")).toBe("œuf");
+  });
+
+  it("garde les sigles et ce qui n'est pas une lettre", async () => {
+    const { ingredientDisplayName } = await import("../src/units/index.ts");
+    expect(ingredientDisplayName("AOP")).toBe("AOP");
+    expect(ingredientDisplayName("7up")).toBe("7up");
+    expect(ingredientDisplayName("B")).toBe("B");
+  });
+});
+
 describe("addQuantities (liste de courses, testeur A06)", () => {
   const clove: UnitDef = { code: "clove", dimension: "COUNT", toBase: null, metric: false };
   const pinch: UnitDef = { code: "pinch", dimension: "NONE", toBase: null, metric: false };

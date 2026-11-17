@@ -45,7 +45,8 @@ describe("ingredients (D09, D120)", () => {
     const client = await loginAs(await createUser(), app);
     const created = await client.post("/ingredients", { name: "Crème fraîche" });
     expect(created.status).toBe(201);
-    expect(created.body).toMatchObject({ name: "Crème fraîche" });
+    // Initiale en minuscule, comme dans une liste d'ingredients [R3].
+    expect(created.body).toMatchObject({ name: "crème fraîche" });
     const row = await db.ingredient.findUniqueOrThrow({ where: { id: created.body.id } });
     expect(row.status).toBe("NEW");
 
@@ -68,7 +69,7 @@ describe("ingredients (D09, D120)", () => {
     });
     const res = await client.get("/ingredients?q=zucc");
     expect(res.body.data).toEqual([
-      expect.objectContaining({ id: target.body.id, name: "Courgette", matchedName: "Zucchini" }),
+      expect.objectContaining({ id: target.body.id, name: "courgette", matchedName: "zucchini" }),
     ]);
     const reused = await client.post("/ingredients", { name: "zucchini" });
     expect(reused.body.id).toBe(target.body.id);

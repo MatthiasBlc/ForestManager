@@ -48,8 +48,8 @@ describe("creer et lire une recette (F-REC-1, F-REC-4)", () => {
       steps: ["Cuire les pates.", "Gratiner 20 min."],
     });
     expect(block.ingredients).toEqual([
-      expect.objectContaining({ name: "Pâtes", quantity: 500, optional: false }),
-      expect.objectContaining({ name: "Sel", quantity: null }),
+      expect.objectContaining({ name: "pâtes", quantity: 500, optional: false }),
+      expect.objectContaining({ name: "sel", quantity: null }),
     ]);
 
     const revision = await db.recipeRevision.findFirstOrThrow({ where: { recipeId: res.body.id } });
@@ -86,7 +86,7 @@ describe("creer et lire une recette (F-REC-1, F-REC-4)", () => {
     expect(res.status).toBe(201);
     expect(res.body.blocks[0].ingredients[0]).toMatchObject({
       ingredientId: target,
-      name: "Courgette",
+      name: "courgette",
     });
   });
 
