@@ -52,7 +52,7 @@ Le code et la documentation de la V1 ne sont plus dans l'arbre. Pour reprendre u
 
 ## Reprise
 
-- Derniere session : 2026-11-17. Seconde recette close et feu vert du proprietaire ; C8 en cours : CI #34 verte, log du menage a blanc relu et `DRY_RUN` retire ; reste le deroule de `31-Mise-en-prod.md` (premier menage reel, fusion de la PR #35, verification). Le detail des etapes recentes est dans `4-Roadmap.md` (C7b a C8) et `30-Recette-2.md`.
+- Derniere session : 2026-11-17. **V2 en prod le 2026-11-17** (`v2.0.0`, bilan : `31-Mise-en-prod.md` S7). C8 reste ouvert pour les actions du proprietaire (registry, Traefik, buckets V1), non bloquantes ; ensuite C9 (V2.1). Le detail des etapes recentes est dans `4-Roadmap.md` (C7b a C8) et `30-Recette-2.md`.
 - Fait : etude (A), design system (B4), modele de donnees (B1), permissions (B2), parcours (B3), architecture (B6), tests (B8), maquettes (B5). Version et couverture du CDC : son en-tete.
 - Fait aussi : decisions D01 a D142 (journal). Points ouverts B9 tranches le 2026-11-05 (D140 a D142) : copie independante supprimee, liste de courses a role minimal reglable, schema mis a jour avec les decisions des maquettes, super admin sans modification de recette, statuts des documents au journal, D37 et D130 definitifs, D12 et D14 non utilises.
 - CDC 1.0 valide par le proprietaire le 2026-11-05 (B9) : la phase d'etude est terminee, le code est autorise.

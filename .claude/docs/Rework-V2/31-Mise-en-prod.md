@@ -49,3 +49,13 @@ Deroule pas a pas du jour de la prod, depuis ce poste [D201]. Le proprietaire cl
 - Serveur : images d'avant le label `forestmanager.image` (V1 et premiers builds V2) a retirer a la main une fois.
 - Traefik : `trustedIPs` pour la vraie IP derriere Cloudflare (`14-Architecture.md` S13).
 - Buckets V1 : `mc anonymous set none` sur `forestmanager-images-preprod` / `-prod` [D167].
+
+## 7. Bilan du 2026-11-17
+
+- PR #35 fusionnee (`cc43aff`), CI #36 verte en ~12 min 30 : `deploy-prod`, `registry-prune`, `release-tag` (`v2.0.0`).
+- Demarrage de l'API : `Backup done (4.0K)` (base neuve), 15 migrations appliquees, seed (16 unites, 10 rayons, catalogue des modules, brouillon de changelog `2.0.0` vide : premiere version, pas de commits de reference), `API ready`.
+- `/api/v1/config` : `release 2.0.0`, `environment production`, uploads, Bugsink et Discord actifs, email non configure (prevu).
+- Compte du proprietaire cree par Discord (mot de passe et email aussi) ; super admin cree, 2FA configuree ; tableau de bord admin : Bugsink et stockage en ligne, version `2.0.0`.
+- Controles de Claude dans Chrome : accueil sans erreur console, notifications, flux SSE a travers Cloudflare et Traefik, recette "Test prod - tarte aux tomates" avec photo (ingredient, recette, photo en 201/201/200, photo relue depuis le bucket de prod).
+- Evenement de test Bugsink recu dans le projet de prod.
+- A noter : les logs JSON de l'API sont mal rendus par la vue de logs de Portainer (affichage seulement) ; `x-real-ip` = IP interne de Traefik tant que `trustedIPs` n'est pas regle (S6).
