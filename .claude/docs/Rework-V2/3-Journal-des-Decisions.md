@@ -869,3 +869,9 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 - **Constat** : les icones d'espace etaient rondes et devenaient des carres arrondis au survol et a l'ouverture ; le recadrage d'une photo d'espace (D211) utilisait un masque carre a angles vifs, qui ne correspond a aucune des deux formes affichees.
 - **Options** : masque carre arrondi ou rond ; icones rondes qui changent de forme, ou carre arrondi en permanence.
 - **Choix** (demande du proprietaire) : icones d'espace en carre arrondi en permanence (30 % de la taille), espace perso compris ; pastille blanche courte au survol et barre pour l'espace ouvert, comme Discord ; masque du recadrage d'une photo d'espace au meme arrondi. L'avatar de compte reste rond (masque rond de D211).
+
+### D214 - Delai de recette propre aux recettes d'un tag - VALIDEE (2026-11-17, demande du proprietaire)
+
+- **Constat** : le delai avant de reproposer une recette (7 jours dans les profils du Nid) vaut pour tout le profil. Certaines recettes reviennent par nature plus souvent ("Soupe du moment") : il faudrait baisser le delai de tout le profil, ou renoncer a les voir revenir.
+- **Options** : delai par recette (regle de recette) ; delai propre aux recettes d'un tag (regle de tag) ; plusieurs delais au niveau du profil.
+- **Choix** : champ "Delai propre a ses recettes" sur une regle de tag (0 a 30 jours, 0 : sans delai), qui remplace le delai du profil pour les recettes portant ce tag ; plusieurs tags avec un delai : le plus court l'emporte. Independant du delai de tag (jours entre deux recettes du tag) et des frequences. Regle de tag seulement (contrainte en base et a la validation) ; la copie d'un profil le garde.

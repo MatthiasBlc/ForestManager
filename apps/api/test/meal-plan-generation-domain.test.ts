@@ -26,6 +26,7 @@ const rule = (over: Partial<ProfileRule> & { id: string }): ProfileRule => ({
   frequencyMax: null,
   frequencyPer: null,
   tagCooldownDays: null,
+  recipeCooldownDays: null,
   ...over,
 });
 
@@ -386,6 +387,87 @@ describe("delai entre deux fois la meme recette (calendrier continu)", () => {
       pick: null,
       reason: { code: "COOLDOWN", days: 3 },
     });
+  });
+});
+
+// D214 : une regle de tag peut remplacer le delai de recette du profil.
+describe("delai de recette propre a un tag (D214)", () => {
+  const soupRule = rule({ id: "soupes", tagId: "soupe", recipeCooldownDays: 1 });
+
+  it("une recette du tag revient plus tot que le delai du profil", () => {
+    const result = generate(
+      input({
+        from: "2026-11-11",
+        to: "2026-11-11",
+        mealTimes: ["DINNER"],
+        recipes: [recipe("veloute", ["soupe"])],
+        context: [
+          { date: "2026-11-09", mealTime: "DINNER", recipeId: "veloute", tagIds: ["soupe"] },
+        ],
+        profile: { cooldownDays: 7, useIdeas: false, rules: [soupRule], exclusions: [], pins: [] },
+      })
+    );
+    expect(picked(result)).toEqual(["veloute"]);
+  });
+
+  it("le delai du tag s'applique encore dans sa fenetre", () => {
+    const result = generate(
+      input({
+        from: "2026-11-10",
+        to: "2026-11-10",
+        mealTimes: ["DINNER"],
+        recipes: [recipe("veloute", ["soupe"])],
+        context: [
+          { date: "2026-11-09", mealTime: "DINNER", recipeId: "veloute", tagIds: ["soupe"] },
+        ],
+        profile: { cooldownDays: 7, useIdeas: false, rules: [soupRule], exclusions: [], pins: [] },
+      })
+    );
+    expect(result.proposals[0]).toMatchObject({ pick: null, reason: { code: "COOLDOWN" } });
+  });
+
+  it("les autres recettes gardent le delai du profil", () => {
+    const result = generate(
+      input({
+        from: "2026-11-11",
+        to: "2026-11-11",
+        mealTimes: ["DINNER"],
+        recipes: [recipe("gratin")],
+        context: [{ date: "2026-11-09", mealTime: "DINNER", recipeId: "gratin", tagIds: [] }],
+        profile: { cooldownDays: 7, useIdeas: false, rules: [soupRule], exclusions: [], pins: [] },
+      })
+    );
+    expect(result.proposals[0]).toMatchObject({
+      pick: null,
+      reason: { code: "COOLDOWN", days: 7 },
+    });
+  });
+
+  it("plusieurs tags avec un delai : le plus court l'emporte", () => {
+    const result = generate(
+      input({
+        from: "2026-11-11",
+        to: "2026-11-11",
+        mealTimes: ["DINNER"],
+        recipes: [recipe("veloute", ["soupe", "hiver"])],
+        context: [
+          {
+            date: "2026-11-09",
+            mealTime: "DINNER",
+            recipeId: "veloute",
+            tagIds: ["soupe", "hiver"],
+          },
+        ],
+        profile: {
+          cooldownDays: 7,
+          useIdeas: false,
+          rules: [soupRule, rule({ id: "hiver", tagId: "hiver", recipeCooldownDays: 10 })],
+          exclusions: [],
+          pins: [],
+        },
+      })
+    );
+    expect(picked(result)).toEqual(["veloute"]);
   });
 });
 

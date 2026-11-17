@@ -348,6 +348,7 @@ function profileHandlers(base: string, state: ProfileState, tags: readonly Tag[]
       frequencyMax: body.frequencyMax ?? null,
       frequencyPer: bounded ? (body.frequencyPer ?? "PER_WEEK") : null,
       tagCooldownDays: body.tagCooldownDays ?? null,
+      recipeCooldownDays: body.recipeCooldownDays ?? null,
     };
   };
   return [

@@ -1009,6 +1009,8 @@ model MealGenerationRule {
   frequencyMax    Int?
   frequencyPer    FrequencyPer?
   tagCooldownDays Int?
+  /// Delai de recette des recettes du tag, a la place de celui du profil [D214].
+  recipeCooldownDays Int?
 
   profile MealGenerationProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   tag     Tag?                  @relation(fields: [tagId], references: [id], onDelete: Cascade)

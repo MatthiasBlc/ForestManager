@@ -236,12 +236,17 @@ export const ruleBodySchema = z
     frequencyMax: frequencySchema,
     frequencyPer: frequencyPerSchema.nullable().default(null),
     tagCooldownDays: z.int().min(1).max(MAX_COOLDOWN_DAYS).nullable().default(null),
+    /** Delai de recette des recettes du tag, a la place de celui du profil (0 : aucun) [D214]. */
+    recipeCooldownDays: z.int().min(0).max(MAX_COOLDOWN_DAYS).nullable().default(null),
   })
   .refine(
     (rule) =>
       rule.target.kind === "TAG" ||
-      (rule.frequencyMin === null && rule.frequencyMax === null && rule.tagCooldownDays === null),
-    "frequency and tag cooldown apply to tag rules only"
+      (rule.frequencyMin === null &&
+        rule.frequencyMax === null &&
+        rule.tagCooldownDays === null &&
+        rule.recipeCooldownDays === null),
+    "frequency and cooldowns apply to tag rules only"
   )
   .refine(
     (rule) =>
@@ -283,6 +288,7 @@ export const ruleSchema = z.object({
   frequencyMax: z.int().nullable(),
   frequencyPer: frequencyPerSchema.nullable(),
   tagCooldownDays: z.int().nullable(),
+  recipeCooldownDays: z.int().nullable(),
 });
 export type Rule = z.infer<typeof ruleSchema>;
 

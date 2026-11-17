@@ -153,6 +153,9 @@ function RuleForm({
   const [max, setMax] = useState(rule?.frequencyMax ?? 0);
   const [per, setPer] = useState<FrequencyPer>(rule?.frequencyPer ?? "PER_WEEK");
   const [cooldown, setCooldown] = useState(rule?.tagCooldownDays ?? 0);
+  // Delai de recette propre aux recettes du tag [D214] ; coupe : celui du profil.
+  const [ownWait, setOwnWait] = useState((rule?.recipeCooldownDays ?? null) !== null);
+  const [wait, setWait] = useState(rule?.recipeCooldownDays ?? 0);
   const [problem, setProblem] = useState<string>();
   const done = async () => {
     await queryClient.invalidateQueries({ queryKey: profilesKey(spaceId) });
@@ -193,6 +196,7 @@ function RuleForm({
       frequencyMax: tag && max > 0 ? max : null,
       frequencyPer: tag && (min > 0 || max > 0) ? per : null,
       tagCooldownDays: tag && cooldown > 0 ? cooldown : null,
+      recipeCooldownDays: tag && ownWait ? wait : null,
     });
   };
 
@@ -328,6 +332,24 @@ function RuleForm({
               format={(days) => (days === 0 ? "Aucun" : `${String(days)} j`)}
               onChange={setCooldown}
             />
+          </div>
+          <div className="flex flex-col gap-2">
+            <Switch label="Délai propre à ses recettes" checked={ownWait} onChange={setOwnWait} />
+            {ownWait ? (
+              <div className="flex flex-col gap-1">
+                <span className="text-sm text-ink-muted">
+                  Remplace le délai du profil pour les recettes de ce tag.
+                </span>
+                <Stepper
+                  label="Jours avant de reproposer une de ses recettes"
+                  min={0}
+                  max={MAX_COOLDOWN_DAYS}
+                  value={wait}
+                  format={(days) => (days === 0 ? "Aucun" : `${String(days)} j`)}
+                  onChange={setWait}
+                />
+              </div>
+            ) : null}
           </div>
         </>
       ) : null}

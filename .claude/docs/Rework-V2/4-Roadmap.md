@@ -149,6 +149,9 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [ ] Vraie IP des clients derriere Cloudflare, cote proprietaire, un autre jour (pas d'acces a Traefik le 2026-11-17), **non bloquant pour la prod** : `trustedIPs` de Traefik a regler (`TRUST_PROXY=3` deja fait) ; reglage, enjeux et verification dans `14-Architecture.md` S13
   - [ ] A faire par le proprietaire (a revoir ensemble) : retirer la lecture publique des buckets V1 `forestmanager-images-preprod` / `-prod` (`mc anonymous set none`) [D167]
 - [x] Importer dans une recette existante [D212] (2026-11-17) : API (`imported` a la modification, revision IMPORT), editeur (menu "...", feuilles d'import reutilisees, fusion), TDD, E2E
+- [x] Delai de recette propre aux recettes d'un tag [D214] (2026-11-17)
+- [ ] Affichage des tags dans les listes de recettes (trop de pastilles, scroll horizontal sans fin sur mobile) : etude, options, choix au selecteur (demande du proprietaire, 2026-11-17)
+- [ ] Cartes de recette en bureau : bouton "..." en haut a droite de l'image, qui ouvre au clic gauche le meme menu que le clic droit (demande du proprietaire, 2026-11-17 ; points horizontaux ou verticaux a trancher)
 - [ ] C9 Module liste de courses (V2.1)
 - [ ] Reimport du JSON d'export dans F-AJOUT-RECETTE (V2.1) [D192]
 - [ ] E2E WebKit (Safari) (V2.1) [D195]

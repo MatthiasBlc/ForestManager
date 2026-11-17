@@ -189,6 +189,7 @@ export async function readProfile(
         frequencyMax: rule.frequencyMax,
         frequencyPer: rule.frequencyPer,
         tagCooldownDays: rule.tagCooldownDays,
+        recipeCooldownDays: rule.recipeCooldownDays,
       },
     ];
   });
@@ -366,6 +367,7 @@ function ruleData(body: RuleInput) {
     frequencyMax: body.frequencyMax,
     frequencyPer: body.frequencyPer,
     tagCooldownDays: body.tagCooldownDays,
+    recipeCooldownDays: body.recipeCooldownDays,
   };
 }
 
@@ -531,6 +533,7 @@ export async function resolveProfile(
         frequencyMax: rule.frequencyMax,
         frequencyPer: rule.frequencyPer,
         tagCooldownDays: rule.tagCooldownDays,
+        recipeCooldownDays: rule.recipeCooldownDays,
       },
     ];
   });

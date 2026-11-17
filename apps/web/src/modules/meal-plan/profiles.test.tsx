@@ -94,6 +94,7 @@ describe("regles (D184)", () => {
           frequencyMax: null,
           frequencyPer: "PER_WEEK",
           tagCooldownDays: null,
+          recipeCooldownDays: null,
         },
       ]);
     });
@@ -102,6 +103,33 @@ describe("regles (D184)", () => {
     });
     const rule = screen.getByRole("button", { name: /Végétarien/ });
     expect(rule).toHaveTextContent("Le soir · au moins 2 fois par semaine · poids ×1,5");
+  });
+
+  // D214 : delai de recette propre aux recettes du tag, a la place de celui du profil.
+  it("regle de tag : delai propre a ses recettes", async () => {
+    const s = mealPlanServer({ myRole: "OWNER" });
+    const { user } = openProfiles(s);
+    await user.click(await screen.findByRole("button", { name: "Ajouter une règle" }));
+    const sheet = await screen.findByRole("dialog", { name: "Nouvelle règle" });
+    const tags = within(sheet).getByRole("group", { name: "Tag" });
+    await user.click(within(tags).getByRole("button", { name: "Végétarien" }));
+    await user.click(within(sheet).getByRole("switch", { name: "Délai propre à ses recettes" }));
+    const wait = within(sheet).getByRole("group", {
+      name: "Jours avant de reproposer une de ses recettes",
+    });
+    await user.click(within(wait).getByRole("button", { name: "Plus" }));
+    await user.click(within(wait).getByRole("button", { name: "Plus" }));
+    await user.click(within(sheet).getByRole("button", { name: "Ajouter la règle" }));
+
+    await waitFor(() => {
+      expect(s.plan.ruleBodies[0]).toMatchObject({ recipeCooldownDays: 2 });
+    });
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: "Nouvelle règle" })).not.toBeInTheDocument();
+    });
+    expect(screen.getByRole("button", { name: /Végétarien/ })).toHaveTextContent(
+      "Recettes reproposées après 2 j"
+    );
   });
 
   it("mode avance : jauge de 0 a 200 % par pas de 5 %", async () => {
@@ -144,6 +172,7 @@ describe("regles (D184)", () => {
               frequencyMax: null,
               frequencyPer: null,
               tagCooldownDays: null,
+              recipeCooldownDays: null,
             },
           ],
         }),
@@ -179,6 +208,7 @@ describe("regles (D184)", () => {
               frequencyMax: null,
               frequencyPer: null,
               tagCooldownDays: null,
+              recipeCooldownDays: null,
             },
           ],
         }),
