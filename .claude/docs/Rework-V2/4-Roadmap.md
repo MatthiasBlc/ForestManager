@@ -153,7 +153,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
 - [x] Repas choisi a la main verrouille d'office [D215] (2026-11-17)
 - [x] Etude de l'affichage des tags (demande du proprietaire, 2026-11-17) : `32-Etude-Tags.md`, maquette `32-Maquette-Tags.html` (https://claude.ai/artifact/9uWV3b9eBZqmoRFW5vNSqS), choix au selecteur [D216]
 - [ ] Tags harmonises [D216] (TDD)
-  - [ ] Familles de tags : modele `TagFamily` + `Tag.familyId`, API (familles globales dans l'admin, familles d'espace par les moderateurs), nombre de recettes par tag dans la liste des tags d'un espace, seed inchange (familles des tags globaux reglees par l'admin)
+  - [x] Familles de tags : modele `TagFamily` + `Tag.familyId`, API (familles globales dans l'admin, familles d'espace par les moderateurs), nombre de recettes par tag dans la liste des tags d'un espace, seed inchange (familles des tags globaux reglees par l'admin) ; fait le 2026-11-17 : catalogue `GET .../recipes/tag-catalog` (familles globales puis d'espace, tags avec famille et nombre de recettes), `PATCH .../tags/:tagId` prend `familyId`
   - [ ] Filtre OU dans une famille, ET entre familles (API de la liste et filtre hors ligne)
   - [ ] Composant de choix de tags (feuille : recherche, familles, choix multiple ou unique, creation d'un tag d'espace)
   - [ ] Liste des recettes et "Depuis mes recettes" : bouton "Filtres", filtres actifs retirables, feuille de filtres (Bases, espace d'origine) ; deux tags en texte sur les cartes
@@ -166,6 +166,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
 - [ ] Cartes de recette en bureau : bouton "..." en haut a droite de l'image, qui ouvre au clic gauche le meme menu que le clic droit (demande du proprietaire, 2026-11-17 ; points horizontaux ou verticaux a trancher)
 - [ ] Ordre des espaces dans le rail par glisser-deposer (attention UI / UX : souris, doigt, clavier) ; l'espace perso reste toujours en haut, le bouton "+" toujours en bas (demande du proprietaire, 2026-11-17)
 - [ ] Fleche de retour d'une recette ouverte depuis le planning : revenir au planning (meme semaine, meme vue), pas a la liste des recettes ; de meme, une recette ouverte depuis un widget de l'accueil revient a l'accueil ; verifier les autres origines (recherche, notifications, activite) (demande du proprietaire, 2026-11-17)
+- [ ] PWA de preprod reconnaissable sur le telephone : nom (ex. "Forest Manager Preprod", nom court explicite) et icone distincts de la prod (bandeau ou teinte "PREPROD"), choisis au build selon l'environnement (demande du proprietaire, 2026-11-17)
 - [ ] C9 Module liste de courses (V2.1)
 - [ ] Reimport du JSON d'export dans F-AJOUT-RECETTE (V2.1) [D192]
 - [ ] E2E WebKit (Safari) (V2.1) [D195]
