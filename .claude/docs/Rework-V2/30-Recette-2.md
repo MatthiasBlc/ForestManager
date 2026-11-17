@@ -147,3 +147,5 @@ Laisses tels quels : badge "A traduire" sur toutes les unites, rayons et tags (t
 Revue mobile en preprod (2026-11-17, Chrome a 390 px, souris) : liste, fiche, mode cuisine et feuille Ingredients, planning (vue Jour, F-REPAS), menu "Plus", notifications, apparence (focus Potager bleu) conformes. Remarque : dans le bandeau des jours du Planning, aujourd'hui n'avait pas de repere visuel quand un autre jour etait choisi (seulement `aria-current`) ; tranche par le proprietaire et corrige le 2026-11-17 (TDD) : fond accent clair, comme dans la grille bureau. Le defilement au doigt des tags (D12) reste a voir sur un vrai telephone.
 
 Tests du proprietaire sur un vrai telephone (2026-11-17) : conformes, dont le defilement au doigt des tags (D12).
+
+Deploy preprod du 2026-11-17 (CI #31, `9e61d88`) : carte "Pates sauce tomate" de "Revue duo" a 50 min et repere d'aujourd'hui dans le bandeau des jours du Planning (fond accent clair, theme sombre, 390 px) conformes. IP reelle au journal d'audit : a verifier par le proprietaire apres une connexion admin.
