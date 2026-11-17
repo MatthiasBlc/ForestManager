@@ -2,6 +2,7 @@
 // liste, detail, creation, modification, suppression, historique, restauration,
 // partage (F-PARTAGER, demandes, "Mes recettes", depart). Garde l'etat et les corps recus.
 import {
+  matchesTagFilter,
   errorBody,
   type CreateRecipeBody,
   type Ingredient,
@@ -18,6 +19,7 @@ import {
   type SpaceDetail,
   type SpaceRole,
   type Tag,
+  type TagFamily,
   type UpdateRecipeBody,
 } from "@fm/shared";
 import { http, HttpResponse } from "msw";
@@ -71,6 +73,9 @@ export function recipeServer({
       { id: uuid(), scope: "GLOBAL", name: "Rapide" },
     ] as Tag[],
     spaceTags: [{ id: uuid(), scope: "SPACE", name: "Plat du dimanche" }] as Tag[],
+    /** Familles du catalogue [D216] et famille de chaque tag (absent : sans famille). */
+    tagFamilies: [] as TagFamily[],
+    familyOf: {} as Record<string, string>,
     /** Etat du partage par recette ; par defaut, aucun partage. */
     sharing: {} as Record<string, Partial<RecipeSharing>>,
     shareRequests: [] as ShareRequest[],
@@ -173,6 +178,16 @@ export function recipeServer({
       return HttpResponse.json(created, { status: 201 });
     }),
     http.get(`${base}/tags`, () => HttpResponse.json({ data: state.spaceTags })),
+    http.get(`${base}/tag-catalog`, () =>
+      HttpResponse.json({
+        families: state.tagFamilies,
+        tags: [...state.globalTags, ...state.spaceTags].map((tag) => ({
+          ...tag,
+          familyId: state.familyOf[tag.id] ?? null,
+          recipeCount: state.recipes.filter((r) => r.tags.some((t) => t.id === tag.id)).length,
+        })),
+      })
+    ),
     http.post(`${base}/tags`, async ({ request }) => {
       const { name } = (await request.json()) as { name: string };
       const tag: Tag = { id: uuid(), scope: "SPACE", name };
@@ -186,7 +201,13 @@ export function recipeServer({
       const tagIds = params.get("tagIds")?.split(",") ?? [];
       const data = state.recipes
         .filter((r) => r.title.toLowerCase().includes(q))
-        .filter((r) => tagIds.every((id) => r.tags.some((t) => t.id === id)))
+        .filter((r) =>
+          matchesTagFilter(
+            r.tags.map((t) => t.id),
+            tagIds,
+            (id) => state.familyOf[id] ?? null
+          )
+        )
         .filter((r) =>
           (params.get("ingredientIds")?.split(",") ?? []).every((id) =>
             r.blocks.some(

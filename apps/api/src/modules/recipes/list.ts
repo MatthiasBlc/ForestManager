@@ -3,6 +3,7 @@
 // derniere recette renvoyee (pagination par cle, stable quand on ajoute).
 import {
   normalizeName,
+  tagFilterGroups,
   type RecipeListQuery,
   type RecipeSort,
   type RecipeSummary,
@@ -106,7 +107,8 @@ function filters(
   scope: Prisma.Sql,
   spaceId: string,
   viewerId: string,
-  query: RecipeListQuery
+  query: RecipeListQuery,
+  tagGroups: string[][]
 ): Prisma.Sql[] {
   // Masquee par la moderation [D178] : seul son auteur la voit encore.
   const where = [
@@ -119,11 +121,13 @@ function filters(
     const like = `%${text.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
     where.push(Prisma.sql`lower(unaccent(r.title)) LIKE ${like}`);
   }
-  for (const tagId of query.tagIds ?? []) {
+  // OU dans une famille, ET entre familles [D216].
+  for (const group of tagGroups) {
+    const ids = Prisma.join(group);
     where.push(Prisma.sql`(
-      EXISTS (SELECT 1 FROM "RecipeGlobalTag" g WHERE g."recipeId" = r.id AND g."tagId" = ${tagId})
+      EXISTS (SELECT 1 FROM "RecipeGlobalTag" g WHERE g."recipeId" = r.id AND g."tagId" IN (${ids}))
       OR EXISTS (SELECT 1 FROM "RecipeSpaceTag" s
-        WHERE s."recipeId" = r.id AND s."spaceId" = ${spaceId} AND s."tagId" = ${tagId}))`);
+        WHERE s."recipeId" = r.id AND s."spaceId" = ${spaceId} AND s."tagId" IN (${ids})))`);
   }
   for (const ingredientId of query.ingredientIds ?? []) {
     where.push(Prisma.sql`EXISTS (SELECT 1 FROM "RecipeIngredient" ri
@@ -134,6 +138,17 @@ function filters(
   if (query.authorId) where.push(Prisma.sql`r."authorId" = ${query.authorId}`);
   if (query.base !== undefined) where.push(Prisma.sql`r."isBase" = ${query.base}`);
   return where;
+}
+
+/** Tags choisis groupes par famille ; un tag inconnu reste seul (aucun resultat). */
+async function tagGroupsOf(ctx: Context, tagIds: string[] | undefined): Promise<string[][]> {
+  if (!tagIds?.length) return [];
+  const rows = await ctx.db.tag.findMany({
+    where: { id: { in: tagIds } },
+    select: { id: true, familyId: true },
+  });
+  const family = new Map(rows.map((row) => [row.id, row.familyId]));
+  return tagFilterGroups(tagIds, (id) => family.get(id) ?? null);
 }
 
 /**
@@ -149,7 +164,7 @@ export async function listRecipes(
   scope: Prisma.Sql = visibleInSql(spaceId)
 ): Promise<{ data: RecipeSummary[]; nextCursor: string | null }> {
   const sort = SORTS[query.sort];
-  const where = filters(scope, spaceId, viewerId, query);
+  const where = filters(scope, spaceId, viewerId, query, await tagGroupsOf(ctx, query.tagIds));
   if (query.cursor) {
     const cursor = decodeCursor(query.cursor, sort);
     where.push(

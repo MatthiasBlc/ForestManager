@@ -385,6 +385,31 @@ describe("liste, recherche, filtres et tri (F-REC-11)", () => {
     expect((await list("tagIds=nope")).body.error.code).toBe("VALIDATION_001");
   });
 
+  it("tags : OU dans une famille, ET entre familles et entre tags sans famille (D216)", async () => {
+    const { f, owner, ids, quick, veggie } = await library();
+    const base = `/spaces/${f.spaceId}/recipes`;
+    const list = (tagIds: string[]) => owner.get(`${base}?sort=title&tagIds=${tagIds.join(",")}`);
+    const tier = (await owner.post(`${base}/tag-families`, { name: "Palier" })).body.id as string;
+    const regular = (await owner.post(`${base}/tags`, { name: "Regulier" })).body.id as string;
+    await owner.patch(`${base}/tags/${quick}`, { familyId: tier });
+    await owner.patch(`${base}/tags/${regular}`, { familyId: tier });
+    await owner.put(`${base}/${ids.tarte}/space-tags`, { tagIds: [regular] });
+
+    // quick : Dahl, Sauce ; regular : Tarte ; veggie (sans famille) : Dahl, Tarte.
+    expect(titles(await list([quick, regular]))).toEqual([
+      "Dahl de lentilles",
+      "Sauce tériyaki",
+      "Tarte aux pommes",
+    ]);
+    expect(titles(await list([quick, regular, veggie]))).toEqual([
+      "Dahl de lentilles",
+      "Tarte aux pommes",
+    ]);
+    const plain = (await owner.post(`${base}/tags`, { name: "Leger" })).body.id as string;
+    await owner.put(`${base}/${ids.salade}/space-tags`, { tagIds: [plain] });
+    expect(titles(await list([veggie, plain]))).toEqual([]);
+  });
+
   it("pagine par curseur sans doublon ni oubli, quel que soit le tri", async () => {
     const { f, owner } = await library();
     for (const sort of ["recent", "title", "time"]) {

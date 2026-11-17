@@ -12,6 +12,7 @@ import {
   shareRequestSchema,
   suggestionSchema,
   suggestionSummarySchema,
+  tagCatalogSchema,
   tagSchema,
   unitSchema,
   type RecipeSort,
@@ -168,6 +169,14 @@ export function spaceTagsQuery(spaceId: string) {
     queryKey: [...recipesKey(spaceId), "tags"],
     queryFn: async () =>
       (await api.get(`/spaces/${spaceId}/recipes/tags`, listSchema(tagSchema))).data,
+  });
+}
+
+/** Catalogue des tags de l'espace [D216] : familles, tags avec famille et nombre de recettes. */
+export function tagCatalogQuery(spaceId: string) {
+  return queryOptions({
+    queryKey: [...recipesKey(spaceId), "tag-catalog"],
+    queryFn: async () => api.get(`/spaces/${spaceId}/recipes/tag-catalog`, tagCatalogSchema),
   });
 }
 

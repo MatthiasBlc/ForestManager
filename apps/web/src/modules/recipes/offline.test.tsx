@@ -2,10 +2,11 @@
 // cartes, ecritures desactivees (pas masquees).
 import { act, screen, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
+import type { Tag } from "@fm/shared";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { App } from "../../app/App.tsx";
-import { buildRecipe } from "../../test/fixtures.ts";
+import { buildRecipe, uuid } from "../../test/fixtures.ts";
 import { recipeServer } from "../../test/recipe-server.ts";
 import { renderWithProviders } from "../../test/render.tsx";
 import { server } from "../../test/server.ts";
@@ -57,6 +58,37 @@ describe("liste hors ligne (E-RECETTES-HorsLigne)", () => {
     });
     await user.click(screen.getAllByRole("link", { name: "Recettes" })[0] as HTMLElement);
     expect(await screen.findByText("Aucune recette disponible hors ligne")).toBeInTheDocument();
+  });
+});
+
+describe("filtre par tags hors ligne (D216)", () => {
+  it("OU dans une famille : deux paliers donnent les recettes de l'un ou de l'autre", async () => {
+    const must: Tag = { id: uuid(), scope: "SPACE", name: "Incontournable" };
+    const regular: Tag = { id: uuid(), scope: "SPACE", name: "Regulier" };
+    const dahl = buildRecipe({ title: "Dahl de lentilles", tags: [must] });
+    const tarte = buildRecipe({ title: "Tarte aux pommes", tags: [regular] });
+    const s = recipeServer({ recipes: [dahl, tarte] });
+    const tier = { id: uuid(), scope: "SPACE" as const, name: "Palier" };
+    s.recipes.spaceTags.push(must, regular);
+    s.recipes.tagFamilies.push(tier);
+    s.recipes.familyOf[must.id] = tier.id;
+    s.recipes.familyOf[regular.id] = tier.id;
+    const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/recipes` });
+    await screen.findByRole("article", { name: "Dahl de lentilles" });
+    for (const recipe of [dahl, tarte]) {
+      await user.click(screen.getByRole("article", { name: recipe.title }));
+      await screen.findByRole("heading", { name: recipe.title });
+      await user.click(screen.getByRole("button", { name: "Retour" }));
+      await screen.findByRole("article", { name: "Tarte aux pommes" });
+    }
+    act(() => {
+      setOnline(false);
+    });
+    await screen.findByText(/Disponibles hors ligne/);
+    await user.click(screen.getByRole("button", { name: "Incontournable" }));
+    await user.click(screen.getByRole("button", { name: "Regulier" }));
+    expect(screen.getByRole("article", { name: "Dahl de lentilles" })).toBeInTheDocument();
+    expect(screen.getByRole("article", { name: "Tarte aux pommes" })).toBeInTheDocument();
   });
 });
 

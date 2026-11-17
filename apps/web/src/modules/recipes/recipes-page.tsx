@@ -3,6 +3,7 @@
 // par espace d'origine (onglet unique, D207) ; recettes partagees ;
 // bandeau des demandes de partage ; etats vide, chargement, erreur ; F-AJOUT-RECETTE.
 import {
+  matchesTagFilter,
   normalizeName,
   type Recipe,
   type RecipeSummary,
@@ -38,6 +39,7 @@ import {
   recipesKey,
   recipesQuery,
   spaceTagsQuery,
+  tagCatalogQuery,
   unitsQuery,
 } from "./queries.ts";
 import { RecipeActionsSheet } from "./recipe-actions-sheet.tsx";
@@ -255,6 +257,8 @@ export function RecipesPage() {
   const units = useQuery(unitsQuery);
   const globalTags = useQuery(globalTagsQuery);
   const spaceTags = useQuery(spaceTagsQuery(spaceId));
+  // Familles des tags : filtre hors ligne OU dans une famille [D216].
+  const catalog = useQuery(tagCatalogQuery(spaceId));
   const [search, setSearch] = useState("");
   const [tagIds, setTagIds] = useState<string[]>([]);
   const [baseOnly, setBaseOnly] = useState(false);
@@ -333,7 +337,11 @@ export function RecipesPage() {
       ({ recipe }) =>
         (!term || normalizeName(recipe.title).includes(term)) &&
         (!baseOnly || recipe.isBase) &&
-        tagIds.every((id) => recipe.tags.some((tag) => tag.id === id))
+        matchesTagFilter(
+          recipe.tags.map((tag) => tag.id),
+          tagIds,
+          (id) => catalog.data?.tags.find((tag) => tag.id === id)?.familyId ?? null
+        )
     );
     content =
       available.length === 0 ? (
