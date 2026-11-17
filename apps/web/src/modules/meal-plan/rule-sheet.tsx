@@ -331,20 +331,11 @@ function RuleForm({
           </div>
         </>
       ) : null}
+      {/* Pas de `block` : deux boutons pleine largeur sur la ligne du pied debordent. */}
       <SheetFooter>
-        <Button
-          variant="primary"
-          block
-          disabled={save.isPending || guard.disabled}
-          aria-describedby={guard["aria-describedby"]}
-          onClick={submit}
-        >
-          {rule ? "Enregistrer" : "Ajouter la règle"}
-        </Button>
         {rule ? (
           <Button
             variant="danger"
-            block
             disabled={remove.isPending || guard.disabled}
             onClick={() => {
               remove.mutate();
@@ -353,6 +344,14 @@ function RuleForm({
             Supprimer la règle
           </Button>
         ) : null}
+        <Button
+          variant="primary"
+          disabled={save.isPending || guard.disabled}
+          aria-describedby={guard["aria-describedby"]}
+          onClick={submit}
+        >
+          {rule ? "Enregistrer" : "Ajouter la règle"}
+        </Button>
       </SheetFooter>
     </div>
   );
