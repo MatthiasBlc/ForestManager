@@ -235,6 +235,39 @@ Fichier : `.github/workflows/ci.yml` (reprise de la chaine V1 : memes secrets, r
 - **Jobs** : `verify` (format, lint, typecheck dont les cles i18n, audit des dependances de prod, tests avec seuils de couverture dans `docker/compose.test.yml`) ; `e2e` (16 parcours dans `docker/compose.e2e.yml`, artefacts des echecs 7 jours) ; `build` (images `backend` et `frontend` cible `prod`) ; `deploy-preprod` / `deploy-prod` (`docker/deploy.sh` vers Portainer, serialises par environnement) ; `release-tag`. Detail des controles : `15-Plan-Tests.md` S6 [D200].
 - **Images taguees** `sha-<court>` (plus `latest` en prod) et deployees par ce tag : on sait ce qui tourne et on revient en arriere en changeant le tag.
 - **Base de donnees** : au demarrage de l'image (`docker/api-start.sh`), `prisma migrate deploy` puis seed ; le conteneur s'arrete si la migration echoue. `pg_dump` avant les migrations en prod [D76] : `BACKUP_DIR=/backups` (compose de prod seulement, volume `postgres_backups`), un dump `fm-<date UTC>.dump` (format custom) a chaque demarrage du conteneur, deploy ou redeploy Portainer ; un echec arrete le conteneur avant toute migration ; dumps de plus de 14 jours effaces apres un dump reussi. Restauration : `pg_restore --no-owner --clean --if-exists -d <base> fm-<date>.dump` (dump sur le meme serveur que la base : pas une sauvegarde hors site).
+- **IP des clients** : chaine Cloudflare, Traefik, nginx du front, API ; `TRUST_PROXY=3` en preprod et prod. Il faut en plus que Traefik fasse confiance a Cloudflare, sinon il ecrase `X-Forwarded-For` et l'API voit l'IP du noeud Cloudflare. **Pas encore fait (cote serveur, proprietaire)** : sans ce reglage, tout fonctionne, mais le journal d'audit et les sessions montrent des IP Cloudflare et les limites de debit se comptent par noeud Cloudflare (risque faible a notre echelle, non bloquant pour la prod). Reglage, dans la config statique de Traefik, sur l'entrypoint HTTPS (souvent `websecure`), puis redemarrer Traefik :
+
+  ```yaml
+  entryPoints:
+    websecure:
+      forwardedHeaders:
+        trustedIPs: # https://www.cloudflare.com/ips (releve du 2026-11-17)
+          - 173.245.48.0/20
+          - 103.21.244.0/22
+          - 103.22.200.0/22
+          - 103.31.4.0/22
+          - 141.101.64.0/18
+          - 108.162.192.0/18
+          - 190.93.240.0/20
+          - 188.114.96.0/20
+          - 197.234.240.0/22
+          - 198.41.128.0/17
+          - 162.158.0.0/15
+          - 104.16.0.0/13
+          - 104.24.0.0/14
+          - 172.64.0.0/13
+          - 131.0.72.0/22
+          - 2400:cb00::/32
+          - 2606:4700::/32
+          - 2803:f800::/32
+          - 2405:b500::/32
+          - 2405:8100::/32
+          - 2a06:98c0::/29
+          - 2c0f:f248::/32
+  ```
+
+  En arguments de commande : meme liste separee par des virgules dans `--entrypoints.websecure.forwardedHeaders.trustedIPs=...`. Verification : connexion admin en preprod, la ligne "Connexion" du journal d'audit montre la vraie IP.
+
 - **Seed** : uniquement les referentiels (unites, conversions, rayons, tags globaux, catalogue de modules) et le brouillon de changelog [D187], idempotent (upsert). Donnees de demo dans un script separe, jamais lance en prod.
 - **Remise a zero avant la V2** [D23] : nouvelle base sur un volume neuf (`postgres17_data[_dev]`), memes stacks Portainer.
 

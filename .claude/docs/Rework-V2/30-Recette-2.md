@@ -149,3 +149,5 @@ Revue mobile en preprod (2026-11-17, Chrome a 390 px, souris) : liste, fiche, mo
 Tests du proprietaire sur un vrai telephone (2026-11-17) : conformes, dont le defilement au doigt des tags (D12).
 
 Deploy preprod du 2026-11-17 (CI #31, `9e61d88`) : carte "Pates sauce tomate" de "Revue duo" a 50 min et repere d'aujourd'hui dans le bandeau des jours du Planning (fond accent clair, theme sombre, 390 px) conformes. IP reelle au journal d'audit : a verifier par le proprietaire apres une connexion admin.
+
+Journal d'audit apres connexion admin (2026-11-17, 10 h 30) : IP `172.71.127.93`, plus `172.19.0.8`, mais c'est un noeud Cloudflare (le site passe par Cloudflare : chaine Cloudflare, Traefik, nginx du front, API). Tranche par le proprietaire : Traefik fait confiance aux plages de Cloudflare (`forwardedHeaders.trustedIPs`, config du serveur) et `TRUST_PROXY` passe a 3 en preprod et prod. Non falsifiable : un appel direct au serveur voit son `X-Forwarded-For` ecrase par Traefik.
