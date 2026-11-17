@@ -86,6 +86,23 @@ describe("E-MODE-CUISINE", () => {
 
     await user.click(screen.getByRole("button", { name: "Terminer" }));
     expect(await screen.findByRole("heading", { name: "Gratin de pâtes" })).toBeInTheDocument();
+    // La fiche garde les portions du mode cuisine [R7].
+    expect(screen.getByRole("checkbox", { name: /1 kg Pâtes/ })).toBeInTheDocument();
+  });
+
+  it("fleches du clavier : etape suivante et precedente [R7]", async () => {
+    const recipe = gratin();
+    const s = recipeServer({ recipes: [recipe] });
+    const { user } = renderWithProviders(<App />, {
+      route: `/s/${s.space.id}/recipes/${recipe.id}/cook`,
+    });
+    await screen.findByText("Étape 1 sur 2");
+    await user.keyboard("{ArrowRight}");
+    expect(screen.getByText("Étape 2 sur 2")).toBeInTheDocument();
+    await user.keyboard("{ArrowRight}");
+    expect(screen.getByText("Étape 2 sur 2")).toBeInTheDocument();
+    await user.keyboard("{ArrowLeft}");
+    expect(screen.getByText("Étape 1 sur 2")).toBeInTheDocument();
   });
 
   it("quitter revient au detail", async () => {
@@ -189,6 +206,7 @@ describe("etapes et ingredients a plat (cook.ts)", () => {
             id: sub.id,
             title: sub.title,
             yieldQuantity: sub.yieldQuantity,
+            totalMinutes: sub.totalMinutes,
             yieldUnitId: sub.yieldUnitId,
             isBase: true,
             blocks: sub.blocks,
@@ -225,6 +243,15 @@ describe("etapes et ingredients a plat (cook.ts)", () => {
     expect(steps[1]?.block).toEqual({ title: "Saumon", linked: false, amount: null });
     // Le pluriel du nom compte aussi.
     expect(steps[1]?.ingredients.map((line) => line.name)).toEqual(["Saumon"]);
+  });
+
+  it("les sous-recettes se preparent avant le bloc qui les utilise (D9)", () => {
+    const recipe = composed();
+    recipe.blocks.reverse();
+    expect(cookSteps(recipe, UNITS, 2).map((step) => step.text)).toEqual([
+      "Mélanger la sauce soja et le mirin.",
+      "Saisir les saumons 3 minutes par face.",
+    ]);
   });
 
   it("ingredients groupes par bloc, a l'echelle", () => {

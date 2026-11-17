@@ -53,7 +53,14 @@ describe("bloc lie (D24, D107)", () => {
       quantity: 150,
       unitId: await unitId("ml"),
       status: "AVAILABLE",
-      recipe: { id: sauce.id, title: "Sauce teriyaki", yieldQuantity: 300, isBase: true },
+      // Temps de la sous-recette : la fiche du plat les additionne [R5].
+      recipe: {
+        id: sauce.id,
+        title: "Sauce teriyaki",
+        yieldQuantity: 300,
+        isBase: true,
+        totalMinutes: 45,
+      },
     });
     expect(res.body.blocks[0].recipe.blocks[0].steps).toEqual([
       "Cuire les pates.",

@@ -15,7 +15,7 @@ import { SegmentedControl } from "../../ui/controls.tsx";
 import { Icon } from "../../ui/icon.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
-import { describeDiff } from "./format.ts";
+import { byline, describeDiff } from "./format.ts";
 
 /** Choix de l'espace puis creation d'une adaptation (F-ADAPTER, suggestion refusee). */
 function AdaptationSheet({
@@ -127,9 +127,7 @@ export function AdaptSheet({
     >
       <span className="flex flex-col">
         <b>{recipe.title}</b>
-        <small className="text-ink-muted">
-          par {author} · {recipe.homeSpace.name}
-        </small>
+        <small className="text-ink-muted">{byline(author, recipe.homeSpace.name)}</small>
       </span>
       <p className="m-0">
         Crée ta version de la recette. L'original de {author} n'est jamais modifié.
@@ -182,7 +180,7 @@ export function AdaptedFromNotice({ spaceId, recipe }: { spaceId: string; recipe
   return (
     <div className="fm-stack gap-2">
       <span className="text-sm text-ink-muted">
-        Adaptée de {from.title} · {from.author.username} ({from.homeSpace.name})
+        Adaptée de {from.title} · {byline(from.author.username, from.homeSpace.name)}
         {from.deleted ? " · Original supprimé" : ""}
       </span>
       {from.changed ? (

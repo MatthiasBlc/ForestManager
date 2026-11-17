@@ -96,6 +96,7 @@ describe("detail hors ligne", () => {
             id: sauce.id,
             title: sauce.title,
             yieldQuantity: sauce.yieldQuantity,
+            totalMinutes: sauce.totalMinutes,
             yieldUnitId: null,
             isBase: true,
             blocks: sauce.blocks,

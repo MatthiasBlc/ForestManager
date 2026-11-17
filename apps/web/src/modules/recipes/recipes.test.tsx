@@ -39,6 +39,9 @@ describe("liste des recettes (E-RECETTES)", () => {
     expect(
       await screen.findByRole("heading", { name: "Pas encore de recette dans Famille" })
     ).toBeInTheDocument();
+    // R8 : rien a chercher ni a filtrer.
+    expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Filtres" })).not.toBeInTheDocument();
   });
 
   it("recherche et filtre par tag ou par base", async () => {
@@ -166,6 +169,9 @@ describe("editeur de recette (E-RECETTE-EDITION)", () => {
     await user.click(screen.getByRole("button", { name: "Enregistrer" }));
     expect(await screen.findByText("Donne un titre à la recette.")).toBeInTheDocument();
     expect(s.recipes.bodies.create).toBeUndefined();
+    // D3 : l'erreur tombe des que le titre est saisi.
+    await user.type(screen.getByLabelText("Titre"), "Gratin");
+    expect(screen.queryByText("Donne un titre à la recette.")).not.toBeInTheDocument();
   });
 
   it("Annuler demande confirmation ; le brouillon est garde et restaure (D104)", async () => {
@@ -289,5 +295,19 @@ describe("detail d'une recette (E-RECETTE)", () => {
       route: `/s/${s.space.id}/recipes/00000000-0000-4000-8000-000000000000`,
     });
     expect(await screen.findByRole("heading", { name: "Recette introuvable" })).toBeInTheDocument();
+  });
+
+  it("modifier sans en avoir le droit : explique et propose une suggestion (D15)", async () => {
+    const recipe = buildRecipe({ title: "Gratin", can: { edit: false, delete: false } });
+    const s = recipeServer({ recipes: [recipe] });
+    const { user } = renderWithProviders(<App />, {
+      route: `/s/${s.space.id}/recipes/${recipe.id}/edit`,
+    });
+    expect(
+      await screen.findByRole("heading", { name: "Modification réservée" })
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/supprimée/)).not.toBeInTheDocument();
+    await user.click(screen.getByRole("link", { name: "Proposer une modification" }));
+    expect(await screen.findByText(/Mode suggestion/)).toBeInTheDocument();
   });
 });

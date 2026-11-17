@@ -7,6 +7,7 @@ import {
   type DiffEntry,
   type DiffField,
   type FieldValue,
+  type RecipeBlock,
   type RecipeIngredient,
   type Unit,
 } from "@fm/shared";
@@ -54,6 +55,11 @@ export function ingredientAmount(
   return scaledAmount(line, units, servings / yieldQuantity);
 }
 
+/** Entier a partir de 10, sinon une decimale. */
+function kitchenRound(quantity: number): number {
+  return quantity >= 10 ? Math.round(quantity) : Math.round(quantity * 10) / 10;
+}
+
 /** Quantite multipliee par `scale` (portions, part d'une sous-recette), lisible. */
 export function scaledAmount(
   line: Pick<RecipeIngredient, "quantity" | "unitId">,
@@ -69,8 +75,53 @@ export function scaledAmount(
     return `${formatQuantity(scaled, { fractions: true })} ${unitLabel(unit, scaled)}`;
   const readable = simplify(scaled, unit, units);
   const shown = units.find((u) => u.code === readable.unit.code) ?? unit;
-  const label = unitLabel(shown, readable.quantity);
-  return `${formatQuantity(readable.quantity, { fractions: !shown.metric })} ${label}`;
+  // Mise a l'echelle : precision de cuisine (33 cl, 1,3 g), pas "33,33 cl" (R4).
+  const quantity =
+    shown.metric && scale !== 1 ? kitchenRound(readable.quantity) : readable.quantity;
+  const label = unitLabel(shown, quantity);
+  return `${formatQuantity(quantity, { fractions: !shown.metric })} ${label}`;
+}
+
+/**
+ * Quantite d'une sous-recette liee. Sans unite, ce sont des portions de la sous-recette,
+ * dans son unite de rendement ("8 pers.", "4 pieces"), jamais un "8" nu [R5].
+ */
+export function linkedAmount(
+  block: Pick<RecipeIngredient, "quantity" | "unitId">,
+  yieldUnitId: string | null,
+  units: readonly Unit[],
+  scale: number
+): string {
+  if (block.unitId !== null) return scaledAmount(block, units, scale);
+  const quantity = (block.quantity ?? 0) * scale;
+  const unit = units.find((u) => u.id === yieldUnitId);
+  return formatYield(unit?.metric ? kitchenRound(quantity) : quantity, unit);
+}
+
+/** Temps d'une recette, sous-recettes liees comprises [R5] ; null si aucun temps. */
+export function composedMinutes(recipe: {
+  totalMinutes: number | null;
+  blocks: readonly RecipeBlock[];
+}): number | null {
+  const parts = [
+    recipe.totalMinutes,
+    ...recipe.blocks.map((block) =>
+      block.kind === "RECIPE" && block.recipe ? composedMinutes(block.recipe) : null
+    ),
+  ].filter((value): value is number => value !== null);
+  return parts.length === 0 ? null : parts.reduce((sum, value) => sum + value, 0);
+}
+
+/** Espace a citer apres l'auteur : l'espace perso porte le nom de son auteur, inutile de le repeter [R2]. */
+export function spaceAfterAuthor(author: string, spaceName: string | null): string | null {
+  if (!spaceName || spaceName.toLowerCase() === author.toLowerCase()) return null;
+  return spaceName;
+}
+
+/** "par Lea · Foyer", ou "par Lea" pour une recette de son espace perso. */
+export function byline(author: string, spaceName: string | null): string {
+  const space = spaceAfterAuthor(author, spaceName);
+  return space ? `par ${author} · ${space}` : `par ${author}`;
 }
 
 /** "Amis", "Amis et TOM", "Amis, TOM et Colloc". */

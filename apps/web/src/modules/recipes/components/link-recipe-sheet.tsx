@@ -110,7 +110,12 @@ export function LinkRecipeSheet({
         <OptionList
           label="Recettes trouvées"
           value={selectedId}
-          onChange={setSelectedId}
+          onChange={(id) => {
+            setSelectedId(id);
+            // Toute la recette par defaut, a ajuster ensuite [R6].
+            const picked = results.find((r) => r.id === id);
+            setQuantity(picked ? formatQuantity(picked.yieldQuantity) : "");
+          }}
           options={results.map((recipe) => {
             const current = recipe.id === currentRecipeId;
             return {
@@ -129,8 +134,11 @@ export function LinkRecipeSheet({
             };
           })}
         />
+      </div>
+      <SheetFooter>
+        {/* Dans le pied, toujours visible quelle que soit la longueur de la liste [R6]. */}
         {selected ? (
-          <>
+          <div className="fm-stack w-full gap-1">
             <div className="flex items-end gap-2">
               <Field
                 label="Quantité utilisée"
@@ -148,10 +156,8 @@ export function LinkRecipeSheet({
             <small className="text-ink-muted">
               Les quantités suivent si tu changes les portions.
             </small>
-          </>
+          </div>
         ) : null}
-      </div>
-      <SheetFooter>
         <Button
           variant="primary"
           icon="link"
@@ -171,7 +177,7 @@ export function LinkRecipeSheet({
             setQuantity("");
           }}
         >
-          {selected ? `Lier ${selected.title}` : "Lier la recette"}
+          {selected ? `Lier ${selected.title}` : "Choisis une recette"}
         </Button>
       </SheetFooter>
     </Sheet>

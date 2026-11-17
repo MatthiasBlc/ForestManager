@@ -318,6 +318,7 @@ function toLinkedBlock(block: BlockRow, links: ReadonlyMap<string, LoadedLink>):
             title: loaded.row.title,
             yieldQuantity: loaded.row.yieldQuantity,
             yieldUnitId: loaded.row.yieldUnitId,
+            totalMinutes: totalMinutes(loaded.row),
             isBase: loaded.row.isBase,
             blocks: loaded.row.blocks.map((sub) => toBlock(sub, links)),
           }

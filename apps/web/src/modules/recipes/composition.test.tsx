@@ -39,6 +39,7 @@ function plat(sub: Recipe, status: "AVAILABLE" | "HIDDEN" | "DELETED" = "AVAILAB
                 id: sub.id,
                 title: sub.title,
                 yieldQuantity: sub.yieldQuantity,
+                totalMinutes: sub.totalMinutes,
                 yieldUnitId: sub.yieldUnitId,
                 isBase: true,
                 blocks: sub.blocks,
@@ -80,6 +81,30 @@ describe("detail d'une recette composee", () => {
     expect(within(block).getByText("300 ml")).toBeInTheDocument();
     expect(within(block).getByRole("checkbox", { name: /500 g Pâtes/ })).toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("portions sans unite, temps total, clic sur le bloc [R5]", async () => {
+    const sub = { ...sauce(), yieldQuantity: 8, yieldUnitId: null, totalMinutes: 30 };
+    const base = plat(sub);
+    const recipe: Recipe = {
+      ...base,
+      totalMinutes: 20,
+      blocks: base.blocks.map((block) =>
+        block.kind === "RECIPE" ? { ...block, quantity: 8, unitId: null } : block
+      ),
+    };
+    const s = recipeServer({ recipes: [sub, recipe] });
+    const { user } = renderWithProviders(<App />, {
+      route: `/s/${s.space.id}/recipes/${recipe.id}`,
+    });
+    await screen.findByRole("heading", { name: "Saumon teriyaki" });
+    const block = screen.getByRole("region", { name: "Sauce teriyaki" });
+    expect(within(block).getByText("8 pers.")).toBeInTheDocument();
+    // Le temps de la fiche compte celui de la sauce.
+    expect(screen.getByText("50 min")).toBeInTheDocument();
+    // Toucher l'en-tete du bloc le deplie, comme le chevron.
+    await user.click(within(block).getByText("Recette liée"));
+    expect(within(block).getByRole("checkbox", { name: /Pâtes/ })).toBeInTheDocument();
   });
 
   it("sous-recette non visible dans l'espace", async () => {
@@ -138,9 +163,15 @@ describe("lier une recette dans l'editeur (F-AJOUT-BLOC, F-LIER-RECETTE)", () =>
     expect(options[0]).toHaveTextContent("rend 300 ml");
     expect(within(list).getByRole("option", { name: /Saumon teriyaki/ })).toBeDisabled();
 
+    // Sans choix, le bouton dit ce qu'il attend [R6].
+    expect(within(sheet).getByRole("button", { name: "Choisis une recette" })).toBeDisabled();
     await user.click(options[0] as HTMLElement);
     expect(within(sheet).getByText("ml sur 300")).toBeInTheDocument();
-    await user.type(within(sheet).getByLabelText("Quantité utilisée"), "150");
+    // Preremplie avec toute la recette liee [R6].
+    const quantity = within(sheet).getByLabelText("Quantité utilisée");
+    expect(quantity).toHaveValue("300");
+    await user.clear(quantity);
+    await user.type(quantity, "150");
     expect(await axeViolations(container)).toEqual([]);
     await user.click(within(sheet).getByRole("button", { name: "Lier Sauce teriyaki" }));
 

@@ -15,6 +15,7 @@ import { Button } from "../../ui/button.tsx";
 import { Skeleton } from "../../ui/display.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { DiffTable } from "./adaptation.tsx";
+import { byline } from "./format.ts";
 import { comparisonQuery, recipeFailure, recipeQuery, recipesKey, unitsQuery } from "./queries.ts";
 import { RecipeUnavailable } from "./recipe-page.tsx";
 
@@ -75,8 +76,8 @@ export function ComparePage() {
             {adaptation.title}
           </h1>
           <span className="text-sm text-ink-muted">
-            Adaptée dans {spaceName} · original de {original.author.username} (
-            {original.homeSpace.name})
+            Adaptée dans {spaceName} · original{" "}
+            {byline(original.author.username, original.homeSpace.name)}
           </span>
         </div>
 

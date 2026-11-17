@@ -1,8 +1,9 @@
 // Mode cuisine (F-REC-12) : la recette mise a plat. Les etapes des sous-recettes
-// sont deroulees dans l'ordre des blocs, a l'echelle a travers les niveaux (D24).
+// sont deroulees avant les blocs de la recette (D9), a l'echelle a travers les
+// niveaux (D24).
 import { linkFactor, normalizeName, type Recipe, type RecipeBlock, type Unit } from "@fm/shared";
 
-import { scaledAmount } from "./format.ts";
+import { linkedAmount, scaledAmount } from "./format.ts";
 
 export interface CookLine {
   /** Cle stable d'une ligne (bloc puis position) : sert au cochage. */
@@ -58,7 +59,11 @@ function flatten(recipe: Recipe, units: readonly Unit[], scale: number): FlatBlo
         const sub = block.recipe;
         if (!sub) return [];
         const top = parent ?? {
-          head: { title: sub.title, linked: true, amount: scaledAmount(block, units, factor) },
+          head: {
+            title: sub.title,
+            linked: true,
+            amount: linkedAmount(block, sub.yieldUnitId, units, factor),
+          },
           group: key,
         };
         const subFactor =
@@ -98,7 +103,14 @@ function mentions(text: string, names: readonly (string | null)[]): boolean {
 }
 
 export function cookSteps(recipe: Recipe, units: readonly Unit[], scale: number): CookStep[] {
-  return flatten(recipe, units, scale).flatMap((flat) => {
+  // Les sous-recettes se preparent d'abord : le plat qui les utilise vient apres,
+  // quel que soit l'ordre des blocs sur la fiche (D9).
+  const blocks = flatten(recipe, units, scale);
+  const ordered = [
+    ...blocks.filter((f) => f.head?.linked),
+    ...blocks.filter((f) => !f.head?.linked),
+  ];
+  return ordered.flatMap((flat) => {
     const all = lines(flat, units);
     return flat.block.steps.map((text) => ({
       text,

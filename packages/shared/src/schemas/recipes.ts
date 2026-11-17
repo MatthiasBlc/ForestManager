@@ -158,6 +158,8 @@ export interface LinkedRecipe {
   title: string;
   yieldQuantity: number;
   yieldUnitId: string | null;
+  /** Temps propres de la sous-recette (sans ses propres liens) ; null si aucun. */
+  totalMinutes: number | null;
   isBase: boolean;
   blocks: RecipeBlock[];
 }
@@ -180,6 +182,7 @@ const linkedRecipeSchema: z.ZodType<LinkedRecipe> = z.object({
   title: z.string(),
   yieldQuantity: z.number(),
   yieldUnitId: uuidSchema.nullable(),
+  totalMinutes: z.number().int().nullable(),
   isBase: z.boolean(),
   get blocks() {
     return z.array(recipeBlockSchema);
@@ -586,6 +589,8 @@ export const importedRecipeSchema = z.object({
   cookMinutes: z.number().int().nullable(),
   restMinutes: z.number().int().nullable(),
   sourceUrl: z.string().nullable(),
+  /** Photo de la page (http ou https), reprise par l'editeur via l'API (D13). */
+  imageUrl: z.string().nullable(),
   ingredients: z.array(
     z.object({
       raw: z.string(),

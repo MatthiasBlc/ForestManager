@@ -19,6 +19,7 @@ function mine(s: Server, titles: string[]) {
   s.recipes.addable = titles.map((title) =>
     buildRecipe({
       title,
+      isBase: title === "Granola",
       author: self,
       homeSpaceId: s.personal.id,
       homeSpace: { id: s.personal.id, name: s.personal.name },
@@ -98,6 +99,14 @@ describe("Depuis mes recettes (F-MES-RECETTES, D203)", () => {
     await user.click(within(picker).getByRole("checkbox", { name: /Saumon teriyaki/ }));
     await user.click(within(picker).getByRole("checkbox", { name: /Dahl/ }));
     expect(within(picker).getByText("2 choisies")).toBeInTheDocument();
+    // Une base porte son badge, comme dans la liste [R9].
+    expect(
+      within(
+        within(picker)
+          .getByRole("checkbox", { name: /Granola/ })
+          .closest("label")!
+      ).getByText("Base")
+    ).toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
 
     await user.click(within(picker).getByRole("button", { name: "Ajouter 2 recettes" }));
@@ -127,7 +136,10 @@ describe("Depuis mes recettes (F-MES-RECETTES, D203)", () => {
     expect(within(staying).getByText("Pâte fraîche")).toBeInTheDocument();
 
     await user.click(within(confirm).getByRole("button", { name: "Ajouter" }));
-    expect(await screen.findByText("Lasagnes ajoutée à Famille")).toBeInTheDocument();
+    // Le toast compte la sous-recette qui arrive avec elle [R9].
+    expect(
+      await screen.findByText("Lasagnes ajoutée à Famille, avec 1 sous-recette")
+    ).toBeInTheDocument();
     expect(s.recipes.bodies.addMine).toEqual({ recipeIds: [lasagnes!.id] });
   });
 

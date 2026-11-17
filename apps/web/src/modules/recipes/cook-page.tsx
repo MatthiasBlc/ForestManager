@@ -3,7 +3,7 @@
 // Les portions viennent du detail (`?servings=`). Rien n'est enregistre.
 import type { Recipe, Unit } from "@fm/shared";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 
 import { PageChrome } from "../../core/shell/page-chrome.tsx";
@@ -44,8 +44,25 @@ function CookView({
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [sheet, setSheet] = useState(false);
   const leave = () => {
-    void navigate(`/s/${spaceId}/recipes/${recipe.id}`);
+    // La fiche reprend les portions du mode cuisine [R7].
+    const keep = servings === recipe.yieldQuantity ? "" : `?servings=${servings}`;
+    void navigate(`/s/${spaceId}/recipes/${recipe.id}${keep}`);
   };
+  // Fleches du clavier en bureau [R7] ; pas quand la feuille des ingredients est ouverte.
+  useEffect(() => {
+    if (sheet) return;
+    const onKey = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target?.closest("input, textarea, select, [contenteditable]")) return;
+      if (event.key === "ArrowRight")
+        setIndex((i) => Math.min(i + 1, Math.max(steps.length - 1, 0)));
+      if (event.key === "ArrowLeft") setIndex((i) => Math.max(i - 1, 0));
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [sheet, steps.length]);
   const row = (line: CookLine) => (
     <IngredientRow
       key={line.key}

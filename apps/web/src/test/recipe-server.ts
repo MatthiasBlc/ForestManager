@@ -125,6 +125,7 @@ export function recipeServer({
                   id: sub.id,
                   title: sub.title,
                   yieldQuantity: sub.yieldQuantity,
+                  totalMinutes: sub.totalMinutes,
                   yieldUnitId: sub.yieldUnitId,
                   isBase: sub.isBase,
                   blocks: sub.blocks,

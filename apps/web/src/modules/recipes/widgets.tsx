@@ -6,6 +6,7 @@ import { useNavigate } from "react-router";
 
 import { homeQuery } from "../../core/home/queries.ts";
 import { RecipeCard, type CardBadge } from "./components/recipe-card.tsx";
+import { byline } from "./format.ts";
 import { RecipeActionsSheet } from "./recipe-actions-sheet.tsx";
 
 export function RecentRecipes({ data }: { data: Record<string, unknown> }) {
@@ -30,9 +31,7 @@ export function RecentRecipes({ data }: { data: Record<string, unknown> }) {
             <RecipeCard
               key={recipe.id}
               title={recipe.title}
-              meta={[recipe.spaceName, recipe.author ? `par ${recipe.author}` : null]
-                .filter(Boolean)
-                .join(" · ")}
+              meta={recipe.author ? byline(recipe.author, recipe.spaceName) : recipe.spaceName}
               image={recipe.imageUrl}
               badges={badges}
               onOpen={() => void navigate(`/s/${recipe.spaceId}/recipes/${recipe.id}`)}

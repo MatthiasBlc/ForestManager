@@ -158,6 +158,7 @@ function AddRecipeSheet({
           }}
         >
           {option("link", "Un lien", "Une page de recette sur le web")}
+          <Icon name="chevron-right" className="fm-option-go" />
         </button>
         <button
           type="button"
@@ -167,6 +168,7 @@ function AddRecipeSheet({
           }}
         >
           {option("book-open", "Un texte collé", "Depuis un mail, une note, un PDF")}
+          <Icon name="chevron-right" className="fm-option-go" />
         </button>
         <small className="text-ink-muted">
           Dans tous les cas, tu vérifies tout dans l'éditeur avant d'enregistrer.
@@ -322,6 +324,8 @@ export function RecipesPage() {
   };
 
   let content;
+  // Espace sans aucune recette : ni recherche ni filtres, seulement l'invitation a en ajouter (R8).
+  let emptySpace = false;
   if (!online) {
     const term = normalizeName(q);
     const available = offlineRecipes(queryClient, spaceId, mine, me.data?.id);
@@ -392,6 +396,7 @@ export function RecipesPage() {
       />
     );
   } else if (recipes.length === 0) {
+    emptySpace = true;
     content = (
       <EmptyState
         icon="book-open"
@@ -454,81 +459,85 @@ export function RecipesPage() {
           <SuggestionsToDecideBanner spaceId={spaceId} />
         </>
       ) : null}
-      <div className="flex items-center gap-2">
-        <input
-          type="search"
-          className="fm-input flex-1"
-          aria-label="Rechercher une recette"
-          placeholder="Rechercher une recette"
-          value={search}
-          onChange={(event) => {
-            setSearch(event.target.value);
-          }}
-        />
-      </div>
-      {homeChoices.length > 1 ? (
-        <div className="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Espaces">
-          <Chip
-            selected={homeSpaceId === null}
-            onToggle={() => {
-              setHomeSpaceId(null);
-            }}
-          >
-            Tous les espaces
-          </Chip>
-          {homeChoices.map((choice) => (
+      {emptySpace ? null : (
+        <>
+          <div className="flex items-center gap-2">
+            <input
+              type="search"
+              className="fm-input flex-1"
+              aria-label="Rechercher une recette"
+              placeholder="Rechercher une recette"
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+              }}
+            />
+          </div>
+          {homeChoices.length > 1 ? (
+            <div className="fm-chip-row" role="group" aria-label="Espaces">
+              <Chip
+                selected={homeSpaceId === null}
+                onToggle={() => {
+                  setHomeSpaceId(null);
+                }}
+              >
+                Tous les espaces
+              </Chip>
+              {homeChoices.map((choice) => (
+                <Chip
+                  key={choice.id}
+                  selected={homeSpaceId === choice.id}
+                  onToggle={(on) => {
+                    setHomeSpaceId(on ? choice.id : null);
+                  }}
+                >
+                  {choice.kind === "PERSONAL" ? "Perso" : choice.name}
+                </Chip>
+              ))}
+            </div>
+          ) : null}
+          <div className="fm-chip-row" role="group" aria-label="Filtres">
             <Chip
-              key={choice.id}
-              selected={homeSpaceId === choice.id}
-              onToggle={(on) => {
-                setHomeSpaceId(on ? choice.id : null);
+              selected={!tagFiltered}
+              onToggle={() => {
+                setTagIds([]);
+                setBaseOnly(false);
+                setSearch("");
+                clearIngredient();
               }}
             >
-              {choice.kind === "PERSONAL" ? "Perso" : choice.name}
+              Toutes
             </Chip>
-          ))}
-        </div>
-      ) : null}
-      <div className="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Filtres">
-        <Chip
-          selected={!tagFiltered}
-          onToggle={() => {
-            setTagIds([]);
-            setBaseOnly(false);
-            setSearch("");
-            clearIngredient();
-          }}
-        >
-          Toutes
-        </Chip>
-        {ingredientId ? (
-          <button
-            type="button"
-            className="fm-chip"
-            aria-pressed="true"
-            // Le nom commence par le texte visible (axe label-content-name-mismatch).
-            aria-label={`Avec ${ingredientName}, retirer le filtre`}
-            onClick={clearIngredient}
-          >
-            Avec {ingredientName}
-            <Icon name="x" size={16} />
-          </button>
-        ) : null}
-        {tags.map((tag) => (
-          <Chip
-            key={tag.id}
-            selected={tagIds.includes(tag.id)}
-            onToggle={(on) => {
-              setTagIds((ids) => (on ? [...ids, tag.id] : ids.filter((id) => id !== tag.id)));
-            }}
-          >
-            {tag.name}
-          </Chip>
-        ))}
-        <Chip selected={baseOnly} onToggle={setBaseOnly}>
-          Bases
-        </Chip>
-      </div>
+            {ingredientId ? (
+              <button
+                type="button"
+                className="fm-chip"
+                aria-pressed="true"
+                // Le nom commence par le texte visible (axe label-content-name-mismatch).
+                aria-label={`Avec ${ingredientName}, retirer le filtre`}
+                onClick={clearIngredient}
+              >
+                Avec {ingredientName}
+                <Icon name="x" size={16} />
+              </button>
+            ) : null}
+            {tags.map((tag) => (
+              <Chip
+                key={tag.id}
+                selected={tagIds.includes(tag.id)}
+                onToggle={(on) => {
+                  setTagIds((ids) => (on ? [...ids, tag.id] : ids.filter((id) => id !== tag.id)));
+                }}
+              >
+                {tag.name}
+              </Chip>
+            ))}
+            <Chip selected={baseOnly} onToggle={setBaseOnly}>
+              Bases
+            </Chip>
+          </div>
+        </>
+      )}
       {content}
       <AddRecipeSheet
         step={addStep === "root" || addStep === "create" ? addStep : null}

@@ -21,7 +21,7 @@ import { Field } from "../../ui/field.tsx";
 import { Icon } from "../../ui/icon.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
-import { joinNames } from "./format.ts";
+import { byline, joinNames } from "./format.ts";
 import { recipeQuery, recipesKey, shareRequestsQuery, sharingQuery } from "./queries.ts";
 
 function SpaceRow({ space, children }: { space: SpaceSummary; children: ReactNode }) {
@@ -194,9 +194,7 @@ function RequestShare({
         <Avatar name={author} size={36} />
         <span className="flex flex-col">
           <b>{recipe.title}</b>
-          <small className="text-ink-muted">
-            par {author} · {recipe.homeSpace.name}
-          </small>
+          <small className="text-ink-muted">{byline(author, recipe.homeSpace.name)}</small>
         </span>
       </div>
       {chosen ? (

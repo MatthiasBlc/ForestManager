@@ -4,7 +4,7 @@
 import { linkFactor, type LinkedBlock, type Recipe, type RecipeBlock, type Unit } from "@fm/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 
 import { spaceQuery } from "../../core/session/queries.ts";
 import { PageChrome } from "../../core/shell/page-chrome.tsx";
@@ -18,7 +18,15 @@ import { Icon } from "../../ui/icon.tsx";
 import { IngredientRow } from "./components/ingredient-row.tsx";
 import { LINK_STATUS_TITLES } from "./draft.ts";
 import { cookSteps } from "./cook.ts";
-import { formatMinutes, plannedLabel, scaledAmount, unitLabel } from "./format.ts";
+import {
+  byline,
+  composedMinutes,
+  formatMinutes,
+  linkedAmount,
+  plannedLabel,
+  scaledAmount,
+  unitLabel,
+} from "./format.ts";
 import { recipeFailure, recipeQuery, unitsQuery, type RecipeFailure } from "./queries.ts";
 import { AdaptedFromNotice } from "./adaptation.tsx";
 import { useRecipeActions } from "./use-recipe-actions.tsx";
@@ -38,6 +46,31 @@ export function RecipeNotFound({ spaceId }: { spaceId: string }) {
         }
       >
         Elle a été supprimée, ou elle n'est pas visible dans cet espace.
+      </EmptyState>
+    </div>
+  );
+}
+
+/** Modifier une recette visible sans en avoir le droit (D15) : la suggestion reste ouverte. */
+export function RecipeReadOnly({ spaceId, recipe }: { spaceId: string; recipe: Recipe }) {
+  const base = `/s/${spaceId}/recipes/${recipe.id}`;
+  return (
+    <div className="p-4">
+      <EmptyState
+        icon="lock"
+        title="Modification réservée"
+        action={
+          <div className="flex flex-wrap justify-center gap-2">
+            <Link to={`${base}/suggest`} className="fm-btn fm-btn-primary">
+              Proposer une modification
+            </Link>
+            <Link to={base} className="fm-btn fm-btn-secondary">
+              Retour à la recette
+            </Link>
+          </div>
+        }
+      >
+        Seul {recipe.author.username} peut modifier « {recipe.title} ». Propose-lui tes changements.
       </EmptyState>
     </div>
   );
@@ -168,13 +201,21 @@ function LinkedBlockView({
     : 0;
   return (
     <section className="fm-block fm-block-linked" aria-label={title}>
-      <div className="fm-block-head">
+      {/* Toucher l'en-tete deplie le bloc [R5] ; le lien et le chevron gardent leur role. */}
+      <div
+        className={sub ? "fm-block-head cursor-pointer" : "fm-block-head"}
+        onClick={(event) => {
+          if (sub && !(event.target as HTMLElement).closest("a, button")) setOpen(!open);
+        }}
+      >
         <Icon name={sub ? "link" : "lock"} />
         <div className="flex min-w-0 flex-1 flex-col">
           <span className="fm-block-kind">Recette liée</span>
           <b>{sub ? <Link to={`/s/${spaceId}/recipes/${sub.id}`}>{sub.title}</Link> : title}</b>
         </div>
-        <span className="fm-block-qty">{scaledAmount(block, units, scale)}</span>
+        <span className="fm-block-qty">
+          {linkedAmount(block, sub?.yieldUnitId ?? null, units, scale)}
+        </span>
         {sub ? (
           <IconButton
             icon={open ? "chevron-down" : "chevron-right"}
@@ -262,7 +303,12 @@ function RecipeView({
 }) {
   const navigate = useNavigate();
   const guard = useWriteGuard();
-  const [servings, setServings] = useState(recipe.yieldQuantity);
+  // Retour du mode cuisine : memes portions qu'avant (`?servings=`) [R7].
+  const [params] = useSearchParams();
+  const asked = Number(params.get("servings"));
+  const [servings, setServings] = useState(
+    Number.isInteger(asked) && asked > 0 ? asked : recipe.yieldQuantity
+  );
   const actions = useRecipeActions({
     spaceId,
     recipe,
@@ -274,6 +320,7 @@ function RecipeView({
   const yieldUnit = units.find((u) => u.id === recipe.yieldUnitId);
   const titled = recipe.blocks.length > 1;
   const composed = recipe.blocks.some((block) => block.kind === "RECIPE");
+  const minutes = composedMinutes(recipe);
   const cookTo =
     cookSteps(recipe, units, 1).length > 0
       ? `/s/${spaceId}/recipes/${recipe.id}/cook?servings=${servings}`
@@ -307,13 +354,7 @@ function RecipeView({
           alt="Photo de la recette"
           className="mx-auto block h-[220px] w-full max-w-3xl object-cover sm:h-[300px] sm:rounded-b-lg"
         />
-      ) : (
-        <div
-          className="h-[150px]"
-          aria-hidden="true"
-          style={{ background: "linear-gradient(140deg, var(--accent-soft), var(--surface))" }}
-        />
-      )}
+      ) : null}
       <article className="fm-stack mx-auto w-full max-w-3xl p-4" aria-labelledby="recipe-title">
         <div className="flex items-start gap-1">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -321,8 +362,8 @@ function RecipeView({
               {recipe.title}
             </h1>
             <span className="text-sm text-ink-muted">
-              par {recipe.author.username}
-              {sharedHere ? ` · ${recipe.homeSpace.name}` : ""} · révision {recipe.currentRevision}
+              {byline(recipe.author.username, sharedHere ? recipe.homeSpace.name : null)} · révision{" "}
+              {recipe.currentRevision}
             </span>
           </div>
           {cookTo ? (
@@ -376,10 +417,10 @@ function RecipeView({
             unit={yieldUnit ? unitLabel(yieldUnit, servings) : "pers."}
             onChange={setServings}
           />
-          {recipe.totalMinutes !== null ? (
+          {minutes !== null ? (
             <span className="inline-flex items-center gap-1.5 text-sm text-ink-muted">
               <Icon name="clock" size={16} />
-              {formatMinutes(recipe.totalMinutes)}
+              {formatMinutes(minutes)}
             </span>
           ) : null}
           {recipe.planning ? (

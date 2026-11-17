@@ -100,7 +100,7 @@ describe("adaptation et original (E-COMPARER-ORIGINAL)", () => {
       route: `/s/${s.space.id}/recipes/${recipe.id}`,
     });
     expect(
-      await screen.findByText(/Adaptée de Gratin de pâtes · lea \(Foyer\)/)
+      await screen.findByText(/Adaptée de Gratin de pâtes · par lea · Foyer/)
     ).toBeInTheDocument();
     await user.click(screen.getByRole("link", { name: /Original modifié/ }));
 

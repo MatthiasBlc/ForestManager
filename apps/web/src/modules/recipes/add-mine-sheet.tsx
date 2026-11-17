@@ -24,7 +24,7 @@ import { api, ApiRequestError } from "../../lib/api.ts";
 import { useDebounced } from "../../lib/use-debounced.ts";
 import { Button, IconButton } from "../../ui/button.tsx";
 import { Chip } from "../../ui/controls.tsx";
-import { EmptyState, Skeleton } from "../../ui/display.tsx";
+import { Badge, EmptyState, Skeleton } from "../../ui/display.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { recipeMeta } from "./format.ts";
@@ -111,12 +111,17 @@ export function AddMineSheet({
     onSuccess: async ({ added }) => {
       const [first] = selected;
       await queryClient.invalidateQueries({ queryKey: recipesKey(spaceId) });
+      // Les sous-recettes qui suivent arrivent aussi : le toast les compte [R9].
+      const subs = added > 0 ? (withIt ?? []).filter((sub) => sub.included).length : 0;
+      const along =
+        subs > 0 ? `, avec ${String(subs)} ${plural(subs, "sous-recette", "sous-recettes")}` : "";
       toast(
-        added === 1 && selected.length === 1 && first
+        (added === 1 && selected.length === 1 && first
           ? `${first.title} ajoutée à ${spaceName}`
           : added === 0
             ? `Déjà dans ${spaceName}`
-            : `${String(added)} ${plural(added, "recette ajoutée", "recettes ajoutées")} à ${spaceName}`,
+            : `${String(added)} ${plural(added, "recette ajoutée", "recettes ajoutées")} à ${spaceName}`) +
+          along,
         { tone: "success" }
       );
       close();
@@ -241,7 +246,15 @@ export function AddMineSheet({
                   }}
                 />
                 <span className="fm-pick-text">
-                  <b>{recipe.title}</b>
+                  <b>
+                    {recipe.title}
+                    {recipe.isBase ? (
+                      <>
+                        {" "}
+                        <Badge tone="second">Base</Badge>
+                      </>
+                    ) : null}
+                  </b>
                   <small>
                     {[origin, recipeMeta(recipe, units.data)].filter(Boolean).join(" · ")}
                   </small>
@@ -278,7 +291,7 @@ export function AddMineSheet({
           />
         </div>
         {(tags.data ?? []).length > 0 ? (
-          <div className="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Tags">
+          <div className="fm-chip-row" role="group" aria-label="Tags">
             <Chip
               selected={tagIds.length === 0}
               onToggle={() => {
