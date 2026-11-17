@@ -1,6 +1,6 @@
 # Forest Manager V2 - Cahier des charges
 
-**Version : 1.5 (1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder ; 1.1 : module Planning revu au plan C5, D180 a D184, D11 amendee : midi et soir seulement ; 1.2 : plan C6, D187 a D189 : changelog en brouillon embarque, temps reel en SSE ; 1.3 : plan C6b, D192 : export en tache de fond, reimport en V2.1 ; 1.4 : etude UX mobile, D209 ; 1.5 : connexion avec Discord, D210, avatars recadres, D211) ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception** - 2026-11-13
+**Version : 1.5 (1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder ; 1.1 : module Planning revu au plan C5, D180 a D184, D11 amendee : midi et soir seulement ; 1.2 : plan C6, D187 a D189 : changelog en brouillon embarque, temps reel en SSE ; 1.3 : plan C6b, D192 : export en tache de fond, reimport en V2.1 ; 1.4 : etude UX mobile, D209 ; 1.5 : connexion avec Discord, D210, avatars recadres, D211 ; 1.6 : import dans une recette existante, D212) ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception** - 2026-11-17
 Statut de chaque decision : voir `3-Journal-des-Decisions.md`. Une ligne marquee `[Dxx]` renvoie a sa decision.
 Les questions de la phase A sont au S10 (toutes repondues). Tant qu'une question touche une section, cette section n'est pas validable.
 
@@ -139,6 +139,7 @@ Ce que l'on supprime de la V1 : la recette perso jumelle creee automatiquement, 
 - F-IMP-1 Import depuis une URL (JSON-LD schema.org, comme en V1) vers un formulaire pre-rempli que l'utilisateur valide.
 - F-IMP-2 Import depuis un texte colle, en V2.0 : decoupage heuristique sans LLM payant, formulaire pre-rempli a valider [D28].
 - Les champs importes douteux portent un badge "A verifier" et un bandeau, sans bloquer l'enregistrement [D103].
+- F-IMP-3 Import dans une recette existante (menu "..." de l'editeur) : remplace ingredients, etapes, portions, temps et lien, garde titre, tags, notes et photo ; revision IMPORT [D212].
 - Securite : resolution DNS et verification d'IP privee **a chaque redirection**, taille et duree bornees.
 
 ### 4.6 Planning de repas (module)
