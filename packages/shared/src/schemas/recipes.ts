@@ -389,14 +389,18 @@ export const recipeSharingSchema = z.object({
   spaces: z.array(z.object({ spaceId: uuidSchema, status: z.enum(SHARE_STATUSES) })),
   /** Sous-recettes : partagees avec le plat si elles sont du meme auteur [D26]. */
   withIt: z.array(z.object({ id: uuidSchema, title: z.string(), included: z.boolean() })),
+  /** Tags d'espace de la recette dans son espace d'origine, a reprendre au partage [D216]. */
+  homeTags: z.array(tagSchema),
 });
 export type RecipeSharing = z.infer<typeof recipeSharingSchema>;
 
 /** Espaces ou la recette doit etre partagee ; les autres espaces de l'utilisateur sont retires. */
 export const recipeSharesBodySchema = z.strictObject({
   spaceIds: z.array(uuidSchema).max(MAX_SHARE_TARGETS),
+  /** Tags d'origine (`homeTags`) a reprendre dans les espaces nouvellement partages [D216]. */
+  tagIds: z.array(uuidSchema).max(RECIPE_TAGS_MAX).default([]),
 });
-export type RecipeSharesBody = z.infer<typeof recipeSharesBodySchema>;
+export type RecipeSharesBody = z.input<typeof recipeSharesBodySchema>;
 
 // --- "Depuis mes recettes" : ajout en lot a un espace [D203, D208] ---
 
@@ -408,11 +412,16 @@ export const addMineBodySchema = z.strictObject({
     .min(1)
     .max(ADD_MINE_MAX)
     .refine((ids) => new Set(ids).size === ids.length, { message: "Recette en double" }),
+  /** Tags d'origine (`tags` de l'apercu) a reprendre dans l'espace [D216]. */
+  tagIds: z.array(uuidSchema).max(100).default([]),
 });
-export type AddMineBody = z.infer<typeof addMineBodySchema>;
+export type AddMineBody = z.input<typeof addMineBodySchema>;
 
 /** Sous-recettes emportees par la selection ; `included: false` : d'un autre auteur [D26]. */
-export const addMinePreviewSchema = recipeSharingSchema.pick({ withIt: true });
+export const addMinePreviewSchema = recipeSharingSchema.pick({ withIt: true }).extend({
+  /** Tags d'espace d'origine des recettes choisies, a reprendre ou non [D216]. */
+  tags: z.array(tagSchema),
+});
 export type AddMinePreview = z.infer<typeof addMinePreviewSchema>;
 
 /** Nombre de recettes choisies vraiment ajoutees (celles deja visibles sont ignorees). */

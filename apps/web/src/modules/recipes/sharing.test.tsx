@@ -45,7 +45,7 @@ describe("partager sa recette (F-PARTAGER)", () => {
     await user.click(amisSwitch);
     await user.click(within(sheet).getByRole("button", { name: "Enregistrer" }));
     await waitFor(() => {
-      expect(s.recipes.bodies.shares).toEqual({ spaceIds: [extra.id] });
+      expect(s.recipes.bodies.shares).toEqual({ spaceIds: [extra.id], tagIds: [] });
     });
     expect(await screen.findByText("Partagée dans Amis")).toBeInTheDocument();
   });
@@ -67,9 +67,34 @@ describe("partager sa recette (F-PARTAGER)", () => {
     await user.click(amisSwitch);
     await user.click(within(sheet).getByRole("button", { name: "Enregistrer" }));
     await waitFor(() => {
-      expect(s.recipes.bodies.shares).toEqual({ spaceIds: [] });
+      expect(s.recipes.bodies.shares).toEqual({ spaceIds: [], tagIds: [] });
     });
     expect(await screen.findByText("Partage mis à jour")).toBeInTheDocument();
+  });
+
+  it("tags d'origine proposes, tous coches, pour les nouveaux espaces (D216)", async () => {
+    const extra = amis();
+    const s = recipeServer({ extraSpaces: [extra] });
+    const recipe = s.add({ title: "Gratin" });
+    const gratins = { id: uuid(), scope: "SPACE" as const, name: "Gratins" };
+    const noel = { id: uuid(), scope: "SPACE" as const, name: "Noël" };
+    s.recipes.sharing[recipe.id] = { homeTags: [gratins, noel] };
+    const { user } = renderWithProviders(<App />, {
+      route: `/s/${s.space.id}/recipes/${recipe.id}`,
+    });
+    await openShare(user);
+    const sheet = await screen.findByRole("dialog", { name: "Partager dans tes espaces" });
+    // Rien a reprendre tant qu'aucun nouvel espace n'est coche.
+    await within(sheet).findByRole("switch", { name: "Amis" });
+    expect(within(sheet).queryByRole("group", { name: /Tags à reprendre/ })).toBeNull();
+    await user.click(within(sheet).getByRole("switch", { name: "Amis" }));
+    const carried = within(sheet).getByRole("group", { name: "Tags à reprendre dans Amis" });
+    expect(within(carried).getByRole("checkbox", { name: "Gratins" })).toBeChecked();
+    await user.click(within(carried).getByRole("checkbox", { name: "Noël" }));
+    await user.click(within(sheet).getByRole("button", { name: "Enregistrer" }));
+    await waitFor(() => {
+      expect(s.recipes.bodies.shares).toEqual({ spaceIds: [extra.id], tagIds: [gratins.id] });
+    });
   });
 });
 

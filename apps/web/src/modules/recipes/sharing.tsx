@@ -21,6 +21,7 @@ import { Field } from "../../ui/field.tsx";
 import { Icon } from "../../ui/icon.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
+import { CarriedTags } from "./components/carried-tags.tsx";
 import { byline, joinNames } from "./format.ts";
 import { recipeQuery, recipesKey, shareRequestsQuery, sharingQuery } from "./queries.ts";
 
@@ -48,6 +49,8 @@ function DirectShare({
   const sharing = useQuery(sharingQuery(spaceId, recipe.id));
   const spaces = useQuery(spacesQuery);
   const [checked, setChecked] = useState<Set<string> | null>(null);
+  // Tags d'origine decoches : non repris dans les nouveaux espaces [D216].
+  const [skipped, setSkipped] = useState<Set<string>>(new Set());
   const shared = new Set(
     (sharing.data?.spaces ?? []).filter((s) => s.status === "SHARED").map((s) => s.spaceId)
   );
@@ -60,14 +63,16 @@ function DirectShare({
   const origin = all.find((s) => s.id === home);
   // L'espace perso ne sert pas de cible ("Mes recettes" montre deja tout, D82).
   const targets = all.filter((s) => s.id !== home && s.kind === "GROUP");
+  const added = targets.filter((s) => current.has(s.id) && !shared.has(s.id));
+  const homeTags = sharing.data?.homeTags ?? [];
   const save = useMutation({
     mutationFn: () =>
       api.put(`/spaces/${spaceId}/recipes/${recipe.id}/shares`, {
         // Un partage existant hors des cibles affichees (espace perso) est garde.
         spaceIds: [...current].filter((id) => id !== home),
+        tagIds: added.length > 0 ? homeTags.map((t) => t.id).filter((id) => !skipped.has(id)) : [],
       }),
     onSuccess: async () => {
-      const added = targets.filter((s) => current.has(s.id) && !shared.has(s.id));
       await queryClient.invalidateQueries({ queryKey: recipeQuery(spaceId, recipe.id).queryKey });
       toast(
         added.length > 0
@@ -113,6 +118,14 @@ function DirectShare({
       ))}
       {targets.length === 0 ? (
         <p className="text-ink-muted">Tu n'as pas d'autre espace où la partager.</p>
+      ) : null}
+      {added.length > 0 ? (
+        <CarriedTags
+          tags={homeTags}
+          skipped={skipped}
+          onSkipped={setSkipped}
+          target={joinNames(added.map((s) => s.name))}
+        />
       ) : null}
       {withIt.length > 0 ? (
         <section className="fm-stack" aria-labelledby="share-with-it">

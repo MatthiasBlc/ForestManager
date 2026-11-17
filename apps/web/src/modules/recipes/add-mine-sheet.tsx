@@ -26,6 +26,7 @@ import { Button, IconButton } from "../../ui/button.tsx";
 import { Badge, EmptyState, Skeleton } from "../../ui/display.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
+import { CarriedTags } from "./components/carried-tags.tsx";
 import { ActiveFilters, FiltersButton, FiltersSheet, type ActiveFilter } from "./filters-sheet.tsx";
 import { recipeMeta } from "./format.ts";
 import { recipesKey, recipesQuery, tagCatalogQuery, unitsQuery } from "./queries.ts";
@@ -61,6 +62,9 @@ export function AddMineSheet({
   // Selection dans l'ordre des clics : l'ajout et l'activite gardent cet ordre.
   const [selected, setSelected] = useState<RecipeSummary[]>([]);
   const [withIt, setWithIt] = useState<AddMinePreview["withIt"] | null>(null);
+  // Tags d'origine des recettes choisies et ceux decoches [D216].
+  const [carry, setCarry] = useState<AddMinePreview["tags"]>([]);
+  const [skipped, setSkipped] = useState<Set<string>>(new Set());
   const [alert, setAlert] = useState<string>();
   const q = useDebounced(search.trim());
   const filtered = q !== "" || tagIds.length > 0 || baseOnly;
@@ -122,7 +126,11 @@ export function AddMineSheet({
 
   const add = useMutation({
     mutationFn: () =>
-      api.post(`/spaces/${spaceId}/recipes/add-mine`, { recipeIds: ids }, addMineResultSchema),
+      api.post(
+        `/spaces/${spaceId}/recipes/add-mine`,
+        { recipeIds: ids, tagIds: carry.map((t) => t.id).filter((id) => !skipped.has(id)) },
+        addMineResultSchema
+      ),
     onSuccess: async ({ added }) => {
       const [first] = selected;
       await queryClient.invalidateQueries({ queryKey: recipesKey(spaceId) });
@@ -151,7 +159,9 @@ export function AddMineSheet({
         addMinePreviewSchema
       ),
     onSuccess: (result) => {
-      if (result.withIt.length > 0) setWithIt(result.withIt);
+      setCarry(result.tags);
+      setSkipped(new Set());
+      if (result.withIt.length > 0 || result.tags.length > 0) setWithIt(result.withIt);
       else add.mutate();
     },
     onError: onRefused,
@@ -191,6 +201,7 @@ export function AddMineSheet({
               </ul>
             </section>
           ) : null}
+          <CarriedTags tags={carry} skipped={skipped} onSkipped={setSkipped} target={spaceName} />
           <small className="text-ink-muted">
             Ce sont les mêmes recettes, pas des copies : une modification se voit dans tous tes
             espaces.

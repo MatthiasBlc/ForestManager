@@ -25,6 +25,7 @@ import {
   type RecipeActor,
   type RightsRow,
 } from "./service.ts";
+import { carryHomeTags, homeTagsOf } from "./tags.ts";
 
 type Tx = Prisma.TransactionClient;
 type Db = Context["db"] | Tx;
@@ -171,7 +172,7 @@ export async function getSharing(
   const spaceIds = (await mySpaceIds(ctx.db, actor.userId)).filter(
     (id) => id !== recipe.homeSpaceId
   );
-  const [shares, pending, withIt, { decides }] = await Promise.all([
+  const [shares, pending, withIt, { decides }, homeTags] = await Promise.all([
     ctx.db.recipeShare.findMany({
       where: { recipeId, removedAt: null, spaceId: { in: spaceIds } },
       select: { spaceId: true },
@@ -182,6 +183,7 @@ export async function getSharing(
     }),
     subRecipesOf(ctx.db, recipeId),
     decision(ctx.db, recipe, actor.userId),
+    homeTagsOf(ctx.db, [recipe]),
   ]);
   const status = new Map<string, ShareStatus>();
   for (const row of pending) status.set(row.targetSpaceId, "PENDING");
@@ -198,6 +200,7 @@ export async function getSharing(
       title: sub.title,
       included: sub.authorId === recipe.authorId,
     })),
+    homeTags: homeTags.get(recipe.id) ?? [],
   };
 }
 
@@ -209,7 +212,9 @@ export async function setShares(
   ctx: Context,
   actor: RecipeActor,
   recipeId: string,
-  spaceIds: string[]
+  spaceIds: string[],
+  /** Tags d'origine a reprendre dans les espaces nouvellement partages [D216]. */
+  tagIds: readonly string[] = []
 ): Promise<RecipeSharing> {
   const recipe = await findVisible(ctx, actor, recipeId);
   if (!(await decision(ctx.db, recipe, actor.userId)).decides) throw new AppError("SPACE_002");
@@ -228,6 +233,7 @@ export async function setShares(
           sharedById: actor.userId,
           approvedById: null,
         });
+        await carryHomeTags(tx, recipe, tagIds, spaceId, actor.userId);
         into.push(spaceId);
       } else if (!wanted.has(spaceId) && visible) {
         await unshareFrom(tx, recipe.id, spaceId, actor.userId);
@@ -273,7 +279,7 @@ export async function previewAddMine(
   ctx: Context,
   actor: RecipeActor,
   recipeIds: string[]
-): Promise<{ withIt: RecipeSharing["withIt"] }> {
+): Promise<{ withIt: RecipeSharing["withIt"]; tags: RecipeSharing["homeTags"] }> {
   const recipes = await ownRecipes(ctx.db, actor.userId, recipeIds);
   const seen = new Set(recipeIds);
   const withIt: RecipeSharing["withIt"] = [];
@@ -289,20 +295,28 @@ export async function previewAddMine(
       withIt.push({ id: sub.id, title: sub.title, included: sub.authorId === recipe.authorId });
     }
   }
-  return { withIt };
+  // Tags d'origine des recettes choisies, sans doublon de nom [D216].
+  const tags = new Map<string, RecipeSharing["homeTags"][number]>();
+  for (const list of (await homeTagsOf(ctx.db, recipes)).values()) {
+    for (const tag of list) if (!tags.has(tag.name)) tags.set(tag.name, tag);
+  }
+  const sorted = [...tags.values()].sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  return { withIt, tags: sorted };
 }
 
 /** Partage les recettes choisies dans l'espace courant, tout ou rien ; renvoie le nombre ajoute. */
 export async function addMine(
   ctx: Context,
   actor: RecipeActor,
-  recipeIds: string[]
+  recipeIds: string[],
+  tagIds: readonly string[] = []
 ): Promise<number> {
   const added = await ctx.db.$transaction(async (tx) => {
     const into: { id: string; title: string }[] = [];
     for (const recipe of await ownRecipes(tx, actor.userId, recipeIds)) {
       if (await isVisibleIn(tx, recipe, actor.spaceId)) continue;
       await shareInto(tx, recipe, actor.spaceId, { sharedById: actor.userId, approvedById: null });
+      await carryHomeTags(tx, recipe, tagIds, actor.spaceId, actor.userId);
       into.push(recipe);
     }
     return into;

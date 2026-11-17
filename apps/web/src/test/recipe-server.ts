@@ -89,6 +89,8 @@ export function recipeServer({
     addable: [] as Recipe[],
     /** Sous-recettes annoncees par l'apercu de l'ajout en lot. */
     addMinePreview: [] as RecipeSharing["withIt"],
+    /** Tags d'origine annonces par l'apercu [D216]. */
+    addMineTags: [] as Tag[],
     /** Refus de l'ajout en lot (une recette n'est plus disponible). */
     addMineFails: false,
     queries: [] as URLSearchParams[],
@@ -295,6 +297,7 @@ export function recipeServer({
     canShare: recipe.can.share,
     spaces: [],
     withIt: [],
+    homeTags: [],
     ...state.sharing[recipe.id],
   });
   const summary = ({
@@ -452,7 +455,7 @@ export function recipeServer({
     }),
     http.post(`${base}/add-mine/preview`, async ({ request }) => {
       record("addMinePreview", await request.json());
-      return HttpResponse.json({ withIt: state.addMinePreview });
+      return HttpResponse.json({ withIt: state.addMinePreview, tags: state.addMineTags });
     }),
     http.post(`${base}/add-mine`, async ({ request }) => {
       const body = (await request.json()) as { recipeIds: string[] };

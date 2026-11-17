@@ -16,6 +16,8 @@ import { visibleInSql } from "./list.ts";
 
 const LOCALE = "fr"; // francais seul en V2.0 [D34]
 
+type Db = Context["db"] | Prisma.TransactionClient;
+
 const slugOf = (name: string) => normalizeName(name).replace(/ /g, "-");
 
 function toTag(row: { id: string; scope: "GLOBAL" | "SPACE"; name: string }): Tag {
@@ -41,23 +43,32 @@ export async function findOrCreateSpaceTag(
   name: string,
   userId: string
 ): Promise<{ tag: Tag; created: boolean }> {
+  return findOrCreateIn(ctx.db, spaceId, name, userId);
+}
+
+async function findOrCreateIn(
+  db: Db,
+  spaceId: string,
+  name: string,
+  userId: string
+): Promise<{ tag: Tag; created: boolean }> {
   const slug = slugOf(name);
-  const existing = await ctx.db.tag.findUnique({ where: { spaceId_slug: { spaceId, slug } } });
+  const existing = await db.tag.findUnique({ where: { spaceId_slug: { spaceId, slug } } });
   if (existing && !existing.deletedAt) {
     const target = existing.mergedIntoId
-      ? await ctx.db.tag.findUniqueOrThrow({ where: { id: existing.mergedIntoId } })
+      ? await db.tag.findUniqueOrThrow({ where: { id: existing.mergedIntoId } })
       : existing;
     return { tag: toTag(target), created: false };
   }
   if (existing) {
     // Tag supprime : il revient avec le nom saisi.
-    const revived = await ctx.db.tag.update({
+    const revived = await db.tag.update({
       where: { id: existing.id },
       data: { deletedAt: null, mergedIntoId: null, name: name.trim() },
     });
     return { tag: toTag(revived), created: true };
   }
-  const row = await ctx.db.tag.create({
+  const row = await db.tag.create({
     data: { scope: "SPACE", spaceId, name: name.trim(), slug, createdById: userId },
   });
   return { tag: toTag(row), created: true };
@@ -284,4 +295,54 @@ export async function tagCatalog(
     ],
     tags: catalogTags,
   };
+}
+
+// --- Tags repris au partage [D216] ---
+
+/** Tags d'espace actifs de chaque recette dans son espace d'origine, par recette. */
+export async function homeTagsOf(
+  db: Db,
+  recipes: readonly { id: string; homeSpaceId: string }[]
+): Promise<Map<string, Tag[]>> {
+  const rows = await db.recipeSpaceTag.findMany({
+    where: {
+      OR: recipes.map((r) => ({ recipeId: r.id, spaceId: r.homeSpaceId })),
+      tag: { deletedAt: null, mergedIntoId: null },
+    },
+    include: { tag: true },
+  });
+  const byRecipe = new Map<string, Tag[]>();
+  for (const row of rows) {
+    const list = byRecipe.get(row.recipeId) ?? [];
+    list.push(toTag(row.tag));
+    byRecipe.set(row.recipeId, list);
+  }
+  for (const list of byRecipe.values()) list.sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  return byRecipe;
+}
+
+/**
+ * Pose dans `spaceId` les tags d'origine de la recette choisis (`tagIds`) : un tag
+ * de meme nom (slug) de l'espace cible est pose, sinon il y est cree (sans famille).
+ * Un id qui n'est pas un tag d'origine de la recette est ignore.
+ */
+export async function carryHomeTags(
+  db: Db,
+  recipe: { id: string; homeSpaceId: string },
+  tagIds: readonly string[],
+  spaceId: string,
+  userId: string
+): Promise<void> {
+  if (tagIds.length === 0) return;
+  const home = (await homeTagsOf(db, [recipe])).get(recipe.id) ?? [];
+  const chosen = home.filter((tag) => tagIds.includes(tag.id));
+  const targets: string[] = [];
+  for (const tag of chosen) {
+    targets.push((await findOrCreateIn(db, spaceId, tag.name, userId)).tag.id);
+  }
+  if (targets.length === 0) return;
+  await db.recipeSpaceTag.createMany({
+    data: targets.map((tagId) => ({ recipeId: recipe.id, spaceId, tagId })),
+    skipDuplicates: true,
+  });
 }

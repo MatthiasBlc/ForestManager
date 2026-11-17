@@ -170,7 +170,7 @@ function recipesRouter(ctx: Context): Router {
     requirePermission("recipes.create"),
     handle({ body: addMineBodySchema }, async ({ body }, req, res) => {
       refusePersonal(req);
-      const added = await sharing.addMine(ctx, actorOf(req), body.recipeIds);
+      const added = await sharing.addMine(ctx, actorOf(req), body.recipeIds, body.tagIds);
       reply(res, addMineResultSchema, { added });
     })
   );
@@ -400,7 +400,13 @@ function recipesRouter(ctx: Context): Router {
     handle(
       { params: recipeIdSchema, body: recipeSharesBodySchema },
       async ({ params, body }, req, res) => {
-        const result = await sharing.setShares(ctx, actorOf(req), params.recipeId, body.spaceIds);
+        const result = await sharing.setShares(
+          ctx,
+          actorOf(req),
+          params.recipeId,
+          body.spaceIds,
+          body.tagIds
+        );
         reply(res, recipeSharingSchema, result);
       }
     )
