@@ -160,7 +160,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] Editeur : une section Tags (globaux + tags de l'espace ou il est ouvert, y compris un espace de partage) ; API : seul qui peut modifier la recette change ses tags d'espace ; fait le 2026-11-17 : `RecipeTagsField`, `PUT .../space-tags` exige le droit de modifier (SPACE_002 sinon) ; badges de la fiche tries par famille
   - [x] Partage (F-PARTAGER, "Depuis mes recettes") : tags d'espace d'origine proposes en cases cochees, poses ou crees dans l'espace cible ; fait le 2026-11-17 : `homeTags` dans l'etat du partage, `tags` dans l'apercu de l'ajout en lot, `tagIds` dans les deux corps ; seulement vers les espaces nouvellement partages (pas a l'acceptation d'une demande de partage)
   - [x] Planning : regle et epinglage par le champ "Tag" (choix unique) ; fait le 2026-11-17 (`TagChoice` de `rule-sheet.tsx`)
-  - [ ] Reglages de l'espace > Tags (moderateurs) ; admin : familles globales
+  - [x] Reglages de l'espace > Tags (moderateurs) ; admin : familles globales ; fait le 2026-11-17 : page `recipes/tags` (lien par `settingsLinks` du module), ordre par Monter / Descendre (clavier et doigt) plutot qu'au glisser ; admin A08 : tableau des familles et colonne Famille
   - [ ] Recherche globale : groupe "Tags"
   - [ ] E2E, verification dans Chrome (mobile et bureau)
 - [ ] Cartes de recette en bureau : bouton "..." en haut a droite de l'image, qui ouvre au clic gauche le meme menu que le clic droit (demande du proprietaire, 2026-11-17 ; points horizontaux ou verticaux a trancher)
