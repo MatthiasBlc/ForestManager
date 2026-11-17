@@ -161,7 +161,8 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
     sheet.getByText("Laissés tels quels : 1 verrouillé, 1 « Pas de repas ».")
   ).toBeVisible();
   await sheet.getByRole("button", { name: "Garder ce planning" }).click();
-  await expectToast(page, "10 repas ajoutés au planning");
+  // Toutes les cases etaient remplies : remplacees, pas ajoutees.
+  await expectToast(page, "10 repas remplacés au planning");
   await expect(tuesdayDinner).toHaveAccessibleName("Mardi 9, soir : Restes, 2 pers., verrouillé");
   await expect(slot(page, "Mercredi 10, midi")).toHaveAccessibleName(
     "Mercredi 10, midi : Pas de repas"

@@ -60,5 +60,5 @@ test("parcours 3 : recette perso partagee, vue par un membre qui peut la suggere
   // L'ecran d'edition lui est ferme, meme par son adresse.
   await tomPage.goto(`/s/${space.id}/recipes/${tarte.id}/edit`);
   await expect(tomPage.getByLabel("Titre", { exact: true })).toHaveCount(0);
-  await expect(tomPage.getByRole("heading", { name: /introuvable/i })).toBeVisible();
+  await expect(tomPage.getByRole("heading", { name: "Modification réservée" })).toBeVisible();
 });

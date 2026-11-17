@@ -45,7 +45,7 @@ test("parcours 5 : adaptation, original modifie, comparaison", async ({
   await tomPage.getByRole("textbox", { name: "Étape 1" }).fill("Cuire 1 heure, à couvert.");
   await tomPage.getByRole("button", { name: "Enregistrer la révision 2" }).click();
   await expect(tomPage.getByText("Cuire 1 heure, à couvert.")).toBeVisible();
-  await expect(tomPage.getByText("Adaptée de Gratin dauphinois · lea (Famille)")).toBeVisible();
+  await expect(tomPage.getByText("Adaptée de Gratin dauphinois · par lea · Famille")).toBeVisible();
   await expect(tomPage.getByRole("link", { name: /Original modifié/ })).toHaveCount(0);
   await expectNoA11yViolations(tomPage);
   const adaptationUrl = new URL(tomPage.url()).pathname;

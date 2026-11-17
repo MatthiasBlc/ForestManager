@@ -129,7 +129,7 @@ test("parcours 14 : clavier seul et palette Ctrl K @desktop", async ({ page, sce
   const recipes = palette(page).getByRole("listbox", { name: "Recettes" });
   await expect(recipes.getByRole("option", { name: /^Tarte aux pommes lea/ })).toBeVisible();
   const ingredients = palette(page).getByRole("listbox", { name: "Ingrédients" });
-  const potato = ingredients.getByRole("option", { name: /^Pomme de terre 1 recette · Famille/ });
+  const potato = ingredients.getByRole("option", { name: /^pomme de terre 1 recette · Famille/ });
   await expect(potato).toBeVisible();
   await expectNoA11yViolations(page);
   for (let i = 0; i < 10; i += 1) {
@@ -139,8 +139,8 @@ test("parcours 14 : clavier seul et palette Ctrl K @desktop", async ({ page, sce
   await expect(potato).toHaveAttribute("aria-selected", "true");
   await page.keyboard.press("Enter");
   await expect(page).toHaveURL(new RegExp(`/s/${space.id}/recipes\\?ingredient=`));
-  await expect(page.getByRole("button", { name: /Pomme de terre/ })).toHaveText(
-    "Avec Pomme de terre"
+  await expect(page.getByRole("button", { name: /pomme de terre/ })).toHaveText(
+    "Avec pomme de terre"
   );
   await expect(page.getByRole("article")).toHaveCount(1);
   await expect(page.getByRole("article", { name: "Gratin dauphinois" })).toBeVisible();

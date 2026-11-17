@@ -45,7 +45,7 @@ test(
     await page.getByRole("button", { name: "Enregistrer" }).click();
 
     await expect(page.getByRole("heading", { name: "Gratin de Jeanne" })).toBeVisible();
-    await expect(page.getByRole("checkbox", { name: /1,5 kg Pommes de terre/ })).toBeVisible();
+    await expect(page.getByRole("checkbox", { name: /1,5 kg pommes de terre/ })).toBeVisible();
     await expect(page.getByText("Cuire 45 minutes.")).toBeVisible();
     await expectNoA11yViolations(page);
 
