@@ -18,7 +18,7 @@ Deroule pas a pas du jour de la prod, depuis ce poste [D201]. Le proprietaire cl
    - etape serveur : nombre d'images supprimees et espace libere (images de plus de 72 h portant le label `forestmanager.image`).
 3. Log juge bon : retirer `DRY_RUN: 1` de `.github/workflows/ci.yml` (job `registry-prune`), commit, push ; le passage suivant supprime pour de vrai.
    - Fait le 2026-11-17 (CI #34) : par image, gardes = `latest` et les 10 `sha-*` du 2026-11-12 15:57 a ce jour, 8 a supprimer (2026-11-12, 09:39 a 15:21) ; serveur : 0 image (le label date de `841253e`, moins de 72 h). Dans les logs, les `***` sont des `2` masques par GitHub (un secret vaut `2`).
-   - Passage suivant (premier reel) : verifier des lignes `supprime ...` et aucune `echec`.
+   - Premier passage reel (CI #35, 2026-11-17, vert) : 9 tags supprimes par image (les 8 du passage a blanc et `sha-7c3fc47`, sorti des 10 avec le nouveau tag), aucun echec ; gardes = `latest` et 10 `sha-*` dont `sha-3c2a06d` deploye. Espace libere seulement au `garbage-collect` du registry (S6).
 4. Secrets de prod presents dans GitHub (proprietaire) : `STACK_ID`, `SENTRY_DSN` (projet Bugsink de prod), `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET`, plus les communs.
 
 ## 3. Fusion et deploy
