@@ -138,7 +138,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] Lignes du proprietaire (telephone, deux appareils, admin, Bugsink) : jugees bonnes (2026-11-13)
   - [x] Defauts D1 a D15 corriges (detail : section 4 de `30-Recette-2.md`)
   - [x] Remarques R1 a R18 (detail : section 4 de `30-Recette-2.md`)
-  - [ ] Deploy preprod, revue des lignes concernees
+  - [x] Deploy preprod, revue des lignes concernees (2026-11-17 ; reste et ecart : section 4 de `30-Recette-2.md`)
 - [ ] C8 Mise en prod V2 (depuis ce poste [D201])
   - [ ] Accelerer la CI (2026-11-12 : `verify` ~9 min dont 6 min 48 de tests et couverture) : image de test en cache (buildx `type=gha` comme les images de prod), tests de l'API repartis en jobs paralleles, cache du lint
   - [ ] `pg_dump` avant chaque deploy prod, garde 14 jours [D76] : absent de `ci.yml`, a ecrire avant la prod

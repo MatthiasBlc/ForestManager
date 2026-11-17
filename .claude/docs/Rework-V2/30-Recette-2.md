@@ -128,4 +128,18 @@ Verifie dans Chrome sur la stack de dev (2026-11-13) : R1 a R3, R5 a R7, R10 a R
 
 - R17 tranche par le proprietaire (2026-11-17) : seule la restauration d'un espace entre au fil (`core.space.restored`, "a restaure l'espace.") ; pas de ligne par modification de recette (fil trop charge), ni pour une suppression (espace plus visible).
 
-Reste : commits, deploy preprod et revue des lignes concernees.
+Deploy preprod le 2026-11-17 (CI #29 verte, E2E alignes sur les nouveaux libelles). Revue en preprod le meme jour avec deux comptes neufs (revue2a867, revue2b867, espace "Revue duo") :
+
+- Conformes : migration des noms d'ingredients (existants en minuscule), R1, R2, R3, R5 (8 pers., 50 min, en-tete qui deplie), D6 (invitation acceptee depuis l'accueil : cloche a zero, arrivee dans l'espace), D7, D10 (cles `fm:` effacees a la deconnexion), D11 (Entree sur "Rester connecte" envoie le formulaire), D12 / R8 (puces a la ligne, sous le voile), D15, R11 (bandeau suggestion), R14, R15, R18.
+- Non revus en preprod : planning (D8, R9, R10, R12 ; module non accorde a l'espace de revue, verifies en dev), D12 sur un vrai telephone, lien du 12/11 de "Coloc recette" (R13, comptes de revue non membres), import Marmiton (D13).
+- Ecart releve : une carte de recette composee affichait son temps propre ("20 min") quand la fiche affichait le total ("50 min"). Corrige : l'API renvoie le total, sous-recettes visibles comprises, dans la liste comme sur la fiche.
+- Planning revu ensuite en preprod (module accorde d'office par l'admin a "Revue duo") : D8 (periode du mardi au dimanche, lundi passe intact), R9 ("2 repas ajoutes"), R10 (samedi encadre) conformes.
+
+Tour de l'admin en preprod (2026-11-17) : tableau de bord, demandes, catalogue et "Accorder a un espace", ingredients (en minuscule), unites, rayons, tags, espaces, changelog, journal, reglages. Corrige dans la foulee (TDD, unitaires et E2E verts) :
+
+- IP des clients : la chaine est Traefik puis le nginx du front ; `TRUST_PROXY` passe de 1 a 2 en preprod et prod (avant, l'API voyait l'IP de Traefik pour tout le monde : journal faux et limites de debit partagees par tous les utilisateurs).
+- Module accorde (d'office ou sur demande) : range apres les modules de l'espace (il passait devant Recettes, a egalite de rang). Les espaces deja servis en preprod gardent leur ordre ; l'OWNER peut le changer.
+- Journal d'audit : "Planning des repas -> Revue duo" au lieu du code `meal-plan` (nom de l'espace enregistre avec l'action).
+- Utilisateurs : colonne Espaces plus large, dates sur une ligne, bouton "Reinitialiser" sous l'en-tete "Mot de passe" (plus de defilement horizontal).
+
+Laisses tels quels : badge "A traduire" sur toutes les unites, rayons et tags (traduction anglaise prevue plus tard) ; brouillon du changelog 2.0.0 vide : voulu, la premiere version V2 n'a pas de tag precedent et ses notes s'ecrivent a la main dans l'admin avant de la publier ; les versions suivantes sont preremplies a partir des commits.
