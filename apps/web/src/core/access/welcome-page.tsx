@@ -85,7 +85,9 @@ export function WelcomePage() {
           </Button>
         </form>
       ) : null}
-      <Link to={personal}>Plus tard</Link>
+      <Link to={personal} className="fm-btn fm-btn-secondary fm-btn-block">
+        Plus tard
+      </Link>
     </AuthLayout>
   );
 }

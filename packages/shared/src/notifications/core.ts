@@ -47,4 +47,5 @@ export const CORE_ACTIVITY_TYPES = [
   "core.member.left",
   "core.module.enabled",
   "core.space.exported",
+  "core.space.restored",
 ] as const;

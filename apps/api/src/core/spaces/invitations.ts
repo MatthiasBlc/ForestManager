@@ -211,6 +211,7 @@ export async function joinByLink(ctx: Context, code: string, userId: string): Pr
     await addToSpace(tx, link.spaceId, userId);
     return link.spaceId;
   });
+  await settleInvitationNotices(ctx, spaceId, userId, true);
   await memberJoined(ctx, spaceId, userId);
   return spaceId;
 }
@@ -269,19 +270,56 @@ export async function inviteByUsername(
   });
   if (membership && !membership.leftAt) return;
   // Index partiel : une seule invitation PENDING par (espace, invite) ; un doublon est ignore.
-  const inserted = await ctx.db.$executeRaw`
+  const inserted = await ctx.db.$queryRaw<{ id: string }[]>`
     INSERT INTO "SpaceInvitation" ("id", "spaceId", "inviterId", "inviteeId")
     VALUES (gen_random_uuid(), ${spaceId}, ${inviterId}, ${invitee.id})
-    ON CONFLICT ("spaceId", "inviteeId") WHERE "status" = 'PENDING' DO NOTHING`;
-  if (inserted === 0) return;
+    ON CONFLICT ("spaceId", "inviteeId") WHERE "status" = 'PENDING' DO NOTHING
+    RETURNING "id"`;
+  const invitation = inserted[0];
+  if (!invitation) return;
   // Pas encore membre : l'avis ne pointe pas sur l'espace, il en garde le nom (P02).
   const space = await ctx.db.space.findUniqueOrThrow({ where: { id: spaceId } });
   await notify(ctx, {
     type: "core.invitation.received",
     recipients: [invitee.id],
     actorId: inviterId,
-    data: { spaceName: space.name },
+    targetType: INVITATION_TARGET,
+    targetId: invitation.id,
+    data: { spaceName: space.name, spaceId },
   });
+}
+
+const INVITATION_TARGET = "SpaceInvitation";
+
+/**
+ * Invitations de `inviteeId` pour l'espace tranchees (acceptee, refusee,
+ * annulee) : leurs avis n'attendent plus rien et sont marques lus ; apres une
+ * arrivee, ils menent a l'espace (D6).
+ */
+async function settleInvitationNotices(
+  ctx: Context,
+  spaceId: string,
+  inviteeId: string,
+  joined: boolean
+): Promise<void> {
+  const invitations = await ctx.db.spaceInvitation.findMany({
+    where: { spaceId, inviteeId, status: { not: "PENDING" } },
+    select: { id: true },
+  });
+  const where = {
+    userId: inviteeId,
+    type: "core.invitation.received",
+    targetType: INVITATION_TARGET,
+    targetId: { in: invitations.map((row) => row.id) },
+  };
+  if (joined) {
+    await ctx.db.notification.updateMany({ where, data: { url: `/s/${spaceId}/home` } });
+  }
+  const read = await ctx.db.notification.updateMany({
+    where: { ...where, readAt: null },
+    data: { readAt: new Date() },
+  });
+  if (read.count > 0) ctx.realtime.toUsers([inviteeId], { type: "notification" });
 }
 
 /** Invitations en attente envoyees par l'espace (pour les annuler). */
@@ -308,7 +346,7 @@ export async function cancelInvitation(
   await requireSpacePermission(ctx.db, spaceId, userId, "space.invites.manage");
   const invitation = await ctx.db.spaceInvitation.findFirst({
     where: { id: invitationId, spaceId },
-    select: { status: true },
+    select: { status: true, inviteeId: true },
   });
   if (!invitation) throw new AppError("SPACE_012");
   const { count } = await ctx.db.spaceInvitation.updateMany({
@@ -316,6 +354,7 @@ export async function cancelInvitation(
     data: { status: "CANCELLED", respondedAt: new Date() },
   });
   if (count === 0) throw new AppError("COMMON_006");
+  await settleInvitationNotices(ctx, spaceId, invitation.inviteeId, false);
 }
 
 /** Invitations recues en attente (avant le centre de notifications de C6). */
@@ -353,6 +392,7 @@ export async function respondToInvitation(
     }
     return invitation.spaceId;
   });
+  await settleInvitationNotices(ctx, result, userId, accept);
   if (accept) await memberJoined(ctx, result, userId);
   return result;
 }

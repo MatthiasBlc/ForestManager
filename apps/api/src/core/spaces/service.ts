@@ -208,6 +208,8 @@ export async function restoreSpace(ctx: Context, spaceId: string, userId: string
     await assertCanOwnAnother(tx, userId);
     await tx.space.update({ where: { id: spaceId }, data: { deletedAt: null, purgeAfter: null } });
   });
+  // Seule la restauration entre au fil : un espace supprime n'est plus visible [R17].
+  await recordActivity(ctx, { spaceId, type: "core.space.restored", actorId: userId });
   await notify(ctx, {
     type: "core.space.restored",
     recipients: await activeMembers(ctx.db, spaceId),

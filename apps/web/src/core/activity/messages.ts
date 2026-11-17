@@ -18,6 +18,7 @@ const CORE: Record<string, ActivityRenderer> = {
     to: `/s/${spaceId}/modules`,
   }),
   "core.space.exported": () => ({ text: "a exporté l'espace.", to: null }),
+  "core.space.restored": () => ({ text: "a restauré l'espace.", to: null }),
 };
 
 export function renderActivity(

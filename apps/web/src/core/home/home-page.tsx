@@ -18,6 +18,7 @@ import { Skeleton } from "../../ui/display.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { meQuery, spacesQuery } from "../session/queries.ts";
 import { CustomizeSheet } from "./customize-sheet.tsx";
+import { refreshAfterJoin } from "../spaces/queries.ts";
 import { homeQuery } from "./queries.ts";
 import { HOME_WIDGETS } from "./widgets.ts";
 
@@ -55,7 +56,7 @@ export function HomePage() {
     onSuccess: async (space) => {
       await queryClient.invalidateQueries({ queryKey: ["me", "invitations"] });
       if (space) {
-        await queryClient.invalidateQueries({ queryKey: ["spaces"] });
+        await refreshAfterJoin(queryClient);
         toast(`Bienvenue dans ${space.name}`, { tone: "success" });
         void navigate(`/s/${space.id}`);
       }

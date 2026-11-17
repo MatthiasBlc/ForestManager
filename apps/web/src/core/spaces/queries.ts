@@ -8,7 +8,7 @@ import {
   type SpaceDetail,
 } from "@fm/shared";
 import { can, type CorePermissionKey } from "@fm/shared";
-import { queryOptions } from "@tanstack/react-query";
+import { queryOptions, type QueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 
 import { api } from "../../lib/api.ts";
@@ -53,4 +53,17 @@ export function transferQuery(spaceId: string) {
 /** Droit du membre courant dans l'espace (matrice partagee). */
 export function canIn(space: SpaceDetail, key: CorePermissionKey): boolean {
   return can({ authenticated: true, space: { kind: space.kind, role: space.myRole } }, key);
+}
+
+/**
+ * Apres une arrivee dans un espace (lien ou invitation) : la liste des espaces,
+ * l'accueil (recettes du nouvel espace, D7) et les notifications (avis
+ * d'invitation lu, D6) ont change.
+ */
+export async function refreshAfterJoin(client: QueryClient): Promise<void> {
+  await Promise.all([
+    client.invalidateQueries({ queryKey: ["spaces"] }),
+    client.invalidateQueries({ queryKey: ["me"] }),
+    client.invalidateQueries({ queryKey: ["notifications"] }),
+  ]);
 }

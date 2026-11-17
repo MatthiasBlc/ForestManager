@@ -66,7 +66,8 @@ const spacePath = (n: Notification, path: string) => (n.space ? `/s/${n.space.id
 const CORE: Record<string, NotificationRenderer> = {
   "core.invitation.received": (n, env) => ({
     text: `t'invite dans ${spaceName(n)}.`,
-    to: `/s/${env.personalSpaceId}/home`,
+    // En attente : la carte de l'accueil ; acceptee : l'API pointe sur l'espace (D6).
+    to: n.url ?? `/s/${env.personalSpaceId}/home`,
   }),
   "core.transfer.proposed": (n, env) => ({
     text: `te propose de devenir propriétaire de ${spaceName(n)}.`,

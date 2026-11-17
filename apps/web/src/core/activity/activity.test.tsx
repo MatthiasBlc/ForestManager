@@ -33,6 +33,7 @@ describe("fil d'activite (F-SPC-7)", () => {
       [
         buildEvent(),
         buildEvent({ type: "core.module.enabled", data: { moduleCode: "meal-plan" } }),
+        buildEvent({ type: "core.space.restored" }),
       ],
       [buildEvent({ type: "core.member.left", actor: null, createdAt: old })],
     ];
@@ -53,6 +54,7 @@ describe("fil d'activite (F-SPC-7)", () => {
     const today = screen.getByRole("region", { name: "Aujourd'hui" });
     expect(within(today).getByText("a rejoint l'espace.")).toBeInTheDocument();
     expect(within(today).getByText("a activé le module Planning des repas.")).toBeInTheDocument();
+    expect(within(today).getByText("a restauré l'espace.")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Voir plus" }));
     const earlier = await screen.findByRole("region", { name: "Plus tôt" });
     expect(within(earlier).getByText("Un ancien membre")).toBeInTheDocument();

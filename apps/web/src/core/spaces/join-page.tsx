@@ -12,6 +12,7 @@ import { Skeleton } from "../../ui/display.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { AuthLayout, FormAlert } from "../access/auth-layout.tsx";
 import { meQuery } from "../session/queries.ts";
+import { refreshAfterJoin } from "./queries.ts";
 
 export function JoinPage() {
   const { code = "" } = useParams();
@@ -27,7 +28,7 @@ export function JoinPage() {
   const join = useMutation({
     mutationFn: () => api.post(`/invite-links/${code}/join`, undefined, spaceDetailSchema),
     onSuccess: async (space) => {
-      await queryClient.invalidateQueries({ queryKey: ["spaces"] });
+      await refreshAfterJoin(queryClient);
       toast(`Bienvenue dans ${space.name}`, { tone: "success" });
       void navigate(`/s/${space.id}`, { replace: true });
     },
@@ -62,7 +63,7 @@ export function JoinPage() {
           <b>{space.name}</b>
           <small>
             {space.memberCount} membre{space.memberCount > 1 ? "s" : ""} · lien valable jusqu'au{" "}
-            {new Date(expiresAt).toLocaleDateString("fr-FR")}
+            {new Date(expiresAt).toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}
           </small>
         </span>
       </div>
@@ -72,7 +73,9 @@ export function JoinPage() {
           <Button variant="primary" block disabled={join.isPending} onClick={() => join.mutate()}>
             Rejoindre l'espace
           </Button>
-          <Link to="/">Plus tard</Link>
+          <Link to="/" className="fm-btn fm-btn-secondary fm-btn-block">
+            Plus tard
+          </Link>
         </>
       ) : (
         <>

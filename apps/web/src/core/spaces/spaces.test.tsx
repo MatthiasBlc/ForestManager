@@ -292,3 +292,23 @@ describe("reglages, depart, suppression, transfert", () => {
     expect(await screen.findByText("TOM restauré")).toBeInTheDocument();
   });
 });
+
+describe("rejoindre par un lien (E-REJOINDRE)", () => {
+  it("date en toutes lettres et Plus tard en bouton [R13]", async () => {
+    spaceServer();
+    const code = "c".repeat(22);
+    server.use(
+      http.get(`/api/v1/invite-links/${code}`, () =>
+        HttpResponse.json({
+          space: { name: "Coloc", tintIndex: 1, avatarUrl: null, memberCount: 3 },
+          expiresAt: "2026-11-14T18:00:00.000Z",
+        })
+      )
+    );
+    renderWithProviders(<App />, { route: `/join/${code}` });
+    expect(
+      await screen.findByText(/3 membres · lien valable jusqu'au 14 novembre/)
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Plus tard" })).toHaveClass("fm-btn");
+  });
+});

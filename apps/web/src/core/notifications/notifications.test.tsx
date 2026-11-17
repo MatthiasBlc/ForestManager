@@ -247,6 +247,12 @@ describe("messages du socle (C6.4)", () => {
           type: "core.invitation.received",
           data: { spaceName: "Amis" },
         }),
+        // Acceptee : l'API l'a fait pointer sur l'espace (D6).
+        buildNotification({
+          type: "core.invitation.received",
+          data: { spaceName: "Famille" },
+          url: `/s/${famille.id}/home`,
+        }),
         buildNotification({
           type: "core.moderation.opened",
           category: "core.platform",
@@ -279,7 +285,14 @@ describe("messages du socle (C6.4)", () => {
       ],
     ]);
     renderWithProviders(<App />, { route: "/notifications" });
-    expect(await screen.findByText(/t'invite dans Amis\./)).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: /t'invite dans Amis\./ })).toHaveAttribute(
+      "href",
+      `/s/${me.personalSpaceId}/home`
+    );
+    expect(screen.getByRole("link", { name: /t'invite dans Famille\./ })).toHaveAttribute(
+      "href",
+      `/s/${famille.id}/home`
+    );
     expect(
       screen.getByText(
         "Un administrateur consulte Famille en lecture seule pendant 30 minutes. Motif : Signalement d'un membre (Recette signalée)."

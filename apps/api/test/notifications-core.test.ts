@@ -50,6 +50,53 @@ describe("invitations et arrivees (P02, P03)", () => {
     });
   });
 
+  it("une invitation acceptee marque l'avis lu et le fait pointer sur l'espace (D6)", async () => {
+    const { owner, space } = await family();
+    const ownerClient = await loginAs(owner, app);
+    const [accepted, declined, joined, cancelled] = [
+      await createUser(),
+      await createUser(),
+      await createUser(),
+      await createUser(),
+    ];
+    for (const user of [accepted, declined, joined, cancelled]) {
+      await ownerClient.post(`/spaces/${space.id}/invitations`, { username: user.username });
+    }
+    const invitationOf = (userId: string) =>
+      db.spaceInvitation.findFirstOrThrow({ where: { inviteeId: userId } });
+    const [first] = await notificationsOf(accepted.id);
+    expect(first).toMatchObject({
+      targetType: "SpaceInvitation",
+      targetId: (await invitationOf(accepted.id)).id,
+      data: { spaceName: "Famille", spaceId: space.id },
+    });
+
+    const acceptedClient = await loginAs(accepted, app);
+    await acceptedClient.post(`/me/invitations/${(await invitationOf(accepted.id)).id}/accept`);
+    const declinedClient = await loginAs(declined, app);
+    await declinedClient.post(`/me/invitations/${(await invitationOf(declined.id)).id}/decline`);
+    // Rejoindre par lien vaut acceptation de l'invitation en attente.
+    const link = await ownerClient.post(`/spaces/${space.id}/invite-links`, {
+      expiresInDays: 7,
+      maxUses: null,
+    });
+    await (await loginAs(joined, app)).post(`/invite-links/${link.body.code}/join`);
+    await ownerClient.post(
+      `/spaces/${space.id}/invitations/${(await invitationOf(cancelled.id)).id}/cancel`
+    );
+
+    for (const [user, url] of [
+      [accepted, `/s/${space.id}/home`],
+      [joined, `/s/${space.id}/home`],
+      [declined, null],
+      [cancelled, null],
+    ] as const) {
+      const [row] = await notificationsOf(user.id);
+      expect(row?.readAt).not.toBeNull();
+      expect(row?.url).toBe(url);
+    }
+  });
+
   it("une arrivee previent l'OWNER et les moderateurs (regroupee) et entre dans l'activite", async () => {
     const { owner, moderator, member, space } = await family();
     const ownerClient = await loginAs(owner, app);
@@ -194,6 +241,12 @@ describe("suppression et restauration (P14)", () => {
     expect((await notificationsOf(member.id)).map((n) => [n.type, n.spaceId])).toEqual([
       ["core.space.deleted", null],
       ["core.space.restored", space.id],
+    ]);
+    // La restauration entre aussi dans le fil d'activite de l'espace [R17].
+    const events = await db.activityEvent.findMany({ where: { spaceId: space.id } });
+    expect(events.map((e) => [e.type, e.actorId])).toContainEqual([
+      "core.space.restored",
+      owner.id,
     ]);
   });
 });

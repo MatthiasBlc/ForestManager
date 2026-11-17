@@ -35,7 +35,12 @@ describe("accueil (E-ACCUEIL, F-INVITATION)", () => {
     });
     mockSession({ me, spaces: [buildPersonalSpace(me), famille] });
     const calls: string[] = [];
+    let homeLoads = 0;
     server.use(
+      http.get("/api/v1/me/home", () => {
+        homeLoads += 1;
+        return HttpResponse.json({ widgets: [], available: [], custom: false });
+      }),
       http.get("/api/v1/me/invitations", () => HttpResponse.json({ data: [invitation, other] })),
       http.post("/api/v1/me/invitations/:id/:action", ({ params }) => {
         calls.push(`${String(params.action)}:${String(params.id)}`);
@@ -54,6 +59,10 @@ describe("accueil (E-ACCUEIL, F-INVITATION)", () => {
       expect(document.documentElement).toHaveAttribute("data-space", "3");
     });
     expect(calls).toEqual([`decline:${other.id}`, `accept:${invitation.id}`]);
+    // D7 : l'accueil se recharge avec les recettes du nouvel espace.
+    await waitFor(() => {
+      expect(homeLoads).toBe(2);
+    });
   });
 
   it("propose d'accepter un transfert de propriete recu", async () => {
