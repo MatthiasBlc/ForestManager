@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
@@ -78,6 +78,35 @@ describe("Sheet, declencheur disparu", () => {
     await waitFor(() => {
       expect(screen.getByRole("main")).toHaveFocus();
     });
+  });
+});
+
+describe("Sheet, pointeur deja perdu", () => {
+  // Bugsink (2026-11-17) : setPointerCapture leve NotFoundError si le pointeur
+  // n'est plus actif (doigt releve tres vite) ; la feuille doit rester utilisable.
+  it("ne leve pas si la capture du pointeur echoue", async () => {
+    const user = userEvent.setup();
+    const capture = vi.spyOn(HTMLElement.prototype, "setPointerCapture").mockImplementation(() => {
+      throw new DOMException("No active pointer with the given id is found.", "NotFoundError");
+    });
+    const errors: unknown[] = [];
+    const onError = (event: ErrorEvent) => {
+      errors.push(event.error);
+      event.preventDefault();
+    };
+    window.addEventListener("error", onError);
+    try {
+      render(<SheetDemo />);
+      await user.click(screen.getByRole("button", { name: "Inviter" }));
+      const heading = screen.getByRole("heading", { name: "Inviter des membres" });
+      fireEvent.pointerDown(heading, { pointerId: 7, clientY: 10 });
+      expect(capture).toHaveBeenCalled();
+      expect(errors).toEqual([]);
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+    } finally {
+      window.removeEventListener("error", onError);
+      capture.mockRestore();
+    }
   });
 });
 

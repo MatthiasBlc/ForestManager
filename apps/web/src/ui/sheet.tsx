@@ -48,7 +48,13 @@ export function Sheet({ open, onClose, title, description, children }: SheetProp
     onPointerDown: (e: PointerEvent<HTMLElement>) => {
       if ((e.target as HTMLElement).closest("button")) return;
       start.current = e.clientY;
-      e.currentTarget.setPointerCapture(e.pointerId);
+      // Le pointeur peut deja etre perdu (doigt releve tres vite) : la capture
+      // n'est qu'un confort, le glisser marche sans elle.
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch {
+        // NotFoundError : rien a capturer
+      }
     },
     onPointerMove: (e: PointerEvent<HTMLElement>) => {
       if (start.current === null) return;
