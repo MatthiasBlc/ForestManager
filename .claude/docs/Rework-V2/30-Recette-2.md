@@ -143,3 +143,5 @@ Tour de l'admin en preprod (2026-11-17) : tableau de bord, demandes, catalogue e
 - Utilisateurs : colonne Espaces plus large, dates sur une ligne, bouton "Reinitialiser" sous l'en-tete "Mot de passe" (plus de defilement horizontal).
 
 Laisses tels quels : badge "A traduire" sur toutes les unites, rayons et tags (traduction anglaise prevue plus tard) ; brouillon du changelog 2.0.0 vide : voulu, la premiere version V2 n'a pas de tag precedent et ses notes s'ecrivent a la main dans l'admin avant de la publier ; les versions suivantes sont preremplies a partir des commits.
+
+Revue mobile en preprod (2026-11-17, Chrome a 390 px, souris) : liste, fiche, mode cuisine et feuille Ingredients, planning (vue Jour, F-REPAS), menu "Plus", notifications, apparence (focus Potager bleu) conformes. Remarque en attente : dans le bandeau des jours du Planning, aujourd'hui n'a pas de repere visuel quand un autre jour est choisi (seulement `aria-current`). Le defilement au doigt des tags (D12) reste a voir sur un vrai telephone.
