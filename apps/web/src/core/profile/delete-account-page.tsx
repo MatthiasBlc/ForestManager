@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { useNavigate } from "react-router";
 
+import { clearAccountStorage } from "../../lib/account-storage.ts";
 import { api } from "../../lib/api.ts";
 import { applyApiError } from "../../lib/form-errors.ts";
 import { SpaceIcon } from "../../patterns/space-icon.tsx";
@@ -47,6 +48,7 @@ export function DeleteAccountPage() {
     try {
       await api.delete("/me", byName ? { username: username.trim() } : { password });
       queryClient.clear();
+      clearAccountStorage();
       queryClient.setQueryData(["me"], null);
       toast("Ton compte a été supprimé");
       void navigate("/", { replace: true });

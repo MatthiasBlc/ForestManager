@@ -87,6 +87,24 @@ describe("controles", () => {
     expect(onChange).toHaveBeenCalledWith(true);
   });
 
+  it("Switch : Entree envoie le formulaire sans basculer (D11)", async () => {
+    const onSubmit = vi.fn((event: { preventDefault: () => void }) => {
+      event.preventDefault();
+    });
+    render(
+      <form onSubmit={onSubmit}>
+        <Switch label="Rester connecté" />
+      </form>
+    );
+    const toggle = screen.getByRole("switch", { name: "Rester connecté" });
+    toggle.focus();
+    await userEvent.keyboard("{Enter}");
+    expect(onSubmit).toHaveBeenCalledOnce();
+    expect(toggle).toHaveAttribute("aria-checked", "false");
+    await userEvent.keyboard(" ");
+    expect(toggle).toHaveAttribute("aria-checked", "true");
+  });
+
   it("Stepper : bornes respectees", async () => {
     const onChange = vi.fn();
     render(

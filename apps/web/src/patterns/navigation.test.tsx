@@ -186,3 +186,29 @@ describe("TopBar", () => {
     expect(screen.getByText("Suggérer une modification")).toHaveClass("fm-wide-only");
   });
 });
+
+describe("AppShell", () => {
+  it("remet le contenu en haut quand la route change, pas quand seule la recherche change (D1)", async () => {
+    const { AppShell } = await import("./app-shell.tsx");
+    const { Link } = await import("react-router");
+    render(
+      <MemoryRouter initialEntries={["/a"]}>
+        <AppShell>
+          <Link to="/b">Vers b</Link>
+          <Link to="/b?day=2">Jour</Link>
+        </AppShell>
+      </MemoryRouter>
+    );
+    const main = screen.getByRole("main");
+    const writes: number[] = [];
+    Object.defineProperty(main, "scrollTop", {
+      configurable: true,
+      get: () => 0,
+      set: (v: number) => writes.push(v),
+    });
+    await userEvent.click(screen.getByRole("link", { name: "Vers b" }));
+    expect(writes).toEqual([0]);
+    await userEvent.click(screen.getByRole("link", { name: "Jour" }));
+    expect(writes).toEqual([0]);
+  });
+});

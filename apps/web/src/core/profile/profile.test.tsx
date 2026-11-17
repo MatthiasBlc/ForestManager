@@ -101,8 +101,9 @@ describe("profil (E-PROFIL)", () => {
       expect(bodies).toEqual([{ uploadId: uploadIds[0] }]);
     });
     // Dans la page : le rail porte aussi une image "matthias" (son espace perso).
-    const avatar = within(screen.getByRole("main")).getAllByRole("img", { name: "matthias" })[0];
+    // Relue a chaque essai : l'avatar peut etre remplace au rechargement du profil.
     await waitFor(() => {
+      const avatar = within(screen.getByRole("main")).getAllByRole("img", { name: "matthias" })[0];
       expect(avatar?.querySelector("img")).toHaveAttribute("src", signedUrl("users/me/1.webp"));
     });
 
@@ -169,8 +170,15 @@ describe("profil (E-PROFIL)", () => {
     const { user } = renderWithProviders(<App />, { route: "/profile" });
     expect(await screen.findByRole("heading", { name: "matthias" })).toBeInTheDocument();
     expect(screen.getByText("matthias@exemple.fr")).toBeInTheDocument();
+    localStorage.setItem("fm:lastSpace", "x");
+    localStorage.setItem("fm:recent-recipes", '["Gratin"]');
+    localStorage.setItem("fm:draft:new:x", "{}");
+    localStorage.setItem("autre", "garde");
     await user.click(screen.getByRole("button", { name: "Se déconnecter" }));
     expect(await screen.findByRole("link", { name: "Se connecter" })).toBeInTheDocument();
+    // D10 : rien du compte ne reste lisible sur un appareil partage.
+    expect(Object.keys(localStorage).filter((key) => key.startsWith("fm:"))).toEqual([]);
+    expect(localStorage.getItem("autre")).toBe("garde");
   });
 
   it("la deconnexion rend l'ambiance par defaut : celle du compte ne reste pas a l'ecran", async () => {

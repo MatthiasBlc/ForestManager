@@ -230,7 +230,7 @@
   --line-strong: #8e8d88;
   --ink: #202024;
   --ink-muted: #5c5c64;
-  --focus: #c93c26;
+  --focus: #3a6ea5;
   --overlay: rgba(28, 26, 22, 0.42);
   --accent: var(--tint-1);
   --accent-soft: var(--tint-1-soft);
@@ -285,7 +285,7 @@
   --line-strong: #71717b;
   --ink: #ececef;
   --ink-muted: #a3a3ad;
-  --focus: #f0745f;
+  --focus: #7fa8dc;
   --overlay: rgba(8, 9, 10, 0.62);
   --accent: var(--tint-1);
   --accent-soft: var(--tint-1-soft);

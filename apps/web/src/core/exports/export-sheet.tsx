@@ -25,7 +25,7 @@ import { canIn } from "../spaces/queries.ts";
 const POLL_MS = 1000;
 
 const FORMATS = [
-  { value: "JSON", label: "JSON", hint: "Se réimportera dans Forest Manager" },
+  { value: "JSON", label: "JSON", hint: "Données complètes, lisibles par d'autres outils" },
   { value: "MARKDOWN", label: "Markdown", hint: "Se lit partout, un fichier par recette" },
 ] as const;
 

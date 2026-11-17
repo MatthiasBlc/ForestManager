@@ -14,8 +14,8 @@ export function OfflineBanner() {
     >
       <Icon name="wifi-off" size={16} />
       <span id={OFFLINE_REASON_ID}>
-        Hors ligne. Tu consultes la dernière version enregistrée ; les modifications attendront le
-        réseau.
+        Hors ligne. Tu consultes la dernière version enregistrée ; pour modifier, attends le retour
+        du réseau.
       </span>
     </div>
   );

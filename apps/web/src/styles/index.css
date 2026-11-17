@@ -34,6 +34,8 @@
   --color-success-text: var(--success-text);
   --color-warning-soft: var(--warning-soft);
   --color-warning-text: var(--warning-text);
+  --color-second-soft: var(--second-soft);
+  --color-second-text: var(--second-text);
   --font-display: var(--font-display);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);

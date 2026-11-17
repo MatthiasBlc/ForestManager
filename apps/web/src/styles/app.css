@@ -432,14 +432,19 @@ a.fm-slot {
   gap: var(--space-4);
   align-items: start;
 }
+/* Deux cartes par ligne sur telephone, davantage quand le widget est large [R15]. */
 .fm-home-cards {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: var(--space-3);
 }
 @media (min-width: 1024px) {
   .fm-home-widgets {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  /* Nombre impair : le dernier widget prend toute la largeur, pas de colonne vide [R15]. */
+  .fm-home-widgets > :last-child:nth-child(odd) {
+    grid-column: 1 / -1;
   }
 }
 

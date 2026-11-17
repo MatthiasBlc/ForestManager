@@ -31,6 +31,12 @@ export function Switch({
         checked={on}
         disabled={disabled}
         onCheckedChange={setOn}
+        onKeyDown={(event) => {
+          // Entree envoie le formulaire, comme dans un champ ; Espace bascule (D11).
+          if (event.key !== "Enter") return;
+          event.preventDefault();
+          event.currentTarget.form?.requestSubmit();
+        }}
       />
       <span>{label}</span>
     </label>

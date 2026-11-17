@@ -200,7 +200,7 @@ export function ProfilePage() {
           to="/profile/password"
         />
         {showDiscord ? <DiscordRow linkedAs={me.data.discord?.username ?? null} /> : null}
-        <Row icon="home" label="Langue" value="Français" />
+        <Row icon="globe" label="Langue" value="Français" />
         <Row
           icon="arrow-down"
           label="Exporter mes recettes"
@@ -208,7 +208,7 @@ export function ProfilePage() {
           onClick={() => setExportOpen(true)}
         />
         <Row
-          icon="sparkles"
+          icon="megaphone"
           label="Nouveautés"
           value="Ce qui a changé dans Forest Manager"
           to="/news"
