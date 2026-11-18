@@ -35,7 +35,7 @@ Depuis `master` dans `hotfix/<sujet>`, puis fusionnes dans le lot en cours.
 
 ## `v2.3.0` - Liste de courses (branche `lot/v2.3.0`)
 
-- [ ] Ouvrir la branche `lot/v2.3.0` depuis `Developement` (proprietaire : la pousser)
+- [x] Ouvrir la branche `lot/v2.3.0` depuis `Developement` (2026-11-18, poussee)
 - [ ] C9 Module liste de courses (CDC S4.7, F-SHP ; droits [D141] ; conversions et rayons deja en base [D36]) : choix tranches au selecteur le 2026-11-18 [D228], maquette `3-Maquette-C9.html` validee, plan `2-Plan-C9.md` ; en TDD
 - [ ] Fermeture du lot : `Developement` fusionne dans le lot, `npm test`, `npm run e2e`, lint et typecheck au vert ; PR `lot/v2.3.0` -> `Developement`
 - [ ] Preprod : PR `Developement` -> `master`, verification pas a pas avec le proprietaire
