@@ -18,7 +18,8 @@ import { Field } from "../../ui/field.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { plural } from "../../lib/plural.ts";
 
-export type ImportSheet = "url" | "text" | null;
+/** Feuille d'import ouverte : lien, texte colle ou export de recettes [D225]. */
+export type ImportSheet = "url" | "text" | "export" | null;
 
 function useOpenEditor(spaceId: string) {
   const navigate = useNavigate();
