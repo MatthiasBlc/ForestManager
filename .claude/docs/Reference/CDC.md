@@ -196,6 +196,7 @@ Reprise de la V1 (page utilisateur, gestion admin), generation revue [D187] :
 - Chaque image API embarque le brouillon de sa version (version semver et items calcules par la CI depuis les commits) ; le demarrage le cree s'il n'existe pas.
 - L'admin le reformule pour les utilisateurs dans A10 et le publie, en prevenant tout le monde ou non [D127] ; une version publiee peut etre masquee.
 - La 2.0.0 (premiere version V2) s'ecrit a la main.
+- Une version publiee peut etre rendue publique : lisible sans connexion sur `/news` ; les lignes acceptent un Markdown en ligne (gras, italique, code, liens), rendu sans HTML [D226, a valider].
 
 ## 5. UX et design system
 
@@ -308,3 +309,4 @@ Sans objet [D23] : la V1 n'a pas d'utilisateurs reels, la base et la stack seron
 - 1.7 : delai de recette par tag, D214 ; repas manuel verrouille, D215
 - 1.8 : affichage des tags et familles, D216
 - 1.9 : ordre des listes de recettes, D217 ; ordre des espaces, D218 ; retour d'une recette, D219 ; PWA de preprod, D220
+- 1.10 : changelog public et Markdown dans les notes de version, D226 (a valider)

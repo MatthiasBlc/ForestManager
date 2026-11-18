@@ -42,7 +42,7 @@ npm workspaces : `apps/api`, `apps/web`, `packages/shared`, `packages/test-utils
 
 - Sessions serveur en base, cookie `httpOnly`, `secure`, `sameSite=lax` ; **1 jour glissant**, **30 jours** avec "Rester connecte" ; identifiant renouvele a la connexion.
 - Mots de passe `argon2id`, 10 a 128 caracteres ; connexion par email ou username.
-- CSRF par double submit cookie ; limites de debit sur connexion, inscription, mot de passe oublie, demandes d'acces aux modules, import par URL, creations d'ingredients.
+- CSRF par double submit cookie ; limites de debit sur connexion, inscription, mot de passe oublie, lecture des nouveautes (ouverte sans connexion [D226]), demandes d'acces aux modules, import par URL, creations d'ingredients.
 - **Connexion avec Discord** [D202, D210] facultative : sans `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET`, `features.discord` vaut false et les boutons sont masques. Redirection declaree chez Discord : `<APP_URL>/api/v1/auth/discord/callback`.
 - **Admin isole** : `AdminUser`, session dediee de 30 min non glissante, **2FA TOTP obligatoire**, audit de chaque action, routes sous `/api/v1/admin`.
 

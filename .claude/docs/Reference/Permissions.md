@@ -170,12 +170,13 @@ Un meme utilisateur est MEM, MOD ou OWN selon l'espace. "Auteur" se cumule avec 
 
 ## Administration
 
-| Action                                                                       | VIS | CON | MEM | MOD | OWN | ANC | ADM | Source        | Note                                     |
-| ---------------------------------------------------------------------------- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | ------------- | ---------------------------------------- |
-| Tableau de bord, file des demandes de modules, file des nouveaux ingredients |  -  |  -  |  -  |  -  |  -  |  -  | Oui | CDC S4.9      |                                          |
-| Moderer une recette ou un espace (masquer, supprimer) avec motif             |  -  |  -  |  -  |  -  |  -  |  -  | Oui | CDC S3.3, D52 |                                          |
-| Gerer le changelog                                                           |  -  |  -  |  -  |  -  |  -  |  -  | Oui | CDC S4.10     |                                          |
-| Se connecter a la place d'un utilisateur                                     |  -  |  -  |  -  |  -  |  -  |  -  |  -  | D52           | Interdit, y compris pour le super admin. |
+| Action                                                                       |  VIS  | CON | MEM | MOD | OWN | ANC | ADM | Source          | Note                                     |
+| ---------------------------------------------------------------------------- | :---: | :-: | :-: | :-: | :-: | :-: | :-: | --------------- | ---------------------------------------- |
+| Tableau de bord, file des demandes de modules, file des nouveaux ingredients |   -   |  -  |  -  |  -  |  -  |  -  | Oui | CDC S4.9        |                                          |
+| Moderer une recette ou un espace (masquer, supprimer) avec motif             |   -   |  -  |  -  |  -  |  -  |  -  | Oui | CDC S3.3, D52   |                                          |
+| Gerer le changelog                                                           |   -   |  -  |  -  |  -  |  -  |  -  | Oui | CDC S4.10       |                                          |
+| Lire les nouveautes (versions publiees du changelog)                         | Cond. | Oui | Oui | Oui | Oui |  -  |  -  | CDC S4.10, D226 | VIS : versions publiques seulement.      |
+| Se connecter a la place d'un utilisateur                                     |   -   |  -  |  -  |  -  |  -  |  -  |  -  | D52             | Interdit, y compris pour le super admin. |
 
 ## Cas limites
 
