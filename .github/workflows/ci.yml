@@ -122,7 +122,7 @@ jobs:
         run: npm run test:merge
 
   # ========================================
-  # Parcours E2E (Chromium mobile + desktop) [D197]
+  # Parcours E2E (Chromium mobile + desktop, WebKit iPhone) [D197, D227]
   # ========================================
   e2e:
     runs-on: ubuntu-latest

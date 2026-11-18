@@ -34,13 +34,47 @@ const slots = (page: Page, name: RegExp) =>
 const slot = (page: Page, when: string) => slots(page, new RegExp(`^${when} : `));
 
 /** Glisser au doigt : appui long, la case se souleve, puis deplacement (vrais evenements
- * tactiles, Chromium) [D204]. */
+ * tactiles, Chromium) [D204]. WebKit n'a pas d'equivalent dans Playwright (pas de CDP,
+ * `touchscreen` ne sait que taper) : evenements de pointeur "touch" synthetiques, qui
+ * prouvent le geste de l'application mais pas le defilement natif [D227]. */
 async function touchDrag(page: Page, from: Locator, to: Locator) {
   await from.scrollIntoViewIfNeeded();
   const [a, b] = await Promise.all([from.boundingBox(), to.boundingBox()]);
   if (!a || !b) throw new Error("case hors de la page");
   const start = { x: a.x + a.width / 2, y: a.y + a.height / 2 };
   const end = { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+  if (page.context().browser()?.browserType().name() === "webkit") {
+    const pointer = (type: string, point: { x: number; y: number }) =>
+      page.evaluate(
+        ({ type, point }) => {
+          const target = document.elementFromPoint(point.x, point.y) ?? document.body;
+          target.dispatchEvent(
+            new PointerEvent(type, {
+              bubbles: true,
+              cancelable: true,
+              composed: true,
+              pointerId: 1,
+              pointerType: "touch",
+              isPrimary: true,
+              button: type === "pointermove" ? -1 : 0,
+              clientX: point.x,
+              clientY: point.y,
+            })
+          );
+        },
+        { type, point }
+      );
+    await pointer("pointerdown", start);
+    await expect(from).toHaveAttribute("data-drag-lifted", "");
+    for (let step = 1; step <= 8; step += 1) {
+      await pointer("pointermove", {
+        x: start.x + ((end.x - start.x) * step) / 8,
+        y: start.y + ((end.y - start.y) * step) / 8,
+      });
+    }
+    await pointer("pointerup", end);
+    return;
+  }
   const cdp = await page.context().newCDPSession(page);
   await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [start] });
   await expect(from).toHaveAttribute("data-drag-lifted", "");

@@ -3,7 +3,8 @@
 # en NODE_ENV=test (routes /api/v1/__test, limites de debit coupees), base et
 # stockage en memoire. Independant des stacks de dev et de test.
 #
-#   npm run e2e                          tous les parcours (mobile, puis desktop pour les (D))
+#   npm run e2e                          tous les parcours : Chromium mobile, desktop pour les (D),
+#                                        puis WebKit iPhone [D227]
 #   npm run e2e -- --project=mobile      arguments passes a `playwright test`
 #   npm run e2e:down                     arreter la stack
 #
@@ -119,7 +120,7 @@ services:
       context: .
       dockerfile: docker/e2e.Dockerfile
     init: true
-    ipc: host # recommande par Playwright pour Chromium
+    ipc: host # recommande par Playwright pour Chromium (WebKit fourni aussi par l'image)
     # Meme espace reseau que le nginx : le navigateur ouvre http://localhost.
     network_mode: "service:web"
     # Rapports ecrits dans e2e/ avec l'utilisateur de l'hote (pas de fichiers root).

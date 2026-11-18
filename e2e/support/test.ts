@@ -64,13 +64,37 @@ export type Scenario = <N extends keyof Scenarios>(
 const EXPECTED_CONSOLE =
   /Failed to load resource: (the server responded with a status of 4\d\d|net::ERR_INTERNET_DISCONNECTED)/;
 
+/**
+ * Bruit propre a WebKit [D227], limite aux requetes vers l'application elle-meme
+ * (une vraie erreur CORS, vers le stockage par exemple, reste une erreur) :
+ * - "WebKit encountered an internal error" : requete tentee sans reseau (le flux
+ *   SSE qui se reconnecte, parcours 12), l'equivalent de ERR_INTERNET_DISCONNECTED ;
+ * - "Fetch API cannot load ... due to access control checks" : requete en cours
+ *   annulee par une navigation (`page.goto` pendant le chargement de `/me`),
+ *   remontee par Playwright comme exception de la page, sans effet pour l'utilisateur.
+ */
+const WEBKIT_INTERNAL_ERROR = "Failed to load resource: WebKit encountered an internal error";
+const WEBKIT_CANCELLED_FETCH = /Fetch API cannot load (\S+) due to access control checks/;
+
+function sameOrigin(page: Page, url: string | undefined): boolean {
+  try {
+    return url !== undefined && new URL(url).origin === new URL(page.url()).origin;
+  } catch {
+    return false;
+  }
+}
+
 /** Releve les erreurs de console et les exceptions d'une page. */
 export function watchConsole(page: Page, errors: string[]): void {
   page.on("console", (message) => {
-    if (message.type() === "error" && !EXPECTED_CONSOLE.test(message.text()))
-      errors.push(`console: ${message.text()}`);
+    if (message.type() !== "error" || EXPECTED_CONSOLE.test(message.text())) return;
+    if (message.text() === WEBKIT_INTERNAL_ERROR && sameOrigin(page, message.location().url))
+      return;
+    errors.push(`console: ${message.text()}`);
   });
   page.on("pageerror", (error) => {
+    const cancelled = WEBKIT_CANCELLED_FETCH.exec(`${error.message}\n${error.stack ?? ""}`);
+    if (cancelled && sameOrigin(page, cancelled[1])) return;
     errors.push(`exception: ${error.message}`);
   });
 }
