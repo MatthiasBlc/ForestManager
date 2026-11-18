@@ -628,6 +628,12 @@ textarea.fm-input {
 .fm-menu .fm-danger {
   color: var(--danger-text);
 }
+/* Action indisponible (hors ligne, premiere famille a monter) : visible mais grisee. */
+.fm-menu button[data-disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: transparent;
+}
 .fm-menu hr {
   border: 0;
   border-top: 1px solid var(--line);
