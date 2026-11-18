@@ -12,10 +12,13 @@ const storage = createStorage(testEnv);
 if (!storage) throw new Error("MINIO_* variables missing in the test environment");
 export const testStorage: Storage = storage;
 
-/** Referentiels : remplis par le seed, jamais vides entre deux fichiers. */
+/**
+ * Referentiels : remplis par le seed, jamais vides entre deux fichiers. Le
+ * catalogue des modules est vide et recree par le seed : des tests changent le
+ * statut d'un module, qui fuirait sinon dans les fichiers suivants.
+ */
 const KEPT_TABLES = new Set([
   "_prisma_migrations",
-  "Module",
   "Unit",
   "UnitTranslation",
   "Aisle",
