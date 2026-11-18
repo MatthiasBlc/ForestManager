@@ -6,7 +6,7 @@ Feuille de verification avant la fusion `Developement` -> `master` (2026-11-18).
 
 - [x] Admin > Tags (`/admin/tags`) : tableau des familles globales (creer, renommer, ordonner), colonne Famille des tags globaux ; page et colonne Famille vues par Claude le 2026-11-18 (aucune famille encore, colonne Recettes a 0 partout en preprod), creation d'une famille laissee au proprietaire ; famille "Moment" (Course) creee par Claude, Aperitif, Entree, Plat, Dessert, Petit-dejeuner rangees dedans
 - [x] Ranger les tags globaux du proprietaire (Hiver, Printemps, Ete, Automne -> "Saison" ; Midi, Soir -> "Repas"...) puis verifier le filtre OU / ET dans "Le Nid" ; fait avec "Moment" dans Coloc recette (compte testrecette1) : Dessert + Plat = 2 recettes (OU), + Vegetarien = 1 (ET)
-- [ ] Planning > regle ou epinglage : champ "Tag" (feuille a choix unique, recherche)
+- [x] Planning > regle ou epinglage : champ "Tag" (feuille a choix unique, recherche) ; vu par Claude (profil Standard de Coloc recette) : feuille "Choisir un tag" groupee par famille, choix de Dessert, feuille refermee ; regle non ajoutee
 - [ ] Reglages de l'espace > Tags (moderateur) : familles d'espace, Monter / Descendre, fusion
 - [x] Editeur : section Tags, creation d'un tag d'espace ; partage avec reprise des tags d'origine ; tags groupes par famille, tag d'espace "Sucre" cree depuis la recherche, badges de la fiche tries par famille (partage non reteste)
 
@@ -14,7 +14,7 @@ Feuille de verification avant la fusion `Developement` -> `master` (2026-11-18).
 
 - [x] Ordre A a Z par defaut ; feuille Filtres > "Trier par" (6 ordres) ; filtre actif "Tri : ..." retirable ; ordre retenu apres rechargement [D217]
 - [x] Bureau : bouton "..." en haut a droite de l'image d'une carte, meme menu que le clic droit, la recette ne s'ouvre pas
-- [ ] Telephone : pas de bouton "...", l'appui long ouvre toujours le menu
+- [x] Telephone : pas de bouton "...", l'appui long ouvre toujours le menu (proprietaire : "telephone ok")
 
 ## Espaces [D218]
 
