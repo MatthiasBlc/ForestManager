@@ -340,7 +340,18 @@ export type RestoreRevisionBody = z.infer<typeof restoreRevisionBodySchema>;
 
 // --- Liste ---
 
-export const RECIPE_SORTS = ["recent", "title", "time"] as const;
+/**
+ * Ordres de la liste [D217] : titre (defaut), creation, temps total, chacun
+ * dans les deux sens ; une recette sans temps reste a la fin.
+ */
+export const RECIPE_SORTS = [
+  "title",
+  "title-desc",
+  "recent",
+  "oldest",
+  "time",
+  "time-desc",
+] as const;
 export type RecipeSort = (typeof RECIPE_SORTS)[number];
 
 /** Liste d'UUID separes par des virgules dans la query string. */
@@ -360,7 +371,7 @@ export const recipeListQuerySchema = cursorQuerySchema.extend({
     .enum(["true", "false"])
     .transform((v) => v === "true")
     .optional(),
-  sort: z.enum(RECIPE_SORTS).default("recent"),
+  sort: z.enum(RECIPE_SORTS).default("title"),
 });
 export type RecipeListQuery = z.infer<typeof recipeListQuerySchema>;
 

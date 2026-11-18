@@ -895,3 +895,13 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
   - **Reglages de l'espace > Tags** (moderateurs) : familles de l'espace (creer, renommer, ordonner, supprimer) et tags avec leur nombre de recettes (renommer, changer de famille, fusionner, supprimer).
   - **Recherche globale** : groupe "Tags" ; un tag ouvre la liste des recettes de l'espace filtree sur lui.
   - **Tags repris au partage** (demande du proprietaire) : partager une recette (F-PARTAGER, "Depuis mes recettes") propose ses tags d'espace d'origine en cases, toutes cochees, "Tags a reprendre dans Le Nid" : un tag de meme nom (slug) dans l'espace cible est pose, sinon il y est cree (famille "Autres") ; decocher pour ne pas le reprendre.
+
+### D217 - Ordre des listes de recettes - VALIDEE (2026-11-18, proprietaire au selecteur)
+
+- **Constat** : l'API savait trier (plus recentes par date de modification, alphabetique, temps total) mais l'interface ne proposait aucun choix ; "Mes recettes" et "Recettes d'un espace" sortaient par derniere modification.
+- **Choix** :
+  - **Six ordres**, chacun dans les deux sens : A a Z (defaut) et Z a A ; plus recentes et plus anciennes ; plus rapides et plus longues (temps total, une recette sans temps toujours a la fin).
+  - **A a Z par defaut** (demande du proprietaire : le plus logique en arrivant, sans reglage), dans l'API comme dans l'interface.
+  - **"Plus recentes" = date de creation** : ordre stable, une recette retouchee ne remonte pas en tete.
+  - **Dans la feuille Filtres**, section "Trier par" en tete (pas de bouton de plus) ; un ordre autre que A a Z apparait en filtre actif retirable ("Tri : Plus recentes") et compte dans "Filtres (n)" ; "Effacer" revient a A a Z.
+  - **Retenu sur l'appareil** (une valeur pour toutes les listes, simple confort) ; hors ligne, meme ordre applique aux recettes disponibles.

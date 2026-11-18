@@ -7,6 +7,7 @@ import {
   normalizeName,
   type Recipe,
   type RecipeSummary,
+  type RecipeSort,
   type SpaceSummary,
   type Unit,
 } from "@fm/shared";
@@ -38,6 +39,13 @@ import { recipesKey, recipesQuery, tagCatalogQuery, unitsQuery } from "./queries
 import { RecipeActionsSheet } from "./recipe-actions-sheet.tsx";
 import { ShareRequestsBanner } from "./sharing.tsx";
 import { SuggestionsToDecideBanner } from "./suggestions.tsx";
+import {
+  DEFAULT_RECIPE_SORT,
+  RECIPE_SORT_LABELS,
+  readRecipeSort,
+  sortRecipes,
+  writeRecipeSort,
+} from "./sort.ts";
 import { homeLabel, sortByFamily } from "./tag-groups.ts";
 import { useDebounced } from "../../lib/use-debounced.ts";
 import { useUrlFlag } from "../../lib/use-url-flag.ts";
@@ -198,7 +206,7 @@ function offlineRecipes(
     if (typeof keySpace !== "string" || (mine && recipe.author.id !== meId)) continue;
     if (!found.has(recipe.id)) found.set(recipe.id, { spaceId: keySpace, recipe });
   }
-  return [...found.values()].sort((a, b) => a.recipe.title.localeCompare(b.recipe.title, "fr"));
+  return [...found.values()];
 }
 
 function toSummary(recipe: Recipe): RecipeSummary {
@@ -257,6 +265,12 @@ export function RecipesPage() {
   const [search, setSearch] = useState("");
   const [tagIds, setTagIds] = useState<string[]>([]);
   const [baseOnly, setBaseOnly] = useState(false);
+  // Ordre de la liste [D217] : retenu sur l'appareil.
+  const [sort, setSortState] = useState(readRecipeSort);
+  const setSort = (next: RecipeSort) => {
+    setSortState(next);
+    writeRecipeSort(next);
+  };
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [addStep, setAddStep] = useState<AddStep | null>(null);
   const [importSheet, setImportSheet] = useState<ImportSheet>(null);
@@ -307,6 +321,7 @@ export function RecipesPage() {
       tagIds,
       ingredientIds: ingredientId ? [ingredientId] : [],
       base: baseOnly,
+      sort,
       mine,
       homeSpaceId,
     }),
@@ -333,6 +348,7 @@ export function RecipesPage() {
     setTagIds([]);
     setBaseOnly(false);
     setHomeSpaceId(null);
+    setSort(DEFAULT_RECIPE_SORT);
     clearIngredient();
   };
   const homeSpace = homeChoices.find((choice) => choice.id === homeSpaceId);
@@ -351,6 +367,17 @@ export function RecipesPage() {
       },
     })),
     ...(baseOnly ? [{ key: "base", label: "Bases", onRemove: () => setBaseOnly(false) }] : []),
+    ...(sort === DEFAULT_RECIPE_SORT
+      ? []
+      : [
+          {
+            key: "sort",
+            label: `Tri : ${RECIPE_SORT_LABELS[sort]}`,
+            onRemove: () => {
+              setSort(DEFAULT_RECIPE_SORT);
+            },
+          },
+        ]),
   ];
   // "Mes recettes" ouvre chaque recette dans son espace d'origine.
   const open = (recipe: RecipeSummary) => {
@@ -373,16 +400,21 @@ export function RecipesPage() {
   if (!online) {
     const term = normalizeName(q);
     const available = offlineRecipes(queryClient, spaceId, mine, me.data?.id);
-    const shown = available.filter(
-      ({ recipe }) =>
-        (!term || normalizeName(recipe.title).includes(term)) &&
-        (!baseOnly || recipe.isBase) &&
-        matchesTagFilter(
-          recipe.tags.map((tag) => tag.id),
-          tagIds,
-          (id) => catalog.data?.tags.find((tag) => tag.id === id)?.familyId ?? null
-        )
-    );
+    const shown = sortRecipes(
+      available.map(({ recipe }) => recipe),
+      sort
+    )
+      .map(toSummary)
+      .filter(
+        (recipe) =>
+          (!term || normalizeName(recipe.title).includes(term)) &&
+          (!baseOnly || recipe.isBase) &&
+          matchesTagFilter(
+            recipe.tags.map((tag) => tag.id),
+            tagIds,
+            (id) => catalog.data?.tags.find((tag) => tag.id === id)?.familyId ?? null
+          )
+      );
     content =
       available.length === 0 ? (
         <EmptyState icon="wifi-off" title="Aucune recette disponible hors ligne">
@@ -395,7 +427,7 @@ export function RecipesPage() {
             {available.length > 1 ? "recettes ouvertes" : "recette ouverte"} récemment.
           </p>
           <RecipeGrid
-            recipes={shown.map(({ recipe }) => toSummary(recipe))}
+            recipes={shown}
             units={units.data ?? []}
             badges={(recipe) => [
               ...badgesOf(recipe, spaceId, mine, spaces.data ?? []),
@@ -547,6 +579,8 @@ export function RecipesPage() {
         homeChoices={homeChoices}
         homeSpaceId={homeSpaceId}
         onHomeSpaceId={setHomeSpaceId}
+        sort={sort}
+        onSort={setSort}
         total={online ? list.data?.pages[0]?.total : undefined}
         onClear={clearFilters}
       />

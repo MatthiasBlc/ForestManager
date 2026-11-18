@@ -1,6 +1,6 @@
 # Forest Manager V2 - Cahier des charges
 
-**Version : 1.8 (1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder ; 1.1 : module Planning revu au plan C5, D180 a D184, D11 amendee : midi et soir seulement ; 1.2 : plan C6, D187 a D189 : changelog en brouillon embarque, temps reel en SSE ; 1.3 : plan C6b, D192 : export en tache de fond, reimport en V2.1 ; 1.4 : etude UX mobile, D209 ; 1.5 : connexion avec Discord, D210, avatars recadres, D211 ; 1.6 : import dans une recette existante, D212 ; 1.7 : delai de recette par tag, D214 ; repas manuel verrouille, D215 ; 1.8 : affichage des tags et familles, D216) ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception** - 2026-11-17
+**Version : 1.9 (1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder ; 1.1 : module Planning revu au plan C5, D180 a D184, D11 amendee : midi et soir seulement ; 1.2 : plan C6, D187 a D189 : changelog en brouillon embarque, temps reel en SSE ; 1.3 : plan C6b, D192 : export en tache de fond, reimport en V2.1 ; 1.4 : etude UX mobile, D209 ; 1.5 : connexion avec Discord, D210, avatars recadres, D211 ; 1.6 : import dans une recette existante, D212 ; 1.7 : delai de recette par tag, D214 ; repas manuel verrouille, D215 ; 1.8 : affichage des tags et familles, D216 ; 1.9 : ordre des listes de recettes, D217) ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception** - 2026-11-18
 Statut de chaque decision : voir `3-Journal-des-Decisions.md`. Une ligne marquee `[Dxx]` renvoie a sa decision.
 Les questions de la phase A sont au S10 (toutes repondues). Tant qu'une question touche une section, cette section n'est pas validable.
 
@@ -119,7 +119,7 @@ Cycle de vie [D03][D04][D05] :
 - F-REC-8 **Historique des revisions** consultable, avec restauration (meme droit que modifier [D55]). Le bouton d'enregistrement annonce la revision creee ("Enregistrer la revision 5") [D102]. Quitter l'editeur sans enregistrer garde un brouillon sur l'appareil [D104].
 - F-REC-9 Retirer une recette d'un espace de partage (auteur ou moderateur de cet espace) sans la supprimer.
 - F-REC-10 Supprimer une recette (auteur ; MOD et OWNER de l'espace d'origine si l'auteur n'en est plus membre [D57]) : elle disparait de tous les espaces ou elle est partagee, apres confirmation listant ces espaces.
-- F-REC-11 Recherche et filtres : texte, tags, ingredients, temps max, auteur, espace. Tri. Filtres dans une feuille, seuls les filtres actifs restent en tete de liste [D216].
+- F-REC-11 Recherche et filtres : texte, tags, ingredients, temps max, auteur, espace. Filtres dans une feuille, seuls les filtres actifs restent en tete de liste [D216]. Tri dans la meme feuille : A a Z par defaut, Z a A, plus recentes ou plus anciennes (creation), plus rapides ou plus longues ; retenu sur l'appareil [D217].
 - F-REC-12 Vue cuisine : etapes en grand, ecran maintenu allume, cochage des ingredients. Sur mobile, le detail d'une recette a un en-tete avec retour et une seule action principale fixee en bas (Mode cuisine) [D100].
 - F-REC-13 Compteurs : nombre de fois planifiee, derniere fois cuisinee, nombre d'adaptations, espaces de partage. Pas de suivi des vues [D39].
 

@@ -26,6 +26,8 @@ export interface TagSheetProps {
   counts?: boolean;
   /** Creation d'un tag d'espace quand la recherche ne trouve pas ce nom. */
   create?: (name: string) => Promise<void>;
+  /** Contenu au-dessus de la recherche (ordre de la liste). */
+  header?: ReactNode;
   /** Contenu sous les tags (Bases, espace d'origine). */
   children?: ReactNode;
   /** Pied de la feuille ; par defaut "OK" en choix multiple. */
@@ -44,6 +46,7 @@ export function TagSheet({
   mode = "multiple",
   counts = false,
   create,
+  header,
   children,
   footer,
 }: TagSheetProps) {
@@ -81,6 +84,7 @@ export function TagSheet({
   return (
     <Sheet open={open} onClose={close} title={title}>
       <div className="fm-stack">
+        {header}
         <input
           type="search"
           className="fm-input"

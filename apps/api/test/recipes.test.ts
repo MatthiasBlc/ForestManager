@@ -1,5 +1,6 @@
 // Recettes simples (C3.2) : creer, lire, modifier, supprimer, lister avec
 // recherche, filtres, tri et pagination ; tags poses sur une recette.
+import { RECIPE_SORTS } from "@fm/shared";
 import { describe, expect, it } from "vitest";
 
 import { createTestApp, loginAs } from "./helpers/app.ts";
@@ -324,15 +325,15 @@ describe("liste, recherche, filtres et tri (F-REC-11)", () => {
   const titles = (res: { body: { data: { title: string }[] } }) =>
     res.body.data.map((r) => r.title);
 
-  it("liste les recettes de l'espace, les plus recentes d'abord, avec un resume", async () => {
+  it("liste les recettes de l'espace, par ordre alphabetique par defaut (D217), avec un resume", async () => {
     const { f, owner } = await library();
     const res = await owner.get(`/spaces/${f.spaceId}/recipes`);
     expect(res.status).toBe(200);
     expect(titles(res)).toEqual([
+      "Dahl de lentilles",
       "Salade de lentilles",
       "Sauce tériyaki",
       "Tarte aux pommes",
-      "Dahl de lentilles",
     ]);
     expect(res.body.nextCursor).toBeNull();
     const dahl = res.body.data.find((r: { title: string }) => r.title === "Dahl de lentilles");
@@ -410,6 +411,41 @@ describe("liste, recherche, filtres et tri (F-REC-11)", () => {
     expect(titles(await list([veggie, plain]))).toEqual([]);
   });
 
+  it("trie par creation, titre et temps, dans les deux sens (D217)", async () => {
+    const { f, owner, ids } = await library();
+    const list = (sort: string) => owner.get(`/spaces/${f.spaceId}/recipes?sort=${sort}`);
+    // Une recette retouchee ne remonte pas : l'ordre suit la creation.
+    await db.recipe.update({
+      where: { id: ids.dahl },
+      data: { updatedAt: new Date(Date.now() + 60_000) },
+    });
+    expect(titles(await list("recent"))).toEqual([
+      "Salade de lentilles",
+      "Sauce tériyaki",
+      "Tarte aux pommes",
+      "Dahl de lentilles",
+    ]);
+    expect(titles(await list("oldest"))).toEqual([
+      "Dahl de lentilles",
+      "Tarte aux pommes",
+      "Sauce tériyaki",
+      "Salade de lentilles",
+    ]);
+    expect(titles(await list("title-desc"))).toEqual([
+      "Tarte aux pommes",
+      "Sauce tériyaki",
+      "Salade de lentilles",
+      "Dahl de lentilles",
+    ]);
+    // Sans temps : toujours a la fin.
+    expect(titles(await list("time-desc"))).toEqual([
+      "Tarte aux pommes",
+      "Dahl de lentilles",
+      "Sauce tériyaki",
+      "Salade de lentilles",
+    ]);
+  });
+
   it('premiere page : nombre total de recettes filtrees ("Voir N recettes", D216)', async () => {
     const { f, owner, veggie } = await library();
     const base = `/spaces/${f.spaceId}/recipes`;
@@ -425,7 +461,7 @@ describe("liste, recherche, filtres et tri (F-REC-11)", () => {
 
   it("pagine par curseur sans doublon ni oubli, quel que soit le tri", async () => {
     const { f, owner } = await library();
-    for (const sort of ["recent", "title", "time"]) {
+    for (const sort of RECIPE_SORTS) {
       const seen: string[] = [];
       let cursor: string | null = null;
       do {

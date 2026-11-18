@@ -1,13 +1,14 @@
 // F-FILTRES [D216] : bouton "Filtres", filtres actifs retirables, feuille de
-// filtres (tags par famille, Bases, espace d'origine). Liste des recettes et
-// "Depuis mes recettes".
-import type { SpaceSummary, TagCatalog } from "@fm/shared";
+// filtres (ordre de la liste [D217], tags par famille, Bases, espace d'origine).
+// Liste des recettes et "Depuis mes recettes".
+import { RECIPE_SORTS, type RecipeSort, type SpaceSummary, type TagCatalog } from "@fm/shared";
 
 import { Button } from "../../ui/button.tsx";
 import { Chip, Switch } from "../../ui/controls.tsx";
 import { Icon } from "../../ui/icon.tsx";
 import { SheetFooter } from "../../ui/sheet.tsx";
 import { TagSheet } from "./components/tag-sheet.tsx";
+import { RECIPE_SORT_LABELS } from "./sort.ts";
 import { homeLabel } from "./tag-groups.ts";
 
 /** Filtre actif affiche sous la recherche. */
@@ -75,6 +76,8 @@ export function FiltersSheet({
   homeChoices = [],
   homeSpaceId = null,
   onHomeSpaceId,
+  sort,
+  onSort,
   total,
   onClear,
 }: {
@@ -93,6 +96,9 @@ export function FiltersSheet({
   homeChoices?: readonly SpaceSummary[];
   homeSpaceId?: string | null;
   onHomeSpaceId?: (id: string | null) => void;
+  /** Ordre de la liste [D217] ; sans lui, pas de section "Trier par". */
+  sort?: RecipeSort;
+  onSort?: (sort: RecipeSort) => void;
   /** Nombre de recettes filtrees, si connu. */
   total: number | undefined;
   onClear: () => void;
@@ -108,6 +114,26 @@ export function FiltersSheet({
       counts={counts}
       selected={tagIds}
       onChange={onTagIds}
+      header={
+        sort && onSort ? (
+          <div className="flex flex-col gap-2" role="group" aria-label="Trier par">
+            <span className="fm-label">Trier par</span>
+            <div className="flex flex-wrap gap-2">
+              {RECIPE_SORTS.map((choice) => (
+                <Chip
+                  key={choice}
+                  selected={sort === choice}
+                  onToggle={() => {
+                    onSort(choice);
+                  }}
+                >
+                  {RECIPE_SORT_LABELS[choice]}
+                </Chip>
+              ))}
+            </div>
+          </div>
+        ) : null
+      }
       footer={
         <SheetFooter>
           <Button onClick={onClear}>Effacer</Button>

@@ -15,10 +15,11 @@ import { AppError } from "../../core/http/errors.ts";
 import { loadLinks } from "./composition.ts";
 import { summaryInclude, toSummary, withLinkedMinutes } from "./content.ts";
 
-/** Temps total ; une recette sans temps passe apres les autres au tri par temps. */
+/** Temps total, NULL pour une recette sans temps. */
 const TOTAL = Prisma.sql`(CASE WHEN num_nonnulls(r."prepMinutes", r."cookMinutes", r."restMinutes") = 0 THEN NULL
   ELSE COALESCE(r."prepMinutes", 0) + COALESCE(r."cookMinutes", 0) + COALESCE(r."restMinutes", 0) END)`;
 const NO_TIME = 2_147_483_647;
+const NO_TIME_DESC = -1;
 
 interface SortSpec {
   key: Prisma.Sql;
@@ -31,29 +32,45 @@ interface SortSpec {
 
 const bindValue = (value: unknown) => Prisma.sql`${value}`;
 
-const SORTS: Record<RecipeSort, SortSpec> = {
-  recent: {
-    key: Prisma.sql`r."updatedAt"`,
-    descending: true,
+function dateSort(descending: boolean): SortSpec {
+  return {
+    key: Prisma.sql`r."createdAt"`,
+    descending,
     parse: (value) => {
       const date = typeof value === "string" ? new Date(value) : null;
       return date && !Number.isNaN(date.getTime()) ? date.toISOString() : undefined;
     },
     // Dates stockees en UTC sans fuseau (timestamp(3)).
     bind: (value) => Prisma.sql`CAST(${String(value).replace("Z", "")} AS timestamp(3))`,
-  },
-  title: {
+  };
+}
+
+function titleSort(descending: boolean): SortSpec {
+  return {
     key: Prisma.sql`(lower(unaccent(r.title)) COLLATE "C")`,
-    descending: false,
+    descending,
     parse: (value) => (typeof value === "string" ? value : undefined),
     bind: bindValue,
-  },
-  time: {
-    key: Prisma.sql`COALESCE(${TOTAL}, ${NO_TIME})`,
-    descending: false,
+  };
+}
+
+/** Une recette sans temps passe apres les autres, dans les deux sens. */
+function timeSort(descending: boolean): SortSpec {
+  return {
+    key: Prisma.sql`COALESCE(${TOTAL}, ${descending ? NO_TIME_DESC : NO_TIME})`,
+    descending,
     parse: (value) => (Number.isInteger(value) ? value : undefined),
     bind: bindValue,
-  },
+  };
+}
+
+const SORTS: Record<RecipeSort, SortSpec> = {
+  title: titleSort(false),
+  "title-desc": titleSort(true),
+  recent: dateSort(true),
+  oldest: dateSort(false),
+  time: timeSort(false),
+  "time-desc": timeSort(true),
 };
 
 interface Cursor {

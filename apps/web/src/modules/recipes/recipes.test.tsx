@@ -96,6 +96,47 @@ describe("liste des recettes (E-RECETTES)", () => {
     expect(screen.queryByRole("group", { name: "Filtres actifs" })).not.toBeInTheDocument();
   });
 
+  it("feuille de filtres : Trier par, A a Z par defaut, choix retenu sur l'appareil (D217)", async () => {
+    const s = recipeServer({ recipes: [buildRecipe({ title: "Dahl" })] });
+    const first = renderWithProviders(<App />, { route: `/s/${s.space.id}/recipes` });
+    await screen.findByRole("article", { name: "Dahl" });
+    expect(s.recipes.queries.at(-1)?.get("sort")).toBeNull();
+
+    await first.user.click(screen.getByRole("button", { name: "Filtres" }));
+    const sheet = screen.getByRole("dialog", { name: "Filtres" });
+    const sorts = within(sheet).getByRole("group", { name: "Trier par" });
+    expect(within(sorts).getByRole("button", { name: "A à Z" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    await first.user.click(within(sorts).getByRole("button", { name: "Plus récentes" }));
+    await waitFor(() => {
+      expect(s.recipes.queries.at(-1)?.get("sort")).toBe("recent");
+    });
+    expect(within(sorts).getByRole("button", { name: "A à Z" })).toHaveAttribute(
+      "aria-pressed",
+      "false"
+    );
+    await first.user.click(within(sheet).getByRole("button", { name: /^Voir/ }));
+    expect(screen.getByRole("group", { name: "Filtres actifs" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Filtres (1)" })).toBeInTheDocument();
+    first.unmount();
+
+    // Retenu : on revient avec le meme ordre, retirable comme un filtre.
+    const again = renderWithProviders(<App />, { route: `/s/${s.space.id}/recipes` });
+    await screen.findByRole("article", { name: "Dahl" });
+    expect(s.recipes.queries.at(-1)?.get("sort")).toBe("recent");
+    await again.user.click(
+      within(screen.getByRole("group", { name: "Filtres actifs" })).getByRole("button", {
+        name: "Tri : Plus récentes, retirer le filtre",
+      })
+    );
+    await waitFor(() => {
+      expect(s.recipes.queries.at(-1)?.get("sort")).toBeNull();
+    });
+    expect(screen.queryByRole("group", { name: "Filtres actifs" })).not.toBeInTheDocument();
+  });
+
   it("Ajouter une recette > Creer > Saisir ouvre l'editeur (F-AJOUT-RECETTE)", async () => {
     const s = recipeServer();
     const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/recipes` });
