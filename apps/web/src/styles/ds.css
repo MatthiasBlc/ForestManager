@@ -793,6 +793,11 @@ textarea.fm-input {
   object-fit: cover;
   border-radius: inherit;
 }
+/* Rail : l'image est dans un span en display: contents (nom accessible) ; il
+   transmet l'arrondi du bouton, sinon l'image garde des coins carres. */
+.fm-space > .contents {
+  border-radius: inherit;
+}
 /* Pastille au survol, barre pour l'espace ouvert [D213]. */
 .fm-space[aria-current="true"]::before {
   content: "";
