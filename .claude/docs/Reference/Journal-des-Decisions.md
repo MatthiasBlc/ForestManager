@@ -931,3 +931,23 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
   - `.claude/docs/V2.2/` : chantier en cours, README court (etat, reprise) et roadmap (lot V2.2, actions infra du proprietaire reprises de C8, idees a etudier reprises du brainstorming).
   - `.claude/docs/Archive/Rework-V2/` : tout le reste du chantier Rework V2, intact ; l'ancien brainstorming dans `Archive/`.
   - **Le code fait foi** pour le design system (`apps/web/src/styles/`) et le schema (`apps/api/prisma/schema.prisma`) : les copies des docs sont archivees et ne sont plus recopiees.
+
+### D222 - Texte colle : etapes en blocs "ETAPE N", lignes parasites ecartees - VALIDEE (2026-11-18, proprietaire au selecteur, recette reelle importee en prod)
+
+- **Constat** : un texte colle de recette (copie Discord) donnait zero etape : le titre "Process" n'etait pas reconnu, donc tout restait dans la section Ingredients, y compris les "ETAPE N" ; "Repos: --", l'intertitre "Pour servir :" et la date du message devenaient des ingredients ; "(facultatif)" restait dans le nom.
+- **Choix** :
+  - Une ligne "ETAPE N" seule ouvre une etape faite des lignes qui suivent (une etape par bloc), et fait passer aux etapes meme sans titre de section reconnu. Les etapes ecrites "Etape 3 : texte" ou "1. texte" restent une par ligne.
+  - Titres d'etapes reconnus en plus : "Process", "Procede", "Deroulement".
+  - Ignores : une duree sans valeur ("Repos: --", "Cuisson : aucun"), un intertitre sans quantite finissant par ":" dans la section Ingredients, une ligne qui n'est qu'une date et une heure ("— 03/04/2026 12:23").
+  - "(facultatif)" / "(optionnel)" sort du nom et passe en note : le flag `optional` n'est ni affiche ni editable dans l'appli, l'activer a l'import le rendrait invisible et irreversible.
+  - Non retenu : "2 a 4 gousses d'ail selon le gout" reste lu "a gout" (le proprietaire ne l'a pas pris).
+
+### D223 - Ordre des tags dans une famille, choisi a la main - VALIDEE (2026-11-18, demande du proprietaire)
+
+- **Constat** : les tags d'une famille s'affichaient par ordre alphabetique [D216] : Automne, Ete, Hiver, Printemps au lieu de Printemps -> Hiver ; A tester avant Incontournable.
+- **Choix** : chaque tag porte un rang dans sa famille (`Tag.sortOrder`), regle comme l'ordre des familles : "Monter" / "Descendre" dans le menu du tag (Reglages de l'espace > Tags, moderateurs) et fleches sur la ligne du tag dans l'admin (tags globaux, regroupes par famille dans l'ordre des familles). Un tag qui entre dans une famille arrive en fin ; l'ordre envoye contient chaque tag de la famille une fois. "Autres" (sans famille) reste alphabetique. Le catalogue suit cet ordre, donc les filtres, la feuille de tags, les cartes et la fiche aussi. La migration part de l'ordre alphabetique existant : rien ne bouge a l'arrivee, l'ordre des familles creees en prod (Saison, Palier...) se regle ensuite a la main.
+
+### D224 - Fleche de retour d'une recette : remonter l'historique plutot qu'empiler - VALIDEE (2026-11-18, demande du proprietaire)
+
+- **Constat** : la fleche de la recette [D219] empilait la page d'origine dans l'historique ([origine, recette, origine]) : le geste retour d'Android (ou le bouton du navigateur) revenait alors sur la recette.
+- **Choix** : la page retenue garde aussi sa position dans l'historique de l'onglet (`idx` du routeur). Si l'origine est plus haut dans l'historique, la fleche y remonte (`history.go(-n)`, sous-pages comprises) ; sinon (lien direct, onglet neuf, position inconnue) elle pose l'origine, ou la liste, a la place de la recette (`replace`). Meme regle a la suppression ou au retrait de la recette et a "Annuler" d'une nouvelle recette. Le geste retour part ainsi d'avant l'origine. Parcours E2E 19.

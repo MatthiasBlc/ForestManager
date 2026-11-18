@@ -4,8 +4,14 @@ La premiere case non cochee est le point de reprise. Cocher au fil de l'eau.
 
 ## Lot V2.2
 
-- [ ] C9 Module liste de courses (CDC S4.7, F-SHP ; droits [D141] ; conversions et rayons deja en base [D36]) : plan a ecrire (`1-Plan-C9.md`) puis TDD
+Ordre fixe avec le proprietaire le 2026-11-18 : les plus simples d'abord (1 a 3 en autonomie, puis une seule mise en prod `v2.2.0`).
+
+- [x] Import par texte colle : etapes en blocs "ETAPE N", lignes parasites ecartees [D222]
+- [x] Ordre des tags dans une famille, choisi comme l'ordre des familles [D223]
+- [x] Geste retour d'Android coherent avec la fleche de retour d'une recette [D224]
 - [ ] Reimport du JSON d'export dans F-AJOUT-RECETTE [D192] (format versionne `forest-manager/recipes` v1, deja valide par Zod)
+- [ ] Changelog public, lisible sans connexion (flag `isPublic`) ; Markdown dans les notes de version
+- [ ] C9 Module liste de courses (CDC S4.7, F-SHP ; droits [D141] ; conversions et rayons deja en base [D36]) : plan a ecrire (`1-Plan-C9.md`) puis TDD
 - [ ] E2E WebKit (Safari) [D195]
 
 ## Actions infra du proprietaire (reprises de C8, non bloquantes)
@@ -21,7 +27,4 @@ Chacune passe par une etude et une decision avant d'entrer dans un lot.
 - [ ] Module "On joue a quoi ?" : liste de jeux d'un espace, a partir d'une API publique (nouveau module par le registre [D40], acces sur demande [D33])
 - [ ] Module "On regarde quoi et ou ?" : films et series, API publique, interface inspiree de Netflix (memes bases)
 - [ ] Visite guidee pour les nouveaux utilisateurs (rail, modules, ajout de recette), si l'ecran de bienvenue [D61] ne suffit pas
-- [ ] Changelog public, lisible sans connexion (flag `isPublic`) ; Markdown dans les notes de version
 - [ ] Bot Discord pour les notifications [D202]
-- [ ] Ordre des tags dans une famille, choisi comme l'ordre des familles (saisons Printemps -> Hiver, paliers Incontournable -> A tester) ; aujourd'hui alphabetique [D216] (demande du proprietaire, 2026-11-18)
-- [ ] Geste retour d'Android coherent avec la fleche de retour d'une recette [D219] (aujourd'hui le geste revient sur la recette)

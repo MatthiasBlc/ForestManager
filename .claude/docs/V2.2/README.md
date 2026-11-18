@@ -12,8 +12,9 @@ Chantier ouvert le 2026-11-18, apres la mise en prod de la `v2.1.0` : module lis
 ## Etat
 
 - En prod : `v2.1.0` (2026-11-18). Historique du chantier precedent : `../Archive/Rework-V2/` (bilan de mise en prod V2 : `31-Mise-en-prod.md`, recette de la v2.1.0 : `33-Recette-v2.1.md`).
-- Rien de commence dans ce chantier.
+- Fait, pas encore deploye : import par texte colle [D222] ; ordre des tags dans une famille [D223] (migration `tag_order`) ; geste retour d'Android [D224]. Apres le deploy en prod : regler l'ordre de Saison et Palier a la main.
 
 ## Reprise
 
 - 2026-11-18 : chantier ouvert, docs reorganisees [D221] ; `v2.1.0` en prod, changelog publie (notification a tous), familles de tags creees en prod (globales : Saison, Moment, Type de plat ; Le Nid : Categorie, Palier). Prochaine etape : choisir avec le proprietaire par quoi commencer (liste de courses : plan a ecrire avant le code, avec ses choix au selecteur ; ou reimport du JSON d'export, plus court).
+- 2026-11-18 (suite) : idees listees avec leur charge (ordre a fixer avec le proprietaire) ; correctif de l'import texte [D222] fait en TDD a partir d'une recette reelle (One pot pasta), a committer puis deployer pour mettre a jour la recette en prod.
