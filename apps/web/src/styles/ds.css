@@ -1127,6 +1127,7 @@ textarea.fm-input {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* Bouton "..." de la carte : seulement avec une souris ; au doigt, l'appui long. */
 .fm-rcard-more {
   position: absolute;
   top: var(--space-1);
@@ -1135,6 +1136,12 @@ textarea.fm-input {
   width: 36px;
   height: 36px;
   border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+}
+@media (hover: none), (pointer: coarse) {
+  .fm-rcard-more {
+    display: none;
+  }
 }
 .fm-grid {
   display: grid;

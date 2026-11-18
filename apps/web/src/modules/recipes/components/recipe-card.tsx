@@ -1,6 +1,8 @@
 // RecipeCard du design system : photo (ou fond teinte), titre, portions et temps,
 // badges d'etat, deux premiers tags. Toucher ou Entree ouvre la recette ; appui long, clic droit,
-// touche Menu ou Maj+F10 ouvrent ses actions (F-ACTIONS).
+// touche Menu ou Maj+F10 ouvrent ses actions (F-ACTIONS), comme le bouton "..." en haut a
+// droite de l'image, montre seulement avec une souris (bureau).
+import { IconButton } from "../../../ui/button.tsx";
 import { Badge, type Tone } from "../../../ui/display.tsx";
 import type { IconName } from "../../../ui/icon.tsx";
 import { useLongPress } from "../../../ui/use-long-press.ts";
@@ -65,6 +67,24 @@ export function RecipeCard({
         }
       >
         {image ? <img src={image} alt="" /> : null}
+        {onActions ? (
+          <IconButton
+            icon="more"
+            label={`Actions de ${title}`}
+            className="fm-rcard-more"
+            // Ni ouverture de la recette ni appui long de la carte.
+            onPointerDown={(event) => {
+              event.stopPropagation();
+            }}
+            onClick={(event) => {
+              event.stopPropagation();
+              onActions();
+            }}
+            onKeyDown={(event) => {
+              event.stopPropagation();
+            }}
+          />
+        ) : null}
         {badges.length > 0 ? (
           <div className="fm-badges">
             {badges.map((badge) => (
