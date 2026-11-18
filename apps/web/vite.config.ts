@@ -3,6 +3,8 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
 
+import { PREPROD_DIR, preprodVariant } from "./src/pwa/preprod/variant.ts";
+
 // En dev, /api part vers l'API (service `api` dans Docker, localhost sinon) :
 // meme origine que la prod (nginx), donc cookies et CSRF identiques.
 const apiTarget = process.env.API_PROXY_TARGET ?? "http://localhost:3001";
@@ -52,12 +54,18 @@ export default defineConfig({
       workbox: {
         globPatterns: ["**/*.{js,css,html,woff2,png,svg}"],
         // Polices : alphabet latin seulement en precache (francais) ; les autres se chargent a la demande.
-        globIgnores: ["**/*-{cyrillic,cyrillic-ext,greek,greek-ext,vietnamese}-*.woff2"],
+        globIgnores: [
+          "**/*-{cyrillic,cyrillic-ext,greek,greek-ext,vietnamese}-*.woff2",
+          // Variante preprod [D220] : recopiee a la racine au demarrage du conteneur.
+          `${PREPROD_DIR}/**`,
+        ],
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api\//, /^\/forestmanager-images-/],
         cleanupOutdatedCaches: true,
       },
     }),
+    // Nom et icones de la PWA de preprod [D220] (dist/preprod/, choisi au demarrage).
+    preprodVariant(),
   ],
   server: {
     host: true,

@@ -88,6 +88,9 @@ services:
     container_name: forestmanager-dev-frontend
     hostname: forestmanager-dev-frontend
     restart: unless-stopped
+    environment:
+      # PWA reconnaissable sur le telephone [D220] : nom et icones a bandeau.
+      - WEB_VARIANT=preprod
     networks:
       - internal-dev
       - proxy

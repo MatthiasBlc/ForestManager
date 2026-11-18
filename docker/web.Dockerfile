@@ -40,6 +40,8 @@ FROM ${NGINX_IMAGE} AS prod
 COPY docker/web.nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker/web.security-headers.conf /etc/nginx/security-headers.conf
 COPY --from=build /app/apps/web/dist /usr/share/nginx/html
+# Variante preprod de la PWA (nom, icones), choisie par WEB_VARIANT au demarrage [D220].
+COPY --chmod=755 docker/web-variant.sh /docker-entrypoint.d/40-web-variant.sh
 EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD wget -qO /dev/null http://127.0.0.1/ || exit 1
