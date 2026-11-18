@@ -171,23 +171,35 @@ function splitNote(text: string): { name: string; note: string | null } {
   };
 }
 
+// "(facultatif)", "(optionnel)" : passe en note, visible et modifiable dans l'editeur.
+const OPTIONAL_MARK = /\s*\((facultati(?:f|ve)|optionnel(?:le)?|en option)\)/iu;
+
 export function parseIngredientLine(line: string): ImportedIngredient {
   const raw = normalizeLine(cleanText(line)).replace(BULLET, "");
+  const optional = OPTIONAL_MARK.exec(raw);
+  if (!optional?.[1]) return parseIngredientText(raw, raw);
+  const parsed = parseIngredientText(raw.replace(OPTIONAL_MARK, "").trim(), raw);
+  const word = optional[1].toLowerCase();
+  const note = clip(parsed.note ? `${parsed.note}, ${word}` : word, RECIPE_INGREDIENT_NOTE_MAX);
+  return { ...parsed, note };
+}
+
+function parseIngredientText(text: string, raw: string): ImportedIngredient {
   const base = { raw, quantity: null, unitCode: null, note: null };
 
-  const taste = TASTE_PREFIX.exec(raw) ?? TASTE_SUFFIX.exec(raw);
+  const taste = TASTE_PREFIX.exec(text) ?? TASTE_SUFFIX.exec(text);
   if (taste?.[1]) {
     return { ...base, unitCode: "to-taste", ...splitNote(taste[1]), check: false };
   }
 
-  const quantity = QUANTITY.exec(raw);
+  const quantity = QUANTITY.exec(text);
   if (!quantity?.[1]) {
-    const { name, note } = splitNote(raw);
-    return { ...base, name: name || raw, note, check: true };
+    const { name, note } = splitNote(text);
+    return { ...base, name: name || text, note, check: true };
   }
   const range = /[-–à]/u.test(quantity[0].slice(quantity[1].length));
   let value = toNumber(quantity[1]);
-  let rest = raw.slice(quantity[0].length);
+  let rest = text.slice(quantity[0].length);
   let unitCode: string | null = null;
   for (const unit of UNIT_PATTERNS) {
     const match = unit.regex.exec(rest);
@@ -203,7 +215,7 @@ export function parseIngredientLine(line: string): ImportedIngredient {
     raw,
     quantity: value,
     unitCode,
-    name: name || raw,
+    name: name || text,
     note,
     check: value === null || range || !name,
   };
@@ -406,7 +418,13 @@ export function fromJsonLd(recipe: unknown, sourceUrl: string | null): ImportedR
 const SEPARATOR = /^[-=_*~#.·]{3,}$/u;
 const INGREDIENTS_HEADER = /^ingr[ée]dients?(?:\s+pour\b.*)?\s*:?$/iu;
 const STEPS_HEADER =
-  /^(?:pr[ée]paration|[ée]tapes?|instructions?|recette|m[ée]thode|d[ée]roul[ée])\s*:?$/iu;
+  /^(?:pr[ée]paration|[ée]tapes?|instructions?|recette|m[ée]thode|d[ée]roul[ée](?:ment)?|process|proc[ée]d[ée])\s*:?$/iu;
+// "ETAPE 1" seul sur sa ligne : ouvre une etape faite des lignes qui suivent.
+const STEP_HEADING = /^[ée]tape\s*\d+\s*[:.)-]?$/iu;
+// Intertitre d'ingredients sans quantite ("Pour servir :") : pas un ingredient.
+const INGREDIENT_SUBHEADER = /^[^\d].*:$/u;
+// Ligne date/heure d'un copier-coller de messagerie ("— 03/04/2026 12:23").
+const DATE_LINE = /^[-–—\s]*\d{1,2}\/\d{1,2}\/\d{2,4}(?:\s+(?:[aà]\s+)?\d{1,2}[:h]\d{2})?$/u;
 const SERVINGS = [
   /^(?:pour\s+)?(\d+)\s*(?:personnes?|pers\.?|parts?|portions?|couverts?)\b/iu,
   /^(?:portions?|parts?|personnes?|nombre de personnes)\s*:?\s*(\d+)/iu,
@@ -418,6 +436,11 @@ const TIME_VALUE =
 const TIME_ITEM = new RegExp(`(${TIME_KIND})\\s*:?\\s*(${TIME_VALUE})`, "giu");
 const TIME_LINE = new RegExp(
   `^(?:(?:${TIME_KIND})\\s*:?\\s*(?:${TIME_VALUE}))(?:\\s*[-–—|/,;•·]?\\s*(?:${TIME_KIND})\\s*:?\\s*(?:${TIME_VALUE}))*\\s*$`,
+  "iu"
+);
+// Duree sans valeur ("Repos: --", "Cuisson : aucun") : ignoree.
+const EMPTY_TIME = new RegExp(
+  `^(?:${TIME_KIND})\\s*(?::\\s*(?:[-–—]+|aucun|n[ée]ant|0\\s*min(?:utes?)?)|[-–—]{2,})$`,
   "iu"
 );
 const NUMBERED_STEP = /^(?:[ée]tape\s*\d+|\d+\s*[.)])\s/iu;
@@ -444,11 +467,14 @@ export function parseRecipeText(text: string): ImportedRecipe {
     steps: [],
   };
   let section: "auto" | "ingredients" | "steps" = "auto";
+  // Etapes en blocs "ETAPE N" : la ligne suivante complete l'etape ouverte.
+  let blocks = false;
+  let stepOpen = false;
   const lines = (text || "")
     .replace(/\r\n?/g, "\n")
     .split("\n")
     .map((line) => normalizeLine(line))
-    .filter((line) => line && !SEPARATOR.test(line));
+    .filter((line) => line && !SEPARATOR.test(line) && !DATE_LINE.test(line));
 
   for (const line of lines) {
     if (INGREDIENTS_HEADER.test(line)) {
@@ -459,6 +485,13 @@ export function parseRecipeText(text: string): ImportedRecipe {
       section = "steps";
       continue;
     }
+    if (STEP_HEADING.test(line)) {
+      section = "steps";
+      blocks = true;
+      stepOpen = false;
+      continue;
+    }
+    if (EMPTY_TIME.test(line)) continue;
     const servings = SERVINGS.map((regex) => regex.exec(line)).find(Boolean);
     if (servings?.[1] && recipe.yieldQuantity === null) {
       recipe.yieldQuantity = Number(servings[1]);
@@ -491,9 +524,16 @@ export function parseRecipeText(text: string): ImportedRecipe {
       looksLikeBareIngredient(line);
     const isIngredient =
       section === "ingredients" || (section === "auto" && looksLikeIngredient(line));
+    if (isIngredient && !BULLET.test(line) && INGREDIENT_SUBHEADER.test(line)) continue;
     if (bare) recipe.ingredients.push({ ...parseIngredientLine(line), name: line, note: null });
     else if (isIngredient) recipe.ingredients.push(parseIngredientLine(line));
-    else recipe.steps.push(line.replace(BULLET, ""));
+    else if (blocks && stepOpen) {
+      recipe.steps[recipe.steps.length - 1] =
+        `${recipe.steps.at(-1) ?? ""} ${line.replace(BULLET, "")}`;
+    } else {
+      recipe.steps.push(line.replace(BULLET, ""));
+      stepOpen = blocks;
+    }
   }
   return finish(recipe);
 }
