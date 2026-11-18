@@ -162,7 +162,8 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] Planning : regle et epinglage par le champ "Tag" (choix unique) ; fait le 2026-11-17 (`TagChoice` de `rule-sheet.tsx`)
   - [x] Reglages de l'espace > Tags (moderateurs) ; admin : familles globales ; fait le 2026-11-17 : page `recipes/tags` (lien par `settingsLinks` du module), ordre par Monter / Descendre (clavier et doigt) plutot qu'au glisser ; admin A08 : tableau des familles et colonne Famille
   - [x] Recherche globale : groupe "Tags" ; fait le 2026-11-17 : groupe `recipes.tags` (tags avec au moins une recette dans l'espace courant), lien `recipes?tag=`
-  - [ ] E2E, verification dans Chrome (mobile et bureau)
+  - [ ] E2E, verification dans Chrome (mobile et bureau) ; E2E fait le 2026-11-18 (parcours 18, vert en mobile et bureau ; parcours 14 vu une fois instable sur le retour du focus apres Echap a l'accueil, sans lien) ; reste la verification dans Chrome
+- [ ] Pages Mes recettes et Recettes d'un espace : choisir l'ordre de tri (plus recent, plus ancien, alphabetique...) (demande du proprietaire, 2026-11-17)
 - [ ] Cartes de recette en bureau : bouton "..." en haut a droite de l'image, qui ouvre au clic gauche le meme menu que le clic droit (demande du proprietaire, 2026-11-17 ; points horizontaux ou verticaux a trancher)
 - [ ] Ordre des espaces dans le rail par glisser-deposer (attention UI / UX : souris, doigt, clavier) ; l'espace perso reste toujours en haut, le bouton "+" toujours en bas (demande du proprietaire, 2026-11-17)
 - [ ] Fleche de retour d'une recette ouverte depuis le planning : revenir au planning (meme semaine, meme vue), pas a la liste des recettes ; de meme, une recette ouverte depuis un widget de l'accueil revient a l'accueil ; verifier les autres origines (recherche, notifications, activite) (demande du proprietaire, 2026-11-17)
