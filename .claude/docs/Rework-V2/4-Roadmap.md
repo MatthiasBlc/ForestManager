@@ -152,7 +152,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
 - [x] Delai de recette propre aux recettes d'un tag [D214] (2026-11-17)
 - [x] Repas choisi a la main verrouille d'office [D215] (2026-11-17)
 - [x] Etude de l'affichage des tags (demande du proprietaire, 2026-11-17) : `32-Etude-Tags.md`, maquette `32-Maquette-Tags.html` (https://claude.ai/artifact/9uWV3b9eBZqmoRFW5vNSqS), choix au selecteur [D216]
-- [ ] Tags harmonises [D216] (TDD)
+- [x] Tags harmonises [D216] (TDD)
   - [x] Familles de tags : modele `TagFamily` + `Tag.familyId`, API (familles globales dans l'admin, familles d'espace par les moderateurs), nombre de recettes par tag dans la liste des tags d'un espace, seed inchange (familles des tags globaux reglees par l'admin) ; fait le 2026-11-17 : catalogue `GET .../recipes/tag-catalog` (familles globales puis d'espace, tags avec famille et nombre de recettes), `PATCH .../tags/:tagId` prend `familyId`
   - [x] Filtre OU dans une famille, ET entre familles (API de la liste et filtre hors ligne) ; fait le 2026-11-17 : logique commune `matchesTagFilter` dans `packages/shared`, un tag sans famille compte comme sa propre famille
   - [x] Composant de choix de tags (feuille : recherche, familles, choix multiple ou unique, creation d'un tag d'espace) ; fait le 2026-11-17 : `TagSheet` (`modules/recipes/components/tag-sheet.tsx`)
@@ -162,7 +162,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
   - [x] Planning : regle et epinglage par le champ "Tag" (choix unique) ; fait le 2026-11-17 (`TagChoice` de `rule-sheet.tsx`)
   - [x] Reglages de l'espace > Tags (moderateurs) ; admin : familles globales ; fait le 2026-11-17 : page `recipes/tags` (lien par `settingsLinks` du module), ordre par Monter / Descendre (clavier et doigt) plutot qu'au glisser ; admin A08 : tableau des familles et colonne Famille
   - [x] Recherche globale : groupe "Tags" ; fait le 2026-11-17 : groupe `recipes.tags` (tags avec au moins une recette dans l'espace courant), lien `recipes?tag=`
-  - [ ] E2E, verification dans Chrome (mobile et bureau) ; E2E fait le 2026-11-18 (parcours 18, vert en mobile et bureau ; parcours 14 vu une fois instable sur le retour du focus apres Echap a l'accueil, sans lien) ; reste la verification dans Chrome
+  - [x] E2E, verification dans Chrome (mobile et bureau) ; fait le 2026-11-18 : parcours 18 vert en mobile et bureau (parcours 14 vu une fois instable sur le retour du focus apres Echap a l'accueil, sans lien) ; Chrome en dev (cadre de 390 px pour le mobile) : filtres OU / ET et "Voir N recettes", filtres actifs, deux tags sur les cartes, feuille du bas mobile, editeur (creation d'un tag), reglages des tags (familles, Monter), recherche globale ; correctif : action de menu indisponible grisee. Non vu dans Chrome : page admin des familles globales (pas de session admin en dev ; couverte par les tests) et champ Tag du planning (module inactif dans l'espace de test)
 - [ ] Pages Mes recettes et Recettes d'un espace : choisir l'ordre de tri (plus recent, plus ancien, alphabetique...) (demande du proprietaire, 2026-11-17)
 - [ ] Cartes de recette en bureau : bouton "..." en haut a droite de l'image, qui ouvre au clic gauche le meme menu que le clic droit (demande du proprietaire, 2026-11-17 ; points horizontaux ou verticaux a trancher)
 - [ ] Ordre des espaces dans le rail par glisser-deposer (attention UI / UX : souris, doigt, clavier) ; l'espace perso reste toujours en haut, le bouton "+" toujours en bas (demande du proprietaire, 2026-11-17)
