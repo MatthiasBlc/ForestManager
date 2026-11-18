@@ -16,4 +16,4 @@ Chantier ouvert le 2026-11-18, apres la mise en prod de la `v2.1.0` : module lis
 
 ## Reprise
 
-- 2026-11-18 : chantier ouvert, docs reorganisees [D221]. Prochaine etape : choisir par quoi commencer dans `Roadmap.md` avec le proprietaire (liste de courses : plan a ecrire avant le code).
+- 2026-11-18 : chantier ouvert, docs reorganisees [D221] ; `v2.1.0` en prod, changelog publie (notification a tous), familles de tags creees en prod (globales : Saison, Moment, Type de plat ; Le Nid : Categorie, Palier). Prochaine etape : choisir avec le proprietaire par quoi commencer (liste de courses : plan a ecrire avant le code, avec ses choix au selecteur ; ou reimport du JSON d'export, plus court).

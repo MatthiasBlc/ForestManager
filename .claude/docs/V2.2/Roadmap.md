@@ -23,4 +23,5 @@ Chacune passe par une etude et une decision avant d'entrer dans un lot.
 - [ ] Visite guidee pour les nouveaux utilisateurs (rail, modules, ajout de recette), si l'ecran de bienvenue [D61] ne suffit pas
 - [ ] Changelog public, lisible sans connexion (flag `isPublic`) ; Markdown dans les notes de version
 - [ ] Bot Discord pour les notifications [D202]
+- [ ] Ordre des tags dans une famille, choisi comme l'ordre des familles (saisons Printemps -> Hiver, paliers Incontournable -> A tester) ; aujourd'hui alphabetique [D216] (demande du proprietaire, 2026-11-18)
 - [ ] Geste retour d'Android coherent avec la fleche de retour d'une recette [D219] (aujourd'hui le geste revient sur la recette)
