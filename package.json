@@ -31,6 +31,7 @@
     "test:shared": "docker compose -p forestmanager-test --project-directory . -f docker/compose.test.yml run --rm --build tests npx vitest run --configLoader runner --project @fm/shared",
     "test:down": "docker compose -p forestmanager-test --project-directory . -f docker/compose.test.yml down",
     "e2e": "docker compose -p forestmanager-e2e --project-directory . -f docker/compose.e2e.yml --profile run build && docker compose -p forestmanager-e2e --project-directory . -f docker/compose.e2e.yml up -d --wait web && HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -p forestmanager-e2e --project-directory . -f docker/compose.e2e.yml run --rm e2e",
+    "e2e:webkit": "docker compose -p forestmanager-e2e --project-directory . -f docker/compose.e2e.yml --profile run build && docker compose -p forestmanager-e2e --project-directory . -f docker/compose.e2e.yml up -d --wait web && E2E_WEBKIT=1 HOST_UID=$(id -u) HOST_GID=$(id -g) docker compose -p forestmanager-e2e --project-directory . -f docker/compose.e2e.yml run --rm e2e --project=webkit",
     "e2e:down": "docker compose -p forestmanager-e2e --project-directory . -f docker/compose.e2e.yml --profile run down --remove-orphans",
     "prisma:migrate": "docker compose --project-directory . -f docker/compose.dev.yml exec api npm exec --workspace=@fm/api -- prisma migrate dev",
     "prisma:studio": "docker compose --project-directory . -f docker/compose.dev.yml exec api npm exec --workspace=@fm/api -- prisma studio --port 5555 --browser none",

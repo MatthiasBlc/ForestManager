@@ -1,10 +1,12 @@
-// Parcours E2E [D77, D197, D227] : Chromium (mobile et desktop) et WebKit
-// (iPhone), contre le front en image de production (nginx) et une API en
-// NODE_ENV=test. Lancer par `npm run e2e`
-// depuis la racine (docker/compose.e2e.yml), jamais sur l'hote.
+// Parcours E2E [D77, D197, D227] : Chromium (mobile et desktop), et WebKit
+// (iPhone, informatif) a part, contre le front en image de production (nginx)
+// et une API en NODE_ENV=test. Lancer par `npm run e2e` (Chromium) ou
+// `npm run e2e:webkit` depuis la racine (docker/compose.e2e.yml), jamais sur l'hote.
 import { defineConfig, devices } from "@playwright/test";
 
 const ci = Boolean(process.env.CI);
+/** Pose par `npm run e2e:webkit` : le projet WebKit n'existe que la [D227]. */
+const webkit = Boolean(process.env.E2E_WEBKIT);
 
 export default defineConfig({
   testDir: "./journeys",
@@ -48,12 +50,16 @@ export default defineConfig({
       grep: /@desktop/,
       use: { browserName: "chromium", viewport: { width: 1280, height: 800 } },
     },
-    {
-      // Safari iOS [D227] : tous les parcours, iPhone (agent Safari, tactile),
-      // viewport du projet mobile pour comparer a l'identique. Les parties
-      // desktop se reperent par `isMobile` (parcours 14).
-      name: "webkit",
-      use: { ...devices["iPhone 13"], viewport: { width: 390, height: 844 } },
-    },
+    // Safari iOS [D227] : tous les parcours, iPhone (agent Safari, tactile),
+    // viewport du projet mobile pour comparer a l'identique. Les parties
+    // desktop se reperent par `isMobile` (parcours 14). Informatif, a part.
+    ...(webkit
+      ? [
+          {
+            name: "webkit",
+            use: { ...devices["iPhone 13"], viewport: { width: 390, height: 844 } },
+          },
+        ]
+      : []),
   ],
 });

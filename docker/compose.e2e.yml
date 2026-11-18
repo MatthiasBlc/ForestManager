@@ -3,8 +3,8 @@
 # en NODE_ENV=test (routes /api/v1/__test, limites de debit coupees), base et
 # stockage en memoire. Independant des stacks de dev et de test.
 #
-#   npm run e2e                          tous les parcours : Chromium mobile, desktop pour les (D),
-#                                        puis WebKit iPhone [D227]
+#   npm run e2e                          tous les parcours (Chromium mobile, puis desktop pour les (D))
+#   npm run e2e:webkit                   tous les parcours sous WebKit iPhone, informatif [D227]
 #   npm run e2e -- --project=mobile      arguments passes a `playwright test`
 #   npm run e2e:down                     arreter la stack
 #
@@ -128,6 +128,7 @@ services:
     environment:
       HOME: /tmp
       CI: ${CI:-}
+      E2E_WEBKIT: ${E2E_WEBKIT:-} # pose par `npm run e2e:webkit` [D227]
     volumes:
       - ./e2e:/app/e2e
     depends_on:
