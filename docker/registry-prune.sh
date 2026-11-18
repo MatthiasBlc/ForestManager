@@ -102,10 +102,23 @@ for image in ${IMAGES}; do
     kept_digests[$(digest_of "${tag}")]=1
   done
 
+  # Digests lus avant toute suppression : deux tags a supprimer peuvent pointer le
+  # meme digest (image web reconstruite a l'identique), et le DELETE du premier
+  # retire aussi le second, dont la lecture repondrait alors 404.
+  declare -A drop_digests=()
   for tag in "${drop[@]}"; do
-    digest=$(digest_of "${tag}")
+    drop_digests[${tag}]=$(digest_of "${tag}")
+  done
+  declare -A deleted_digests=()
+
+  for tag in "${drop[@]}"; do
+    digest=${drop_digests[${tag}]}
     if [ -n "${kept_digests[${digest}]:-}" ]; then
       echo "garde ${tag} (meme digest qu'un tag garde)"
+      continue
+    fi
+    if [ -n "${deleted_digests[${digest}]:-}" ]; then
+      echo "supprime ${tag} (meme digest que le precedent)"
       continue
     fi
     if [ "${DRY_RUN}" = "1" ]; then
@@ -113,13 +126,14 @@ for image in ${IMAGES}; do
       continue
     fi
     if api -X DELETE "${BASE}/manifests/${digest}" >/dev/null; then
+      deleted_digests[${digest}]=1
       echo "supprime ${tag} (${digest})"
     else
       echo "echec de la suppression de ${tag} (${digest})" >&2
       status=1
     fi
   done
-  unset kept_digests
+  unset kept_digests drop_digests deleted_digests
   echo "gardes : ${keep[*]}"
 done
 
