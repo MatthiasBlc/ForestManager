@@ -4,11 +4,11 @@
 import { linkFactor, type LinkedBlock, type Recipe, type RecipeBlock, type Unit } from "@fm/shared";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router";
+import { Link, useParams, useSearchParams } from "react-router";
 
 import { spaceQuery } from "../../core/session/queries.ts";
 import { PageChrome } from "../../core/shell/page-chrome.tsx";
-import { recipeBackTarget } from "../../core/shell/return-to.ts";
+import { useRecipeBack } from "../../core/shell/return-to.ts";
 import { useWriteGuard } from "../../pwa/use-write-guard.ts";
 import { TopBar } from "../../patterns/top-bar.tsx";
 import { ActionMenu } from "../../ui/action-menu.tsx";
@@ -308,7 +308,6 @@ function RecipeView({
   recipe: Recipe;
   units: readonly Unit[];
 }) {
-  const navigate = useNavigate();
   const guard = useWriteGuard();
   // Badges des tags dans l'ordre des familles [D216].
   const catalog = useQuery(tagCatalogQuery(spaceId));
@@ -318,13 +317,8 @@ function RecipeView({
   const [servings, setServings] = useState(
     Number.isInteger(asked) && asked > 0 ? asked : recipe.yieldQuantity
   );
-  const actions = useRecipeActions({
-    spaceId,
-    recipe,
-    onGone: () => {
-      void navigate(recipeBackTarget(spaceId), { replace: true });
-    },
-  });
+  const goBack = useRecipeBack(spaceId);
+  const actions = useRecipeActions({ spaceId, recipe, onGone: goBack });
   const sharedHere = recipe.homeSpaceId !== spaceId;
   const yieldUnit = units.find((u) => u.id === recipe.yieldUnitId);
   const titled = recipe.blocks.length > 1;
@@ -343,9 +337,7 @@ function RecipeView({
           <TopBar
             title="Recette"
             // Retour a la page d'ou la recette a ete ouverte, la liste sinon (D219).
-            onBack={() => {
-              void navigate(recipeBackTarget(spaceId));
-            }}
+            onBack={goBack}
           />
         }
         bottom={
