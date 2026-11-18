@@ -12,22 +12,22 @@ Fait et committe sur `Developement` :
 - [x] Ordre des tags dans une famille, choisi comme l'ordre des familles [D223]
 - [x] Geste retour d'Android coherent avec la fleche de retour d'une recette [D224]
 
-En cours en parallele (un sous-agent chacun, dans un worktree, branche non poussee) :
+Faits en parallele par trois sous-agents, puis repris sur `Developement` :
 
-- [ ] Reimport d'un export dans F-AJOUT-RECETTE [D192, D225] : etapes 1 et 2 (shared, API) faites ; etapes 3 a 5 (web, E2E, docs) en cours. Plan : `1-Plan-Reimport.md`
-- [ ] Changelog public, lisible sans connexion (flag `isPublic`) ; Markdown dans les notes de version [D226]
-- [ ] E2E WebKit (Safari) [D195, D227]
+- [x] Reimport d'un export dans F-AJOUT-RECETTE [D192, D225] : shared, API, web, E2E (parcours 20), docs. Plan : `1-Plan-Reimport.md` ; libelles de l'ecran a relire en preprod
+- [x] Changelog public, lisible sans connexion sur `/news` (case par version) ; Markdown en ligne dans les notes de version [D226]
+- [x] E2E WebKit (iPhone) en job de CI a part et informatif ; `npm run e2e:webkit` en local [D195, D227]
 
 Integration et mise en ligne :
 
-- [ ] Bilan des trois agents ; choix de D226 (et D227 si besoin) valides au selecteur par le proprietaire
-- [ ] Fusion des trois branches dans `Developement` ; `npm test`, `npm run e2e`, lint et typecheck au vert
+- [x] Bilan des trois agents ; choix de D226 et D227 valides au selecteur par le proprietaire
+- [x] Fusion des trois branches dans `Developement` ; `npm test` (1809/1809), `npm run e2e` (25 passes, 1 saute), lint et typecheck au vert
 - [ ] Preprod : PR `Developement` -> `master`, verification pas a pas avec le proprietaire
-- [ ] Prod `v2.2.0` : fusion de la PR, tag, changelog ; puis regler a la main l'ordre des tags de Saison et Palier [D223]
+- [ ] Prod `v2.2.0` : fusion de la PR, tag, changelog (cocher "Visible sans connexion" si souhaite [D226]) ; puis regler a la main l'ordre des tags de Saison et Palier [D223]
 
 ## 2. Nouveaux modules (apres la `v2.2.0`)
 
-- [ ] C9 Module liste de courses (CDC S4.7, F-SHP ; droits [D141] ; conversions et rayons deja en base [D36]) : choix tranches au selecteur le 2026-11-18 [D228], plan `2-Plan-C9.md` ; D228 a reporter au journal et au CDC a la fusion des agents ; puis TDD (maquette avant le web)
+- [ ] C9 Module liste de courses (CDC S4.7, F-SHP ; droits [D141] ; conversions et rayons deja en base [D36]) : choix tranches au selecteur le 2026-11-18 [D228], plan `2-Plan-C9.md` ; puis TDD (maquette avant le web)
 - [ ] Autres nouveaux modules : etude et decision pour chacun, a choisir parmi les idees ci-dessous
 
 ## Actions infra du proprietaire (reprises de C8, non bloquantes)

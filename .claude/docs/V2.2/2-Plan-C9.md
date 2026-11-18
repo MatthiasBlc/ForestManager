@@ -2,7 +2,7 @@
 
 Choix du proprietaire au selecteur le 2026-11-18 (tous ceux recommandes), puis revus d'apres sa liste Google Keep actuelle : groupes par endroit ou acheter (Pharmacie, Menager, Primeur, Boucher, Marche, Alimentaire, Epicerie asiatique, Ikea, Autre), beaucoup d'articles hors cuisine, rarement une quantite. Base : CDC S4.7 (F-SHP), droits [D141], rayons [D125], addition des quantites [D126], conversions et poids par unite deja en base [D36, D46]. La V1 n'avait pas de liste de courses : rien a reprendre.
 
-D228 est a reporter au journal et au CDC (S4.7) a la fusion des branches des agents (D226 et D227 y sont en cours d'ecriture) : en attendant, ce plan fait foi.
+D228 est au journal et le CDC (S4.7) est a jour.
 
 ## Decisions (D228)
 

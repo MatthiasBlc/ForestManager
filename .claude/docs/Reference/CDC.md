@@ -167,9 +167,12 @@ Reprend la V1 (grille jours x repas, repas recette / texte libre / vide, verroui
 
 ### 4.7 Liste de courses (module, V2.2)
 
-- F-SHP-1 Generer une liste depuis une periode du planning (agregation des ingredients, conversion d'unites, mise a l'echelle des portions). Pieces et grammes s'additionnent grace au poids par unite, sinon deux lignes [D126].
-- F-SHP-2 Articles libres, cocher "achete", archiver.
-- F-SHP-3 Regroupement par rayon, dans l'ordre du parcours en magasin (F-REF-5) [D125] ; magasin favori par ingredient.
+Plan : `V2.2/2-Plan-C9.md`. Mobile first : remplir a la maison, cocher en magasin d'une main [D228].
+
+- F-SHP-0 Une seule liste par espace, toujours a jour, perso compris [D228].
+- F-SHP-1 Ajouter depuis une periode du planning : apercu des ingredients additionnes (conversion d'unites, mise a l'echelle des portions, sous-recettes depliees), tous coches ; on decoche ce qu'on a deja ; repas deja ajoutes signales. Un ingredient deja dans la liste recoit la quantite sur sa ligne (detail "pour : ..."). Pieces et grammes s'additionnent grace au poids par unite, sinon deux lignes [D126, D228].
+- F-SHP-2 Articles a la main : ingredient du catalogue ou texte libre, quantite facultative ; cocher "achete" ; "Retirer les achetes" avec Annuler, sans historique. Hors ligne : lecture et coches, envoyees au retour du reseau [D228].
+- F-SHP-3 Sections de l'espace (Primeur, Pharmacie, Ikea...), ordonnees a la main, creees au depart depuis les rayons (F-REF-5) [D125] ; un article deplace d'une section a l'autre est retenu par l'espace ; sinon "Autres". Remplace le "magasin favori par ingredient" [D228].
 - F-SHP-4 Modifier la liste (generer, articles libres, cocher, archiver) : role minimal reglable par l'OWNER, MEMBER par defaut, comme le planning [D141].
 
 ### 4.8 Notifications et activite
@@ -196,7 +199,7 @@ Reprise de la V1 (page utilisateur, gestion admin), generation revue [D187] :
 - Chaque image API embarque le brouillon de sa version (version semver et items calcules par la CI depuis les commits) ; le demarrage le cree s'il n'existe pas.
 - L'admin le reformule pour les utilisateurs dans A10 et le publie, en prevenant tout le monde ou non [D127] ; une version publiee peut etre masquee.
 - La 2.0.0 (premiere version V2) s'ecrit a la main.
-- Une version publiee peut etre rendue publique : lisible sans connexion sur `/news` ; les lignes acceptent un Markdown en ligne (gras, italique, code, liens), rendu sans HTML [D226, a valider].
+- Une version publiee peut etre rendue publique : lisible sans connexion sur `/news` ; les lignes acceptent un Markdown en ligne (gras, italique, code, liens), rendu sans HTML [D226].
 
 ## 5. UX et design system
 
@@ -309,4 +312,5 @@ Sans objet [D23] : la V1 n'a pas d'utilisateurs reels, la base et la stack seron
 - 1.7 : delai de recette par tag, D214 ; repas manuel verrouille, D215
 - 1.8 : affichage des tags et familles, D216
 - 1.9 : ordre des listes de recettes, D217 ; ordre des espaces, D218 ; retour d'une recette, D219 ; PWA de preprod, D220
-- 1.10 : changelog public et Markdown dans les notes de version, D226 (a valider)
+- 1.10 : changelog public et Markdown dans les notes de version, D226 ; E2E WebKit informatif, D227
+- 1.11 : liste de courses revue avant le code (une liste par espace, sections de l'espace, apercu depuis le planning, coches hors ligne), D228

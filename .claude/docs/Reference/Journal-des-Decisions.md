@@ -957,7 +957,7 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 - **Options** : fichier zip ou JSON seul ; doublons par apercu a cocher, tout importer ou ignorer ; tags repris ou non ; entree dans l'ajout de recette (200 ou 50 max) ou dans le profil.
 - **Choix** : l'archive zip telle que telechargee (photos reprises) ou le `recettes.json` seul ; entree "Importer un export" dans "Ajouter une recette" > "Creer", dans l'espace courant ; apercu a cocher, les titres deja presents dans l'espace decoches et marques ; la personne qui importe devient l'auteur, tags globaux retrouves par nom et tags d'espace crees s'ils manquent ; 200 recettes maximum, tout ou rien. Regles de conversion (sous-recettes, unites inconnues, photos) dans le plan.
 
-### D226 - Changelog public et Markdown dans les notes de version - A VALIDER PAR LE PROPRIETAIRE (2026-11-18, choix pris par Claude en autonomie, proprietaire injoignable)
+### D226 - Changelog public et Markdown dans les notes de version - VALIDEE (2026-11-18, choix pris en autonomie par un agent, valides tels quels par le proprietaire au selecteur)
 
 - **Constat** : les Nouveautes ne se lisent que connecte (`GET /releases` derriere `requireAuth`) ; une version ne peut pas etre montree a quelqu'un sans compte. Les lignes sont du texte brut (300 caracteres, trois sections) : ni gras, ni lien.
 - **Options et choix** (alternative ecartee entre parentheses) :
@@ -984,3 +984,18 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
   - Bruit de console accepte, seulement pour les requetes vers l'app : "WebKit encountered an internal error" (requete sans reseau, parcours 12) et "Fetch API cannot load ... due to access control checks" (requete annulee par une navigation, parcours 19).
   - Parcours 14 : partie desktop et partie mobile choisies par `isMobile` du projet, plus par son nom.
 - **Limites** : WebKit de Playwright sous Linux n'est pas Safari iOS (moteur proche, pas le meme systeme) : il encode le WebP, donc le repli JPEG de Safari [D167] reste couvert par les tests unitaires de `lib/image.ts` ; l'installation de la PWA et les gestes natifs sur iPhone ne sont pas verifies.
+
+### D228 - Liste de courses : une liste par espace, sections de l'espace, apercu depuis le planning - VALIDEE (2026-11-18, proprietaire au selecteur ; plan `V2.2/2-Plan-C9.md`)
+
+- **Constat** : le CDC prevoyait des rayons globaux et un "magasin favori par ingredient". La liste Google Keep du proprietaire range par endroit ou acheter (Pharmacie, Primeur, Boucher, Marche, Epicerie asiatique, Ikea...), avec beaucoup d'articles hors cuisine et rarement une quantite.
+- **Options et choix** (alternative ecartee entre parentheses) :
+  - Une seule liste par espace (plusieurs listes nommees).
+  - Depuis le planning : apercu a cocher, on decoche ce qu'on a deja (ajout direct puis tri dans la liste).
+  - Hors ligne : lecture et coches, envoyees au retour du reseau (lecture seule ; tout hors ligne avec conflits).
+  - Articles a la main : ingredient du catalogue ou texte libre (texte libre seulement).
+  - Doublons : additionnes sur une ligne, detail des recettes (une ligne par generation).
+  - "Archiver" = retirer les achetes, avec Annuler, sans historique (historique des courses).
+  - Sous-recettes depliees en leurs ingredients (une ligne par sous-recette).
+  - Sections propres a l'espace, creees depuis les rayons, memoire des deplacements par l'espace (sections vides au depart ; rayons figes de la plateforme). Remplace le magasin favori.
+  - Seules les sections se reordonnent ; articles dans l'ordre d'ajout, achetes en fin de section (glisser-deposer des articles).
+- **Ergonomie** : mobile first, juge au nombre de gestes (ajouter 5 articles, generer une semaine, faire une section) ; detail dans le plan.
