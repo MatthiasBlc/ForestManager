@@ -19,6 +19,7 @@ import { useLocation, useNavigate, useParams } from "react-router";
 
 import { FormAlert } from "../../core/access/auth-layout.tsx";
 import { PageChrome } from "../../core/shell/page-chrome.tsx";
+import { recipeBackTarget } from "../../core/shell/return-to.ts";
 import { spaceQuery } from "../../core/session/queries.ts";
 import { errorMessage } from "../../i18n/index.ts";
 import { api } from "../../lib/api.ts";
@@ -488,7 +489,8 @@ function Editor({
     setDirty(true);
   };
   const back = () => {
-    void navigate(recipe ? `/s/${spaceId}/recipes/${recipe.id}` : `/s/${spaceId}/recipes`);
+    // Nouvelle recette : retour a la page d'ou on l'a lancee, la liste sinon (D219).
+    void navigate(recipe ? `/s/${spaceId}/recipes/${recipe.id}` : recipeBackTarget(spaceId));
   };
   const quit = () => {
     clearDraft(key);

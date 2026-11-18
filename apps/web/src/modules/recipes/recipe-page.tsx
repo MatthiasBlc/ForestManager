@@ -8,6 +8,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 
 import { spaceQuery } from "../../core/session/queries.ts";
 import { PageChrome } from "../../core/shell/page-chrome.tsx";
+import { recipeBackTarget } from "../../core/shell/return-to.ts";
 import { useWriteGuard } from "../../pwa/use-write-guard.ts";
 import { TopBar } from "../../patterns/top-bar.tsx";
 import { ActionMenu } from "../../ui/action-menu.tsx";
@@ -321,7 +322,7 @@ function RecipeView({
     spaceId,
     recipe,
     onGone: () => {
-      void navigate(`/s/${spaceId}/recipes`, { replace: true });
+      void navigate(recipeBackTarget(spaceId), { replace: true });
     },
   });
   const sharedHere = recipe.homeSpaceId !== spaceId;
@@ -341,8 +342,9 @@ function RecipeView({
         top={
           <TopBar
             title="Recette"
+            // Retour a la page d'ou la recette a ete ouverte, la liste sinon (D219).
             onBack={() => {
-              void navigate(`/s/${spaceId}/recipes`);
+              void navigate(recipeBackTarget(spaceId));
             }}
           />
         }
