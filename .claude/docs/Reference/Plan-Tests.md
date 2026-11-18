@@ -19,7 +19,7 @@ Regle : un comportement se teste au niveau **le plus bas** qui le prouve. Les E2
 - **Supertest** sur l'app Express sans ouvrir de port.
 - **PostgreSQL de test** dans Docker (`docker compose -f docker/compose.test.yml`), migrations appliquees au demarrage, **base remise a zero entre fichiers de test** (TRUNCATE des tables hors referentiels), referentiels seedes une fois.
 - **Testing Library** + `user-event` ; **MSW** pour simuler l'API, avec des handlers generes depuis les schemas Zod partages (les reponses mockees sont valides par construction).
-- **Playwright** : projets `mobile` (Chromium, 390x844, tous les parcours), `desktop` (Chromium, 1280x800, parcours (D)) et `webkit` (Safari iOS, profil iPhone en 390x844, tous les parcours) [D227] ; `npm run e2e -- --project=webkit` pour un seul projet. Ecarts et limites propres a WebKit : D227 ; **@axe-core/playwright** pour l'accessibilite. Stack `docker/compose.e2e.yml` (front en image prod, API en `NODE_ENV=test`), `npm run e2e` [D197].
+- **Playwright** : projets `mobile` (Chromium, 390x844, tous les parcours), `desktop` (Chromium, 1280x800, parcours (D)) ; projet `webkit` (Safari iOS, profil iPhone en 390x844, tous les parcours, informatif) joue a part par `npm run e2e:webkit` [D227] ; `npm run e2e -- --project=mobile` pour un seul projet. Ecarts et limites propres a WebKit : D227 ; **@axe-core/playwright** pour l'accessibilite. Stack `docker/compose.e2e.yml` (front en image prod, API en `NODE_ENV=test`), `npm run e2e` [D197].
 - **Couverture** : `@vitest/coverage-v8`, seuils par zone dans `vitest.config.ts` (section 7), `npm run test:coverage` [D200].
 - Tous les tests tournent **dans Docker** en local, comme en V1 (les variables d'environnement n'existent pas hors conteneur).
 
@@ -102,16 +102,17 @@ Chaque parcours tourne en **mobile** (projet par defaut) ; ceux marques (D) tour
 
 Sur chaque push et chaque pull request (`.github/workflows/ci.yml` : job `verify`, puis job `e2e`, puis `build`) :
 
-| Etape                                                                   | Bloquant |
-| ----------------------------------------------------------------------- | -------- |
-| Lint + format (ESLint, Prettier)                                        | Oui      |
-| Typecheck de tout le monorepo                                           | Oui      |
-| Controle des cles i18n manquantes (typecheck, D200)                     | Oui      |
-| Unitaires + integration API (PostgreSQL de service)                     | Oui      |
-| Composants (dont rendu des six themes)                                  | Oui      |
-| E2E parcours critiques (Chromium mobile + desktop, WebKit iPhone, D227) | Oui      |
-| Couverture sous les seuils                                              | Oui      |
-| `npm audit` (vulnerabilites hautes et critiques)                        | Oui      |
+| Etape                                               | Bloquant         |
+| --------------------------------------------------- | ---------------- |
+| Lint + format (ESLint, Prettier)                    | Oui              |
+| Typecheck de tout le monorepo                       | Oui              |
+| Controle des cles i18n manquantes (typecheck, D200) | Oui              |
+| Unitaires + integration API (PostgreSQL de service) | Oui              |
+| Composants (dont rendu des six themes)              | Oui              |
+| E2E parcours critiques (Chromium mobile + desktop)  | Oui              |
+| E2E WebKit iPhone (job `e2e-webkit`, D227)          | Non (informatif) |
+| Couverture sous les seuils                          | Oui              |
+| `npm audit` (vulnerabilites hautes et critiques)    | Oui              |
 
 Les traces Playwright, captures et videos des echecs sont gardees comme artefacts de CI pendant 7 jours.
 
@@ -146,7 +147,7 @@ La matrice des permissions est couverte a **100 % des couples route x role** par
 
 ## 10. Tests manuels
 
-Une **feuille de recette** courte avant chaque mise en prod : installation sur un vrai telephone, gestes tactiles, mode cuisine (ecran allume), photo prise avec l'appareil, notifications temps reel entre deux appareils. Les E2E WebKit [D227] couvrent le moteur de Safari, pas l'iPhone : installation de la PWA, gestes natifs et appareil photo sur iPhone restent a verifier a la main quand le proprietaire l'ajoute a la feuille.
+Une **feuille de recette** courte avant chaque mise en prod : installation sur un vrai telephone, gestes tactiles, mode cuisine (ecran allume), photo prise avec l'appareil, notifications temps reel entre deux appareils. Android (Chrome) seulement : pas d'iPhone a disposition, Safari n'est couvert que par les E2E WebKit informatifs [D227].
 
 Feuille en place depuis C7.7 : artefact `25-Recette-Preprod.html` (resultats partages dans sa base, collection `recette`). Chaque fonctionnalite livree apres C7.7 y ajoute ses lignes ; la seconde recette complete, sans echec ni remarque ouverte, conditionne C8 [D205].
 
@@ -155,7 +156,7 @@ Feuille en place depuis C7.7 : artefact `25-Recette-Preprod.html` (resultats par
 | #   | Decision                                                                                                                                                                                                                                                | Statut  |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | D77 | Outils : Vitest partout, Supertest sur vraie base PostgreSQL remise a zero entre fichiers, Testing Library + MSW avec handlers issus des schemas Zod, Playwright mobile + desktop avec axe.                                                             | VALIDEE |
-| D78 | CI bloquante : lint, typecheck, cles i18n, unitaires, integration, composants, E2E critiques, couverture, `npm audit` ; WebKit retire de la CI par D195, remis (bloquant, meme job) par D227 ; seuils 90 / 80 / 60 % (shared / api / web).              | VALIDEE |
+| D78 | CI bloquante : lint, typecheck, cles i18n, unitaires, integration, composants, E2E critiques, couverture, `npm audit` ; WebKit retire de la CI par D195, remis en job informatif (non bloquant) par D227 ; seuils 90 / 80 / 60 % (shared / api / web).  | VALIDEE |
 | D79 | Donnees de test : fabriques partagees dans `packages/test-utils`, seed des referentiels identique a la prod, scenarios E2E crees par une route reservee a l'environnement de test, fixtures d'import servies localement (aucun appel a Internet en CI). | VALIDEE |
 
 ## 12. Questions pour le proprietaire (tranchees)

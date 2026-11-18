@@ -969,14 +969,18 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
   - **Admin** : pas d'apercu separe : chaque ligne s'affiche rendue hors edition, en texte brut quand on la reformule ; un rappel de la syntaxe sous le titre. (Ecarte : un panneau d'apercu a cote de l'editeur.)
 - **A noter** : sortie de `RequireAuth`, la page ouvre elle-meme le temps reel et retient la page visitee quand l'utilisateur est connecte (la nouvelle version apparait toujours sans recharger).
 
-### D227 - E2E WebKit (Safari iOS) : projet iPhone, tous les parcours, dans le meme lancement et le meme job de CI - PROPOSEE (2026-11-18, V2.2, defauts annonces au proprietaire ; reprend D195)
+### D227 - E2E WebKit (Safari iOS) : projet iPhone, tous les parcours, job de CI a part et informatif - VALIDEE (2026-11-18, V2.2, proprietaire au selecteur ; reprend D195)
 
 - **Constat** : D195 reportait WebKit ; l'app est surtout utilisee sur telephone. L'image Playwright officielle (`mcr.microsoft.com/playwright`, meme version que `@playwright/test`) fournit deja WebKit : l'image E2E ne change pas.
-- **Options** : projet WebKit dans `npm run e2e` et le job `e2e` existant (bloquant) ; script `e2e:webkit` et job a part ; WebKit informatif (non bloquant).
-- **Choix** (defaut annonce) : un troisieme projet Playwright `webkit` (profil `iPhone 13` : agent Safari iOS, tactile, echelle 3, viewport 390x844 comme le projet `mobile`), qui joue tous les parcours ; meme lancement `npm run e2e` (`--project=webkit` pour le jouer seul), meme job de CI, bloquant comme Chromium. Duree ajoutee : environ +2 min (les parcours sont en serie, une seule base).
+- **Options** : projet WebKit dans `npm run e2e` et le job `e2e` existant, bloquant (ecartee) ; script `e2e:webkit` et job a part, informatif (retenue).
+- **Choix** :
+  - Un projet Playwright `webkit` (profil `iPhone 13` : agent Safari iOS, tactile, echelle 3, viewport 390x844 comme le projet `mobile`), qui joue tous les parcours ; il n'existe que si `E2E_WEBKIT` est pose.
+  - En local : `npm run e2e` reste Chromium seul (mobile + desktop) ; `npm run e2e:webkit` joue WebKit sur la meme stack (`e2e:down` arrete les deux). Environ 2 min.
+  - En CI : le job `e2e` (Chromium) reste bloquant ; un job `e2e-webkit` a part, `continue-on-error` et hors des `needs` de `build`, ne bloque ni les images ni la fusion (pas de controle requis).
+  - Pas de verification manuelle sur iPhone dans la feuille de recette : ni le proprietaire ni les utilisateurs n'ont d'iPhone ; Safari n'est couvert que par ce job informatif.
 - **Ecarts propres a WebKit, dans les parcours et pas dans l'app** :
   - Parcours 9 (glisser au doigt) : pas de CDP sous WebKit, `touchscreen` ne sait que taper ; le geste passe par des evenements de pointeur "touch" synthetiques (la logique de l'app est prouvee, pas le defilement natif).
   - Parcours 11 (photo) : WebKit ne transmet pas a Playwright la partie fichier d'un `FormData` intercepte ; le formulaire vers le stockage est serialise en octets dans la page avant l'envoi (`e2e/support/storage.ts`).
   - Bruit de console accepte, seulement pour les requetes vers l'app : "WebKit encountered an internal error" (requete sans reseau, parcours 12) et "Fetch API cannot load ... due to access control checks" (requete annulee par une navigation, parcours 19).
   - Parcours 14 : partie desktop et partie mobile choisies par `isMobile` du projet, plus par son nom.
-- **Limites** : WebKit de Playwright sous Linux n'est pas Safari iOS (moteur proche, pas le meme systeme) : il encode le WebP, donc le repli JPEG de Safari [D167] reste couvert par les tests unitaires de `lib/image.ts` ; l'installation de la PWA et les gestes natifs restent a la feuille de recette sur un vrai iPhone.
+- **Limites** : WebKit de Playwright sous Linux n'est pas Safari iOS (moteur proche, pas le meme systeme) : il encode le WebP, donc le repli JPEG de Safari [D167] reste couvert par les tests unitaires de `lib/image.ts` ; l'installation de la PWA et les gestes natifs sur iPhone ne sont pas verifies.
