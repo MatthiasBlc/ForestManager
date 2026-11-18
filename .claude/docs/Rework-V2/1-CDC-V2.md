@@ -1,6 +1,6 @@
 # Forest Manager V2 - Cahier des charges
 
-**Version : 1.9 (1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder ; 1.1 : module Planning revu au plan C5, D180 a D184, D11 amendee : midi et soir seulement ; 1.2 : plan C6, D187 a D189 : changelog en brouillon embarque, temps reel en SSE ; 1.3 : plan C6b, D192 : export en tache de fond, reimport en V2.1 ; 1.4 : etude UX mobile, D209 ; 1.5 : connexion avec Discord, D210, avatars recadres, D211 ; 1.6 : import dans une recette existante, D212 ; 1.7 : delai de recette par tag, D214 ; repas manuel verrouille, D215 ; 1.8 : affichage des tags et familles, D216 ; 1.9 : ordre des listes de recettes, D217 ; ordre des espaces, D218) ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception** - 2026-11-18
+**Version : 1.9 (1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder ; 1.1 : module Planning revu au plan C5, D180 a D184, D11 amendee : midi et soir seulement ; 1.2 : plan C6, D187 a D189 : changelog en brouillon embarque, temps reel en SSE ; 1.3 : plan C6b, D192 : export en tache de fond, reimport en V2.1 ; 1.4 : etude UX mobile, D209 ; 1.5 : connexion avec Discord, D210, avatars recadres, D211 ; 1.6 : import dans une recette existante, D212 ; 1.7 : delai de recette par tag, D214 ; repas manuel verrouille, D215 ; 1.8 : affichage des tags et familles, D216 ; 1.9 : ordre des listes de recettes, D217 ; ordre des espaces, D218 ; retour d'une recette, D219) ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception** - 2026-11-18
 Statut de chaque decision : voir `3-Journal-des-Decisions.md`. Une ligne marquee `[Dxx]` renvoie a sa decision.
 Les questions de la phase A sont au S10 (toutes repondues). Tant qu'une question touche une section, cette section n'est pas validable.
 
@@ -88,7 +88,7 @@ Identifiants `F-<module>-<n>` pour que roadmap et tests s'y referent.
 - F-ACC-3 Mot de passe oublie par email si un SMTP est configure ; sinon reinitialisation par un admin [D21] : mot de passe temporaire de 24 h a usage unique, transmis par l'admin lui-meme, a changer a la connexion ; l'ancien reste valable tant que le temporaire n'a pas servi, puis les autres sessions sont fermees [D134]. L'app demarre et fonctionne sans SMTP.
 - F-ACC-4 Profil : username, email, mot de passe, avatar, theme d'interface (S5.3). Avatars de compte et d'espace recadres par l'utilisateur a l'envoi (deplacer, zoomer ; carre de 512 px) ; les photos de recette gardent leurs proportions [D211].
 - F-ACC-5 Suppression du compte (RGPD) : les contenus partages dans des espaces GROUP restent, auteur anonymise, repris par les moderateurs [D20]. L'ecran montre les consequences espace par espace et propose l'export avant de demander le mot de passe [D116].
-- F-ACC-6 Export natif de ses recettes (JSON reimportable, Markdown, photos en zip) [D37]. Archive preparee en tache de fond, gardee 24 h ; ecran de reimport en V2.1 [D192].
+- F-ACC-6 Export natif de ses recettes (JSON reimportable, Markdown, photos en zip) [D37]. Archive preparee en tache de fond, gardee 24 h ; ecran de reimport en V2.2 [D192].
 - A la creation du compte, l'espace PERSONAL est cree automatiquement. Son onglet recettes est "Mes recettes" : toutes les recettes dont on est l'auteur, dans tous ses espaces, filtrables par espace d'origine ; une recette creee la nait dans l'espace perso [D82, D207].
 
 ### 4.2 Espaces, membres, invitations
@@ -164,7 +164,7 @@ Reprend la V1 (grille jours x repas, repas recette / texte libre / vide, verroui
 - F-MPL-7 Echange de repas sur mobile en mode "echange" : bandeau, cibles en pointilles, Annuler [D112].
 - F-MPL-8 Barre du planning : Idees de repas, Profils de generation et Reglages du planning sont des boutons a icone et mot court ("Idees", "Profils", "Reglages"), sur une ligne des 360 px [D209].
 
-### 4.7 Liste de courses (module, V2.1)
+### 4.7 Liste de courses (module, V2.2)
 
 - F-SHP-1 Generer une liste depuis une periode du planning (agregation des ingredients, conversion d'unites, mise a l'echelle des portions). Pieces et grammes s'additionnent grace au poids par unite, sinon deux lignes [D126].
 - F-SHP-2 Articles libres, cocher "achete", archiver.
@@ -213,6 +213,7 @@ Reprise de la V1 (page utilisateur, gestion admin), generation revue [D187] :
 
 - **Rail des espaces** (gauche, etroit) en bureau : avatar de l'espace perso puis des groupes, bouton "+". Sur mobile : l'espace courant (avatar + nom) est un bouton de l'en-tete qui ouvre la liste des espaces en feuille (avatars, pastilles de nouveautes, "+") [D130].
 - **Barre du module** : modules actifs de l'espace courant (Recettes, Planning, Courses, Membres, Reglages). Sur mobile : barre d'onglets en bas, 4 modules maximum puis "Plus" (membres, reglages et modules au-dela du quatrieme, dans l'ordre choisi par l'OWNER) [D131]. Espace perso : Accueil, Mes recettes, puis les autres modules et Plus [D95, D207]. Quand "Plus" n'aurait qu'une entree, elle devient un onglet et "Plus" disparait (espace perso : Accueil, Mes recettes, Reglages) [D209].
+- **Retour d'une recette** : la fleche ramene a la page d'ou on l'a ouverte (planning a la meme semaine et la meme vue, accueil, recherche, notifications, activite), la liste des recettes sinon [D219].
 - **Zone de contenu** : liste / detail, avec panneau de detail lateral sur grand ecran et page pleine sur mobile.
 - **En-tete** : recherche, notifications, profil.
 - Dashboard d'accueil fait de **widgets** que l'utilisateur choisit et ordonne (prochains repas, recettes les plus cuisinees, recemment ajoutees, activite des groupes), dans une feuille "Personnaliser l'accueil" ; invitations et transferts en attente toujours en tete [D193]. "Prochains repas" : un repas-recette ouvre la recette, un repas texte le planning du jour, lien "Planning" a cote du nom de chaque espace [D204].

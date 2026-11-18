@@ -122,7 +122,7 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
     - [x] Revue dans Chrome et cloture de C7c (`26-Plan-C7c.md` S2)
   - [x] Etude UX de la navigation mobile ("labyrinthe de menus", demande du proprietaire) [D205] : carte et constats `28-Etude-UX-Mobile.md` ; Accueil en tete du selecteur d'espaces [D206], onglet unique "Mes recettes" [D207] ; pas de bande d'espaces hors espace sur mobile, boutons libelles du Planning, "Plus" d'une entree devenu onglet [D209] ; TDD, verifie dans Chrome, ligne `nav-mobile` de la feuille de recette
   - [x] Cloture de C7 (`24-Plan-C7.md` S3)
-- [x] C7b Connexion avec Discord avant la prod [D202] : inscription par Discord, liaison d'un compte existant depuis le profil, connexion ; plan `27-Plan-C7b.md` [D210], ligne du CDC, maquette, TDD ; lignes ajoutees a la feuille de recette ; plus tard peut-etre un bot Discord pour les notifications (V2.1 ou apres)
+- [x] C7b Connexion avec Discord avant la prod [D202] : inscription par Discord, liaison d'un compte existant depuis le profil, connexion ; plan `27-Plan-C7b.md` [D210], ligne du CDC, maquette, TDD ; lignes ajoutees a la feuille de recette ; plus tard peut-etre un bot Discord pour les notifications (V2.2 ou apres)
   - [x] Plan de C7b (`27-Plan-C7b.md`, D210)
   - [x] C7b.1 API : migration, client Discord, start / callback / pending / register, liaison et deliaison, definir un mot de passe, comptes sans mot de passe (connexion, email, suppression, admin) ; TDD
   - [x] C7b.0 Maquette (`29-Maquette-C7b.html`), validee par le proprietaire
@@ -166,8 +166,11 @@ La premiere case non cochee est le point de reprise. Phase B terminee : le code 
 - [x] Pages Mes recettes et Recettes d'un espace : choisir l'ordre de tri [D217] (demande du proprietaire, 2026-11-17) ; fait le 2026-11-18 : six ordres (A a Z par defaut, Z a A, plus recentes / anciennes par creation, plus rapides / longues), section "Trier par" de la feuille Filtres, filtre actif "Tri : ...", retenu sur l'appareil (`modules/recipes/sort.ts`), hors ligne compris ; TDD, E2E (parcours 14 encore vu instable une fois, vert seul deux fois), Chrome mobile
 - [x] Cartes de recette en bureau : bouton "..." en haut a droite de l'image, qui ouvre au clic gauche le meme menu que le clic droit (demande du proprietaire, 2026-11-17) ; fait le 2026-11-18 : points horizontaux (icone `more` de toute l'appli), montre seulement avec une souris (`hover: hover`, `pointer: fine`), le doigt garde l'appui long ; TDD, E2E, Chrome
 - [x] Ordre des espaces dans le rail par glisser-deposer (attention UI / UX : souris, doigt, clavier) ; l'espace perso reste toujours en haut, le bouton "+" toujours en bas (demande du proprietaire, 2026-11-17) ; fait le 2026-11-18 [D218] : ordre dans le compte (`Membership.sortOrder`, `PUT /me/space-order`), glisser dans le rail et la feuille des espaces (`patterns/space-reorder.ts`), Alt+fleches ; TDD, E2E, Chrome
-- [ ] Fleche de retour d'une recette ouverte depuis le planning : revenir au planning (meme semaine, meme vue), pas a la liste des recettes ; de meme, une recette ouverte depuis un widget de l'accueil revient a l'accueil ; verifier les autres origines (recherche, notifications, activite) (demande du proprietaire, 2026-11-17)
+- [x] Fleche de retour d'une recette ouverte depuis le planning : revenir au planning (meme semaine, meme vue), pas a la liste des recettes ; de meme, une recette ouverte depuis un widget de l'accueil revient a l'accueil ; verifier les autres origines (recherche, notifications, activite) (demande du proprietaire, 2026-11-17) ; fait le 2026-11-18 [D219] : derniere page visitee hors des pages de la recette, retenue par onglet (`core/shell/return-to.ts`), liste par defaut ; vue du planning dans l'adresse (`?view=week`) ; par un sous-agent, TDD, E2E
 - [ ] PWA de preprod reconnaissable sur le telephone : nom (ex. "Forest Manager Preprod", nom court explicite) et icone distincts de la prod (bandeau ou teinte "PREPROD"), choisis au build selon l'environnement (demande du proprietaire, 2026-11-17)
-- [ ] C9 Module liste de courses (V2.1)
-- [ ] Reimport du JSON d'export dans F-AJOUT-RECETTE (V2.1) [D192]
-- [ ] E2E WebKit (Safari) (V2.1) [D195]
+
+<!-- 2026-11-18 : le lot appele "V2.1" devient "V2.2" (la livraison des corrections post-prod prend le numero v2.1.0, calcule par la CI) ; le journal garde l'ancien nom. -->
+
+- [ ] C9 Module liste de courses (V2.2)
+- [ ] Reimport du JSON d'export dans F-AJOUT-RECETTE (V2.2) [D192]
+- [ ] E2E WebKit (Safari) (V2.2) [D195]

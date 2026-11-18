@@ -157,7 +157,7 @@ Un meme utilisateur est MEM, MOD ou OWN selon l'espace. "Auteur" se cumule avec 
 | Ajouter une idee de repas                                                              |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | CDC S4.6      |                                                                               |
 | Modifier, supprimer une idee                                                           |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | CDC S4.6      | Membre : seulement ses propres idees.                                         |
 | Convertir une idee en recette                                                          |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | F-MPL-4, D182 | Auteur : celui qui convertit ; l'idee est ensuite retiree.                    |
-| Liste de courses (V2.1) : creer, cocher, archiver                                      |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | F-SHP-4, D141 | Role minimal regle par l'OWNER ; MEMBER par defaut, comme le planning (D141). |
+| Liste de courses (V2.2) : creer, cocher, archiver                                      |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | F-SHP-4, D141 | Role minimal regle par l'OWNER ; MEMBER par defaut, comme le planning (D141). |
 
 ## Notifications et activite
 
