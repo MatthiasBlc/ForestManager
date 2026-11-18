@@ -8,6 +8,7 @@ import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 
 import { spaceQuery } from "../../core/session/queries.ts";
 import { PageChrome } from "../../core/shell/page-chrome.tsx";
+import { recipeBackTarget } from "../../core/shell/return-to.ts";
 import { useWriteGuard } from "../../pwa/use-write-guard.ts";
 import { TopBar } from "../../patterns/top-bar.tsx";
 import { ActionMenu } from "../../ui/action-menu.tsx";
@@ -26,7 +27,14 @@ import {
   scaledAmount,
   unitLabel,
 } from "./format.ts";
-import { recipeFailure, recipeQuery, unitsQuery, type RecipeFailure } from "./queries.ts";
+import {
+  recipeFailure,
+  recipeQuery,
+  tagCatalogQuery,
+  unitsQuery,
+  type RecipeFailure,
+} from "./queries.ts";
+import { sortByFamily } from "./tag-groups.ts";
 import { AdaptedFromNotice } from "./adaptation.tsx";
 import { useRecipeActions } from "./use-recipe-actions.tsx";
 import { RecipeSuggestionsBanner } from "./suggestions.tsx";
@@ -302,6 +310,8 @@ function RecipeView({
 }) {
   const navigate = useNavigate();
   const guard = useWriteGuard();
+  // Badges des tags dans l'ordre des familles [D216].
+  const catalog = useQuery(tagCatalogQuery(spaceId));
   // Retour du mode cuisine : memes portions qu'avant (`?servings=`) [R7].
   const [params] = useSearchParams();
   const asked = Number(params.get("servings"));
@@ -312,7 +322,7 @@ function RecipeView({
     spaceId,
     recipe,
     onGone: () => {
-      void navigate(`/s/${spaceId}/recipes`, { replace: true });
+      void navigate(recipeBackTarget(spaceId), { replace: true });
     },
   });
   const sharedHere = recipe.homeSpaceId !== spaceId;
@@ -332,8 +342,9 @@ function RecipeView({
         top={
           <TopBar
             title="Recette"
+            // Retour a la page d'ou la recette a ete ouverte, la liste sinon (D219).
             onBack={() => {
-              void navigate(`/s/${spaceId}/recipes`);
+              void navigate(recipeBackTarget(spaceId));
             }}
           />
         }
@@ -438,7 +449,7 @@ function RecipeView({
                 Composée
               </Badge>
             ) : null}
-            {recipe.tags.map((tag) => (
+            {sortByFamily(recipe.tags, catalog.data).map((tag) => (
               <Badge key={tag.id} tone={tag.scope === "GLOBAL" ? "accent" : "neutral"}>
                 {tag.name}
               </Badge>

@@ -18,7 +18,7 @@ Deroule pas a pas du jour de la prod, depuis ce poste [D201]. Le proprietaire cl
    - etape serveur : nombre d'images supprimees et espace libere (images de plus de 72 h portant le label `forestmanager.image`).
 3. Log juge bon : retirer `DRY_RUN: 1` de `.github/workflows/ci.yml` (job `registry-prune`), commit, push ; le passage suivant supprime pour de vrai.
    - Fait le 2026-11-17 (CI #34) : par image, gardes = `latest` et les 10 `sha-*` du 2026-11-12 15:57 a ce jour, 8 a supprimer (2026-11-12, 09:39 a 15:21) ; serveur : 0 image (le label date de `841253e`, moins de 72 h). Dans les logs, les `***` sont des `2` masques par GitHub (un secret vaut `2`).
-   - Passage suivant (premier reel) : verifier des lignes `supprime ...` et aucune `echec`.
+   - Premier passage reel (CI #35, 2026-11-17, vert) : 9 tags supprimes par image (les 8 du passage a blanc et `sha-7c3fc47`, sorti des 10 avec le nouveau tag), aucun echec ; gardes = `latest` et 10 `sha-*` dont `sha-3c2a06d` deploye. Espace libere seulement au `garbage-collect` du registry (S6).
 4. Secrets de prod presents dans GitHub (proprietaire) : `STACK_ID`, `SENTRY_DSN` (projet Bugsink de prod), `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET`, plus les communs.
 
 ## 3. Fusion et deploy
@@ -49,3 +49,13 @@ Deroule pas a pas du jour de la prod, depuis ce poste [D201]. Le proprietaire cl
 - Serveur : images d'avant le label `forestmanager.image` (V1 et premiers builds V2) a retirer a la main une fois.
 - Traefik : `trustedIPs` pour la vraie IP derriere Cloudflare (`14-Architecture.md` S13).
 - Buckets V1 : `mc anonymous set none` sur `forestmanager-images-preprod` / `-prod` [D167].
+
+## 7. Bilan du 2026-11-17
+
+- PR #35 fusionnee (`cc43aff`), CI #36 verte en ~12 min 30 : `deploy-prod`, `registry-prune`, `release-tag` (`v2.0.0`).
+- Demarrage de l'API : `Backup done (4.0K)` (base neuve), 15 migrations appliquees, seed (16 unites, 10 rayons, catalogue des modules, brouillon de changelog `2.0.0` vide : premiere version, pas de commits de reference), `API ready`.
+- `/api/v1/config` : `release 2.0.0`, `environment production`, uploads, Bugsink et Discord actifs, email non configure (prevu).
+- Compte du proprietaire cree par Discord (mot de passe et email aussi) ; super admin cree, 2FA configuree ; tableau de bord admin : Bugsink et stockage en ligne, version `2.0.0`.
+- Controles de Claude dans Chrome : accueil sans erreur console, notifications, flux SSE a travers Cloudflare et Traefik, recette "Test prod - tarte aux tomates" avec photo (ingredient, recette, photo en 201/201/200, photo relue depuis le bucket de prod).
+- Evenement de test Bugsink recu dans le projet de prod.
+- A noter : les logs JSON de l'API sont mal rendus par la vue de logs de Portainer (affichage seulement) ; `x-real-ip` = IP interne de Traefik tant que `trustedIPs` n'est pas regle (S6).

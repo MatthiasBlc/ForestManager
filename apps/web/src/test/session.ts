@@ -59,6 +59,9 @@ export function mockEmptyRecipes(): void {
     http.get("/api/v1/units", () => HttpResponse.json({ data: UNITS })),
     http.get("/api/v1/tags", () => HttpResponse.json({ data: [] })),
     http.get("/api/v1/spaces/:spaceId/recipes/tags", () => HttpResponse.json({ data: [] })),
+    http.get("/api/v1/spaces/:spaceId/recipes/tag-catalog", () =>
+      HttpResponse.json({ families: [], tags: [] })
+    ),
     http.get("/api/v1/spaces/:spaceId/recipes/share-requests", () =>
       HttpResponse.json({ data: [] })
     ),

@@ -91,7 +91,6 @@ body,
 .fm-space.fm-space-lg {
   width: 64px;
   height: 64px;
-  border-radius: var(--radius-lg);
   font-size: 26px;
 }
 
@@ -298,6 +297,36 @@ a.fm-slot {
   }
   .fm-drag-ghost {
     transform: translate(var(--fm-drag-x, 0), var(--fm-drag-y, 0));
+  }
+}
+
+/* Ranger les espaces au glisser [D218] (rail et selecteur) : memes reperes que le planning. */
+.fm-space[data-drag-id],
+.fm-option[data-drag-id] {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.fm-space[data-drag-lifted],
+.fm-option[data-drag-lifted] {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.fm-space[data-drag-source],
+.fm-option[data-drag-source] {
+  opacity: 0.35;
+}
+.fm-space[data-drop-over],
+.fm-option[data-drop-over] {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fm-space[data-drag-lifted],
+  .fm-option[data-drag-lifted] {
+    transition: none;
   }
 }
 
@@ -640,6 +669,10 @@ main[tabindex="-1"]:focus-visible {
   overflow: hidden;
   background: #111;
   touch-action: none;
+}
+/* Photo d'espace : masque au meme arrondi que l'icone (30 %) [D213]. */
+.fm-crop-square .reactEasyCrop_CropArea {
+  border-radius: 30%;
 }
 .fm-crop-zoom {
   display: flex;

@@ -48,5 +48,49 @@ export type Tag = z.infer<typeof tagSchema>;
 export const tagNameBodySchema = z.strictObject({
   name: z.string().trim().min(1).max(TAG_NAME_MAX),
 });
+
+// --- Familles de tags [D216] ---
+
+export const TAG_FAMILY_NAME_MAX = 40;
+
+/** Famille de tags : globale (admin) ou d'espace (moderateurs), ordonnee. */
+export const tagFamilySchema = z.object({
+  id: uuidSchema,
+  scope: z.enum(["GLOBAL", "SPACE"]),
+  name: z.string(),
+});
+export type TagFamily = z.infer<typeof tagFamilySchema>;
+
+/** Tag du catalogue d'un espace : sa famille et ses recettes visibles dans l'espace. */
+export const catalogTagSchema = tagSchema.extend({
+  familyId: uuidSchema.nullable(),
+  recipeCount: z.number().int(),
+});
+export type CatalogTag = z.infer<typeof catalogTagSchema>;
+
+/** Catalogue : familles globales puis de l'espace (dans leur ordre), tags globaux et de l'espace. */
+export const tagCatalogSchema = z.object({
+  families: z.array(tagFamilySchema),
+  tags: z.array(catalogTagSchema),
+});
+export type TagCatalog = z.infer<typeof tagCatalogSchema>;
+
+/** Modifier un tag d'espace : nom et/ou famille (null : sans famille). */
+export const spaceTagPatchBodySchema = z
+  .strictObject({
+    name: z.string().trim().min(1).max(TAG_NAME_MAX).optional(),
+    familyId: uuidSchema.nullable().optional(),
+  })
+  .refine((body) => body.name !== undefined || body.familyId !== undefined, {
+    message: "Rien a modifier",
+  });
+
+export const tagFamilyNameBodySchema = z.strictObject({
+  name: z.string().trim().min(1).max(TAG_FAMILY_NAME_MAX),
+});
+export const tagFamilyParamsSchema = z.strictObject({ familyId: uuidSchema });
+export const tagFamilyOrderBodySchema = z.strictObject({
+  ids: z.array(uuidSchema).min(1).max(100),
+});
 export const mergeTagBodySchema = z.strictObject({ intoTagId: uuidSchema });
 export const spaceTagParamsSchema = z.strictObject({ spaceId: uuidSchema, tagId: uuidSchema });

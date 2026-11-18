@@ -2,7 +2,13 @@
 // C3.2 : blocs LOCAL seulement ; les blocs RECIPE (lien vivant) arrivent en C3.4.
 import { z } from "zod";
 
-import { cursorQuerySchema, isoDateTimeSchema, userSummarySchema, uuidSchema } from "./common.ts";
+import {
+  cursorQuerySchema,
+  isoDateTimeSchema,
+  pageSchema,
+  userSummarySchema,
+  uuidSchema,
+} from "./common.ts";
 import { tagSchema } from "./referentials.ts";
 
 export const RECIPE_TITLE_MAX = 120;
@@ -120,6 +126,8 @@ export type CreateRecipeBody = z.input<typeof createRecipeBodySchema>;
 export const updateRecipeBodySchema = z.strictObject({
   ...recipeContentShape,
   revision: z.number().int().min(1),
+  /** Contenu remplace par un import dans la recette existante : revision IMPORT [D212]. */
+  imported: z.boolean().optional(),
 });
 export type UpdateRecipeBody = z.input<typeof updateRecipeBodySchema>;
 
@@ -231,6 +239,12 @@ export const recipeSummarySchema = z.object({
 });
 export type RecipeSummary = z.infer<typeof recipeSummarySchema>;
 
+/** Page de la liste ; la premiere porte le nombre total de recettes filtrees ("Voir N recettes", D216). */
+export const recipePageSchema = pageSchema(recipeSummarySchema).extend({
+  total: z.number().int().optional(),
+});
+export type RecipePage = z.infer<typeof recipePageSchema>;
+
 export const recipeSchema = z.object({
   ...recipeBaseShape,
   description: z.string().nullable(),
@@ -326,7 +340,18 @@ export type RestoreRevisionBody = z.infer<typeof restoreRevisionBodySchema>;
 
 // --- Liste ---
 
-export const RECIPE_SORTS = ["recent", "title", "time"] as const;
+/**
+ * Ordres de la liste [D217] : titre (defaut), creation, temps total, chacun
+ * dans les deux sens ; une recette sans temps reste a la fin.
+ */
+export const RECIPE_SORTS = [
+  "title",
+  "title-desc",
+  "recent",
+  "oldest",
+  "time",
+  "time-desc",
+] as const;
 export type RecipeSort = (typeof RECIPE_SORTS)[number];
 
 /** Liste d'UUID separes par des virgules dans la query string. */
@@ -346,7 +371,7 @@ export const recipeListQuerySchema = cursorQuerySchema.extend({
     .enum(["true", "false"])
     .transform((v) => v === "true")
     .optional(),
-  sort: z.enum(RECIPE_SORTS).default("recent"),
+  sort: z.enum(RECIPE_SORTS).default("title"),
 });
 export type RecipeListQuery = z.infer<typeof recipeListQuerySchema>;
 
@@ -375,14 +400,18 @@ export const recipeSharingSchema = z.object({
   spaces: z.array(z.object({ spaceId: uuidSchema, status: z.enum(SHARE_STATUSES) })),
   /** Sous-recettes : partagees avec le plat si elles sont du meme auteur [D26]. */
   withIt: z.array(z.object({ id: uuidSchema, title: z.string(), included: z.boolean() })),
+  /** Tags d'espace de la recette dans son espace d'origine, a reprendre au partage [D216]. */
+  homeTags: z.array(tagSchema),
 });
 export type RecipeSharing = z.infer<typeof recipeSharingSchema>;
 
 /** Espaces ou la recette doit etre partagee ; les autres espaces de l'utilisateur sont retires. */
 export const recipeSharesBodySchema = z.strictObject({
   spaceIds: z.array(uuidSchema).max(MAX_SHARE_TARGETS),
+  /** Tags d'origine (`homeTags`) a reprendre dans les espaces nouvellement partages [D216]. */
+  tagIds: z.array(uuidSchema).max(RECIPE_TAGS_MAX).default([]),
 });
-export type RecipeSharesBody = z.infer<typeof recipeSharesBodySchema>;
+export type RecipeSharesBody = z.input<typeof recipeSharesBodySchema>;
 
 // --- "Depuis mes recettes" : ajout en lot a un espace [D203, D208] ---
 
@@ -394,11 +423,16 @@ export const addMineBodySchema = z.strictObject({
     .min(1)
     .max(ADD_MINE_MAX)
     .refine((ids) => new Set(ids).size === ids.length, { message: "Recette en double" }),
+  /** Tags d'origine (`tags` de l'apercu) a reprendre dans l'espace [D216]. */
+  tagIds: z.array(uuidSchema).max(100).default([]),
 });
-export type AddMineBody = z.infer<typeof addMineBodySchema>;
+export type AddMineBody = z.input<typeof addMineBodySchema>;
 
 /** Sous-recettes emportees par la selection ; `included: false` : d'un autre auteur [D26]. */
-export const addMinePreviewSchema = recipeSharingSchema.pick({ withIt: true });
+export const addMinePreviewSchema = recipeSharingSchema.pick({ withIt: true }).extend({
+  /** Tags d'espace d'origine des recettes choisies, a reprendre ou non [D216]. */
+  tags: z.array(tagSchema),
+});
 export type AddMinePreview = z.infer<typeof addMinePreviewSchema>;
 
 /** Nombre de recettes choisies vraiment ajoutees (celles deja visibles sont ignorees). */

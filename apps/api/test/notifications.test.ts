@@ -156,6 +156,15 @@ describe("GET /me/notifications et lecture", () => {
         data: { n: i },
       });
     }
+    // Dates distinctes : creees dans la meme milliseconde, l'ordre retomberait sur l'id.
+    const created = await db.notification.findMany({ where: { userId: owner.id } });
+    for (const row of created) {
+      const n = (row.data as { n: number }).n;
+      await db.notification.update({
+        where: { id: row.id },
+        data: { createdAt: new Date(Date.now() - (3 - n) * 60 * 1000) },
+      });
+    }
     await notify(ctx, { type: "core.release.published", recipients: [member.id] });
     const client = await loginAs(owner, app);
     const first = await client.get("/me/notifications?limit=2");

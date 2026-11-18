@@ -1,4 +1,4 @@
-// Routes des espaces : /api/v1/spaces/... et /api/v1/me/transfers.
+// Routes des espaces : /api/v1/spaces/..., /api/v1/me/transfers et /api/v1/me/space-order.
 import {
   changeRoleBodySchema,
   createSpaceBodySchema,
@@ -9,6 +9,7 @@ import {
   memberSchema,
   ownershipTransferSchema,
   spaceDetailSchema,
+  spaceOrderBodySchema,
   spaceParamsSchema,
   spaceSummarySchema,
   transferParamsSchema,
@@ -32,6 +33,16 @@ export function spacesRouter(ctx: Context): Router {
       data: await spaces.listSpaces(ctx, currentUserId(req)),
     });
   });
+
+  router.put(
+    "/me/space-order",
+    requireAuth,
+    handle({ body: spaceOrderBodySchema }, async ({ body }, req, res) => {
+      const userId = currentUserId(req);
+      await spaces.setSpaceOrder(ctx, userId, body.spaceIds);
+      reply(res, listSchema(spaceSummarySchema), { data: await spaces.listSpaces(ctx, userId) });
+    })
+  );
 
   router.post(
     "/spaces",

@@ -76,7 +76,9 @@ async function loadSituation(
   const gap = Math.max(
     6,
     profile.input.cooldownDays,
-    ...profile.input.rules.map((rule) => rule.tagCooldownDays ?? 0)
+    ...profile.input.rules.map((rule) =>
+      Math.max(rule.tagCooldownDays ?? 0, rule.recipeCooldownDays ?? 0)
+    )
   );
   const [rows, ideaRows] = await Promise.all([
     ctx.db.mealSlot.findMany({

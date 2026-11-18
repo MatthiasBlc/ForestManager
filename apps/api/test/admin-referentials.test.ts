@@ -102,6 +102,11 @@ describe("acces aux routes", () => {
       anonymous.patch(`/admin/tags/${UNKNOWN}`, { fr: "a" }),
       anonymous.post(`/admin/tags/${UNKNOWN}/merge`, { intoTagId: UNKNOWN }),
       anonymous.delete(`/admin/tags/${UNKNOWN}`),
+      anonymous.get("/admin/tag-families"),
+      anonymous.post("/admin/tag-families", { fr: "a" }),
+      anonymous.patch(`/admin/tag-families/${UNKNOWN}`, { fr: "a" }),
+      anonymous.put("/admin/tag-families/order", { ids: [UNKNOWN] }),
+      anonymous.delete(`/admin/tag-families/${UNKNOWN}`),
     ];
     for (const res of await Promise.all(calls)) expect(res.body.error.code).toBe("ADMIN_002");
     // Une session utilisateur ne donne aucun droit admin.
@@ -450,6 +455,74 @@ describe("tags globaux (A08)", () => {
     expect(await db.recipeGlobalTag.count({ where: { tagId: c } })).toBe(0);
     expect(await lastAudit()).toMatchObject({ action: "tag.deleted", targetId: c });
     expect((await client.delete(`/admin/tags/${c}`)).body.error.code).toBe("ADMIN_008");
+  });
+});
+
+describe("familles de tags globales (D216)", () => {
+  it("cree en fin de liste, traduit, renomme, nom pris, reordonne ; audit", async () => {
+    const season = await client.post("/admin/tag-families", { fr: "Saison", en: "Season" });
+    expect(season.status).toBe(201);
+    expect(season.body).toMatchObject({ fr: "Saison", en: "Season", tagCount: 0 });
+    expect(await lastAudit()).toMatchObject({ action: "tag-family.created" });
+    const diet = (await client.post("/admin/tag-families", { fr: "Régime" })).body;
+    const list = (await client.get("/admin/tag-families")).body.data as { id: string }[];
+    expect(list.map((f) => f.id)).toEqual([season.body.id, diet.id]);
+
+    expect((await client.post("/admin/tag-families", { fr: "saison" })).body.error.code).toBe(
+      "ADMIN_009"
+    );
+    const renamed = await client.patch(`/admin/tag-families/${diet.id}`, { fr: "Regime", en: "" });
+    expect(renamed.body).toMatchObject({ fr: "Regime", en: null });
+    expect(await lastAudit()).toMatchObject({ action: "tag-family.updated" });
+    expect(
+      (await client.patch(`/admin/tag-families/${UNKNOWN}`, { fr: "Autre" })).body.error.code
+    ).toBe("ADMIN_008");
+
+    const ordered = await client.put("/admin/tag-families/order", {
+      ids: [diet.id, season.body.id],
+    });
+    expect(ordered.status).toBe(200);
+    expect(ordered.body.data.map((f: { id: string }) => f.id)).toEqual([diet.id, season.body.id]);
+    expect(await lastAudit()).toMatchObject({ action: "tag-family.reordered" });
+    expect(
+      (await client.put("/admin/tag-families/order", { ids: [diet.id] })).body.error.code
+    ).toBe("ADMIN_016");
+  });
+
+  it("range un tag global dans une famille ; supprimer la famille le remet sans famille", async () => {
+    const family = (await client.post("/admin/tag-families", { fr: "Moment" })).body.id as string;
+    const tag = (await client.post("/admin/tags", { fr: "Brunch", familyId: family })).body;
+    expect(tag).toMatchObject({ fr: "Brunch", familyId: family });
+    const families = (await client.get("/admin/tag-families")).body.data as {
+      id: string;
+      tagCount: number;
+    }[];
+    expect(families.find((f) => f.id === family)?.tagCount).toBe(1);
+
+    // familyId absent : la famille ne change pas ; null : sans famille.
+    const renamed = await client.patch(`/admin/tags/${tag.id}`, { fr: "Le brunch" });
+    expect(renamed.body).toMatchObject({ fr: "Le brunch", familyId: family });
+    expect(
+      (await client.patch(`/admin/tags/${tag.id}`, { fr: "Brunch", familyId: UNKNOWN })).body.error
+        .code
+    ).toBe("ADMIN_008");
+
+    const space = await member.post(`/spaces/${spaceId}/recipes/tag-families`, { name: "Perso" });
+    expect(
+      (await client.patch(`/admin/tags/${tag.id}`, { fr: "Brunch", familyId: space.body.id })).body
+        .error.code
+    ).toBe("ADMIN_008");
+
+    expect((await client.delete(`/admin/tag-families/${family}`)).status).toBe(204);
+    expect(await lastAudit()).toMatchObject({ action: "tag-family.deleted", targetId: family });
+    const after = (await client.get("/admin/tags")).body.data as {
+      id: string;
+      familyId: unknown;
+    }[];
+    expect(after.find((t) => t.id === tag.id)?.familyId).toBeNull();
+    expect((await client.delete(`/admin/tag-families/${family}`)).body.error.code).toBe(
+      "ADMIN_008"
+    );
   });
 });
 

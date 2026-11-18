@@ -36,7 +36,7 @@ npm workspaces, un seul `package-lock.json` a la racine.
         modules/
           recipes/            # module Recettes (fourni a tous les espaces)
           meal-plan/          # module Planning (+ generation)
-          shopping/           # module Courses (V2.1)
+          shopping/           # module Courses (V2.2)
         referentials/         # ingredients, unites, conversions, rayons, tags globaux
         server.ts
       prisma/

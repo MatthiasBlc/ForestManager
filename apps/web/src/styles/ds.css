@@ -408,6 +408,26 @@ textarea.fm-input {
   color: var(--accent-text);
   border-color: var(--accent-text);
 }
+/* Nombre de recettes d'un tag dans la feuille de filtres [D216]. */
+.fm-chip-count {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--ink-muted);
+}
+.fm-chip[aria-pressed="true"] .fm-chip-count {
+  color: inherit;
+}
+/* Nombre de filtres actifs dans le bouton "Filtres". */
+.fm-filters-count {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  color: var(--on-accent);
+  font: 700 12px/20px var(--font-sans);
+  text-align: center;
+}
 
 /* ---------- Avatar ---------- */
 .fm-avatar {
@@ -608,6 +628,12 @@ textarea.fm-input {
 .fm-menu .fm-danger {
   color: var(--danger-text);
 }
+/* Action indisponible (hors ligne, premiere famille a monter) : visible mais grisee. */
+.fm-menu button[data-disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: transparent;
+}
 .fm-menu hr {
   border: 0;
   border-top: 1px solid var(--line);
@@ -750,7 +776,8 @@ textarea.fm-input {
   flex: none;
   width: 40px;
   height: 40px;
-  border-radius: var(--radius-full);
+  /* Carre a coins arrondis en permanence, comme Discord [D213] ; 30 % suit la taille. */
+  border-radius: 30%;
   border: 0;
   padding: 0;
   cursor: pointer;
@@ -759,7 +786,6 @@ textarea.fm-input {
   font: 700 15px/1 var(--font-display);
   background: var(--tint, var(--surface-raised));
   color: var(--tint-ink, var(--ink));
-  transition: border-radius 0.18s;
 }
 .fm-space img {
   width: 100%;
@@ -767,10 +793,12 @@ textarea.fm-input {
   object-fit: cover;
   border-radius: inherit;
 }
-.fm-space:hover,
-.fm-space[aria-current="true"] {
-  border-radius: var(--radius-lg);
+/* Rail : l'image est dans un span en display: contents (nom accessible) ; il
+   transmet l'arrondi du bouton, sinon l'image garde des coins carres. */
+.fm-space > .contents {
+  border-radius: inherit;
 }
+/* Pastille au survol, barre pour l'espace ouvert [D213]. */
 .fm-space[aria-current="true"]::before {
   content: "";
   position: absolute;
@@ -780,6 +808,18 @@ textarea.fm-input {
   height: 4px;
   border-radius: 4px 4px 0 0;
   background: var(--ink);
+}
+@media (hover: hover) {
+  .fm-space:not(.fm-space-static):not(.fm-space-add):not([aria-current="true"]):hover::before {
+    content: "";
+    position: absolute;
+    left: 15px;
+    right: 15px;
+    bottom: -8px;
+    height: 4px;
+    border-radius: 4px 4px 0 0;
+    background: var(--ink);
+  }
 }
 .fm-space-dot {
   position: absolute;
@@ -819,6 +859,15 @@ textarea.fm-input {
     right: auto;
     top: 10px;
     bottom: 10px;
+    width: 4px;
+    height: auto;
+    border-radius: 0 4px 4px 0;
+  }
+  .fm-space:not(.fm-space-static):not(.fm-space-add):not([aria-current="true"]):hover::before {
+    left: -12px;
+    right: auto;
+    top: 18px;
+    bottom: 18px;
     width: 4px;
     height: auto;
     border-radius: 0 4px 4px 0;
@@ -967,6 +1016,9 @@ textarea.fm-input {
 .fm-shell-main {
   overflow-y: auto;
   min-width: 0;
+  /* Contient les elements en position absolue (textes `sr-only`...) : sans cela,
+     places par rapport a la page, ils allongent le document et la fenetre defile. */
+  position: relative;
 }
 @container (min-width: 768px) {
   .fm-shell-grid {
@@ -1074,6 +1126,13 @@ textarea.fm-input {
   font-size: 13px;
   line-height: 18px;
 }
+/* Deux premiers tags sous le titre [D216] : une ligne, coupee si trop longue. */
+.fm-rcard-body .fm-rcard-tags {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Bouton "..." de la carte : seulement avec une souris ; au doigt, l'appui long. */
 .fm-rcard-more {
   position: absolute;
   top: var(--space-1);
@@ -1082,6 +1141,12 @@ textarea.fm-input {
   width: 36px;
   height: 36px;
   border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+}
+@media (hover: none), (pointer: coarse) {
+  .fm-rcard-more {
+    display: none;
+  }
 }
 .fm-grid {
   display: grid;

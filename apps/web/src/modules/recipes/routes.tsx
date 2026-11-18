@@ -7,6 +7,7 @@ import { HistoryPage } from "./history-page.tsx";
 import { RecipeEditorPage } from "./recipe-editor-page.tsx";
 import { RecipePage } from "./recipe-page.tsx";
 import { RecipesPage } from "./recipes-page.tsx";
+import { SpaceTagsPage } from "./space-tags-page.tsx";
 import { SuggestionPage } from "./suggestion-page.tsx";
 
 export default function RecipesRoutes() {
@@ -16,6 +17,7 @@ export default function RecipesRoutes() {
       {/* Ancien onglet "Mes recettes" : la liste de l'espace perso l'a remplace (D207). */}
       <Route path="mine" element={<Navigate to=".." relative="path" replace />} />
       <Route path="new" element={<RecipeEditorPage />} />
+      <Route path="tags" element={<SpaceTagsPage />} />
       <Route path=":recipeId" element={<RecipePage />} />
       <Route path=":recipeId/edit" element={<RecipeEditorPage />} />
       <Route path=":recipeId/cook" element={<CookPage />} />

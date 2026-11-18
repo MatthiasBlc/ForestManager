@@ -1,5 +1,6 @@
 // Recettes simples (C3.2) : creer, lire, modifier, supprimer, lister avec
 // recherche, filtres, tri et pagination ; tags poses sur une recette.
+import { RECIPE_SORTS } from "@fm/shared";
 import { describe, expect, it } from "vitest";
 
 import { createTestApp, loginAs } from "./helpers/app.ts";
@@ -324,15 +325,15 @@ describe("liste, recherche, filtres et tri (F-REC-11)", () => {
   const titles = (res: { body: { data: { title: string }[] } }) =>
     res.body.data.map((r) => r.title);
 
-  it("liste les recettes de l'espace, les plus recentes d'abord, avec un resume", async () => {
+  it("liste les recettes de l'espace, par ordre alphabetique par defaut (D217), avec un resume", async () => {
     const { f, owner } = await library();
     const res = await owner.get(`/spaces/${f.spaceId}/recipes`);
     expect(res.status).toBe(200);
     expect(titles(res)).toEqual([
+      "Dahl de lentilles",
       "Salade de lentilles",
       "Sauce tériyaki",
       "Tarte aux pommes",
-      "Dahl de lentilles",
     ]);
     expect(res.body.nextCursor).toBeNull();
     const dahl = res.body.data.find((r: { title: string }) => r.title === "Dahl de lentilles");
@@ -385,9 +386,82 @@ describe("liste, recherche, filtres et tri (F-REC-11)", () => {
     expect((await list("tagIds=nope")).body.error.code).toBe("VALIDATION_001");
   });
 
+  it("tags : OU dans une famille, ET entre familles et entre tags sans famille (D216)", async () => {
+    const { f, owner, ids, quick, veggie } = await library();
+    const base = `/spaces/${f.spaceId}/recipes`;
+    const list = (tagIds: string[]) => owner.get(`${base}?sort=title&tagIds=${tagIds.join(",")}`);
+    const tier = (await owner.post(`${base}/tag-families`, { name: "Palier" })).body.id as string;
+    const regular = (await owner.post(`${base}/tags`, { name: "Regulier" })).body.id as string;
+    await owner.patch(`${base}/tags/${quick}`, { familyId: tier });
+    await owner.patch(`${base}/tags/${regular}`, { familyId: tier });
+    await owner.put(`${base}/${ids.tarte}/space-tags`, { tagIds: [regular] });
+
+    // quick : Dahl, Sauce ; regular : Tarte ; veggie (sans famille) : Dahl, Tarte.
+    expect(titles(await list([quick, regular]))).toEqual([
+      "Dahl de lentilles",
+      "Sauce tériyaki",
+      "Tarte aux pommes",
+    ]);
+    expect(titles(await list([quick, regular, veggie]))).toEqual([
+      "Dahl de lentilles",
+      "Tarte aux pommes",
+    ]);
+    const plain = (await owner.post(`${base}/tags`, { name: "Leger" })).body.id as string;
+    await owner.put(`${base}/${ids.salade}/space-tags`, { tagIds: [plain] });
+    expect(titles(await list([veggie, plain]))).toEqual([]);
+  });
+
+  it("trie par creation, titre et temps, dans les deux sens (D217)", async () => {
+    const { f, owner, ids } = await library();
+    const list = (sort: string) => owner.get(`/spaces/${f.spaceId}/recipes?sort=${sort}`);
+    // Une recette retouchee ne remonte pas : l'ordre suit la creation.
+    await db.recipe.update({
+      where: { id: ids.dahl },
+      data: { updatedAt: new Date(Date.now() + 60_000) },
+    });
+    expect(titles(await list("recent"))).toEqual([
+      "Salade de lentilles",
+      "Sauce tériyaki",
+      "Tarte aux pommes",
+      "Dahl de lentilles",
+    ]);
+    expect(titles(await list("oldest"))).toEqual([
+      "Dahl de lentilles",
+      "Tarte aux pommes",
+      "Sauce tériyaki",
+      "Salade de lentilles",
+    ]);
+    expect(titles(await list("title-desc"))).toEqual([
+      "Tarte aux pommes",
+      "Sauce tériyaki",
+      "Salade de lentilles",
+      "Dahl de lentilles",
+    ]);
+    // Sans temps : toujours a la fin.
+    expect(titles(await list("time-desc"))).toEqual([
+      "Tarte aux pommes",
+      "Dahl de lentilles",
+      "Sauce tériyaki",
+      "Salade de lentilles",
+    ]);
+  });
+
+  it('premiere page : nombre total de recettes filtrees ("Voir N recettes", D216)', async () => {
+    const { f, owner, veggie } = await library();
+    const base = `/spaces/${f.spaceId}/recipes`;
+    expect((await owner.get(base)).body.total).toBe(4);
+    const first = await owner.get(`${base}?tagIds=${veggie}&limit=1`);
+    expect(first.body).toMatchObject({ total: 2, data: [expect.anything()] });
+    const next = await owner.get(
+      `${base}?tagIds=${veggie}&limit=1&cursor=${first.body.nextCursor}`
+    );
+    expect(next.body.total).toBeUndefined();
+    expect((await owner.get(`${base}/mine`)).body.total).toEqual(expect.any(Number));
+  });
+
   it("pagine par curseur sans doublon ni oubli, quel que soit le tri", async () => {
     const { f, owner } = await library();
-    for (const sort of ["recent", "title", "time"]) {
+    for (const sort of RECIPE_SORTS) {
       const seen: string[] = [];
       let cursor: string | null = null;
       do {
@@ -412,12 +486,13 @@ describe("liste, recherche, filtres et tri (F-REC-11)", () => {
     expect((await outsider.get(`/spaces/${f.outsider.personalSpaceId}/recipes`)).body).toEqual({
       data: [],
       nextCursor: null,
+      total: 0,
     });
   });
 });
 
 describe("tags d'une recette (D19)", () => {
-  it("tout membre pose les tags d'espace ; la fusion d'un tag suit sur les recettes", async () => {
+  it("seul qui peut modifier la recette pose ses tags d'espace (D216) ; la fusion suit", async () => {
     const f = await groupFixture();
     const author = await loginAs(f.member, app);
     const recipe = await createRecipe(author, f.spaceId);
@@ -426,7 +501,8 @@ describe("tags d'une recette (D19)", () => {
     const hiver = (await extra.post(tags, { name: "Hiver" })).body.id as string;
     const froid = (await extra.post(tags, { name: "Froid" })).body.id as string;
     const path = `/spaces/${f.spaceId}/recipes/${recipe.id}/space-tags`;
-    const res = await extra.put(path, { tagIds: [hiver, froid] });
+    expect((await extra.put(path, { tagIds: [hiver] })).body.error.code).toBe("SPACE_002");
+    const res = await author.put(path, { tagIds: [hiver, froid] });
     expect(res.status).toBe(200);
     expect(res.body.tags.map((t: { name: string }) => t.name).sort()).toEqual(["Froid", "Hiver"]);
 
@@ -438,7 +514,7 @@ describe("tags d'une recette (D19)", () => {
     const otherSpaceTag = await loginAs(f.outsider, app).then((c) =>
       c.post(`/spaces/${f.outsider.personalSpaceId}/recipes/tags`, { name: "Ailleurs" })
     );
-    expect((await extra.put(path, { tagIds: [otherSpaceTag.body.id] })).body.error.code).toBe(
+    expect((await author.put(path, { tagIds: [otherSpaceTag.body.id] })).body.error.code).toBe(
       "VALIDATION_001"
     );
   });
@@ -452,9 +528,9 @@ describe("tags d'une recette (D19)", () => {
     expect(read.body.tags).toEqual([expect.objectContaining({ id: veggie, scope: "GLOBAL" })]);
     expect(
       (
-        await (
-          await loginAs(f.extra, app)
-        ).put(`/spaces/${f.spaceId}/recipes/${recipe.id}/space-tags`, { tagIds: [veggie] })
+        await author.put(`/spaces/${f.spaceId}/recipes/${recipe.id}/space-tags`, {
+          tagIds: [veggie],
+        })
       ).body.error.code
     ).toBe("VALIDATION_001");
   });

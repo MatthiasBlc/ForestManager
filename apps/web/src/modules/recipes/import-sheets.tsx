@@ -32,13 +32,17 @@ export function ImportUrlSheet({
   onClose,
   onPasteText,
   spaceId,
+  onImported,
 }: {
   open: boolean;
   onClose: () => void;
   onPasteText: () => void;
   spaceId: string;
+  /** Recette existante [D212] : l'import remplit l'editeur ouvert au lieu d'en ouvrir un. */
+  onImported?: (imported: ImportedRecipe) => void;
 }) {
-  const openEditor = useOpenEditor(spaceId);
+  const navigateToEditor = useOpenEditor(spaceId);
+  const openEditor = onImported ?? navigateToEditor;
   const [url, setUrl] = useState("");
   const [error, setError] = useState<string>();
   const [busy, setBusy] = useState(false);
@@ -106,12 +110,16 @@ export function ImportTextSheet({
   open,
   onClose,
   spaceId,
+  onImported,
 }: {
   open: boolean;
   onClose: () => void;
   spaceId: string;
+  /** Recette existante [D212] : l'import remplit l'editeur ouvert au lieu d'en ouvrir un. */
+  onImported?: (imported: ImportedRecipe) => void;
 }) {
-  const openEditor = useOpenEditor(spaceId);
+  const navigateToEditor = useOpenEditor(spaceId);
+  const openEditor = onImported ?? navigateToEditor;
   const [text, setText] = useState("");
   const recipe = useMemo(() => parseRecipeText(text), [text]);
   const toCheck = recipe.ingredients.filter((line) => line.check).length;
@@ -154,7 +162,7 @@ export function ImportTextSheet({
               openEditor(recipe);
             }}
           >
-            Ouvrir dans l'éditeur
+            {onImported ? "Importer dans la recette" : "Ouvrir dans l'éditeur"}
           </Button>
         </SheetFooter>
       </div>

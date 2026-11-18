@@ -3,9 +3,10 @@
 // derniere recette renvoyee (pagination par cle, stable quand on ajoute).
 import {
   normalizeName,
+  tagFilterGroups,
   type RecipeListQuery,
+  type RecipePage,
   type RecipeSort,
-  type RecipeSummary,
 } from "@fm/shared";
 
 import type { Context } from "../../core/context.ts";
@@ -14,10 +15,11 @@ import { AppError } from "../../core/http/errors.ts";
 import { loadLinks } from "./composition.ts";
 import { summaryInclude, toSummary, withLinkedMinutes } from "./content.ts";
 
-/** Temps total ; une recette sans temps passe apres les autres au tri par temps. */
+/** Temps total, NULL pour une recette sans temps. */
 const TOTAL = Prisma.sql`(CASE WHEN num_nonnulls(r."prepMinutes", r."cookMinutes", r."restMinutes") = 0 THEN NULL
   ELSE COALESCE(r."prepMinutes", 0) + COALESCE(r."cookMinutes", 0) + COALESCE(r."restMinutes", 0) END)`;
 const NO_TIME = 2_147_483_647;
+const NO_TIME_DESC = -1;
 
 interface SortSpec {
   key: Prisma.Sql;
@@ -30,29 +32,45 @@ interface SortSpec {
 
 const bindValue = (value: unknown) => Prisma.sql`${value}`;
 
-const SORTS: Record<RecipeSort, SortSpec> = {
-  recent: {
-    key: Prisma.sql`r."updatedAt"`,
-    descending: true,
+function dateSort(descending: boolean): SortSpec {
+  return {
+    key: Prisma.sql`r."createdAt"`,
+    descending,
     parse: (value) => {
       const date = typeof value === "string" ? new Date(value) : null;
       return date && !Number.isNaN(date.getTime()) ? date.toISOString() : undefined;
     },
     // Dates stockees en UTC sans fuseau (timestamp(3)).
     bind: (value) => Prisma.sql`CAST(${String(value).replace("Z", "")} AS timestamp(3))`,
-  },
-  title: {
+  };
+}
+
+function titleSort(descending: boolean): SortSpec {
+  return {
     key: Prisma.sql`(lower(unaccent(r.title)) COLLATE "C")`,
-    descending: false,
+    descending,
     parse: (value) => (typeof value === "string" ? value : undefined),
     bind: bindValue,
-  },
-  time: {
-    key: Prisma.sql`COALESCE(${TOTAL}, ${NO_TIME})`,
-    descending: false,
+  };
+}
+
+/** Une recette sans temps passe apres les autres, dans les deux sens. */
+function timeSort(descending: boolean): SortSpec {
+  return {
+    key: Prisma.sql`COALESCE(${TOTAL}, ${descending ? NO_TIME_DESC : NO_TIME})`,
+    descending,
     parse: (value) => (Number.isInteger(value) ? value : undefined),
     bind: bindValue,
-  },
+  };
+}
+
+const SORTS: Record<RecipeSort, SortSpec> = {
+  title: titleSort(false),
+  "title-desc": titleSort(true),
+  recent: dateSort(true),
+  oldest: dateSort(false),
+  time: timeSort(false),
+  "time-desc": timeSort(true),
 };
 
 interface Cursor {
@@ -106,7 +124,8 @@ function filters(
   scope: Prisma.Sql,
   spaceId: string,
   viewerId: string,
-  query: RecipeListQuery
+  query: RecipeListQuery,
+  tagGroups: string[][]
 ): Prisma.Sql[] {
   // Masquee par la moderation [D178] : seul son auteur la voit encore.
   const where = [
@@ -119,11 +138,13 @@ function filters(
     const like = `%${text.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
     where.push(Prisma.sql`lower(unaccent(r.title)) LIKE ${like}`);
   }
-  for (const tagId of query.tagIds ?? []) {
+  // OU dans une famille, ET entre familles [D216].
+  for (const group of tagGroups) {
+    const ids = Prisma.join(group);
     where.push(Prisma.sql`(
-      EXISTS (SELECT 1 FROM "RecipeGlobalTag" g WHERE g."recipeId" = r.id AND g."tagId" = ${tagId})
+      EXISTS (SELECT 1 FROM "RecipeGlobalTag" g WHERE g."recipeId" = r.id AND g."tagId" IN (${ids}))
       OR EXISTS (SELECT 1 FROM "RecipeSpaceTag" s
-        WHERE s."recipeId" = r.id AND s."spaceId" = ${spaceId} AND s."tagId" = ${tagId}))`);
+        WHERE s."recipeId" = r.id AND s."spaceId" = ${spaceId} AND s."tagId" IN (${ids})))`);
   }
   for (const ingredientId of query.ingredientIds ?? []) {
     where.push(Prisma.sql`EXISTS (SELECT 1 FROM "RecipeIngredient" ri
@@ -134,6 +155,17 @@ function filters(
   if (query.authorId) where.push(Prisma.sql`r."authorId" = ${query.authorId}`);
   if (query.base !== undefined) where.push(Prisma.sql`r."isBase" = ${query.base}`);
   return where;
+}
+
+/** Tags choisis groupes par famille ; un tag inconnu reste seul (aucun resultat). */
+async function tagGroupsOf(ctx: Context, tagIds: string[] | undefined): Promise<string[][]> {
+  if (!tagIds?.length) return [];
+  const rows = await ctx.db.tag.findMany({
+    where: { id: { in: tagIds } },
+    select: { id: true, familyId: true },
+  });
+  const family = new Map(rows.map((row) => [row.id, row.familyId]));
+  return tagFilterGroups(tagIds, (id) => family.get(id) ?? null);
 }
 
 /**
@@ -147,9 +179,16 @@ export async function listRecipes(
   viewerId: string,
   query: RecipeListQuery,
   scope: Prisma.Sql = visibleInSql(spaceId)
-): Promise<{ data: RecipeSummary[]; nextCursor: string | null }> {
+): Promise<RecipePage> {
   const sort = SORTS[query.sort];
-  const where = filters(scope, spaceId, viewerId, query);
+  const where = filters(scope, spaceId, viewerId, query, await tagGroupsOf(ctx, query.tagIds));
+  // Premiere page seulement : nombre de recettes filtrees, avant le curseur.
+  const total = query.cursor
+    ? undefined
+    : (
+        await ctx.db.$queryRaw<{ count: number }[]>`
+          SELECT count(*)::int AS count FROM "Recipe" r WHERE ${Prisma.join(where, " AND ")}`
+      )[0]?.count;
   if (query.cursor) {
     const cursor = decodeCursor(query.cursor, sort);
     where.push(
@@ -189,5 +228,5 @@ export async function listRecipes(
     const summary = toSummary(ctx, recipe);
     return [{ ...summary, totalMinutes: withLinkedMinutes(summary.totalMinutes, blocks, links) }];
   });
-  return { data, nextCursor };
+  return total === undefined ? { data, nextCursor } : { data, nextCursor, total };
 }

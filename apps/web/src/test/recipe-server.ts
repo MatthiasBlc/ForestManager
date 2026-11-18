@@ -2,6 +2,7 @@
 // liste, detail, creation, modification, suppression, historique, restauration,
 // partage (F-PARTAGER, demandes, "Mes recettes", depart). Garde l'etat et les corps recus.
 import {
+  matchesTagFilter,
   errorBody,
   type CreateRecipeBody,
   type Ingredient,
@@ -18,6 +19,7 @@ import {
   type SpaceDetail,
   type SpaceRole,
   type Tag,
+  type TagFamily,
   type UpdateRecipeBody,
 } from "@fm/shared";
 import { http, HttpResponse } from "msw";
@@ -71,6 +73,9 @@ export function recipeServer({
       { id: uuid(), scope: "GLOBAL", name: "Rapide" },
     ] as Tag[],
     spaceTags: [{ id: uuid(), scope: "SPACE", name: "Plat du dimanche" }] as Tag[],
+    /** Familles du catalogue [D216] et famille de chaque tag (absent : sans famille). */
+    tagFamilies: [] as TagFamily[],
+    familyOf: {} as Record<string, string>,
     /** Etat du partage par recette ; par defaut, aucun partage. */
     sharing: {} as Record<string, Partial<RecipeSharing>>,
     shareRequests: [] as ShareRequest[],
@@ -84,6 +89,8 @@ export function recipeServer({
     addable: [] as Recipe[],
     /** Sous-recettes annoncees par l'apercu de l'ajout en lot. */
     addMinePreview: [] as RecipeSharing["withIt"],
+    /** Tags d'origine annonces par l'apercu [D216]. */
+    addMineTags: [] as Tag[],
     /** Refus de l'ajout en lot (une recette n'est plus disponible). */
     addMineFails: false,
     queries: [] as URLSearchParams[],
@@ -173,11 +180,76 @@ export function recipeServer({
       return HttpResponse.json(created, { status: 201 });
     }),
     http.get(`${base}/tags`, () => HttpResponse.json({ data: state.spaceTags })),
+    http.get(`${base}/tag-catalog`, () =>
+      HttpResponse.json({
+        families: state.tagFamilies,
+        tags: [...state.globalTags, ...state.spaceTags].map((tag) => ({
+          ...tag,
+          familyId: state.familyOf[tag.id] ?? null,
+          recipeCount: state.recipes.filter((r) => r.tags.some((t) => t.id === tag.id)).length,
+        })),
+      })
+    ),
     http.post(`${base}/tags`, async ({ request }) => {
       const { name } = (await request.json()) as { name: string };
       const tag: Tag = { id: uuid(), scope: "SPACE", name };
       state.spaceTags.push(tag);
       return HttpResponse.json(tag, { status: 201 });
+    }),
+    // Tags de l'espace (E-TAGS-ESPACE) [D216].
+    http.patch(`${base}/tags/:tagId`, async ({ params, request }) => {
+      const body = (await request.json()) as { name?: string; familyId?: string | null };
+      state.bodies.patchTag = body;
+      const tag = state.spaceTags.find((t) => t.id === params.tagId);
+      if (!tag) return notFound();
+      if (body.name !== undefined) tag.name = body.name;
+      if (body.familyId !== undefined) {
+        state.familyOf = Object.fromEntries(
+          Object.entries({ ...state.familyOf, [tag.id]: body.familyId }).filter(
+            (entry): entry is [string, string] => entry[1] !== null
+          )
+        );
+      }
+      return HttpResponse.json(tag);
+    }),
+    http.post(`${base}/tags/:tagId/merge`, async ({ params, request }) => {
+      state.bodies.mergeTag = await request.json();
+      state.spaceTags = state.spaceTags.filter((t) => t.id !== params.tagId);
+      return new HttpResponse(null, { status: 204 });
+    }),
+    http.delete(`${base}/tags/:tagId`, ({ params }) => {
+      state.calls.push(`delete-tag:${String(params.tagId)}`);
+      state.spaceTags = state.spaceTags.filter((t) => t.id !== params.tagId);
+      return new HttpResponse(null, { status: 204 });
+    }),
+    http.post(`${base}/tag-families`, async ({ request }) => {
+      const { name } = (await request.json()) as { name: string };
+      state.bodies.createFamily = { name };
+      const family: TagFamily = { id: uuid(), scope: "SPACE", name };
+      state.tagFamilies.push(family);
+      return HttpResponse.json(family, { status: 201 });
+    }),
+    http.put(`${base}/tag-families/order`, async ({ request }) => {
+      const { ids } = (await request.json()) as { ids: string[] };
+      state.bodies.familyOrder = { ids };
+      state.tagFamilies = ids.flatMap((id) => state.tagFamilies.filter((f) => f.id === id));
+      return HttpResponse.json({ data: state.tagFamilies });
+    }),
+    http.patch(`${base}/tag-families/:familyId`, async ({ params, request }) => {
+      const { name } = (await request.json()) as { name: string };
+      state.bodies.renameFamily = { name };
+      const family = state.tagFamilies.find((f) => f.id === params.familyId);
+      if (!family) return notFound();
+      family.name = name;
+      return HttpResponse.json(family);
+    }),
+    http.delete(`${base}/tag-families/:familyId`, ({ params }) => {
+      state.calls.push(`delete-family:${String(params.familyId)}`);
+      state.tagFamilies = state.tagFamilies.filter((f) => f.id !== params.familyId);
+      state.familyOf = Object.fromEntries(
+        Object.entries(state.familyOf).filter(([, familyId]) => familyId !== params.familyId)
+      );
+      return new HttpResponse(null, { status: 204 });
     }),
     http.get(base, ({ request }) => {
       const params = new URL(request.url).searchParams;
@@ -186,7 +258,13 @@ export function recipeServer({
       const tagIds = params.get("tagIds")?.split(",") ?? [];
       const data = state.recipes
         .filter((r) => r.title.toLowerCase().includes(q))
-        .filter((r) => tagIds.every((id) => r.tags.some((t) => t.id === id)))
+        .filter((r) =>
+          matchesTagFilter(
+            r.tags.map((t) => t.id),
+            tagIds,
+            (id) => state.familyOf[id] ?? null
+          )
+        )
         .filter((r) =>
           (params.get("ingredientIds")?.split(",") ?? []).every((id) =>
             r.blocks.some(
@@ -196,7 +274,7 @@ export function recipeServer({
         )
         .filter((r) => params.get("base") !== "true" || r.isBase)
         .map(toSummary);
-      return HttpResponse.json({ data, nextCursor: null });
+      return HttpResponse.json({ data, nextCursor: null, total: data.length });
     }),
     http.post(base, async ({ request }) => {
       const body = (await request.json()) as CreateRecipeBody;
@@ -274,6 +352,7 @@ export function recipeServer({
     canShare: recipe.can.share,
     spaces: [],
     withIt: [],
+    homeTags: [],
     ...state.sharing[recipe.id],
   });
   const summary = ({
@@ -420,6 +499,7 @@ export function recipeServer({
         const data = state.addable
           .filter((r) => r.title.toLowerCase().includes(q))
           .filter((r) => tagIds.every((id) => r.tags.some((t) => t.id === id)))
+          .filter((r) => params.get("base") !== "true" || r.isBase)
           .map(toSummary);
         return HttpResponse.json({ data, nextCursor: null });
       }
@@ -430,7 +510,7 @@ export function recipeServer({
     }),
     http.post(`${base}/add-mine/preview`, async ({ request }) => {
       record("addMinePreview", await request.json());
-      return HttpResponse.json({ withIt: state.addMinePreview });
+      return HttpResponse.json({ withIt: state.addMinePreview, tags: state.addMineTags });
     }),
     http.post(`${base}/add-mine`, async ({ request }) => {
       const body = (await request.json()) as { recipeIds: string[] };

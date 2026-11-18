@@ -44,6 +44,8 @@ export interface ProfileRule {
   frequencyMax: number | null;
   frequencyPer: FrequencyPer | null;
   tagCooldownDays: number | null;
+  /** Delai de recette propre aux recettes du tag, a la place de celui du profil [D214]. */
+  recipeCooldownDays: number | null;
 }
 
 export interface WeeklyCell {
@@ -355,17 +357,31 @@ export function generate(input: GenerationInput): GenerationResult {
       if (pool.length === 0) return empty({ code: "FREQUENCY_MAX", tagIds: [...maxed].sort() });
     }
 
-    // Delai entre deux fois la meme recette, avant et apres la case.
+    // Delai entre deux fois la meme recette, avant et apres la case. Une regle de
+    // tag peut le remplacer pour ses recettes, le plus court l'emporte [D214].
     const days = profile.cooldownDays;
-    if (days > 0) {
-      const recent = new Set(
-        placed.flatMap((p) =>
-          p.pick?.kind === "RECIPE" && distance(p.date, target.date) <= days ? [p.pick.id] : []
-        )
+    const cooldownOf = (tagIds: readonly string[]) => {
+      const own = profile.rules.flatMap((rule) =>
+        rule.tagId !== null && rule.recipeCooldownDays !== null && tagIds.includes(rule.tagId)
+          ? [rule.recipeCooldownDays]
+          : []
       );
-      pool = pool.filter((entry) => entry.pick.kind === "IDEA" || !recent.has(entry.pick.id));
-      if (pool.length === 0) return empty({ code: "COOLDOWN", days });
+      return own.length > 0 ? Math.min(...own) : days;
+    };
+    const lastGap = new Map<string, number>();
+    for (const p of placed) {
+      if (p.pick?.kind !== "RECIPE") continue;
+      const gap = distance(p.date, target.date);
+      lastGap.set(p.pick.id, Math.min(gap, lastGap.get(p.pick.id) ?? Infinity));
     }
+    const before = pool.length;
+    pool = pool.filter((entry) => {
+      if (entry.pick.kind === "IDEA") return true;
+      const gap = lastGap.get(entry.pick.id);
+      const wait = cooldownOf(entry.tagIds);
+      return gap === undefined || wait === 0 || gap > wait;
+    });
+    if (pool.length === 0 && before > 0) return empty({ code: "COOLDOWN", days });
 
     // Delai entre deux recettes d'un meme tag.
     const cooling = new Set<string>();

@@ -52,6 +52,8 @@ beforeAll(() => {
 afterEach(() => {
   server.resetHandlers();
   cleanup();
+  // Page de retour des recettes (D219) : propre a l'onglet, donc a chaque test.
+  sessionStorage.clear();
 });
 afterAll(() => {
   server.close();

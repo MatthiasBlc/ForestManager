@@ -127,6 +127,9 @@ const DEFINITIONS = {
   RECIPE_015: { status: 400, message: "Ce lien ne peut pas être importé." },
   RECIPE_016: { status: 422, message: "Cette page est injoignable ou trop lourde." },
   RECIPE_017: { status: 422, message: "Aucune recette trouvée sur cette page." },
+  RECIPE_018: { status: 404, message: "Famille de tags introuvable." },
+  RECIPE_019: { status: 409, message: "Une famille porte déjà ce nom dans cet espace." },
+  RECIPE_020: { status: 422, message: "L'ordre doit contenir chaque famille une seule fois." },
 
   // --- Planning ---
   MEAL_001: { status: 409, message: "Ce repas n'est pas planifié dans cet espace." },
@@ -195,6 +198,7 @@ const DEFINITIONS = {
     status: 409,
     message: "Cet espace n'est pas en suppression ou ne peut plus être restauré.",
   },
+  ADMIN_016: { status: 422, message: "L'ordre doit contenir chaque famille une seule fois." },
 } as const satisfies Record<string, ErrorDefinition>;
 
 export type ErrorCode = keyof typeof DEFINITIONS;

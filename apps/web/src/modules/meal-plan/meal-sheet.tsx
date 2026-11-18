@@ -178,7 +178,8 @@ function MealForm({ spaceId, spaceName, cell, meal, defaultServings, onDone, onS
   const [text, setText] = useState(meal?.kind === "TEXT" ? (meal.title ?? "") : "");
   const [servings, setServings] = useState(meal?.servings ?? defaultServings);
   const [comment, setComment] = useState(meal?.comment ?? "");
-  const [locked, setLocked] = useState(meal?.locked ?? false);
+  // Un repas choisi a la main est verrouille d'office : la generation complete autour [D215].
+  const [locked, setLocked] = useState(meal ? meal.locked : true);
   const gone = meal?.kind === "RECIPE" && !meal.recipe ? meal.title : null;
   const base = `/spaces/${spaceId}/meal-plan/meals/${cell.date}/${cell.mealTime}`;
   const refresh = () => queryClient.invalidateQueries({ queryKey: mealsKey(spaceId) });

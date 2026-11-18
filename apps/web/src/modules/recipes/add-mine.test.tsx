@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 
 import { App } from "../../app/App.tsx";
 import { axeViolations } from "../../test/axe.ts";
-import { buildRecipe } from "../../test/fixtures.ts";
+import { buildRecipe, uuid } from "../../test/fixtures.ts";
 import { recipeServer } from "../../test/recipe-server.ts";
 import { renderWithProviders } from "../../test/render.tsx";
 import { RECIPE_ACTIVITY } from "./notifications.ts";
@@ -83,6 +83,31 @@ describe("feuille Ajouter une recette (F-AJOUT-RECETTE, D208)", () => {
     expect(within(sheet).queryByRole("button", { name: /Depuis mes recettes/ })).toBeNull();
     expect(within(sheet).queryByRole("button", { name: "Retour" })).toBeNull();
   });
+
+  it("filtre ses recettes par la feuille de filtres : tags globaux, Bases (D216)", async () => {
+    const s = recipeServer();
+    const [saumon] = mine(s, ["Saumon", "Granola", "Dahl"]);
+    const quick = s.recipes.globalTags[1]!;
+    saumon!.tags = [quick];
+    const { user, picker } = await openMine(s);
+    await within(picker).findByRole("checkbox", { name: /Dahl/ });
+    await user.click(within(picker).getByRole("button", { name: "Filtres" }));
+    const filters = screen.getByRole("dialog", { name: "Filtres" });
+    // Tags globaux seulement : les tags de Famille ne sont pas sur mes recettes d'ailleurs.
+    expect(within(filters).queryByRole("button", { name: "Plat du dimanche" })).toBeNull();
+    await user.click(within(filters).getByRole("button", { name: "Rapide" }));
+    await user.click(within(filters).getByRole("button", { name: "Voir les recettes" }));
+    await waitFor(() => {
+      expect(within(picker).queryByRole("checkbox", { name: /Dahl/ })).not.toBeInTheDocument();
+    });
+    expect(within(picker).getByRole("checkbox", { name: /Saumon/ })).toBeInTheDocument();
+    await user.click(
+      within(within(picker).getByRole("group", { name: "Filtres actifs" })).getByRole("button", {
+        name: "Rapide, retirer le filtre",
+      })
+    );
+    expect(await within(picker).findByRole("checkbox", { name: /Dahl/ })).toBeInTheDocument();
+  });
 });
 
 describe("Depuis mes recettes (F-MES-RECETTES, D203)", () => {
@@ -111,7 +136,7 @@ describe("Depuis mes recettes (F-MES-RECETTES, D203)", () => {
 
     await user.click(within(picker).getByRole("button", { name: "Ajouter 2 recettes" }));
     expect(await screen.findByText("2 recettes ajoutées à Famille")).toBeInTheDocument();
-    expect(s.recipes.bodies.addMine).toEqual({ recipeIds: [saumon!.id, dahl!.id] });
+    expect(s.recipes.bodies.addMine).toEqual({ recipeIds: [saumon!.id, dahl!.id], tagIds: [] });
     expect(screen.queryByRole("dialog", { name: "Mes recettes à ajouter" })).toBeNull();
     expect(await screen.findByRole("article", { name: "Saumon teriyaki" })).toBeInTheDocument();
   });
@@ -140,7 +165,7 @@ describe("Depuis mes recettes (F-MES-RECETTES, D203)", () => {
     expect(
       await screen.findByText("Lasagnes ajoutée à Famille, avec 1 sous-recette")
     ).toBeInTheDocument();
-    expect(s.recipes.bodies.addMine).toEqual({ recipeIds: [lasagnes!.id] });
+    expect(s.recipes.bodies.addMine).toEqual({ recipeIds: [lasagnes!.id], tagIds: [] });
   });
 
   it("recherche transmise a l'API", async () => {
@@ -181,7 +206,7 @@ describe("Depuis mes recettes (F-MES-RECETTES, D203)", () => {
     s.recipes.addMineFails = false;
     await user.click(within(picker).getByRole("button", { name: "Ajouter 1 recette" }));
     expect(await screen.findByText("Saumon teriyaki ajoutée à Famille")).toBeInTheDocument();
-    expect(s.recipes.bodies.addMine).toEqual({ recipeIds: [saumon!.id] });
+    expect(s.recipes.bodies.addMine).toEqual({ recipeIds: [saumon!.id], tagIds: [] });
   });
 
   it("50 au plus : les autres cases se grisent", async () => {
@@ -245,5 +270,24 @@ describe("Depuis mes recettes (F-MES-RECETTES, D203)", () => {
     expect(render(three as typeof event, "s1").text).toBe(
       "a ajouté 2 recettes : « Dahl », « Gratin »."
     );
+  });
+
+  it("tags d'origine a reprendre : tous coches, decocher pour ne pas les reprendre (D216)", async () => {
+    const s = recipeServer();
+    const [saumon] = mine(s, ["Saumon teriyaki", "Dahl"]);
+    const poisson = { id: uuid(), scope: "SPACE" as const, name: "Poisson" };
+    const soir = { id: uuid(), scope: "SPACE" as const, name: "Soir" };
+    s.recipes.addMineTags = [poisson, soir];
+    const { user, picker } = await openMine(s);
+    await user.click(await within(picker).findByRole("checkbox", { name: /Saumon teriyaki/ }));
+    await user.click(within(picker).getByRole("button", { name: "Ajouter 1 recette" }));
+    const confirm = await screen.findByRole("dialog", { name: "Ajouter 1 recette à Famille" });
+    const carried = within(confirm).getByRole("group", { name: "Tags à reprendre dans Famille" });
+    expect(within(carried).getByRole("checkbox", { name: "Poisson" })).toBeChecked();
+    await user.click(within(carried).getByRole("checkbox", { name: "Soir" }));
+    await user.click(within(confirm).getByRole("button", { name: "Ajouter" }));
+    await waitFor(() => {
+      expect(s.recipes.bodies.addMine).toEqual({ recipeIds: [saumon!.id], tagIds: [poisson.id] });
+    });
   });
 });

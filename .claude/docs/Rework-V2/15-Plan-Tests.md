@@ -19,7 +19,7 @@ Regle : un comportement se teste au niveau **le plus bas** qui le prouve. Les E2
 - **Supertest** sur l'app Express sans ouvrir de port.
 - **PostgreSQL de test** dans Docker (`docker compose -f docker/compose.test.yml`), migrations appliquees au demarrage, **base remise a zero entre fichiers de test** (TRUNCATE des tables hors referentiels), referentiels seedes une fois.
 - **Testing Library** + `user-event` ; **MSW** pour simuler l'API, avec des handlers generes depuis les schemas Zod partages (les reponses mockees sont valides par construction).
-- **Playwright** (Chromium seul, WebKit reporte en V2.1 [D195] ; emulation mobile 390x844 par defaut ; un projet desktop 1280x800) ; **@axe-core/playwright** pour l'accessibilite. Stack `docker/compose.e2e.yml` (front en image prod, API en `NODE_ENV=test`), `npm run e2e` [D197].
+- **Playwright** (Chromium seul, WebKit reporte en V2.2 [D195] ; emulation mobile 390x844 par defaut ; un projet desktop 1280x800) ; **@axe-core/playwright** pour l'accessibilite. Stack `docker/compose.e2e.yml` (front en image prod, API en `NODE_ENV=test`), `npm run e2e` [D197].
 - **Couverture** : `@vitest/coverage-v8`, seuils par zone dans `vitest.config.ts` (section 7), `npm run test:coverage` [D200].
 - Tous les tests tournent **dans Docker** en local, comme en V1 (les variables d'environnement n'existent pas hors conteneur).
 

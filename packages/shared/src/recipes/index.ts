@@ -67,3 +67,4 @@ export function checkComposition(
 
 export * from "./diff.ts";
 export * from "./import.ts";
+export * from "./tag-filter.ts";

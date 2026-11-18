@@ -171,14 +171,15 @@ describe("partage par reference (D03, F-REC-5)", () => {
     expect(await titlesIn(w.asMatthias, w.famille.id)).toEqual(["Gratin de pates"]);
   });
 
-  it("chaque espace a ses propres tags sur une recette partagee (D19)", async () => {
+  it("chaque espace a ses propres tags sur une recette partagee (D19, D216)", async () => {
     const w = await world();
     const gratin = await createRecipe(w.asLea, w.foyer.id);
     await share(w.asLea, w.foyer.id, gratin.id, [w.famille.id]);
     const tag = await w.asMatthias.post(`${recipesOf(w.famille.id)}/tags`, { name: "Noel" });
-    await w.asMatthias.put(`${recipesOf(w.famille.id)}/${gratin.id}/space-tags`, {
-      tagIds: [tag.body.id],
-    });
+    const path = `${recipesOf(w.famille.id)}/${gratin.id}/space-tags`;
+    // Matthias ne peut pas modifier la recette de Lea : il ne la tague pas [D216].
+    expect((await w.asMatthias.put(path, { tagIds: [tag.body.id] })).status).toBe(403);
+    await w.asLea.put(path, { tagIds: [tag.body.id] });
 
     const inFamille = await w.asMatthias.get(`${recipesOf(w.famille.id)}/${gratin.id}`);
     expect(inFamille.body.tags.map((t: { name: string }) => t.name)).toEqual(["Noel"]);
@@ -186,6 +187,65 @@ describe("partage par reference (D03, F-REC-5)", () => {
     expect(inFoyer.body.tags).toEqual([]);
     const filtered = await w.asMatthias.get(`${recipesOf(w.famille.id)}?tagIds=${tag.body.id}`);
     expect(filtered.body.data).toHaveLength(1);
+  });
+
+  it("tags d'origine repris au partage (D216) : poses s'ils existent, crees sinon", async () => {
+    const w = await world();
+    const gratin = await createRecipe(w.asLea, w.foyer.id);
+    const foyerTags = `${recipesOf(w.foyer.id)}/tags`;
+    const noel = (await w.asLea.post(foyerTags, { name: "Noël" })).body.id as string;
+    const gratins = (await w.asLea.post(foyerTags, { name: "Gratins" })).body.id as string;
+    const leger = (await w.asLea.post(foyerTags, { name: "Léger" })).body.id as string;
+    await w.asLea.put(`${recipesOf(w.foyer.id)}/${gratin.id}/space-tags`, {
+      tagIds: [noel, gratins, leger],
+    });
+    const sharing = await w.asLea.get(`${recipesOf(w.foyer.id)}/${gratin.id}/sharing`);
+    expect(sharing.body.homeTags.map((t: { name: string }) => t.name)).toEqual([
+      "Gratins",
+      "Léger",
+      "Noël",
+    ]);
+    // Famille a deja "noel" (meme slug) : il est pose, pas recree.
+    const familleNoel = (
+      await w.asMatthias.post(`${recipesOf(w.famille.id)}/tags`, { name: "noel" })
+    ).body.id as string;
+    const res = await w.asLea.put(`${recipesOf(w.foyer.id)}/${gratin.id}/shares`, {
+      spaceIds: [w.famille.id],
+      tagIds: [noel, gratins],
+    });
+    expect(res.status).toBe(200);
+    const inFamille = await w.asMatthias.get(`${recipesOf(w.famille.id)}/${gratin.id}`);
+    const tags = inFamille.body.tags as { id: string; name: string; scope: string }[];
+    expect(tags.map((t) => t.name).sort()).toEqual(["Gratins", "noel"]);
+    expect(tags.find((t) => t.name === "noel")?.id).toBe(familleNoel);
+    // Les tags de l'origine restent inchanges.
+    const inFoyer = await w.asLea.get(`${recipesOf(w.foyer.id)}/${gratin.id}`);
+    expect(inFoyer.body.tags).toHaveLength(3);
+  });
+
+  it("Depuis mes recettes : l'apercu liste les tags d'origine, l'ajout reprend les coches (D216)", async () => {
+    const w = await world();
+    const gratin = await createRecipe(w.asLea, w.foyer.id);
+    const dahl = await createRecipe(w.asLea, w.foyer.id, { title: "Dahl" });
+    const foyerTags = `${recipesOf(w.foyer.id)}/tags`;
+    const noel = (await w.asLea.post(foyerTags, { name: "Noel" })).body.id as string;
+    const soupe = (await w.asLea.post(foyerTags, { name: "Soupe" })).body.id as string;
+    await w.asLea.put(`${recipesOf(w.foyer.id)}/${gratin.id}/space-tags`, { tagIds: [noel] });
+    await w.asLea.put(`${recipesOf(w.foyer.id)}/${dahl.id}/space-tags`, { tagIds: [noel, soupe] });
+    const base = recipesOf(w.famille.id);
+    const preview = await w.asLea.post(`${base}/add-mine/preview`, {
+      recipeIds: [gratin.id, dahl.id],
+    });
+    expect(preview.body.tags.map((t: { name: string }) => t.name)).toEqual(["Noel", "Soupe"]);
+    const res = await w.asLea.post(`${base}/add-mine`, {
+      recipeIds: [gratin.id, dahl.id],
+      tagIds: [noel],
+    });
+    expect(res.body.added).toBe(2);
+    for (const id of [gratin.id, dahl.id]) {
+      const read = await w.asLea.get(`${base}/${id}`);
+      expect(read.body.tags.map((t: { name: string }) => t.name)).toEqual(["Noel"]);
+    }
   });
 
   it("une recette partagee peut etre liee comme sous-recette dans l'espace de partage", async () => {

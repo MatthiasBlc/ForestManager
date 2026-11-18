@@ -7,6 +7,8 @@ import {
   adminIngredientSchema,
   adminIngredientsQuerySchema,
   adminTagBodySchema,
+  adminTagFamilyBodySchema,
+  adminTagFamilySchema,
   adminTagSchema,
   adminUnitSchema,
   aisleOrderBodySchema,
@@ -17,6 +19,7 @@ import {
   mergeIngredientBodySchema,
   mergeTagBodySchema,
   updateAdminIngredientBodySchema,
+  tagFamilyOrderBodySchema,
   updateAdminUnitBodySchema,
 } from "@fm/shared";
 import { Router } from "express";
@@ -199,6 +202,55 @@ export function adminReferentialsRouter(ctx: Context): Router {
     "/tags/:id",
     handle({ params: idParamsSchema }, async ({ params }, req, res) => {
       await referentials.deleteTag(ctx, currentAdminId(req), params.id);
+      res.status(204).end();
+    })
+  );
+
+  // --- Familles de tags globales [D216] ---
+
+  router.get("/tag-families", async (_req, res) => {
+    reply(res, listSchema(adminTagFamilySchema), {
+      data: await referentials.listTagFamilies(ctx),
+    });
+  });
+
+  router.post(
+    "/tag-families",
+    handle({ body: adminTagFamilyBodySchema }, async ({ body }, req, res) => {
+      const family = await referentials.createTagFamily(ctx, currentAdminId(req), body);
+      reply(res, adminTagFamilySchema, family, 201);
+    })
+  );
+
+  // Declaree avant /tag-families/:id pour que "order" ne soit pas lu comme un id.
+  router.put(
+    "/tag-families/order",
+    handle({ body: tagFamilyOrderBodySchema }, async ({ body }, req, res) => {
+      const data = await referentials.reorderTagFamilies(ctx, currentAdminId(req), body.ids);
+      reply(res, listSchema(adminTagFamilySchema), { data });
+    })
+  );
+
+  router.patch(
+    "/tag-families/:id",
+    handle(
+      { params: idParamsSchema, body: adminTagFamilyBodySchema },
+      async ({ params, body }, req, res) => {
+        const family = await referentials.updateTagFamily(
+          ctx,
+          currentAdminId(req),
+          params.id,
+          body
+        );
+        reply(res, adminTagFamilySchema, family);
+      }
+    )
+  );
+
+  router.delete(
+    "/tag-families/:id",
+    handle({ params: idParamsSchema }, async ({ params }, req, res) => {
+      await referentials.deleteTagFamily(ctx, currentAdminId(req), params.id);
       res.status(204).end();
     })
   );

@@ -1,5 +1,5 @@
 // Recherche globale, groupes du module Recettes (P16) [D191] : recettes de tous
-// les espaces de l'utilisateur, ingredients utilises dans l'espace courant.
+// les espaces de l'utilisateur, tags et ingredients utilises dans l'espace courant.
 import type { SearchGroup } from "@fm/shared";
 
 import type { Context } from "../../core/context.ts";
@@ -81,6 +81,44 @@ async function ingredients(ctx: Context, input: SearchInput): Promise<SearchGrou
   };
 }
 
+/**
+ * Tags globaux et de l'espace courant qui ont des recettes visibles ici [D216] ;
+ * un tag ouvre la liste de l'espace filtree sur lui.
+ */
+async function tags(ctx: Context, input: SearchInput): Promise<SearchGroup> {
+  const current = input.spaces.find((space) => space.id === input.currentSpaceId);
+  if (!current) return { key: "recipes.tags", items: [] };
+  const rows = await ctx.db.$queryRaw<{ id: string; name: string; count: number }[]>`
+    SELECT t.id, COALESCE(tr.name, t.name) AS name, COUNT(DISTINCT r.id)::int AS count
+    FROM "Tag" t
+    LEFT JOIN "TagTranslation" tr ON tr."tagId" = t.id AND tr.locale = ${LOCALE}
+    JOIN (
+      SELECT g."tagId", g."recipeId" FROM "RecipeGlobalTag" g
+      UNION ALL
+      SELECT st."tagId", st."recipeId" FROM "RecipeSpaceTag" st WHERE st."spaceId" = ${current.id}
+    ) link ON link."tagId" = t.id
+    JOIN "Recipe" r ON r.id = link."recipeId"
+    WHERE t."deletedAt" IS NULL AND t."mergedIntoId" IS NULL
+      AND (t.scope = 'GLOBAL' OR t."spaceId" = ${current.id})
+      AND ${visibleInSql(current.id)} AND r."deletedAt" IS NULL
+      AND (r."hiddenAt" IS NULL OR r."authorId" = ${input.userId})
+      AND lower(unaccent(COALESCE(tr.name, t.name))) LIKE ${input.like}
+    GROUP BY t.id, COALESCE(tr.name, t.name)
+    ORDER BY (lower(unaccent(COALESCE(tr.name, t.name))) LIKE ${prefixOf(input.text)}) DESC,
+      count DESC, COALESCE(tr.name, t.name)
+    LIMIT ${input.limit}`;
+  return {
+    key: "recipes.tags",
+    items: rows.map((row) => ({
+      id: row.id,
+      title: row.name,
+      spaceId: current.id,
+      spaceName: current.name,
+      data: { recipeCount: row.count },
+    })),
+  };
+}
+
 export async function searchRecipes(ctx: Context, input: SearchInput): Promise<SearchGroup[]> {
-  return Promise.all([recipes(ctx, input), ingredients(ctx, input)]);
+  return Promise.all([recipes(ctx, input), tags(ctx, input), ingredients(ctx, input)]);
 }

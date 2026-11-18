@@ -237,4 +237,57 @@ describe("tags globaux (A08)", () => {
       expect(within(table).queryByText("Végétarien")).not.toBeInTheDocument();
     });
   });
+
+  it("familles globales : creer, traduire, ordonner, supprimer ; ranger un tag (D216)", async () => {
+    const { state } = mockReferentialsApi();
+    const { user } = renderWithProviders(<App />, { route: "/admin/tags" });
+    const families = await screen.findByRole("table", { name: "Familles de tags" });
+    expect(within(families).getByRole("row", { name: /Saison Season 0/ })).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: "Nouvelle famille" }));
+    let sheet = await screen.findByRole("dialog", { name: "Nouvelle famille" });
+    await user.type(within(sheet).getByLabelText("Nom en français"), "Moment");
+    await user.click(within(sheet).getByRole("button", { name: "Créer" }));
+    await waitFor(() => {
+      expect(state.calls).toContainEqual(
+        expect.objectContaining({
+          method: "POST",
+          path: "/admin/tag-families",
+          body: { fr: "Moment", en: null },
+        })
+      );
+    });
+
+    await user.click(await screen.findByRole("button", { name: "Monter Régime" }));
+    await waitFor(() => {
+      expect(state.calls).toContainEqual(
+        expect.objectContaining({
+          method: "PUT",
+          path: "/admin/tag-families/order",
+          body: { ids: [state.families[0]!.id, state.families[1]!.id, state.families[2]!.id] },
+        })
+      );
+    });
+    expect(state.families.map((f) => f.fr)).toEqual(["Régime", "Saison", "Moment"]);
+
+    await user.click(screen.getByRole("button", { name: "Renommer ou traduire Saison" }));
+    sheet = await screen.findByRole("dialog", { name: "Modifier « Saison »" });
+    await user.click(within(sheet).getByRole("button", { name: "Supprimer la famille" }));
+    sheet = await screen.findByRole("dialog", { name: "Supprimer « Saison » ?" });
+    await user.click(within(sheet).getByRole("button", { name: "Supprimer" }));
+    await waitFor(() => {
+      expect(state.families.map((f) => f.fr)).toEqual(["Régime", "Moment"]);
+    });
+
+    const tags = screen.getByRole("table", { name: "Tags globaux" });
+    await user.selectOptions(within(tags).getByLabelText("Famille de Rapide"), "Régime");
+    await waitFor(() => {
+      expect(state.calls).toContainEqual(
+        expect.objectContaining({
+          method: "PATCH",
+          body: { fr: "Rapide", en: "Quick", familyId: state.families[0]!.id },
+        })
+      );
+    });
+  });
 });

@@ -119,6 +119,11 @@ const B2_ROUTES: Record<string, RecipeKey> = {
   "PATCH /tags/:tagId": "recipes.tags.moderate",
   "POST /tags/:tagId/merge": "recipes.tags.moderate",
   "DELETE /tags/:tagId": "recipes.tags.moderate",
+  "GET /tag-catalog": "recipes.view",
+  "POST /tag-families": "recipes.tags.moderate",
+  "PUT /tag-families/order": "recipes.tags.moderate",
+  "PATCH /tag-families/:familyId": "recipes.tags.moderate",
+  "DELETE /tag-families/:familyId": "recipes.tags.moderate",
   "GET /:recipeId": "recipes.view",
   "PUT /:recipeId": "recipes.view",
   "DELETE /:recipeId": "recipes.view",
@@ -190,6 +195,11 @@ function ok(res: Response): Response {
   return res;
 }
 
+async function spaceFamily(s: Scenario): Promise<string> {
+  const owner = await loginAs(s.f.owner, app);
+  return ok(await owner.post(`${s.base}/tag-families`, { name: "Palier" })).body.id as string;
+}
+
 async function spaceTag(s: Scenario): Promise<string> {
   const owner = await loginAs(s.f.owner, app);
   return ok(await owner.post(`${s.base}/tags`, { name: "Du dimanche" })).body.id as string;
@@ -251,6 +261,14 @@ const CALLS: Record<string, Call> = {
     return c.post(`${s.base}/tags/${await spaceTag(s)}/merge`, { intoTagId: into });
   },
   "DELETE /tags/:tagId": async (c, s) => c.delete(`${s.base}/tags/${await spaceTag(s)}`),
+  "GET /tag-catalog": (c, s) => c.get(`${s.base}/tag-catalog`),
+  "POST /tag-families": (c, s) => c.post(`${s.base}/tag-families`, { name: "Saison" }),
+  "PUT /tag-families/order": async (c, s) =>
+    c.put(`${s.base}/tag-families/order`, { ids: [await spaceFamily(s)] }),
+  "PATCH /tag-families/:familyId": async (c, s) =>
+    c.patch(`${s.base}/tag-families/${await spaceFamily(s)}`, { name: "Paliers" }),
+  "DELETE /tag-families/:familyId": async (c, s) =>
+    c.delete(`${s.base}/tag-families/${await spaceFamily(s)}`),
   "GET /:recipeId": (c, s) => c.get(`${s.base}/${s.recipeId}`),
   "PUT /:recipeId": async (c, s) =>
     c.put(`${s.base}/${s.recipeId}`, { ...(await recipeBody(s.subject)), revision: 1 }),

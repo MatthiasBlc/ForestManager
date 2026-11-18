@@ -57,6 +57,27 @@ describe("actions d'une carte (F-ACTIONS)", () => {
     expect(await screen.findByRole("list", { name: "Révisions de Gratin" })).toBeInTheDocument();
   });
 
+  it('bouton "..." de la carte (bureau) : clic ou Entree ouvrent les actions, pas la recette', async () => {
+    const s = recipeServer();
+    s.add({ title: "Gratin" });
+    const { user, container } = renderWithProviders(<App />, {
+      route: `/s/${s.space.id}/recipes`,
+    });
+    const card = await screen.findByRole("article", { name: "Gratin" });
+    await user.click(within(card).getByRole("button", { name: "Actions de Gratin" }));
+    expect(await screen.findByRole("dialog", { name: "Gratin" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { level: 1, name: "Gratin" })).not.toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: "Gratin" })).not.toBeInTheDocument();
+    });
+    within(card).getByRole("button", { name: "Actions de Gratin" }).focus();
+    await user.keyboard("{Enter}");
+    expect(await screen.findByRole("dialog", { name: "Gratin" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { level: 1, name: "Gratin" })).not.toBeInTheDocument();
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
   it("la touche Menu ouvre les actions ; supprimer reste sur la liste", async () => {
     const s = recipeServer({ recipes: [buildRecipe({ title: "Gratin" })] });
     const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/recipes` });

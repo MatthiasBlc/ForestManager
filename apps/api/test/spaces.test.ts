@@ -96,6 +96,52 @@ describe("creer, lister, lire, modifier", () => {
     expect(list.body.data.map((s: { kind: string }) => s.kind)).toEqual(["PERSONAL", "GROUP"]);
   });
 
+  it("ordre des espaces propre a chacun : perso en tete, les nouveaux a la fin (D218)", async () => {
+    const lea = await createUser();
+    const tom = await createUser();
+    const amis = await createSpace(lea.id, { name: "Amis" });
+    const coloc = await createSpace(lea.id, { name: "Coloc" });
+    const famille = await createSpace(tom.id, { name: "Famille" });
+    await addMember(famille.id, lea.id);
+    await addMember(amis.id, tom.id);
+    const client = await loginAs(lea, app);
+    const names = async (c = client) =>
+      ((await c.get("/spaces")).body.data as { name: string; kind: string }[]).map((s) =>
+        s.kind === "PERSONAL" ? "perso" : s.name
+      );
+    expect(await names()).toEqual(["perso", "Amis", "Coloc", "Famille"]);
+
+    // Le client envoie l'ordre complet ; un espace absent de la liste passe apres, par nom.
+    const res = await client.put("/me/space-order", {
+      spaceIds: [famille.id, amis.id, coloc.id],
+    });
+    expect(res.status).toBe(200);
+    expect(
+      (res.body.data as { name: string; kind: string }[]).map((s) =>
+        s.kind === "PERSONAL" ? "perso" : s.name
+      )
+    ).toEqual(["perso", "Famille", "Amis", "Coloc"]);
+    expect(await names()).toEqual(["perso", "Famille", "Amis", "Coloc"]);
+    // Nouvel espace : apres ceux deja ranges.
+    await client.post("/spaces", { name: "Atelier" });
+    expect(await names()).toEqual(["perso", "Famille", "Amis", "Coloc", "Atelier"]);
+    // Les autres membres gardent leur ordre.
+    expect(await names(await loginAs(tom, app))).toEqual(["perso", "Amis", "Famille"]);
+    // Espace perso, d'un autre ou inconnu : ignores ; doublons refuses.
+    const other = await createSpace(tom.id, { name: "Secret" });
+    expect(
+      (
+        await client.put("/me/space-order", {
+          spaceIds: [lea.personalSpaceId, other.id, NOT_FOUND_UUID, coloc.id],
+        })
+      ).status
+    ).toBe(200);
+    expect(await names()).toEqual(["perso", "Coloc", "Amis", "Atelier", "Famille"]);
+    expect(
+      (await client.put("/me/space-order", { spaceIds: [coloc.id, coloc.id] })).body.error.code
+    ).toBe("VALIDATION_001");
+  });
+
   it("plafonne a 20 espaces possedes (D51)", async () => {
     const user = await createUser();
     for (let i = 0; i < MAX_OWNED_SPACES; i += 1) await createSpace(user.id);

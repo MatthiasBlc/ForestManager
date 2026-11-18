@@ -17,14 +17,17 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
 import { FormAlert } from "../../core/access/auth-layout.tsx";
+import { spaceQuery } from "../../core/session/queries.ts";
 import { errorMessage } from "../../i18n/index.ts";
 import { api } from "../../lib/api.ts";
 import { useWriteGuard } from "../../pwa/use-write-guard.ts";
 import { Button } from "../../ui/button.tsx";
 import { Chip, SegmentedControl, Stepper, Switch } from "../../ui/controls.tsx";
+import { Icon } from "../../ui/icon.tsx";
 import { OptionList } from "../../ui/option-list.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
-import { globalTagsQuery, spaceTagsQuery } from "../recipes/queries.ts";
+import { TagSheet } from "../recipes/components/tag-sheet.tsx";
+import { tagCatalogQuery } from "../recipes/queries.ts";
 import { useDebounced } from "../../lib/use-debounced.ts";
 import { WEIGHT_STEP_LABELS } from "./format.ts";
 import { profilesKey } from "./queries.ts";
@@ -34,7 +37,10 @@ type MealChoice = "ALL" | MealTime;
 
 const isStep = (weight: number) => (WEIGHT_STEPS as readonly number[]).includes(weight);
 
-/** Choix d'un tag (global ou de l'espace) en pastilles : reste court meme avec beaucoup de tags. */
+/**
+ * Choix d'un tag (global ou de l'espace) : un champ qui ouvre la feuille de tags
+ * en choix unique ; toucher un tag le choisit et ferme [D216].
+ */
 export function TagChoice({
   spaceId,
   value,
@@ -46,23 +52,42 @@ export function TagChoice({
   onChange: (id: string) => void;
   label?: string;
 }) {
-  const global = useQuery(globalTagsQuery);
-  const local = useQuery(spaceTagsQuery(spaceId));
-  const tags = [...(global.data ?? []), ...(local.data ?? [])];
-  if (!global.data || !local.data) return <p className="m-0 text-sm text-ink-muted">Chargement…</p>;
+  const [open, setOpen] = useState(false);
+  const catalog = useQuery(tagCatalogQuery(spaceId));
+  const space = useQuery(spaceQuery(spaceId));
+  const chosen = catalog.data?.tags.find((tag) => tag.id === value);
   return (
-    <div className="flex flex-wrap gap-2" role="group" aria-label={label}>
-      {tags.map((tag) => (
-        <Chip
-          key={tag.id}
-          selected={tag.id === value}
-          onToggle={() => {
-            onChange(tag.id);
-          }}
-        >
-          {tag.name}
-        </Chip>
-      ))}
+    <div role="group" aria-label={label}>
+      <button
+        type="button"
+        className="fm-option w-full text-left"
+        aria-label={chosen ? `${chosen.name}, changer le tag` : "Choisir un tag"}
+        onClick={() => {
+          setOpen(true);
+        }}
+      >
+        <span className="fm-option-icon">
+          <Icon name="tag" />
+        </span>
+        <span className="fm-option-text">
+          <b>{chosen ? chosen.name : "Choisir un tag"}</b>
+        </span>
+        <Icon name="chevron-right" className="fm-option-go" />
+      </button>
+      <TagSheet
+        open={open}
+        onClose={() => {
+          setOpen(false);
+        }}
+        title="Choisir un tag"
+        mode="single"
+        catalog={catalog.data}
+        spaceName={space.data?.name ?? ""}
+        selected={value ? [value] : []}
+        onChange={([id]) => {
+          if (id) onChange(id);
+        }}
+      />
     </div>
   );
 }
@@ -153,6 +178,9 @@ function RuleForm({
   const [max, setMax] = useState(rule?.frequencyMax ?? 0);
   const [per, setPer] = useState<FrequencyPer>(rule?.frequencyPer ?? "PER_WEEK");
   const [cooldown, setCooldown] = useState(rule?.tagCooldownDays ?? 0);
+  // Delai de recette propre aux recettes du tag [D214] ; coupe : celui du profil.
+  const [ownWait, setOwnWait] = useState((rule?.recipeCooldownDays ?? null) !== null);
+  const [wait, setWait] = useState(rule?.recipeCooldownDays ?? 0);
   const [problem, setProblem] = useState<string>();
   const done = async () => {
     await queryClient.invalidateQueries({ queryKey: profilesKey(spaceId) });
@@ -193,6 +221,7 @@ function RuleForm({
       frequencyMax: tag && max > 0 ? max : null,
       frequencyPer: tag && (min > 0 || max > 0) ? per : null,
       tagCooldownDays: tag && cooldown > 0 ? cooldown : null,
+      recipeCooldownDays: tag && ownWait ? wait : null,
     });
   };
 
@@ -329,22 +358,31 @@ function RuleForm({
               onChange={setCooldown}
             />
           </div>
+          <div className="flex flex-col gap-2">
+            <Switch label="Délai propre à ses recettes" checked={ownWait} onChange={setOwnWait} />
+            {ownWait ? (
+              <div className="flex flex-col gap-1">
+                <span className="text-sm text-ink-muted">
+                  Remplace le délai du profil pour les recettes de ce tag.
+                </span>
+                <Stepper
+                  label="Jours avant de reproposer une de ses recettes"
+                  min={0}
+                  max={MAX_COOLDOWN_DAYS}
+                  value={wait}
+                  format={(days) => (days === 0 ? "Aucun" : `${String(days)} j`)}
+                  onChange={setWait}
+                />
+              </div>
+            ) : null}
+          </div>
         </>
       ) : null}
+      {/* Pas de `block` : deux boutons pleine largeur sur la ligne du pied debordent. */}
       <SheetFooter>
-        <Button
-          variant="primary"
-          block
-          disabled={save.isPending || guard.disabled}
-          aria-describedby={guard["aria-describedby"]}
-          onClick={submit}
-        >
-          {rule ? "Enregistrer" : "Ajouter la règle"}
-        </Button>
         {rule ? (
           <Button
             variant="danger"
-            block
             disabled={remove.isPending || guard.disabled}
             onClick={() => {
               remove.mutate();
@@ -353,6 +391,14 @@ function RuleForm({
             Supprimer la règle
           </Button>
         ) : null}
+        <Button
+          variant="primary"
+          disabled={save.isPending || guard.disabled}
+          aria-describedby={guard["aria-describedby"]}
+          onClick={submit}
+        >
+          {rule ? "Enregistrer" : "Ajouter la règle"}
+        </Button>
       </SheetFooter>
     </div>
   );

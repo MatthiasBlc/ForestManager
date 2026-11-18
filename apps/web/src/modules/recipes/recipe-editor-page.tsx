@@ -11,7 +11,6 @@ import {
   suggestionSummarySchema,
   type ImportedRecipe,
   type Recipe,
-  type Tag,
   type Unit,
 } from "@fm/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -20,6 +19,7 @@ import { useLocation, useNavigate, useParams } from "react-router";
 
 import { FormAlert } from "../../core/access/auth-layout.tsx";
 import { PageChrome } from "../../core/shell/page-chrome.tsx";
+import { recipeBackTarget } from "../../core/shell/return-to.ts";
 import { spaceQuery } from "../../core/session/queries.ts";
 import { errorMessage } from "../../i18n/index.ts";
 import { api } from "../../lib/api.ts";
@@ -27,8 +27,9 @@ import { uploadImage } from "../../lib/upload.ts";
 import { useUploadsEnabled } from "../../patterns/use-uploads.ts";
 import { ImagePicker } from "../../patterns/image-picker.tsx";
 import { TopBar } from "../../patterns/top-bar.tsx";
+import { ActionMenu } from "../../ui/action-menu.tsx";
 import { Button, IconButton } from "../../ui/button.tsx";
-import { Chip, Stepper, Switch } from "../../ui/controls.tsx";
+import { Stepper, Switch } from "../../ui/controls.tsx";
 import { Badge, Skeleton } from "../../ui/display.tsx";
 import { cx } from "../../ui/cx.ts";
 import { Field } from "../../ui/field.tsx";
@@ -36,7 +37,9 @@ import { Icon } from "../../ui/icon.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { AddBlockSheet, LinkRecipeSheet } from "./components/link-recipe-sheet.tsx";
+import { ImportTextSheet, ImportUrlSheet, type ImportSheet } from "./import-sheets.tsx";
 import { QuantityInput } from "./components/quantity-input.tsx";
+import { RecipeTagsField } from "./components/recipe-tags-field.tsx";
 import {
   clearDraft,
   draftErrors,
@@ -48,6 +51,7 @@ import {
   emptyDraft,
   emptyLine,
   hasErrors,
+  mergeImport,
   newKey,
   readDraft,
   suggestionMarks,
@@ -63,12 +67,10 @@ import { useOnline } from "../../pwa/use-online.ts";
 import type { RecipePrefill } from "./prefill.ts";
 import { RecipeReadOnly, RecipeUnavailable } from "./recipe-page.tsx";
 import {
-  globalTagsQuery,
   recipeFailure,
   recipeQuery,
   recipesKey,
   recipeSuggestionsQuery,
-  spaceTagsQuery,
   unitsQuery,
 } from "./queries.ts";
 
@@ -281,38 +283,6 @@ function BlockEditor({
   );
 }
 
-function TagPicker({
-  label,
-  tags,
-  selected,
-  onChange,
-}: {
-  label: string;
-  tags: readonly Tag[];
-  selected: readonly string[];
-  onChange: (ids: string[]) => void;
-}) {
-  if (tags.length === 0) return null;
-  return (
-    <div className="flex flex-col gap-2" role="group" aria-label={label}>
-      <span className="fm-label">{label}</span>
-      <div className="flex flex-wrap gap-2">
-        {tags.map((tag) => (
-          <Chip
-            key={tag.id}
-            selected={selected.includes(tag.id)}
-            onToggle={(on) => {
-              onChange(on ? [...selected, tag.id] : selected.filter((id) => id !== tag.id));
-            }}
-          >
-            {tag.name}
-          </Chip>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 /** Photo choisie pour une recette pas encore creee : rattachee a l'enregistrement. */
 interface PendingPhoto {
   uploadId: string;
@@ -328,14 +298,18 @@ function PhotoField({
   recipe,
   pending,
   onPending,
+  fromPage,
 }: {
   spaceId: string;
   recipe?: Recipe;
   pending: PendingPhoto | null;
   onPending: (photo: PendingPhoto | null) => void;
+  /** Import dans une recette existante [D212] : photo de la page, reprise si la fiche n'en a pas. */
+  fromPage?: string | null;
 }) {
   const queryClient = useQueryClient();
   const [imageUrl, setImageUrl] = useState(recipe?.imageUrl ?? null);
+  const uploads = useUploadsEnabled();
   const shown = recipe ? imageUrl : (pending?.preview ?? null);
 
   const saved = async (url: string | null) => {
@@ -347,6 +321,33 @@ function PhotoField({
     await queryClient.invalidateQueries({ queryKey: [...recipesKey(spaceId), "list"] });
   };
   const path = recipe ? `/spaces/${spaceId}/recipes/${recipe.id}/photo` : null;
+  // Comme une photo choisie : rattachee tout de suite, hors revisions [D167].
+  useEffect(() => {
+    if (!fromPage || !recipe || imageUrl || !uploads) return;
+    const run = { cancelled: false };
+    void (async () => {
+      try {
+        const image = await api.postForBlob(`/spaces/${spaceId}/recipes/import/image`, {
+          url: fromPage,
+        });
+        const uploadId = await uploadImage(image, "photo");
+        if (run.cancelled) return;
+        const { url } = await api.put(
+          `/spaces/${spaceId}/recipes/${recipe.id}/photo`,
+          { uploadId },
+          imageResponseSchema
+        );
+        await saved(url);
+      } catch {
+        // Photo injoignable ou illisible : la fiche reste sans photo.
+      }
+    })();
+    return () => {
+      run.cancelled = true;
+    };
+    // `saved` et `imageUrl` volontairement hors dependances : un seul essai par import.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fromPage, recipe, uploads, spaceId]);
 
   return (
     <div className="fm-stack gap-2">
@@ -405,8 +406,6 @@ function Editor({
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const globalTags = useQuery(globalTagsQuery);
-  const spaceTags = useQuery(spaceTagsQuery(spaceId));
   const key = `${draftKey(spaceId, recipe)}${suggest ? ":suggest" : ""}`;
   // Un import ou un pre-remplissage remplace le brouillon garde d'une nouvelle recette.
   const [restored] = useState(() => (imported || prefill ? null : readDraft(key)));
@@ -427,7 +426,17 @@ function Editor({
   // Mode suggestion : ce que la suggestion change, ligne par ligne.
   const [base] = useState(() => (suggest && recipe ? draftFromRecipe(recipe) : null));
   const marks = base ? suggestionMarks(base, draft) : {};
-  const toCheck = imported?.ingredients.filter((line) => line.check).length ?? 0;
+  // Import dans la recette existante (menu "...") [D212].
+  const [importSheet, setImportSheet] = useState<ImportSheet>(null);
+  const [reimported, setReimported] = useState<ImportedRecipe | null>(null);
+  const shownImport = reimported ?? (recipe ? undefined : imported);
+  const onReimport = (read: ImportedRecipe) => {
+    setDraft((current) => mergeImport(current, read, units));
+    setDirty(true);
+    setReimported(read);
+    setImportSheet(null);
+  };
+  const toCheck = shownImport?.ingredients.filter((line) => line.check).length ?? 0;
   // Erreurs montrees apres un premier essai d'enregistrement, puis recalculees a
   // chaque saisie : une erreur corrigee disparait aussitot (D3).
   const [submitted, setSubmitted] = useState(false);
@@ -480,7 +489,8 @@ function Editor({
     setDirty(true);
   };
   const back = () => {
-    void navigate(recipe ? `/s/${spaceId}/recipes/${recipe.id}` : `/s/${spaceId}/recipes`);
+    // Nouvelle recette : retour a la page d'ou on l'a lancee, la liste sinon (D219).
+    void navigate(recipe ? `/s/${spaceId}/recipes/${recipe.id}` : recipeBackTarget(spaceId));
   };
   const quit = () => {
     clearDraft(key);
@@ -536,7 +546,11 @@ function Editor({
       let saved = recipe
         ? await api.put(
             `/spaces/${spaceId}/recipes/${recipe.id}`,
-            { ...parsed.data, revision: recipe.currentRevision },
+            {
+              ...parsed.data,
+              revision: recipe.currentRevision,
+              ...(reimported ? { imported: true } : {}),
+            },
             recipeSchema
           )
         : await api.post(
@@ -609,6 +623,22 @@ function Editor({
             // Hors ligne : le brouillon reste sur l'appareil, l'envoi attend le reseau (D106).
             actionDisabled={saving || !online}
             onAction={() => void save()}
+            menu={
+              recipe && !suggest ? (
+                <ActionMenu
+                  label="Actions de l'éditeur"
+                  trigger={<IconButton icon="more" label="Plus d'actions" />}
+                  items={[
+                    { id: "url", label: "Importer un lien", icon: "link" },
+                    { id: "text", label: "Importer un texte", icon: "copy" },
+                  ]}
+                  disabled={!online}
+                  onSelect={(id) => {
+                    setImportSheet(id === "url" ? "url" : "text");
+                  }}
+                />
+              ) : undefined
+            }
           />
         }
       />
@@ -623,7 +653,7 @@ function Editor({
             </span>
           </p>
         ) : null}
-        {imported && !recipe ? (
+        {shownImport ? (
           <p role="status" className="m-0 rounded-md bg-accent-soft px-3 py-2 text-accent-text">
             <b>Recette importée.</b> Vérifie tout avant d'enregistrer
             {toCheck > 0
@@ -654,7 +684,13 @@ function Editor({
           </>
         ) : null}
         {suggest ? null : (
-          <PhotoField spaceId={spaceId} recipe={recipe} pending={photo} onPending={setPhoto} />
+          <PhotoField
+            spaceId={spaceId}
+            recipe={recipe}
+            pending={photo}
+            onPending={setPhoto}
+            fromPage={reimported?.imageUrl ?? null}
+          />
         )}
         <Field
           label="Titre"
@@ -743,24 +779,13 @@ function Editor({
           Ajouter un bloc
         </Button>
         {suggest ? null : (
-          <>
-            <TagPicker
-              label="Tags"
-              tags={globalTags.data ?? []}
-              selected={draft.globalTagIds}
-              onChange={(ids) => {
-                update({ globalTagIds: ids });
-              }}
-            />
-            <TagPicker
-              label={`Tags de ${spaceName}`}
-              tags={spaceTags.data ?? []}
-              selected={draft.spaceTagIds}
-              onChange={(ids) => {
-                update({ spaceTagIds: ids });
-              }}
-            />
-          </>
+          <RecipeTagsField
+            spaceId={spaceId}
+            spaceName={spaceName}
+            globalTagIds={draft.globalTagIds}
+            spaceTagIds={draft.spaceTagIds}
+            onChange={update}
+          />
         )}
         <Switch
           label="Recette de base (sauce, pâte…) : pas proposée seule au planning"
@@ -815,6 +840,29 @@ function Editor({
           update({ blocks: [...draft.blocks, { ...block, key: newKey() }] });
         }}
       />
+      {recipe ? (
+        <>
+          <ImportUrlSheet
+            open={importSheet === "url"}
+            onClose={() => {
+              setImportSheet(null);
+            }}
+            onPasteText={() => {
+              setImportSheet("text");
+            }}
+            spaceId={spaceId}
+            onImported={onReimport}
+          />
+          <ImportTextSheet
+            open={importSheet === "text"}
+            onClose={() => {
+              setImportSheet(null);
+            }}
+            spaceId={spaceId}
+            onImported={onReimport}
+          />
+        </>
+      ) : null}
       <Sheet
         open={confirmOpen}
         onClose={() => {

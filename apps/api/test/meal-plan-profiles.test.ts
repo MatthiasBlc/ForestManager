@@ -262,6 +262,30 @@ describe("regles (D184)", () => {
     expect((await standard(owner, f.spaceId)).ruleCount).toBe(1);
   });
 
+  // D214 : delai de recette propre aux recettes du tag (0 : sans delai).
+  it("regle de tag : delai de recette a la place de celui du profil, garde a la copie", async () => {
+    const f = await plannedGroup();
+    const owner = await loginAs(f.owner, app);
+    const { id } = await standard(owner, f.spaceId);
+    const tag = await globalTag();
+    const res = await addRule(owner, f.spaceId, id, {
+      target: { kind: "TAG", tagId: tag.id },
+      recipeCooldownDays: 0,
+    });
+    expect(res.status, JSON.stringify(res.body)).toBe(201);
+    expect(res.body).toMatchObject({ recipeCooldownDays: 0, frequencyPer: null });
+    const copy = await owner.post(`/spaces/${f.spaceId}/meal-plan/profiles/${id}/duplicate`, {
+      name: "Copie",
+    });
+    const detail = await owner.get(`/spaces/${f.spaceId}/meal-plan/profiles/${copy.body.id}`);
+    expect(detail.body.rules[0]).toMatchObject({ recipeCooldownDays: 0 });
+    const tooLong = await addRule(owner, f.spaceId, id, {
+      target: { kind: "TAG", tagId: tag.id },
+      recipeCooldownDays: 31,
+    });
+    expect(tooLong.body.error.code).toBe("VALIDATION_001");
+  });
+
   it("regle sur un tag de l'espace ; refuse le tag d'un autre espace", async () => {
     const f = await plannedGroup();
     const owner = await loginAs(f.owner, app);
@@ -296,6 +320,11 @@ describe("regles (D184)", () => {
       frequencyMax: 1,
     });
     expect(withFrequency.body.error.code).toBe("VALIDATION_001");
+    const withRecipeCooldown = await addRule(owner, f.spaceId, id, {
+      target: { kind: "RECIPE", recipeId: recipe.id },
+      recipeCooldownDays: 2,
+    });
+    expect(withRecipeCooldown.body.error.code).toBe("VALIDATION_001");
     const elsewhere = await createRecipe(owner, (await createSpace(f.owner.id)).id);
     const invisible = await addRule(owner, f.spaceId, id, {
       target: { kind: "RECIPE", recipeId: elsewhere.id },

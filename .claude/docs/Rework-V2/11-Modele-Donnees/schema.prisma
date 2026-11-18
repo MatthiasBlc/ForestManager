@@ -941,7 +941,7 @@ model MealSlotPin {
   @@id([profileId, weekday, mealTime])
 }
 
-// Module liste de courses (V2.1) : ShoppingList, ShoppingItem, magasins favoris.
+// Module liste de courses (V2.2) : ShoppingList, ShoppingItem, magasins favoris.
 // Hors schema V2.0 ; il s'appuiera sur Unit, IngredientUnitWeight et Aisle [D36].
 
 // =============================================================================

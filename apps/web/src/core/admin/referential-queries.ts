@@ -3,6 +3,7 @@ import {
   adminAislesSchema,
   adminIngredientListSchema,
   adminIngredientSchema,
+  adminTagFamilySchema,
   adminTagSchema,
   adminUnitSchema,
   listSchema,
@@ -42,6 +43,13 @@ export const adminAislesQuery = queryOptions({
 export const adminTagsQuery = queryOptions({
   queryKey: ["admin", "tags"],
   queryFn: async () => (await api.get("/admin/tags", listSchema(adminTagSchema))).data,
+});
+
+/** Familles de tags globales, dans leur ordre [D216]. */
+export const adminTagFamiliesQuery = queryOptions({
+  queryKey: ["admin", "tag-families"],
+  queryFn: async () =>
+    (await api.get("/admin/tag-families", listSchema(adminTagFamilySchema))).data,
 });
 
 /** Apres une ecriture sur les ingredients : listes, details et compteurs des rayons. */

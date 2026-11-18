@@ -57,7 +57,7 @@ export function AvatarCropSheet({
       title="Recadrer la photo"
       description="Déplace la photo et règle le zoom, puis utilise-la."
     >
-      <div className="fm-crop">
+      <div className={shape === "square" ? "fm-crop fm-crop-square" : "fm-crop"}>
         <Cropper
           image={url}
           crop={crop}

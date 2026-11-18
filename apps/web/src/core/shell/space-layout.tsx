@@ -19,6 +19,7 @@ import { ModuleNav } from "../../patterns/module-nav.tsx";
 import type { NavItem } from "../../patterns/nav-item.ts";
 import { SpaceRail } from "../../patterns/space-rail.tsx";
 import { SpaceSwitcher } from "../../patterns/space-switcher.tsx";
+import { useSpaceOrder } from "../session/space-order.ts";
 import { TabBar } from "../../patterns/tab-bar.tsx";
 import { TopBar } from "../../patterns/top-bar.tsx";
 import { useSpaceTint } from "../../theme/use-space-tint.ts";
@@ -144,6 +145,7 @@ export function SpaceLayout() {
   const selectSpace = (id: string) => {
     goTo(`/s/${id}`);
   };
+  const reorderSpaces = useSpaceOrder();
   const addSpace = () => {
     setSwitcherOpen(false);
     setCreateOpen(true);
@@ -156,6 +158,7 @@ export function SpaceLayout() {
       activeId={spaceId}
       onSelect={selectSpace}
       onAdd={addSpace}
+      onReorder={reorderSpaces}
     />
   );
   const switcher = (
@@ -168,6 +171,7 @@ export function SpaceLayout() {
       onSelect={selectSpace}
       {...(personal ? { onHome: () => goTo(`/s/${personal.id}/home`) } : {})}
       onAdd={addSpace}
+      onReorder={reorderSpaces}
     />
   );
   const createSheet = <CreateSpaceSheet open={createOpen} onClose={() => setCreateOpen(false)} />;

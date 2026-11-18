@@ -45,6 +45,15 @@ export const updateSpaceBodySchema = z
   .refine((body) => Object.keys(body).length > 0, { message: "empty update" });
 export type UpdateSpaceBody = z.infer<typeof updateSpaceBodySchema>;
 
+/** Ordre des espaces de groupe dans le rail et le selecteur [D218] : la liste complete. */
+export const spaceOrderBodySchema = z.strictObject({
+  spaceIds: z
+    .array(uuidSchema)
+    .max(200)
+    .refine((ids) => new Set(ids).size === ids.length, { message: "duplicate space" }),
+});
+export type SpaceOrderBody = z.infer<typeof spaceOrderBodySchema>;
+
 /** Quitter : le dernier membre confirme la suppression de l'espace [D22]. */
 export const leaveSpaceBodySchema = z.strictObject({
   confirmDeletion: z.boolean().default(false),

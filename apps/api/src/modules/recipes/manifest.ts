@@ -23,22 +23,27 @@ import {
   shareRequestSchema,
   listSchema,
   mergeTagBodySchema,
-  pageSchema,
   mineRecipeListQuerySchema,
   recipeListQuerySchema,
   recipeParamsSchema,
   recipeSchema,
+  recipePageSchema,
   recipeSpaceTagsBodySchema,
   importRecipeBodySchema,
   importedRecipeSchema,
   attachImageBodySchema,
   imageResponseSchema,
   recipeRevisionSchema,
-  recipeSummarySchema,
   restoreRevisionBodySchema,
   revisionParamsSchema,
   updateRecipeBodySchema,
   spaceTagParamsSchema,
+  spaceTagPatchBodySchema,
+  tagCatalogSchema,
+  tagFamilyNameBodySchema,
+  tagFamilyOrderBodySchema,
+  tagFamilyParamsSchema,
+  tagFamilySchema,
   tagNameBodySchema,
   tagSchema,
 } from "@fm/shared";
@@ -100,11 +105,7 @@ function recipesRouter(ctx: Context): Router {
     "/",
     requirePermission("recipes.view"),
     handle({ query: recipeListQuerySchema }, async ({ query }, req, res) => {
-      reply(
-        res,
-        pageSchema(recipeSummarySchema),
-        await listRecipes(ctx, spaceOf(req), currentUserId(req), query)
-      );
+      reply(res, recipePageSchema, await listRecipes(ctx, spaceOf(req), currentUserId(req), query));
     })
   );
 
@@ -149,7 +150,7 @@ function recipesRouter(ctx: Context): Router {
       if (addable) refusePersonal(req);
       const scope = addable ? addableSql(userId, spaceOf(req)) : authoredBySql(userId, homeSpaceId);
       const page = await listRecipes(ctx, spaceOf(req), userId, filters, scope);
-      reply(res, pageSchema(recipeSummarySchema), page);
+      reply(res, recipePageSchema, page);
     })
   );
 
@@ -169,7 +170,7 @@ function recipesRouter(ctx: Context): Router {
     requirePermission("recipes.create"),
     handle({ body: addMineBodySchema }, async ({ body }, req, res) => {
       refusePersonal(req);
-      const added = await sharing.addMine(ctx, actorOf(req), body.recipeIds);
+      const added = await sharing.addMine(ctx, actorOf(req), body.recipeIds, body.tagIds);
       reply(res, addMineResultSchema, { added });
     })
   );
@@ -219,7 +220,50 @@ function recipesRouter(ctx: Context): Router {
     reply(res, recipeLeavePreviewSchema, await sharing.leavePreview(ctx, actorOf(req)));
   });
 
-  // --- Tags d'espace [D08, D19] ---
+  // --- Tags d'espace [D08, D19] et familles [D216] ---
+
+  router.get("/tag-catalog", requirePermission("recipes.view"), async (req, res) => {
+    reply(res, tagCatalogSchema, await tags.tagCatalog(ctx, spaceOf(req), currentUserId(req)));
+  });
+
+  router.post(
+    "/tag-families",
+    requirePermission("recipes.tags.moderate"),
+    handle({ body: tagFamilyNameBodySchema }, async ({ body }, req, res) => {
+      reply(res, tagFamilySchema, await tags.createSpaceFamily(ctx, spaceOf(req), body.name), 201);
+    })
+  );
+
+  // Declaree avant /tag-families/:familyId pour que "order" ne soit pas lu comme un id.
+  router.put(
+    "/tag-families/order",
+    requirePermission("recipes.tags.moderate"),
+    handle({ body: tagFamilyOrderBodySchema }, async ({ body }, req, res) => {
+      const data = await tags.reorderSpaceFamilies(ctx, spaceOf(req), body.ids);
+      reply(res, listSchema(tagFamilySchema), { data });
+    })
+  );
+
+  router.patch(
+    "/tag-families/:familyId",
+    requirePermission("recipes.tags.moderate"),
+    handle(
+      { params: tagFamilyParamsSchema, body: tagFamilyNameBodySchema },
+      async ({ params, body }, req, res) => {
+        const family = await tags.renameSpaceFamily(ctx, spaceOf(req), params.familyId, body.name);
+        reply(res, tagFamilySchema, family);
+      }
+    )
+  );
+
+  router.delete(
+    "/tag-families/:familyId",
+    requirePermission("recipes.tags.moderate"),
+    handle({ params: tagFamilyParamsSchema }, async ({ params }, req, res) => {
+      await tags.deleteSpaceFamily(ctx, spaceOf(req), params.familyId);
+      res.status(204).end();
+    })
+  );
 
   router.get("/tags", requirePermission("recipes.view"), async (req, res) => {
     reply(res, listSchema(tagSchema), { data: await tags.listSpaceTags(ctx, spaceOf(req)) });
@@ -243,13 +287,9 @@ function recipesRouter(ctx: Context): Router {
     "/tags/:tagId",
     requirePermission("recipes.tags.moderate"),
     handle(
-      { params: tagParamsSchema, body: tagNameBodySchema },
+      { params: tagParamsSchema, body: spaceTagPatchBodySchema },
       async ({ params, body }, req, res) => {
-        reply(
-          res,
-          tagSchema,
-          await tags.renameSpaceTag(ctx, spaceOf(req), params.tagId, body.name)
-        );
+        reply(res, tagSchema, await tags.updateSpaceTag(ctx, spaceOf(req), params.tagId, body));
       }
     )
   );
@@ -290,7 +330,14 @@ function recipesRouter(ctx: Context): Router {
     handle(
       { params: recipeIdSchema, body: updateRecipeBodySchema },
       async ({ params, body }, req, res) => {
-        const recipe = await recipes.updateRecipe(ctx, actorOf(req), params.recipeId, body);
+        const { imported, ...content } = body;
+        const recipe = await recipes.updateRecipe(
+          ctx,
+          actorOf(req),
+          params.recipeId,
+          content,
+          imported ? "IMPORT" : "EDIT"
+        );
         reply(res, recipeSchema, recipe);
       }
     )
@@ -353,7 +400,13 @@ function recipesRouter(ctx: Context): Router {
     handle(
       { params: recipeIdSchema, body: recipeSharesBodySchema },
       async ({ params, body }, req, res) => {
-        const result = await sharing.setShares(ctx, actorOf(req), params.recipeId, body.spaceIds);
+        const result = await sharing.setShares(
+          ctx,
+          actorOf(req),
+          params.recipeId,
+          body.spaceIds,
+          body.tagIds
+        );
         reply(res, recipeSharingSchema, result);
       }
     )

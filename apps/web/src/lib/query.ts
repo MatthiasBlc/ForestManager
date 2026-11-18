@@ -8,7 +8,7 @@ export function createQueryClient(): QueryClient {
   // demarrage : lancee sans reseau, l'application relancerait les donnees
   // relues de l'appareil et finirait en erreur (D35).
   onlineManager.setOnline(navigator.onLine);
-  return new QueryClient({
+  const client = new QueryClient({
     defaultOptions: {
       queries: {
         staleTime: 30_000,
@@ -17,4 +17,8 @@ export function createQueryClient(): QueryClient {
       },
     },
   });
+  // L'admin n'a pas de temps reel [D190] : ses donnees sont relues a chaque
+  // visite de page (cles `["admin", ...]`), sans attendre la fin des 30 s.
+  client.setQueryDefaults(["admin"], { staleTime: 0 });
+  return client;
 }

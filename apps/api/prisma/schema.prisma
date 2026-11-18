@@ -169,6 +169,7 @@ model Space {
   moduleRequests     ModuleAccessRequest[]
   ownershipTransfers SpaceOwnershipTransfer[]
   tags               Tag[]
+  tagFamilies        TagFamily[]
   recipes            Recipe[]                 @relation("RecipeHomeSpace")
   recipeSpaceTags    RecipeSpaceTag[]
   shares             RecipeShare[]
@@ -204,6 +205,9 @@ model Membership {
   /// Confiance de l'auteur [D81] : les autres membres de cet espace peuvent partager
   /// ses recettes ailleurs sans lui demander (il est simplement informe).
   allowMembersToShare Boolean   @default(false)
+  /// Place de l'espace dans le rail et le selecteur de cette personne [D218] ;
+  /// null = pas encore range (apres les autres, par nom).
+  sortOrder           Int?
 
   space Space @relation(fields: [spaceId], references: [id])
   user  User  @relation(fields: [userId], references: [id])
@@ -500,10 +504,13 @@ model Tag {
   slug         String // minuscules, sans accents
   createdById  String?
   mergedIntoId String?
+  /// Famille de meme portee (et du meme espace) [D216] ; sans famille : "Autres".
+  familyId     String?
   createdAt    DateTime  @default(now())
   deletedAt    DateTime?
 
   space        Space?               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  family       TagFamily?           @relation(fields: [familyId], references: [id], onDelete: SetNull)
   createdBy    User?                @relation(fields: [createdById], references: [id], onDelete: SetNull)
   mergedInto   Tag?                 @relation("TagMerge", fields: [mergedIntoId], references: [id])
   mergedFrom   Tag[]                @relation("TagMerge")
@@ -515,6 +522,34 @@ model Tag {
 
   @@unique([spaceId, slug])
   @@index([scope, deletedAt])
+  @@index([familyId])
+}
+
+/// Famille de tags (Saison, Categorie...) [D216] : globale (admin, traduite) ou
+/// d'espace (moderateurs), ordonnee. La supprimer laisse ses tags sans famille.
+model TagFamily {
+  id        String   @id @default(uuid())
+  scope     TagScope
+  spaceId   String? // renseigne seulement pour SPACE
+  name      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  space        Space?                 @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  tags         Tag[]
+  translations TagFamilyTranslation[]
+
+  @@index([scope, spaceId, sortOrder])
+}
+
+model TagFamilyTranslation {
+  familyId String
+  locale   String
+  name     String
+
+  family TagFamily @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@id([familyId, locale])
 }
 
 model TagTranslation {
@@ -1009,6 +1044,8 @@ model MealGenerationRule {
   frequencyMax    Int?
   frequencyPer    FrequencyPer?
   tagCooldownDays Int?
+  /// Delai de recette des recettes du tag, a la place de celui du profil [D214].
+  recipeCooldownDays Int?
 
   profile MealGenerationProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   tag     Tag?                  @relation(fields: [tagId], references: [id], onDelete: Cascade)

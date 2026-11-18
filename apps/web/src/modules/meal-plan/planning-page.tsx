@@ -283,7 +283,19 @@ export function PlanningPage() {
     ...mealsQuery(spaceId, start, days[6] ?? start),
     enabled: !!settings.data,
   });
-  const [view, setView] = useState<"day" | "week">("day");
+  // Vue mobile dans l'adresse : le retour d'une recette la retrouve (D219).
+  const view = params.get("view") === "week" ? "week" : "day";
+  const setView = (next: "day" | "week") => {
+    setParams(
+      (current) => {
+        const updated = new URLSearchParams(current);
+        if (next === "week") updated.set("view", "week");
+        else updated.delete("view");
+        return updated;
+      },
+      { replace: true }
+    );
+  };
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [generateOpen, setGenerateOpen] = useUrlFlag("generate", settings.data?.can.manage);
   const [open, setOpen] = useState<MealCell | null>(null);

@@ -6,7 +6,7 @@ import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../../app/App.tsx";
-import { unitId } from "../../test/fixtures.ts";
+import { buildRecipe, unitId } from "../../test/fixtures.ts";
 import { recipeServer } from "../../test/recipe-server.ts";
 import { renderWithProviders } from "../../test/render.tsx";
 import { server } from "../../test/server.ts";
@@ -198,6 +198,61 @@ describe("coller un texte (F-IMPORT-TEXTE)", () => {
       expect(
         screen.getAllByRole("group", { name: /^Ingrédient \d$/ }).length
       ).toBeGreaterThanOrEqual(3);
+    });
+  });
+});
+
+// D212 : importer dans une recette existante, par le menu "..." de l'editeur.
+describe("importer dans une recette existante (F-IMP-3)", () => {
+  async function openEditMenu(imageUrl: string | null) {
+    const recipe = buildRecipe({ title: "Idée curry", notes: "À tester", imageUrl: null });
+    const s = recipeServer({ myRole: "OWNER", recipes: [recipe] });
+    mockUploads();
+    server.use(
+      http.post(`/api/v1/spaces/${s.space.id}/recipes/import`, () =>
+        HttpResponse.json({ ...CURRY, imageUrl })
+      ),
+      http.post(
+        `/api/v1/spaces/${s.space.id}/recipes/import/image`,
+        () =>
+          new HttpResponse(new Uint8Array([0xff, 0xd8, 0xff]), {
+            headers: { "content-type": "image/jpeg" },
+          })
+      )
+    );
+    const rendered = renderWithProviders(<App />, {
+      route: `/s/${s.space.id}/recipes/${recipe.id}/edit`,
+    });
+    await screen.findByLabelText("Titre");
+    await rendered.user.click(screen.getByRole("button", { name: "Plus d'actions" }));
+    await rendered.user.click(await screen.findByRole("menuitem", { name: "Importer un lien" }));
+    const dialog = await screen.findByRole("dialog", { name: "Importer depuis un lien" });
+    await rendered.user.click(within(dialog).getByLabelText("Lien de la recette"));
+    await rendered.user.paste("https://exemple.fr/curry");
+    await rendered.user.click(within(dialog).getByRole("button", { name: "Importer" }));
+    return { ...rendered, s, recipe };
+  }
+
+  it("remplace le contenu, garde titre et notes, enregistre une revision IMPORT", async () => {
+    const { user, s } = await openEditMenu(null);
+    expect(await screen.findByText(/Recette importée/)).toBeInTheDocument();
+    expect(screen.getByLabelText("Titre")).toHaveValue("Idée curry");
+    expect(screen.getByLabelText("Étape 1")).toHaveValue("Couper l'aubergine.");
+    await user.click(screen.getByRole("button", { name: /Enregistrer la révision/ }));
+    await waitFor(() => {
+      expect(s.recipes.bodies.update).toMatchObject({
+        title: "Idée curry",
+        notes: "À tester",
+        sourceUrl: "https://exemple.fr/curry",
+        imported: true,
+      });
+    });
+  });
+
+  it("reprend la photo de la page si la fiche n'en a pas", async () => {
+    const { s, recipe } = await openEditMenu("https://exemple.fr/curry.jpg");
+    await waitFor(() => {
+      expect(s.recipes.calls).toContain(`photo:${recipe.id}`);
     });
   });
 });

@@ -72,13 +72,35 @@ export async function listSpaces(ctx: Context, userId: string): Promise<SpaceSum
         { role: "OWNER", space: { purgeAfter: { gt: new Date() } } },
       ],
     },
-    select: { role: true, space: { select: summarySelect } },
+    select: { role: true, sortOrder: true, space: { select: summarySelect } },
   });
+  // Perso en tete, puis l'ordre choisi [D218], puis les espaces pas encore ranges par nom.
+  const rank = (m: (typeof memberships)[number]) =>
+    m.space.kind === "PERSONAL" ? -1 : (m.sortOrder ?? Number.MAX_SAFE_INTEGER);
   return memberships
-    .map((m) => toSummary(ctx, m.space, m.role))
-    .sort((a, b) =>
-      a.kind === b.kind ? a.name.localeCompare(b.name) : a.kind === "PERSONAL" ? -1 : 1
-    );
+    .sort((a, b) => rank(a) - rank(b) || a.space.name.localeCompare(b.space.name))
+    .map((m) => toSummary(ctx, m.space, m.role));
+}
+
+/**
+ * Ordre des espaces de groupe de cette personne [D218] : chaque id recoit sa
+ * place ; ses autres espaces (absents de la liste) repassent apres, par nom.
+ * L'espace perso et les espaces dont on n'est pas membre sont ignores.
+ */
+export async function setSpaceOrder(ctx: Context, userId: string, spaceIds: readonly string[]) {
+  await ctx.db.$transaction(async (tx) => {
+    const memberships = await tx.membership.findMany({
+      where: { userId, leftAt: null, space: { kind: "GROUP" } },
+      select: { id: true, spaceId: true },
+    });
+    const place = new Map(spaceIds.map((id, index) => [id, index]));
+    for (const membership of memberships) {
+      await tx.membership.update({
+        where: { id: membership.id },
+        data: { sortOrder: place.get(membership.spaceId) ?? null },
+      });
+    }
+  });
 }
 
 /** Modules accordes, actifs et proposes par la plateforme, dans l'ordre choisi [D131]. */

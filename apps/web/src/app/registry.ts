@@ -106,4 +106,15 @@ export interface WebModule {
   actions?: (space: SpaceDetail) => readonly PaletteAction[];
   /** Widgets d'accueil du module, par cle `<code>.<nom>` de l'API. */
   widgets?: Readonly<Record<string, WebWidget>>;
+  /** Liens des reglages de l'espace (module actif), selon les droits connus [D216]. */
+  settingsLinks?: (space: SpaceDetail) => readonly ModuleSettingsLink[];
+}
+
+/** Lien d'un module dans les reglages de l'espace ; `path` relatif a /s/:spaceId. */
+export interface ModuleSettingsLink {
+  id: string;
+  label: string;
+  hint: string;
+  icon: IconName;
+  path: string;
 }

@@ -4,6 +4,7 @@ import type {
   AdminIngredient,
   AdminIngredientItem,
   AdminTag,
+  AdminTagFamily,
   AdminUnit,
 } from "@fm/shared";
 import { http, HttpResponse } from "msw";
@@ -133,10 +134,14 @@ export function mockReferentialsApi() {
     aisles: [...AISLES],
     unclassified: 12,
     tags: [
-      { id: id(501), fr: "Végétarien", en: "Vegetarian", recipeCount: 48 },
-      { id: id(502), fr: "Apéritif", en: null, recipeCount: 14 },
-      { id: id(503), fr: "Rapide", en: "Quick", recipeCount: 61 },
+      { id: id(501), fr: "Végétarien", en: "Vegetarian", recipeCount: 48, familyId: null },
+      { id: id(502), fr: "Apéritif", en: null, recipeCount: 14, familyId: null },
+      { id: id(503), fr: "Rapide", en: "Quick", recipeCount: 61, familyId: null },
     ] as AdminTag[],
+    families: [
+      { id: id(701), fr: "Saison", en: "Season", tagCount: 0 },
+      { id: id(702), fr: "Régime", en: null, tagCount: 1 },
+    ] as AdminTagFamily[],
   };
   const record = async (request: Request) => {
     const url = new URL(request.url);
@@ -254,7 +259,7 @@ export function mockReferentialsApi() {
     http.get("/api/v1/admin/tags", () => HttpResponse.json({ data: state.tags })),
     http.post("/api/v1/admin/tags", async ({ request }) => {
       const body = (await record(request)) as { fr: string; en: string | null };
-      const created = { id: id(599), fr: body.fr, en: body.en, recipeCount: 0 };
+      const created = { id: id(599), fr: body.fr, en: body.en, recipeCount: 0, familyId: null };
       state.tags = [...state.tags, created];
       return HttpResponse.json(created, { status: 201 });
     }),
@@ -267,6 +272,28 @@ export function mockReferentialsApi() {
       const body = (await record(request)) as { intoTagId: string };
       state.tags = state.tags.filter((t) => t.id !== params.id);
       return HttpResponse.json(state.tags.find((t) => t.id === body.intoTagId));
+    }),
+    http.get("/api/v1/admin/tag-families", () => HttpResponse.json({ data: state.families })),
+    http.post("/api/v1/admin/tag-families", async ({ request }) => {
+      const body = (await record(request)) as { fr: string; en: string | null };
+      const created = { id: id(799), fr: body.fr, en: body.en, tagCount: 0 };
+      state.families = [...state.families, created];
+      return HttpResponse.json(created, { status: 201 });
+    }),
+    http.put("/api/v1/admin/tag-families/order", async ({ request }) => {
+      const body = (await record(request)) as { ids: string[] };
+      state.families = body.ids.map((familyId) => state.families.find((f) => f.id === familyId)!);
+      return HttpResponse.json({ data: state.families });
+    }),
+    http.patch("/api/v1/admin/tag-families/:id", async ({ params, request }) => {
+      const body = (await record(request)) as { fr: string; en: string | null };
+      state.families = state.families.map((f) => (f.id === params.id ? { ...f, ...body } : f));
+      return HttpResponse.json(state.families.find((f) => f.id === params.id));
+    }),
+    http.delete("/api/v1/admin/tag-families/:id", async ({ params, request }) => {
+      await record(request);
+      state.families = state.families.filter((f) => f.id !== params.id);
+      return new HttpResponse(null, { status: 204 });
     }),
     http.delete("/api/v1/admin/tags/:id", async ({ params, request }) => {
       await record(request);

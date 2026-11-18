@@ -172,7 +172,7 @@ Conventions :
   1. F-EXPORT : portee "Recettes a exporter" (Mes recettes / l'espace) seulement pour l'OWNER d'un espace groupe ; format (JSON "Se reimportera dans Forest Manager" / Markdown "Se lit partout, un fichier par recette") ; Switch "Inclure les photos". Toujours une archive zip. Button "Preparer l'export".
   2. Preparation en tache de fond (statut relu chaque seconde) puis Button "Telecharger" ; l'archive est gardee 24 h. Export d'espace : rappel "Un export d'espace par jour. Les membres verront dans l'activite que tu as exporte l'espace." ; limite atteinte : "Prochain export de l'espace possible demain a 14:02."
 - **Notifications** : activite de l'espace "X a exporte l'espace" (D37), pas de notification.
-- **Reimport** : V2.1 (D192) ; le format JSON est versionne (`forest-manager/recipes` v1).
+- **Reimport** : V2.2 (D192) ; le format JSON est versionne (`forest-manager/recipes` v1).
 - **Decisions** : D37, D192.
 
 ## P13 - Changer d'ambiance

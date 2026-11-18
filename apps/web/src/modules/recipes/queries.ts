@@ -2,16 +2,16 @@
 import {
   ingredientSchema,
   listSchema,
-  pageSchema,
   recipeComparisonSchema,
   recipeLeavePreviewSchema,
   recipeRevisionSchema,
   recipeSchema,
   recipeSharingSchema,
-  recipeSummarySchema,
+  recipePageSchema,
   shareRequestSchema,
   suggestionSchema,
   suggestionSummarySchema,
+  tagCatalogSchema,
   tagSchema,
   unitSchema,
   type RecipeSort,
@@ -19,6 +19,7 @@ import {
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 import { api, isNetworkError } from "../../lib/api.ts";
+import { DEFAULT_RECIPE_SORT } from "./sort.ts";
 
 export interface RecipeFilters {
   q?: string;
@@ -35,7 +36,7 @@ export interface RecipeFilters {
   addable?: boolean;
 }
 
-const recipePage = pageSchema(recipeSummarySchema);
+const recipePage = recipePageSchema;
 
 export const recipesKey = (spaceId: string) => ["spaces", spaceId, "recipes"] as const;
 
@@ -45,7 +46,7 @@ export function recipesQuery(spaceId: string, filters: RecipeFilters) {
   if (filters.tagIds?.length) params.set("tagIds", filters.tagIds.join(","));
   if (filters.ingredientIds?.length) params.set("ingredientIds", filters.ingredientIds.join(","));
   if (filters.base) params.set("base", "true");
-  if (filters.sort && filters.sort !== "recent") params.set("sort", filters.sort);
+  if (filters.sort && filters.sort !== DEFAULT_RECIPE_SORT) params.set("sort", filters.sort);
   if (filters.mine && filters.homeSpaceId) params.set("homeSpaceId", filters.homeSpaceId);
   if (filters.mine && filters.addable) params.set("addable", "true");
   const path = `/spaces/${spaceId}/recipes${filters.mine ? "/mine" : ""}`;
@@ -168,6 +169,14 @@ export function spaceTagsQuery(spaceId: string) {
     queryKey: [...recipesKey(spaceId), "tags"],
     queryFn: async () =>
       (await api.get(`/spaces/${spaceId}/recipes/tags`, listSchema(tagSchema))).data,
+  });
+}
+
+/** Catalogue des tags de l'espace [D216] : familles, tags avec famille et nombre de recettes. */
+export function tagCatalogQuery(spaceId: string) {
+  return queryOptions({
+    queryKey: [...recipesKey(spaceId), "tag-catalog"],
+    queryFn: async () => api.get(`/spaces/${spaceId}/recipes/tag-catalog`, tagCatalogSchema),
   });
 }
 

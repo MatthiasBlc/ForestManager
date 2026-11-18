@@ -334,7 +334,8 @@ describe("F-REPAS", () => {
     await user.type(within(sheet).getByLabelText("Repas"), "Resto japonais");
     await user.type(within(sheet).getByLabelText("Commentaire"), "Réserver");
     await user.click(within(sheet).getByRole("button", { name: "Plus" }));
-    await user.click(within(sheet).getByRole("switch", { name: /Verrouiller/ }));
+    // Verrouille d'office pour un repas choisi a la main [D215].
+    expect(within(sheet).getByRole("switch", { name: /Verrouiller/ })).toBeChecked();
     expect(await axeViolations(container)).toEqual([]);
     await user.click(within(sheet).getByRole("button", { name: "Enregistrer" }));
     await waitFor(() => {
@@ -357,7 +358,7 @@ describe("F-REPAS", () => {
     ).toBeInTheDocument();
   });
 
-  it("recette de l'espace trouvee par la recherche ; portions par defaut non envoyees", async () => {
+  it("recette de l'espace trouvee par la recherche ; portions par defaut non envoyees ; verrouille d'office", async () => {
     const dahl = toSummary(buildRecipe({ title: "Dahl de lentilles" }));
     const s = mealPlanServer({ spaceRecipes: [dahl] });
     const { user } = renderWithProviders(<App />, { route: route(s.space.id) });
@@ -376,7 +377,8 @@ describe("F-REPAS", () => {
         recipeId: dahl.id,
         comment: null,
         servings: null,
-        locked: false,
+        // Un repas choisi a la main est garde par la generation, sauf si on decoche.
+        locked: true,
       });
     });
   });

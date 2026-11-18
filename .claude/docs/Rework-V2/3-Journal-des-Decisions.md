@@ -857,3 +857,68 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 - **Constat** : une photo d'espace non carree s'affichait en ovale (l'image debordait de sa pastille en gardant l'arrondi) et un avatar en hauteur montrait son haut au lieu de son centre ; les images gardaient leurs proportions d'origine a l'envoi.
 - **Options** : corriger l'affichage seulement ; recadrer au centre a l'envoi ; laisser l'utilisateur recadrer (deplacer, zoomer) comme Discord ou Facebook. Pour le recadreur : react-easy-crop ou code maison. Maquette ou revue dans l'app.
 - **Choix** : affichage corrige (l'image remplit toujours la pastille, recadree au centre, y compris pour les photos deja envoyees) et recadrage par l'utilisateur a l'envoi des avatars de compte (masque rond) et d'espace (masque carre) : feuille "Recadrer la photo", deplacer au doigt ou a la souris, zoom au pincement, a la molette ou au curseur "Zoom", carre de 512 px au plus envoye. Bibliotheque react-easy-crop (MIT, 6.2.4) ; pas de maquette, revue dans l'app. Les photos de recette gardent leurs proportions.
+
+### D212 - Importer dans une recette existante - VALIDEE (2026-11-17, proprietaire au selecteur, retour d'usage en prod)
+
+- **Constat** : l'import (lien ou texte colle, F-IMP-1/2) n'existe qu'a la creation. Une fiche creee vide comme idee, puis redigee ailleurs, ne peut pas recevoir l'import : il faut tout ressaisir ou creer une seconde fiche.
+- **Options** : acces par le menu "..." de l'editeur, ou par un encart quand la fiche est vide ; l'import remplace le contenu en gardant le reste, ne complete que les champs vides, ou remplace tout titre compris.
+- **Choix** : entree "Importer un lien" / "Importer un texte" dans le menu "..." de l'editeur en modification (invisible au quotidien). L'import remplace ingredients, etapes, portions, temps et lien ; titre, tags, notes et photo restent, la photo de la page n'est reprise que si la fiche n'en a pas. Rien n'est enregistre avant "Enregistrer" ; badges "A verifier" comme a la creation [D103] ; la revision porte la source IMPORT (l'historique garde l'ancienne version).
+
+### D213 - Icones d'espace en carre arrondi, comme Discord - VALIDEE (2026-11-17, proprietaire au selecteur, amende D211)
+
+- **Constat** : les icones d'espace etaient rondes et devenaient des carres arrondis au survol et a l'ouverture ; le recadrage d'une photo d'espace (D211) utilisait un masque carre a angles vifs, qui ne correspond a aucune des deux formes affichees.
+- **Options** : masque carre arrondi ou rond ; icones rondes qui changent de forme, ou carre arrondi en permanence.
+- **Choix** (demande du proprietaire) : icones d'espace en carre arrondi en permanence (30 % de la taille), espace perso compris ; pastille blanche courte au survol et barre pour l'espace ouvert, comme Discord ; masque du recadrage d'une photo d'espace au meme arrondi. L'avatar de compte reste rond (masque rond de D211).
+
+### D214 - Delai de recette propre aux recettes d'un tag - VALIDEE (2026-11-17, demande du proprietaire)
+
+- **Constat** : le delai avant de reproposer une recette (7 jours dans les profils du Nid) vaut pour tout le profil. Certaines recettes reviennent par nature plus souvent ("Soupe du moment") : il faudrait baisser le delai de tout le profil, ou renoncer a les voir revenir.
+- **Options** : delai par recette (regle de recette) ; delai propre aux recettes d'un tag (regle de tag) ; plusieurs delais au niveau du profil.
+- **Choix** : champ "Delai propre a ses recettes" sur une regle de tag (0 a 30 jours, 0 : sans delai), qui remplace le delai du profil pour les recettes portant ce tag ; plusieurs tags avec un delai : le plus court l'emporte. Independant du delai de tag (jours entre deux recettes du tag) et des frequences. Regle de tag seulement (contrainte en base et a la validation) ; la copie d'un profil le garde.
+
+### D215 - Repas choisi a la main verrouille d'office - VALIDEE (2026-11-17, demande du proprietaire)
+
+- **Constat** : l'usage courant est de placer quelques repas a la main puis de completer avec la generation. Un repas saisi a la main n'etait pas verrouille : en mode "Remplacer", la generation pouvait l'ecraser, sauf a penser a cocher "Verrouiller" a chaque fois.
+- **Choix** : un nouveau repas (recette ou texte libre) est verrouille d'office dans la feuille du repas ; la glissiere reste decochable. Un repas existant garde son etat (un repas place par la generation reste deverrouille).
+
+### D216 - Affichage et edition des tags harmonises, familles de tags - VALIDEE (2026-11-17, proprietaire au selecteur ; etude `32-Etude-Tags.md`, maquette `32-Maquette-Tags.html`)
+
+- **Constat** : dans Le Nid, la rangee de filtres de la liste des recettes compte 35 pastilles (18 tags globaux, 15 tags d'espace) a plat, en scroll horizontal sans fin sur mobile ; le filtre fait un ET entre tous les tags (Hiver + Automne ne donne que les recettes des deux saisons) ; quatre composants differents listent tous les tags (filtres, editeur, planning, "Depuis mes recettes"). Manque fonctionnel : le front ne permet ni de creer un tag d'espace, ni de modifier les tags d'un espace de partage, ni aux moderateurs de gerer les tags d'espace (routes presentes, ecrans absents).
+- **Options** : feuille de filtres (A), A + raccourcis des tags les plus utilises (B), rangee reduite aux plus utilises + "Plus" (C), colonne de filtres en bureau (D) ; familles declarees (F1) ou deux sections fixes globaux / espace (F2) ; tags sur les cartes : deux en texte, rien, trois en pastilles ; tags modifiables depuis la fiche, ou depuis l'editeur seulement.
+- **Choix** :
+  - **Liste des recettes (A)** : recherche + bouton "Filtres" (nombre de filtres actifs) ; dessous, seulement les filtres actifs, retirables. Feuille de filtres : recherche de tag, tags par famille avec leur nombre de recettes, tags sans recette masques, "Bases", espace d'origine (Mes recettes) ; "Effacer" et "Voir N recettes". Meme feuille dans "Depuis mes recettes".
+  - **Familles declarees (F1)** : une famille globale (admin) ou d'espace (moderateurs), ordonnee ; un tag a au plus une famille, sinon "Autres". Filtre : OU dans une famille, ET entre familles ("Autres" : chaque tag compte comme sa propre famille, donc ET).
+  - **Un seul composant de choix de tags** (feuille, recherche, familles) : filtres, editeur, regles et epinglages du planning (choix unique), "Depuis mes recettes".
+  - **Cartes** : les deux premiers tags (ordre des familles, puis des tags) en texte discret sous le titre.
+  - **Edition des tags dans l'editeur seulement**, avec les tags de l'espace ou il est ouvert : ouvert depuis un espace de partage, il montre les tags globaux et ceux de cet espace (les tags de l'espace d'origine restent inchanges). Qui ne peut pas modifier la recette ne tague pas ; pas de bouton sur la fiche. Amende F-REF-2 ("tout membre peut creer un tag en taguant").
+  - **Creer un tag d'espace** depuis la feuille de l'editeur quand la recherche ne trouve rien ("Creer le tag ... dans Le Nid", famille "Autres").
+  - **Reglages de l'espace > Tags** (moderateurs) : familles de l'espace (creer, renommer, ordonner, supprimer) et tags avec leur nombre de recettes (renommer, changer de famille, fusionner, supprimer).
+  - **Recherche globale** : groupe "Tags" ; un tag ouvre la liste des recettes de l'espace filtree sur lui.
+  - **Tags repris au partage** (demande du proprietaire) : partager une recette (F-PARTAGER, "Depuis mes recettes") propose ses tags d'espace d'origine en cases, toutes cochees, "Tags a reprendre dans Le Nid" : un tag de meme nom (slug) dans l'espace cible est pose, sinon il y est cree (famille "Autres") ; decocher pour ne pas le reprendre.
+
+### D217 - Ordre des listes de recettes - VALIDEE (2026-11-18, proprietaire au selecteur)
+
+- **Constat** : l'API savait trier (plus recentes par date de modification, alphabetique, temps total) mais l'interface ne proposait aucun choix ; "Mes recettes" et "Recettes d'un espace" sortaient par derniere modification.
+- **Choix** :
+  - **Six ordres**, chacun dans les deux sens : A a Z (defaut) et Z a A ; plus recentes et plus anciennes ; plus rapides et plus longues (temps total, une recette sans temps toujours a la fin).
+  - **A a Z par defaut** (demande du proprietaire : le plus logique en arrivant, sans reglage), dans l'API comme dans l'interface.
+  - **"Plus recentes" = date de creation** : ordre stable, une recette retouchee ne remonte pas en tete.
+  - **Dans la feuille Filtres**, section "Trier par" en tete (pas de bouton de plus) ; un ordre autre que A a Z apparait en filtre actif retirable ("Tri : Plus recentes") et compte dans "Filtres (n)" ; "Effacer" revient a A a Z.
+  - **Retenu sur l'appareil** (une valeur pour toutes les listes, simple confort) ; hors ligne, meme ordre applique aux recettes disponibles.
+
+### D218 - Ordre des espaces dans le rail et le selecteur - VALIDEE (2026-11-18, proprietaire au selecteur)
+
+- **Constat** : les espaces de groupe sortaient par nom ; le proprietaire veut les ranger lui-meme (demande du 2026-11-17), l'espace perso toujours en haut, "+" toujours en bas.
+- **Choix** :
+  - **Ordre garde dans le compte** (`Membership.sortOrder`, propre a chaque personne) : meme ordre sur le telephone et l'ordinateur, les autres membres ne sont pas touches. `PUT /me/space-order` recoit la liste complete ; un espace absent (nouveau) passe apres les autres, par nom.
+  - **Souris** : glisser un espace du rail sur un autre lui fait prendre sa place. **Doigt** : meme geste que le planning [D204] (appui long, l'espace se souleve, glisser), dans le rail comme dans la feuille de choix d'espace du telephone. **Clavier** : Alt+Haut / Alt+Bas sur l'espace qui a le focus, annonce "Amis : position 2 sur 3".
+
+### D219 - Fleche de retour d'une recette selon l'origine - VALIDEE (2026-11-18, demande du proprietaire)
+
+- **Constat** : la fleche de retour de la recette menait toujours a la liste des recettes, meme ouverte depuis le planning, un widget de l'accueil, la recherche, les notifications ou l'activite ; la vue Jour / Semaine du planning (mobile) n'etait pas dans l'adresse et se perdait au retour.
+- **Choix** : une seule logique commune (`core/shell/return-to.ts`) : chaque page connectee visitee hors des pages d'une recette (recette, edition, cuisine, historique, comparer, suggestion, creation) est retenue par onglet (sessionStorage, chemin et parametres) ; la fleche de la recette y ramene, la liste des recettes sinon (lien direct, onglet neuf). Les sous-pages reviennent a la recette puis la fleche a l'origine ; une sous-recette ouverte depuis une recette revient aussi a l'origine. Survit au rechargement. Suppression ou retrait de la recette et "Annuler" d'une nouvelle recette suivent la meme regle. Vue du planning dans l'adresse (`?view=week`, la semaine l'etait deja par `?day=`). La fleche navigue vers l'origine (pas `navigate(-1)`), comme les autres fleches de l'appli.
+
+### D220 - PWA de preprod reconnaissable : variante construite au build, choisie au demarrage du conteneur - VALIDEE (2026-11-18, demande du proprietaire)
+
+- **Constat** : la PWA de preprod installee sur le telephone porte le meme nom et la meme icone que la prod. La CI construit le front sans distinction d'environnement (la prod reconstruit l'image au push sur master, un retour arriere redeploie un tag `sha-*`) : un choix au build ne suivrait pas l'image d'un environnement a l'autre.
+- **Choix** : le build ecrit a cote de la prod une variante `dist/preprod/` (manifeste "Forest Manager Preprod" / nom court "FM Preprod", titre d'onglet et `apple-mobile-web-app-title`, icones a bandeau rouge "PREPROD", maskable dans la zone sure), hors precache du service worker ; l'entrypoint nginx (`docker/web-variant.sh`) la recopie a la racine si `WEB_VARIANT=preprod`, pose dans `docker/compose.preprod.yml`. Sans la variable (ou valeur inconnue) : prod, racine servie identique octet pour octet. Icones generees au build sans dependance (PNG via zlib de Node, police pixel 5x7), aucun binaire committe. `theme_color` inchange (reecrit par le theme a l'execution). Apres le premier deploy : desinstaller puis reinstaller la PWA de preprod sur le telephone (nom et icone d'une PWA installee rarement mis a jour).

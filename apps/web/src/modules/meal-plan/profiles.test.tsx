@@ -22,6 +22,21 @@ function openProfiles(s: ReturnType<typeof mealPlanServer>) {
   return renderWithProviders(<App />, { route: `/s/${s.space.id}/meal-plan/profiles` });
 }
 
+/** Champ "Tag" : ouvre la feuille de tags en choix unique, toucher un tag le choisit [D216]. */
+async function chooseTag(
+  user: ReturnType<typeof renderWithProviders>["user"],
+  sheet: HTMLElement,
+  group: string,
+  name: string
+) {
+  await user.click(within(within(sheet).getByRole("group", { name: group })).getByRole("button"));
+  const picker = await screen.findByRole("dialog", { name: "Choisir un tag" });
+  await user.click(within(picker).getByRole("button", { name }));
+  await waitFor(() => {
+    expect(screen.queryByRole("dialog", { name: "Choisir un tag" })).not.toBeInTheDocument();
+  });
+}
+
 describe("acces", () => {
   it("un moderateur ouvre les profils depuis le planning", async () => {
     const s = mealPlanServer({ myRole: "MODERATOR" });
@@ -70,13 +85,13 @@ describe("regles (D184)", () => {
     const { user } = openProfiles(s);
     await user.click(await screen.findByRole("button", { name: "Ajouter une règle" }));
     const sheet = await screen.findByRole("dialog", { name: "Nouvelle règle" });
-    // Tags en pastilles : la feuille reste courte meme avec beaucoup de tags.
-    const tags = within(sheet).getByRole("group", { name: "Tag" });
-    await user.click(within(tags).getByRole("button", { name: "Végétarien" }));
-    expect(within(tags).getByRole("button", { name: "Végétarien" })).toHaveAttribute(
-      "aria-pressed",
-      "true"
-    );
+    // Un champ qui ouvre la feuille de tags en choix unique [D216].
+    await chooseTag(user, sheet, "Tag", "Végétarien");
+    expect(
+      within(within(sheet).getByRole("group", { name: "Tag" })).getByRole("button", {
+        name: "Végétarien, changer le tag",
+      })
+    ).toBeInTheDocument();
     await user.click(within(sheet).getByRole("button", { name: "Soir" }));
     await user.click(within(sheet).getByRole("button", { name: "Plus souvent" }));
     const min = within(sheet).getByRole("group", { name: "Au moins" });
@@ -94,6 +109,7 @@ describe("regles (D184)", () => {
           frequencyMax: null,
           frequencyPer: "PER_WEEK",
           tagCooldownDays: null,
+          recipeCooldownDays: null,
         },
       ]);
     });
@@ -104,16 +120,38 @@ describe("regles (D184)", () => {
     expect(rule).toHaveTextContent("Le soir · au moins 2 fois par semaine · poids ×1,5");
   });
 
+  // D214 : delai de recette propre aux recettes du tag, a la place de celui du profil.
+  it("regle de tag : delai propre a ses recettes", async () => {
+    const s = mealPlanServer({ myRole: "OWNER" });
+    const { user } = openProfiles(s);
+    await user.click(await screen.findByRole("button", { name: "Ajouter une règle" }));
+    const sheet = await screen.findByRole("dialog", { name: "Nouvelle règle" });
+    await chooseTag(user, sheet, "Tag", "Végétarien");
+    await user.click(within(sheet).getByRole("switch", { name: "Délai propre à ses recettes" }));
+    const wait = within(sheet).getByRole("group", {
+      name: "Jours avant de reproposer une de ses recettes",
+    });
+    await user.click(within(wait).getByRole("button", { name: "Plus" }));
+    await user.click(within(wait).getByRole("button", { name: "Plus" }));
+    await user.click(within(sheet).getByRole("button", { name: "Ajouter la règle" }));
+
+    await waitFor(() => {
+      expect(s.plan.ruleBodies[0]).toMatchObject({ recipeCooldownDays: 2 });
+    });
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: "Nouvelle règle" })).not.toBeInTheDocument();
+    });
+    expect(screen.getByRole("button", { name: /Végétarien/ })).toHaveTextContent(
+      "Recettes reproposées après 2 j"
+    );
+  });
+
   it("mode avance : jauge de 0 a 200 % par pas de 5 %", async () => {
     const s = mealPlanServer({ myRole: "OWNER" });
     const { user } = openProfiles(s);
     await user.click(await screen.findByRole("button", { name: "Ajouter une règle" }));
     const sheet = await screen.findByRole("dialog", { name: "Nouvelle règle" });
-    await user.click(
-      within(within(sheet).getByRole("group", { name: "Tag" })).getByRole("button", {
-        name: "Poisson",
-      })
-    );
+    await chooseTag(user, sheet, "Tag", "Poisson");
     await user.click(within(sheet).getByRole("switch", { name: "Réglage fin" }));
     const gauge = within(sheet).getByRole("slider", { name: "Poids" });
     fireEvent.change(gauge, { target: { value: "135" } });
@@ -144,6 +182,7 @@ describe("regles (D184)", () => {
               frequencyMax: null,
               frequencyPer: null,
               tagCooldownDays: null,
+              recipeCooldownDays: null,
             },
           ],
         }),
@@ -179,6 +218,7 @@ describe("regles (D184)", () => {
               frequencyMax: null,
               frequencyPer: null,
               tagCooldownDays: null,
+              recipeCooldownDays: null,
             },
           ],
         }),
@@ -206,11 +246,7 @@ describe("grille jours x repas (D114)", () => {
     await user.click(screen.getByRole("button", { name: "Vendredi soir : généré" }));
     sheet = await screen.findByRole("dialog", { name: "Vendredi soir" });
     await user.click(within(sheet).getByRole("radio", { name: /Épingler un tag/ }));
-    await user.click(
-      within(within(sheet).getByRole("group", { name: "Tag épinglé" })).getByRole("button", {
-        name: "Poisson",
-      })
-    );
+    await chooseTag(user, sheet, "Tag épinglé", "Poisson");
     await user.click(within(sheet).getByRole("button", { name: "Enregistrer" }));
     expect(
       await screen.findByRole("button", { name: "Vendredi soir : tag Poisson épinglé" })

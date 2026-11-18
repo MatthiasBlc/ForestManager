@@ -6,7 +6,7 @@ import { z } from "zod";
 import { UNIT_DIMENSIONS } from "../units/index.ts";
 import { offsetQuerySchema } from "./admin.ts";
 import { isoDateTimeSchema, uuidSchema } from "./common.ts";
-import { INGREDIENT_NAME_MAX, TAG_NAME_MAX } from "./referentials.ts";
+import { INGREDIENT_NAME_MAX, TAG_FAMILY_NAME_MAX, TAG_NAME_MAX } from "./referentials.ts";
 
 /** Texte facultatif : vide ou absent = null. */
 function optionalText(max: number) {
@@ -212,10 +212,29 @@ export const adminTagSchema = z.object({
   fr: z.string(),
   en: z.string().nullable(),
   recipeCount: z.number().int(),
+  /** Famille globale [D216], null : "Autres". */
+  familyId: uuidSchema.nullable(),
 });
 export type AdminTag = z.infer<typeof adminTagSchema>;
 
 export const adminTagBodySchema = z.strictObject({
   fr: z.string().trim().min(1).max(TAG_NAME_MAX),
   en: optionalText(TAG_NAME_MAX),
+  /** Absent : inchange a la modification ; null : sans famille. */
+  familyId: uuidSchema.nullable().optional(),
+});
+
+// --- Familles de tags globales [D216] ---
+
+export const adminTagFamilySchema = z.object({
+  id: uuidSchema,
+  fr: z.string(),
+  en: z.string().nullable(),
+  tagCount: z.number().int(),
+});
+export type AdminTagFamily = z.infer<typeof adminTagFamilySchema>;
+
+export const adminTagFamilyBodySchema = z.strictObject({
+  fr: z.string().trim().min(1).max(TAG_FAMILY_NAME_MAX),
+  en: optionalText(TAG_FAMILY_NAME_MAX),
 });

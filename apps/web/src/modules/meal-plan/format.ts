@@ -68,6 +68,11 @@ export function ruleDetail(rule: Rule): string {
     rule.mealTime ? `le ${MEAL_TIME_WORDS[rule.mealTime]}` : null,
     frequencyLabel(rule),
     rule.tagCooldownDays ? `${String(rule.tagCooldownDays)} j entre deux` : null,
+    rule.recipeCooldownDays === null
+      ? null
+      : rule.recipeCooldownDays === 0
+        ? "recettes reproposées sans délai"
+        : `recettes reproposées après ${String(rule.recipeCooldownDays)} j`,
     rule.weight === 1 ? null : `poids ${weightLabel(rule.weight)}`,
   ].filter((part): part is string => part !== null);
   const text = parts.length > 0 ? parts.join(" · ") : "poids normal";

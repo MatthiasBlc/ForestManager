@@ -1,4 +1,4 @@
-import { act, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 
@@ -213,6 +213,93 @@ describe("shell d'un espace", () => {
         "aria-current",
         "page"
       );
+    });
+  });
+
+  describe("ordre des espaces (D218)", () => {
+    function ordered() {
+      const me = buildMe();
+      const spaces = ["Amis", "Famille", "Coloc"].map((name, i) =>
+        buildSpaceDetail({ name, tintIndex: i + 1 })
+      );
+      mockSession({ me, spaces: [buildPersonalSpace(me), ...spaces] });
+      const sent: string[][] = [];
+      server.use(
+        http.put("/api/v1/me/space-order", async ({ request }) => {
+          const { spaceIds } = (await request.json()) as { spaceIds: string[] };
+          sent.push(spaceIds);
+          const all = [
+            buildPersonalSpace(me),
+            ...spaceIds.map((id) => spaces.find((sp) => sp.id === id)!),
+          ];
+          return HttpResponse.json({ data: all.map(({ modules: _m, ...summary }) => summary) });
+        })
+      );
+      const [amis, famille, coloc] = spaces;
+      return { me, sent, amis: amis!, famille: famille!, coloc: coloc! };
+    }
+    const groupsOf = (container: HTMLElement) =>
+      within(container)
+        .getAllByRole("button")
+        .flatMap((b) => /(Amis|Famille|Coloc)/.exec(b.textContent)?.[1] ?? []);
+
+    it("rail : Alt+fleches deplacent l'espace qui a le focus, annonce lue", async () => {
+      const { sent, amis, famille, coloc } = ordered();
+      const { user } = renderWithProviders(<App />, { route: `/s/${famille.id}/recipes` });
+      const rail = await screen.findByRole("navigation", { name: "Espaces" });
+      const button = await within(rail).findByRole("button", { name: "Amis" });
+      button.focus();
+      await user.keyboard("{Alt>}{ArrowDown}{/Alt}");
+      await waitFor(() => {
+        expect(sent).toEqual([[famille.id, amis.id, coloc.id]]);
+      });
+      expect(
+        within(rail)
+          .getAllByRole("button")
+          .map((b) => b.getAttribute("title"))
+      ).toEqual(["matthias", "Famille", "Amis", "Coloc", "Créer ou rejoindre un espace"]);
+      expect(within(rail).getByRole("button", { name: "Amis" })).toHaveFocus();
+      expect(within(rail).getByText("Amis : position 2 sur 3")).toBeInTheDocument();
+      // Deja en tete : rien.
+      within(rail).getByRole("button", { name: "Famille" }).focus();
+      await user.keyboard("{Alt>}{ArrowUp}{/Alt}");
+      expect(sent).toHaveLength(1);
+      // L'espace perso ne bouge pas.
+      within(rail).getByRole("button", { name: "matthias" }).focus();
+      await user.keyboard("{Alt>}{ArrowDown}{/Alt}");
+      expect(sent).toHaveLength(1);
+    });
+
+    it("rail et feuille des espaces : glisser un espace sur un autre prend sa place", async () => {
+      const { sent, amis, famille, coloc } = ordered();
+      const { user } = renderWithProviders(<App />, { route: `/s/${famille.id}/recipes` });
+      const rail = await screen.findByRole("navigation", { name: "Espaces" });
+      const mouse = { pointerType: "mouse", button: 0 } as const;
+      const drag = (from: HTMLElement, to: HTMLElement) => {
+        fireEvent.pointerDown(from, { ...mouse, clientX: 10, clientY: 10 });
+        fireEvent.pointerMove(to, { ...mouse, clientX: 10, clientY: 80 });
+        fireEvent.pointerUp(to, { ...mouse, clientX: 10, clientY: 80 });
+      };
+      drag(
+        await within(rail).findByRole("button", { name: "Coloc" }),
+        within(rail).getByRole("button", { name: "Amis" })
+      );
+      await waitFor(() => {
+        expect(sent).toEqual([[coloc.id, amis.id, famille.id]]);
+      });
+
+      await user.click(screen.getByRole("button", { name: /^Famille.*changer d'espace/ }));
+      const sheet = screen.getByRole("dialog", { name: "Espaces" });
+      expect(groupsOf(sheet)).toEqual(["Coloc", "Amis", "Famille"]);
+      drag(
+        within(sheet).getByRole("button", { name: /^Famille/ }),
+        within(sheet).getByRole("button", { name: /^Coloc/ })
+      );
+      await waitFor(() => {
+        expect(sent.at(-1)).toEqual([famille.id, coloc.id, amis.id]);
+      });
+      // Le glisser n'a pas change d'espace : la feuille reste ouverte.
+      expect(screen.getByRole("dialog", { name: "Espaces" })).toBeInTheDocument();
     });
   });
 });

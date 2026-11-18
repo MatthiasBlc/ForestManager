@@ -1,5 +1,6 @@
 // TopBar : bouton d'espace (mobile) ou titre, recherche (C6b) et notifications,
 // profil. Mode edition (D136) : Annuler, titre, action principale.
+import type { ReactNode } from "react";
 import { Link } from "react-router";
 
 import { Button, IconButton } from "../ui/button.tsx";
@@ -33,6 +34,8 @@ interface EditProps {
   actionShort?: string;
   actionDisabled?: boolean;
   onAction?: () => void;
+  /** Menu "..." avant l'action principale (editeur : importer dans la recette [D212]). */
+  menu?: ReactNode;
 }
 
 /** Libelle court en mobile, complet en bureau (deux elements, un seul visible). */
@@ -56,6 +59,7 @@ export function TopBar(props: ViewProps | EditProps) {
         <span className="fm-top-title fm-top-edit-title">
           <Responsive label={props.title} short={props.titleShort} />
         </span>
+        {props.menu}
         {props.action ? (
           <Button
             variant="primary"
