@@ -1,4 +1,4 @@
-// Contrats des services entre modules (14-Architecture.md, `provides` / `requires`).
+// Contrats des services entre modules (Reference/Architecture.md, `provides` / `requires`).
 // Un module n'importe jamais un autre module : il demande un service par sa cle,
 // le registre le trouve dans la liste injectee. Ce fichier ne porte que des types
 // et l'acces type ; chaque module fournit son implementation dans son manifeste.

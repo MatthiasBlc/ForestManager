@@ -1,10 +1,10 @@
 // =============================================================================
 // Forest Manager V2 - schema de l'API
 // =============================================================================
-// Copie du schema cible (.claude/docs/Rework-V2/11-Modele-Donnees/schema.prisma),
-// une section a la fois : C1 = socle (sections 1 a 3) + AdminUser reduit.
-// Chaque etape suivante (C3 a C6) ajoute ses modeles et relations par sa
-// propre migration. Index partiels et CHECK : en SQL dans les migrations.
+// Ce fichier fait foi [D221] (schema cible d'origine archive dans
+// .claude/docs/Archive/Rework-V2/11-Modele-Donnees/). Chaque evolution ajoute
+// ses modeles et relations par sa propre migration. Index partiels et CHECK :
+// en SQL dans les migrations.
 // =============================================================================
 
 generator client {

@@ -87,7 +87,7 @@ const ctx = createContext({
 if (!recipesModule.router) throw new Error("recipes module without router");
 const ROUTES = routesOf(recipesModule.router(ctx));
 
-// --- Matrice B2 recopiee a la main (12-Permissions.md, Recettes et Tags) ---
+// --- Matrice B2 recopiee a la main (Reference/Permissions.md, Recettes et Tags) ---
 
 type RecipeKey = keyof typeof RECIPE_PERMISSIONS;
 

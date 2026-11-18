@@ -1,7 +1,7 @@
 # Forest Manager V2 - Cahier des charges
 
-**Version : 1.9 (1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder ; 1.1 : module Planning revu au plan C5, D180 a D184, D11 amendee : midi et soir seulement ; 1.2 : plan C6, D187 a D189 : changelog en brouillon embarque, temps reel en SSE ; 1.3 : plan C6b, D192 : export en tache de fond, reimport en V2.1 ; 1.4 : etude UX mobile, D209 ; 1.5 : connexion avec Discord, D210, avatars recadres, D211 ; 1.6 : import dans une recette existante, D212 ; 1.7 : delai de recette par tag, D214 ; repas manuel verrouille, D215 ; 1.8 : affichage des tags et familles, D216 ; 1.9 : ordre des listes de recettes, D217 ; ordre des espaces, D218 ; retour d'une recette, D219 ; PWA de preprod, D220) ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception** - 2026-11-18
-Statut de chaque decision : voir `3-Journal-des-Decisions.md`. Une ligne marquee `[Dxx]` renvoie a sa decision.
+**Version : 1.9 - 2026-11-18** (1.0 validee par le proprietaire le 2026-11-05 ; historique en fin de document ; decisions D01 a D142 reportees, D41 a D79 par renvoi aux documents de conception).
+Statut de chaque decision : voir `Journal-des-Decisions.md`. Une ligne marquee `[Dxx]` renvoie a sa decision.
 Les questions de la phase A sont au S10 (toutes repondues). Tant qu'une question touche une section, cette section n'est pas validable.
 
 ---
@@ -185,7 +185,7 @@ Dashboard, referentiels, catalogue de modules (statut de chaque module), **file 
 - Le tableau de bord s'ouvre sur "A traiter" et l'etat des services [D129].
 - Moderation d'un espace : acces en lecture seule pendant 30 minutes, seules les actions de moderation sont possibles (sur une recette : masquer, supprimer, ou la retirer d'un espace de partage, ou elle reste chez son auteur ; motif obligatoire, audit) [D122] ; l'OWNER est informe, avec le motif [D121]. Une recette masquee n'est plus visible que de son auteur, qui voit le motif ; l'acces est enregistre a part et expire seul [D178].
 - Le journal d'audit ne se modifie ni ne se supprime ; il se filtre par categorie [D128].
-- Reglages de la plateforme en lecture seule : SMTP, Bugsink et stockage restent configures par variables d'environnement (`14-Architecture.md`) ; l'ecran affiche l'etat, les valeurs non secretes et un bouton "Tester" par service [D135].
+- Reglages de la plateforme en lecture seule : SMTP, Bugsink et stockage restent configures par variables d'environnement (`Architecture.md`) ; l'ecran affiche l'etat, les valeurs non secretes et un bouton "Tester" par service [D135].
 - Connexion admin sans compteur d'etapes (2 ou 3 selon que la 2FA est deja configuree) : les titres suffisent [D138].
 
 ### 4.10 Changelog
@@ -232,7 +232,7 @@ Reprise de la V1 (page utilisateur, gestion admin), generation revue [D187] :
 
 ### 5.4 Maquettes
 
-Inventaire des ecrans : `13-Parcours.md`. Maquettes : `16-Maquettes/` (4 canevas, liens dans le `README.md` du chantier). Donnees d'exemple : `16-Maquettes/BRIEF.md` (Matthias OWNER de Colloc [D132]).
+Inventaire des ecrans : `Parcours.md`. Maquettes : `16-Maquettes/` (4 canevas, liens dans le `README.md` du chantier). Donnees d'exemple : `16-Maquettes/BRIEF.md` (Matthias OWNER de Colloc [D132]).
 
 ## 6. Exigences techniques
 
@@ -240,7 +240,7 @@ Inventaire des ecrans : `13-Parcours.md`. Maquettes : `16-Maquettes/` (4 canevas
 
 - Monorepo npm workspaces : `apps/api`, `apps/web`, `packages/shared` (schemas Zod, types, codes erreur, constantes de permissions partages entre back et front) [D15].
 - **Socle generique** [D40] : comptes, espaces, membres, permissions, invitations, notifications, activite, recherche et administration ne connaissent aucun module ; Recettes se branche par le registre comme les autres.
-- Backend : TypeScript, Express 5 et Prisma 7 [D80][D86]. Organisation **par module** (`modules/recipes`, `modules/meal-plan`...) avec routes, service, schemas, permissions et notifications propres. Detail : `14-Architecture.md`.
+- Backend : TypeScript, Express 5 et Prisma 7 [D80][D86]. Organisation **par module** (`modules/recipes`, `modules/meal-plan`...) avec routes, service, schemas, permissions et notifications propres. Detail : `Architecture.md`.
 - Frontend : React + Vite + TanStack Query (cache et invalidation serveur), React Router, react-hook-form + Zod partages. Chaque module enregistre ses routes, sa nav et ses widgets dans un registre.
 - Temps reel : Socket.IO conserve, **jonction d'une room uniquement apres verification d'appartenance**.
 
@@ -294,3 +294,16 @@ Sans objet [D23] : la V1 n'a pas d'utilisateurs reels, la base et la stack seron
 | Q14 | REPONDU (D23) - Choix de l'OWNER des communautes existantes lors de la migration ?                                                                                                    | S8         |
 | Q15 | REPONDU (D23, aucun user en V1) - Combien d'utilisateurs / communautes reels en prod aujourd'hui ? (dimensionne l'effort de migration)                                                | S8, S9     |
 | Q16 | REPONDU (D23, sans objet : pas d'utilisateurs, la V1 ne sera pas corrigee) - Les failles V1 relevees (rooms socket, SSRF de l'import) : correctif immediat en V1 ou on attend la V2 ? | V1         |
+
+## Historique des versions
+
+- 1.0 validee par le proprietaire le 2026-11-05, feu vert pour coder
+- 1.1 : module Planning revu au plan C5, D180 a D184, D11 amendee : midi et soir seulement
+- 1.2 : plan C6, D187 a D189 : changelog en brouillon embarque, temps reel en SSE
+- 1.3 : plan C6b, D192 : export en tache de fond, reimport en V2.1
+- 1.4 : etude UX mobile, D209
+- 1.5 : connexion avec Discord, D210, avatars recadres, D211
+- 1.6 : import dans une recette existante, D212
+- 1.7 : delai de recette par tag, D214 ; repas manuel verrouille, D215
+- 1.8 : affichage des tags et familles, D216
+- 1.9 : ordre des listes de recettes, D217 ; ordre des espaces, D218 ; retour d'une recette, D219 ; PWA de preprod, D220

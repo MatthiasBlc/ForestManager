@@ -1,12 +1,13 @@
 # Documentation Forest Manager
 
-| Dossier / fichier    | Contenu                                                               | A lire                                 |
-| -------------------- | --------------------------------------------------------------------- | -------------------------------------- |
-| `Rework-V2/`         | **Chantier en cours** : CDC V2, decisions, roadmap, conception, plans | Toujours, en commencant par son README |
-| `0-Brainstorming.md` | Idees futures encore ouvertes (ecrites par le proprietaire du projet) | Pour une nouvelle idee                 |
+| Dossier      | Contenu                                                                                                   | A lire                                   |
+| ------------ | --------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `V2.2/`      | **Chantier en cours** : etat, reprise, roadmap (lot V2.2, actions infra, idees a etudier)                 | Toujours, en commencant par son README   |
+| `Reference/` | Documents vivants : CDC, journal des decisions, permissions, parcours, architecture, tests, design system | Selon le besoin, par renvoi du chantier  |
+| `Archive/`   | Chantiers termines (Rework V2 : plans, etudes, maquettes, recettes) et ancien brainstorming               | Seulement pour l'histoire d'une decision |
 
-La documentation de la V1 (specs des features, references techniques) a ete retiree de l'arbre : elle reste lisible dans le tag git `v1-final` (`git show v1-final:.claude/docs/V1/...`). Le `README.md` du chantier V2 liste les fichiers V1 encore utiles.
+Regles [D221] : le chantier en cours porte l'etat et la roadmap ; la reference porte la conclusion (CDC) et le debat (journal) ; le code fait foi pour le schema, les routes et le style. Un chantier termine part dans `Archive/`.
 
-Un chantier termine part dans `Archive/` et n'est plus lu par defaut. Dans un chantier en cours, les etudes terminees vont dans son sous-dossier `archive/`.
+La documentation de la V1 reste lisible dans le tag git `v1-final` (`git show v1-final:.claude/docs/V1/...`).
 
 Le `README.md` a la racine du depot reste la presentation publique du projet.

@@ -4,8 +4,8 @@ Plateforme d'espaces prives (famille, amis, colocs) organisee en modules. Module
 
 ## Etat actuel
 
-**Chantier en cours : Rework V2. CDC 1.0 valide le 2026-11-05 : phase de realisation. C1 (socle API), C2 (design system, shell, ecrans du socle) et C3 (Recettes) termines ; C4 (referentiels et admin) et C5 (planning) termines ; C6 (notifications, activite, temps reel, changelog) termine ; C6b (recherche, export, widgets) termine ; C7 (E2E, suivi d'erreurs, CI, preprod en ligne et recettee) termine ; C7b (connexion Discord, D202, D210) termine ; seconde recette faite ; V2 en prod le 2026-11-17 (v2.0.0), C8 ouvert pour les actions infra du proprietaire ; preprod et prod se deploient depuis ce poste, pas a pas avec le proprietaire (D201).**
-Point de reprise : `.claude/docs/Rework-V2/README.md`, puis la premiere case non cochee de `4-Roadmap.md`.
+**Chantier en cours : V2.2** (liste de courses, reimport de l'export, E2E Safari, idees a etudier). V2 en prod depuis le 2026-11-17 (`v2.0.0`), corrections post-prod en `v2.1.0` le 2026-11-18 ; le chantier Rework V2 est archive. Preprod et prod se deploient depuis ce poste, pas a pas avec le proprietaire (D201).
+Point de reprise : `.claude/docs/V2.2/README.md`, puis la premiere case non cochee de `.claude/docs/V2.2/Roadmap.md`.
 
 La V1 est obsolete et supprimee de l'arbre (reference : tag git `v1-final`).
 
@@ -17,7 +17,7 @@ Des que le contexte depasse 30 a 40 % et qu'un point de reprise propre existe (t
 
 Monorepo npm workspaces (npm 11) : `apps/api`, `apps/web`, `packages/shared`, `packages/test-utils`.
 Node 22 (types TS effaces nativement, pas de build API) + TypeScript 6 strict + Express 5 + Zod 4 | React 19 + Vite 8 | PostgreSQL 17 + Prisma (a partir de C1.4) | Vitest 5 | Docker + GitHub Actions + Portainer + Traefik.
-Cible complete et versions : `.claude/docs/Rework-V2/14-Architecture.md`.
+Cible complete et versions : `.claude/docs/Reference/Architecture.md`.
 
 ## Commandes
 
@@ -56,8 +56,10 @@ npm run admin:create           # compte super admin dans la stack de dev (2FA a 
 
 Tout est dans `.claude/docs/` (index : `.claude/docs/README.md`). Regles :
 
-- **Un chantier = un dossier** `.claude/docs/<Chantier>/` avec des fichiers numerotes : `README.md` (etat + ordre de lecture), `1-CDC`, `3-Journal-des-Decisions`, `4-Roadmap`, et les artefacts HTML.
-- **Le CDC porte la conclusion, le journal porte le debat.** Une decision = un numero `D##` dans le journal, reprise en une ligne dans le CDC.
+- **Reference vivante** dans `.claude/docs/Reference/` (CDC, journal des decisions, permissions, parcours, architecture, plan de tests, design system) [D221] : tenue a jour a chaque decision, jamais recopiee dans un chantier.
+- **Un chantier = un dossier** `.claude/docs/<Chantier>/` : `README.md` (etat, ordre de lecture, reprise, court), `Roadmap.md`, puis ses plans, etudes et artefacts numerotes (`1-Plan-...`, `2-Etude-...`).
+- **Le CDC porte la conclusion, le journal porte le debat.** Une decision = un numero `D##` dans le journal (numerotation continue), reprise en une ligne dans le CDC.
+- **Le code fait foi** pour le schema, les routes et le style (`apps/web/src/styles/`) : pas de copie dans les docs.
 - **Roadmap** : cases `- [ ]` ; la premiere non cochee est le point de reprise. Cocher au fil de l'eau.
 - **Artefacts** : toujours ecrire la copie locale dans le dossier du chantier AVANT de publier (lisible hors ligne), puis publier depuis ce fichier.
 - **Un compteur ou un statut a un seul endroit** ; ailleurs on renvoie, on ne recopie pas.

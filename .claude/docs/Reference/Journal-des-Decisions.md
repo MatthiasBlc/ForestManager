@@ -235,7 +235,7 @@ Le detail de chacune est dans le document qui l'a proposee ; ce journal porte le
 - **D46 - Conversions : dimension et facteur vers la base, poids par ingredient et par unite** - VALIDEE (2026-11-03).
 - **D47 - Partage automatique des sous-recettes trace (viaRecipeId)** - VALIDEE (2026-11-03).
 
-### Permissions (`12-Permissions.md`)
+### Permissions (`Permissions.md`)
 
 - **D50 - Pas d'annuaire d'utilisateurs** - VALIDEE (2026-11-03).
 - **D51 - Suppression du compte d'un OWNER : transfert automatique, plafond de 20 espaces possedes** - VALIDEE (2026-11-03).
@@ -248,7 +248,7 @@ Le detail de chacune est dans le document qui l'a proposee ; ce journal porte le
 - **D58 - Planning : role minimal reglable pour modifier un repas (MEMBER par defaut) ; generation et reglages aux moderateurs** - VALIDEE (2026-11-03), MEMBER confirme.
 - **D59 - Un ancien membre qui revient retrouve ses droits d'auteur** - VALIDEE (2026-11-03).
 
-### Parcours (`13-Parcours.md`)
+### Parcours (`Parcours.md`)
 
 - **D60 - Ouverture sur le dernier espace et module visites** - VALIDEE (2026-11-03).
 - **D61 - Ecran de bienvenue a 3 choix apres l'inscription** - VALIDEE (2026-11-03). Une visite guidee est notee comme idee future.
@@ -261,7 +261,7 @@ Le detail de chacune est dans le document qui l'a proposee ; ce journal porte le
 - **D68 - Hors ligne : bandeau, ecriture desactivee, brouillon local** - VALIDEE (2026-11-03).
 - **D69 - Echange de repas : glisser en desktop, menu puis cible sur mobile** - VALIDEE (2026-11-03).
 
-### Architecture et tests (`14-Architecture.md`, `15-Plan-Tests.md`)
+### Architecture et tests (`Architecture.md`, `Plan-Tests.md`)
 
 - **D70 - Monorepo npm workspaces** - VALIDEE (2026-11-03).
 - **D71 - Registre de modules statique (manifestes API et web)** - VALIDEE (2026-11-03).
@@ -359,14 +359,14 @@ Points ouverts releves a la preparation de B9 (relecture croisee du CDC, du sche
 
 ### D140 - Pas de copie independante : l'adaptation est la seule facon de copier une recette - VALIDEE (2026-11-05)
 
-- **Constat** : le CDC gardait une "Copie (fork)" independante (glossaire S2, F-REC-7, roadmap C3) et D04 laissait le suggereur "convertir en copie". Elle n'existe ni dans le schema, ni dans `12-Permissions.md`, ni dans les parcours ou les maquettes : partout, la seule copie est l'adaptation (D17), et 12 dit deja "transformer sa suggestion refusee en adaptation".
+- **Constat** : le CDC gardait une "Copie (fork)" independante (glossaire S2, F-REC-7, roadmap C3) et D04 laissait le suggereur "convertir en copie". Elle n'existe ni dans le schema, ni dans `Permissions.md`, ni dans les parcours ou les maquettes : partout, la seule copie est l'adaptation (D17), et 12 dit deja "transformer sa suggestion refusee en adaptation".
 - **Options** : (A) supprimer la copie independante ; (B) l'ajouter partout (schema, permissions, parcours, maquettes).
 - **Choix** : A. Deux gestes seulement, partager et adapter (principe "un seul chemin evident par action"). Une adaptation dont on ignore les mises a jour se comporte deja comme une copie (`archive/5-Etude-Adaptations.md`, O1). Une suggestion refusee peut devenir une adaptation dans l'espace du suggereur.
 - **Consequence** : amende D03 (la "copie" explicite devient l'adaptation) et remplace la conversion en copie de D04. Retire du CDC (S2, F-REC-7) et de la roadmap (C3). Aucun changement de schema.
 
 ### D141 - Liste de courses : role minimal reglable pour la modifier, MEMBER par defaut - VALIDEE (2026-11-05)
 
-- **Constat** : les droits de la liste de courses (V2.1) etaient seulement "proposes" dans `12-Permissions.md` (memes droits que modifier le planning), sans decision au journal.
+- **Constat** : les droits de la liste de courses (V2.1) etaient seulement "proposes" dans `Permissions.md` (memes droits que modifier le planning), sans decision au journal.
 - **Options** : (A) role minimal reglable par l'OWNER, MEMBER par defaut, comme les repas du planning (D58) ; (B) droits fixes.
 - **Choix** : A. Un seul reglage `editRole` (MEMBER par defaut, l'OWNER peut restreindre) couvre generer depuis le planning, ajouter des articles libres, cocher et archiver. Il sera modelise avec le module en V2.1, sur le modele de `MealPlanSettings.editRole`.
 
@@ -578,7 +578,7 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
 
 ### D174 - Connexion admin : regles de realisation - VALIDEE (2026-11-06, realisation C4.1)
 
-- **Constat** : le CDC et `14-Architecture.md` fixent une session admin isolee de 30 min non glissante avec 2FA TOTP, sans dire comment l'isoler de la session des utilisateurs, ni comment traiter le rejeu d'un code ou la creation du premier compte.
+- **Constat** : le CDC et `Architecture.md` fixent une session admin isolee de 30 min non glissante avec 2FA TOTP, sans dire comment l'isoler de la session des utilisateurs, ni comment traiter le rejeu d'un code ou la creation du premier compte.
 - **Choix** :
   - **Session isolee** : routeur `/api/v1/admin` monte avant la session des utilisateurs, cookie `fm.admin.sid` (httpOnly, SameSite strict, chemin `/api/v1/admin`), table `AdminSession`. Un compte utilisateur n'ouvre rien cote admin, et l'inverse. L'etape mot de passe ouvre une session d'attente de 5 min ; le code valide ouvre une session neuve de 30 min que les requetes ne prolongent jamais.
   - **Code TOTP** : tolerance d'un pas (30 s) ; un code deja accepte est refuse (`AdminUser.totpLastStep`, ecrit sous condition en SQL) ; 3 codes faux ferment la tentative (retour au mot de passe). Rate limit : 5 mots de passe et 10 codes par 15 min.
@@ -671,7 +671,7 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 - **Poids** (complete par le proprietaire) : par defaut cinq paliers (Jamais x0, Moins souvent x0,5, Normal x1, Plus souvent x1,5, Beaucoup plus x2), valeurs deja montrees par les maquettes. Un mode "Avance" dans la regle ouvre une jauge de 0 a 200 % par pas de 5 % pour un reglage fin. En base, un nombre de 0 a 2 ; une regle dont le poids n'est pas un palier s'affiche en pourcentage et s'ouvre en mode avance. Les poids se multiplient comme en V1.
 - **Algorithme** : celui de la V1 (passe principale, rattrapage des minimums, rapport), avec une graine aleatoire injectable pour des tests deterministes ; ordre de priorite des contraintes V1 conserve ; la generation ne refuse jamais, elle explique chaque case laissee vide (D113).
 - **Temps reel** : pas de socket en C5 ; relecture au retour sur l'onglet et en tirant l'ecran (P10). La salle `space:<id>` arrive avec C6.
-- **Services entre modules** (`14-Architecture.md`, `provides` / `requires`) : Recettes fournit le catalogue des recettes visibles d'un espace (recherche et generation) ; le Planning fournit les compteurs D39 ("planifiee N fois", "derniere fois le ..."), que Recettes affiche seulement si le module est present et actif.
+- **Services entre modules** (`Architecture.md`, `provides` / `requires`) : Recettes fournit le catalogue des recettes visibles d'un espace (recherche et generation) ; le Planning fournit les compteurs D39 ("planifiee N fois", "derniere fois le ..."), que Recettes affiche seulement si le module est present et actif.
 - **Droits** (D58, F-MPL-3) : modifier, echanger, verrouiller, remplacer un repas = role minimal `editRole` ; le role minimal se regle par l'OWNER seul ; les autres reglages, les profils et la generation : MODERATOR et OWNER.
 - **Catalogue** : le statut d'un module n'est ecrit qu'a la creation de sa ligne (D175) ; sur une base existante, passer le Planning de "Bientot" a "Disponible" se fait dans A04.
 
@@ -694,8 +694,8 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 ### D188 - Temps reel en SSE plutot que Socket.IO - VALIDEE (2026-11-09, plan C6, choix du proprietaire)
 
 - **Constat** : les besoins vont du serveur vers le client seulement (notifications, invalidation des donnees d'un espace) ; une seule instance d'API.
-- **Options** : Socket.IO (prevu par `14-Architecture.md` S6, comme la V1) ; Server-Sent Events.
-- **Choix** : SSE (`GET /api/v1/events`, `EventSource` natif) : aucune dependance, reprise native, passe par nginx et Traefik en HTTP. Diffusion en memoire derriere une interface (PostgreSQL `LISTEN/NOTIFY` si un jour plusieurs instances). Amende `14-Architecture.md` S6.
+- **Options** : Socket.IO (prevu par `Architecture.md` S6, comme la V1) ; Server-Sent Events.
+- **Choix** : SSE (`GET /api/v1/events`, `EventSource` natif) : aucune dependance, reprise native, passe par nginx et Traefik en HTTP. Diffusion en memoire derriere une interface (PostgreSQL `LISTEN/NOTIFY` si un jour plusieurs instances). Amende `Architecture.md` S6.
 
 ### D189 - C6 recentre, recherche globale, export et widgets en C6b - VALIDEE (2026-11-09, plan C6, choix du proprietaire)
 
@@ -752,7 +752,7 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 
 - **Stack** : `docker/compose.e2e.yml`, front en image prod (nginx, bundle de production) devant une API en `NODE_ENV=test`, PostgreSQL et RustFS en tmpfs, conteneur Playwright officiel.
 - **Route de test** [D79] : `POST /api/v1/__test/scenario` et `/__test/reset`, montees seulement en `NODE_ENV=test`, absence en production prouvee par un test.
-- **Couverture** [D78] : seuils 90 / 80 / 60 % vises ; une zone en dessous recoit des tests la ou un comportement n'est pas prouve, sinon son seuil est pose au niveau mesure et l'ecart est note dans `15-Plan-Tests.md`.
+- **Couverture** [D78] : seuils 90 / 80 / 60 % vises ; une zone en dessous recoit des tests la ou un comportement n'est pas prouve, sinon son seuil est pose au niveau mesure et l'ecart est note dans `Plan-Tests.md`.
 - **E2E en CI** : job bloquant a chaque push et pull request, artefacts des echecs gardes 7 jours.
 
 ### D198 - C7 : decoupage et changement de poste avant tout deploy - REMPLACEE par D201 (2026-11-11, plan C7, demande du proprietaire pour le changement de poste)
@@ -778,7 +778,7 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 
 ### D200 - CI complete : couverture, cles i18n, E2E - VALIDEE (2026-11-11, realisation C7.6, defauts annonces)
 
-- **Constat** : mesure du 2026-11-11 (`@vitest/coverage-v8` 5.0.5), lignes / branches : `packages/shared` 99,7 / 92,1, `apps/api` 95,8 / 83,1, `apps/web` 91,4 / 80,8. Toutes les zones depassent les seuils de `15-Plan-Tests.md` S7. Cote web, aucun texte ne passe encore par `t()` : les seules cles lues sont les codes d'erreur.
+- **Constat** : mesure du 2026-11-11 (`@vitest/coverage-v8` 5.0.5), lignes / branches : `packages/shared` 99,7 / 92,1, `apps/api` 95,8 / 83,1, `apps/web` 91,4 / 80,8. Toutes les zones depassent les seuils de `Plan-Tests.md` S7. Cote web, aucun texte ne passe encore par `t()` : les seules cles lues sont les codes d'erreur.
 - **Choix** :
   - **Couverture** : seuils du plan gardes tels quels (90/85, 80/70, 60/50), aucun test ajoute pour le chiffre. Configuration dans `vitest.config.ts` (seuils par motif de fichiers), lancee par `npm run test:coverage` ; generated, scripts et aides de test exclus. Rapport texte seul, ecrit dans `/tmp` du conteneur (il tourne en root sur l'arbre monte).
   - **Cles i18n** : par le typage d'i18next (`apps/web/src/i18n/i18next.d.ts`, `CustomTypeOptions.resources`) plutot qu'un script : une cle absente de `fr` echoue au typecheck, bloquant en CI. Le namespace `errors` est construit depuis `ERROR_CODES` et le type `ClientErrorCode` (`lib/api.ts`), complet par construction ; un code inconnu venu du serveur reste lu par `i18n.exists`.
@@ -922,3 +922,12 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 
 - **Constat** : la PWA de preprod installee sur le telephone porte le meme nom et la meme icone que la prod. La CI construit le front sans distinction d'environnement (la prod reconstruit l'image au push sur master, un retour arriere redeploie un tag `sha-*`) : un choix au build ne suivrait pas l'image d'un environnement a l'autre.
 - **Choix** : le build ecrit a cote de la prod une variante `dist/preprod/` (manifeste "Forest Manager Preprod" / nom court "FM Preprod", titre d'onglet et `apple-mobile-web-app-title`, icones a bandeau rouge "PREPROD", maskable dans la zone sure), hors precache du service worker ; l'entrypoint nginx (`docker/web-variant.sh`) la recopie a la racine si `WEB_VARIANT=preprod`, pose dans `docker/compose.preprod.yml`. Sans la variable (ou valeur inconnue) : prod, racine servie identique octet pour octet. Icones generees au build sans dependance (PNG via zlib de Node, police pixel 5x7), aucun binaire committe. `theme_color` inchange (reecrit par le theme a l'execution). Apres le premier deploy : desinstaller puis reinstaller la PWA de preprod sur le telephone (nom et icone d'une PWA installee rarement mis a jour).
+
+### D221 - Organisation des docs apres la v2.1.0 : reference vivante, chantier V2.2, le code fait foi - VALIDEE (2026-11-18, demande du proprietaire)
+
+- **Constat** : le dossier du chantier Rework V2 melait la reference durable (CDC, journal, permissions, parcours, architecture, tests, design system) et l'histoire du chantier (plans C1 a C7b, etudes, maquettes, recettes, README de 120 Ko). Le design system et le schema cible existaient en double : copies dans les docs et code, et le code s'en etait deja ecarte.
+- **Choix** :
+  - `.claude/docs/Reference/` : documents vivants utiles au developpement (CDC, journal qui continue sa numerotation, permissions, parcours, architecture, plan de tests, regles du design system). Ils ne portent plus de numero.
+  - `.claude/docs/V2.2/` : chantier en cours, README court (etat, reprise) et roadmap (lot V2.2, actions infra du proprietaire reprises de C8, idees a etudier reprises du brainstorming).
+  - `.claude/docs/Archive/Rework-V2/` : tout le reste du chantier Rework V2, intact ; l'ancien brainstorming dans `Archive/`.
+  - **Le code fait foi** pour le design system (`apps/web/src/styles/`) et le schema (`apps/api/prisma/schema.prisma`) : les copies des docs sont archivees et ne sont plus recopiees.

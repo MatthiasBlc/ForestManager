@@ -42,7 +42,7 @@ export default defineConfig({
       },
     },
     {
-      // Seulement les parcours marques (D) dans 15-Plan-Tests.md S4 (tag @desktop).
+      // Seulement les parcours marques (D) dans Reference/Plan-Tests.md S4 (tag @desktop).
       name: "desktop",
       grep: /@desktop/,
       use: { viewport: { width: 1280, height: 800 } },

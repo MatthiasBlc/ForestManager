@@ -1,4 +1,4 @@
-/* Styles des composants du design system, copies de .claude/docs/Rework-V2/10-Design-System/project/components/bundle.css [D155]. Polices auto-hebergees [D156] : l'import Google Fonts d'origine est retire. */
+/* Styles des composants du design system, issus du bundle d'origine [D155] (archive : .claude/docs/Archive/Rework-V2/10-Design-System/) ; ce fichier fait foi [D221]. Polices auto-hebergees [D156] : l'import Google Fonts d'origine est retire. */
 
 /* Forest Manager UI - styles des composants. Mobile first : regles de base pour le telephone,
    enrichies par des requetes de conteneur (@container) a partir de 768px et 1024px. */

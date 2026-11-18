@@ -1,6 +1,6 @@
 # Plan de tests V2
 
-Statut : voir le journal des decisions. Ce document a introduit D77 a D79 (fin de document) ; architecture de reference : `14-Architecture.md`.
+Statut : voir le journal des decisions. Ce document a introduit D77 a D79 (fin de document) ; architecture de reference : `Architecture.md`.
 
 ## 1. Pyramide
 
