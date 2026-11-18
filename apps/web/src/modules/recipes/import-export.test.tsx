@@ -83,6 +83,16 @@ async function choose(user: Awaited<ReturnType<typeof openImport>>["user"], file
 }
 
 describe("importer un export (F-IMP, D225)", () => {
+  it("la feuille dit a l'ecran quel fichier choisir et dans quel espace", async () => {
+    const s = recipeServer();
+    const { sheet } = await openImport(s);
+    const hint = within(sheet).getByText(/archive \.zip téléchargée depuis Forest Manager/);
+    // Visible, pas seulement pour les lecteurs d'ecran.
+    expect(hint.closest(".fm-sr")).toBeNull();
+    expect(hint).toHaveTextContent("recettes.json");
+    expect(hint).toHaveTextContent("Famille");
+  });
+
   it("recettes.json seul : apercu a cocher, doublon decoche, import sans photos", async () => {
     const s = recipeServer();
     s.recipes.importExisting = ["Gratin dauphinois"];

@@ -22,7 +22,7 @@ Integration et mise en ligne :
 
 - [x] Bilan des trois agents ; choix de D226 et D227 valides au selecteur par le proprietaire
 - [x] Fusion des trois branches dans `Developement` ; `npm test` (1809/1809), `npm run e2e` (25 passes, 1 saute), lint et typecheck au vert
-- [ ] Preprod : PR `Developement` -> `master`, verification pas a pas avec le proprietaire
+- [ ] Preprod : PR `Developement` -> `master`, verification pas a pas avec le proprietaire. Premier passage le 2026-11-18 au vert (import texte, ordre des tags, fleche de retour, reimport, changelog public et Markdown) ; correctif du texte de la feuille "Importer un export" (affiche a l'ecran) a repasser en preprod ; geste retour a voir sur un vrai Android
 - [ ] Prod `v2.2.0` : fusion de la PR, tag, changelog (cocher "Visible sans connexion" si souhaite [D226]) ; puis regler a la main l'ordre des tags de Saison et Palier [D223]
 
 ## 2. Nouveaux modules (apres la `v2.2.0`)

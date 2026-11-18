@@ -227,13 +227,13 @@ export function ImportExportSheet({
   }
 
   return (
-    <Sheet
-      open={open}
-      onClose={close}
-      title="Importer un export"
-      description={`L'archive .zip téléchargée depuis Forest Manager (photos comprises) ou son fichier recettes.json : les recettes arrivent dans ${spaceName}.`}
-    >
+    <Sheet open={open} onClose={close} title="Importer un export">
       <div className="fm-stack">
+        {/* Visible : sans elle, la feuille n'est qu'un titre et deux boutons. */}
+        <p className="text-sm text-ink-muted">
+          L'archive .zip téléchargée depuis Forest Manager (photos comprises) ou son fichier
+          recettes.json : les recettes arrivent dans {spaceName}.
+        </p>
         <input
           ref={input}
           type="file"
