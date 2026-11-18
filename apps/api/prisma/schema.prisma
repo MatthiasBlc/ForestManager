@@ -1159,6 +1159,8 @@ model ChangelogEntry {
   status      ChangelogStatus @default(DRAFT)
   publishedAt DateTime?
   notifiedAt  DateTime?
+  /// Lisible sans connexion (page Nouveautes publique) [D226].
+  isPublic    Boolean         @default(false)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 

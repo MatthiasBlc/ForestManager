@@ -70,6 +70,7 @@ function toAdmin(row: Row): AdminRelease {
     status: row.status,
     publishedAt: row.publishedAt?.toISOString() ?? null,
     notifiedAt: row.notifiedAt?.toISOString() ?? null,
+    isPublic: row.isPublic,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -137,7 +138,7 @@ export function updateRelease(
   return transition(ctx, adminId, id, {
     from: ["DRAFT", "PUBLISHED"],
     action: "release.updated",
-    data: () => ({ title: body.title, content: body.content }),
+    data: () => ({ title: body.title, content: body.content, isPublic: body.isPublic }),
   });
 }
 
@@ -211,9 +212,10 @@ export function showRelease(ctx: Context, adminId: string, id: string): Promise<
 
 // --- Utilisateurs (Nouveautes) ---
 
-export async function publishedReleases(ctx: Context): Promise<Release[]> {
+/** `publicOnly` : visiteur sans connexion, versions publiques seulement [D226]. */
+export async function publishedReleases(ctx: Context, publicOnly: boolean): Promise<Release[]> {
   const rows = await ctx.db.changelogEntry.findMany({
-    where: { status: "PUBLISHED" },
+    where: { status: "PUBLISHED", ...(publicOnly ? { isPublic: true } : {}) },
     orderBy: { publishedAt: "desc" },
   });
   return rows.map((row) => ({

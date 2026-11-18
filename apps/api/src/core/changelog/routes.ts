@@ -1,5 +1,6 @@
 // Changelog (C6.6) [D187] : versions de l'admin (A10, derriere requireAdmin) et
-// versions publiees des utilisateurs (Nouveautes).
+// versions publiees des utilisateurs (Nouveautes), lisibles sans connexion pour
+// les versions publiques [D226].
 import {
   adminReleaseSchema,
   idParamsSchema,
@@ -12,7 +13,7 @@ import { Router } from "express";
 
 import { currentAdminId } from "../admin/session.ts";
 import type { Context } from "../context.ts";
-import { requireAuth } from "../http/auth.ts";
+import { createRateLimiter } from "../http/security.ts";
 import { handle, reply } from "../http/validate.ts";
 import * as changelog from "./service.ts";
 
@@ -75,10 +76,16 @@ export function adminChangelogRouter(ctx: Context): Router {
   return router;
 }
 
-export function changelogRouter(ctx: Context): Router {
+export function changelogRouter(ctx: Context, rateLimit: boolean): Router {
   const router = Router();
-  router.get("/releases", requireAuth, async (_req, res) => {
-    reply(res, listSchema(releaseSchema), { data: await changelog.publishedReleases(ctx) });
+  // Route ouverte aux visiteurs : debit limite.
+  const limiter = createRateLimiter(rateLimit, { windowMs: 60 * 1000, limit: 60 });
+  router.get("/releases", limiter, async (req, res) => {
+    // Session complete seulement : un mot de passe temporaire [D134] lit comme un visiteur.
+    const signedIn = Boolean(req.session.userId) && !req.session.passwordChoice;
+    reply(res, listSchema(releaseSchema), {
+      data: await changelog.publishedReleases(ctx, !signedIn),
+    });
   });
   return router;
 }

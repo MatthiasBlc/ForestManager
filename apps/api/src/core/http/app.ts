@@ -173,7 +173,7 @@ export function createApp(deps: AppDeps): express.Express {
   api.use(modulesRouter(ctx));
   api.use(notificationsRouter(ctx));
   api.use(activityRouter(ctx));
-  api.use(changelogRouter(ctx));
+  api.use(changelogRouter(ctx, rateLimit));
   api.use(searchRouter(ctx, rateLimit));
   api.use(exportsRouter(ctx, rateLimit));
   api.use(homeRouter(ctx));
