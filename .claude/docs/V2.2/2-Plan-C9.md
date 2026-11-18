@@ -12,7 +12,7 @@ D228 est au journal et le CDC (S4.7) est a jour.
 - **Sous-recettes depliees** : leurs ingredients, mis a l'echelle de la quantite utilisee ; on decoche dans l'apercu si on en a une toute faite. Sous-recette non visible : signalee "ingredients manquants" [D24, D26].
 - **Articles a la main** : un seul champ avec suggestions du catalogue d'ingredients ; sinon le texte tel quel (eponge, taie d'oreiller). Quantite et unite facultatives : le plus souvent un simple libelle.
 - **Sections de l'espace** (remplacent les rayons figes et le "magasin favori" du CDC) : chaque espace a ses sections (Primeur, Boucher, Pharmacie, Ikea...), ordonnees a la main comme les familles de tags. A l'activation du module, elles sont creees depuis les rayons de la plateforme, dans l'ordre du parcours [D125] ; renommables, supprimables, on en ajoute. Un ingredient va dans la section de son rayon ; deplace dans une autre section, l'espace s'en souvient (un texte libre aussi, par son nom normalise) ; sinon "Autres", toujours en fin.
-- **Ordre** : seules les sections se reordonnent ; dans une section, ordre d'ajout, les achetes en fin de section. Un article change de section depuis sa ligne.
+- **Ordre** : les sections et les articles se reordonnent a la main (demande du proprietaire le 2026-11-18, remplace "ordre d'ajout", a reporter dans D228 a la validation de la maquette). Appui long puis glisser : dans la section, ou vers une autre section (placement memorise). Un nouvel article arrive en fin des non coches de sa section ; les achetes restent en fin de section. Au clavier : "Monter" / "Descendre" dans le detail.
 - **Retirer les achetes** (l'"archiver" du CDC) : un bouton vide la liste de ce qui est coche, avec Annuler dans le toast ; pas d'historique.
 - **Hors ligne : lecture et coches.** La liste s'affiche hors ligne et on coche "achete" ; les coches partent au retour du reseau (la derniere coche gagne ; article retire entre-temps : coche ignoree). Generer, ajouter, retirer attendent le reseau, comme ailleurs [D35]. En ligne, les changements des autres membres arrivent en temps reel.
 - **Droits** : un `editRole` (MEMBER par defaut, reglable par l'OWNER) couvre generer, ajouter, cocher, retirer [D141]. Lire : tout membre.
@@ -35,7 +35,7 @@ Deux usages, deux moments : **remplir** (a la maison, au fil de la semaine) et *
 
 - `ShoppingSettings` : `spaceId` (id), `editRole` (defaut MEMBER), sur le modele de `MealPlanSettings`.
 - `ShoppingSection` : `spaceId`, `name`, `sortOrder`, `aisleId?` (rayon de la plateforme dont elle est issue : y range les ingredients de ce rayon). Supprimer une section renvoie ses articles dans "Autres" (section implicite, sans ligne).
-- `ShoppingItem` : `spaceId`, `sectionId?` (null = "Autres"), `ingredientId?` ou `label?` (texte libre, l'un ou l'autre), `quantity?`, `unitId?`, `checkedAt?`, `checkedById?`, `createdById?`, dates. Article ephemere : hard delete (pas de `deletedAt`, retirer = supprimer).
+- `ShoppingItem` : `spaceId`, `sectionId?` (null = "Autres"), `ingredientId?` ou `label?` (texte libre, l'un ou l'autre), `quantity?`, `unitId?`, `sortOrder`, `checkedAt?`, `checkedById?`, `createdById?`, dates. Article ephemere : hard delete (pas de `deletedAt`, retirer = supprimer).
 - `ShoppingPlacement` (memoire de l'espace) : `spaceId`, `ingredientId?` ou `labelKey?` (nom normalise), `sectionId` ; ecrite quand on deplace un article. Ordre de recherche d'une section : placement, puis section du rayon de l'ingredient, puis "Autres".
 - `ShoppingItemSource` (pivot, cascade) : article, repas (`mealSlotId?`, `SetNull`), recette et son titre, date et moment du repas, quantite apportee. Sert au detail "pour : ..." et au signal "repas deja ajoute".
 
@@ -54,7 +54,7 @@ Deux usages, deux moments : **remplir** (a la maison, au fil de la semaine) et *
 - `POST /from-plan/preview` (`from`, `to`) -> lignes additionnees (cle stable par ingredient et unite), repas deja ajoutes, repas ignores, sous-recettes manquantes.
 - `POST /from-plan` (`from`, `to`, cles cochees) : recalcule cote serveur et fusionne, en une transaction.
 - `POST /checked/clear` -> articles retires ; `POST /items/restore` pour l'Annuler du toast.
-- `GET/POST /sections`, `PATCH/DELETE /sections/:sectionId`, `PUT /sections/order` (meme droit `editRole`) ; `PATCH /items/:itemId` accepte `sectionId` et ecrit le placement.
+- `GET/POST /sections`, `PATCH/DELETE /sections/:sectionId`, `PUT /sections/order` (meme droit `editRole`) ; `PATCH /items/:itemId` accepte `sectionId` et ecrit le placement ; `PUT /sections/:sectionId/order` (ids des articles) pour l'ordre dans une section.
 - `GET/PUT /settings` (`editRole`, OWNER).
 - Evenement temps reel `shopping.changed` sur la salle de l'espace ; activite : une ligne par generation, pas par coche.
 
@@ -62,7 +62,7 @@ Deux usages, deux moments : **remplir** (a la maison, au fil de la semaine) et *
 
 1. Shared : schemas, codes erreur `SHOPPING_0xx`, permissions, et la fonction pure d'agregation (lignes de repas -> lignes de liste, fusion avec l'existant) testee a part.
 2. API : migration, manifeste et catalogue, settings, articles, apercu et ajout depuis le planning (depliage par `composition.ts`), retirer et restaurer, temps reel ; tests d'integration et matrice de droits B2.
-3. Maquette (artefact, copie locale ici d'abord), inspiree de la liste Keep du proprietaire : page liste par section, champ d'ajout, feuille "Depuis le planning", etat hors ligne ; validee par le proprietaire avant le code web.
+3. Maquette (`3-Maquette-C9.html`, publiee ; copie locale ici d'abord), inspiree de la liste Keep du proprietaire : page liste par section, champ d'ajout, feuille "Depuis le planning", etat hors ligne ; validee par le proprietaire avant le code web.
 4. Web : module (nav, page), liste par section (achetes en fin de section), gestion des sections (ajout, renommage, ordre), ajout, feuille d'apercu, retirer avec Annuler, reglages du module, temps reel, file des coches hors ligne (IndexedDB) ; tests composants.
 5. E2E : planning -> liste -> cocher -> retirer ; deux membres en temps reel si faisable.
 6. Docs : D228 au journal, CDC S4.7 reecrit, Parcours (F-SHP), Permissions, Plan de tests ; F-REF-5 (rayons : servent a initialiser les sections) ; cocher la roadmap.
