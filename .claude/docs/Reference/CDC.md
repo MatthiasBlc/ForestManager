@@ -262,7 +262,7 @@ Conserver l'acquis V1 (helmet, CSRF double submit, rate limiting, validation Zod
 ### 6.4 Infrastructure et deploiement
 
 - Images taguees par version et SHA (plus seulement `:latest`), rollback possible.
-- Preprod deployee a chaque push sur la branche de travail, prod au merge sur `master`.
+- Preprod deployee par la PR `Developement` -> `master`, prod a sa fusion. Chaque lot se developpe sur sa branche `lot/v<X.Y.0>` ; `Developement` ne recoit qu'un hotfix ou un lot termine, un hotfix part de `master` [D229].
 - Le seed de deploiement ne contient que les referentiels ; les donnees de demo sont un script separe.
 - Migrations Prisma revues avant merge, sauvegarde DB avant chaque deploy prod.
 
@@ -315,3 +315,4 @@ Sans objet [D23] : la V1 n'a pas d'utilisateurs reels, la base et la stack seron
 - 1.9 : ordre des listes de recettes, D217 ; ordre des espaces, D218 ; retour d'une recette, D219 ; PWA de preprod, D220
 - 1.10 : changelog public et Markdown dans les notes de version, D226 ; E2E WebKit informatif, D227
 - 1.11 : liste de courses revue avant le code (une liste par espace, sections de l'espace, apercu depuis le planning, coches hors ligne), D228
+- 1.12 : flux git par lot et hotfix, D229

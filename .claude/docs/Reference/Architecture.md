@@ -130,6 +130,20 @@ Chaine reprise de la V1 : memes secrets, registry, stacks Portainer, Traefik. De
 
   En arguments de commande : meme liste separee par des virgules dans `--entrypoints.websecure.forwardedHeaders.trustedIPs=...`. Verification : connexion admin en preprod, la ligne "Connexion" du journal d'audit montre la vraie IP.
 
+### Branches et versions [D229]
+
+| Branche          | Role                                                       | Recoit                                                                      |
+| ---------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `master`         | prod                                                       | la PR `Developement` -> `master` (sa fusion deploie la prod et pose le tag) |
+| `Developement`   | preprod, toujours egale a la prod ou a ce qui part en prod | un hotfix ou un lot termine, par PR ; on n'y developpe pas                  |
+| `lot/v<X.Y.0>`   | developpement d'un lot (ex. `lot/v2.3.0`)                  | les commits du lot ; poussee pour la CI, jamais deployee                    |
+| `hotfix/<sujet>` | correctif urgent pendant un lot                            | un ou deux commits `fix:` (tag de patch calcule par la CI)                  |
+
+- **Ouvrir un lot** (prod deployee, `Developement` = `master`) : `git switch Developement && git pull`, `git switch -c lot/v2.3.0`, `git push -u origin lot/v2.3.0`.
+- **Hotfix pendant un lot** : committer ou `git stash` le lot ; `git switch master && git pull` ; `git switch -c hotfix/<sujet>` ; correctif en TDD, commit `fix:` ; `git push -u origin hotfix/<sujet>` ; PR -> `Developement`, fusion ; PR `Developement` -> `master` (preprod, verification), fusion (prod, tag `vX.Y.Z+1`) ; puis ramener le correctif dans le lot : `git switch lot/v2.3.0 && git pull && git merge origin/Developement && git push` (merge, jamais de rebase d'une branche poussee) ; supprimer `hotfix/<sujet>`.
+- **Fermer un lot** : `git merge origin/Developement` une derniere fois dans le lot, `npm test`, `npm run e2e`, lint, typecheck ; PR `lot/...` -> `Developement`, fusion ; puis le flux preprod et prod habituel ; supprimer la branche du lot.
+- **Migrations Prisma** : pas de migration dans un hotfix si on peut l'eviter. Sinon, apres le merge dans le lot, regenerer les migrations du lot pas encore deployees pour qu'elles viennent apres celle du hotfix.
+
 ## 14. Versions
 
 Les versions sont dans les `package.json` et les Dockerfiles. Regle : la derniere version stable publiee depuis au moins deux semaines, compatible avec le reste (exemple : TypeScript reste en 6.0 tant que typescript-eslint ne suit pas la 7). npm 11 obligatoire (`packageManager`).

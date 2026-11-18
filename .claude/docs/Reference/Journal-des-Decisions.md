@@ -1005,3 +1005,10 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
   - Onglet "Courses" dans la barre du bas du telephone : Planning, Recettes, Courses, Plus. (Ecarte : dans "Plus".) Idee notee a la roadmap : un accueil par espace, ou chacun regle ses widgets et raccourcis.
   - Pas de maintien de l'ecran allume. (Ecarte : un choix dans le menu ; toujours allume liste ouverte.)
   - "Depuis le planning" dans la liste et dans la barre du planning [D209], meme feuille ; planning modifie apres l'ajout : rien d'automatique, l'apercu signale les repas deja ajoutes. (Ecarte : depuis la liste seulement.)
+
+### D229 - Flux git par lot : `Developement` reserve a ce qui part en prod, une branche par lot, hotfix depuis `master` - VALIDEE (2026-11-18, demande du proprietaire)
+
+- **Constat** : jusqu'a la `v2.2.0`, on developpait directement sur `Developement`. Un correctif urgent pendant un lot aurait embarque en preprod puis en prod le travail non fini du lot.
+- **Choix** : `Developement` ne recoit plus qu'un hotfix ou un lot termine ; chaque lot se developpe sur `lot/v<X.Y.0>` (nommee par le tag vise), creee depuis `Developement` quand il est egal a `master`, poussee pour la CI ; un hotfix part de `master` dans `hotfix/<sujet>`, suit le flux normal (PR -> `Developement` -> `master`), puis `Developement` est fusionne dans le lot. Procedure et commandes : `Architecture.md` S13.
+- **Ecarte** : rebaser le lot sur les hotfixes (reecrit une branche poussee) ; corriger dans le lot puis cherry-pick vers `Developement` (le correctif arrive deux fois, avec deux SHA) ; worktree permanent pour les hotfixes (les deux stacks Docker se disputent les ports 3000 et 3001).
+- **Migrations** : eviter les migrations en hotfix ; sinon regenerer les migrations non deployees du lot apres le merge, pour garder l'ordre des dates.

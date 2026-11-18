@@ -2,7 +2,9 @@
 
 La premiere case non cochee est le point de reprise. Cocher au fil de l'eau.
 
-## 1. Lot de corrections et petites evolutions (`v2.2.0`)
+Classe par release : une section par version taguee, un lot = une branche `lot/v<X.Y.0>`, un hotfix = une version de patch [D229] (procedure : `../Reference/Architecture.md` S13). Les actions infra et les idees ne sont rattachees a aucune release.
+
+## `v2.2.0` - Corrections et petites evolutions (en prod le 2026-11-18)
 
 Decide avec le proprietaire le 2026-11-18 : tout le lot part ensemble en preprod puis en prod, sans hotfix separe pour l'import texte.
 
@@ -25,10 +27,23 @@ Integration et mise en ligne :
 - [x] Preprod : PR `Developement` -> `master`, verification pas a pas avec le proprietaire. Premier passage le 2026-11-18 au vert (import texte, ordre des tags, fleche de retour, reimport, changelog public et Markdown) ; correctif du texte de la feuille "Importer un export" (affiche a l'ecran) a repasser en preprod ; geste retour a voir sur un vrai Android
 - [x] Prod `v2.2.0` (2026-11-18) : fusion de la PR #37, tag, changelog publie (visible sans connexion, notification a tous) ; ordre des tags de Saison (Printemps, Ete, Automne, Hiver) et Palier (Incontournable, Regulier, Occasionnel, A tester) regle
 
-## 2. Nouveaux modules (apres la `v2.2.0`)
+## Hotfixes `v2.2.x`
 
-- [ ] C9 Module liste de courses (CDC S4.7, F-SHP ; droits [D141] ; conversions et rayons deja en base [D36]) : choix tranches au selecteur le 2026-11-18 [D228], plan `2-Plan-C9.md` ; puis TDD (maquette avant le web)
-- [ ] Autres nouveaux modules : etude et decision pour chacun, a choisir parmi les idees ci-dessous
+Depuis `master` dans `hotfix/<sujet>`, puis fusionnes dans le lot en cours.
+
+- Aucun pour l'instant.
+
+## `v2.3.0` - Liste de courses (branche `lot/v2.3.0`)
+
+- [ ] Ouvrir la branche `lot/v2.3.0` depuis `Developement` (proprietaire : la pousser)
+- [ ] C9 Module liste de courses (CDC S4.7, F-SHP ; droits [D141] ; conversions et rayons deja en base [D36]) : choix tranches au selecteur le 2026-11-18 [D228], maquette `3-Maquette-C9.html` validee, plan `2-Plan-C9.md` ; en TDD
+- [ ] Fermeture du lot : `Developement` fusionne dans le lot, `npm test`, `npm run e2e`, lint et typecheck au vert ; PR `lot/v2.3.0` -> `Developement`
+- [ ] Preprod : PR `Developement` -> `master`, verification pas a pas avec le proprietaire
+- [ ] Prod `v2.3.0` : fusion, tag, changelog ; suppression de la branche du lot
+
+## Releases suivantes (version a fixer a l'ouverture du lot)
+
+- [ ] Autres nouveaux modules : etude et decision pour chacun, a choisir parmi les idees ci-dessous ; chaque module retenu ouvre sa section de release
 
 ## Actions infra du proprietaire (reprises de C8, non bloquantes)
 
