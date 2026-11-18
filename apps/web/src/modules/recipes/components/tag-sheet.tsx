@@ -140,11 +140,6 @@ export function TagSheet({
                       type="button"
                       className="fm-chip"
                       aria-pressed={on}
-                      aria-label={
-                        counts
-                          ? `${tag.name}, ${String(tag.recipeCount)} ${tag.recipeCount > 1 ? "recettes" : "recette"}`
-                          : undefined
-                      }
                       onClick={() => {
                         toggle(tag.id);
                       }}
@@ -152,9 +147,15 @@ export function TagSheet({
                       {on ? <Icon name="check" size={16} /> : null}
                       {tag.name}
                       {counts ? (
-                        <span className="fm-chip-count" aria-hidden="true">
-                          {tag.recipeCount}
-                        </span>
+                        // Lu "Hiver, 42 recettes" ; seul le nombre se voit.
+                        <>
+                          <span className="fm-sr">
+                            {`, ${String(tag.recipeCount)} ${tag.recipeCount > 1 ? "recettes" : "recette"}`}
+                          </span>
+                          <span className="fm-chip-count" aria-hidden="true">
+                            {tag.recipeCount}
+                          </span>
+                        </>
                       ) : null}
                     </button>
                   );

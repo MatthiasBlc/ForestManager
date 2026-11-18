@@ -19,17 +19,20 @@ export interface ActiveFilter {
 
 /** Bouton "Filtres" avec le nombre de filtres actifs. */
 export function FiltersButton({ count, onClick }: { count: number; onClick: () => void }) {
+  // Nom lu "Filtres (2)" : les parentheses ne sont que pour les lecteurs d'ecran,
+  // le texte visible reste dans le nom (axe label-content-name-mismatch).
   return (
-    <Button
-      icon="filters"
-      aria-label={count > 0 ? `Filtres (${String(count)})` : "Filtres"}
-      onClick={onClick}
-    >
+    <Button icon="filters" onClick={onClick}>
       Filtres
       {count > 0 ? (
-        <span className="fm-filters-count" aria-hidden="true">
-          {count}
-        </span>
+        <>
+          {" "}
+          <span className="fm-filters-count">
+            <span className="fm-sr">(</span>
+            {count}
+            <span className="fm-sr">)</span>
+          </span>
+        </>
       ) : null}
     </Button>
   );
