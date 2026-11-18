@@ -252,7 +252,7 @@ Conserver l'acquis V1 (helmet, CSRF double submit, rate limiting, validation Zod
 
 ### 6.3 Qualite
 
-- Tests d'integration API par module (comme V1) + tests de composants + **E2E Playwright** sur les parcours critiques (inscription, recette, partage, suggestion, planning).
+- Tests d'integration API par module (comme V1) + tests de composants + **E2E Playwright** sur les parcours critiques (inscription, recette, partage, suggestion, planning), sous Chromium (mobile et desktop) et WebKit (iPhone, tous les parcours) [D227].
 - Lint et typecheck bloquants en CI.
 
 ### 6.4 Infrastructure et deploiement
