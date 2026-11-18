@@ -5,6 +5,7 @@ import {
   matchesTagFilter,
   errorBody,
   type CreateRecipeBody,
+  type ErrorCode,
   type Ingredient,
   type Recipe,
   type RecipeBlock,
@@ -93,6 +94,9 @@ export function recipeServer({
     addMineTags: [] as Tag[],
     /** Refus de l'ajout en lot (une recette n'est plus disponible). */
     addMineFails: false,
+    /** Reimport d'un export [D225] : titres deja dans l'espace, refus eventuel. */
+    importExisting: [] as string[],
+    importFails: null as ErrorCode | null,
     queries: [] as URLSearchParams[],
     bodies: {} as Record<string, unknown>,
     calls: [] as string[],
@@ -234,6 +238,13 @@ export function recipeServer({
       state.bodies.familyOrder = { ids };
       state.tagFamilies = ids.flatMap((id) => state.tagFamilies.filter((f) => f.id === id));
       return HttpResponse.json({ data: state.tagFamilies });
+    }),
+    http.put(`${base}/tag-families/:familyId/tags/order`, async ({ params, request }) => {
+      const { ids } = (await request.json()) as { ids: string[] };
+      state.bodies.tagOrder = { familyId: params.familyId, ids };
+      const moved = ids.flatMap((id) => state.spaceTags.filter((t) => t.id === id));
+      state.spaceTags = [...moved, ...state.spaceTags.filter((t) => !ids.includes(t.id))];
+      return HttpResponse.json({ data: moved });
     }),
     http.patch(`${base}/tag-families/:familyId`, async ({ params, request }) => {
       const { name } = (await request.json()) as { name: string };
@@ -507,6 +518,33 @@ export function recipeServer({
         .filter((r) => r.author.id === s.me.id && (!home || r.homeSpaceId === home))
         .map(toSummary);
       return HttpResponse.json({ data, nextCursor: null });
+    }),
+    http.post(`${base}/import-export/preview`, async ({ request }) => {
+      const { titles } = (await request.json()) as { titles: string[] };
+      record("importPreview", { titles });
+      return HttpResponse.json({
+        existing: titles.filter((t) => state.importExisting.includes(t)),
+      });
+    }),
+    http.post(`${base}/import-export`, async ({ request }) => {
+      const body = (await request.json()) as { recipes: { ref: string; title: string }[] };
+      record("importExport", body);
+      if (state.importFails) {
+        return HttpResponse.json(errorBody(state.importFails), { status: 422 });
+      }
+      const created = body.recipes.map((r) => ({
+        ref: r.ref,
+        recipe: buildRecipe({
+          title: r.title,
+          author: self,
+          homeSpaceId: s.space.id,
+          homeSpace: { id: s.space.id, name: s.space.name },
+        }),
+      }));
+      state.recipes.unshift(...created.map((c) => c.recipe));
+      return HttpResponse.json({
+        data: created.map((c) => ({ ref: c.ref, recipeId: c.recipe.id })),
+      });
     }),
     http.post(`${base}/add-mine/preview`, async ({ request }) => {
       record("addMinePreview", await request.json());

@@ -1,6 +1,8 @@
 // A10 : changelog [D187, D127]. Chaque deploiement en production prepare un
 // brouillon a partir des commits ; l'admin le reformule, puis le publie (en
-// prevenant tout le monde ou non), le masque ou le reaffiche.
+// prevenant tout le monde ou non), le masque ou le reaffiche. Les lignes
+// s'ecrivent en Markdown en ligne, rendu hors edition ; une version peut etre
+// lisible sans connexion [D226].
 import {
   RELEASE_ITEM_MAX,
   RELEASE_TITLE_MAX,
@@ -23,6 +25,7 @@ import { Badge, EmptyState, Skeleton, type Tone } from "../../ui/display.tsx";
 import { Field } from "../../ui/field.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { FormAlert } from "../access/auth-layout.tsx";
+import { InlineMarkdown } from "../changelog/inline-markdown.tsx";
 import { SECTION_LABELS, releaseDate, sectionsOf } from "../changelog/sections.ts";
 
 const adminReleasesQuery = queryOptions({
@@ -84,6 +87,7 @@ function ReleaseEditor({ release }: { release: AdminRelease }) {
   const toast = useToast();
   const [title, setTitle] = useState(release.title);
   const [content, setContent] = useState(release.content);
+  const [isPublic, setIsPublic] = useState(release.isPublic);
   const [editing, setEditing] = useState<Editing>(null);
   const [notifyAll, setNotifyAll] = useState(true);
   const readOnly = release.status === "HIDDEN";
@@ -98,7 +102,7 @@ function ReleaseEditor({ release }: { release: AdminRelease }) {
   const save = () =>
     api.patch(
       `/admin/releases/${release.id}`,
-      { title: title.trim(), content: cleaned(content) },
+      { title: title.trim(), content: cleaned(content), isPublic },
       adminReleaseSchema
     );
   const action = useMutation({
@@ -162,6 +166,9 @@ function ReleaseEditor({ release }: { release: AdminRelease }) {
           setTitle(event.target.value);
         }}
       />
+      <p className="m-0 text-sm text-ink-muted">
+        Mise en forme des lignes : **gras**, *italique*, `code`, [lien](https://...)
+      </p>
       {sectionsOf(content).map((section) => (
         <div key={section.key} className="flex flex-col gap-2">
           <span className="text-sm font-semibold">{section.label}</span>
@@ -193,7 +200,9 @@ function ReleaseEditor({ release }: { release: AdminRelease }) {
                 key={index}
                 className="flex items-center gap-2 rounded-md border border-line py-1.5 pr-1.5 pl-3"
               >
-                <span className="min-w-0 flex-1">{item.text}</span>
+                <span className="min-w-0 flex-1">
+                  <InlineMarkdown text={item.text} />
+                </span>
                 {readOnly ? null : (
                   <>
                     <IconButton
@@ -232,6 +241,12 @@ function ReleaseEditor({ release }: { release: AdminRelease }) {
           )}
         </div>
       ))}
+      <Switch
+        label="Visible sans connexion"
+        checked={isPublic}
+        disabled={readOnly}
+        onChange={setIsPublic}
+      />
       {release.status === "DRAFT" ? (
         <Switch
           label="Prévenir tous les utilisateurs par une notification"

@@ -1,5 +1,6 @@
 // Icones Lucide [D16] : memes noms que l'apercu du design system, importees une a une.
 import {
+  Archive,
   ArrowDown,
   ArrowLeft,
   ArrowUp,
@@ -56,6 +57,7 @@ import {
 } from "lucide-react";
 
 const ICONS = {
+  archive: Archive,
   "arrow-down": ArrowDown,
   "arrow-left": ArrowLeft,
   "arrow-up": ArrowUp,

@@ -40,7 +40,7 @@ export interface ApiModule extends ModuleDefinition {
     spaceId: string
   ) => Promise<Readonly<Record<string, SpaceRole>>>;
   /**
-   * Services offerts aux autres modules (14-Architecture.md) : cle prefixee par le
+   * Services offerts aux autres modules (Reference/Architecture.md) : cle prefixee par le
    * code du module, fabrique appelee avec le contexte. Contrats dans `modules/services.ts`.
    */
   readonly provides?: Readonly<Record<string, (ctx: Context) => unknown>>;

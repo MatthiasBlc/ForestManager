@@ -1,4 +1,4 @@
-// Permissions du module Recettes (matrice B2, 12-Permissions.md, Recettes et Tags) :
+// Permissions du module Recettes (matrice B2, Reference/Permissions.md, Recettes et Tags) :
 // roles minimaux par defaut. Partagees par le manifeste et les services qui jugent
 // un espace autre que celui de la requete (decideur d'une demande de partage).
 import { isAllowed, modulePermissionDefinition, type SpaceKind, type SpaceRole } from "@fm/shared";

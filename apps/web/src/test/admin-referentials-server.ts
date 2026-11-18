@@ -285,6 +285,12 @@ export function mockReferentialsApi() {
       state.families = body.ids.map((familyId) => state.families.find((f) => f.id === familyId)!);
       return HttpResponse.json({ data: state.families });
     }),
+    http.put("/api/v1/admin/tag-families/:id/tags/order", async ({ params, request }) => {
+      const body = (await record(request)) as { ids: string[] };
+      const moved = body.ids.map((tagId) => state.tags.find((t) => t.id === tagId)!);
+      state.tags = [...moved, ...state.tags.filter((t) => t.familyId !== params.id)];
+      return HttpResponse.json({ data: moved });
+    }),
     http.patch("/api/v1/admin/tag-families/:id", async ({ params, request }) => {
       const body = (await record(request)) as { fr: string; en: string | null };
       state.families = state.families.map((f) => (f.id === params.id ? { ...f, ...body } : f));

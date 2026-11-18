@@ -1,4 +1,4 @@
-// Permissions du module Planning (matrice B2, 12-Permissions.md, Planning) :
+// Permissions du module Planning (matrice B2, Reference/Permissions.md, Planning) :
 // roles minimaux par defaut ; `meal-plan.edit` se regle par espace (editRole, D58).
 import type { ApiModule } from "../../core/modules/registry.ts";
 

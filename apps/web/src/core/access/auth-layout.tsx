@@ -2,10 +2,19 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 
-export function AuthLayout({ title, children }: { title: string; children: ReactNode }) {
+export function AuthLayout({
+  title,
+  wide = false,
+  children,
+}: {
+  title: string;
+  /** Colonne de lecture (Nouveautes publiques) plutot que de formulaire. */
+  wide?: boolean;
+  children: ReactNode;
+}) {
   return (
     <div className="fm-root flex min-h-full flex-col items-center bg-bg px-4 py-10">
-      <div className="flex w-full max-w-sm flex-col gap-6">
+      <div className={`flex w-full flex-col gap-6 ${wide ? "max-w-xl" : "max-w-sm"}`}>
         <Link to="/" className="font-display text-lg font-bold text-ink no-underline">
           Forest Manager
         </Link>

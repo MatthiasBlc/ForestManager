@@ -86,7 +86,7 @@ function focusState(page: Page) {
 const palette = (page: Page) => page.getByRole("dialog", { name: "Recherche" });
 
 test("parcours 14 : clavier seul et palette Ctrl K @desktop", async ({ page, scenario }, info) => {
-  test.skip(info.project.name !== "desktop", "partie mobile dans le test suivant");
+  test.skip(Boolean(info.project.use.isMobile), "partie mobile dans le test suivant");
   const { space, tuesday } = await setUp(page, scenario);
 
   // 1. Premier passage : l'accueil de l'espace perso ; Tab suit l'ordre visuel, focus visible.
@@ -182,7 +182,7 @@ test("parcours 14 : palette plein ecran sur mobile, puis reprise", async ({
   page,
   scenario,
 }, info) => {
-  test.skip(info.project.name !== "mobile", "partie desktop dans le test precedent");
+  test.skip(!info.project.use.isMobile, "partie desktop dans le test precedent");
   const { space } = await setUp(page, scenario);
 
   // La loupe ouvre la palette plein ecran ; "soupe" puis toucher le resultat.

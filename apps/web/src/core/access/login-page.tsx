@@ -96,6 +96,9 @@ export function LoginPage() {
           Créer un compte
         </Link>
       </p>
+      <Link to="/news" className="text-ink-muted underline">
+        Nouveautés
+      </Link>
     </AuthLayout>
   );
 }

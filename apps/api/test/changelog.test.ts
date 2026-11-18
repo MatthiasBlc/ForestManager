@@ -56,7 +56,11 @@ describe("A10 : versions de l'admin", () => {
     const anonymous = await createClient(app);
     const calls = [
       anonymous.get("/admin/releases"),
-      anonymous.patch(`/admin/releases/${UNKNOWN}`, { title: "T", content: EMPTY }),
+      anonymous.patch(`/admin/releases/${UNKNOWN}`, {
+        title: "T",
+        content: EMPTY,
+        isPublic: false,
+      }),
       anonymous.post(`/admin/releases/${UNKNOWN}/publish`, { notify: false }),
       anonymous.post(`/admin/releases/${UNKNOWN}/hide`),
       anonymous.post(`/admin/releases/${UNKNOWN}/show`),
@@ -75,6 +79,7 @@ describe("A10 : versions de l'admin", () => {
       status: "DRAFT",
       publishedAt: null,
       notifiedAt: null,
+      isPublic: false,
       content: CONTENT,
     });
   });
@@ -84,11 +89,13 @@ describe("A10 : versions de l'admin", () => {
     const res = await client.patch(`/admin/releases/${draft.id}`, {
       title: "  Les recettes composees  ",
       content: { ...EMPTY, improvements: [{ text: "Planning plus rapide" }] },
+      isPublic: true,
     });
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
       title: "Les recettes composees",
       content: { features: [], improvements: [{ text: "Planning plus rapide" }], fixes: [] },
+      isPublic: true,
     });
     const log = await db.adminAuditLog.findFirstOrThrow({
       where: { action: "release.updated", targetId: draft.id },
@@ -97,14 +104,19 @@ describe("A10 : versions de l'admin", () => {
 
     const published = await entry("7.0.1", { status: "PUBLISHED", publishedAt: new Date() });
     expect(
-      (await client.patch(`/admin/releases/${published.id}`, { title: "T", content: CONTENT }))
-        .status
+      (
+        await client.patch(`/admin/releases/${published.id}`, {
+          title: "T",
+          content: CONTENT,
+          isPublic: false,
+        })
+      ).status
     ).toBe(200);
   });
 
   it("refuse une version masquee, inconnue, ou un contenu invalide", async () => {
     const hidden = await entry("7.1.0", { status: "HIDDEN", publishedAt: new Date() });
-    const body = { title: "T", content: CONTENT };
+    const body = { title: "T", content: CONTENT, isPublic: true };
     expect((await client.patch(`/admin/releases/${hidden.id}`, body)).body.error.code).toBe(
       "CHANGELOG_002"
     );
@@ -114,8 +126,14 @@ describe("A10 : versions de l'admin", () => {
     const invalid = await client.patch(`/admin/releases/${hidden.id}`, {
       title: "",
       content: CONTENT,
+      isPublic: true,
     });
     expect(invalid.status).toBe(400);
+    const withoutFlag = await client.patch(`/admin/releases/${hidden.id}`, {
+      title: "T",
+      content: CONTENT,
+    });
+    expect(withoutFlag.status).toBe(400);
   });
 });
 
@@ -205,16 +223,15 @@ describe("publier, masquer, reafficher", () => {
 });
 
 describe("Nouveautes : versions publiees pour les utilisateurs", () => {
-  it("publiees seulement, la plus recente d'abord ; connexion requise", async () => {
-    await db.changelogEntry.deleteMany();
-    const day = 24 * 3600 * 1000;
-    await entry("4.0.0", { status: "PUBLISHED", publishedAt: new Date(Date.now() - 2 * day) });
-    await entry("4.1.0", { status: "PUBLISHED", publishedAt: new Date(Date.now() - day) });
-    await entry("4.2.0");
-    await entry("3.9.0", { status: "HIDDEN", publishedAt: new Date(Date.now() - 3 * day) });
+  const day = 24 * 3600 * 1000;
+  const ago = (days: number) => new Date(Date.now() - days * day);
 
-    const anonymous = await createClient(app);
-    expect((await anonymous.get("/releases")).status).toBe(401);
+  it("publiees seulement, la plus recente d'abord, pour un utilisateur connecte", async () => {
+    await db.changelogEntry.deleteMany();
+    await entry("4.0.0", { status: "PUBLISHED", publishedAt: ago(2) });
+    await entry("4.1.0", { status: "PUBLISHED", publishedAt: ago(1), isPublic: true });
+    await entry("4.2.0", { isPublic: true });
+    await entry("3.9.0", { status: "HIDDEN", publishedAt: ago(3), isPublic: true });
 
     const user = await createUser();
     const reader = await loginAs(user, app);
@@ -230,5 +247,38 @@ describe("Nouveautes : versions publiees pour les utilisateurs", () => {
       content: CONTENT,
       publishedAt: expect.any(String),
     });
+  });
+
+  it("sans connexion : versions publiees et publiques seulement, sans champ interne [D226]", async () => {
+    await db.changelogEntry.deleteMany();
+    await entry("4.0.0", { status: "PUBLISHED", publishedAt: ago(2) });
+    await entry("4.1.0", {
+      status: "PUBLISHED",
+      publishedAt: ago(1),
+      notifiedAt: ago(1),
+      isPublic: true,
+    });
+    await entry("4.2.0", { isPublic: true });
+    await entry("3.9.0", { status: "HIDDEN", publishedAt: ago(3), isPublic: true });
+
+    const anonymous = await createClient(app);
+    const res = await anonymous.get("/releases");
+    expect(res.status).toBe(200);
+    expect(res.body.data).toEqual([
+      {
+        version: "4.1.0",
+        title: "Version 4.1.0",
+        content: CONTENT,
+        publishedAt: expect.any(String),
+      },
+    ]);
+  });
+
+  it("sans connexion, le debit est limite", async () => {
+    const limited = createTestApp({ rateLimit: true });
+    const anonymous = await createClient(limited);
+    let last = 200;
+    for (let i = 0; i < 61; i++) last = (await anonymous.get("/releases")).status;
+    expect(last).toBe(429);
   });
 });

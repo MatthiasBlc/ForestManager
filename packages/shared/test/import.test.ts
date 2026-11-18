@@ -297,6 +297,47 @@ Mélanger et gratiner 20 min.`);
     expect(recipe).toMatchObject({ prepMinutes: 20, cookMinutes: 75, restMinutes: 30, steps: [] });
   });
 
+  it('etapes en blocs "ETAPE N" : une etape par bloc, meme sans titre de section', () => {
+    const recipe = parseRecipeText(`Pâtes
+Ingrédients
+- 400 g de pâtes
+ÉTAPE 1
+Découpez les tomates.
+Râper le parmesan.
+
+Étape 2 :
+Cuire les pâtes.`);
+    expect(recipe.ingredients.map((i) => i.name)).toEqual(["pâtes"]);
+    expect(recipe.steps).toEqual(["Découpez les tomates. Râper le parmesan.", "Cuire les pâtes."]);
+  });
+
+  it.each(["Process", "Procédé", "Déroulement :"])("reconnait le titre d'etapes %s", (header) => {
+    const recipe = parseRecipeText(`Pâtes\nIngrédients\n- 400 g de pâtes\n${header}\nCuire.`);
+    expect(recipe.steps).toEqual(["Cuire."]);
+  });
+
+  it("ignore une duree vide, un intertitre d'ingredients et une ligne date/heure", () => {
+    const recipe = parseRecipeText(`Pâtes
+Ingrédients
+- 400 g de pâtes
+Pour servir :
+- 30 g d'amandes torrefiées (facultatif)
+- persil (optionnel)
+Repos: --
+Cuisson : aucun
+Préparation
+Cuire les pâtes.
+ — 03/04/2026 12:23
+Servir.`);
+    expect(recipe.ingredients.map((i) => [i.name, i.note])).toEqual([
+      ["pâtes", null],
+      ["amandes torrefiées", "facultatif"],
+      ["persil", "optionnel"],
+    ]);
+    expect(recipe).toMatchObject({ restMinutes: null, cookMinutes: null });
+    expect(recipe.steps).toEqual(["Cuire les pâtes.", "Servir."]);
+  });
+
   it("ignore les separateurs ; texte vide = recette vide", () => {
     expect(parseRecipeText("Salade\n-----\n~~~\n").title).toBe("Salade");
     expect(parseRecipeText("  \n ")).toMatchObject({ title: null, ingredients: [], steps: [] });

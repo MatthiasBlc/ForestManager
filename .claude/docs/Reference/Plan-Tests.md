@@ -1,6 +1,6 @@
 # Plan de tests V2
 
-Statut : voir le journal des decisions. Ce document a introduit D77 a D79 (fin de document) ; architecture de reference : `14-Architecture.md`.
+Statut : voir le journal des decisions. Ce document a introduit D77 a D79 (fin de document) ; architecture de reference : `Architecture.md`.
 
 ## 1. Pyramide
 
@@ -19,7 +19,7 @@ Regle : un comportement se teste au niveau **le plus bas** qui le prouve. Les E2
 - **Supertest** sur l'app Express sans ouvrir de port.
 - **PostgreSQL de test** dans Docker (`docker compose -f docker/compose.test.yml`), migrations appliquees au demarrage, **base remise a zero entre fichiers de test** (TRUNCATE des tables hors referentiels), referentiels seedes une fois.
 - **Testing Library** + `user-event` ; **MSW** pour simuler l'API, avec des handlers generes depuis les schemas Zod partages (les reponses mockees sont valides par construction).
-- **Playwright** (Chromium seul, WebKit reporte en V2.2 [D195] ; emulation mobile 390x844 par defaut ; un projet desktop 1280x800) ; **@axe-core/playwright** pour l'accessibilite. Stack `docker/compose.e2e.yml` (front en image prod, API en `NODE_ENV=test`), `npm run e2e` [D197].
+- **Playwright** : projets `mobile` (Chromium, 390x844, tous les parcours), `desktop` (Chromium, 1280x800, parcours (D)) ; projet `webkit` (Safari iOS, profil iPhone en 390x844, tous les parcours, informatif) joue a part par `npm run e2e:webkit` [D227] ; `npm run e2e -- --project=mobile` pour un seul projet. Ecarts et limites propres a WebKit : D227 ; **@axe-core/playwright** pour l'accessibilite. Stack `docker/compose.e2e.yml` (front en image prod, API en `NODE_ENV=test`), `npm run e2e` [D197].
 - **Couverture** : `@vitest/coverage-v8`, seuils par zone dans `vitest.config.ts` (section 7), `npm run test:coverage` [D200].
 - Tous les tests tournent **dans Docker** en local, comme en V1 (les variables d'environnement n'existent pas hors conteneur).
 
@@ -86,6 +86,9 @@ Chaque parcours tourne en **mobile** (projet par defaut) ; ceux marques (D) tour
 15. Changer d'ambiance et de mode dans Profil > Apparence ; le choix persiste apres reconnexion.
 16. Notification en temps reel : un membre suggere, la cloche de l'autrice s'allume sans rechargement, la notification ouvre la suggestion et passe en lue ; une categorie coupee ne previent plus (scenario detaille : `22-Plan-C6.md` S4).
 17. Connexion avec Discord [D210] : inscription confirmee (nom propose, email verifie), encart de secours, reconnexion par Discord, puis liaison d'un compte classique depuis le profil et connexion par Discord. (D) Faux Discord de la stack (`docker/fake-discord/`, profil choisi par le parcours).
+18. Tags [D216] : l'auteur cree un tag d'espace depuis l'editeur, la moderatrice le range dans une famille, la carte le montre et la feuille de filtres filtre dessus.
+19. Geste retour [D219] : la fleche de retour d'une recette remonte l'historique jusqu'a la page d'origine ; le retour du navigateur part ensuite d'avant l'origine.
+20. Reimport d'un export [D225] : un espace exporte en JSON avec photos, l'archive reimportee dans un autre espace par un autre compte (apercu a cocher, photo reprise), puis un second passage ou tout est "Deja dans l'espace".
 
 ## 5. Donnees de test [D79]
 
@@ -99,16 +102,17 @@ Chaque parcours tourne en **mobile** (projet par defaut) ; ceux marques (D) tour
 
 Sur chaque push et chaque pull request (`.github/workflows/ci.yml` : job `verify`, puis job `e2e`, puis `build`) :
 
-| Etape                                               | Bloquant |
-| --------------------------------------------------- | -------- |
-| Lint + format (ESLint, Prettier)                    | Oui      |
-| Typecheck de tout le monorepo                       | Oui      |
-| Controle des cles i18n manquantes (typecheck, D200) | Oui      |
-| Unitaires + integration API (PostgreSQL de service) | Oui      |
-| Composants (dont rendu des six themes)              | Oui      |
-| E2E parcours critiques (Chromium mobile + desktop)  | Oui      |
-| Couverture sous les seuils                          | Oui      |
-| `npm audit` (vulnerabilites hautes et critiques)    | Oui      |
+| Etape                                               | Bloquant         |
+| --------------------------------------------------- | ---------------- |
+| Lint + format (ESLint, Prettier)                    | Oui              |
+| Typecheck de tout le monorepo                       | Oui              |
+| Controle des cles i18n manquantes (typecheck, D200) | Oui              |
+| Unitaires + integration API (PostgreSQL de service) | Oui              |
+| Composants (dont rendu des six themes)              | Oui              |
+| E2E parcours critiques (Chromium mobile + desktop)  | Oui              |
+| E2E WebKit iPhone (job `e2e-webkit`, D227)          | Non (informatif) |
+| Couverture sous les seuils                          | Oui              |
+| `npm audit` (vulnerabilites hautes et critiques)    | Oui              |
 
 Les traces Playwright, captures et videos des echecs sont gardees comme artefacts de CI pendant 7 jours.
 
@@ -143,7 +147,7 @@ La matrice des permissions est couverte a **100 % des couples route x role** par
 
 ## 10. Tests manuels
 
-Une **feuille de recette** courte avant chaque mise en prod : installation sur un vrai telephone, gestes tactiles, mode cuisine (ecran allume), photo prise avec l'appareil, notifications temps reel entre deux appareils. Android (Chrome) seulement pour l'instant : Safari et iPhone sont ignores jusqu'aux E2E WebKit (V2.1, D195).
+Une **feuille de recette** courte avant chaque mise en prod : installation sur un vrai telephone, gestes tactiles, mode cuisine (ecran allume), photo prise avec l'appareil, notifications temps reel entre deux appareils. Android (Chrome) seulement : pas d'iPhone a disposition, Safari n'est couvert que par les E2E WebKit informatifs [D227].
 
 Feuille en place depuis C7.7 : artefact `25-Recette-Preprod.html` (resultats partages dans sa base, collection `recette`). Chaque fonctionnalite livree apres C7.7 y ajoute ses lignes ; la seconde recette complete, sans echec ni remarque ouverte, conditionne C8 [D205].
 
@@ -152,7 +156,7 @@ Feuille en place depuis C7.7 : artefact `25-Recette-Preprod.html` (resultats par
 | #   | Decision                                                                                                                                                                                                                                                | Statut  |
 | --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
 | D77 | Outils : Vitest partout, Supertest sur vraie base PostgreSQL remise a zero entre fichiers, Testing Library + MSW avec handlers issus des schemas Zod, Playwright mobile + desktop avec axe.                                                             | VALIDEE |
-| D78 | CI bloquante : lint, typecheck, cles i18n, unitaires, integration, composants, E2E critiques, couverture, `npm audit` ; WebKit retire de la CI par D195 ; seuils 90 / 80 / 60 % (shared / api / web).                                                   | VALIDEE |
+| D78 | CI bloquante : lint, typecheck, cles i18n, unitaires, integration, composants, E2E critiques, couverture, `npm audit` ; WebKit retire de la CI par D195, remis en job informatif (non bloquant) par D227 ; seuils 90 / 80 / 60 % (shared / api / web).  | VALIDEE |
 | D79 | Donnees de test : fabriques partagees dans `packages/test-utils`, seed des referentiels identique a la prod, scenarios E2E crees par une route reservee a l'environnement de test, fixtures d'import servies localement (aucun appel a Internet en CI). | VALIDEE |
 
 ## 12. Questions pour le proprietaire (tranchees)

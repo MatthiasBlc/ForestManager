@@ -291,10 +291,11 @@ Le script demande un username et un mot de passe, puis genere un QR code TOTP a 
 
 Toute la documentation projet est dans [`.claude/docs/`](.claude/docs/README.md) :
 
-| Dossier                                       | Contenu                                                |
-| --------------------------------------------- | ------------------------------------------------------ |
-| [Rework-V2](.claude/docs/Rework-V2/README.md) | Chantier en cours : analyse V1, cahier des charges V2  |
-| [V1](.claude/docs/V1/README.md)               | Archive : specs des features V1, references techniques |
+| Dossier                                       | Contenu                                                            |
+| --------------------------------------------- | ------------------------------------------------------------------ |
+| [V2.2](.claude/docs/V2.2/README.md)           | Chantier en cours : liste de courses, reimport, idees a etudier    |
+| [Reference](.claude/docs/Reference/README.md) | Cahier des charges, decisions, permissions, parcours, architecture |
+| [Archive](.claude/docs/Archive/)              | Chantiers termines (Rework V2) ; V1 dans le tag git `v1-final`     |
 
 ## Auteur
 

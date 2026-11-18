@@ -1,10 +1,10 @@
 // =============================================================================
 // Forest Manager V2 - schema de l'API
 // =============================================================================
-// Copie du schema cible (.claude/docs/Rework-V2/11-Modele-Donnees/schema.prisma),
-// une section a la fois : C1 = socle (sections 1 a 3) + AdminUser reduit.
-// Chaque etape suivante (C3 a C6) ajoute ses modeles et relations par sa
-// propre migration. Index partiels et CHECK : en SQL dans les migrations.
+// Ce fichier fait foi [D221] (schema cible d'origine archive dans
+// .claude/docs/Archive/Rework-V2/11-Modele-Donnees/). Chaque evolution ajoute
+// ses modeles et relations par sa propre migration. Index partiels et CHECK :
+// en SQL dans les migrations.
 // =============================================================================
 
 generator client {
@@ -506,6 +506,8 @@ model Tag {
   mergedIntoId String?
   /// Famille de meme portee (et du meme espace) [D216] ; sans famille : "Autres".
   familyId     String?
+  /// Ordre dans sa famille, choisi comme celui des familles ; "Autres" reste alphabetique.
+  sortOrder    Int       @default(0)
   createdAt    DateTime  @default(now())
   deletedAt    DateTime?
 
@@ -522,7 +524,7 @@ model Tag {
 
   @@unique([spaceId, slug])
   @@index([scope, deletedAt])
-  @@index([familyId])
+  @@index([familyId, sortOrder])
 }
 
 /// Famille de tags (Saison, Categorie...) [D216] : globale (admin, traduite) ou
@@ -1157,6 +1159,8 @@ model ChangelogEntry {
   status      ChangelogStatus @default(DRAFT)
   publishedAt DateTime?
   notifiedAt  DateTime?
+  /// Lisible sans connexion (page Nouveautes publique) [D226].
+  isPublic    Boolean         @default(false)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 

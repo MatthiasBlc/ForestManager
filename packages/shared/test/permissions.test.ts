@@ -12,7 +12,7 @@ import {
 } from "../src/permissions/index.ts";
 import type { SpaceKind } from "../src/schemas/common.ts";
 
-// Matrice recopiee a la main depuis 12-Permissions.md (Compte, Espace perso,
+// Matrice recopiee a la main depuis Reference/Permissions.md (Compte, Espace perso,
 // Espace groupe, Modules), independamment de l'implementation.
 // Colonnes : VIS, CON (USER), MEM, MOD, OWN. "Cond." et "Soi" = autorise par le role.
 type Row = readonly [vis: 0 | 1, con: 0 | 1, mem: 0 | 1, mod: 0 | 1, own: 0 | 1];

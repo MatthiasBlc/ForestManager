@@ -149,6 +149,35 @@ jobs:
           retention-days: 7
 
   # ========================================
+  # Parcours E2E sous WebKit (Safari iOS), informatif [D227]
+  # ========================================
+  # Un echec reste visible dans le run mais ne bloque ni les images ni la fusion :
+  # job hors des `needs` de `build`, `continue-on-error`.
+  e2e-webkit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Parcours WebKit (docker/compose.e2e.yml)
+        run: npm run e2e:webkit
+
+      - name: Stop E2E stack
+        if: always()
+        run: npm run e2e:down
+
+      - name: Rapport des echecs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-webkit-report
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+          retention-days: 7
+
+  # ========================================
   # Images (backend = API, frontend = nginx + SPA)
   # ========================================
   build:

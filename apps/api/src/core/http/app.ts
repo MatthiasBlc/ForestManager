@@ -1,6 +1,8 @@
 // Application Express 5. Tout est injecte (env, base, journal) : les tests
 // construisent leur propre app sur la base de test.
 
+import type { IncomingMessage } from "node:http";
+
 import { API_PREFIX, appConfigSchema } from "@fm/shared";
 import cors from "cors";
 import express, { Router } from "express";
@@ -80,6 +82,15 @@ export interface AppDeps {
 
 /** Taille maximale d'un corps JSON (comme la V1). */
 const JSON_LIMIT = "50kb";
+/** Reimport d'un export (200 recettes au plus) [D225] : seule route au corps plus gros. */
+const IMPORT_JSON_LIMIT = "3mb";
+const IMPORT_PATH = new RegExp(`^${API_PREFIX}/spaces/[^/]+/recipes/import-export(\\?|$)`);
+
+/** Corps JSON de la route de reimport ; les autres passent par la limite commune. */
+function isImportBody(req: IncomingMessage): boolean {
+  const type = req.headers["content-type"] ?? "";
+  return IMPORT_PATH.test(req.url ?? "") && /^application\/json\b/i.test(type);
+}
 
 /** Contexte complet a partir des dependances (valeurs par defaut selon l'environnement). */
 export function createContext(deps: AppDeps): Context {
@@ -125,6 +136,12 @@ export function createApp(deps: AppDeps): express.Express {
 
   // Tunnel du navigateur vers Bugsink : corps texte borne, sans CSRF ni session [D196].
   app.use(`${API_PREFIX}/monitoring`, monitoringRouter(ctx, rateLimit));
+  app.use(
+    express.json({
+      limit: IMPORT_JSON_LIMIT,
+      type: isImportBody,
+    })
+  );
   app.use(express.json({ limit: JSON_LIMIT }));
   if (deps.testRoutes && env.NODE_ENV === "test")
     app.use(`${API_PREFIX}/__test`, deps.testRoutes(ctx));
@@ -156,7 +173,7 @@ export function createApp(deps: AppDeps): express.Express {
   api.use(modulesRouter(ctx));
   api.use(notificationsRouter(ctx));
   api.use(activityRouter(ctx));
-  api.use(changelogRouter(ctx));
+  api.use(changelogRouter(ctx, rateLimit));
   api.use(searchRouter(ctx, rateLimit));
   api.use(exportsRouter(ctx, rateLimit));
   api.use(homeRouter(ctx));

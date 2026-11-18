@@ -92,6 +92,32 @@ describe("tags de l'espace (E-TAGS-ESPACE, D216)", () => {
     });
   });
 
+  it("ordonne les tags d'une famille ; pas d'ordre dans Autres", async () => {
+    const { s, palier, regulier } = withFamilies();
+    const rare = { id: uuid(), scope: "SPACE" as const, name: "Occasionnel" };
+    s.recipes.spaceTags.push(rare);
+    s.recipes.familyOf[rare.id] = palier.id;
+    const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/recipes/tags` });
+    await user.click(await screen.findByRole("button", { name: "Actions du tag Occasionnel" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Monter" }));
+    await waitFor(() => {
+      expect(s.recipes.bodies.tagOrder).toEqual({
+        familyId: palier.id,
+        ids: [rare.id, regulier.id],
+      });
+    });
+    await user.click(screen.getByRole("button", { name: "Actions du tag Occasionnel" }));
+    expect(await screen.findByRole("menuitem", { name: "Monter" })).toHaveAttribute(
+      "aria-disabled",
+      "true"
+    );
+    await user.keyboard("{Escape}");
+
+    await user.click(screen.getByRole("button", { name: "Actions du tag Plat du dimanche" }));
+    await screen.findByRole("menuitem", { name: "Renommer" });
+    expect(screen.queryByRole("menuitem", { name: "Monter" })).not.toBeInTheDocument();
+  });
+
   it("renomme un tag, change sa famille, le fusionne, le supprime", async () => {
     const { s, saison, regulier, sunday } = withFamilies();
     const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/recipes/tags` });

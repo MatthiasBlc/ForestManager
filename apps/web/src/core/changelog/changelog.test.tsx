@@ -27,6 +27,7 @@ function buildRelease(over: Partial<AdminRelease> = {}): AdminRelease {
     status: "DRAFT",
     publishedAt: null,
     notifiedAt: null,
+    isPublic: false,
     createdAt: NOW,
     updatedAt: NOW,
     ...over,
@@ -45,7 +46,7 @@ function releaseServer(releases: AdminRelease[]) {
   server.use(
     http.get("/api/v1/admin/releases", () => HttpResponse.json({ data: releases })),
     http.patch("/api/v1/admin/releases/:id", async ({ params, request }) => {
-      const body = (await request.json()) as Pick<AdminRelease, "title" | "content">;
+      const body = (await request.json()) as Pick<AdminRelease, "title" | "content" | "isPublic">;
       calls.push({ method: "PATCH", path: String(params.id), body });
       return respond(find(params.id), body);
     }),
@@ -103,6 +104,10 @@ describe("A10 : changelog de l'admin", () => {
       "Planning plus rapide"
     );
 
+    const visible = within(editor).getByRole("switch", { name: "Visible sans connexion" });
+    expect(visible).not.toBeChecked();
+    await user.click(visible);
+
     const notifyAll = within(editor).getByRole("switch", {
       name: "Prévenir tous les utilisateurs par une notification",
     });
@@ -119,6 +124,7 @@ describe("A10 : changelog de l'admin", () => {
         improvements: [{ text: "Planning plus rapide" }],
         fixes: [],
       },
+      isPublic: true,
     });
     expect(calls[1]?.body).toEqual({ notify: true });
     expect(await within(editor).findByText("Publiée")).toBeInTheDocument();
@@ -148,6 +154,36 @@ describe("A10 : changelog de l'admin", () => {
     await waitFor(() => {
       expect(calls.map((c) => c.method)).toEqual(["PATCH", "hide", "show"]);
     });
+  });
+
+  it("les lignes s'affichent en Markdown, le texte brut a la reformulation [D226]", async () => {
+    mockAdminApi();
+    const draft = buildRelease({
+      content: {
+        features: [{ text: "Les **recettes** et [le guide](https://example.com/guide)" }],
+        improvements: [],
+        fixes: [],
+      },
+    });
+    releaseServer([draft]);
+    const user = userEvent.setup();
+    renderWithProviders(<App />, { route: "/admin/changelog" });
+
+    const editor = await screen.findByRole("region", { name: "Version 2.1.0" });
+    expect(within(editor).getByText("recettes").tagName).toBe("STRONG");
+    expect(within(editor).getByRole("link", { name: "le guide" })).toHaveAttribute(
+      "href",
+      "https://example.com/guide"
+    );
+    expect(within(editor).getByText(/\*\*gras\*\*/)).toBeInTheDocument();
+    await user.click(
+      within(editor).getByRole("button", {
+        name: "Reformuler : Les **recettes** et [le guide](https://example.com/guide)",
+      })
+    );
+    expect(within(editor).getByRole("textbox", { name: "Ligne de Nouveautés" })).toHaveValue(
+      "Les **recettes** et [le guide](https://example.com/guide)"
+    );
   });
 
   it("entree Changelog dans la navigation", async () => {
@@ -208,6 +244,51 @@ describe("Nouveautes (utilisateurs)", () => {
     const article = await screen.findByRole("article", { name: "Version 2.0.0" });
     expect(article.textContent.match(/Version 2\.0\.0/g)).toHaveLength(1);
     expect(article).toHaveTextContent("31 octobre 2026");
+  });
+
+  it("lignes en Markdown, sans HTML brut [D226]", async () => {
+    mockSession();
+    const release: Release = {
+      ...RELEASES[1]!,
+      content: {
+        features: [{ text: "Un **planning** et <b>rien</b> [ici](https://example.com)" }],
+        improvements: [],
+        fixes: [],
+      },
+    };
+    server.use(http.get("/api/v1/releases", () => HttpResponse.json({ data: [release] })));
+    renderWithProviders(<App />, { route: "/news" });
+
+    const article = await screen.findByRole("article", { name: "La nouvelle version" });
+    expect(within(article).getByText("planning").tagName).toBe("STRONG");
+    expect(within(article).getByRole("link", { name: "ici" })).toHaveAttribute(
+      "href",
+      "https://example.com"
+    );
+    expect(article).toHaveTextContent("<b>rien</b>");
+    expect(article.querySelector("b:not(.font-mono)")).toBeNull();
+  });
+
+  it("lisible sans connexion, avec un lien pour se connecter [D226]", async () => {
+    mockSession({ me: null });
+    server.use(http.get("/api/v1/releases", () => HttpResponse.json({ data: RELEASES })));
+    const { container } = renderWithProviders(<App />, { route: "/news" });
+
+    expect(
+      await screen.findByRole("article", { name: /Les recettes composees arrivent/ })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Nouveautés" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Se connecter" })).toHaveAttribute("href", "/login");
+    expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("lien depuis la page de connexion [D226]", async () => {
+    mockSession({ me: null });
+    renderWithProviders(<App />, { route: "/login" });
+    expect(await screen.findByRole("link", { name: "Nouveautés" })).toHaveAttribute(
+      "href",
+      "/news"
+    );
   });
 
   it("lien depuis le profil", async () => {

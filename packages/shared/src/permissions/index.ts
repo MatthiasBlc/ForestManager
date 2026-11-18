@@ -1,4 +1,4 @@
-// Permissions du socle (matrice B2, `12-Permissions.md` : Compte, Espace perso,
+// Permissions du socle (matrice B2, `Reference/Permissions.md` : Compte, Espace perso,
 // Espace groupe, Modules) et fonction pure `can()`, utilisee par l'API
 // (requirePermission) et par le web (masquer ce qui est interdit).
 //

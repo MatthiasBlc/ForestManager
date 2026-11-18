@@ -1,5 +1,7 @@
 # Rework V2
 
+> **Chantier termine et archive le 2026-11-18** (`v2.0.0` le 2026-11-17, `v2.1.0` le 2026-11-18). CDC, journal, permissions, parcours, architecture, plan de tests et regles du design system continuent dans `../../Reference/` ; la suite dans `../../V2.2/` [D221]. Les chemins cites ci-dessous sont ceux d'avant l'archivage.
+
 Refonte de Forest Manager : clarifier les concepts de la V1, refaire l'interface (shadcn/ui + Tailwind), decider entre faire evoluer et reecrire.
 
 ## Ordre de lecture

@@ -1,5 +1,5 @@
 // "Ajouter une recette" dans un espace de groupe (C7c.1) : "Depuis mes recettes"
-// d'abord, puis "Creer" (Saisir, un lien, un texte colle) ; selection multiple,
+// d'abord, puis "Creer" (Saisir, un lien, un texte colle, un export) ; selection multiple,
 // sous-recettes annoncees, ajout en lot tout ou rien [D203, D208].
 import { screen, waitFor, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
@@ -66,6 +66,7 @@ describe("feuille Ajouter une recette (F-AJOUT-RECETTE, D208)", () => {
     expect(within(create).getByRole("link", { name: /Saisir/ })).toBeInTheDocument();
     expect(within(create).getByRole("button", { name: /Un lien/ })).toBeInTheDocument();
     expect(within(create).getByRole("button", { name: /Un texte collé/ })).toBeInTheDocument();
+    expect(within(create).getByRole("button", { name: /Importer un export/ })).toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
 
     await user.click(within(create).getByRole("button", { name: "Retour" }));

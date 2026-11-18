@@ -235,7 +235,7 @@ Le detail de chacune est dans le document qui l'a proposee ; ce journal porte le
 - **D46 - Conversions : dimension et facteur vers la base, poids par ingredient et par unite** - VALIDEE (2026-11-03).
 - **D47 - Partage automatique des sous-recettes trace (viaRecipeId)** - VALIDEE (2026-11-03).
 
-### Permissions (`12-Permissions.md`)
+### Permissions (`Permissions.md`)
 
 - **D50 - Pas d'annuaire d'utilisateurs** - VALIDEE (2026-11-03).
 - **D51 - Suppression du compte d'un OWNER : transfert automatique, plafond de 20 espaces possedes** - VALIDEE (2026-11-03).
@@ -248,7 +248,7 @@ Le detail de chacune est dans le document qui l'a proposee ; ce journal porte le
 - **D58 - Planning : role minimal reglable pour modifier un repas (MEMBER par defaut) ; generation et reglages aux moderateurs** - VALIDEE (2026-11-03), MEMBER confirme.
 - **D59 - Un ancien membre qui revient retrouve ses droits d'auteur** - VALIDEE (2026-11-03).
 
-### Parcours (`13-Parcours.md`)
+### Parcours (`Parcours.md`)
 
 - **D60 - Ouverture sur le dernier espace et module visites** - VALIDEE (2026-11-03).
 - **D61 - Ecran de bienvenue a 3 choix apres l'inscription** - VALIDEE (2026-11-03). Une visite guidee est notee comme idee future.
@@ -261,7 +261,7 @@ Le detail de chacune est dans le document qui l'a proposee ; ce journal porte le
 - **D68 - Hors ligne : bandeau, ecriture desactivee, brouillon local** - VALIDEE (2026-11-03).
 - **D69 - Echange de repas : glisser en desktop, menu puis cible sur mobile** - VALIDEE (2026-11-03).
 
-### Architecture et tests (`14-Architecture.md`, `15-Plan-Tests.md`)
+### Architecture et tests (`Architecture.md`, `Plan-Tests.md`)
 
 - **D70 - Monorepo npm workspaces** - VALIDEE (2026-11-03).
 - **D71 - Registre de modules statique (manifestes API et web)** - VALIDEE (2026-11-03).
@@ -359,14 +359,14 @@ Points ouverts releves a la preparation de B9 (relecture croisee du CDC, du sche
 
 ### D140 - Pas de copie independante : l'adaptation est la seule facon de copier une recette - VALIDEE (2026-11-05)
 
-- **Constat** : le CDC gardait une "Copie (fork)" independante (glossaire S2, F-REC-7, roadmap C3) et D04 laissait le suggereur "convertir en copie". Elle n'existe ni dans le schema, ni dans `12-Permissions.md`, ni dans les parcours ou les maquettes : partout, la seule copie est l'adaptation (D17), et 12 dit deja "transformer sa suggestion refusee en adaptation".
+- **Constat** : le CDC gardait une "Copie (fork)" independante (glossaire S2, F-REC-7, roadmap C3) et D04 laissait le suggereur "convertir en copie". Elle n'existe ni dans le schema, ni dans `Permissions.md`, ni dans les parcours ou les maquettes : partout, la seule copie est l'adaptation (D17), et 12 dit deja "transformer sa suggestion refusee en adaptation".
 - **Options** : (A) supprimer la copie independante ; (B) l'ajouter partout (schema, permissions, parcours, maquettes).
 - **Choix** : A. Deux gestes seulement, partager et adapter (principe "un seul chemin evident par action"). Une adaptation dont on ignore les mises a jour se comporte deja comme une copie (`archive/5-Etude-Adaptations.md`, O1). Une suggestion refusee peut devenir une adaptation dans l'espace du suggereur.
 - **Consequence** : amende D03 (la "copie" explicite devient l'adaptation) et remplace la conversion en copie de D04. Retire du CDC (S2, F-REC-7) et de la roadmap (C3). Aucun changement de schema.
 
 ### D141 - Liste de courses : role minimal reglable pour la modifier, MEMBER par defaut - VALIDEE (2026-11-05)
 
-- **Constat** : les droits de la liste de courses (V2.1) etaient seulement "proposes" dans `12-Permissions.md` (memes droits que modifier le planning), sans decision au journal.
+- **Constat** : les droits de la liste de courses (V2.1) etaient seulement "proposes" dans `Permissions.md` (memes droits que modifier le planning), sans decision au journal.
 - **Options** : (A) role minimal reglable par l'OWNER, MEMBER par defaut, comme les repas du planning (D58) ; (B) droits fixes.
 - **Choix** : A. Un seul reglage `editRole` (MEMBER par defaut, l'OWNER peut restreindre) couvre generer depuis le planning, ajouter des articles libres, cocher et archiver. Il sera modelise avec le module en V2.1, sur le modele de `MealPlanSettings.editRole`.
 
@@ -578,7 +578,7 @@ Questions posees avec le plan `17-Plan-C1.md`, tranchees par le proprietaire le 
 
 ### D174 - Connexion admin : regles de realisation - VALIDEE (2026-11-06, realisation C4.1)
 
-- **Constat** : le CDC et `14-Architecture.md` fixent une session admin isolee de 30 min non glissante avec 2FA TOTP, sans dire comment l'isoler de la session des utilisateurs, ni comment traiter le rejeu d'un code ou la creation du premier compte.
+- **Constat** : le CDC et `Architecture.md` fixent une session admin isolee de 30 min non glissante avec 2FA TOTP, sans dire comment l'isoler de la session des utilisateurs, ni comment traiter le rejeu d'un code ou la creation du premier compte.
 - **Choix** :
   - **Session isolee** : routeur `/api/v1/admin` monte avant la session des utilisateurs, cookie `fm.admin.sid` (httpOnly, SameSite strict, chemin `/api/v1/admin`), table `AdminSession`. Un compte utilisateur n'ouvre rien cote admin, et l'inverse. L'etape mot de passe ouvre une session d'attente de 5 min ; le code valide ouvre une session neuve de 30 min que les requetes ne prolongent jamais.
   - **Code TOTP** : tolerance d'un pas (30 s) ; un code deja accepte est refuse (`AdminUser.totpLastStep`, ecrit sous condition en SQL) ; 3 codes faux ferment la tentative (retour au mot de passe). Rate limit : 5 mots de passe et 10 codes par 15 min.
@@ -671,7 +671,7 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 - **Poids** (complete par le proprietaire) : par defaut cinq paliers (Jamais x0, Moins souvent x0,5, Normal x1, Plus souvent x1,5, Beaucoup plus x2), valeurs deja montrees par les maquettes. Un mode "Avance" dans la regle ouvre une jauge de 0 a 200 % par pas de 5 % pour un reglage fin. En base, un nombre de 0 a 2 ; une regle dont le poids n'est pas un palier s'affiche en pourcentage et s'ouvre en mode avance. Les poids se multiplient comme en V1.
 - **Algorithme** : celui de la V1 (passe principale, rattrapage des minimums, rapport), avec une graine aleatoire injectable pour des tests deterministes ; ordre de priorite des contraintes V1 conserve ; la generation ne refuse jamais, elle explique chaque case laissee vide (D113).
 - **Temps reel** : pas de socket en C5 ; relecture au retour sur l'onglet et en tirant l'ecran (P10). La salle `space:<id>` arrive avec C6.
-- **Services entre modules** (`14-Architecture.md`, `provides` / `requires`) : Recettes fournit le catalogue des recettes visibles d'un espace (recherche et generation) ; le Planning fournit les compteurs D39 ("planifiee N fois", "derniere fois le ..."), que Recettes affiche seulement si le module est present et actif.
+- **Services entre modules** (`Architecture.md`, `provides` / `requires`) : Recettes fournit le catalogue des recettes visibles d'un espace (recherche et generation) ; le Planning fournit les compteurs D39 ("planifiee N fois", "derniere fois le ..."), que Recettes affiche seulement si le module est present et actif.
 - **Droits** (D58, F-MPL-3) : modifier, echanger, verrouiller, remplacer un repas = role minimal `editRole` ; le role minimal se regle par l'OWNER seul ; les autres reglages, les profils et la generation : MODERATOR et OWNER.
 - **Catalogue** : le statut d'un module n'est ecrit qu'a la creation de sa ligne (D175) ; sur une base existante, passer le Planning de "Bientot" a "Disponible" se fait dans A04.
 
@@ -694,8 +694,8 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 ### D188 - Temps reel en SSE plutot que Socket.IO - VALIDEE (2026-11-09, plan C6, choix du proprietaire)
 
 - **Constat** : les besoins vont du serveur vers le client seulement (notifications, invalidation des donnees d'un espace) ; une seule instance d'API.
-- **Options** : Socket.IO (prevu par `14-Architecture.md` S6, comme la V1) ; Server-Sent Events.
-- **Choix** : SSE (`GET /api/v1/events`, `EventSource` natif) : aucune dependance, reprise native, passe par nginx et Traefik en HTTP. Diffusion en memoire derriere une interface (PostgreSQL `LISTEN/NOTIFY` si un jour plusieurs instances). Amende `14-Architecture.md` S6.
+- **Options** : Socket.IO (prevu par `Architecture.md` S6, comme la V1) ; Server-Sent Events.
+- **Choix** : SSE (`GET /api/v1/events`, `EventSource` natif) : aucune dependance, reprise native, passe par nginx et Traefik en HTTP. Diffusion en memoire derriere une interface (PostgreSQL `LISTEN/NOTIFY` si un jour plusieurs instances). Amende `Architecture.md` S6.
 
 ### D189 - C6 recentre, recherche globale, export et widgets en C6b - VALIDEE (2026-11-09, plan C6, choix du proprietaire)
 
@@ -752,7 +752,7 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 
 - **Stack** : `docker/compose.e2e.yml`, front en image prod (nginx, bundle de production) devant une API en `NODE_ENV=test`, PostgreSQL et RustFS en tmpfs, conteneur Playwright officiel.
 - **Route de test** [D79] : `POST /api/v1/__test/scenario` et `/__test/reset`, montees seulement en `NODE_ENV=test`, absence en production prouvee par un test.
-- **Couverture** [D78] : seuils 90 / 80 / 60 % vises ; une zone en dessous recoit des tests la ou un comportement n'est pas prouve, sinon son seuil est pose au niveau mesure et l'ecart est note dans `15-Plan-Tests.md`.
+- **Couverture** [D78] : seuils 90 / 80 / 60 % vises ; une zone en dessous recoit des tests la ou un comportement n'est pas prouve, sinon son seuil est pose au niveau mesure et l'ecart est note dans `Plan-Tests.md`.
 - **E2E en CI** : job bloquant a chaque push et pull request, artefacts des echecs gardes 7 jours.
 
 ### D198 - C7 : decoupage et changement de poste avant tout deploy - REMPLACEE par D201 (2026-11-11, plan C7, demande du proprietaire pour le changement de poste)
@@ -778,7 +778,7 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 
 ### D200 - CI complete : couverture, cles i18n, E2E - VALIDEE (2026-11-11, realisation C7.6, defauts annonces)
 
-- **Constat** : mesure du 2026-11-11 (`@vitest/coverage-v8` 5.0.5), lignes / branches : `packages/shared` 99,7 / 92,1, `apps/api` 95,8 / 83,1, `apps/web` 91,4 / 80,8. Toutes les zones depassent les seuils de `15-Plan-Tests.md` S7. Cote web, aucun texte ne passe encore par `t()` : les seules cles lues sont les codes d'erreur.
+- **Constat** : mesure du 2026-11-11 (`@vitest/coverage-v8` 5.0.5), lignes / branches : `packages/shared` 99,7 / 92,1, `apps/api` 95,8 / 83,1, `apps/web` 91,4 / 80,8. Toutes les zones depassent les seuils de `Plan-Tests.md` S7. Cote web, aucun texte ne passe encore par `t()` : les seules cles lues sont les codes d'erreur.
 - **Choix** :
   - **Couverture** : seuils du plan gardes tels quels (90/85, 80/70, 60/50), aucun test ajoute pour le chiffre. Configuration dans `vitest.config.ts` (seuils par motif de fichiers), lancee par `npm run test:coverage` ; generated, scripts et aides de test exclus. Rapport texte seul, ecrit dans `/tmp` du conteneur (il tourne en root sur l'arbre monte).
   - **Cles i18n** : par le typage d'i18next (`apps/web/src/i18n/i18next.d.ts`, `CustomTypeOptions.resources`) plutot qu'un script : une cle absente de `fr` echoue au typecheck, bloquant en CI. Le namespace `errors` est construit depuis `ERROR_CODES` et le type `ClientErrorCode` (`lib/api.ts`), complet par construction ; un code inconnu venu du serveur reste lu par `i18n.exists`.
@@ -922,3 +922,80 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 
 - **Constat** : la PWA de preprod installee sur le telephone porte le meme nom et la meme icone que la prod. La CI construit le front sans distinction d'environnement (la prod reconstruit l'image au push sur master, un retour arriere redeploie un tag `sha-*`) : un choix au build ne suivrait pas l'image d'un environnement a l'autre.
 - **Choix** : le build ecrit a cote de la prod une variante `dist/preprod/` (manifeste "Forest Manager Preprod" / nom court "FM Preprod", titre d'onglet et `apple-mobile-web-app-title`, icones a bandeau rouge "PREPROD", maskable dans la zone sure), hors precache du service worker ; l'entrypoint nginx (`docker/web-variant.sh`) la recopie a la racine si `WEB_VARIANT=preprod`, pose dans `docker/compose.preprod.yml`. Sans la variable (ou valeur inconnue) : prod, racine servie identique octet pour octet. Icones generees au build sans dependance (PNG via zlib de Node, police pixel 5x7), aucun binaire committe. `theme_color` inchange (reecrit par le theme a l'execution). Apres le premier deploy : desinstaller puis reinstaller la PWA de preprod sur le telephone (nom et icone d'une PWA installee rarement mis a jour).
+
+### D221 - Organisation des docs apres la v2.1.0 : reference vivante, chantier V2.2, le code fait foi - VALIDEE (2026-11-18, demande du proprietaire)
+
+- **Constat** : le dossier du chantier Rework V2 melait la reference durable (CDC, journal, permissions, parcours, architecture, tests, design system) et l'histoire du chantier (plans C1 a C7b, etudes, maquettes, recettes, README de 120 Ko). Le design system et le schema cible existaient en double : copies dans les docs et code, et le code s'en etait deja ecarte.
+- **Choix** :
+  - `.claude/docs/Reference/` : documents vivants utiles au developpement (CDC, journal qui continue sa numerotation, permissions, parcours, architecture, plan de tests, regles du design system). Ils ne portent plus de numero.
+  - `.claude/docs/V2.2/` : chantier en cours, README court (etat, reprise) et roadmap (lot V2.2, actions infra du proprietaire reprises de C8, idees a etudier reprises du brainstorming).
+  - `.claude/docs/Archive/Rework-V2/` : tout le reste du chantier Rework V2, intact ; l'ancien brainstorming dans `Archive/`.
+  - **Le code fait foi** pour le design system (`apps/web/src/styles/`) et le schema (`apps/api/prisma/schema.prisma`) : les copies des docs sont archivees et ne sont plus recopiees.
+
+### D222 - Texte colle : etapes en blocs "ETAPE N", lignes parasites ecartees - VALIDEE (2026-11-18, proprietaire au selecteur, recette reelle importee en prod)
+
+- **Constat** : un texte colle de recette (copie Discord) donnait zero etape : le titre "Process" n'etait pas reconnu, donc tout restait dans la section Ingredients, y compris les "ETAPE N" ; "Repos: --", l'intertitre "Pour servir :" et la date du message devenaient des ingredients ; "(facultatif)" restait dans le nom.
+- **Choix** :
+  - Une ligne "ETAPE N" seule ouvre une etape faite des lignes qui suivent (une etape par bloc), et fait passer aux etapes meme sans titre de section reconnu. Les etapes ecrites "Etape 3 : texte" ou "1. texte" restent une par ligne.
+  - Titres d'etapes reconnus en plus : "Process", "Procede", "Deroulement".
+  - Ignores : une duree sans valeur ("Repos: --", "Cuisson : aucun"), un intertitre sans quantite finissant par ":" dans la section Ingredients, une ligne qui n'est qu'une date et une heure ("— 03/04/2026 12:23").
+  - "(facultatif)" / "(optionnel)" sort du nom et passe en note : le flag `optional` n'est ni affiche ni editable dans l'appli, l'activer a l'import le rendrait invisible et irreversible.
+  - Non retenu : "2 a 4 gousses d'ail selon le gout" reste lu "a gout" (le proprietaire ne l'a pas pris).
+
+### D223 - Ordre des tags dans une famille, choisi a la main - VALIDEE (2026-11-18, demande du proprietaire)
+
+- **Constat** : les tags d'une famille s'affichaient par ordre alphabetique [D216] : Automne, Ete, Hiver, Printemps au lieu de Printemps -> Hiver ; A tester avant Incontournable.
+- **Choix** : chaque tag porte un rang dans sa famille (`Tag.sortOrder`), regle comme l'ordre des familles : "Monter" / "Descendre" dans le menu du tag (Reglages de l'espace > Tags, moderateurs) et fleches sur la ligne du tag dans l'admin (tags globaux, regroupes par famille dans l'ordre des familles). Un tag qui entre dans une famille arrive en fin ; l'ordre envoye contient chaque tag de la famille une fois. "Autres" (sans famille) reste alphabetique. Le catalogue suit cet ordre, donc les filtres, la feuille de tags, les cartes et la fiche aussi. La migration part de l'ordre alphabetique existant : rien ne bouge a l'arrivee, l'ordre des familles creees en prod (Saison, Palier...) se regle ensuite a la main.
+
+### D224 - Fleche de retour d'une recette : remonter l'historique plutot qu'empiler - VALIDEE (2026-11-18, demande du proprietaire)
+
+- **Constat** : la fleche de la recette [D219] empilait la page d'origine dans l'historique ([origine, recette, origine]) : le geste retour d'Android (ou le bouton du navigateur) revenait alors sur la recette.
+- **Choix** : la page retenue garde aussi sa position dans l'historique de l'onglet (`idx` du routeur). Si l'origine est plus haut dans l'historique, la fleche y remonte (`history.go(-n)`, sous-pages comprises) ; sinon (lien direct, onglet neuf, position inconnue) elle pose l'origine, ou la liste, a la place de la recette (`replace`). Meme regle a la suppression ou au retrait de la recette et a "Annuler" d'une nouvelle recette. Le geste retour part ainsi d'avant l'origine. Parcours E2E 19.
+
+### D225 - Reimport d'un export de recettes - VALIDEE (2026-11-18, proprietaire au selecteur ; plan `V2.2/1-Plan-Reimport.md`)
+
+- **Options** : fichier zip ou JSON seul ; doublons par apercu a cocher, tout importer ou ignorer ; tags repris ou non ; entree dans l'ajout de recette (200 ou 50 max) ou dans le profil.
+- **Choix** : l'archive zip telle que telechargee (photos reprises) ou le `recettes.json` seul ; entree "Importer un export" dans "Ajouter une recette" > "Creer", dans l'espace courant ; apercu a cocher, les titres deja presents dans l'espace decoches et marques ; la personne qui importe devient l'auteur, tags globaux retrouves par nom et tags d'espace crees s'ils manquent ; 200 recettes maximum, tout ou rien. Regles de conversion (sous-recettes, unites inconnues, photos) dans le plan.
+
+### D226 - Changelog public et Markdown dans les notes de version - VALIDEE (2026-11-18, choix pris en autonomie par un agent, valides tels quels par le proprietaire au selecteur)
+
+- **Constat** : les Nouveautes ne se lisent que connecte (`GET /releases` derriere `requireAuth`) ; une version ne peut pas etre montree a quelqu'un sans compte. Les lignes sont du texte brut (300 caracteres, trois sections) : ni gras, ni lien.
+- **Options et choix** (alternative ecartee entre parentheses) :
+  - **Flag** : `ChangelogEntry.isPublic`, par version, faux par defaut ; migration `20261118130000_changelog_public` (colonne avec defaut, les versions deja en prod restent reservees aux connectes). (Ecarte : tout le changelog public d'un coup, ou vrai par defaut : rendrait publiques sans relecture les versions deja publiees.)
+  - **Reglage** : interrupteur "Visible sans connexion" dans A10, envoye avec le titre et les lignes (`PATCH /admin/releases/:id`, `isPublic` obligatoire) ; brouillon ou version publiee, comme le reste de l'edition. Une version brouillon ou masquee n'est jamais lue sans connexion, meme cochee. (Ecarte : une action dediee `publish-public` ou un choix au moment de publier seulement.)
+  - **Route** : la meme `GET /api/v1/releases`, ouverte sans connexion : connecte (session complete), toutes les versions publiees ; visiteur ou session a mot de passe temporaire [D134], les versions publiees et publiques seulement. Meme forme de reponse dans les deux cas (version, titre, lignes, date de publication : ni id, ni statut, ni `isPublic`, ni date de notification). Limite de debit 60 requetes par minute et par IP. (Ecarte : une seconde route `/public/releases`, qui doublerait la page et le cache.)
+  - **Page** : la meme adresse `/news`, sortie de `RequireAuth` : connecte, la page du profil ; sinon la mise en page des ecrans d'acces (colonne de lecture) avec un lien "Se connecter". Lien "Nouveautes" sous le formulaire de connexion. (Ecarte : une adresse publique a part, `/changelog`, a partager en plus de `/news`.)
+  - **Markdown** : en ligne seulement, dans chaque ligne : `**gras**`, `*italique*`, `` `code` ``, `[lien](https://...)` (http et https seulement, nouvel onglet, `noopener noreferrer`). Analyseur maison de quelques lignes (`apps/web/src/core/changelog/markdown.ts`), rendu en elements React : aucun HTML injecte, une balise ecrite reste du texte, un marqueur orphelin reste tel quel. Pas d'imbrication. Le stockage ne change pas (texte des lignes). (Ecarte : Markdown complet par bloc, titres et listes, avec une dependance du type `marked` + `DOMPurify` ou `react-markdown` : plus lourd, et les trois sections font deja la structure.)
+  - **Admin** : pas d'apercu separe : chaque ligne s'affiche rendue hors edition, en texte brut quand on la reformule ; un rappel de la syntaxe sous le titre. (Ecarte : un panneau d'apercu a cote de l'editeur.)
+- **A noter** : sortie de `RequireAuth`, la page ouvre elle-meme le temps reel et retient la page visitee quand l'utilisateur est connecte (la nouvelle version apparait toujours sans recharger).
+
+### D227 - E2E WebKit (Safari iOS) : projet iPhone, tous les parcours, job de CI a part et informatif - VALIDEE (2026-11-18, V2.2, proprietaire au selecteur ; reprend D195)
+
+- **Constat** : D195 reportait WebKit ; l'app est surtout utilisee sur telephone. L'image Playwright officielle (`mcr.microsoft.com/playwright`, meme version que `@playwright/test`) fournit deja WebKit : l'image E2E ne change pas.
+- **Options** : projet WebKit dans `npm run e2e` et le job `e2e` existant, bloquant (ecartee) ; script `e2e:webkit` et job a part, informatif (retenue).
+- **Choix** :
+  - Un projet Playwright `webkit` (profil `iPhone 13` : agent Safari iOS, tactile, echelle 3, viewport 390x844 comme le projet `mobile`), qui joue tous les parcours ; il n'existe que si `E2E_WEBKIT` est pose.
+  - En local : `npm run e2e` reste Chromium seul (mobile + desktop) ; `npm run e2e:webkit` joue WebKit sur la meme stack (`e2e:down` arrete les deux). Environ 2 min.
+  - En CI : le job `e2e` (Chromium) reste bloquant ; un job `e2e-webkit` a part, `continue-on-error` et hors des `needs` de `build`, ne bloque ni les images ni la fusion (pas de controle requis).
+  - Pas de verification manuelle sur iPhone dans la feuille de recette : ni le proprietaire ni les utilisateurs n'ont d'iPhone ; Safari n'est couvert que par ce job informatif.
+- **Ecarts propres a WebKit, dans les parcours et pas dans l'app** :
+  - Parcours 9 (glisser au doigt) : pas de CDP sous WebKit, `touchscreen` ne sait que taper ; le geste passe par des evenements de pointeur "touch" synthetiques (la logique de l'app est prouvee, pas le defilement natif).
+  - Parcours 11 (photo) : WebKit ne transmet pas a Playwright la partie fichier d'un `FormData` intercepte ; le formulaire vers le stockage est serialise en octets dans la page avant l'envoi (`e2e/support/storage.ts`).
+  - Bruit de console accepte, seulement pour les requetes vers l'app : "WebKit encountered an internal error" (requete sans reseau, parcours 12) et "Fetch API cannot load ... due to access control checks" (requete annulee par une navigation, parcours 19).
+  - Parcours 14 : partie desktop et partie mobile choisies par `isMobile` du projet, plus par son nom.
+- **Limites** : WebKit de Playwright sous Linux n'est pas Safari iOS (moteur proche, pas le meme systeme) : il encode le WebP, donc le repli JPEG de Safari [D167] reste couvert par les tests unitaires de `lib/image.ts` ; l'installation de la PWA et les gestes natifs sur iPhone ne sont pas verifies.
+
+### D228 - Liste de courses : une liste par espace, sections de l'espace, apercu depuis le planning - VALIDEE (2026-11-18, proprietaire au selecteur ; plan `V2.2/2-Plan-C9.md`)
+
+- **Constat** : le CDC prevoyait des rayons globaux et un "magasin favori par ingredient". La liste Google Keep du proprietaire range par endroit ou acheter (Pharmacie, Primeur, Boucher, Marche, Epicerie asiatique, Ikea...), avec beaucoup d'articles hors cuisine et rarement une quantite.
+- **Options et choix** (alternative ecartee entre parentheses) :
+  - Une seule liste par espace (plusieurs listes nommees).
+  - Depuis le planning : apercu a cocher, on decoche ce qu'on a deja (ajout direct puis tri dans la liste).
+  - Hors ligne : lecture et coches, envoyees au retour du reseau (lecture seule ; tout hors ligne avec conflits).
+  - Articles a la main : ingredient du catalogue ou texte libre (texte libre seulement).
+  - Doublons : additionnes sur une ligne, detail des recettes (une ligne par generation).
+  - "Archiver" = retirer les achetes, avec Annuler, sans historique (historique des courses).
+  - Sous-recettes depliees en leurs ingredients (une ligne par sous-recette).
+  - Sections propres a l'espace, creees depuis les rayons, memoire des deplacements par l'espace (sections vides au depart ; rayons figes de la plateforme). Remplace le magasin favori.
+  - Seules les sections se reordonnent ; articles dans l'ordre d'ajout, achetes en fin de section (glisser-deposer des articles).
+- **Ergonomie** : mobile first, juge au nombre de gestes (ajouter 5 articles, generer une semaine, faire une section) ; detail dans le plan.

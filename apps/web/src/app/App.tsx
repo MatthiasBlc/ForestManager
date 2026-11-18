@@ -83,6 +83,8 @@ export function App() {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
           <Route path="/join/:code" element={<JoinPage />} />
+          {/* Connecte ou non : versions publiques sans connexion [D226]. */}
+          <Route path="/news" element={<NewsPage />} />
           <Route element={<RequireAuth />}>
             <Route path="/welcome" element={<WelcomePage />} />
             <Route path="/s/:spaceId/*" element={<SpaceLayout />} />
@@ -92,7 +94,6 @@ export function App() {
             <Route path="/profile/appearance" element={<AppearancePage />} />
             <Route path="/profile/notifications" element={<NotificationPreferencesPage />} />
             <Route path="/notifications" element={<NotificationsPage />} />
-            <Route path="/news" element={<NewsPage />} />
             <Route path="/profile/delete" element={<DeleteAccountPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

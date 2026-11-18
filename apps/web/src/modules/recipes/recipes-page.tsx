@@ -34,6 +34,7 @@ import { AddMineSheet } from "./add-mine-sheet.tsx";
 import { RecipeCard, type CardBadge } from "./components/recipe-card.tsx";
 import { ActiveFilters, FiltersButton, FiltersSheet, type ActiveFilter } from "./filters-sheet.tsx";
 import { recipeMeta } from "./format.ts";
+import { ImportExportSheet } from "./import-export-sheet.tsx";
 import { ImportTextSheet, ImportUrlSheet, type ImportSheet } from "./import-sheets.tsx";
 import { recipesKey, recipesQuery, tagCatalogQuery, unitsQuery } from "./queries.ts";
 import { RecipeActionsSheet } from "./recipe-actions-sheet.tsx";
@@ -174,8 +175,18 @@ function AddRecipeSheet({
           {option("book-open", "Un texte collé", "Depuis un mail, une note, un PDF")}
           <Icon name="chevron-right" className="fm-option-go" />
         </button>
+        <button
+          type="button"
+          className="fm-option w-full text-left"
+          onClick={() => {
+            onImport("export");
+          }}
+        >
+          {option("archive", "Importer un export", "Des recettes exportées de Forest Manager")}
+          <Icon name="chevron-right" className="fm-option-go" />
+        </button>
         <small className="text-ink-muted">
-          Dans tous les cas, tu vérifies tout dans l'éditeur avant d'enregistrer.
+          Lien ou texte : tu vérifies tout dans l'éditeur avant d'enregistrer.
         </small>
       </div>
     </Sheet>
@@ -633,6 +644,14 @@ export function RecipesPage() {
           setImportSheet(null);
         }}
         spaceId={spaceId}
+      />
+      <ImportExportSheet
+        open={importSheet === "export"}
+        onClose={() => {
+          setImportSheet(null);
+        }}
+        spaceId={spaceId}
+        spaceName={spaceName}
       />
       {actionsFor ? (
         <RecipeActionsSheet

@@ -1,7 +1,7 @@
 // Tests de permissions generes depuis la matrice partagee [plan de tests S3] :
 // pour chaque route, un test par acteur (anonyme, non-membre, MEMBER,
 // MODERATOR, OWNER). Le resultat attendu vient de `can()`, elle-meme testee
-// contre la matrice recopiee de 12-Permissions.md.
+// contre la matrice recopiee de Reference/Permissions.md.
 import {
   CORE_PERMISSIONS,
   isAllowed,

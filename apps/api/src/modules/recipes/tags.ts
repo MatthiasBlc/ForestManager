@@ -46,7 +46,8 @@ export async function findOrCreateSpaceTag(
   return findOrCreateIn(ctx.db, spaceId, name, userId);
 }
 
-async function findOrCreateIn(
+/** Comme `findOrCreateSpaceTag`, dans une transaction (reprise de tags [D216, D225]). */
+export async function findOrCreateIn(
   db: Db,
   spaceId: string,
   name: string,
@@ -82,6 +83,21 @@ async function activeTag(ctx: Context, spaceId: string, tagId: string) {
   return tag;
 }
 
+/** Place en fin de famille pour un tag qui y entre. */
+async function endOfFamily(db: Db, familyId: string): Promise<number> {
+  const last = await db.tag.aggregate({ where: { familyId }, _max: { sortOrder: true } });
+  return (last._max.sortOrder ?? -1) + 1;
+}
+
+/** Ordre d'affichage : dans une famille son rang, puis le nom ; "Autres" par nom. */
+function byFamilyOrder(
+  a: { familyId: string | null; sortOrder: number; name: string },
+  b: { familyId: string | null; sortOrder: number; name: string }
+): number {
+  const rank = (t: typeof a) => (t.familyId ? t.sortOrder : 0);
+  return rank(a) - rank(b) || a.name.localeCompare(b.name, "fr");
+}
+
 /** Renomme et/ou range dans une famille de l'espace (null : sans famille). */
 export async function updateSpaceTag(
   ctx: Context,
@@ -89,14 +105,16 @@ export async function updateSpaceTag(
   tagId: string,
   body: { name?: string | undefined; familyId?: string | null | undefined }
 ): Promise<Tag> {
-  await activeTag(ctx, spaceId, tagId);
+  const current = await activeTag(ctx, spaceId, tagId);
   if (body.familyId) await spaceFamily(ctx, spaceId, body.familyId);
+  const joins = body.familyId && body.familyId !== current.familyId;
   try {
     const row = await ctx.db.tag.update({
       where: { id: tagId },
       data: {
         ...(body.name === undefined ? {} : { name: body.name.trim(), slug: slugOf(body.name) }),
         ...(body.familyId === undefined ? {} : { familyId: body.familyId }),
+        ...(joins ? { sortOrder: await endOfFamily(ctx.db, body.familyId ?? "") } : {}),
       },
     });
     return toTag(row);
@@ -228,6 +246,32 @@ export async function reorderSpaceFamilies(
   return listSpaceFamilies(ctx, spaceId);
 }
 
+/** Ordre des tags d'une famille de l'espace : chacun de ses tags une fois. */
+export async function reorderFamilyTags(
+  ctx: Context,
+  spaceId: string,
+  familyId: string,
+  ids: string[]
+): Promise<Tag[]> {
+  await spaceFamily(ctx, spaceId, familyId);
+  const live = { familyId, spaceId, deletedAt: null, mergedIntoId: null };
+  const known = new Set(
+    (await ctx.db.tag.findMany({ where: live, select: { id: true } })).map((t) => t.id)
+  );
+  if (
+    new Set(ids).size !== ids.length ||
+    ids.length !== known.size ||
+    ids.some((i) => !known.has(i))
+  ) {
+    throw new AppError("RECIPE_021");
+  }
+  await ctx.db.$transaction(
+    ids.map((id, index) => ctx.db.tag.update({ where: { id }, data: { sortOrder: index } }))
+  );
+  const rows = await ctx.db.tag.findMany({ where: live, orderBy: { sortOrder: "asc" } });
+  return rows.map(toTag);
+}
+
 /** Suppression : ses tags restent, sans famille ("Autres"). */
 export async function deleteSpaceFamily(
   ctx: Context,
@@ -283,9 +327,11 @@ export async function tagCatalog(
       scope: row.scope,
       name: row.translations[0]?.name ?? row.name,
       familyId: row.familyId,
+      sortOrder: row.sortOrder,
       recipeCount: countOf.get(row.id) ?? 0,
     }))
-    .sort((a, b) => a.name.localeCompare(b.name, "fr"));
+    .sort(byFamilyOrder)
+    .map(({ sortOrder: _, ...tag }) => tag);
   return {
     families: [
       ...globalFamilies.map((row) =>

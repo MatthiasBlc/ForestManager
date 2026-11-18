@@ -36,7 +36,7 @@ Feuille de verification avant la fusion `Developement` -> `master` (2026-11-18).
 
 - [ ] Desinstaller la PWA de preprod du telephone, la reinstaller : nom "FM Preprod", icone a bandeau rouge PREPROD
 - [x] Titre de l'onglet "Forest Manager Preprod" dans le navigateur
-- [ ] La PWA de prod reste inchangee (apres la fusion)
+- [x] La PWA de prod reste inchangee (apres la fusion) : "Forest Manager" / "Forest" servis en prod, `release` 2.1.0 (CI #46, tag `v2.1.0`, 2026-11-18)
 
 ## Changelog
 

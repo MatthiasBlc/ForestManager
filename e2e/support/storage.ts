@@ -51,6 +51,25 @@ function forward(
 
 /** Sert les requetes du navigateur vers le stockage public par le RustFS de la stack. */
 export async function routeStorage(context: BrowserContext): Promise<void> {
+  // WebKit ne transmet pas a Playwright la partie fichier (Blob) d'un FormData
+  // intercepte : le corps arrive vide au stockage (EntityTooSmall) [D227]. Le
+  // formulaire vers le stockage est donc serialise dans la page (meme
+  // multipart, en octets) avant de partir ; l'application ne change pas.
+  if (context.browser()?.browserType().name() === "webkit") {
+    await context.addInitScript((storageUrl: string) => {
+      const send = window.fetch.bind(window);
+      window.fetch = async (input, init) => {
+        const url = typeof input === "string" ? input : input instanceof URL ? input.href : "";
+        if (!url.startsWith(storageUrl) || !(init?.body instanceof FormData)) {
+          return send(input, init);
+        }
+        const encoded = new Response(init.body);
+        const headers = new Headers(init.headers);
+        headers.set("content-type", encoded.headers.get("content-type") ?? "");
+        return send(input, { ...init, headers, body: await encoded.arrayBuffer() });
+      };
+    }, STORAGE_PUBLIC_URL);
+  }
   await context.route(`${STORAGE_PUBLIC_URL}/**`, async (route) => {
     const request = route.request();
     const url = new URL(request.url());

@@ -1,7 +1,8 @@
 # syntax=docker/dockerfile:1
-# Image des parcours E2E [D197] : Playwright officiel (navigateurs fournis) et
-# les dependances du workspace `e2e` seulement. La version de l'image suit celle
-# de @playwright/test dans e2e/package.json. Contexte de build : racine du depot.
+# Image des parcours E2E [D197] : Playwright officiel (navigateurs fournis,
+# Chromium et WebKit [D227]) et les dependances du workspace `e2e` seulement.
+# La version de l'image suit celle de @playwright/test dans e2e/package.json.
+# Contexte de build : racine du depot.
 
 FROM mcr.microsoft.com/playwright:v1.64.1-noble
 RUN npm install -g npm@11.21.1 && npm cache clean --force

@@ -59,6 +59,8 @@ export const adminReleaseSchema = z.object({
   status: changelogStatusSchema,
   publishedAt: isoDateTimeSchema.nullable(),
   notifiedAt: isoDateTimeSchema.nullable(),
+  /** Lisible sans connexion, une fois publiee [D226]. */
+  isPublic: z.boolean(),
   createdAt: isoDateTimeSchema,
   updatedAt: isoDateTimeSchema,
 });
@@ -67,6 +69,7 @@ export type AdminRelease = z.infer<typeof adminReleaseSchema>;
 export const updateReleaseBodySchema = z.strictObject({
   title: z.string().trim().min(1).max(RELEASE_TITLE_MAX),
   content: releaseContentSchema,
+  isPublic: z.boolean(),
 });
 export type UpdateReleaseBody = z.infer<typeof updateReleaseBodySchema>;
 
@@ -76,7 +79,12 @@ export const publishReleaseBodySchema = z.strictObject({
 });
 export type PublishReleaseBody = z.infer<typeof publishReleaseBodySchema>;
 
-/** Version publiee, vue par les utilisateurs (page Nouveautes). */
+/**
+ * Version publiee, vue par les utilisateurs (page Nouveautes) ; sans connexion,
+ * seulement les versions publiques [D226]. Aucun champ interne (id, statut, notification).
+ * Les lignes acceptent un Markdown en ligne (gras, italique, code, liens http(s)),
+ * rendu sans HTML brut par le front.
+ */
 export const releaseSchema = z.object({
   version: z.string(),
   title: z.string(),

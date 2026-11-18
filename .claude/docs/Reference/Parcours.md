@@ -58,17 +58,18 @@ Conventions :
 ## P04 - Creer une recette (saisie, import URL, import texte)
 
 - **Declencheur** : Button "Nouvelle recette" (E-RECETTES), CommandPalette "Nouvelle recette", E-BIENVENUE.
-- **Ecrans** : F-AJOUT-RECETTE -> (F-IMPORT-URL | F-IMPORT-TEXTE) -> E-RECETTE-EDITION -> E-RECETTE.
+- **Ecrans** : F-AJOUT-RECETTE -> (F-IMPORT-URL | F-IMPORT-TEXTE) -> E-RECETTE-EDITION -> E-RECETTE ; ou F-AJOUT-RECETTE -> F-IMPORT-EXPORT -> E-RECETTES.
 - **Etapes** :
-  1. F-AJOUT-RECETTE (D63) : trois choix : "Saisir", "Importer depuis un lien", "Coller un texte". La recette sera creee dans l'espace courant (rappel en tete : "Dans Famille").
+  1. F-AJOUT-RECETTE (D63) : "Saisir", "Un lien", "Un texte colle", "Importer un export" (D225). La recette sera creee dans l'espace courant (rappel en tete : "Dans Famille").
   2. F-IMPORT-URL : Field lien, Button "Importer". Chargement : "Lecture de la recette...". Echec : "Cette page ne contient pas de recette lisible. Essaie Coller un texte." (bascule proposee).
   3. F-IMPORT-TEXTE (D28) : Field multiline, Button "Analyser". Le texte est decoupe en titre, ingredients, etapes.
   4. E-RECETTE-EDITION, pre-rempli si import : titre, photo, rendement (Stepper + unite : "pers." par defaut, ml, pieces), temps (preparation, cuisson, repos), blocs (RecipeBlock en edition) : ingredients (quantite, unite, ingredient avec autocompletion ; un ingredient inconnu est cree a la volee, D09), etapes (reordonnables), tags de l'espace (Chip, creation libre, D08/D19), tags globaux. Les champs issus d'un import et douteux sont signales "A verifier" (Badge warning).
   5. Button primary "Enregistrer" -> E-RECETTE, Toast "Recette enregistree". Revision 1 creee (D05).
   6. Quitter avec des modifications : F-CONFIRMER "Abandonner les modifications ?".
+  7. F-IMPORT-EXPORT (D225) : Button "Choisir le fichier" (archive .zip de P12 ou son `recettes.json`), lu sur l'appareil. Fichier refuse : "Ce fichier n'est pas un export de recettes Forest Manager." ; export Markdown : "refais un export au format JSON". Puis "Recettes a importer" : cases comme F-MES-RECETTES, toutes cochees sauf les titres deja dans l'espace ("Deja dans l'espace"), compteur "2 choisies", 200 max, Button "Importer 2 recettes" ; tout ou rien. Toast "2 recettes importees dans Famille", puis photos de l'archive recette par recette, Toast "1 photo non reprise" si besoin. Pas d'editeur : les recettes sont enregistrees telles quelles.
 - **Etats** : brouillon conserve localement si l'app se ferme (pas de perte de saisie) ; hors ligne : Enregistrer desactive avec "Reviens en ligne pour enregistrer" (D68).
 - **Notifications** : activite de l'espace "X a ajoute Gratin de pates". Notification regroupee "X et 2 autres ont ajoute des recettes dans Famille" seulement pour qui active la categorie "Nouvelles recettes" (coupee par defaut).
-- **Decisions** : D05, D08, D09, D19, D28, D63.
+- **Decisions** : D05, D08, D09, D19, D28, D63, D225.
 
 ## P05 - Recette composee
 
@@ -94,7 +95,7 @@ Conventions :
   1. F-ADAPTER : choix de l'espace cible (un seul), Field titre pre-rempli ("Gratin de pates - version Colloc" modifiable). Button "Adapter".
   2. E-RECETTE-EDITION de l'adaptation, deja remplie ; Enregistrer cree une recette de l'espace cible liee a l'original.
   3. Plus tard, quand l'original change : Badge warning "Original modifie" sur la RecipeCard et un bandeau dans E-RECETTE avec "Comparer avec l'original" -> E-COMPARER-ORIGINAL (deux colonnes sur desktop, onglets Original / Adaptation sur mobile, differences surlignees). Button "Marquer comme vu" fait disparaitre le badge.
-- **Depuis l'espace de groupe** (D203, D208) : E-RECETTES, "Ajouter une recette" -> F-AJOUT-RECETTE : "Depuis mes recettes" (en tete) ou "Creer" (Saisir / Un lien / Un texte colle). F-MES-RECETTES : mes recettes pas encore visibles dans l'espace, recherche et tags, cases, compteur "2 choisies", 50 max ; "Ajouter" confirme seulement si des sous-recettes suivent ; tout ou rien ; Toast "2 recettes ajoutees a Coloc".
+- **Depuis l'espace de groupe** (D203, D208) : E-RECETTES, "Ajouter une recette" -> F-AJOUT-RECETTE : "Depuis mes recettes" (en tete) ou "Creer" (Saisir / Un lien / Un texte colle / Importer un export). F-MES-RECETTES : mes recettes pas encore visibles dans l'espace, recherche et tags, cases, compteur "2 choisies", 50 max ; "Ajouter" confirme seulement si des sous-recettes suivent ; tout ou rien ; Toast "2 recettes ajoutees a Coloc".
 - **Notifications** : partage -> activite de l'espace cible "X a partage Gratin de pates" (un lot : "X a ajoute 12 recettes"). Adaptation -> l'auteur de l'original recoit "Ta recette a ete adaptee dans Colloc" (sans le contenu si l'auteur n'est pas membre de Colloc).
 - **Decisions** : D03, D17, D26, D65, D203, D208.
 
@@ -172,8 +173,8 @@ Conventions :
   1. F-EXPORT : portee "Recettes a exporter" (Mes recettes / l'espace) seulement pour l'OWNER d'un espace groupe ; format (JSON "Se reimportera dans Forest Manager" / Markdown "Se lit partout, un fichier par recette") ; Switch "Inclure les photos". Toujours une archive zip. Button "Preparer l'export".
   2. Preparation en tache de fond (statut relu chaque seconde) puis Button "Telecharger" ; l'archive est gardee 24 h. Export d'espace : rappel "Un export d'espace par jour. Les membres verront dans l'activite que tu as exporte l'espace." ; limite atteinte : "Prochain export de l'espace possible demain a 14:02."
 - **Notifications** : activite de l'espace "X a exporte l'espace" (D37), pas de notification.
-- **Reimport** : V2.2 (D192) ; le format JSON est versionne (`forest-manager/recipes` v1).
-- **Decisions** : D37, D192.
+- **Reimport** : F-IMPORT-EXPORT (P04, D225) ; le format JSON est versionne (`forest-manager/recipes` v1) ; un export Markdown ne se reimporte pas.
+- **Decisions** : D37, D192, D225.
 
 ## P13 - Changer d'ambiance
 
@@ -276,7 +277,8 @@ Toutes tranchees : QP1 par D60, QP2 par D61, QP3 par D64, QP4 par D69, QP5 par D
 | E-RECETTES              | Ecran   | Liste des recettes de l'espace   | P01, P02, P04, P16 |
 | E-RECETTE               | Ecran   | Detail d'une recette             | P04 a P07, P11     |
 | E-RECETTE-EDITION       | Ecran   | Creer / modifier une recette     | P04, P05, P06      |
-| F-AJOUT-RECETTE         | Feuille | Nouvelle recette : 3 choix       | P01, P04           |
+| F-AJOUT-RECETTE         | Feuille | Nouvelle recette : 4 choix       | P01, P04           |
+| F-IMPORT-EXPORT         | Feuille | Reimport d'un export, a cocher   | P04, P12           |
 | F-IMPORT-URL            | Feuille | Importer depuis un lien          | P04                |
 | F-IMPORT-TEXTE          | Feuille | Coller un texte                  | P04                |
 | F-AJOUT-BLOC            | Feuille | Ajouter un bloc                  | P05                |

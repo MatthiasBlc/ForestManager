@@ -106,6 +106,7 @@ describe("acces aux routes", () => {
       anonymous.post("/admin/tag-families", { fr: "a" }),
       anonymous.patch(`/admin/tag-families/${UNKNOWN}`, { fr: "a" }),
       anonymous.put("/admin/tag-families/order", { ids: [UNKNOWN] }),
+      anonymous.put(`/admin/tag-families/${UNKNOWN}/tags/order`, { ids: [UNKNOWN] }),
       anonymous.delete(`/admin/tag-families/${UNKNOWN}`),
     ];
     for (const res of await Promise.all(calls)) expect(res.body.error.code).toBe("ADMIN_002");
@@ -487,6 +488,34 @@ describe("familles de tags globales (D216)", () => {
     expect(
       (await client.put("/admin/tag-families/order", { ids: [diet.id] })).body.error.code
     ).toBe("ADMIN_016");
+  });
+
+  it("ordre des tags d'une famille globale : fin de famille a l'arrivee, reordonne, audite", async () => {
+    const family = (await client.post("/admin/tag-families", { fr: "Palier" })).body.id as string;
+    const must = (await client.post("/admin/tags", { fr: "Incontournable", familyId: family })).body
+      .id as string;
+    const tryIt = (await client.post("/admin/tags", { fr: "A tester", familyId: family })).body
+      .id as string;
+    const inFamily = async () =>
+      ((await client.get("/admin/tags")).body.data as { id: string; familyId: string | null }[])
+        .filter((t) => t.familyId === family)
+        .map((t) => t.id);
+    expect(await inFamily()).toEqual([must, tryIt]);
+
+    const order = `/admin/tag-families/${family}/tags/order`;
+    const ordered = await client.put(order, { ids: [tryIt, must] });
+    expect(ordered.status).toBe(200);
+    expect(ordered.body.data.map((t: { id: string }) => t.id)).toEqual([tryIt, must]);
+    expect(await inFamily()).toEqual([tryIt, must]);
+    expect(await lastAudit()).toMatchObject({
+      action: "tag-family.tags-reordered",
+      targetId: family,
+    });
+    expect((await client.put(order, { ids: [must] })).body.error.code).toBe("ADMIN_017");
+    expect(
+      (await client.put(`/admin/tag-families/${UNKNOWN}/tags/order`, { ids: [must] })).body.error
+        .code
+    ).toBe("ADMIN_008");
   });
 
   it("range un tag global dans une famille ; supprimer la famille le remet sans famille", async () => {

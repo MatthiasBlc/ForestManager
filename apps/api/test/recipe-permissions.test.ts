@@ -38,6 +38,27 @@ import { upload } from "./helpers/storage.ts";
 
 const NOT_FOUND = "00000000-0000-4000-8000-000000000000";
 
+/** Recette minimale de `recettes.json` pour le reimport [D225]. */
+const exported = {
+  ref: "soupe",
+  title: "Soupe importee",
+  description: null,
+  author: "x",
+  space: "y",
+  isBase: false,
+  yield: { quantity: 2, unit: null },
+  prepMinutes: null,
+  cookMinutes: null,
+  restMinutes: null,
+  tags: [],
+  blocks: [{ kind: "LOCAL", title: null, ingredients: [], steps: ["Cuire."] }],
+  notes: null,
+  sourceUrl: null,
+  photo: null,
+  createdAt: "2026-11-01T10:00:00.000Z",
+  updatedAt: "2026-11-01T10:00:00.000Z",
+};
+
 // Import sans reseau : une page avec une recette JSON-LD.
 const app = createTestApp({
   fetchImage: () =>
@@ -87,7 +108,7 @@ const ctx = createContext({
 if (!recipesModule.router) throw new Error("recipes module without router");
 const ROUTES = routesOf(recipesModule.router(ctx));
 
-// --- Matrice B2 recopiee a la main (12-Permissions.md, Recettes et Tags) ---
+// --- Matrice B2 recopiee a la main (Reference/Permissions.md, Recettes et Tags) ---
 
 type RecipeKey = keyof typeof RECIPE_PERMISSIONS;
 
@@ -105,6 +126,8 @@ const B2_ROUTES: Record<string, RecipeKey> = {
   "GET /": "recipes.view",
   "POST /import": "recipes.create",
   "POST /import/image": "recipes.create",
+  "POST /import-export/preview": "recipes.create",
+  "POST /import-export": "recipes.create",
   "POST /": "recipes.create",
   "GET /mine": "recipes.view",
   "POST /add-mine/preview": "recipes.create",
@@ -122,6 +145,7 @@ const B2_ROUTES: Record<string, RecipeKey> = {
   "GET /tag-catalog": "recipes.view",
   "POST /tag-families": "recipes.tags.moderate",
   "PUT /tag-families/order": "recipes.tags.moderate",
+  "PUT /tag-families/:familyId/tags/order": "recipes.tags.moderate",
   "PATCH /tag-families/:familyId": "recipes.tags.moderate",
   "DELETE /tag-families/:familyId": "recipes.tags.moderate",
   "GET /:recipeId": "recipes.view",
@@ -238,6 +262,9 @@ const CALLS: Record<string, Call> = {
   "POST /import": (c, s) => c.post(`${s.base}/import`, { url: "https://example.org/soupe" }),
   "POST /import/image": (c, s) =>
     c.post(`${s.base}/import/image`, { url: "https://example.org/soupe.jpg" }),
+  "POST /import-export/preview": (c, s) =>
+    c.post(`${s.base}/import-export/preview`, { titles: ["Gratin"] }),
+  "POST /import-export": (c, s) => c.post(`${s.base}/import-export`, { recipes: [exported] }),
   "POST /": async (c, s) => c.post(s.base, await recipeBody(s.subject)),
   "GET /mine": (c, s) => c.get(`${s.base}/mine`),
   "POST /add-mine/preview": async (c, s) =>
@@ -265,6 +292,12 @@ const CALLS: Record<string, Call> = {
   "POST /tag-families": (c, s) => c.post(`${s.base}/tag-families`, { name: "Saison" }),
   "PUT /tag-families/order": async (c, s) =>
     c.put(`${s.base}/tag-families/order`, { ids: [await spaceFamily(s)] }),
+  "PUT /tag-families/:familyId/tags/order": async (c, s) => {
+    const owner = await loginAs(s.f.owner, app);
+    const [familyId, tagId] = [await spaceFamily(s), await spaceTag(s)];
+    ok(await owner.patch(`${s.base}/tags/${tagId}`, { familyId }));
+    return c.put(`${s.base}/tag-families/${familyId}/tags/order`, { ids: [tagId] });
+  },
   "PATCH /tag-families/:familyId": async (c, s) =>
     c.patch(`${s.base}/tag-families/${await spaceFamily(s)}`, { name: "Paliers" }),
   "DELETE /tag-families/:familyId": async (c, s) =>
