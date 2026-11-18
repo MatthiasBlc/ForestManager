@@ -86,6 +86,9 @@ Chaque parcours tourne en **mobile** (projet par defaut) ; ceux marques (D) tour
 15. Changer d'ambiance et de mode dans Profil > Apparence ; le choix persiste apres reconnexion.
 16. Notification en temps reel : un membre suggere, la cloche de l'autrice s'allume sans rechargement, la notification ouvre la suggestion et passe en lue ; une categorie coupee ne previent plus (scenario detaille : `22-Plan-C6.md` S4).
 17. Connexion avec Discord [D210] : inscription confirmee (nom propose, email verifie), encart de secours, reconnexion par Discord, puis liaison d'un compte classique depuis le profil et connexion par Discord. (D) Faux Discord de la stack (`docker/fake-discord/`, profil choisi par le parcours).
+18. Tags [D216] : l'auteur cree un tag d'espace depuis l'editeur, la moderatrice le range dans une famille, la carte le montre et la feuille de filtres filtre dessus.
+19. Geste retour [D219] : la fleche de retour d'une recette remonte l'historique jusqu'a la page d'origine ; le retour du navigateur part ensuite d'avant l'origine.
+20. Reimport d'un export [D225] : un espace exporte en JSON avec photos, l'archive reimportee dans un autre espace par un autre compte (apercu a cocher, photo reprise), puis un second passage ou tout est "Deja dans l'espace".
 
 ## 5. Donnees de test [D79]
 
