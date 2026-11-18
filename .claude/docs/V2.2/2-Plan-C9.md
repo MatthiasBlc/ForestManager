@@ -8,7 +8,7 @@ D228 est au journal et le CDC (S4.7) est a jour.
 
 - **Une seule liste par espace**, toujours a jour : on ouvre le module, on est sur la liste. Disponible aussi dans l'espace perso [D02].
 - **Depuis le planning : apercu a cocher.** On choisit une periode (par defaut de demain a la fin de la semaine du planning, 31 jours au plus comme la generation [D180]) ; l'apercu liste les ingredients additionnes, tous coches ; on decoche ce qu'on a deja, puis "Ajouter N articles". Les repas deja ajoutes sont signales. Meme geste que le reimport et "Depuis mes recettes" [D203, D225].
-- **Doublons additionnes** : un ingredient deja dans la liste (non achete) recoit la quantite sur sa ligne ; detail "pour : Curry, Quiche" en touchant la ligne. Pieces et grammes additionnes par le poids par unite, sinon deux lignes [D126] (`addQuantities` de `packages/shared/src/units`).
+- **Doublons additionnes** : un ingredient deja dans la liste (non achete) recoit la quantite sur sa ligne ; detail "pour : Curry, Quiche" par "..." sur la ligne. **Une ligne et une case par produit, meme en unites melangees** (proprietaire au selecteur le 2026-11-18, remplace les "deux lignes" de D126 pour la liste) : pieces et grammes additionnes par le poids par unite quand il est connu, sinon les parts jointes sur la meme ligne ("500 g + 3") ; le detail dit quelle recette apporte quelle part. Les parts viennent de `addQuantities` (`packages/shared/src/units`) ; l'article garde ses parts (modele : quantite par unite, pas un seul couple quantite/unite).
 - **Sous-recettes depliees** : leurs ingredients, mis a l'echelle de la quantite utilisee ; on decoche dans l'apercu si on en a une toute faite. Sous-recette non visible : signalee "ingredients manquants" [D24, D26].
 - **Articles a la main** : un seul champ avec suggestions du catalogue d'ingredients ; sinon le texte tel quel (eponge, taie d'oreiller). Quantite et unite facultatives : le plus souvent un simple libelle.
 - **Sections de l'espace** (remplacent les rayons figes et le "magasin favori" du CDC) : chaque espace a ses sections (Primeur, Boucher, Pharmacie, Ikea...), ordonnees a la main comme les familles de tags. A l'activation du module, elles sont creees depuis les rayons de la plateforme, dans l'ordre du parcours [D125] ; renommables, supprimables, on en ajoute. Un ingredient va dans la section de son rayon ; deplace dans une autre section, l'espace s'en souvient (un texte libre aussi, par son nom normalise) ; sinon "Autres", toujours en fin.
@@ -22,21 +22,22 @@ D228 est au journal et le CDC (S4.7) est a jour.
 
 Deux usages, deux moments : **remplir** (a la maison, au fil de la semaine) et **cocher** (en magasin, une main, peu de reseau). Chaque geste est juge sur le telephone d'abord, le bureau ensuite (meme page, plus large).
 
-- **Cocher** : toute la ligne est la cible (pas seulement la case), hauteur confortable au pouce ; l'article coche se barre et glisse en fin de section, sans confirmation. Retour haptique si disponible.
+- **Cocher** : toute la ligne est la cible (pas seulement la case) ; appui long puis glisser deplace ; "..." ouvre le detail (tranche le 2026-11-18), hauteur confortable au pouce ; l'article coche se barre et glisse en fin de section, sans confirmation. Retour haptique si disponible.
 - **Ajouter** : champ toujours visible en bas de l'ecran (zone du pouce), le clavier reste ouvert apres chaque ajout pour enchainer ("lait", entree, "piles", entree). Suggestions d'ingredients et d'articles deja vus dans l'espace ; la quantite se tape dans le meme champ ("2 citrons", "500 g farine") avec le parseur de l'import texte, jamais un formulaire.
 - **Section** : l'article ajoute va dans sa section memorisee ; la changer depuis la ligne (appui long ou "..." -> liste des sections), un geste.
 - **Lire** : sections repliables avec leur compteur restant ; une section entierement cochee se replie seule ; en tete, un seul compteur "12 a acheter".
 - **Actions rares hors du chemin** : "Depuis le planning", "Retirer les achetes (N)", "Gerer les sections" dans la barre ou le menu du module, pas sur chaque ligne. Aucune boite de confirmation : Annuler dans le toast.
 - **Hors ligne** : bandeau discret, coches toujours possibles, compteur "3 coches en attente" jusqu'a l'envoi.
-- **Ecran allume** en magasin (wake lock, comme le mode cuisine) : a confirmer a la maquette.
+- **Ecran allume** : non, pas de wake lock (proprietaire, 2026-11-18).
 - La maquette est jugee sur le nombre de gestes : ajouter 5 articles, generer une semaine, faire les courses d'une section.
 
 ## Modele (propose, le schema fera foi)
 
 - `ShoppingSettings` : `spaceId` (id), `editRole` (defaut MEMBER), sur le modele de `MealPlanSettings`.
 - `ShoppingSection` : `spaceId`, `name`, `sortOrder`, `aisleId?` (rayon de la plateforme dont elle est issue : y range les ingredients de ce rayon). Supprimer une section renvoie ses articles dans "Autres" (section implicite, sans ligne).
-- `ShoppingItem` : `spaceId`, `sectionId?` (null = "Autres"), `ingredientId?` ou `label?` (texte libre, l'un ou l'autre), `quantity?`, `unitId?`, `sortOrder`, `checkedAt?`, `checkedById?`, `createdById?`, dates. Article ephemere : hard delete (pas de `deletedAt`, retirer = supprimer).
+- `ShoppingItem` : `spaceId`, `sectionId?` (null = "Autres"), `ingredientId?` ou `label?` (texte libre, l'un ou l'autre), `sortOrder`, `checkedAt?`, `checkedById?`, `createdById?`, dates. Article ephemere : hard delete (pas de `deletedAt`, retirer = supprimer).
 - `ShoppingPlacement` (memoire de l'espace) : `spaceId`, `ingredientId?` ou `labelKey?` (nom normalise), `sectionId` ; ecrite quand on deplace un article. Ordre de recherche d'une section : placement, puis section du rayon de l'ingredient, puis "Autres".
+- `ShoppingItemPart` (cascade) : article, `quantity?`, `unitId?` ; une ligne par unite non convertible ("500 g + 3"), une seule le plus souvent.
 - `ShoppingItemSource` (pivot, cascade) : article, repas (`mealSlotId?`, `SetNull`), recette et son titre, date et moment du repas, quantite apportee. Sert au detail "pour : ..." et au signal "repas deja ajoute".
 
 ## Regles de calcul
@@ -67,7 +68,6 @@ Deux usages, deux moments : **remplir** (a la maison, au fil de la semaine) et *
 5. E2E : planning -> liste -> cocher -> retirer ; deux membres en temps reel si faisable.
 6. Docs : D228 au journal, CDC S4.7 reecrit, Parcours (F-SHP), Permissions, Plan de tests ; F-REF-5 (rayons : servent a initialiser les sections) ; cocher la roadmap.
 
-## Points laisses ouverts (a trancher a la maquette)
+## Points tranches a la maquette (proprietaire, 2026-11-18)
 
-- Le planning change apres l'ajout : rien d'automatique (l'apercu signale les repas deja ajoutes ; on peut rajouter). A confirmer a l'usage.
-- Entree depuis le planning (bouton "Liste de courses" dans la barre du planning [D209]) en plus de la feuille dans le module.
+Maquette : `3-Maquette-C9.html`. Unites melangees sur une ligne, ordre manuel des articles, gestes (toucher coche, appui long deplace, "..." detail), onglet "Courses" dans la barre du bas, pas d'ecran allume, "Depuis le planning" dans la liste et dans la barre du planning [D209] ; planning modifie apres l'ajout : rien d'automatique, l'apercu signale les repas deja ajoutes. A reporter dans D228 et au CDC S4.7 a la validation de la maquette.

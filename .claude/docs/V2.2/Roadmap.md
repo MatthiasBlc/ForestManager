@@ -42,5 +42,6 @@ Chacune passe par une etude et une decision avant d'entrer dans un lot.
 
 - [ ] Module "On joue a quoi ?" : liste de jeux d'un espace, a partir d'une API publique (nouveau module par le registre [D40], acces sur demande [D33])
 - [ ] Module "On regarde quoi et ou ?" : films et series, API publique, interface inspiree de Netflix (memes bases)
+- [ ] Accueil par espace : chacun y regle ses widgets et raccourcis, par espace (aujourd'hui l'espace widgets est personnel et commun a tous les espaces) ; idee du proprietaire a la maquette C9 (2026-11-18)
 - [ ] Visite guidee pour les nouveaux utilisateurs (rail, modules, ajout de recette), si l'ecran de bienvenue [D61] ne suffit pas
 - [ ] Bot Discord pour les notifications [D202]
