@@ -2,17 +2,33 @@
 
 La premiere case non cochee est le point de reprise. Cocher au fil de l'eau.
 
-## Lot V2.2
+## 1. Lot de corrections et petites evolutions (`v2.2.0`)
 
-Ordre fixe avec le proprietaire le 2026-11-18 : les plus simples d'abord (1 a 3 en autonomie, puis une seule mise en prod `v2.2.0`).
+Decide avec le proprietaire le 2026-11-18 : tout le lot part ensemble en preprod puis en prod, sans hotfix separe pour l'import texte.
+
+Fait et committe sur `Developement` :
 
 - [x] Import par texte colle : etapes en blocs "ETAPE N", lignes parasites ecartees [D222]
 - [x] Ordre des tags dans une famille, choisi comme l'ordre des familles [D223]
 - [x] Geste retour d'Android coherent avec la fleche de retour d'une recette [D224]
-- [ ] Reimport d'un export dans F-AJOUT-RECETTE [D192, D225] : plan `1-Plan-Reimport.md` ecrit, etapes 1 a 5 a faire en TDD
-- [ ] Changelog public, lisible sans connexion (flag `isPublic`) ; Markdown dans les notes de version
-- [ ] C9 Module liste de courses (CDC S4.7, F-SHP ; droits [D141] ; conversions et rayons deja en base [D36]) : plan a ecrire (`1-Plan-C9.md`) puis TDD
-- [ ] E2E WebKit (Safari) [D195]
+
+En cours en parallele (un sous-agent chacun, dans un worktree, branche non poussee) :
+
+- [ ] Reimport d'un export dans F-AJOUT-RECETTE [D192, D225] : etapes 1 et 2 (shared, API) faites ; etapes 3 a 5 (web, E2E, docs) en cours. Plan : `1-Plan-Reimport.md`
+- [ ] Changelog public, lisible sans connexion (flag `isPublic`) ; Markdown dans les notes de version [D226]
+- [ ] E2E WebKit (Safari) [D195, D227]
+
+Integration et mise en ligne :
+
+- [ ] Bilan des trois agents ; choix de D226 (et D227 si besoin) valides au selecteur par le proprietaire
+- [ ] Fusion des trois branches dans `Developement` ; `npm test`, `npm run e2e`, lint et typecheck au vert
+- [ ] Preprod : PR `Developement` -> `master`, verification pas a pas avec le proprietaire
+- [ ] Prod `v2.2.0` : fusion de la PR, tag, changelog ; puis regler a la main l'ordre des tags de Saison et Palier [D223]
+
+## 2. Nouveaux modules (apres la `v2.2.0`)
+
+- [ ] C9 Module liste de courses (CDC S4.7, F-SHP ; droits [D141] ; conversions et rayons deja en base [D36]) : plan a ecrire (`1-Plan-C9.md`), choix au selecteur, puis TDD
+- [ ] Autres nouveaux modules : etude et decision pour chacun, a choisir parmi les idees ci-dessous
 
 ## Actions infra du proprietaire (reprises de C8, non bloquantes)
 
