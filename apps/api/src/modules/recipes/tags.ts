@@ -46,7 +46,8 @@ export async function findOrCreateSpaceTag(
   return findOrCreateIn(ctx.db, spaceId, name, userId);
 }
 
-async function findOrCreateIn(
+/** Comme `findOrCreateSpaceTag`, dans une transaction (reprise de tags [D216, D225]). */
+export async function findOrCreateIn(
   db: Db,
   spaceId: string,
   name: string,

@@ -134,6 +134,15 @@ const DEFINITIONS = {
     status: 422,
     message: "L'ordre doit contenir chaque tag de la famille une seule fois.",
   },
+  // Reimport d'un export [D225]
+  RECIPE_022: {
+    status: 422,
+    message: "Ce fichier n'est pas un export de recettes Forest Manager.",
+  },
+  RECIPE_023: {
+    status: 422,
+    message: "Les recettes liées de cet export forment une boucle.",
+  },
 
   // --- Planning ---
   MEAL_001: { status: 409, message: "Ce repas n'est pas planifié dans cet espace." },

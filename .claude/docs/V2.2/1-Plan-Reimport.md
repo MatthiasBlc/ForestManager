@@ -19,8 +19,15 @@ Choix du proprietaire au selecteur le 2026-11-18 (tous ceux recommandes). Le for
 
 ## Etapes (TDD)
 
-1. Shared : schema du corps `POST /spaces/:spaceId/recipes/import-export` (`recipes` : 1 a 200 `exportedRecipeSchema`) et de la reponse (`{ ref, recipeId }[]`) ; codes erreur dedies.
-2. API : service d'import (transaction, tri topologique, conversion ci-dessus, permission `recipes.create`), tests d'integration (aller-retour export -> import, doublons, sous-recette absente, unite inconnue, limite 200, droits B2).
+1. [fait] Shared : schema du corps `POST /spaces/:spaceId/recipes/import-export` (`recipes` : 1 a 200 `exportedRecipeSchema`) et de la reponse (`{ ref, recipeId }[]`) ; codes erreur dedies.
+2. [fait] API : service d'import (transaction, tri topologique, conversion ci-dessus, permission `recipes.create`), tests d'integration (aller-retour export -> import, doublons, sous-recette absente, unite inconnue, limite 200, droits B2).
 3. Web : lecture du zip dans le navigateur (`fflate`, deja utilise par l'API, a ajouter au front), validation Zod, feuille d'apercu a cocher, envoi, puis photos ; tests composants (archive invalide, JSON seul, doublons decoches).
 4. E2E : export d'un espace puis reimport dans un autre (parcours 11 etendu ou nouveau parcours).
 5. Docs : CDC (F-IMP), Parcours (F-AJOUT-RECETTE), Permissions (nouvelle route), cocher la roadmap.
+
+## Ecarts au plan (etapes 1 et 2)
+
+- Route d'apercu en plus : `POST /spaces/:spaceId/recipes/import-export/preview` (`titles` -> `existing`), pour decocher les titres deja presents sans lister tout l'espace.
+- Codes : `RECIPE_022` (fichier qui n'est pas un export, pour le front), `RECIPE_023` (sous-recettes en boucle) ; plus de 3 niveaux : `RECIPE_008` existant.
+- Corps JSON de cette route seule borne a 3 Mo (50 ko ailleurs) ; 10 imports par 15 min.
+- Activite : une ligne "recettes ajoutees" pour un lot, la notification de creation pour une recette seule.

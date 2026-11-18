@@ -29,6 +29,10 @@ import {
   recipeSchema,
   recipePageSchema,
   recipeSpaceTagsBodySchema,
+  importExportBodySchema,
+  importExportPreviewBodySchema,
+  importExportPreviewSchema,
+  importExportResultSchema,
   importRecipeBodySchema,
   importedRecipeSchema,
   attachImageBodySchema,
@@ -70,6 +74,7 @@ import { RECIPE_PERMISSIONS } from "./permissions.ts";
 import * as revisions from "./revisions.ts";
 import { searchRecipes } from "./search.ts";
 import { exportRecipes } from "./export.ts";
+import { importExport, previewImportExport } from "./import-export.ts";
 import * as recipes from "./service.ts";
 import * as sharing from "./sharing.ts";
 import * as suggestions from "./suggestions.ts";
@@ -126,6 +131,26 @@ function recipesRouter(ctx: Context): Router {
     handle({ body: importRecipeBodySchema }, async ({ body }, _req, res) => {
       const image = await importImage(ctx, body.url);
       res.status(200).type(image.contentType).set("cache-control", "no-store").send(image.body);
+    })
+  );
+
+  // Reimport d'un export [D225] : titres deja presents, puis creation en lot (tout ou rien).
+  router.post(
+    "/import-export/preview",
+    requirePermission("recipes.create"),
+    handle({ body: importExportPreviewBodySchema }, async ({ body }, req, res) => {
+      const existing = await previewImportExport(ctx, actorOf(req), body.titles);
+      reply(res, importExportPreviewSchema, { existing });
+    })
+  );
+
+  router.post(
+    "/import-export",
+    requirePermission("recipes.create"),
+    createRateLimiter(ctx.env.NODE_ENV !== "test", { windowMs: 15 * 60 * 1000, limit: 10 }),
+    handle({ body: importExportBodySchema }, async ({ body }, req, res) => {
+      const data = await importExport(ctx, actorOf(req), body.recipes);
+      reply(res, importExportResultSchema, { data }, 201);
     })
   );
 

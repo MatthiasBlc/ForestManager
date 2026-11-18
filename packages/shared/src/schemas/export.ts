@@ -3,7 +3,13 @@
 
 import { z } from "zod";
 
-import { isoDateTimeSchema, uuidSchema } from "./common.ts";
+import { isoDateTimeSchema, listSchema, uuidSchema } from "./common.ts";
+import {
+  RECIPE_BLOCKS_MAX,
+  RECIPE_LINES_MAX,
+  RECIPE_TAGS_MAX,
+  RECIPE_TITLE_MAX,
+} from "./recipes.ts";
 
 export const EXPORT_SCOPES = ["MY_RECIPES", "SPACE"] as const;
 export const exportScopeSchema = z.enum(EXPORT_SCOPES);
@@ -70,8 +76,8 @@ export const exportedBlockSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("LOCAL"),
     title: z.string().nullable(),
-    ingredients: z.array(exportedIngredientSchema),
-    steps: z.array(z.string()),
+    ingredients: z.array(exportedIngredientSchema).max(RECIPE_LINES_MAX),
+    steps: z.array(z.string()).max(RECIPE_LINES_MAX),
   }),
   z.object({
     kind: z.literal("RECIPE"),
@@ -88,7 +94,7 @@ export type ExportedBlock = z.infer<typeof exportedBlockSchema>;
 export const exportedRecipeSchema = z.object({
   /** Identifiant dans l'archive (nom des fichiers Markdown et des photos). */
   ref: z.string().regex(/^[a-z0-9-]+$/),
-  title: z.string().min(1),
+  title: z.string().trim().min(1).max(RECIPE_TITLE_MAX),
   description: z.string().nullable(),
   author: z.string(),
   space: z.string(),
@@ -97,8 +103,8 @@ export const exportedRecipeSchema = z.object({
   prepMinutes: minutes,
   cookMinutes: minutes,
   restMinutes: minutes,
-  tags: z.array(z.string()),
-  blocks: z.array(exportedBlockSchema),
+  tags: z.array(z.string()).max(RECIPE_TAGS_MAX * 2),
+  blocks: z.array(exportedBlockSchema).min(1).max(RECIPE_BLOCKS_MAX),
   notes: z.string().nullable(),
   sourceUrl: z.string().nullable(),
   /** Chemin de la photo dans l'archive (`photos/...`). */
@@ -115,3 +121,36 @@ export const recipesExportSchema = z.object({
   recipes: z.array(exportedRecipeSchema),
 });
 export type RecipesExport = z.infer<typeof recipesExportSchema>;
+
+// --- Reimport dans un espace [D225] ---
+
+/** Recettes reimportees au plus en une fois (tout ou rien). */
+export const IMPORT_EXPORT_MAX = 200;
+
+/** Recettes cochees dans l'apercu, telles que lues dans `recettes.json`. */
+export const importExportBodySchema = z.strictObject({
+  recipes: z
+    .array(exportedRecipeSchema)
+    .min(1)
+    .max(IMPORT_EXPORT_MAX)
+    .refine((recipes) => new Set(recipes.map((r) => r.ref)).size === recipes.length, {
+      message: "Reference en double",
+    }),
+});
+export type ImportExportBody = z.input<typeof importExportBodySchema>;
+
+/** Apercu : titres des recettes de l'archive... */
+export const importExportPreviewBodySchema = z.strictObject({
+  titles: z.array(z.string().max(RECIPE_TITLE_MAX)).min(1).max(IMPORT_EXPORT_MAX),
+});
+export type ImportExportPreviewBody = z.infer<typeof importExportPreviewBodySchema>;
+
+/** ... et ceux deja dans l'espace (sans casse ni accents), tels qu'envoyes : a decocher. */
+export const importExportPreviewSchema = z.object({ existing: z.array(z.string()) });
+export type ImportExportPreview = z.infer<typeof importExportPreviewSchema>;
+
+/** Recette creee pour chaque reference (pour envoyer les photos ensuite). */
+export const importExportResultSchema = listSchema(
+  z.object({ ref: z.string(), recipeId: uuidSchema })
+);
+export type ImportExportResult = z.infer<typeof importExportResultSchema>;

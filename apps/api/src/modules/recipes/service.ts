@@ -193,6 +193,36 @@ export interface AdaptationSource {
   imageKey?: string | null;
 }
 
+/** Ecrit la recette, sa revision 1 et ses tags ; contenu deja resolu et verifie. */
+export async function insertRecipe(
+  tx: Prisma.TransactionClient,
+  actor: RecipeActor,
+  content: RecipeContent,
+  source: "CREATE" | "IMPORT",
+  adaptation?: AdaptationSource
+): Promise<string> {
+  const recipe = await tx.recipe.create({
+    data: {
+      ...recipeColumns(content),
+      homeSpaceId: actor.spaceId,
+      authorId: actor.userId,
+      currentRevision: 1,
+      adaptedFromId: adaptation?.adaptedFromId ?? null,
+      adaptedFromRevision: adaptation?.adaptedFromRevision ?? null,
+      blocks: blocksCreate(content.blocks),
+      globalTags: { create: content.globalTagIds.map((tagId) => ({ tagId })) },
+      spaceTags: {
+        create: content.spaceTagIds.map((tagId) => ({ tagId, spaceId: actor.spaceId })),
+      },
+      revisions: {
+        create: { number: 1, source, authorId: actor.userId, snapshot: snapshotOf(content) },
+      },
+    },
+    select: { id: true },
+  });
+  return recipe.id;
+}
+
 export async function createRecipe(
   ctx: Context,
   actor: RecipeActor,
@@ -203,33 +233,9 @@ export async function createRecipe(
 ): Promise<Recipe> {
   const content = await resolveContent(ctx.db, input, actor.spaceId, adaptation?.keepLinks);
   await assertComposition(ctx.db, null, linksOf(content.blocks));
-  const id = await ctx.db.$transaction(async (tx) => {
-    const recipe = await tx.recipe.create({
-      data: {
-        ...recipeColumns(content),
-        homeSpaceId: actor.spaceId,
-        authorId: actor.userId,
-        currentRevision: 1,
-        adaptedFromId: adaptation?.adaptedFromId ?? null,
-        adaptedFromRevision: adaptation?.adaptedFromRevision ?? null,
-        blocks: blocksCreate(content.blocks),
-        globalTags: { create: content.globalTagIds.map((tagId) => ({ tagId })) },
-        spaceTags: {
-          create: content.spaceTagIds.map((tagId) => ({ tagId, spaceId: actor.spaceId })),
-        },
-        revisions: {
-          create: {
-            number: 1,
-            source,
-            authorId: actor.userId,
-            snapshot: snapshotOf(content),
-          },
-        },
-      },
-      select: { id: true },
-    });
-    return recipe.id;
-  });
+  const id = await ctx.db.$transaction((tx) =>
+    insertRecipe(tx, actor, content, source, adaptation)
+  );
   if (adaptation?.imageKey) {
     const imageKey = await copyImage(ctx, adaptation.imageKey, `recipes/${id}`);
     if (imageKey) await ctx.db.recipe.update({ where: { id }, data: { imageKey } });
