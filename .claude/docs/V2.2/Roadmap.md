@@ -9,7 +9,7 @@ Ordre fixe avec le proprietaire le 2026-11-18 : les plus simples d'abord (1 a 3 
 - [x] Import par texte colle : etapes en blocs "ETAPE N", lignes parasites ecartees [D222]
 - [x] Ordre des tags dans une famille, choisi comme l'ordre des familles [D223]
 - [x] Geste retour d'Android coherent avec la fleche de retour d'une recette [D224]
-- [ ] Reimport du JSON d'export dans F-AJOUT-RECETTE [D192] (format versionne `forest-manager/recipes` v1, deja valide par Zod)
+- [ ] Reimport d'un export dans F-AJOUT-RECETTE [D192, D225] : plan `1-Plan-Reimport.md` ecrit, etapes 1 a 5 a faire en TDD
 - [ ] Changelog public, lisible sans connexion (flag `isPublic`) ; Markdown dans les notes de version
 - [ ] C9 Module liste de courses (CDC S4.7, F-SHP ; droits [D141] ; conversions et rayons deja en base [D36]) : plan a ecrire (`1-Plan-C9.md`) puis TDD
 - [ ] E2E WebKit (Safari) [D195]

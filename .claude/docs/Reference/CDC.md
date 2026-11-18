@@ -88,7 +88,7 @@ Identifiants `F-<module>-<n>` pour que roadmap et tests s'y referent.
 - F-ACC-3 Mot de passe oublie par email si un SMTP est configure ; sinon reinitialisation par un admin [D21] : mot de passe temporaire de 24 h a usage unique, transmis par l'admin lui-meme, a changer a la connexion ; l'ancien reste valable tant que le temporaire n'a pas servi, puis les autres sessions sont fermees [D134]. L'app demarre et fonctionne sans SMTP.
 - F-ACC-4 Profil : username, email, mot de passe, avatar, theme d'interface (S5.3). Avatars de compte et d'espace recadres par l'utilisateur a l'envoi (deplacer, zoomer ; carre de 512 px) ; les photos de recette gardent leurs proportions [D211].
 - F-ACC-5 Suppression du compte (RGPD) : les contenus partages dans des espaces GROUP restent, auteur anonymise, repris par les moderateurs [D20]. L'ecran montre les consequences espace par espace et propose l'export avant de demander le mot de passe [D116].
-- F-ACC-6 Export natif de ses recettes (JSON reimportable, Markdown, photos en zip) [D37]. Archive preparee en tache de fond, gardee 24 h ; ecran de reimport en V2.2 [D192].
+- F-ACC-6 Export natif de ses recettes (JSON reimportable, Markdown, photos en zip) [D37]. Archive preparee en tache de fond, gardee 24 h ; ecran de reimport en V2.2 [D192] : zip ou JSON, apercu a cocher (titres deja presents decoches), 200 recettes max, l'importeur devient l'auteur [D225].
 - A la creation du compte, l'espace PERSONAL est cree automatiquement. Son onglet recettes est "Mes recettes" : toutes les recettes dont on est l'auteur, dans tous ses espaces, filtrables par espace d'origine ; une recette creee la nait dans l'espace perso [D82, D207].
 
 ### 4.2 Espaces, membres, invitations

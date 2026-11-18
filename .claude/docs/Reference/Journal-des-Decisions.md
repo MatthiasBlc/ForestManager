@@ -951,3 +951,8 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 
 - **Constat** : la fleche de la recette [D219] empilait la page d'origine dans l'historique ([origine, recette, origine]) : le geste retour d'Android (ou le bouton du navigateur) revenait alors sur la recette.
 - **Choix** : la page retenue garde aussi sa position dans l'historique de l'onglet (`idx` du routeur). Si l'origine est plus haut dans l'historique, la fleche y remonte (`history.go(-n)`, sous-pages comprises) ; sinon (lien direct, onglet neuf, position inconnue) elle pose l'origine, ou la liste, a la place de la recette (`replace`). Meme regle a la suppression ou au retrait de la recette et a "Annuler" d'une nouvelle recette. Le geste retour part ainsi d'avant l'origine. Parcours E2E 19.
+
+### D225 - Reimport d'un export de recettes - VALIDEE (2026-11-18, proprietaire au selecteur ; plan `V2.2/1-Plan-Reimport.md`)
+
+- **Options** : fichier zip ou JSON seul ; doublons par apercu a cocher, tout importer ou ignorer ; tags repris ou non ; entree dans l'ajout de recette (200 ou 50 max) ou dans le profil.
+- **Choix** : l'archive zip telle que telechargee (photos reprises) ou le `recettes.json` seul ; entree "Importer un export" dans "Ajouter une recette" > "Creer", dans l'espace courant ; apercu a cocher, les titres deja presents dans l'espace decoches et marques ; la personne qui importe devient l'auteur, tags globaux retrouves par nom et tags d'espace crees s'ils manquent ; 200 recettes maximum, tout ou rien. Regles de conversion (sous-recettes, unites inconnues, photos) dans le plan.

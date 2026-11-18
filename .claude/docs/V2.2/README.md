@@ -6,8 +6,9 @@ Chantier ouvert le 2026-11-18, apres la mise en prod de la `v2.1.0` : module lis
 
 1. Ce README (etat et reprise).
 2. `Roadmap.md` : la premiere case non cochee est le point de reprise.
-3. `../Reference/CDC.md` : S1 a S3 (vision, glossaire, roles), puis la section du module concerne (liste de courses : S4.7).
-4. `../Reference/Journal-des-Decisions.md` : seulement pour le pourquoi d'une regle (chercher le `D##`).
+3. `1-Plan-Reimport.md` : plan du reimport en cours.
+4. `../Reference/CDC.md` : S1 a S3 (vision, glossaire, roles), puis la section du module concerne (liste de courses : S4.7).
+5. `../Reference/Journal-des-Decisions.md` : seulement pour le pourquoi d'une regle (chercher le `D##`).
 
 ## Etat
 
@@ -18,3 +19,4 @@ Chantier ouvert le 2026-11-18, apres la mise en prod de la `v2.1.0` : module lis
 
 - 2026-11-18 : chantier ouvert, docs reorganisees [D221] ; `v2.1.0` en prod, changelog publie (notification a tous), familles de tags creees en prod (globales : Saison, Moment, Type de plat ; Le Nid : Categorie, Palier). Prochaine etape : choisir avec le proprietaire par quoi commencer (liste de courses : plan a ecrire avant le code, avec ses choix au selecteur ; ou reimport du JSON d'export, plus court).
 - 2026-11-18 (suite) : idees listees avec leur charge (ordre a fixer avec le proprietaire) ; correctif de l'import texte [D222] fait en TDD a partir d'une recette reelle (One pot pasta), a committer puis deployer pour mettre a jour la recette en prod.
+- 2026-11-18 (fin) : import texte [D222], ordre des tags [D223] et geste retour [D224] committes (E2E 24/24) ; reimport : choix tranches [D225], plan `1-Plan-Reimport.md` ; reprise a son etape 1. A la mise en prod `v2.2.0` : regler l'ordre de Saison et Palier, reinstaller rien (pas de changement PWA).
