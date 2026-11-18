@@ -300,6 +300,36 @@ a.fm-slot {
   }
 }
 
+/* Ranger les espaces au glisser [D218] (rail et selecteur) : memes reperes que le planning. */
+.fm-space[data-drag-id],
+.fm-option[data-drag-id] {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.fm-space[data-drag-lifted],
+.fm-option[data-drag-lifted] {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.fm-space[data-drag-source],
+.fm-option[data-drag-source] {
+  opacity: 0.35;
+}
+.fm-space[data-drop-over],
+.fm-option[data-drop-over] {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fm-space[data-drag-lifted],
+  .fm-option[data-drag-lifted] {
+    transition: none;
+  }
+}
+
 /* Stepper a sa taille dans une colonne flex (champ du formulaire), comme dans l'editeur de
    recette, au lieu de s'etirer sur toute la largeur. */
 .fm-stepper {

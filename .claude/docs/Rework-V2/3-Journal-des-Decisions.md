@@ -905,3 +905,10 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
   - **"Plus recentes" = date de creation** : ordre stable, une recette retouchee ne remonte pas en tete.
   - **Dans la feuille Filtres**, section "Trier par" en tete (pas de bouton de plus) ; un ordre autre que A a Z apparait en filtre actif retirable ("Tri : Plus recentes") et compte dans "Filtres (n)" ; "Effacer" revient a A a Z.
   - **Retenu sur l'appareil** (une valeur pour toutes les listes, simple confort) ; hors ligne, meme ordre applique aux recettes disponibles.
+
+### D218 - Ordre des espaces dans le rail et le selecteur - VALIDEE (2026-11-18, proprietaire au selecteur)
+
+- **Constat** : les espaces de groupe sortaient par nom ; le proprietaire veut les ranger lui-meme (demande du 2026-11-17), l'espace perso toujours en haut, "+" toujours en bas.
+- **Choix** :
+  - **Ordre garde dans le compte** (`Membership.sortOrder`, propre a chaque personne) : meme ordre sur le telephone et l'ordinateur, les autres membres ne sont pas touches. `PUT /me/space-order` recoit la liste complete ; un espace absent (nouveau) passe apres les autres, par nom.
+  - **Souris** : glisser un espace du rail sur un autre lui fait prendre sa place. **Doigt** : meme geste que le planning [D204] (appui long, l'espace se souleve, glisser), dans le rail comme dans la feuille de choix d'espace du telephone. **Clavier** : Alt+Haut / Alt+Bas sur l'espace qui a le focus, annonce "Amis : position 2 sur 3".

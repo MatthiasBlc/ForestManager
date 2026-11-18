@@ -6,6 +6,7 @@ import { Icon } from "../ui/icon.tsx";
 import { Sheet } from "../ui/sheet.tsx";
 import { SpaceIcon } from "./space-icon.tsx";
 import type { SpaceVisual } from "./space-label.ts";
+import { useSpaceReorder } from "./space-reorder.ts";
 
 export interface SpaceSwitcherProps {
   open: boolean;
@@ -17,6 +18,8 @@ export interface SpaceSwitcherProps {
   /** Accueil de l'espace perso, en tete de liste. */
   onHome?: () => void;
   onAdd: () => void;
+  /** Nouvel ordre des groupes [D218] : appui long puis glisser, ou Alt+fleches. */
+  onReorder?: (ids: string[]) => void;
 }
 
 export function SpaceSwitcher({
@@ -28,8 +31,10 @@ export function SpaceSwitcher({
   onSelect,
   onHome,
   onAdd,
+  onReorder,
 }: SpaceSwitcherProps) {
-  const row = (space: SpaceVisual) => {
+  const reorder = useSpaceReorder(spaces, onReorder);
+  const row = (space: SpaceVisual, movable = false) => {
     const on = space.id === activeId;
     return (
       <button
@@ -38,6 +43,7 @@ export function SpaceSwitcher({
         className={cx("fm-option", on && "fm-option-on")}
         aria-current={on ? "true" : undefined}
         onClick={() => onSelect(space.id)}
+        {...(movable ? reorder.item(space.id) : {})}
       >
         {/* Pas d'aria-label : le nom accessible est le texte affiche (axe
             label-content-name-mismatch), les espaces separent ses morceaux. */}
@@ -76,7 +82,7 @@ export function SpaceSwitcher({
         ) : null}
         {personal ? row(personal) : null}
         {personal ? <hr className="fm-options-sep" /> : null}
-        {spaces.map(row)}
+        {spaces.map((space) => row(space, true))}
         <button type="button" className="fm-option fm-option-add" onClick={onAdd}>
           <span className="fm-space fm-space-static fm-space-add">
             <Icon name="plus" />
@@ -85,6 +91,9 @@ export function SpaceSwitcher({
             <b>Créer ou rejoindre un espace</b>
           </span>
         </button>
+        <span className="sr-only" aria-live="polite">
+          {reorder.message}
+        </span>
       </div>
     </Sheet>
   );

@@ -205,6 +205,9 @@ model Membership {
   /// Confiance de l'auteur [D81] : les autres membres de cet espace peuvent partager
   /// ses recettes ailleurs sans lui demander (il est simplement informe).
   allowMembersToShare Boolean   @default(false)
+  /// Place de l'espace dans le rail et le selecteur de cette personne [D218] ;
+  /// null = pas encore range (apres les autres, par nom).
+  sortOrder           Int?
 
   space Space @relation(fields: [spaceId], references: [id])
   user  User  @relation(fields: [userId], references: [id])
