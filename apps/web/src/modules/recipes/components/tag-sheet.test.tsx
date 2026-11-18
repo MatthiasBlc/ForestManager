@@ -91,6 +91,17 @@ describe("feuille de tags (F-TAGS)", () => {
     expect(onClose).toHaveBeenCalled();
   });
 
+  it('sans tag a montrer : le message dit pourquoi, pas "ne correspond" sans recherche', async () => {
+    const empty: TagCatalog = { families: [saison], tags: [ete] };
+    const { user, unmount } = renderWithProviders(<Harness catalog={empty} counts />);
+    expect(screen.getByText("Aucune recette taguée pour l'instant.")).toBeInTheDocument();
+    unmount();
+    renderWithProviders(<Harness catalog={{ families: [], tags: [] }} title="Tags" />);
+    expect(screen.getByText("Aucun tag pour l'instant.")).toBeInTheDocument();
+    await user.type(screen.getByRole("searchbox", { name: "Chercher un tag" }), "zz");
+    expect(screen.getByText("Aucun tag ne correspond.")).toBeInTheDocument();
+  });
+
   it("recherche sans accents ni casse", async () => {
     const { user } = renderWithProviders(<Harness />);
     await user.type(screen.getByRole("searchbox", { name: "Chercher un tag" }), "ete");

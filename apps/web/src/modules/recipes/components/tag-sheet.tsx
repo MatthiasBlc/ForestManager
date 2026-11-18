@@ -123,7 +123,13 @@ export function TagSheet({
           </button>
         ) : null}
         {groups.length === 0 && !canCreate ? (
-          <p className="m-0 text-sm text-ink-muted">Aucun tag ne correspond.</p>
+          <p className="m-0 text-sm text-ink-muted">
+            {term
+              ? "Aucun tag ne correspond."
+              : counts
+                ? "Aucune recette taguée pour l'instant."
+                : "Aucun tag pour l'instant."}
+          </p>
         ) : null}
         {groups.map((group) => {
           const label = familyLabel(group.family, spaceName);
