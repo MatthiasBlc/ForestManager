@@ -170,10 +170,11 @@ Reprend la V1 (grille jours x repas, repas recette / texte libre / vide, verroui
 Plan : `V2.2/2-Plan-C9.md`. Mobile first : remplir a la maison, cocher en magasin d'une main [D228].
 
 - F-SHP-0 Une seule liste par espace, toujours a jour, perso compris [D228].
-- F-SHP-1 Ajouter depuis une periode du planning : apercu des ingredients additionnes (conversion d'unites, mise a l'echelle des portions, sous-recettes depliees), tous coches ; on decoche ce qu'on a deja ; repas deja ajoutes signales. Un ingredient deja dans la liste recoit la quantite sur sa ligne (detail "pour : ..."). Pieces et grammes s'additionnent grace au poids par unite, sinon deux lignes [D126, D228].
+- F-SHP-1 Ajouter depuis une periode du planning : apercu des ingredients additionnes (conversion d'unites, mise a l'echelle des portions, sous-recettes depliees), tous coches ; on decoche ce qu'on a deja ; repas deja ajoutes signales. Un ingredient deja dans la liste recoit la quantite sur sa ligne (detail "pour : ..."). Une ligne et une case par produit : pieces et grammes s'additionnent grace au poids par unite, sinon les parts sont jointes sur la ligne ("500 g + 3") [D126, D228].
 - F-SHP-2 Articles a la main : ingredient du catalogue ou texte libre, quantite facultative ; cocher "achete" ; "Retirer les achetes" avec Annuler, sans historique. Hors ligne : lecture et coches, envoyees au retour du reseau [D228].
-- F-SHP-3 Sections de l'espace (Primeur, Pharmacie, Ikea...), ordonnees a la main, creees au depart depuis les rayons (F-REF-5) [D125] ; un article deplace d'une section a l'autre est retenu par l'espace ; sinon "Autres". Remplace le "magasin favori par ingredient" [D228].
+- F-SHP-3 Sections de l'espace (Primeur, Pharmacie, Ikea...) et articles dans leur section, ordonnes a la main (les achetes en fin de section) ; sections creees au depart depuis les rayons (F-REF-5) [D125] ; un article deplace d'une section a l'autre est retenu par l'espace ; sinon "Autres". Remplace le "magasin favori par ingredient" [D228].
 - F-SHP-4 Modifier la liste (generer, articles libres, cocher, archiver) : role minimal reglable par l'OWNER, MEMBER par defaut, comme le planning [D141].
+- F-SHP-5 Gestes : toucher la ligne coche, appui long puis glisser deplace, "..." ouvre le detail ; onglet "Courses" dans la barre du bas du telephone ; pas d'ecran maintenu allume ; "Depuis le planning" aussi dans la barre du planning [D228].
 
 ### 4.8 Notifications et activite
 

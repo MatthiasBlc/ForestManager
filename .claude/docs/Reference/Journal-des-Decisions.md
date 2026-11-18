@@ -997,5 +997,11 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
   - "Archiver" = retirer les achetes, avec Annuler, sans historique (historique des courses).
   - Sous-recettes depliees en leurs ingredients (une ligne par sous-recette).
   - Sections propres a l'espace, creees depuis les rayons, memoire des deplacements par l'espace (sections vides au depart ; rayons figes de la plateforme). Remplace le magasin favori.
-  - Seules les sections se reordonnent ; articles dans l'ordre d'ajout, achetes en fin de section (glisser-deposer des articles).
+  - Sections et articles se reordonnent a la main ; un nouvel article arrive en fin des non coches de sa section, les achetes restent en fin de section (ordre d'ajout fixe ; d'abord retenu au selecteur, change a la maquette).
 - **Ergonomie** : mobile first, juge au nombre de gestes (ajouter 5 articles, generer une semaine, faire une section) ; detail dans le plan.
+- **Maquette validee** (2026-11-18, proprietaire au selecteur ; `V2.2/3-Maquette-C9.html`) :
+  - Unites melangees : une ligne et une case par produit ; pieces et grammes additionnes par le poids par unite quand il est connu, sinon les parts jointes sur la ligne ("500 g + 3"), le detail dit quelle recette apporte quelle part. (Ecarte : deux lignes, regle de D126 pour la liste ; une ligne jamais convertie.) Pourquoi : en magasin, deux lignes pour un meme produit font cocher l'une et oublier l'autre.
+  - Gestes : toucher la ligne coche, appui long puis glisser deplace (dans la section ou vers une autre, placement retenu), "..." ouvre le detail. (Ecarte : toucher la ligne ouvre le detail, seule la case coche.) Pourquoi : le geste le plus frequent en magasin doit etre le plus simple.
+  - Onglet "Courses" dans la barre du bas du telephone : Planning, Recettes, Courses, Plus. (Ecarte : dans "Plus".) Idee notee a la roadmap : un accueil par espace, ou chacun regle ses widgets et raccourcis.
+  - Pas de maintien de l'ecran allume. (Ecarte : un choix dans le menu ; toujours allume liste ouverte.)
+  - "Depuis le planning" dans la liste et dans la barre du planning [D209], meme feuille ; planning modifie apres l'ajout : rien d'automatique, l'apercu signale les repas deja ajoutes. (Ecarte : depuis la liste seulement.)
