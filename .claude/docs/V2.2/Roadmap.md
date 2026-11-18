@@ -27,7 +27,7 @@ Integration et mise en ligne :
 
 ## 2. Nouveaux modules (apres la `v2.2.0`)
 
-- [ ] C9 Module liste de courses (CDC S4.7, F-SHP ; droits [D141] ; conversions et rayons deja en base [D36]) : plan a ecrire (`1-Plan-C9.md`), choix au selecteur, puis TDD
+- [ ] C9 Module liste de courses (CDC S4.7, F-SHP ; droits [D141] ; conversions et rayons deja en base [D36]) : choix tranches au selecteur le 2026-11-18 [D228], plan `2-Plan-C9.md` ; D228 a reporter au journal et au CDC a la fusion des agents ; puis TDD (maquette avant le web)
 - [ ] Autres nouveaux modules : etude et decision pour chacun, a choisir parmi les idees ci-dessous
 
 ## Actions infra du proprietaire (reprises de C8, non bloquantes)

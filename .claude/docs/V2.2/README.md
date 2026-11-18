@@ -6,7 +6,7 @@ Chantier ouvert le 2026-11-18, apres la mise en prod de la `v2.1.0` : module lis
 
 1. Ce README (etat et reprise).
 2. `Roadmap.md` : la premiere case non cochee est le point de reprise.
-3. `1-Plan-Reimport.md` : plan du reimport en cours.
+3. `1-Plan-Reimport.md` : plan du reimport en cours ; `2-Plan-C9.md` : plan de la liste de courses [D228].
 4. `../Reference/CDC.md` : S1 a S3 (vision, glossaire, roles), puis la section du module concerne (liste de courses : S4.7).
 5. `../Reference/Journal-des-Decisions.md` : seulement pour le pourquoi d'une regle (chercher le `D##`).
 
@@ -22,3 +22,4 @@ Chantier ouvert le 2026-11-18, apres la mise en prod de la `v2.1.0` : module lis
 - 2026-11-18 (fin) : import texte [D222], ordre des tags [D223] et geste retour [D224] committes (E2E 24/24) ; reimport : choix tranches [D225], plan `1-Plan-Reimport.md` ; reprise a son etape 1. A la mise en prod `v2.2.0` : regler l'ordre de Saison et Palier, reinstaller rien (pas de changement PWA).
 - 2026-11-18 (reimport) : etapes 1 (shared) et 2 (API, tests d'integration et matrice B2) faites et committees ; reprise a l'etape 3 (web : lecture du zip, feuille d'apercu). Ecarts au plan notes en fin de `1-Plan-Reimport.md`.
 - 2026-11-18 (agents) : trois sous-agents en parallele, chacun dans un worktree (branches non poussees) : fin du reimport (etapes 3 a 5), changelog public + Markdown (D226, choix a valider au selecteur), E2E WebKit (D227). Ensuite : fusion dans `Developement`, mise a jour de la roadmap, un seul passage en preprod de tout le lot (pas de hotfix `v2.1.1` pour l'import texte), puis C9 liste de courses et les nouveaux modules.
+- 2026-11-18 (C9) : pendant que les agents tournent, choix de la liste de courses tranches au selecteur (8 points, tous recommandes) et plan `2-Plan-C9.md` ecrit ; D228 a reporter au journal et au CDC a la fusion.
