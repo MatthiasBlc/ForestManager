@@ -244,6 +244,18 @@ function recipesRouter(ctx: Context): Router {
     })
   );
 
+  router.put(
+    "/tag-families/:familyId/tags/order",
+    requirePermission("recipes.tags.moderate"),
+    handle(
+      { params: tagFamilyParamsSchema, body: tagFamilyOrderBodySchema },
+      async ({ params, body }, req, res) => {
+        const data = await tags.reorderFamilyTags(ctx, spaceOf(req), params.familyId, body.ids);
+        reply(res, listSchema(tagSchema), { data });
+      }
+    )
+  );
+
   router.patch(
     "/tag-families/:familyId",
     requirePermission("recipes.tags.moderate"),

@@ -235,6 +235,13 @@ export function recipeServer({
       state.tagFamilies = ids.flatMap((id) => state.tagFamilies.filter((f) => f.id === id));
       return HttpResponse.json({ data: state.tagFamilies });
     }),
+    http.put(`${base}/tag-families/:familyId/tags/order`, async ({ params, request }) => {
+      const { ids } = (await request.json()) as { ids: string[] };
+      state.bodies.tagOrder = { familyId: params.familyId, ids };
+      const moved = ids.flatMap((id) => state.spaceTags.filter((t) => t.id === id));
+      state.spaceTags = [...moved, ...state.spaceTags.filter((t) => !ids.includes(t.id))];
+      return HttpResponse.json({ data: moved });
+    }),
     http.patch(`${base}/tag-families/:familyId`, async ({ params, request }) => {
       const { name } = (await request.json()) as { name: string };
       state.bodies.renameFamily = { name };

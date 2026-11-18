@@ -7,6 +7,8 @@ import { INGREDIENTS, mockReferentialsApi } from "../../test/admin-referentials-
 import { axeViolations } from "../../test/axe.ts";
 import { renderWithProviders } from "../../test/render.tsx";
 
+const tagId = (n: number) => `${String(n).padStart(8, "0")}-0000-4000-8000-000000000000`;
+
 const { TARGET, DUPLICATE } = INGREDIENTS;
 
 describe("ingredients (A05)", () => {
@@ -235,6 +237,39 @@ describe("tags globaux (A08)", () => {
     await user.click(within(sheet).getByRole("button", { name: "Supprimer" }));
     await waitFor(() => {
       expect(within(table).queryByText("Végétarien")).not.toBeInTheDocument();
+    });
+  });
+
+  it("tags groupes par famille dans l'ordre des familles ; ordre des tags d'une famille", async () => {
+    const { state } = mockReferentialsApi();
+    const [saison, regime] = state.families;
+    state.tags = [
+      { id: tagId(511), fr: "Hiver", en: null, recipeCount: 0, familyId: saison!.id },
+      { id: tagId(512), fr: "Été", en: null, recipeCount: 0, familyId: saison!.id },
+      { id: tagId(513), fr: "Sans gluten", en: null, recipeCount: 0, familyId: regime!.id },
+      ...state.tags,
+    ];
+    const { user } = renderWithProviders(<App />, { route: "/admin/tags" });
+    const table = await screen.findByRole("table", { name: "Tags globaux" });
+    await within(table).findByText("Hiver");
+    const names = within(table)
+      .getAllByRole("rowheader")
+      .map((cell) => cell.textContent);
+    expect(names).toEqual(["Hiver", "Été", "Sans gluten", "Végétarien", "Apéritif", "Rapide"]);
+    // Pas d'ordre dans "Autres" ; bornes de la famille.
+    expect(within(table).queryByRole("button", { name: "Monter Rapide" })).toBeNull();
+    expect(within(table).getByRole("button", { name: "Monter Hiver" })).toBeDisabled();
+    expect(within(table).getByRole("button", { name: "Descendre Été" })).toBeDisabled();
+
+    await user.click(within(table).getByRole("button", { name: "Monter Été" }));
+    await waitFor(() => {
+      expect(state.calls).toContainEqual(
+        expect.objectContaining({
+          method: "PUT",
+          path: `/admin/tag-families/${saison!.id}/tags/order`,
+          body: { ids: [tagId(512), tagId(511)] },
+        })
+      );
     });
   });
 

@@ -231,6 +231,22 @@ export function adminReferentialsRouter(ctx: Context): Router {
     })
   );
 
+  router.put(
+    "/tag-families/:id/tags/order",
+    handle(
+      { params: idParamsSchema, body: tagFamilyOrderBodySchema },
+      async ({ params, body }, req, res) => {
+        const data = await referentials.reorderFamilyTags(
+          ctx,
+          currentAdminId(req),
+          params.id,
+          body.ids
+        );
+        reply(res, listSchema(adminTagSchema), { data });
+      }
+    )
+  );
+
   router.patch(
     "/tag-families/:id",
     handle(

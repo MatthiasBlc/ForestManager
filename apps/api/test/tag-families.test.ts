@@ -104,6 +104,52 @@ describe("familles d'espace (moderateurs)", () => {
   });
 });
 
+describe("ordre des tags dans une famille d'espace", () => {
+  it("nouveau venu en fin de famille, reordonne, ordre complet exige, catalogue dans l'ordre", async () => {
+    const f = await groupFixture();
+    const moderator = await loginAs(f.moderator, app);
+    const member = await loginAs(f.member, app);
+    const base = `/spaces/${f.spaceId}/recipes`;
+    const season = (await moderator.post(`${base}/tag-families`, { name: "Saison" }))
+      .body as Family;
+    const idOf = async (name: string) => {
+      const id = (await moderator.post(`${base}/tags`, { name })).body.id as string;
+      await moderator.patch(`${base}/tags/${id}`, { familyId: season.id });
+      return id;
+    };
+    // Crees dans l'ordre Printemps, Ete, Hiver : chacun arrive en fin de famille.
+    const spring = await idOf("Printemps");
+    const summer = await idOf("Ete");
+    const winter = await idOf("Hiver");
+    const seasonIds = async () =>
+      ((await member.get(`${base}/tag-catalog`)).body.tags as CatalogTag[])
+        .filter((t) => t.familyId === season.id)
+        .map((t) => t.id);
+    expect(await seasonIds()).toEqual([spring, summer, winter]);
+
+    const order = `${base}/tag-families/${season.id}/tags/order`;
+    const ordered = await moderator.put(order, { ids: [winter, spring, summer] });
+    expect(ordered.status).toBe(200);
+    expect(ordered.body.data.map((t: { id: string }) => t.id)).toEqual([winter, spring, summer]);
+    expect(await seasonIds()).toEqual([winter, spring, summer]);
+
+    // Chaque tag de la famille une fois, rien d'autre.
+    const other = (await moderator.post(`${base}/tags`, { name: "Autre" })).body.id as string;
+    for (const ids of [
+      [winter, spring],
+      [winter, spring, summer, other],
+      [winter, winter, spring],
+    ]) {
+      expect((await moderator.put(order, { ids })).body.error.code).toBe("RECIPE_021");
+    }
+    expect(
+      (await moderator.put(`${base}/tag-families/${UNKNOWN}/tags/order`, { ids: [winter] })).body
+        .error.code
+    ).toBe("RECIPE_018");
+    expect((await member.put(order, { ids: [spring, summer, winter] })).status).toBe(403);
+  });
+});
+
 describe("catalogue des tags d'un espace", () => {
   it("familles globales puis d'espace ; tags avec famille et recettes visibles ici", async () => {
     const f = await groupFixture();

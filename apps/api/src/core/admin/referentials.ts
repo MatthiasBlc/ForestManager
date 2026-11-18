@@ -606,6 +606,16 @@ export async function reorderAisles(ctx: Context, adminId: string, ids: string[]
 
 const liveGlobal = { scope: "GLOBAL", deletedAt: null, mergedIntoId: null } as const;
 
+/** Place en fin de famille pour un tag qui y entre. */
+async function endOfFamily(tx: Tx, familyId: string): Promise<number> {
+  const last = await tx.tag.aggregate({ where: { familyId }, _max: { sortOrder: true } });
+  return (last._max.sortOrder ?? -1) + 1;
+}
+
+/** Dans une famille son rang, puis le nom ; sans famille, le nom. */
+const rankOf = (t: { familyId: string | null; sortOrder: number }) =>
+  t.familyId ? t.sortOrder : 0;
+
 export async function listTags(ctx: Context): Promise<AdminTag[]> {
   const rows = await ctx.db.tag.findMany({
     where: liveGlobal,
@@ -615,14 +625,21 @@ export async function listTags(ctx: Context): Promise<AdminTag[]> {
     },
   });
   return rows
+    .sort(
+      (a, b) =>
+        rankOf(a) - rankOf(b) ||
+        (a.translations.find((t) => t.locale === FR)?.name ?? a.name).localeCompare(
+          b.translations.find((t) => t.locale === FR)?.name ?? b.name,
+          "fr"
+        )
+    )
     .map((row) => ({
       id: row.id,
       fr: row.translations.find((t) => t.locale === FR)?.name ?? row.name,
       en: row.translations.find((t) => t.locale === EN)?.name ?? null,
       recipeCount: row._count.recipes,
       familyId: row.familyId,
-    }))
-    .sort((a, b) => a.fr.localeCompare(b.fr, "fr"));
+    }));
 }
 
 async function tagById(ctx: Context, id: string): Promise<AdminTag> {
@@ -691,7 +708,13 @@ export async function createTag(ctx: Context, adminId: string, body: TagBody): P
       async (s) => (await tx.tag.findFirst({ where: { scope: "GLOBAL", slug: s } })) !== null
     );
     const tag = await tx.tag.create({
-      data: { scope: "GLOBAL", name: body.fr, slug, familyId: body.familyId ?? null },
+      data: {
+        scope: "GLOBAL",
+        name: body.fr,
+        slug,
+        familyId: body.familyId ?? null,
+        sortOrder: body.familyId ? await endOfFamily(tx, body.familyId) : 0,
+      },
     });
     await writeTagTranslations(tx, tag.id, body.fr, body.en);
     await audit(tx, {
@@ -714,14 +737,16 @@ export async function updateTag(
   body: TagBody
 ): Promise<AdminTag> {
   await ctx.db.$transaction(async (tx) => {
-    await liveTag(tx, id);
+    const current = await liveTag(tx, id);
     await assertTagNameFree(tx, body.fr, id);
     await checkGlobalFamily(tx, body.familyId);
+    const joins = body.familyId && body.familyId !== current.familyId;
     await tx.tag.update({
       where: { id },
       data: {
         name: body.fr,
         ...(body.familyId === undefined ? {} : { familyId: body.familyId }),
+        ...(joins ? { sortOrder: await endOfFamily(tx, body.familyId ?? "") } : {}),
       },
     });
     await writeTagTranslations(tx, id, body.fr, body.en);
@@ -911,6 +936,38 @@ export async function reorderTagFamilies(
     await audit(tx, { adminId, action: "tag-family.reordered", data: { ids } });
   });
   return listTagFamilies(ctx);
+}
+
+/** Ordre des tags d'une famille globale : chacun de ses tags une fois. */
+export async function reorderFamilyTags(
+  ctx: Context,
+  adminId: string,
+  familyId: string,
+  ids: string[]
+): Promise<AdminTag[]> {
+  await ctx.db.$transaction(async (tx) => {
+    await liveFamily(tx, familyId);
+    const all = await tx.tag.findMany({ where: { ...liveGlobal, familyId }, select: { id: true } });
+    const known = new Set(all.map((t) => t.id));
+    if (
+      new Set(ids).size !== ids.length ||
+      ids.length !== known.size ||
+      ids.some((i) => !known.has(i))
+    ) {
+      throw new AppError("ADMIN_017");
+    }
+    for (const [index, tagId] of ids.entries()) {
+      await tx.tag.update({ where: { id: tagId }, data: { sortOrder: index } });
+    }
+    await audit(tx, {
+      adminId,
+      action: "tag-family.tags-reordered",
+      targetType: "tag-family",
+      targetId: familyId,
+      data: { ids },
+    });
+  });
+  return (await listTags(ctx)).filter((t) => t.familyId === familyId);
 }
 
 /** Suppression : ses tags restent, sans famille ("Autres"). */

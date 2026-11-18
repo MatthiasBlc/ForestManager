@@ -122,6 +122,7 @@ const B2_ROUTES: Record<string, RecipeKey> = {
   "GET /tag-catalog": "recipes.view",
   "POST /tag-families": "recipes.tags.moderate",
   "PUT /tag-families/order": "recipes.tags.moderate",
+  "PUT /tag-families/:familyId/tags/order": "recipes.tags.moderate",
   "PATCH /tag-families/:familyId": "recipes.tags.moderate",
   "DELETE /tag-families/:familyId": "recipes.tags.moderate",
   "GET /:recipeId": "recipes.view",
@@ -265,6 +266,12 @@ const CALLS: Record<string, Call> = {
   "POST /tag-families": (c, s) => c.post(`${s.base}/tag-families`, { name: "Saison" }),
   "PUT /tag-families/order": async (c, s) =>
     c.put(`${s.base}/tag-families/order`, { ids: [await spaceFamily(s)] }),
+  "PUT /tag-families/:familyId/tags/order": async (c, s) => {
+    const owner = await loginAs(s.f.owner, app);
+    const [familyId, tagId] = [await spaceFamily(s), await spaceTag(s)];
+    ok(await owner.patch(`${s.base}/tags/${tagId}`, { familyId }));
+    return c.put(`${s.base}/tag-families/${familyId}/tags/order`, { ids: [tagId] });
+  },
   "PATCH /tag-families/:familyId": async (c, s) =>
     c.patch(`${s.base}/tag-families/${await spaceFamily(s)}`, { name: "Paliers" }),
   "DELETE /tag-families/:familyId": async (c, s) =>

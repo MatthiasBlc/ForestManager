@@ -302,6 +302,33 @@ export function TagsPage() {
     }
   };
 
+  // Groupes dans l'ordre des familles, puis "Autres" ; dans un groupe, l'ordre de l'API.
+  const familyIds = (families.data ?? []).map((f) => f.id);
+  const rank = (tag: AdminTag) => {
+    const index = tag.familyId ? familyIds.indexOf(tag.familyId) : -1;
+    return index === -1 ? familyIds.length : index;
+  };
+  const ordered = (tags.data ?? [])
+    .map((tag, index) => ({ tag, index }))
+    .sort((a, b) => rank(a.tag) - rank(b.tag) || a.index - b.index)
+    .map(({ tag }) => tag);
+  const siblingsOf = (tag: AdminTag) =>
+    tag.familyId && familyIds.includes(tag.familyId)
+      ? ordered.filter((t) => t.familyId === tag.familyId)
+      : null;
+  const moveTag = async (tag: AdminTag, siblings: AdminTag[], delta: number) => {
+    const ids = siblings.map((t) => t.id);
+    const from = ids.indexOf(tag.id);
+    ids.splice(from, 1);
+    ids.splice(from + delta, 0, tag.id);
+    try {
+      await api.put(`/admin/tag-families/${tag.familyId ?? ""}/tags/order`, { ids });
+      await queryClient.invalidateQueries({ queryKey: adminTagsQuery.queryKey });
+    } catch (error) {
+      toast(errorMessage(error), { tone: "danger" });
+    }
+  };
+
   const save = async (tag: AdminTag | null, value: TranslatedName) => {
     await (tag
       ? api.patch(`/admin/tags/${tag.id}`, value, adminTagSchema)
@@ -350,48 +377,68 @@ export function TagsPage() {
               </tr>
             </thead>
             <tbody>
-              {tags.data.map((tag) => (
-                <tr key={tag.id}>
-                  <th scope="row" className="font-semibold">
-                    {tag.fr}
-                  </th>
-                  <td>{tag.en ?? <Badge tone="warning">À traduire</Badge>}</td>
-                  <td className="font-mono">{tag.recipeCount}</td>
-                  <td>
-                    <select
-                      className="fm-input"
-                      aria-label={`Famille de ${tag.fr}`}
-                      value={tag.familyId ?? ""}
-                      onChange={(event) => void setFamily(tag, event.target.value)}
-                    >
-                      <option value="">Autres</option>
-                      {(families.data ?? []).map((family) => (
-                        <option key={family.id} value={family.id}>
-                          {family.fr}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td>
-                    <div className="flex justify-end gap-1">
-                      <IconButton
-                        icon="pencil"
-                        label={`Renommer ou traduire ${tag.fr}`}
-                        onClick={() => {
-                          setDialog({ kind: "edit", tag });
-                        }}
-                      />
-                      <IconButton
-                        icon="git-branch"
-                        label={`Fusionner ${tag.fr} dans un autre tag`}
-                        onClick={() => {
-                          setDialog({ kind: "merge", tag });
-                        }}
-                      />
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {ordered.map((tag) => {
+                const siblings = siblingsOf(tag);
+                const position = siblings?.indexOf(tag) ?? -1;
+                return (
+                  <tr key={tag.id}>
+                    <th scope="row" className="font-semibold">
+                      {tag.fr}
+                    </th>
+                    <td>{tag.en ?? <Badge tone="warning">À traduire</Badge>}</td>
+                    <td className="font-mono">{tag.recipeCount}</td>
+                    <td>
+                      <select
+                        className="fm-input"
+                        aria-label={`Famille de ${tag.fr}`}
+                        value={tag.familyId ?? ""}
+                        onChange={(event) => void setFamily(tag, event.target.value)}
+                      >
+                        <option value="">Autres</option>
+                        {(families.data ?? []).map((family) => (
+                          <option key={family.id} value={family.id}>
+                            {family.fr}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      <div className="flex justify-end gap-1">
+                        {siblings ? (
+                          <>
+                            <IconButton
+                              icon="arrow-up"
+                              label={`Monter ${tag.fr}`}
+                              disabled={position === 0}
+                              onClick={() => void moveTag(tag, siblings, -1)}
+                            />
+                            <IconButton
+                              icon="arrow-down"
+                              label={`Descendre ${tag.fr}`}
+                              disabled={position === siblings.length - 1}
+                              onClick={() => void moveTag(tag, siblings, 1)}
+                            />
+                          </>
+                        ) : null}
+                        <IconButton
+                          icon="pencil"
+                          label={`Renommer ou traduire ${tag.fr}`}
+                          onClick={() => {
+                            setDialog({ kind: "edit", tag });
+                          }}
+                        />
+                        <IconButton
+                          icon="git-branch"
+                          label={`Fusionner ${tag.fr} dans un autre tag`}
+                          onClick={() => {
+                            setDialog({ kind: "merge", tag });
+                          }}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </TableScroll>

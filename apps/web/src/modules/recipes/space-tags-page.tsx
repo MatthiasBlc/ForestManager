@@ -303,6 +303,22 @@ export function SpaceTagsPage() {
     }
   };
 
+  // Ordre d'un tag dans sa famille, comme celui des familles.
+  const moveTag = async (family: TagFamily, list: CatalogTag[], tag: CatalogTag, delta: number) => {
+    const ids = list.map((t) => t.id);
+    const from = ids.indexOf(tag.id);
+    const to = from + delta;
+    if (to < 0 || to >= ids.length) return;
+    ids.splice(from, 1);
+    ids.splice(to, 0, tag.id);
+    try {
+      await api.put(`${base}/tag-families/${family.id}/tags/order`, { ids });
+      await refresh();
+    } catch (error) {
+      toast(errorMessage(error), { tone: "danger" });
+    }
+  };
+
   let content;
   if (catalog.isError) {
     content = <FormAlert message={errorMessage(catalog.error)} />;
@@ -352,7 +368,7 @@ export function SpaceTagsPage() {
             </p>
           ) : (
             <ul className="m-0 flex list-none flex-col gap-1 p-0">
-              {list.map((tag) => (
+              {list.map((tag, tagIndex) => (
                 <li key={tag.id} className="flex items-center gap-2">
                   <span className="flex min-w-0 flex-1 flex-col">
                     <b className="text-[15px]">{tag.name}</b>
@@ -365,6 +381,22 @@ export function SpaceTagsPage() {
                     trigger={<IconButton icon="more" label={`Actions du tag ${tag.name}`} />}
                     items={[
                       { id: "rename", label: "Renommer", icon: "pencil" },
+                      ...(family
+                        ? [
+                            {
+                              id: "up",
+                              label: "Monter",
+                              icon: "arrow-up" as const,
+                              disabled: tagIndex === 0,
+                            },
+                            {
+                              id: "down",
+                              label: "Descendre",
+                              icon: "arrow-down" as const,
+                              disabled: tagIndex === list.length - 1,
+                            },
+                          ]
+                        : []),
                       { id: "family", label: "Changer de famille", icon: "tag" },
                       {
                         id: "merge",
@@ -376,7 +408,9 @@ export function SpaceTagsPage() {
                       { id: "delete", label: "Supprimer", icon: "trash", danger: true },
                     ]}
                     onSelect={(id) => {
-                      if (id === "rename") setDialog({ kind: "rename-tag", tag });
+                      if (family && (id === "up" || id === "down")) {
+                        void moveTag(family, list, tag, id === "up" ? -1 : 1);
+                      } else if (id === "rename") setDialog({ kind: "rename-tag", tag });
                       else if (id === "family") setDialog({ kind: "family-of", tag });
                       else if (id === "merge") setDialog({ kind: "merge-tag", tag });
                       else setDialog({ kind: "delete-tag", tag });

@@ -506,6 +506,8 @@ model Tag {
   mergedIntoId String?
   /// Famille de meme portee (et du meme espace) [D216] ; sans famille : "Autres".
   familyId     String?
+  /// Ordre dans sa famille, choisi comme celui des familles ; "Autres" reste alphabetique.
+  sortOrder    Int       @default(0)
   createdAt    DateTime  @default(now())
   deletedAt    DateTime?
 
@@ -522,7 +524,7 @@ model Tag {
 
   @@unique([spaceId, slug])
   @@index([scope, deletedAt])
-  @@index([familyId])
+  @@index([familyId, sortOrder])
 }
 
 /// Famille de tags (Saison, Categorie...) [D216] : globale (admin, traduite) ou

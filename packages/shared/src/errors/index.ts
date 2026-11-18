@@ -130,6 +130,10 @@ const DEFINITIONS = {
   RECIPE_018: { status: 404, message: "Famille de tags introuvable." },
   RECIPE_019: { status: 409, message: "Une famille porte déjà ce nom dans cet espace." },
   RECIPE_020: { status: 422, message: "L'ordre doit contenir chaque famille une seule fois." },
+  RECIPE_021: {
+    status: 422,
+    message: "L'ordre doit contenir chaque tag de la famille une seule fois.",
+  },
 
   // --- Planning ---
   MEAL_001: { status: 409, message: "Ce repas n'est pas planifié dans cet espace." },
@@ -199,6 +203,10 @@ const DEFINITIONS = {
     message: "Cet espace n'est pas en suppression ou ne peut plus être restauré.",
   },
   ADMIN_016: { status: 422, message: "L'ordre doit contenir chaque famille une seule fois." },
+  ADMIN_017: {
+    status: 422,
+    message: "L'ordre doit contenir chaque tag de la famille une seule fois.",
+  },
 } as const satisfies Record<string, ErrorDefinition>;
 
 export type ErrorCode = keyof typeof DEFINITIONS;
