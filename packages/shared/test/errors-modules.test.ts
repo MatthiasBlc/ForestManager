@@ -14,7 +14,7 @@ describe("errors", () => {
     for (const code of ERROR_CODES) {
       const info = ERRORS[code];
       expect(code).toMatch(
-        /^(AUTH|SPACE|MODULE|RECIPE|MEAL|NOTIF|CHANGELOG|EXPORT|STORAGE|ADMIN|VALIDATION|COMMON)_\d{3}$/
+        /^(AUTH|SPACE|MODULE|RECIPE|MEAL|SHOPPING|NOTIF|CHANGELOG|EXPORT|STORAGE|ADMIN|VALIDATION|COMMON)_\d{3}$/
       );
       expect(info.status).toBeGreaterThanOrEqual(400);
       expect(info.status).toBeLessThan(600);
@@ -29,6 +29,19 @@ describe("errors", () => {
     });
     const withDetails = errorBody("VALIDATION_001", [{ path: "name" }]);
     expect(apiErrorSchema.parse(withDetails)).toEqual(withDetails);
+  });
+
+  it("codes de la liste de courses [D228]", () => {
+    expect(ERROR_CODES.filter((code) => code.startsWith("SHOPPING_"))).toEqual([
+      "SHOPPING_001",
+      "SHOPPING_002",
+      "SHOPPING_003",
+      "SHOPPING_004",
+      "SHOPPING_005",
+      "SHOPPING_006",
+      "SHOPPING_007",
+      "SHOPPING_008",
+    ]);
   });
 
   it("reconnait les codes connus seulement", () => {

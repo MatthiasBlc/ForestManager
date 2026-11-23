@@ -11,4 +11,5 @@ export * from "./modules/index.ts";
 export * from "./schemas/index.ts";
 export * from "./recipes/index.ts";
 export * from "./units/index.ts";
+export * from "./shopping/index.ts";
 export * from "./notifications/index.ts";

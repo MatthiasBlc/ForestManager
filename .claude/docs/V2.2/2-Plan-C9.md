@@ -75,3 +75,7 @@ Maquette : `3-Maquette-C9.html`. Unites melangees sur une ligne, ordre manuel de
 ## Point tranche a l'ouverture (proprietaire au selecteur, 2026-11-23) [D231]
 
 Une section ne suivait qu'un rayon, alors que les groupes du proprietaire en couvrent plusieurs. Tranche : section favorite par produit et par espace (premier deplacement memorise, puis "Toujours ranger ici"), rayons de la plateforme pour les sections de depart seulement (supprimables), doublons additionnes par produit et par section, la case coche et toucher le produit ouvre le detail.
+
+## Ecarts au plan
+
+- Etape 1 (2026-11-23) : agregation et fusion dans `packages/shared/src/shopping`, schemas dans `schemas/shopping.ts`, codes `SHOPPING_001` a `008`. Les permissions vont dans le manifeste API (etape 2), comme le planning. Ordre des articles : `PUT /items/order` (`sectionId`, null pour "Autres", et ids) au lieu de `PUT /sections/:sectionId/order`. Coche hors ligne : `checkedChangedAt` envoye par le client, une coche plus ancienne que la derniere est ignoree. "Toujours ranger ici" : `rememberSection` sur `PATCH /items/:itemId`. L'apercu a une ligne par ingredient (cle : `ingredientIds` a l'ajout), la section est resolue cote serveur.
