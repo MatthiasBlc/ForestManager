@@ -58,6 +58,15 @@ export function partsOf(json: Prisma.JsonValue): { quantity: number; unitId: str
   });
 }
 
+/** Parts avec quantite (celles d'`addParts` le sont toujours) : forme de sortie de l'API. */
+export function quantified(
+  parts: readonly ShoppingPart[]
+): { quantity: number; unitId: string | null }[] {
+  return parts.flatMap((part) =>
+    part.quantity === null ? [] : [{ quantity: part.quantity, unitId: part.unitId }]
+  );
+}
+
 export function toItem(ctx: Context, row: ItemRow): ShoppingItem {
   const name = row.ingredient?.translations[0];
   return {

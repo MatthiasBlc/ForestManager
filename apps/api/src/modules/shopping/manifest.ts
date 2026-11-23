@@ -2,6 +2,10 @@
 // sections de l'espace, articles, ajout depuis le planning. Le statut au catalogue
 // appartient au super admin une fois la ligne creee (accorde a la demande, D33).
 import {
+  applyPlanBodySchema,
+  applyPlanResultSchema,
+  planPreviewBodySchema,
+  planPreviewSchema,
   createShoppingItemBodySchema,
   restoreShoppingItemsBodySchema,
   sectionOrderBodySchema,
@@ -36,6 +40,7 @@ import {
   restoreItems,
   updateItem,
 } from "./items.ts";
+import { applyFromPlan, previewFromPlan } from "./from-plan.ts";
 import { SHOPPING_PERMISSIONS } from "./permissions.ts";
 import {
   createSection,
@@ -189,6 +194,33 @@ function shoppingRouter(ctx: Context): Router {
     reply(res, listSchema(shoppingItemSchema), { data });
   });
 
+  // --- Depuis le planning [D228] ---
+
+  router.post(
+    "/from-plan/preview",
+    requirePermission("shopping.edit"),
+    handle({ body: planPreviewBodySchema }, async ({ body }, req, res) => {
+      const spaceId = spaceOf(req);
+      await ensureInitialized(ctx.db, spaceId);
+      const preview = await previewFromPlan(ctx, spaceId, currentUserId(req), body.from, body.to);
+      reply(res, planPreviewSchema, preview);
+    })
+  );
+
+  router.post(
+    "/from-plan",
+    requirePermission("shopping.edit"),
+    handle({ body: applyPlanBodySchema }, async ({ body }, req, res) => {
+      const spaceId = spaceOf(req);
+      await ensureInitialized(ctx.db, spaceId);
+      reply(
+        res,
+        applyPlanResultSchema,
+        await applyFromPlan(ctx, spaceId, currentUserId(req), body)
+      );
+    })
+  );
+
   return router;
 }
 
@@ -196,7 +228,9 @@ export const shoppingModule: ApiModule = {
   code: "shopping",
   catalog: { status: "COMING_SOON", sortOrder: 3 },
   permissions: SHOPPING_PERMISSIONS,
+  activityTypes: ["shopping.list.generated"],
   router: shoppingRouter,
+  requires: ["recipes.ingredients"],
   roleOverrides: async (db, spaceId) => ({
     "shopping.edit": await readEditRole(db, spaceId),
   }),
