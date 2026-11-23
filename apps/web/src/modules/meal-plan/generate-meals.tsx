@@ -1,32 +1,30 @@
-// F-GENERER, etape "Repas a generer" [D230] : les repas de la periode, pre-remplis par
-// la grille du profil [D114] ; decocher un repas l'exclut, un tag l'epingle, pour cette
-// generation seulement (le profil ne change pas). Verrouille, "Pas de repas" et, sans
-// "Remplacer", repas deja prevu : affiches, non cochables (la generation les laisse).
-import {
-  generationPreviewSchema,
-  type DatedGridCellBody,
-  type GenerationPreview,
-  type GenerationProfile,
-  type Meal,
-  type MealTime,
-} from "@fm/shared";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+// F-GENERER, accordeon "Choisir les repas" [D230] : la grille des repas de la periode,
+// pre-remplie par la grille du profil [D114]. Un toucher sur une case ouvre son choix
+// (genere, exclu, tag epingle), pour cette generation seulement : le profil ne change
+// pas. Verrouille, "Pas de repas" et, sans "Remplacer", repas deja prevu : affiches,
+// non modifiables (la generation les laisse). Telephone : un jour par ligne, Midi et
+// Soir en colonnes ; grand ecran : la disposition du planning, une grille par semaine.
+import type { DatedGridCellBody, GenerationProfile, Meal, MealTime } from "@fm/shared";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
 
 import { FormAlert } from "../../core/access/auth-layout.tsx";
-import { spaceQuery } from "../../core/session/queries.ts";
 import { errorMessage } from "../../i18n/index.ts";
-import { api } from "../../lib/api.ts";
-import { useWriteGuard } from "../../pwa/use-write-guard.ts";
-import { Button, IconButton } from "../../ui/button.tsx";
+import { useMediaQuery } from "../../lib/use-media-query.ts";
+import { Button } from "../../ui/button.tsx";
+import { RadioGroup } from "../../ui/controls.tsx";
+import { cx } from "../../ui/cx.ts";
 import { Icon } from "../../ui/icon.tsx";
-import { SheetFooter } from "../../ui/sheet.tsx";
-import { TagSheet } from "../recipes/components/tag-sheet.tsx";
-import { tagCatalogQuery } from "../recipes/queries.ts";
-import { addDays, weekdayOf, whenLabel } from "./dates.ts";
+import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
+import { addDays, shortDay, weekdayOf, whenLabel } from "./dates.ts";
+import { MEAL_TIME_LABELS } from "./format.ts";
 import { mealsQuery, profileQuery, settingsQuery } from "./queries.ts";
+import { TagChoice } from "./rule-sheet.tsx";
 
-/** Options choisies a l'etape precedente. */
+/** Feuille centree et elargie (meme seuil que `.fm-sheet`) : la disposition du planning. */
+const WIDE = "(min-width: 768px)";
+
+/** Options choisies dans F-GENERER. */
 export interface GenerateChoice {
   profileId: string;
   from: string;
@@ -34,19 +32,26 @@ export interface GenerateChoice {
   replace: boolean;
 }
 
+/** Ce que la grille envoie avec la generation. */
+export interface MealsSelection {
+  cells: DatedGridCellBody[];
+  count: number;
+}
+
 interface Row {
   date: string;
   mealTime: MealTime;
-  /** Repas laisse par la generation : affiche, non cochable. */
+  /** Repas laisse par la generation : affiche, non modifiable. */
   fixed: boolean;
-  /** Repas deja prevu, dit sous la date. */
+  /** Repas deja prevu (titre ou "Pas de repas"). */
   note: string | null;
+  locked: boolean;
 }
 
-export interface RowState {
-  on: boolean;
-  tag: { id: string; name: string } | null;
-}
+type CellState =
+  | { state: "GENERATED" }
+  | { state: "EXCLUDED" }
+  | { state: "PINNED"; tag: { id: string; name: string } };
 
 const cellKey = (date: string, mealTime: MealTime) => `${date}/${mealTime}`;
 
@@ -61,13 +66,12 @@ function rowsOf(
     for (const mealTime of mealTimes) {
       const meal = byCell.get(cellKey(date, mealTime));
       const skipped = meal?.kind === "SKIPPED";
-      const fixed = !!meal && (meal.locked || skipped || !choice.replace);
-      const title = skipped ? "Pas de repas" : (meal?.title ?? null);
       rows.push({
         date,
         mealTime,
-        fixed,
-        note: title ? (meal?.locked ? `${title}, verrouillé` : title) : null,
+        fixed: !!meal && (meal.locked || skipped || !choice.replace),
+        note: skipped ? "Pas de repas" : (meal?.title ?? null),
+        locked: !!meal?.locked,
       });
     }
   }
@@ -75,217 +79,323 @@ function rowsOf(
 }
 
 /** Etat de depart d'une case : celui de la grille du profil pour son jour. */
-function initialState(rows: readonly Row[], profile: GenerationProfile): Map<string, RowState> {
+function initialState(rows: readonly Row[], profile: GenerationProfile): Map<string, CellState> {
   return new Map(
-    rows.map((row) => {
+    rows.map((row): [string, CellState] => {
       const cell = profile.grid.find(
         (c) => c.weekday === weekdayOf(row.date) && c.mealTime === row.mealTime
       );
-      const tag =
-        cell?.state === "PINNED" && cell.tag.status === "ACTIVE"
-          ? { id: cell.tag.id, name: cell.tag.name }
-          : null;
-      return [cellKey(row.date, row.mealTime), { on: cell?.state !== "EXCLUDED", tag }];
+      const state: CellState =
+        cell?.state === "EXCLUDED"
+          ? { state: "EXCLUDED" }
+          : cell?.state === "PINNED" && cell.tag.status === "ACTIVE"
+            ? { state: "PINNED", tag: { id: cell.tag.id, name: cell.tag.name } }
+            : { state: "GENERATED" };
+      return [cellKey(row.date, row.mealTime), state];
     })
   );
 }
 
-/** Corps de la generation : les cases decochees et epinglees des repas generables. */
-function cellsOf(rows: readonly Row[], state: ReadonlyMap<string, RowState>): DatedGridCellBody[] {
-  return rows.flatMap((row): DatedGridCellBody[] => {
-    const current = state.get(cellKey(row.date, row.mealTime));
-    if (row.fixed || !current) return [];
+function selectionOf(rows: readonly Row[], states: ReadonlyMap<string, CellState>): MealsSelection {
+  const cells: DatedGridCellBody[] = [];
+  let count = 0;
+  for (const row of rows) {
+    const current = states.get(cellKey(row.date, row.mealTime));
+    if (row.fixed || !current) continue;
     const at = { date: row.date, mealTime: row.mealTime };
-    if (!current.on) return [{ ...at, state: "EXCLUDED" }];
-    return current.tag ? [{ ...at, state: "PINNED", tagId: current.tag.id }] : [];
-  });
+    if (current.state === "EXCLUDED") {
+      cells.push({ ...at, state: "EXCLUDED" });
+      continue;
+    }
+    count++;
+    if (current.state === "PINNED") cells.push({ ...at, state: "PINNED", tagId: current.tag.id });
+  }
+  return { cells, count };
 }
 
-/** Choix des repas a generer, gardes au retour depuis l'apercu. */
-export type MealChoices = ReadonlyMap<string, RowState>;
+function status(row: Row, current: CellState | undefined): string {
+  if (row.fixed) return [row.note, row.locked ? "verrouillé" : null].filter(Boolean).join(", ");
+  if (current?.state === "EXCLUDED") return "exclu";
+  if (current?.state === "PINNED") return `tag ${current.tag.name} épinglé`;
+  return "généré";
+}
 
-function MealsForm({
+function CellButton({
+  row,
+  current,
+  onOpen,
+}: {
+  row: Row;
+  current: CellState | undefined;
+  onOpen: () => void;
+}) {
+  const state = row.fixed ? null : (current?.state ?? "GENERATED");
+  return (
+    <button
+      type="button"
+      disabled={row.fixed}
+      aria-label={`${whenLabel(row.date, row.mealTime)} : ${status(row, current)}`}
+      className={cx(
+        "flex h-11 w-full items-center justify-center gap-1 overflow-hidden rounded-md border px-1 text-xs leading-tight",
+        state === null && "cursor-default border-transparent bg-surface text-ink-muted",
+        state === "GENERATED" && "border-line bg-surface-raised",
+        state === "EXCLUDED" && "border-dashed border-line-strong bg-surface text-ink-muted",
+        state === "PINNED" && "border-accent bg-accent-soft text-accent-text"
+      )}
+      onClick={onOpen}
+    >
+      {row.fixed && row.locked ? <Icon name="lock" size={12} /> : null}
+      <span aria-hidden="true" className="truncate">
+        {row.fixed
+          ? (row.note ?? "")
+          : current?.state === "EXCLUDED"
+            ? "—"
+            : current?.state === "PINNED"
+              ? current.tag.name
+              : ""}
+      </span>
+    </button>
+  );
+}
+
+/** Choix d'une case : genere, exclu ou tag epingle (comme la grille du profil). */
+function CellForm({
   spaceId,
-  choice,
-  rows,
-  profile,
-  saved,
-  onBack,
-  onPreview,
+  current,
+  onDone,
 }: {
   spaceId: string;
-  choice: GenerateChoice;
-  rows: Row[];
-  profile: GenerationProfile;
-  saved: MealChoices | null;
-  onBack: () => void;
-  onPreview: (preview: GenerationPreview, choices: MealChoices) => void;
+  current: CellState;
+  onDone: (next: CellState) => void;
 }) {
-  const guard = useWriteGuard();
-  const catalog = useQuery(tagCatalogQuery(spaceId));
-  const space = useQuery(spaceQuery(spaceId));
-  const [state, setState] = useState<MealChoices>(() => saved ?? initialState(rows, profile));
-  const [picking, setPicking] = useState<Row | null>(null);
-  const update = (row: Row, change: Partial<RowState>) => {
-    setState((current) => {
-      const next = new Map(current);
-      const key = cellKey(row.date, row.mealTime);
-      const before = next.get(key) ?? { on: true, tag: null };
-      next.set(key, { ...before, ...change });
-      return next;
-    });
-  };
-  const run = useMutation({
-    mutationFn: () =>
-      api.post(
-        `/spaces/${spaceId}/meal-plan/generate`,
-        { ...choice, cells: cellsOf(rows, state) },
-        generationPreviewSchema
-      ),
-    onSuccess: (preview) => {
-      onPreview(preview, state);
-    },
-  });
-  const count = rows.filter(
-    (row) => !row.fixed && state.get(cellKey(row.date, row.mealTime))?.on
-  ).length;
-  const pickedTag = picking ? state.get(cellKey(picking.date, picking.mealTime))?.tag : null;
-
+  const [state, setState] = useState<CellState["state"]>(current.state);
+  const [tag, setTag] = useState(current.state === "PINNED" ? current.tag : null);
+  const [problem, setProblem] = useState<string>();
   return (
     <div className="fm-stack">
-      <div className="flex items-center gap-2">
-        <IconButton icon="arrow-left" label="Retour" onClick={onBack} />
-        <small className="text-ink-muted">
-          Décoche un repas pour le laisser, épingle un tag pour cette génération seulement.
-        </small>
-      </div>
-      <FormAlert message={run.isError ? errorMessage(run.error) : undefined} />
-      <p role="status" className="m-0 text-sm font-semibold">
-        {count === 0 ? "Aucun repas à générer." : `${String(count)} repas à générer`}
-      </p>
-      <ul className="fm-pick-list">
-        {rows.map((row) => {
-          const when = whenLabel(row.date, row.mealTime);
-          const current = state.get(cellKey(row.date, row.mealTime));
-          const on = !row.fixed && !!current?.on;
-          return (
-            <li key={cellKey(row.date, row.mealTime)} className="flex items-center gap-2">
-              <label className="fm-pick min-w-0 flex-1">
-                <input
-                  type="checkbox"
-                  checked={on}
-                  disabled={row.fixed}
-                  onChange={(event) => {
-                    update(row, { on: event.target.checked });
-                  }}
-                />
-                <span className="fm-pick-text">
-                  <b>{when}</b> {row.note ? <small>{row.note}</small> : null}
-                </span>
-              </label>
-              {row.fixed ? null : (
-                <button
-                  type="button"
-                  className="fm-chip shrink-0"
-                  disabled={!on}
-                  aria-pressed={!!current?.tag}
-                  aria-label={
-                    current?.tag
-                      ? `${when} : tag ${current.tag.name}, changer`
-                      : `${when} : épingler un tag`
-                  }
-                  onClick={() => {
-                    setPicking(row);
-                  }}
-                >
-                  <Icon name="tag" size={16} />
-                  <span className="max-w-28 truncate">{current?.tag?.name ?? "Tag"}</span>
-                </button>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-      <TagSheet
-        open={picking !== null}
-        onClose={() => {
-          setPicking(null);
-        }}
-        title="Choisir un tag"
-        mode="single"
-        catalog={catalog.data}
-        spaceName={space.data?.name ?? ""}
-        selected={pickedTag ? [pickedTag.id] : []}
-        onChange={([id]) => {
-          const tag = catalog.data?.tags.find((t) => t.id === id);
-          if (picking && tag) update(picking, { tag: { id: tag.id, name: tag.name } });
-        }}
-        footer={
-          pickedTag ? (
-            <SheetFooter>
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  if (picking) update(picking, { tag: null });
-                  setPicking(null);
-                }}
-              >
-                Retirer le tag
-              </Button>
-            </SheetFooter>
-          ) : undefined
-        }
+      <FormAlert message={problem} />
+      <RadioGroup
+        label="Ce repas"
+        options={[
+          { value: "GENERATED", label: "Généré", hint: "La génération y place un repas." },
+          { value: "EXCLUDED", label: "Exclu", hint: "Pas de génération pour ce repas." },
+          {
+            value: "PINNED",
+            label: "Épingler un tag",
+            hint: "Seulement des recettes de ce tag.",
+          },
+        ]}
+        value={state}
+        onChange={setState}
       />
+      {state === "PINNED" ? (
+        <div className="flex flex-col gap-2">
+          <span className="fm-label">Tag épinglé</span>
+          <TagChoice
+            spaceId={spaceId}
+            label="Tag épinglé"
+            value={tag?.id ?? null}
+            onChange={(id, name) => {
+              setTag({ id, name });
+            }}
+          />
+        </div>
+      ) : null}
       <SheetFooter>
         <Button
           variant="primary"
           block
-          icon="sparkles"
-          disabled={count === 0 || run.isPending || guard.disabled}
-          aria-describedby={guard["aria-describedby"]}
           onClick={() => {
-            run.mutate();
+            if (state !== "PINNED") {
+              onDone({ state });
+              return;
+            }
+            if (!tag) {
+              setProblem("Choisis le tag à épingler.");
+              return;
+            }
+            onDone({ state, tag });
           }}
         >
-          Générer
+          OK
         </Button>
       </SheetFooter>
     </div>
   );
 }
 
-/** Etape "Repas a generer" : charge reglages, profil et repas de la periode. */
-export function GenerateMeals({
+/** Semaines de la periode, pour la disposition du planning. */
+function weeksOf(dates: readonly string[]): string[][] {
+  const weeks: string[][] = [];
+  for (let i = 0; i < dates.length; i += 7) weeks.push(dates.slice(i, i + 7));
+  return weeks;
+}
+
+function DayHeader({ date }: { date: string }) {
+  const { day, num } = shortDay(date);
+  return (
+    <>
+      {day} {num}
+    </>
+  );
+}
+
+function Grid({
+  spaceId,
+  rows,
+  mealTimes,
+  profile,
+  onChange,
+}: {
+  spaceId: string;
+  rows: Row[];
+  mealTimes: readonly MealTime[];
+  profile: GenerationProfile;
+  onChange: (selection: MealsSelection) => void;
+}) {
+  const wide = useMediaQuery(WIDE);
+  const [states, setStates] = useState(() => initialState(rows, profile));
+  const [open, setOpen] = useState<Row | null>(null);
+  useEffect(() => {
+    onChange(selectionOf(rows, states));
+  }, [rows, states, onChange]);
+  const byCell = new Map(rows.map((row) => [cellKey(row.date, row.mealTime), row]));
+  const dates = [...new Set(rows.map((row) => row.date))];
+  const cell = (date: string, mealTime: MealTime) => {
+    const row = byCell.get(cellKey(date, mealTime));
+    if (!row) return null;
+    return (
+      <CellButton
+        row={row}
+        current={states.get(cellKey(date, mealTime))}
+        onOpen={() => {
+          setOpen(row);
+        }}
+      />
+    );
+  };
+  const table = "w-full table-fixed border-separate border-spacing-1";
+  const head = "text-xs font-semibold text-ink-muted";
+
+  return (
+    <>
+      {wide ? (
+        weeksOf(dates).map((week) => (
+          <table key={week[0]} className={table}>
+            <thead>
+              <tr>
+                <th scope="col" className="w-12">
+                  <span className="sr-only">Repas</span>
+                </th>
+                {week.map((date) => (
+                  <th key={date} scope="col" className={head}>
+                    <DayHeader date={date} />
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {mealTimes.map((mealTime) => (
+                <tr key={mealTime}>
+                  <th scope="row" className={cx(head, "text-left")}>
+                    {MEAL_TIME_LABELS[mealTime]}
+                  </th>
+                  {week.map((date) => (
+                    <td key={date} className="p-0">
+                      {cell(date, mealTime)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ))
+      ) : (
+        <table className={table}>
+          <thead>
+            <tr>
+              <th scope="col" className="w-16">
+                <span className="sr-only">Jour</span>
+              </th>
+              {mealTimes.map((mealTime) => (
+                <th key={mealTime} scope="col" className={head}>
+                  {MEAL_TIME_LABELS[mealTime]}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {dates.map((date) => (
+              <tr key={date}>
+                <th scope="row" className={cx(head, "text-left")}>
+                  <DayHeader date={date} />
+                </th>
+                {mealTimes.map((mealTime) => (
+                  <td key={mealTime} className="p-0">
+                    {cell(date, mealTime)}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+      <p className="m-0 text-xs text-ink-muted">
+        Touche un repas pour l'exclure ou y épingler un tag, pour cette génération seulement. —
+        exclu · nom d'un tag : tag épinglé.
+      </p>
+      <Sheet
+        open={open !== null}
+        onClose={() => {
+          setOpen(null);
+        }}
+        title={open ? whenLabel(open.date, open.mealTime) : ""}
+      >
+        {open ? (
+          <CellForm
+            spaceId={spaceId}
+            current={states.get(cellKey(open.date, open.mealTime)) ?? { state: "GENERATED" }}
+            onDone={(next) => {
+              setStates((current) => new Map(current).set(cellKey(open.date, open.mealTime), next));
+              setOpen(null);
+            }}
+          />
+        ) : null}
+      </Sheet>
+    </>
+  );
+}
+
+/** Grille des repas a generer : charge reglages, profil et repas de la periode. */
+export function MealsChoice({
   spaceId,
   choice,
-  saved,
-  onBack,
-  onPreview,
+  onChange,
 }: {
   spaceId: string;
   choice: GenerateChoice;
-  /** Choix deja faits pour ces options (retour depuis l'apercu). */
-  saved: MealChoices | null;
-  onBack: () => void;
-  onPreview: (preview: GenerationPreview, choices: MealChoices) => void;
+  onChange: (selection: MealsSelection) => void;
 }) {
   const settings = useQuery(settingsQuery(spaceId));
   const profile = useQuery(profileQuery(spaceId, choice.profileId));
   const meals = useQuery(mealsQuery(spaceId, choice.from, choice.to));
   const error = settings.error ?? profile.error ?? meals.error;
+  const rows = useMemo(
+    () =>
+      settings.data && meals.data ? rowsOf(choice, settings.data.mealTimes, meals.data) : null,
+    [settings.data, meals.data, choice]
+  );
   if (error) return <FormAlert message={errorMessage(error)} />;
-  if (!settings.data || !profile.data || !meals.data) {
+  if (!settings.data || !profile.data || !rows) {
     return <p className="m-0 text-sm text-ink-muted">Chargement…</p>;
   }
   return (
-    <MealsForm
+    <Grid
       spaceId={spaceId}
-      choice={choice}
-      rows={rowsOf(choice, settings.data.mealTimes, meals.data)}
+      rows={rows}
+      mealTimes={settings.data.mealTimes}
       profile={profile.data}
-      saved={saved}
-      onBack={onBack}
-      onPreview={onPreview}
+      onChange={onChange}
     />
   );
 }

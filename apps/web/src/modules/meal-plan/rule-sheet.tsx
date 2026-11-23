@@ -49,7 +49,8 @@ export function TagChoice({
 }: {
   spaceId: string;
   value: string | null;
-  onChange: (id: string) => void;
+  /** Le nom suit l'identifiant (affichage sans relire le catalogue). */
+  onChange: (id: string, name: string) => void;
   label?: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -85,7 +86,7 @@ export function TagChoice({
         spaceName={space.data?.name ?? ""}
         selected={value ? [value] : []}
         onChange={([id]) => {
-          if (id) onChange(id);
+          if (id) onChange(id, catalog.data?.tags.find((tag) => tag.id === id)?.name ?? "");
         }}
       />
     </div>

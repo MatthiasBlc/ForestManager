@@ -1,16 +1,17 @@
-// F-GENERER et son rapport [D110, D113, D184] : choisir le profil, la periode et
-// s'il faut remplacer les repas non verrouilles, puis les repas a generer [D230] ;
-// l'apercu ne change rien tant
-// qu'on ne garde pas ce planning ; les cases vides sont expliquees (en mode
+// F-GENERER et son rapport [D110, D113, D184] : choisir le profil, la periode,
+// s'il faut remplacer les repas non verrouilles et, au besoin, les repas a generer
+// (accordeon facultatif, D230) ; l'apercu ne change rien tant qu'on ne garde pas
+// ce planning ; les cases vides sont expliquees (en mode
 // "Remplacer", le repas actuel d'une case sans proposition reste, et le rapport
 // le dit), et un repas modifie entre-temps par un membre n'est pas ecrase.
 import {
   applyGenerationResultSchema,
+  generationPreviewSchema,
   type ApplyGenerationBody,
   type GenerationPreview,
 } from "@fm/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Link } from "react-router";
 
 import { FormAlert } from "../../core/access/auth-layout.tsx";
@@ -18,12 +19,13 @@ import { errorMessage } from "../../i18n/index.ts";
 import { api } from "../../lib/api.ts";
 import { useWriteGuard } from "../../pwa/use-write-guard.ts";
 import { Button } from "../../ui/button.tsx";
+import { Icon } from "../../ui/icon.tsx";
 import { RadioGroup, SegmentedControl, Switch } from "../../ui/controls.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { addDays, periodLabel, todayIso, whenLabel } from "./dates.ts";
 import { reasonText, skippedText, warningText } from "./format.ts";
-import { GenerateMeals, type GenerateChoice, type MealChoices } from "./generate-meals.tsx";
+import { MealsChoice, type MealsSelection } from "./generate-meals.tsx";
 import { mealsKey, profilesQuery } from "./queries.ts";
 
 type Span = "this" | "next" | "both";
@@ -55,19 +57,23 @@ function appliedMessage(added: number, replaced: number, conflicts: number): str
 function Options({
   spaceId,
   weekStart,
-  initial,
-  onNext,
+  onPreview,
+  onExpand,
 }: {
   spaceId: string;
   weekStart: string;
-  /** Choix deja faits (retour depuis les repas a generer). */
-  initial: { profileId: string; span: Span; replace: boolean } | null;
-  onNext: (choice: GenerateChoice, span: Span) => void;
+  onPreview: (preview: GenerationPreview) => void;
+  /** Accordeon ouvert : la feuille s'elargit sur grand ecran. */
+  onExpand: (expanded: boolean) => void;
 }) {
+  const guard = useWriteGuard();
   const profiles = useQuery(profilesQuery(spaceId));
-  const [profileId, setProfileId] = useState<string | undefined>(initial?.profileId);
-  const [span, setSpan] = useState<Span>(initial?.span ?? "this");
-  const [replace, setReplace] = useState(initial?.replace ?? false);
+  const [profileId, setProfileId] = useState<string>();
+  const [span, setSpan] = useState<Span>("this");
+  const [replace, setReplace] = useState(false);
+  // "Choisir les repas" [D230] : facultatif, ferme ; la grille n'existe qu'une fois ouverte.
+  const [open, setOpen] = useState(false);
+  const [selection, setSelection] = useState<MealsSelection | null>(null);
   const chosen = profileId ?? profiles.data?.find((p) => p.isDefault)?.id;
   // Les jours passes ne sont jamais regeneres : l'historique et les compteurs
   // "planifiee N fois" restent vrais (D8).
@@ -76,10 +82,42 @@ function Options({
   const from = start < today ? today : start;
   const to = span === "this" ? addDays(weekStart, 6) : addDays(weekStart, 13);
   const past = from > to;
+  const choice = useMemo(
+    () => (chosen ? { profileId: chosen, from, to, replace } : null),
+    [chosen, from, to, replace]
+  );
+  // D'autres options : d'autres repas, la grille repart de celle du profil.
+  const gridKey = choice ? `${choice.profileId}/${from}/${to}/${String(replace)}` : "";
+  const [selectionKey, setSelectionKey] = useState(gridKey);
+  const current = selectionKey === gridKey ? selection : null;
+  const onSelection = useCallback(
+    (next: MealsSelection) => {
+      setSelection(next);
+      setSelectionKey(gridKey);
+    },
+    [gridKey]
+  );
+  const run = useMutation({
+    mutationFn: () =>
+      api.post(
+        `/spaces/${spaceId}/meal-plan/generate`,
+        { ...choice, ...(current ? { cells: current.cells } : {}) },
+        generationPreviewSchema
+      ),
+    onSuccess: onPreview,
+  });
 
   return (
     <div className="fm-stack">
-      <FormAlert message={profiles.isError ? errorMessage(profiles.error) : undefined} />
+      <FormAlert
+        message={
+          run.isError
+            ? errorMessage(run.error)
+            : profiles.isError
+              ? errorMessage(profiles.error)
+              : undefined
+        }
+      />
       <div className="flex flex-col gap-1">
         <span className="fm-label">Profil de génération</span>
         {profiles.data ? (
@@ -123,16 +161,51 @@ function Options({
         checked={replace}
         onChange={setReplace}
       />
+      {choice && !past ? (
+        <div className="fm-stack gap-2">
+          <button
+            type="button"
+            className="fm-option w-full text-left"
+            aria-expanded={open}
+            aria-controls="generate-meals"
+            onClick={() => {
+              setOpen(!open);
+              onExpand(!open);
+            }}
+          >
+            <span className="fm-option-icon">
+              <Icon name="calendar" />
+            </span>
+            <span className="fm-option-text">
+              <b>Choisir les repas</b>
+              <small>
+                {current
+                  ? `${String(current.count)} repas à générer`
+                  : "Exclure un repas ou y épingler un tag"}
+              </small>
+            </span>
+            <Icon name={open ? "chevron-down" : "chevron-right"} className="fm-option-go" />
+          </button>
+          {/* Une fois ouverte, la grille reste montee (repliee) : ses choix comptent. */}
+          {open || current ? (
+            <div id="generate-meals" className="fm-stack gap-2" hidden={!open}>
+              <MealsChoice key={gridKey} spaceId={spaceId} choice={choice} onChange={onSelection} />
+            </div>
+          ) : null}
+        </div>
+      ) : null}
       <SheetFooter>
         <Button
           variant="primary"
           block
-          disabled={!chosen || past}
+          icon="sparkles"
+          disabled={!chosen || past || current?.count === 0 || run.isPending || guard.disabled}
+          aria-describedby={guard["aria-describedby"]}
           onClick={() => {
-            if (chosen) onNext({ profileId: chosen, from, to, replace }, span);
+            run.mutate();
           }}
         >
-          Suivant
+          Générer
         </Button>
       </SheetFooter>
     </div>
@@ -286,75 +359,43 @@ export function GenerateSheet({
   /** Premier jour de la semaine affichee. */
   weekStart: string;
 }) {
-  const [choice, setChoice] = useState<{ value: GenerateChoice; span: Span } | null>(null);
-  const [atMeals, setAtMeals] = useState(false);
-  const [mealChoices, setMealChoices] = useState<MealChoices | null>(null);
   const [preview, setPreview] = useState<GenerationPreview | null>(null);
+  const [expanded, setExpanded] = useState(false);
   const close = () => {
     setPreview(null);
-    setChoice(null);
-    setMealChoices(null);
-    setAtMeals(false);
+    setExpanded(false);
     onClose();
   };
-  const title = preview
-    ? "Planning proposé"
-    : atMeals && choice
-      ? "Repas à générer"
-      : "Générer le planning";
-  let content;
-  if (preview) {
-    content = (
-      <Report
-        spaceId={spaceId}
-        preview={preview}
-        onBack={() => {
-          setPreview(null);
-        }}
-        onDone={close}
-      />
-    );
-  } else if (atMeals && choice) {
-    content = (
-      <GenerateMeals
-        spaceId={spaceId}
-        choice={choice.value}
-        saved={mealChoices}
-        onBack={() => {
-          setAtMeals(false);
-        }}
-        onPreview={(next, choices) => {
-          setMealChoices(choices);
-          setPreview(next);
-        }}
-      />
-    );
-  } else {
-    content = (
-      <Options
-        spaceId={spaceId}
-        weekStart={weekStart}
-        initial={
-          choice
-            ? {
-                profileId: choice.value.profileId,
-                span: choice.span,
-                replace: choice.value.replace,
-              }
-            : null
-        }
-        onNext={(value, span) => {
-          // D'autres options : autres repas, les choix repartent de la grille du profil.
-          setMealChoices(null);
-          setChoice({ value, span });
-          setAtMeals(true);
-        }}
-      />
-    );
-  }
   return (
-    <Sheet open={open} onClose={close} title={title}>
-      {open ? content : null}
+    <Sheet
+      open={open}
+      onClose={close}
+      title={preview ? "Planning proposé" : "Générer le planning"}
+      wide={expanded && !preview}
+    >
+      {open ? (
+        <>
+          {preview ? (
+            <Report
+              spaceId={spaceId}
+              preview={preview}
+              onBack={() => {
+                setPreview(null);
+              }}
+              onDone={close}
+            />
+          ) : null}
+          {/* Restent montees pendant l'apercu : "Retour" retrouve les choix faits. */}
+          <div hidden={preview !== null}>
+            <Options
+              spaceId={spaceId}
+              weekStart={weekStart}
+              onPreview={setPreview}
+              onExpand={setExpanded}
+            />
+          </div>
+        </>
+      ) : null}
     </Sheet>
   );
 }

@@ -565,6 +565,9 @@ textarea.fm-input {
     border-radius: var(--radius-lg);
     animation: fm-fade 0.2s ease-out;
   }
+  .fm-sheet-wide {
+    width: min(880px, calc(100% - 48px));
+  }
   .fm-sheet-grip {
     display: none;
   }
