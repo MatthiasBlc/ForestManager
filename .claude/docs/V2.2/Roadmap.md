@@ -31,7 +31,7 @@ Integration et mise en ligne :
 
 Depuis `master` dans `hotfix/<sujet>`, puis fusionnes dans le lot en cours.
 
-### `v2.2.1` - Patch planning (branche `hotfix/planning`) [D230]
+### `v2.2.1` - Patch planning (en prod le 2026-11-23) [D230]
 
 Retours d'usage du 2026-11-23, choix au selecteur ; plan `4-Plan-Patch-Planning.md`. A faire avant C9.
 
@@ -44,8 +44,8 @@ Retours d'usage du 2026-11-23, choix au selecteur ; plan `4-Plan-Patch-Planning.
 - [x] Etape 5 : docs (Plan-Tests, Parcours, ecarts au plan) ; verification complete (1815 tests, 25 E2E, lint, typecheck) et revue a 390 px dans Chrome sur la dev (compte de test) ; changelog : brouillon genere par la CI depuis les commits `fix:`, a reformuler a la mise en prod
 - [x] CI de la PR #39 : `verify` en echec sur `npm audit` (avis GHSA-7589-6fvf-x4pw, ReDoS dans `effect` <= 3.22.0, tire par `@prisma/config` 7.10.1, outil en ligne de commande seulement) ; `overrides` `@prisma/config` -> `effect` 3.22.4 sur `hotfix/planning` (2026-11-23), tests et E2E au vert
 - [x] Preprod verifiee sur ordinateur (2026-11-23) : gestes, portions, raccourcis, generation ; le proprietaire demande l'accordeon facultatif et la grille (D230 complete), fait sur `hotfix/planning` avant la prod
-- [ ] PR `hotfix/planning` -> `Developement` (accordeon et grille), puis revoir en preprod, puis `Developement` -> `master` (preprod, verification pas a pas), fusion (prod, tag `v2.2.1`), changelog
-- [ ] `Developement` fusionne dans `lot/v2.3.0` ; suppression de `hotfix/planning`
+- [x] PR #41 `hotfix/planning` -> `Developement` (accordeon et grille), preprod revue sur ordinateur ; PR #39 `Developement` -> `master` fusionnee : prod `v2.2.1` taguee (2026-11-23), controlee dans Chrome (lecture seule) ; changelog publie (2 nouveautes, 2 ameliorations, visible sans connexion, notification a tous)
+- [x] `Developement` fusionne dans `lot/v2.3.0` (lot = `Developement` = `1780d9a`) ; `hotfix/planning` supprimee ; actions infra laissees en l'etat par le proprietaire
 
 ## `v2.3.0` - Liste de courses (branche `lot/v2.3.0`)
 

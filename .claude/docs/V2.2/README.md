@@ -12,8 +12,8 @@ Chantier ouvert le 2026-11-18, apres la mise en prod de la `v2.1.0` : module lis
 
 ## Etat
 
-- En prod : `v2.1.0` (2026-11-18). Historique du chantier precedent : `../Archive/Rework-V2/` (bilan de mise en prod V2 : `31-Mise-en-prod.md`, recette de la v2.1.0 : `33-Recette-v2.1.md`).
-- Fait, pas encore deploye : import par texte colle [D222] ; ordre des tags dans une famille [D223] (migration `tag_order`) ; geste retour d'Android [D224]. Apres le deploy en prod : regler l'ordre de Saison et Palier a la main.
+- En prod : `v2.2.1` (2026-11-23, patch planning [D230]). Historique du chantier precedent : `../Archive/Rework-V2/`.
+- En cours : lot `v2.3.0` (liste de courses, C9), branche `lot/v2.3.0` a jour de la prod.
 
 ## Reprise
 
@@ -30,3 +30,4 @@ Chantier ouvert le 2026-11-18, apres la mise en prod de la `v2.1.0` : module lis
 - 2026-11-18 (fin du lot) : changelog `v2.2.0` publie (visible sans connexion, notification a tous), ordre de Saison et Palier regle en prod. Lot `v2.2.0` termine. Reprise : `/clear`, puis C9 etape 1 de `2-Plan-C9.md` (shared), en TDD.
 - 2026-11-18 (flux git) : flux par lot et hotfix decide [D229], procedure dans `../Reference/Architecture.md` S13. Branche `lot/v2.3.0` ouverte et poussee. Reprise : C9 etape 1 de `2-Plan-C9.md` (shared), en TDD, sur `lot/v2.3.0`.
 - 2026-11-23 (patch planning) : retours d'usage du proprietaire etudies, choix au selecteur [D230] (droits de generation : D58 garde) ; plan `4-Plan-Patch-Planning.md`, hotfix `v2.2.1` avant C9. Branche `hotfix/planning` ouverte (code de `v2.2.0`, non poussee). Etapes 1 a 5 faites et committees (verification complete au vert, revue dans Chrome sur la dev). Reprise : le proprietaire pousse `hotfix/planning`, PR vers `Developement`, puis preprod (Roadmap, section `v2.2.1`).
+- 2026-11-23 (prod `v2.2.1`) : patch planning en prod et tague, changelog publie ; accordeon "Choisir les repas" en grille ajoute apres la revue preprod ; faille `effect` (audit) corrigee par un `overrides`. `Developement` fusionne dans `lot/v2.3.0`, `hotfix/planning` supprimee. Reprise : `/clear`, puis C9 etape 1 de `2-Plan-C9.md` (shared), en TDD, sur `lot/v2.3.0`.
