@@ -107,7 +107,7 @@ Identifiants `F-<module>-<n>` pour que roadmap et tests s'y referent.
 
 Contenu :
 
-- F-REC-1 Titre, photo, portions (avec mise a l'echelle des quantites), temps (preparation, cuisson, repos, total calcule), ingredients (quantite, unite, ingredient), etapes ordonnees, notes, source (URL).
+- F-REC-1 Titre, photo, portions (avec mise a l'echelle des quantites), temps (preparation, cuisson, repos, total calcule), ingredients (quantite, unite, ingredient, precision facultative, case "Facultatif" [D232]), etapes ordonnees, notes, source (URL).
 - F-REC-2 **Blocs** : une recette est une suite de blocs, soit locaux (titre optionnel, ingredients, etapes : "Sauce", "Assemblage"), soit **liens vers une autre recette** avec la quantite utilisee ("Sauce teriyaki : 150 ml"). Chaque recette a un **rendement** (portions par defaut, ou ml, pieces...). Une recette simple = 1 bloc local implicite ; lien **vivant** : un plat montre toujours la version actuelle de sa sous-recette ; pas de boucle, 3 niveaux maximum [D24]. Pour lier une recette, les bases sont proposees d'abord et la quantite se saisit dans l'unite de rendement de la sous-recette [D107].
 - F-REC-3 Tags.
 

@@ -939,7 +939,7 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
   - Une ligne "ETAPE N" seule ouvre une etape faite des lignes qui suivent (une etape par bloc), et fait passer aux etapes meme sans titre de section reconnu. Les etapes ecrites "Etape 3 : texte" ou "1. texte" restent une par ligne.
   - Titres d'etapes reconnus en plus : "Process", "Procede", "Deroulement".
   - Ignores : une duree sans valeur ("Repos: --", "Cuisson : aucun"), un intertitre sans quantite finissant par ":" dans la section Ingredients, une ligne qui n'est qu'une date et une heure ("— 03/04/2026 12:23").
-  - "(facultatif)" / "(optionnel)" sort du nom et passe en note : le flag `optional` n'est ni affiche ni editable dans l'appli, l'activer a l'import le rendrait invisible et irreversible.
+  - "(facultatif)" / "(optionnel)" sort du nom et passe en note : le flag `optional` n'est ni affiche ni editable dans l'appli, l'activer a l'import le rendrait invisible et irreversible. Revu par D232 : le flag devient visible et editable, l'import le regle.
   - Non retenu : "2 a 4 gousses d'ail selon le gout" reste lu "a gout" (le proprietaire ne l'a pas pris).
 
 ### D223 - Ordre des tags dans une famille, choisi a la main - VALIDEE (2026-11-18, demande du proprietaire)
@@ -1033,3 +1033,13 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
   - **Doublons** : additionnes par produit et par section. Une quantite ajoutee (planning ou a la main) va sur la ligne non cochee du produit dans sa section favorite, ou la cree. Une ligne deplacee ailleurs reste a part : poivrons au primeur et poivrons dans Alimentaire sur deux lignes. Le reste de D228 tient sur une meme ligne (unites melangees, parts jointes).
   - **Gestes** : la case coche l'article ; toucher le produit ouvre son detail (quantites, recettes "pour : ...", section, "Toujours ranger ici", Monter / Descendre, Retirer) ; appui long puis glisser deplace. Le bouton "..." de chaque ligne disparait.
 - **Ecarte** : une section qui couvre plusieurs rayons, avec des puces de rayon a deplacer (lien durable superflu, puisque chaque espace range ses produits par favorite) ; choisir les rayons de chaque section a l'activation ; memoriser chaque deplacement (un ecart d'une semaine changerait la favorite) ou n'en memoriser aucun (un geste de plus pour la mise en place) ; une ligne par produit quelle que soit la section ; jamais de fusion (doublons a chaque generation) ; toucher la ligne pour cocher (D228 : un toucher pour lire le detail coche par erreur).
+
+### D232 - Editeur de recette : precision et facultatif d'une ligne d'ingredient - VALIDEE (2026-11-23, demande du proprietaire, choix au selecteur) - AMENDE D222
+
+- **Constat** : la precision d'une ligne ("ou bouillon de legumes", "une poignee") ne se saisit que si la ligne en a deja une (import, API) ; le flag `optional` est garde a l'enregistrement mais ni affiche ni editable, et seule la liste de courses s'en sert (ingredient facultatif non precoche dans "Depuis le planning"). L'import met "facultatif" dans la precision [D222].
+- **Choix** :
+  - **Editeur** : sous chaque ligne d'ingredient, un lien discret "+ Precision" ouvre le champ (focus) ; le champ reste affiche des que la ligne a une precision. A cote, une case "Facultatif" regle le flag `optional`.
+  - **Affichage** : "facultatif" en gris apres le nom et la precision ("Parmesan, rape · facultatif"), sur la fiche, en mode cuisine et dans le texte copie.
+  - **Import** : "(facultatif)" / "(optionnel)" regle le flag au lieu d'aller dans la precision.
+  - **Existant** : une migration SQL convertit les precisions qui valent "facultatif" ou "optionnel" (le flag passe a vrai, la precision a null) ou qui finissent par ", facultatif" / ", optionnel" (le suffixe est retire). Idempotente, elle passe une fois en preprod puis en prod.
+- **Ecarte** : un champ de precision toujours visible (editeur deux fois plus haut sur mobile) ; "facultatif" ecrit dans la precision seulement (la liste de courses ne le reconnait pas) ; un badge "Facultatif" en bout de ligne (ligne chargee sur mobile) ; garder les anciennes precisions telles quelles.
