@@ -160,6 +160,9 @@ function MealsForm({
         </small>
       </div>
       <FormAlert message={run.isError ? errorMessage(run.error) : undefined} />
+      <p role="status" className="m-0 text-sm font-semibold">
+        {count === 0 ? "Aucun repas à générer." : `${String(count)} repas à générer`}
+      </p>
       <ul className="fm-pick-list">
         {rows.map((row) => {
           const when = whenLabel(row.date, row.mealTime);
@@ -246,9 +249,6 @@ function MealsForm({
         >
           Générer
         </Button>
-        <span className="text-center text-sm text-ink-muted">
-          {count === 0 ? "Aucun repas à générer." : `${String(count)} repas à générer`}
-        </span>
       </SheetFooter>
     </div>
   );
