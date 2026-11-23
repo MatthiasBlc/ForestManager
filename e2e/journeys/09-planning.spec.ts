@@ -26,9 +26,8 @@ const RECIPES = [
   "Hachis parmentier",
 ];
 
-/** Cases dont le nom accessible suit `name` : bouton, ou lien pour un repas-recette [D204]. */
-const slots = (page: Page, name: RegExp) =>
-  page.getByRole("button", { name }).or(page.getByRole("link", { name }));
+/** Cases dont le nom accessible suit `name` : toujours des boutons au planning [D230]. */
+const slots = (page: Page, name: RegExp) => page.getByRole("button", { name });
 
 /** Un repas de la semaine affichee, par son nom accessible ("Mardi 9, midi : ..."). */
 const slot = (page: Page, when: string) => slots(page, new RegExp(`^${when} : `));
@@ -162,6 +161,12 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
   sheet = page.getByRole("dialog", { name: "Générer le planning" });
   await expect(sheet.getByRole("radio", { name: /Standard/ })).toBeChecked();
   await expectNoA11yViolations(page);
+  await sheet.getByRole("button", { name: "Suivant", exact: true }).click();
+  // Repas a generer [D230] : les repas deja prevus sont grises.
+  sheet = page.getByRole("dialog", { name: "Repas à générer" });
+  await expect(sheet.getByRole("checkbox", { name: /^Mardi 9, soir/ })).toBeDisabled();
+  await expect(sheet.getByText("9 repas à générer")).toBeVisible();
+  await expectNoA11yViolations(page);
   await sheet.getByRole("button", { name: "Générer", exact: true }).click();
   sheet = page.getByRole("dialog", { name: "Planning proposé" });
   await expect(sheet.getByText("9 repas proposés sur 9")).toBeVisible();
@@ -183,7 +188,7 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
   await expect(slot(page, "Mercredi 10, midi")).toHaveAccessibleName(
     "Mercredi 10, midi : Pas de repas"
   );
-  const planned = page.getByRole("link", {
+  const planned = page.getByRole("button", {
     name: new RegExp(`^\\S+ \\d+, (midi|soir) : (${RECIPES.join("|")})$`),
   });
   await expect(planned).toHaveCount(10);
@@ -192,15 +197,19 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
   await page.getByRole("button", { name: "Générer", exact: true }).click();
   sheet = page.getByRole("dialog", { name: "Générer le planning" });
   await sheet.getByRole("switch", { name: /^Remplacer les repas non verrouillés/ }).click();
+  await sheet.getByRole("button", { name: "Suivant", exact: true }).click();
+  // Un repas decoche reste tel quel, pour cette generation seulement [D230].
+  sheet = page.getByRole("dialog", { name: "Repas à générer" });
+  await sheet.getByRole("checkbox", { name: /^Dimanche 14, soir/ }).uncheck();
   await sheet.getByRole("button", { name: "Générer", exact: true }).click();
   sheet = page.getByRole("dialog", { name: "Planning proposé" });
-  await expect(sheet.getByText("10 repas proposés sur 10")).toBeVisible();
+  await expect(sheet.getByText("9 repas proposés sur 9")).toBeVisible();
   await expect(
-    sheet.getByText("Laissés tels quels : 1 verrouillé, 1 « Pas de repas ».")
+    sheet.getByText("Laissés tels quels : 1 exclu, 1 verrouillé, 1 « Pas de repas ».")
   ).toBeVisible();
   await sheet.getByRole("button", { name: "Garder ce planning" }).click();
   // Toutes les cases etaient remplies : remplacees, pas ajoutees.
-  await expectToast(page, "10 repas remplacés au planning");
+  await expectToast(page, "9 repas remplacés au planning");
   await expect(tuesdayDinner).toHaveAccessibleName("Mardi 9, soir : Restes, 2 pers., verrouillé");
   await expect(slot(page, "Mercredi 10, midi")).toHaveAccessibleName(
     "Mercredi 10, midi : Pas de repas"
@@ -234,10 +243,17 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
     );
   }
 
-  // 10. Toucher un repas-recette ouvre la recette [D204].
+  // 10. Toucher un repas-recette ouvre F-REPAS, "Voir la recette" en tete ; le clic droit
+  // ouvre directement la recette, aux portions du repas [D230].
   const first = planned.first();
   const title = ((await first.getAttribute("aria-label")) ?? "").split(" : ")[1] ?? "";
   await first.click();
-  await expect(page).toHaveURL(new RegExp(`/s/${space.id}/recipes/`));
+  await expect(
+    page.getByRole("dialog").getByRole("link", { name: "Voir la recette" })
+  ).toHaveAttribute("href", /\/recipes\/[^?]+\?servings=\d+$/);
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await first.click({ button: "right" });
+  await expect(page).toHaveURL(new RegExp(`/s/${space.id}/recipes/[^?]+\\?servings=\\d+$`));
   await expect(page.getByRole("heading", { level: 1, name: title })).toBeVisible();
 });

@@ -87,10 +87,12 @@ describe("GET /me/home", () => {
     expect(recent.recipes[0]).toMatchObject({ spaceId: famille.id, author: "sam_h1" });
   });
 
-  it("prochains repas : a partir d'aujourd'hui, par espace avec le Planning", async () => {
+  it("prochains repas : a partir d'aujourd'hui, par espace avec le Planning et les portions", async () => {
     const lea = await createUser();
     const famille = await createSpace(lea.id, { name: "Famille" });
     await grantModule(famille.id, "meal-plan");
+    // Portions d'un repas sans portions propres : le defaut de l'espace [D230].
+    await db.mealPlanSettings.create({ data: { spaceId: famille.id, defaultServings: 3 } });
     const client = await loginAs(lea, app);
     const gratin = await createRecipe(client, famille.id, { title: "Gratin" });
     await db.mealSlot.createMany({
@@ -104,6 +106,7 @@ describe("GET /me/home", () => {
           kind: "RECIPE",
           recipeId: gratin.id,
           text: "Gratin",
+          servings: 6,
         },
         { spaceId: famille.id, date: day(2), mealTime: "LUNCH", kind: "SKIPPED" },
       ],
@@ -120,12 +123,14 @@ describe("GET /me/home", () => {
         mealTime: "LUNCH",
         title: "Gratin",
         recipeId: gratin.id,
+        servings: 6,
       },
       {
         date: day(1).toISOString().slice(0, 10),
         mealTime: "DINNER",
         title: "Soupe",
         recipeId: null,
+        servings: 3,
       },
     ]);
   });
@@ -158,6 +163,7 @@ describe("GET /me/home", () => {
         mealTime: "LUNCH",
         title: "Tarte",
         recipeId: null,
+        servings: 4,
       },
     ]);
   });

@@ -31,11 +31,23 @@ Integration et mise en ligne :
 
 Depuis `master` dans `hotfix/<sujet>`, puis fusionnes dans le lot en cours.
 
-- Aucun pour l'instant.
+### `v2.2.1` - Patch planning (branche `hotfix/planning`) [D230]
+
+Retours d'usage du 2026-11-23, choix au selecteur ; plan `4-Plan-Patch-Planning.md`. A faire avant C9.
+
+- [x] Etude et choix au selecteur ; D230 au journal, CDC S4.6 et Parcours P10 a jour
+- [x] Ouvrir `hotfix/planning` (2026-11-23) : depuis le commit de `lot/v2.3.0`, dont le code est celui de `master` (`v2.2.0`) et qui n'ajoute que des docs, pour eviter un conflit de docs ; lot laisse en l'etat
+- [x] Etape 1 : recette aux portions du repas (`?servings=`), accueil compris (l API renvoie les portions effectives)
+- [x] Etape 2 : gestes inverses au planning (clic gauche / toucher : F-REPAS ; clic droit / appui long : la recette)
+- [x] Etape 3 : raccourcis du texte libre
+- [x] Etape 4 : grille ponctuelle avant generation (shared, API, web) : etape "Repas a generer" apres "Suivant"
+- [x] Etape 5 : docs (Plan-Tests, Parcours, ecarts au plan) ; verification complete (1815 tests, 25 E2E, lint, typecheck) et revue a 390 px dans Chrome sur la dev (compte de test) ; changelog : brouillon genere par la CI depuis les commits `fix:`, a reformuler a la mise en prod
+- [ ] PR `hotfix/planning` -> `Developement`, puis `Developement` -> `master` (preprod, verification pas a pas), fusion (prod, tag `v2.2.1`), changelog
+- [ ] `Developement` fusionne dans `lot/v2.3.0` ; suppression de `hotfix/planning`
 
 ## `v2.3.0` - Liste de courses (branche `lot/v2.3.0`)
 
-- [ ] Ouvrir la branche `lot/v2.3.0` depuis `Developement` (proprietaire : la pousser)
+- [x] Ouvrir la branche `lot/v2.3.0` depuis `Developement` (2026-11-18, poussee)
 - [ ] C9 Module liste de courses (CDC S4.7, F-SHP ; droits [D141] ; conversions et rayons deja en base [D36]) : choix tranches au selecteur le 2026-11-18 [D228], maquette `3-Maquette-C9.html` validee, plan `2-Plan-C9.md` ; en TDD
 - [ ] Fermeture du lot : `Developement` fusionne dans le lot, `npm test`, `npm run e2e`, lint et typecheck au vert ; PR `lot/v2.3.0` -> `Developement`
 - [ ] Preprod : PR `Developement` -> `master`, verification pas a pas avec le proprietaire

@@ -1,11 +1,11 @@
 // F-GENERER et son rapport [D110, D113, D184] : choisir le profil, la periode et
-// s'il faut remplacer les repas non verrouilles ; l'apercu ne change rien tant
+// s'il faut remplacer les repas non verrouilles, puis les repas a generer [D230] ;
+// l'apercu ne change rien tant
 // qu'on ne garde pas ce planning ; les cases vides sont expliquees (en mode
 // "Remplacer", le repas actuel d'une case sans proposition reste, et le rapport
 // le dit), et un repas modifie entre-temps par un membre n'est pas ecrase.
 import {
   applyGenerationResultSchema,
-  generationPreviewSchema,
   type ApplyGenerationBody,
   type GenerationPreview,
 } from "@fm/shared";
@@ -23,6 +23,7 @@ import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { addDays, periodLabel, todayIso, whenLabel } from "./dates.ts";
 import { reasonText, skippedText, warningText } from "./format.ts";
+import { GenerateMeals, type GenerateChoice, type MealChoices } from "./generate-meals.tsx";
 import { mealsKey, profilesQuery } from "./queries.ts";
 
 type Span = "this" | "next" | "both";
@@ -54,17 +55,19 @@ function appliedMessage(added: number, replaced: number, conflicts: number): str
 function Options({
   spaceId,
   weekStart,
-  onPreview,
+  initial,
+  onNext,
 }: {
   spaceId: string;
   weekStart: string;
-  onPreview: (preview: GenerationPreview) => void;
+  /** Choix deja faits (retour depuis les repas a generer). */
+  initial: { profileId: string; span: Span; replace: boolean } | null;
+  onNext: (choice: GenerateChoice, span: Span) => void;
 }) {
-  const guard = useWriteGuard();
   const profiles = useQuery(profilesQuery(spaceId));
-  const [profileId, setProfileId] = useState<string>();
-  const [span, setSpan] = useState<Span>("this");
-  const [replace, setReplace] = useState(false);
+  const [profileId, setProfileId] = useState<string | undefined>(initial?.profileId);
+  const [span, setSpan] = useState<Span>(initial?.span ?? "this");
+  const [replace, setReplace] = useState(initial?.replace ?? false);
   const chosen = profileId ?? profiles.data?.find((p) => p.isDefault)?.id;
   // Les jours passes ne sont jamais regeneres : l'historique et les compteurs
   // "planifiee N fois" restent vrais (D8).
@@ -73,27 +76,10 @@ function Options({
   const from = start < today ? today : start;
   const to = span === "this" ? addDays(weekStart, 6) : addDays(weekStart, 13);
   const past = from > to;
-  const run = useMutation({
-    mutationFn: () =>
-      api.post(
-        `/spaces/${spaceId}/meal-plan/generate`,
-        { profileId: chosen, from, to, replace },
-        generationPreviewSchema
-      ),
-    onSuccess: onPreview,
-  });
 
   return (
     <div className="fm-stack">
-      <FormAlert
-        message={
-          run.isError
-            ? errorMessage(run.error)
-            : profiles.isError
-              ? errorMessage(profiles.error)
-              : undefined
-        }
-      />
+      <FormAlert message={profiles.isError ? errorMessage(profiles.error) : undefined} />
       <div className="flex flex-col gap-1">
         <span className="fm-label">Profil de génération</span>
         {profiles.data ? (
@@ -141,14 +127,12 @@ function Options({
         <Button
           variant="primary"
           block
-          icon="sparkles"
-          disabled={!chosen || past || run.isPending || guard.disabled}
-          aria-describedby={guard["aria-describedby"]}
+          disabled={!chosen || past}
           onClick={() => {
-            run.mutate();
+            if (chosen) onNext({ profileId: chosen, from, to, replace }, span);
           }}
         >
-          Générer
+          Suivant
         </Button>
       </SheetFooter>
     </div>
@@ -302,27 +286,75 @@ export function GenerateSheet({
   /** Premier jour de la semaine affichee. */
   weekStart: string;
 }) {
+  const [choice, setChoice] = useState<{ value: GenerateChoice; span: Span } | null>(null);
+  const [atMeals, setAtMeals] = useState(false);
+  const [mealChoices, setMealChoices] = useState<MealChoices | null>(null);
   const [preview, setPreview] = useState<GenerationPreview | null>(null);
   const close = () => {
     setPreview(null);
+    setChoice(null);
+    setMealChoices(null);
+    setAtMeals(false);
     onClose();
   };
+  const title = preview
+    ? "Planning proposé"
+    : atMeals && choice
+      ? "Repas à générer"
+      : "Générer le planning";
+  let content;
+  if (preview) {
+    content = (
+      <Report
+        spaceId={spaceId}
+        preview={preview}
+        onBack={() => {
+          setPreview(null);
+        }}
+        onDone={close}
+      />
+    );
+  } else if (atMeals && choice) {
+    content = (
+      <GenerateMeals
+        spaceId={spaceId}
+        choice={choice.value}
+        saved={mealChoices}
+        onBack={() => {
+          setAtMeals(false);
+        }}
+        onPreview={(next, choices) => {
+          setMealChoices(choices);
+          setPreview(next);
+        }}
+      />
+    );
+  } else {
+    content = (
+      <Options
+        spaceId={spaceId}
+        weekStart={weekStart}
+        initial={
+          choice
+            ? {
+                profileId: choice.value.profileId,
+                span: choice.span,
+                replace: choice.value.replace,
+              }
+            : null
+        }
+        onNext={(value, span) => {
+          // D'autres options : autres repas, les choix repartent de la grille du profil.
+          setMealChoices(null);
+          setChoice({ value, span });
+          setAtMeals(true);
+        }}
+      />
+    );
+  }
   return (
-    <Sheet open={open} onClose={close} title={preview ? "Planning proposé" : "Générer le planning"}>
-      {open ? (
-        preview ? (
-          <Report
-            spaceId={spaceId}
-            preview={preview}
-            onBack={() => {
-              setPreview(null);
-            }}
-            onDone={close}
-          />
-        ) : (
-          <Options spaceId={spaceId} weekStart={weekStart} onPreview={setPreview} />
-        )
-      ) : null}
+    <Sheet open={open} onClose={close} title={title}>
+      {open ? content : null}
     </Sheet>
   );
 }

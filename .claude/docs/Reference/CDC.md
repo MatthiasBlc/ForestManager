@@ -149,7 +149,7 @@ Ce que l'on supprime de la V1 : la recette perso jumelle creee automatiquement, 
 
 Reprend la V1 (grille jours x repas, repas recette / texte libre / vide, verrouillage, echange par glisser-deposer, idees de repas, generation par jeux de parametres) avec ces changements :
 
-- F-MPL-0 Calendrier continu par espace : pas de planning a creer ni d'archives, on navigue de semaine en semaine, le passe reste consultable ; la generation porte sur une periode choisie (31 jours au plus) [D180]. Un repas est vide, recette, texte libre ou "Pas de repas" [D181].
+- F-MPL-0 Calendrier continu par espace : pas de planning a creer ni d'archives, on navigue de semaine en semaine, le passe reste consultable ; la generation porte sur une periode choisie (31 jours au plus) [D180]. Un repas est vide, recette, texte libre ou "Pas de repas" [D181]. Le texte libre propose des raccourcis fixes (Restes, Resto, A emporter, Chez des amis, Pique-nique) [D230].
 
 - F-MPL-1 Disponible dans l'espace PERSONAL aussi.
 - F-MPL-2 Deux repas par jour, midi et soir ; chaque espace choisit de planifier l'un, l'autre ou les deux (les deux par defaut). Ni petit-dejeuner ni gouter [D11].
@@ -161,6 +161,7 @@ Reprend la V1 (grille jours x repas, repas recette / texte libre / vide, verroui
   - le rapport explique chaque repas laisse vide au lieu de le remplir de force [D113] ;
   - exclusions et epinglages se reglent dans une seule grille jours x repas [D114].
   - un profil "Standard" sans regle existe d'office dans chaque espace [D183] ; poids en cinq paliers, avec un mode avance a jauge 0 a 200 % [D184] ; une regle de tag peut remplacer le delai de recette du profil pour ses recettes (0 a 30 jours, le plus court l'emporte) [D214] ; un repas choisi a la main est verrouille d'office, decochable [D215].
+  - avant de generer, la grille des repas de la periode (pre-remplie par celle du profil) : decocher un repas, y poser un tag, pour cette generation seulement [D230].
 - F-MPL-6 Sur mobile, selecteur "Jour | Semaine" : Jour = vue detaillee, Semaine = liste compacte des 7 jours (une ligne par jour, repas en pastilles, toucher un repas l'ouvre) ; grille semaine complete en bureau [D111].
 - F-MPL-7 Echange de repas sur mobile en mode "echange" : bandeau, cibles en pointilles, Annuler [D112].
 - F-MPL-8 Barre du planning : Idees de repas, Profils de generation et Reglages du planning sont des boutons a icone et mot court ("Idees", "Profils", "Reglages"), sur une ligne des 360 px [D209].
@@ -207,7 +208,7 @@ Reprise de la V1 (page utilisateur, gestion admin), generation revue [D187] :
 ### 5.1 Principes
 
 - **Mobile first** [D38] : chaque ecran est concu pour le telephone d'abord. Gestes : glisser pour fermer les panneaux du bas, appui long pour le menu d'actions, tirer pour rafraichir.
-  Repas (planning et accueil) : toucher un repas-recette ouvre la recette ; appui long, clic droit ou touche Menu ouvrent F-REPAS ; sur mobile, appui long puis glisser echange deux repas [D204, amende D186 et D69].
+  Repas : au planning, toucher un repas (recette comprise) ouvre F-REPAS, avec "Voir la recette" en tete ; appui long, clic droit ou touche Menu ouvrent la recette d'un repas-recette [D230] ; sur l'accueil, toucher un repas-recette ouvre la recette [D204] ; la recette s'ouvre aux portions du repas [D230] ; sur mobile, appui long puis glisser echange deux repas [D204, amende D186 et D69].
 - **Une seule interface** desktop et mobile, construite avec les memes composants (pas de pages "mobile" a part).
 - **Navigation stable en 3 niveaux** : espace -> module -> contenu. L'utilisateur sait toujours dans quel espace il est.
 - **Le contenu d'abord** : les panneaux lateraux et les menus servent le contenu, pas l'inverse.
