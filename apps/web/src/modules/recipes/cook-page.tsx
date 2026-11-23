@@ -69,6 +69,7 @@ function CookView({
       amount={line.amount}
       name={line.name}
       note={line.note}
+      optional={line.optional}
       checked={checked[line.key] ?? false}
       onCheckedChange={(value) => {
         setChecked((current) => ({ ...current, [line.key]: value }));

@@ -1837,6 +1837,27 @@ textarea.fm-input {
   font-size: 14px;
   min-height: 36px;
 }
+/* Sous la ligne : "+ Precision" et la case "Facultatif" (D232), discrets */
+.fm-qty-extra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 14px;
+  color: var(--ink-muted);
+}
+.fm-qty-optional {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 36px;
+  cursor: pointer;
+}
+.fm-qty-optional input {
+  accent-color: var(--accent);
+  width: 18px;
+  height: 18px;
+}
 
 /* Rangee de puces (filtres, espaces, tags) : defile au doigt sans barre (une barre
    classique de Chrome bureau passait au-dessus du voile des feuilles, D12) ; avec

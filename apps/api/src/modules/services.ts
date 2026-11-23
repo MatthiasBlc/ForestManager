@@ -52,9 +52,57 @@ export interface MealPlanStats {
   forRecipe(spaceId: string, recipeId: string): Promise<RecipePlanningStats | null>;
 }
 
+/** Repas d'une periode, vu par la liste de courses. */
+export interface PlannedMeal {
+  id: string;
+  date: string;
+  mealTime: "LUNCH" | "DINNER";
+  kind: "RECIPE" | "TEXT" | "SKIPPED";
+  recipeId: string | null;
+  /** Texte libre, ou dernier titre connu d'une recette [D184]. */
+  text: string | null;
+  /** Portions effectives (celles du repas, sinon celles de l'espace). */
+  servings: number;
+}
+
+/** Fourni par le Planning : repas de la periode, null si le module n'est pas actif dans l'espace. */
+export interface MealPlanPeriod {
+  meals(spaceId: string, from: string, to: string): Promise<PlannedMeal[] | null>;
+}
+
+/** Ligne d'ingredient d'une recette, sous-recettes depliees, pour la recette entiere. */
+export interface RecipeIngredientLine {
+  ingredientId: string;
+  quantity: number | null;
+  unitId: string | null;
+  optional: boolean;
+}
+
+export interface ShoppingRecipe {
+  id: string;
+  title: string;
+  yieldQuantity: number;
+  /** Rendement en portions (pas d'unite) : se met a l'echelle des portions d'un repas. */
+  inPortions: boolean;
+  lines: RecipeIngredientLine[];
+  /** Titres des sous-recettes invisibles ou supprimees : leurs ingredients manquent. */
+  missing: string[];
+}
+
+/** Fourni par Recettes : ingredients des recettes visibles dans un espace [D24, D228]. */
+export interface RecipeIngredients {
+  forShopping(
+    spaceId: string,
+    viewerId: string,
+    ids: readonly string[]
+  ): Promise<Map<string, ShoppingRecipe>>;
+}
+
 export interface ModuleServices {
   "recipes.catalog": RecipeCatalog;
+  "recipes.ingredients": RecipeIngredients;
   "meal-plan.recipeStats": MealPlanStats;
+  "meal-plan.period": MealPlanPeriod;
 }
 
 export type ServiceKey = keyof ModuleServices;

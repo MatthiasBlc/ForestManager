@@ -42,6 +42,9 @@ const CONVENTIONAL = /^(?<type>[a-z]+)(?:\([^)]*\))?(?<breaking>!)?:\s*(?<descri
 const MARKER = /\s*\((?<marker>[^()]*\b(?:C\d|D\d|F-)[^()]*)\)\s*$/;
 const STEP = /\bC\d+(?:\.\d+)?[a-z]?\b/;
 const SEMVER_TAG = /^v(\d+)\.(\d+)\.(\d+)$/;
+/** Longueur maximale d'un item, verifiee au seed (RELEASE_ITEM_MAX de shared, recopie : script sans dependance). */
+const ITEM_MAX = 300;
+const SEPARATOR = " ; ";
 
 export function parseLog(raw: string): Commit[] {
   return raw
@@ -81,6 +84,23 @@ function sentence(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
+/** Textes d'une etape joints par " ; ", en items de ITEM_MAX au plus ; un texte seul trop long est coupe. */
+function chunks(texts: readonly string[]): string[] {
+  const items: string[] = [];
+  let current = "";
+  for (const raw of texts) {
+    const text = raw.length > ITEM_MAX ? `${raw.slice(0, ITEM_MAX - 1)}…` : raw;
+    if (current && current.length + SEPARATOR.length + text.length > ITEM_MAX) {
+      items.push(current);
+      current = text;
+    } else {
+      current = current ? `${current}${SEPARATOR}${text}` : text;
+    }
+  }
+  if (current) items.push(current);
+  return items;
+}
+
 export function buildRelease(tag: string | null, commits: readonly Commit[]): ReleaseNotes {
   const content: ReleaseNotes["content"] = { features: [], improvements: [], fixes: [] };
   const current = tag ? parts(tag) : null;
@@ -109,7 +129,7 @@ export function buildRelease(tag: string | null, commits: readonly Commit[]): Re
     groups.set(key, group);
   }
   for (const { section, texts } of groups.values()) {
-    content[section].push({ text: sentence(texts.join(" ; ")) });
+    for (const text of chunks(texts)) content[section].push({ text: sentence(text) });
   }
 
   const [major, minor, patch] = current;

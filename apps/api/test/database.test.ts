@@ -14,7 +14,7 @@ describe("seed", () => {
       ["recipes", "AVAILABLE", true],
       // Le statut appartient au super admin : le seed ne l'ecrase pas.
       ["meal-plan", "BETA", false],
-      ["shopping", "COMING_SOON", false],
+      ["shopping", "AVAILABLE", false],
     ]);
   });
 });

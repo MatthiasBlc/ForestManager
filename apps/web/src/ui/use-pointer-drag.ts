@@ -43,6 +43,8 @@ interface Session {
 export interface PointerDragOptions {
   /** Case lachee sur une autre (identifiants `source` et `target`). */
   onDrop: (source: string, target: string) => void;
+  /** Debut et fin du glisser (pas de l'appui long) : un rendu chacun, pas a chaque mouvement. */
+  onDragChange?: ((dragging: boolean) => void) | undefined;
 }
 
 export interface SourceOptions {
@@ -103,14 +105,16 @@ const preventScroll = (event: TouchEvent) => {
   if (event.cancelable) event.preventDefault();
 };
 
-export function usePointerDrag({ onDrop }: PointerDragOptions) {
+export function usePointerDrag({ onDrop, onDragChange }: PointerDragOptions) {
   const session = useRef<Session | null>(null);
   /** Case dont le prochain clic est annule (apres un glisser ou un appui long). */
   const swallow = useRef<string | null>(null);
   const dropRef = useRef(onDrop);
+  const changeRef = useRef(onDragChange);
   useEffect(() => {
     dropRef.current = onDrop;
-  }, [onDrop]);
+    changeRef.current = onDragChange;
+  }, [onDrop, onDragChange]);
 
   const setOver = (s: Session, over: HTMLElement | null) => {
     const next = over?.dataset.dropId === s.id ? null : over;
@@ -129,6 +133,7 @@ export function usePointerDrag({ onDrop }: PointerDragOptions) {
     s.el.removeAttribute("data-drag-lifted");
     s.detach();
     if (session.current === s) session.current = null;
+    if (s.phase === "dragging") changeRef.current?.(false);
   };
 
   // Defilement au bord du conteneur tant que le pointeur y reste.
@@ -159,6 +164,7 @@ export function usePointerDrag({ onDrop }: PointerDragOptions) {
     s.ghost = makeGhost(s.el);
     s.scroller = scrollParent(s.el);
     autoScroll(s);
+    changeRef.current?.(true);
   };
 
   const lift = (s: Session) => {

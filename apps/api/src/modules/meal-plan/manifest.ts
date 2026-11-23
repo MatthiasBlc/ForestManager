@@ -43,7 +43,7 @@ import type { ApiModule } from "../../core/modules/registry.ts";
 import { provide } from "../services.ts";
 import { applyGeneration, previewGeneration, suggestMeal } from "./generation.ts";
 import { convertIdea, createIdea, deleteIdea, listIdeas, updateIdea } from "./ideas.ts";
-import { clearMeal, listMeals, putMeal, recipeStats, swapMeals } from "./meals.ts";
+import { clearMeal, listMeals, mealPeriod, putMeal, recipeStats, swapMeals } from "./meals.ts";
 import { mealChanged, planGenerated } from "./events.ts";
 import { MEAL_PLAN_PERMISSIONS } from "./permissions.ts";
 import { searchMeals } from "./search.ts";
@@ -369,7 +369,10 @@ export const mealPlanModule: ApiModule = {
   router: mealPlanRouter,
   requires: ["recipes.catalog"],
   search: searchMeals,
-  provides: { "meal-plan.recipeStats": provide("meal-plan.recipeStats", recipeStats) },
+  provides: {
+    "meal-plan.recipeStats": provide("meal-plan.recipeStats", recipeStats),
+    "meal-plan.period": provide("meal-plan.period", mealPeriod),
+  },
   roleOverrides: async (db, spaceId) => ({
     "meal-plan.edit": (await readSettings(db, spaceId)).editRole,
   }),

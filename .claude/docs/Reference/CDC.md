@@ -107,7 +107,7 @@ Identifiants `F-<module>-<n>` pour que roadmap et tests s'y referent.
 
 Contenu :
 
-- F-REC-1 Titre, photo, portions (avec mise a l'echelle des quantites), temps (preparation, cuisson, repos, total calcule), ingredients (quantite, unite, ingredient), etapes ordonnees, notes, source (URL).
+- F-REC-1 Titre, photo, portions (avec mise a l'echelle des quantites), temps (preparation, cuisson, repos, total calcule), ingredients (quantite, unite, ingredient, precision facultative, case "Facultatif" [D232]), etapes ordonnees, notes, source (URL).
 - F-REC-2 **Blocs** : une recette est une suite de blocs, soit locaux (titre optionnel, ingredients, etapes : "Sauce", "Assemblage"), soit **liens vers une autre recette** avec la quantite utilisee ("Sauce teriyaki : 150 ml"). Chaque recette a un **rendement** (portions par defaut, ou ml, pieces...). Une recette simple = 1 bloc local implicite ; lien **vivant** : un plat montre toujours la version actuelle de sa sous-recette ; pas de boucle, 3 niveaux maximum [D24]. Pour lier une recette, les bases sont proposees d'abord et la quantite se saisit dans l'unite de rendement de la sous-recette [D107].
 - F-REC-3 Tags.
 
@@ -133,7 +133,7 @@ Ce que l'on supprime de la V1 : la recette perso jumelle creee automatiquement, 
 - F-REF-6 Familles de tags (Saison, Categorie...) : globales (admin) ou d'espace (moderateurs), ordonnees ; un tag a au plus une famille. Un seul composant de choix de tags partout (feuille avec recherche et familles) ; filtre OU dans une famille, ET entre familles ; deux premiers tags en texte sur les cartes ; au partage, les tags d'espace d'origine de la recette sont proposes (coches) pour l'espace cible, crees s'ils n'y existent pas [D216]. Dans une famille, les tags sont ordonnes a la main comme les familles (un nouveau venu arrive en fin) ; "Autres" reste alphabetique [D223].
 - F-REF-3 Ingredients : catalogue global. Un ingredient inconnu est cree a la volee et utilisable tout de suite ; l'admin fusionne les doublons a posteriori (le statut sert au tri de la file admin, pas a bloquer). Un ingredient fusionne devient un synonyme de la cible : propose a la saisie, remplace par la cible [D120].
 - F-REF-4 Unites : catalogue global gere par l'admin, par dimension (poids, volume, piece, qualitatif ; les cuilleres sont des volumes) avec un facteur vers l'unite de base, et un poids par ingredient et par unite pour passer des pieces aux grammes [D46]. Sert aux recettes composees et a la liste de courses [D36].
-- F-REF-5 Rayons : chaque ingredient a un rayon par defaut (fruits et legumes, boucherie...), gere par l'admin, utilise par la future liste de courses [D36]. Les rayons sont ordonnes selon le parcours en magasin ; sans rayon, l'ingredient va dans "Autres" [D125].
+- F-REF-5 Rayons : chaque ingredient a un rayon par defaut (fruits et legumes, boucherie...), gere par l'admin [D36] ; ils servent a creer les sections de depart de la liste de courses, puis a ranger un ingredient sans section favorite (F-SHP-3, D231). Les rayons sont ordonnes selon le parcours en magasin ; sans rayon, l'ingredient va dans "Autres" [D125].
 - Supprime : workflow PENDING des tags d'espace, suggestions de tags, preference "masquer les tags" par espace [D27].
 
 ### 4.5 Import
@@ -171,11 +171,11 @@ Reprend la V1 (grille jours x repas, repas recette / texte libre / vide, verroui
 Plan : `V2.2/2-Plan-C9.md`. Mobile first : remplir a la maison, cocher en magasin d'une main [D228].
 
 - F-SHP-0 Une seule liste par espace, toujours a jour, perso compris [D228].
-- F-SHP-1 Ajouter depuis une periode du planning : apercu des ingredients additionnes (conversion d'unites, mise a l'echelle des portions, sous-recettes depliees), tous coches ; on decoche ce qu'on a deja ; repas deja ajoutes signales. Un ingredient deja dans la liste recoit la quantite sur sa ligne (detail "pour : ..."). Une ligne et une case par produit : pieces et grammes s'additionnent grace au poids par unite, sinon les parts sont jointes sur la ligne ("500 g + 3") [D126, D228].
+- F-SHP-1 Ajouter depuis une periode du planning : apercu des ingredients additionnes (conversion d'unites, mise a l'echelle des portions, sous-recettes depliees), tous coches ; on decoche ce qu'on a deja ; repas deja ajoutes signales. Un ingredient deja dans la liste recoit la quantite sur sa ligne de la section ou il va (detail "pour : ...") ; une ligne deplacee ailleurs reste a part [D231]. Une ligne et une case par produit : pieces et grammes s'additionnent grace au poids par unite, sinon les parts sont jointes sur la ligne ("500 g + 3") [D126, D228].
 - F-SHP-2 Articles a la main : ingredient du catalogue ou texte libre, quantite facultative ; cocher "achete" ; "Retirer les achetes" avec Annuler, sans historique. Hors ligne : lecture et coches, envoyees au retour du reseau [D228].
-- F-SHP-3 Sections de l'espace (Primeur, Pharmacie, Ikea...) et articles dans leur section, ordonnes a la main (les achetes en fin de section) ; sections creees au depart depuis les rayons (F-REF-5) [D125] ; un article deplace d'une section a l'autre est retenu par l'espace ; sinon "Autres". Remplace le "magasin favori par ingredient" [D228].
+- F-SHP-3 Sections de l'espace (Primeur, Pharmacie, Ikea...) et articles dans leur section, ordonnes a la main (les achetes en fin de section) ; sections creees au depart depuis les rayons (F-REF-5), toutes supprimables [D125] ; chaque produit a sa section favorite dans l'espace, fixee par son premier deplacement puis par "Toujours ranger ici" ; deplacer ensuite ne change que la ligne ; sinon la section de son rayon, ou "Autres". Remplace le "magasin favori par ingredient" [D228, D231].
 - F-SHP-4 Modifier la liste (generer, articles libres, cocher, archiver) : role minimal reglable par l'OWNER, MEMBER par defaut, comme le planning [D141].
-- F-SHP-5 Gestes : toucher la ligne coche, appui long puis glisser deplace, "..." ouvre le detail ; onglet "Courses" dans la barre du bas du telephone ; pas d'ecran maintenu allume ; "Depuis le planning" aussi dans la barre du planning [D228].
+- F-SHP-5 Gestes : la case coche, toucher le produit ouvre son detail, appui long puis glisser deplace [D231] ; onglet "Courses" dans la barre du bas du telephone ; pas d'ecran maintenu allume ; "Depuis le planning" aussi dans la barre du planning [D228].
 
 ### 4.8 Notifications et activite
 

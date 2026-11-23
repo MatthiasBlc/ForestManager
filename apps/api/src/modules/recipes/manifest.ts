@@ -64,6 +64,7 @@ import {
 import type { ApiModule } from "../../core/modules/registry.ts";
 import * as adaptation from "./adaptation.ts";
 import { recipeCatalog } from "./catalog.ts";
+import { recipeIngredients } from "./ingredients.ts";
 import { provide } from "../services.ts";
 import { AppError } from "../../core/http/errors.ts";
 import { addableSql, authoredBySql, listRecipes } from "./list.ts";
@@ -673,6 +674,9 @@ export const recipesModule: ApiModule = {
   storageKeys: photos.storageKeys,
   search: searchRecipes,
   exportData: exportRecipes,
-  provides: { "recipes.catalog": provide("recipes.catalog", recipeCatalog) },
+  provides: {
+    "recipes.catalog": provide("recipes.catalog", recipeCatalog),
+    "recipes.ingredients": provide("recipes.ingredients", recipeIngredients),
+  },
   widgets: RECIPE_WIDGETS,
 };

@@ -11,6 +11,7 @@ export interface CookLine {
   amount: string;
   name: string;
   note: string | null;
+  optional: boolean;
 }
 
 export interface CookBlock {
@@ -87,6 +88,7 @@ function lines(flat: FlatBlock, units: readonly Unit[]): CookLine[] {
     amount: scaledAmount(line, units, flat.scale),
     name: line.name,
     note: line.note,
+    optional: line.optional,
   }));
 }
 

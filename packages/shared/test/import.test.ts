@@ -329,13 +329,21 @@ Préparation
 Cuire les pâtes.
  — 03/04/2026 12:23
 Servir.`);
-    expect(recipe.ingredients.map((i) => [i.name, i.note])).toEqual([
-      ["pâtes", null],
-      ["amandes torrefiées", "facultatif"],
-      ["persil", "optionnel"],
+    expect(recipe.ingredients.map((i) => [i.name, i.note, i.optional])).toEqual([
+      ["pâtes", null, false],
+      ["amandes torrefiées", null, true],
+      ["persil", null, true],
     ]);
     expect(recipe).toMatchObject({ restMinutes: null, cookMinutes: null });
     expect(recipe.steps).toEqual(["Cuire les pâtes.", "Servir."]);
+  });
+
+  it("marque facultatif sans toucher a la precision (D232)", () => {
+    expect(parseIngredientLine("50 g de parmesan, râpé (en option)")).toMatchObject({
+      name: "parmesan",
+      note: "râpé",
+      optional: true,
+    });
   });
 
   it("ignore les separateurs ; texte vide = recette vide", () => {

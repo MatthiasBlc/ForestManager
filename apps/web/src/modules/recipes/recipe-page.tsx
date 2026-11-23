@@ -168,6 +168,7 @@ export function BlockBody({
             amount={scaledAmount(line, units, scale)}
             name={line.name}
             note={line.note}
+            optional={line.optional}
           />
         ))}
       </div>

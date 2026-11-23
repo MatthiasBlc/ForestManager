@@ -146,19 +146,26 @@ Un meme utilisateur est MEM, MOD ou OWN selon l'espace. "Auteur" se cumule avec 
 
 ## Planning
 
-| Action                                                                                 | VIS | CON |  MEM  | MOD | OWN | ANC | ADM | Source        | Note                                                                          |
-| -------------------------------------------------------------------------------------- | :-: | :-: | :---: | :-: | :-: | :-: | :-: | ------------- | ----------------------------------------------------------------------------- |
-| Voir le planning (semaines passees comprises), les idees de repas                      |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | CDC S4.6      | Si le module est accorde et actif.                                            |
-| Modifier un repas (recette, texte libre, portions, commentaire), echanger, verrouiller |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | F-MPL-3, D58  | Role minimal regle par l'OWNER ; MEMBER par defaut.                           |
-| Remplacer un repas par la generation (un seul repas)                                   |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | D58           | Memes droits que modifier un repas.                                           |
-| Regler le planning (repas de la journee, portions, debut de semaine)                   |  -  |  -  |   -   | Oui | Oui |  -  |  -  | D11, D58      | Calendrier continu, pas de planning a creer (D180).                           |
-| Regler le role minimal pour modifier un repas                                          |  -  |  -  |   -   |  -  | Oui |  -  |  -  | F-MPL-3, D58  |                                                                               |
-| Gerer les jeux de parametres de generation (regles, exclusions, epinglages)            |  -  |  -  |   -   | Oui | Oui |  -  |  -  | D58           |                                                                               |
-| Generer tout un planning                                                               |  -  |  -  |   -   | Oui | Oui |  -  |  -  | D58           | Les repas verrouilles ne bougent pas.                                         |
-| Ajouter une idee de repas                                                              |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | CDC S4.6      |                                                                               |
-| Modifier, supprimer une idee                                                           |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | CDC S4.6      | Membre : seulement ses propres idees.                                         |
-| Convertir une idee en recette                                                          |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | F-MPL-4, D182 | Auteur : celui qui convertit ; l'idee est ensuite retiree.                    |
-| Liste de courses (V2.2) : creer, cocher, archiver                                      |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | F-SHP-4, D141 | Role minimal regle par l'OWNER ; MEMBER par defaut, comme le planning (D141). |
+| Action                                                                                 | VIS | CON |  MEM  | MOD | OWN | ANC | ADM | Source        | Note                                                       |
+| -------------------------------------------------------------------------------------- | :-: | :-: | :---: | :-: | :-: | :-: | :-: | ------------- | ---------------------------------------------------------- |
+| Voir le planning (semaines passees comprises), les idees de repas                      |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | CDC S4.6      | Si le module est accorde et actif.                         |
+| Modifier un repas (recette, texte libre, portions, commentaire), echanger, verrouiller |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | F-MPL-3, D58  | Role minimal regle par l'OWNER ; MEMBER par defaut.        |
+| Remplacer un repas par la generation (un seul repas)                                   |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | D58           | Memes droits que modifier un repas.                        |
+| Regler le planning (repas de la journee, portions, debut de semaine)                   |  -  |  -  |   -   | Oui | Oui |  -  |  -  | D11, D58      | Calendrier continu, pas de planning a creer (D180).        |
+| Regler le role minimal pour modifier un repas                                          |  -  |  -  |   -   |  -  | Oui |  -  |  -  | F-MPL-3, D58  |                                                            |
+| Gerer les jeux de parametres de generation (regles, exclusions, epinglages)            |  -  |  -  |   -   | Oui | Oui |  -  |  -  | D58           |                                                            |
+| Generer tout un planning                                                               |  -  |  -  |   -   | Oui | Oui |  -  |  -  | D58           | Les repas verrouilles ne bougent pas.                      |
+| Ajouter une idee de repas                                                              |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | CDC S4.6      |                                                            |
+| Modifier, supprimer une idee                                                           |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | CDC S4.6      | Membre : seulement ses propres idees.                      |
+| Convertir une idee en recette                                                          |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | F-MPL-4, D182 | Auteur : celui qui convertit ; l'idee est ensuite retiree. |
+
+## Liste de courses
+
+| Action                                                                                               | VIS | CON |  MEM  | MOD | OWN | ANC | ADM | Source        | Note                                                |
+| ---------------------------------------------------------------------------------------------------- | :-: | :-: | :---: | :-: | :-: | :-: | :-: | ------------- | --------------------------------------------------- |
+| Voir la liste et ses sections                                                                        |  -  |  -  |  Oui  | Oui | Oui |  -  |  -  | F-SHP-0       | Si le module est accorde et actif ; perso compris.  |
+| Modifier la liste : ajouter (a la main, depuis le planning), cocher, retirer, sections et leur ordre |  -  |  -  | Cond. | Oui | Oui |  -  |  -  | F-SHP-4, D141 | Role minimal regle par l'OWNER ; MEMBER par defaut. |
+| Regler le role minimal pour modifier la liste                                                        |  -  |  -  |   -   |  -  | Oui |  -  |  -  | F-SHP-4, D141 |                                                     |
 
 ## Notifications et activite
 
@@ -194,6 +201,8 @@ Un meme utilisateur est MEM, MOD ou OWN selon l'espace. "Auteur" se cumule avec 
 | Suggestion en attente quand la recette change                        | La suggestion reste basee sur sa revision ; le diff est recalcule sur la version courante et les conflits sont signales ; elle reste tranchable.                                                  | D04, D05 |
 | Changement de role pendant une action                                | Les droits sont verifies a chaque requete cote serveur ; l'interface se met a jour par le temps reel.                                                                                             | CDC S6.2 |
 | Lien d'invitation utilise apres expiration ou revocation             | Refuse avec un message clair ; l'utilisateur peut demander un nouveau lien a un moderateur.                                                                                                       | D07      |
+| Coche faite hors ligne sur un article retire entre-temps             | La coche est oubliee a l'envoi, sans message ; pour un meme article, la derniere coche gagne.                                                                                                     | D228     |
+| Section de la liste de courses supprimee                             | Ses articles passent dans "Autres", les sections favorites qui la visaient sont effacees.                                                                                                         | D231     |
 | Compte supprime auteur de suggestions ou d'idees                     | Ses suggestions en attente sont annulees ; ses idees de repas restent, auteur anonymise.                                                                                                          | D20      |
 
 ## Decisions

@@ -8,12 +8,15 @@ export function IngredientRow({
   amount,
   name,
   note,
+  optional = false,
   checked: controlled,
   onCheckedChange,
 }: {
   amount: string;
   name: string;
   note?: string | null;
+  /** Ingredient facultatif [D232] : "facultatif" en gris apres le nom. */
+  optional?: boolean;
   /** Pilote de l'exterieur (mode cuisine : la feuille et l'etape partagent les cases). */
   checked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
@@ -29,7 +32,7 @@ export function IngredientRow({
       className="fm-ing"
       role="checkbox"
       aria-checked={checked}
-      aria-label={[amount, name, note].filter(Boolean).join(" ")}
+      aria-label={[amount, name, note, optional ? "facultatif" : null].filter(Boolean).join(" ")}
       tabIndex={0}
       onClick={toggle}
       onKeyDown={(event) => {
@@ -46,6 +49,7 @@ export function IngredientRow({
       <span className="fm-ing-name">
         {name}
         {note ? <span className="text-ink-muted">, {note}</span> : null}
+        {optional ? <span className="text-ink-muted"> · facultatif</span> : null}
       </span>
     </div>
   );

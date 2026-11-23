@@ -7,7 +7,7 @@ import type { Context } from "../../core/context.ts";
 import type { Prisma } from "../../core/db/client.ts";
 import { AppError } from "../../core/http/errors.ts";
 import { isModuleActive } from "../../core/modules/guards.ts";
-import { requiredService, type MealPlanStats } from "../services.ts";
+import { requiredService, type MealPlanPeriod, type MealPlanStats } from "../services.ts";
 import { readSettings } from "./settings.ts";
 
 /** Date de calendrier stockee a minuit UTC (`@db.Date`). */
@@ -226,6 +226,42 @@ export function recipeStats(ctx: Context): MealPlanStats {
         }),
       ]);
       return { count, lastOn: last ? toIsoDate(last.date) : null };
+    },
+  };
+}
+
+/** Service `meal-plan.period` (liste de courses) : repas planifies de la periode, portions effectives. */
+export function mealPeriod(ctx: Context): MealPlanPeriod {
+  return {
+    async meals(spaceId, from, to) {
+      if (!(await isModuleActive(ctx.db, spaceId, "meal-plan"))) return null;
+      const { mealTimes, defaultServings } = await readSettings(ctx.db, spaceId);
+      const rows = await ctx.db.mealSlot.findMany({
+        where: {
+          spaceId,
+          date: { gte: toDbDate(from), lte: toDbDate(to) },
+          mealTime: { in: mealTimes },
+        },
+        select: {
+          id: true,
+          date: true,
+          mealTime: true,
+          kind: true,
+          recipeId: true,
+          text: true,
+          servings: true,
+        },
+        orderBy: [{ date: "asc" }, { mealTime: "asc" }],
+      });
+      return rows.map((row) => ({
+        id: row.id,
+        date: toIsoDate(row.date),
+        mealTime: row.mealTime,
+        kind: row.kind,
+        recipeId: row.recipeId,
+        text: row.text,
+        servings: row.servings ?? defaultServings,
+      }));
     },
   };
 }

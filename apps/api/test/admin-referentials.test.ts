@@ -305,6 +305,46 @@ describe("fusion d'ingredients (A05b, D120)", () => {
       (await client.post(`/admin/ingredients/${a}/merge`, { intoId: UNKNOWN })).body.error.code
     ).toBe("ADMIN_008");
   });
+
+  it("repointe les articles de la liste de courses et leurs sections favorites (D231)", async () => {
+    const target = await verified("poivron");
+    const source = await memberIngredient("poivrons");
+    const other = await createSpace((await createUser()).id);
+    const section = await db.shoppingSection.create({ data: { spaceId, name: "Primeur" } });
+    const otherSection = await db.shoppingSection.create({
+      data: { spaceId: other.id, name: "Marche" },
+    });
+    const item = await db.shoppingItem.create({
+      data: { spaceId, ingredientId: source, productKey: `ingredient:${source}` },
+    });
+    await db.shoppingPlacement.createMany({
+      data: [
+        { spaceId, productKey: `ingredient:${source}`, sectionId: section.id },
+        // L'autre espace range deja la cible : sa favorite garde le dessus.
+        { spaceId: other.id, productKey: `ingredient:${source}`, sectionId: otherSection.id },
+        { spaceId: other.id, productKey: `ingredient:${target}`, sectionId: otherSection.id },
+      ],
+    });
+
+    expect(
+      (await client.post(`/admin/ingredients/${source}/merge`, { intoId: target })).status
+    ).toBe(200);
+    expect(await db.shoppingItem.findUniqueOrThrow({ where: { id: item.id } })).toMatchObject({
+      ingredientId: target,
+      productKey: `ingredient:${target}`,
+    });
+    const placements = await db.shoppingPlacement.findMany({
+      where: { spaceId: { in: [spaceId, other.id] } },
+      orderBy: { spaceId: "asc" },
+    });
+    expect(placements.map((p) => [p.spaceId, p.productKey])).toEqual(
+      expect.arrayContaining([
+        [spaceId, `ingredient:${target}`],
+        [other.id, `ingredient:${target}`],
+      ])
+    );
+    expect(placements).toHaveLength(2);
+  });
 });
 
 describe("unites (A06)", () => {
