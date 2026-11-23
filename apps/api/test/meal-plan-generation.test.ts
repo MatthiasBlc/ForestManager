@@ -244,6 +244,63 @@ describe("apercu (D110)", () => {
     });
   });
 
+  it("grille ponctuelle : exclusions et epinglages par date, le profil ne change pas [D230]", async () => {
+    const f = await plannedGroup();
+    const owner = await loginAs(f.owner, app);
+    await createRecipe(owner, f.spaceId);
+    const profileId = await defaultProfile(owner, f.spaceId);
+    const fast = await globalTag("Rapide");
+    const result = await preview(owner, f.spaceId, {
+      from: "2026-11-09",
+      to: "2026-11-10",
+      cells: [
+        { date: "2026-11-09", mealTime: "LUNCH", state: "EXCLUDED" },
+        { date: "2026-11-10", mealTime: "DINNER", state: "PINNED", tagId: fast.id },
+      ],
+    });
+    expect(result.proposals.map((p) => `${p.date}/${p.mealTime}`)).toEqual([
+      "2026-11-09/DINNER",
+      "2026-11-10/LUNCH",
+      "2026-11-10/DINNER",
+    ]);
+    expect(result.proposals[2]?.reason).toEqual({
+      code: "PIN",
+      tag: { id: fast.id, name: "Rapide" },
+    });
+    expect(result.skipped).toMatchObject({ excluded: 1 });
+    const profile = await owner.get(`${planOf(f.spaceId)}/profiles/${profileId}`);
+    expect(profile.body.grid).toEqual([]);
+  });
+
+  it("grille ponctuelle : refuse une case hors de la periode, en double, ou un tag inconnu", async () => {
+    const f = await plannedGroup();
+    const owner = await loginAs(f.owner, app);
+    const profileId = await defaultProfile(owner, f.spaceId);
+    const post = (cells: unknown[]) =>
+      owner.post(`${planOf(f.spaceId)}/generate`, {
+        profileId,
+        from: "2026-11-09",
+        to: "2026-11-10",
+        cells,
+      });
+    const outside = await post([{ date: "2026-11-11", mealTime: "LUNCH", state: "EXCLUDED" }]);
+    expect(outside.body.error.code).toBe("VALIDATION_001");
+    const twice = await post([
+      { date: "2026-11-09", mealTime: "LUNCH", state: "EXCLUDED" },
+      { date: "2026-11-09", mealTime: "LUNCH", state: "EXCLUDED" },
+    ]);
+    expect(twice.body.error.code).toBe("VALIDATION_001");
+    const unknown = await post([
+      {
+        date: "2026-11-09",
+        mealTime: "LUNCH",
+        state: "PINNED",
+        tagId: "00000000-0000-4000-8000-000000000000",
+      },
+    ]);
+    expect(unknown.body.error.code).toBe("RECIPE_003");
+  });
+
   it("refuse une periode de plus de 31 jours et un profil d'un autre espace", async () => {
     const f = await plannedGroup();
     const owner = await loginAs(f.owner, app);

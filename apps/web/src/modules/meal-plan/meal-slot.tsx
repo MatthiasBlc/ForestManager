@@ -1,8 +1,8 @@
 // MealSlot (design system) : un repas de la grille. Recette (fond accent), texte,
-// vide (pointille) ou "Pas de repas" (barre). Toucher un repas-recette ouvre la recette ;
-// appui long, clic droit ou touche Menu ouvrent F-REPAS [D204]. Les autres cases ouvrent
-// F-REPAS au toucher. Un repas se glisse sur un autre pour les echanger, a la souris ou
-// au doigt apres un appui long (`usePointerDrag`) [D204].
+// vide (pointille) ou "Pas de repas" (barre). Au planning, toucher un repas ouvre F-REPAS ;
+// appui long, clic droit ou touche Menu ouvrent la recette d'un repas-recette [D230].
+// Sur l'accueil, la case est un lien vers la recette [D204]. Un repas se glisse sur un
+// autre pour les echanger, a la souris ou au doigt apres un appui long (`usePointerDrag`).
 import { useId, type MouseEvent, type ReactNode } from "react";
 import { Link } from "react-router";
 
@@ -32,9 +32,9 @@ export interface MealSlotProps {
   /** Hors de la grille (accueil) : `when` affiche a droite, pas seulement lu. */
   showWhen?: boolean;
   onOpen?: () => void;
-  /** Repas-recette : lien vers la recette (le toucher la suit au lieu de `onOpen`). */
+  /** Accueil : lien vers la recette (le toucher la suit au lieu de `onOpen`). */
   href?: string;
-  /** Appui long, clic droit, touche Menu : F-REPAS quand la case est un lien. */
+  /** Appui long, clic droit, touche Menu : la recette d'un repas-recette au planning [D230]. */
   onMenu?: () => void;
   /** Case qu'on peut prendre pour l'echanger (gere aussi appui long et clic droit). */
   dragSource?: DragSource | undefined;
@@ -86,10 +86,11 @@ export function MealSlot({
       {showWhen ? <small className="fm-slot-when">{when}</small> : null}
     </>
   );
-  if (href) {
+  if (href || onMenu) {
     return (
-      <RecipeSlot
+      <SecondarySlot
         href={href}
+        onOpen={onOpen}
         name={name}
         className={className}
         onMenu={onMenu}
@@ -97,7 +98,7 @@ export function MealSlot({
         draggable={!!dragSource}
       >
         {content}
-      </RecipeSlot>
+      </SecondarySlot>
     );
   }
   return (
@@ -107,9 +108,10 @@ export function MealSlot({
   );
 }
 
-/** Case lien vers la recette, avec F-REPAS en geste secondaire. */
-function RecipeSlot({
+/** Case lien (accueil) ou bouton (planning), avec la recette en geste secondaire. */
+function SecondarySlot({
   href,
+  onOpen,
   name,
   className,
   onMenu,
@@ -117,7 +119,8 @@ function RecipeSlot({
   draggable,
   children,
 }: {
-  href: string;
+  href: string | undefined;
+  onOpen: (() => void) | undefined;
   name: string;
   className: string;
   onMenu: (() => void) | undefined;
@@ -128,36 +131,47 @@ function RecipeSlot({
 }) {
   const hintId = useId();
   const press = useLongPress(() => onMenu?.());
-  if (!onMenu) {
+  if (!onMenu && href) {
     return (
       <Link to={href} className={className} aria-label={name} {...drag}>
         {children}
       </Link>
     );
   }
+  const gestures = {
+    className,
+    "aria-label": name,
+    "aria-describedby": hintId,
+    ...(draggable
+      ? drag
+      : {
+          ...drag,
+          ...press.handlers,
+          // Clic droit, touche Menu et Maj+F10 emettent tous `contextmenu`.
+          onContextMenu: (event: MouseEvent) => {
+            event.preventDefault();
+            onMenu?.();
+          },
+        }),
+  };
+  const hint = (
+    <span id={hintId} hidden>
+      Appui long ou clic droit : ouvrir la recette
+    </span>
+  );
+  if (href) {
+    return (
+      <Link to={href} {...gestures}>
+        {children}
+        {hint}
+      </Link>
+    );
+  }
   return (
-    <Link
-      to={href}
-      className={className}
-      aria-label={name}
-      aria-describedby={hintId}
-      {...(draggable
-        ? drag
-        : {
-            ...drag,
-            ...press.handlers,
-            // Clic droit, touche Menu et Maj+F10 emettent tous `contextmenu`.
-            onContextMenu: (event: MouseEvent) => {
-              event.preventDefault();
-              onMenu();
-            },
-          })}
-    >
+    <button type="button" onClick={onOpen} {...gestures}>
       {children}
-      <span id={hintId} hidden>
-        Appui long ou clic droit : détails du repas
-      </span>
-    </Link>
+      {hint}
+    </button>
   );
 }
 

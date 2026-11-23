@@ -105,6 +105,40 @@ describe("tirage", () => {
 });
 
 describe("cases sautees : verrou, repas gardes, Pas de repas, exclusions", () => {
+  it("grille ponctuelle : remplace celle du profil, case par date [D230]", () => {
+    const result = generate(
+      input({
+        from: "2026-11-09",
+        to: "2026-11-16",
+        mealTimes: ["DINNER"],
+        // Le profil exclut le lundi soir : la grille ponctuelle le remplace.
+        profile: {
+          cooldownDays: 0,
+          useIdeas: false,
+          rules: [],
+          exclusions: [{ weekday: "MON", mealTime: "DINNER" }],
+          pins: [],
+        },
+        recipes: [recipe("soupe", ["t-soupe"]), recipe("r1"), recipe("r2"), recipe("r3")],
+        cells: [
+          { date: "2026-11-10", mealTime: "DINNER", state: "EXCLUDED" },
+          { date: "2026-11-16", mealTime: "DINNER", state: "PINNED", tagId: "t-soupe" },
+        ],
+      })
+    );
+    expect(result.proposals.map((p) => p.date)).toEqual([
+      "2026-11-09",
+      "2026-11-11",
+      "2026-11-12",
+      "2026-11-13",
+      "2026-11-14",
+      "2026-11-15",
+      "2026-11-16",
+    ]);
+    expect(result.proposals.at(-1)?.pick).toEqual({ kind: "RECIPE", id: "soupe" });
+    expect(result.skipped).toEqual({ excluded: 1, locked: 0, kept: 0, skippedMeals: 0 });
+  });
+
   it("garde les repas remplis, ne remplit que les cases vides", () => {
     const result = generate(
       input({

@@ -65,6 +65,8 @@ export const upcomingMealsWidgetSchema = z.object({
           mealTime: z.enum(["LUNCH", "DINNER"]),
           title: z.string(),
           recipeId: uuidSchema.nullable(),
+          /** Portions du repas, sinon le defaut de l'espace : la recette s'ouvre ainsi [D230]. */
+          servings: z.int().positive(),
         })
       ),
     })

@@ -98,7 +98,13 @@ export interface GenerationInput {
   random: Random;
   /** "Proposer un autre repas" : ce choix est ecarte. */
   avoid?: MealPick;
+  /** Grille ponctuelle, par date : remplace exclusions et epinglages du profil [D230]. */
+  cells?: readonly DatedCell[];
 }
+
+export type DatedCell =
+  | { date: string; mealTime: MealTime; state: "EXCLUDED" }
+  | { date: string; mealTime: MealTime; state: "PINNED"; tagId: string };
 
 /** Pourquoi une case reste vide : la premiere etape qui a vide le pool. */
 export type EmptyReason =
@@ -216,8 +222,18 @@ const cellKey = (weekday: Weekday, mealTime: MealTime) => `${weekday}/${mealTime
 export function generate(input: GenerationInput): GenerationResult {
   const { profile } = input;
   const mealTimes = MEAL_ORDER.filter((time) => input.mealTimes.includes(time));
-  const excluded = new Set(profile.exclusions.map((c) => cellKey(c.weekday, c.mealTime)));
-  const pins = new Map(profile.pins.map((p) => [cellKey(p.weekday, p.mealTime), p.tagId]));
+  // Grille ponctuelle (par date) ou grille du profil (par jour de la semaine) [D230].
+  const dated = input.cells;
+  const excluded = new Set(
+    dated
+      ? dated.filter((c) => c.state === "EXCLUDED").map((c) => `${c.date}/${c.mealTime}`)
+      : profile.exclusions.map((c) => cellKey(c.weekday, c.mealTime))
+  );
+  const pins = new Map(
+    dated
+      ? dated.flatMap((c) => (c.state === "PINNED" ? [[`${c.date}/${c.mealTime}`, c.tagId]] : []))
+      : profile.pins.map((p) => [cellKey(p.weekday, p.mealTime), p.tagId])
+  );
   const existing = new Map(input.meals.map((m) => [`${m.date}/${m.mealTime}`, m]));
   const skipped = { excluded: 0, locked: 0, kept: 0, skippedMeals: 0 };
 
@@ -231,7 +247,7 @@ export function generate(input: GenerationInput): GenerationResult {
   const targets: Target[] = [];
   for (let date = input.from; date <= input.to; date = addDays(date, 1)) {
     for (const mealTime of mealTimes) {
-      const key = cellKey(weekdayOf(date), mealTime);
+      const key = dated ? `${date}/${mealTime}` : cellKey(weekdayOf(date), mealTime);
       const meal = existing.get(`${date}/${mealTime}`);
       const keep = (counter: keyof typeof skipped) => {
         skipped[counter]++;

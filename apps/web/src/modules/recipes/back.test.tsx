@@ -1,7 +1,7 @@
 // Fleche de retour d'une recette selon l'origine (D219) : la page d'ou on l'a
 // ouverte (planning a la meme semaine et dans la meme vue, recherche, accueil...),
 // la liste des recettes sinon (lien direct, onglet neuf).
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../../app/App.tsx";
@@ -60,7 +60,11 @@ describe("retour d'une recette (D219)", () => {
       await screen.findByRole("heading", { name: "Du 16 au 22 novembre" })
     ).toBeInTheDocument();
 
-    await user.click(await screen.findByRole("link", { name: /Mardi 17, midi : Dahl/ }));
+    // Le repas d'abord, puis sa recette [D230].
+    await user.click(await screen.findByRole("button", { name: /Mardi 17, midi : Dahl/ }));
+    await user.click(
+      within(await screen.findByRole("dialog")).getByRole("link", { name: "Voir la recette" })
+    );
     await screen.findByRole("heading", { name: "Dahl de lentilles", level: 1 });
     await user.click(screen.getByRole("button", { name: "Retour" }));
 
@@ -75,7 +79,11 @@ describe("retour d'une recette (D219)", () => {
     const { user } = renderWithProviders(<App />, {
       route: `/s/${s.space.id}/meal-plan?day=2026-11-17`,
     });
-    await user.click(await screen.findByRole("link", { name: /Mardi 17, midi : Dahl/ }));
+    // Le repas d'abord, puis sa recette [D230].
+    await user.click(await screen.findByRole("button", { name: /Mardi 17, midi : Dahl/ }));
+    await user.click(
+      within(await screen.findByRole("dialog")).getByRole("link", { name: "Voir la recette" })
+    );
     await screen.findByRole("heading", { name: "Dahl de lentilles", level: 1 });
     await user.click(screen.getByRole("button", { name: "Plus d'actions" }));
     await user.click(await screen.findByRole("menuitem", { name: "Voir l'historique" }));

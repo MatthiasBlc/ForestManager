@@ -2,12 +2,18 @@
 // cases vides expliquees [D113], "Garder ce planning" sans ecraser une case
 // modifiee depuis [D110, D184] ; "Proposer un autre repas" depuis F-REPAS.
 import type { GenerationPreview } from "@fm/shared";
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../../app/App.tsx";
 import { axeViolations } from "../../test/axe.ts";
-import { buildMeal, buildProfile, mealPlanServer } from "../../test/meal-plan-server.ts";
+import {
+  FISH as FISH_TAG,
+  VEGETARIAN,
+  buildMeal,
+  buildProfile,
+  mealPlanServer,
+} from "../../test/meal-plan-server.ts";
 import { renderWithProviders } from "../../test/render.tsx";
 
 // Mardi 10 novembre 2026 : semaine du lundi 9 au dimanche 15.
@@ -16,8 +22,11 @@ beforeEach(() => {
   vi.setSystemTime(new Date(2026, 10, 10, 10));
 });
 
+const baseMatchMedia = Object.getOwnPropertyDescriptor(window, "matchMedia");
+
 afterEach(() => {
   vi.useRealTimers();
+  if (baseMatchMedia) Object.defineProperty(window, "matchMedia", baseMatchMedia);
 });
 
 const DAHL = "00000000-0000-4000-8000-0000000000c1";
@@ -73,6 +82,131 @@ function previewFor(profileId: string, over: Partial<GenerationPreview> = {}): G
 }
 
 describe("F-GENERER", () => {
+  it("choisir les repas (accordeon) : grille pre-remplie par le profil, a modifier pour cette generation [D230]", async () => {
+    const standard = buildProfile({
+      name: "Standard",
+      isDefault: true,
+      grid: [
+        { weekday: "WED", mealTime: "DINNER", state: "EXCLUDED" },
+        {
+          weekday: "FRI",
+          mealTime: "LUNCH",
+          state: "PINNED",
+          tag: { id: FISH_TAG.id, name: "Poisson", status: "ACTIVE" },
+        },
+      ],
+    });
+    const s = mealPlanServer({
+      myRole: "OWNER",
+      profiles: [standard],
+      meals: [
+        buildMeal({ date: "2026-11-12", mealTime: "LUNCH", title: "Cantine", locked: true }),
+        buildMeal({ date: "2026-11-13", mealTime: "DINNER", title: "Crêpes" }),
+      ],
+    });
+    s.plan.preview = previewFor(standard.id);
+    const { user, container } = renderWithProviders(<App />, {
+      route: `/s/${s.space.id}/meal-plan`,
+    });
+    await user.click(await screen.findByRole("button", { name: "Générer" }));
+    const sheet = await screen.findByRole("dialog", { name: "Générer le planning" });
+    await within(sheet).findByRole("radio", { name: /Standard/ });
+    // Facultatif : ferme par defaut, "Générer" reste a portee.
+    const toggle = within(sheet).getByRole("button", { name: /Choisir les repas/ });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+    // Telephone : un jour par ligne, Midi et Soir en colonnes.
+    expect(await within(sheet).findByRole("rowheader", { name: "MAR 10" })).toBeInTheDocument();
+    expect(within(sheet).getByRole("columnheader", { name: "Midi" })).toBeInTheDocument();
+    expect(
+      within(sheet).getByRole("button", { name: "Mercredi 11, soir : exclu" })
+    ).toBeInTheDocument();
+    expect(
+      within(sheet).getByRole("button", { name: "Vendredi 13, midi : tag Poisson épinglé" })
+    ).toBeInTheDocument();
+    expect(
+      within(sheet).getByRole("button", { name: "Jeudi 12, midi : Cantine, verrouillé" })
+    ).toBeDisabled();
+    expect(
+      within(sheet).getByRole("button", { name: "Vendredi 13, soir : Crêpes" })
+    ).toBeDisabled();
+    expect(within(toggle).getByText("9 repas à générer")).toBeInTheDocument();
+    expect(await axeViolations(container)).toEqual([]);
+
+    const choose = async (when: string, label: string) => {
+      await user.click(within(sheet).getByRole("button", { name: new RegExp(`^${when} : `) }));
+      const cell = await screen.findByRole("dialog", { name: when });
+      await user.click(within(cell).getByRole("radio", { name: new RegExp(label) }));
+      return cell;
+    };
+    await user.click(
+      within(await choose("Mardi 10, midi", "Exclu")).getByRole("button", { name: "OK" })
+    );
+    await user.click(
+      within(await choose("Mercredi 11, soir", "Généré")).getByRole("button", { name: "OK" })
+    );
+    await user.click(
+      within(await choose("Vendredi 13, midi", "Généré")).getByRole("button", { name: "OK" })
+    );
+    const pin = await choose("Samedi 14, soir", "Épingler un tag");
+    await user.click(within(pin).getByRole("button", { name: "Choisir un tag" }));
+    const picker = await screen.findByRole("dialog", { name: "Choisir un tag" });
+    await user.click(within(picker).getByRole("button", { name: VEGETARIAN.name }));
+    await user.click(within(pin).getByRole("button", { name: "OK" }));
+    expect(
+      await within(sheet).findByRole("button", { name: "Samedi 14, soir : tag Végétarien épinglé" })
+    ).toBeInTheDocument();
+    expect(within(toggle).getByText("9 repas à générer")).toBeInTheDocument();
+
+    await user.click(within(sheet).getByRole("button", { name: "Générer" }));
+    await waitFor(() => {
+      expect(s.plan.generations).toEqual([
+        {
+          profileId: standard.id,
+          from: "2026-11-10",
+          to: "2026-11-15",
+          replace: false,
+          cells: [
+            { date: "2026-11-10", mealTime: "LUNCH", state: "EXCLUDED" },
+            { date: "2026-11-14", mealTime: "DINNER", state: "PINNED", tagId: VEGETARIAN.id },
+          ],
+        },
+      ]);
+    });
+    // Le profil n'est pas modifie.
+    expect(s.plan.grids).toEqual([]);
+    // Retour depuis l'apercu : les choix restent.
+    const report = await screen.findByRole("dialog", { name: "Planning proposé" });
+    await user.click(within(report).getByRole("button", { name: "Retour" }));
+    const again = await screen.findByRole("dialog", { name: "Générer le planning" });
+    expect(
+      within(again).getByRole("button", { name: "Mardi 10, midi : exclu" })
+    ).toBeInTheDocument();
+  });
+
+  it("choisir les repas sur grand ecran : la disposition du planning", async () => {
+    Object.defineProperty(window, "matchMedia", {
+      configurable: true,
+      writable: true,
+      value: (query: string) => ({
+        matches: query.includes("min-width"),
+        media: query,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+      }),
+    });
+    const standard = buildProfile({ name: "Standard", isDefault: true });
+    const s = mealPlanServer({ myRole: "OWNER", profiles: [standard] });
+    const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/meal-plan` });
+    await user.click(await screen.findByRole("button", { name: "Générer" }));
+    const sheet = await screen.findByRole("dialog", { name: "Générer le planning" });
+    await within(sheet).findByRole("radio", { name: /Standard/ });
+    await user.click(within(sheet).getByRole("button", { name: /Choisir les repas/ }));
+    expect(await within(sheet).findByRole("columnheader", { name: "MAR 10" })).toBeInTheDocument();
+    expect(within(sheet).getByRole("rowheader", { name: "Soir" })).toBeInTheDocument();
+  });
+
   it("genere la semaine affichee avec le profil par defaut, puis garde le planning", async () => {
     const standard = buildProfile({ name: "Standard", isDefault: true });
     const summer = buildProfile({ name: "Été léger" });
@@ -226,8 +360,8 @@ describe("proposer un autre repas", () => {
       reason: null,
     };
     const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/meal-plan` });
-    // Repas-recette : F-REPAS par clic droit, le toucher ouvre la recette [D204].
-    fireEvent.contextMenu(await screen.findByRole("link", { name: /Dahl de lentilles/ }));
+    // Toucher un repas, recette comprise, ouvre F-REPAS [D230].
+    await user.click(await screen.findByRole("button", { name: /Dahl de lentilles/ }));
     const sheet = await screen.findByRole("dialog", { name: "Mardi 10, soir" });
     await user.click(within(sheet).getByRole("button", { name: "Proposer un autre repas" }));
     expect(s.plan.suggestions).toEqual([]);
@@ -242,8 +376,8 @@ describe("proposer un autre repas", () => {
     const s = mealPlanServer({ myRole: "MEMBER", meals: [dahlMeal] });
     s.plan.suggestResult = { meal: null, reason: { code: "COOLDOWN", days: 3 } };
     const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/meal-plan` });
-    // Repas-recette : F-REPAS par clic droit, le toucher ouvre la recette [D204].
-    fireEvent.contextMenu(await screen.findByRole("link", { name: /Dahl de lentilles/ }));
+    // Toucher un repas, recette comprise, ouvre F-REPAS [D230].
+    await user.click(await screen.findByRole("button", { name: /Dahl de lentilles/ }));
     const sheet = await screen.findByRole("dialog", { name: "Mardi 10, soir" });
     await user.click(within(sheet).getByRole("button", { name: "Proposer un autre repas" }));
     await user.click(within(sheet).getByRole("button", { name: "Remplacer" }));
@@ -256,9 +390,9 @@ describe("proposer un autre repas", () => {
 
   it("pas de proposition sur un repas verrouille", async () => {
     const s = mealPlanServer({ myRole: "MEMBER", meals: [{ ...dahlMeal, locked: true }] });
-    renderWithProviders(<App />, { route: `/s/${s.space.id}/meal-plan` });
-    // Repas-recette : F-REPAS par clic droit, le toucher ouvre la recette [D204].
-    fireEvent.contextMenu(await screen.findByRole("link", { name: /Dahl de lentilles/ }));
+    const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/meal-plan` });
+    // Toucher un repas, recette comprise, ouvre F-REPAS [D230].
+    await user.click(await screen.findByRole("button", { name: /Dahl de lentilles/ }));
     const sheet = await screen.findByRole("dialog", { name: "Mardi 10, soir" });
     expect(
       within(sheet).queryByRole("button", { name: "Proposer un autre repas" })

@@ -149,7 +149,7 @@ Ce que l'on supprime de la V1 : la recette perso jumelle creee automatiquement, 
 
 Reprend la V1 (grille jours x repas, repas recette / texte libre / vide, verrouillage, echange par glisser-deposer, idees de repas, generation par jeux de parametres) avec ces changements :
 
-- F-MPL-0 Calendrier continu par espace : pas de planning a creer ni d'archives, on navigue de semaine en semaine, le passe reste consultable ; la generation porte sur une periode choisie (31 jours au plus) [D180]. Un repas est vide, recette, texte libre ou "Pas de repas" [D181].
+- F-MPL-0 Calendrier continu par espace : pas de planning a creer ni d'archives, on navigue de semaine en semaine, le passe reste consultable ; la generation porte sur une periode choisie (31 jours au plus) [D180]. Un repas est vide, recette, texte libre ou "Pas de repas" [D181]. Le texte libre propose des raccourcis fixes (Restes, Resto, A emporter, Chez des amis, Pique-nique) [D230].
 
 - F-MPL-1 Disponible dans l'espace PERSONAL aussi.
 - F-MPL-2 Deux repas par jour, midi et soir ; chaque espace choisit de planifier l'un, l'autre ou les deux (les deux par defaut). Ni petit-dejeuner ni gouter [D11].
@@ -161,6 +161,7 @@ Reprend la V1 (grille jours x repas, repas recette / texte libre / vide, verroui
   - le rapport explique chaque repas laisse vide au lieu de le remplir de force [D113] ;
   - exclusions et epinglages se reglent dans une seule grille jours x repas [D114].
   - un profil "Standard" sans regle existe d'office dans chaque espace [D183] ; poids en cinq paliers, avec un mode avance a jauge 0 a 200 % [D184] ; une regle de tag peut remplacer le delai de recette du profil pour ses recettes (0 a 30 jours, le plus court l'emporte) [D214] ; un repas choisi a la main est verrouille d'office, decochable [D215].
+  - avant de generer, un accordeon facultatif "Choisir les repas" : la grille des repas de la periode (pre-remplie par celle du profil), un repas a exclure ou a epingler a un tag, pour cette generation seulement ; telephone : un jour par ligne, grand ecran : la disposition du planning [D230].
 - F-MPL-6 Sur mobile, selecteur "Jour | Semaine" : Jour = vue detaillee, Semaine = liste compacte des 7 jours (une ligne par jour, repas en pastilles, toucher un repas l'ouvre) ; grille semaine complete en bureau [D111].
 - F-MPL-7 Echange de repas sur mobile en mode "echange" : bandeau, cibles en pointilles, Annuler [D112].
 - F-MPL-8 Barre du planning : Idees de repas, Profils de generation et Reglages du planning sont des boutons a icone et mot court ("Idees", "Profils", "Reglages"), sur une ligne des 360 px [D209].
@@ -170,10 +171,11 @@ Reprend la V1 (grille jours x repas, repas recette / texte libre / vide, verroui
 Plan : `V2.2/2-Plan-C9.md`. Mobile first : remplir a la maison, cocher en magasin d'une main [D228].
 
 - F-SHP-0 Une seule liste par espace, toujours a jour, perso compris [D228].
-- F-SHP-1 Ajouter depuis une periode du planning : apercu des ingredients additionnes (conversion d'unites, mise a l'echelle des portions, sous-recettes depliees), tous coches ; on decoche ce qu'on a deja ; repas deja ajoutes signales. Un ingredient deja dans la liste recoit la quantite sur sa ligne (detail "pour : ..."). Pieces et grammes s'additionnent grace au poids par unite, sinon deux lignes [D126, D228].
+- F-SHP-1 Ajouter depuis une periode du planning : apercu des ingredients additionnes (conversion d'unites, mise a l'echelle des portions, sous-recettes depliees), tous coches ; on decoche ce qu'on a deja ; repas deja ajoutes signales. Un ingredient deja dans la liste recoit la quantite sur sa ligne (detail "pour : ..."). Une ligne et une case par produit : pieces et grammes s'additionnent grace au poids par unite, sinon les parts sont jointes sur la ligne ("500 g + 3") [D126, D228].
 - F-SHP-2 Articles a la main : ingredient du catalogue ou texte libre, quantite facultative ; cocher "achete" ; "Retirer les achetes" avec Annuler, sans historique. Hors ligne : lecture et coches, envoyees au retour du reseau [D228].
-- F-SHP-3 Sections de l'espace (Primeur, Pharmacie, Ikea...), ordonnees a la main, creees au depart depuis les rayons (F-REF-5) [D125] ; un article deplace d'une section a l'autre est retenu par l'espace ; sinon "Autres". Remplace le "magasin favori par ingredient" [D228].
+- F-SHP-3 Sections de l'espace (Primeur, Pharmacie, Ikea...) et articles dans leur section, ordonnes a la main (les achetes en fin de section) ; sections creees au depart depuis les rayons (F-REF-5) [D125] ; un article deplace d'une section a l'autre est retenu par l'espace ; sinon "Autres". Remplace le "magasin favori par ingredient" [D228].
 - F-SHP-4 Modifier la liste (generer, articles libres, cocher, archiver) : role minimal reglable par l'OWNER, MEMBER par defaut, comme le planning [D141].
+- F-SHP-5 Gestes : toucher la ligne coche, appui long puis glisser deplace, "..." ouvre le detail ; onglet "Courses" dans la barre du bas du telephone ; pas d'ecran maintenu allume ; "Depuis le planning" aussi dans la barre du planning [D228].
 
 ### 4.8 Notifications et activite
 
@@ -206,7 +208,7 @@ Reprise de la V1 (page utilisateur, gestion admin), generation revue [D187] :
 ### 5.1 Principes
 
 - **Mobile first** [D38] : chaque ecran est concu pour le telephone d'abord. Gestes : glisser pour fermer les panneaux du bas, appui long pour le menu d'actions, tirer pour rafraichir.
-  Repas (planning et accueil) : toucher un repas-recette ouvre la recette ; appui long, clic droit ou touche Menu ouvrent F-REPAS ; sur mobile, appui long puis glisser echange deux repas [D204, amende D186 et D69].
+  Repas : au planning, toucher un repas (recette comprise) ouvre F-REPAS, avec "Voir la recette" en tete ; appui long, clic droit ou touche Menu ouvrent la recette d'un repas-recette [D230] ; sur l'accueil, toucher un repas-recette ouvre la recette [D204] ; la recette s'ouvre aux portions du repas [D230] ; sur mobile, appui long puis glisser echange deux repas [D204, amende D186 et D69].
 - **Une seule interface** desktop et mobile, construite avec les memes composants (pas de pages "mobile" a part).
 - **Navigation stable en 3 niveaux** : espace -> module -> contenu. L'utilisateur sait toujours dans quel espace il est.
 - **Le contenu d'abord** : les panneaux lateraux et les menus servent le contenu, pas l'inverse.
@@ -261,7 +263,7 @@ Conserver l'acquis V1 (helmet, CSRF double submit, rate limiting, validation Zod
 ### 6.4 Infrastructure et deploiement
 
 - Images taguees par version et SHA (plus seulement `:latest`), rollback possible.
-- Preprod deployee a chaque push sur la branche de travail, prod au merge sur `master`.
+- Preprod deployee par la PR `Developement` -> `master`, prod a sa fusion. Chaque lot se developpe sur sa branche `lot/v<X.Y.0>` ; `Developement` ne recoit qu'un hotfix ou un lot termine, un hotfix part de `master` [D229].
 - Le seed de deploiement ne contient que les referentiels ; les donnees de demo sont un script separe.
 - Migrations Prisma revues avant merge, sauvegarde DB avant chaque deploy prod.
 
@@ -314,3 +316,4 @@ Sans objet [D23] : la V1 n'a pas d'utilisateurs reels, la base et la stack seron
 - 1.9 : ordre des listes de recettes, D217 ; ordre des espaces, D218 ; retour d'une recette, D219 ; PWA de preprod, D220
 - 1.10 : changelog public et Markdown dans les notes de version, D226 ; E2E WebKit informatif, D227
 - 1.11 : liste de courses revue avant le code (une liste par espace, sections de l'espace, apercu depuis le planning, coches hors ligne), D228
+- 1.12 : flux git par lot et hotfix, D229

@@ -1,6 +1,7 @@
 // F-REPAS [P10, D181] : recette (espace d'abord, puis mes recettes avec partage
 // propose), texte libre ou "Pas de repas" ; portions, commentaire, verrou ; vider,
-// echanger. Sans le droit de modifier : le repas en lecture seule (F-MPL-3).
+// echanger. "Voir la recette" en tete, aux portions du repas [D230]. Sans le droit de
+// modifier : le repas en lecture seule (F-MPL-3).
 import {
   mealSchema,
   pageSchema,
@@ -22,13 +23,13 @@ import { errorMessage } from "../../i18n/index.ts";
 import { api } from "../../lib/api.ts";
 import { useWriteGuard } from "../../pwa/use-write-guard.ts";
 import { Button } from "../../ui/button.tsx";
-import { SegmentedControl, Stepper, Switch } from "../../ui/controls.tsx";
+import { Chip, SegmentedControl, Stepper, Switch } from "../../ui/controls.tsx";
 import { Field } from "../../ui/field.tsx";
 import { OptionList, type OptionItem } from "../../ui/option-list.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { whenLabel } from "./dates.ts";
-import { reasonText } from "./format.ts";
+import { reasonText, recipeHref } from "./format.ts";
 import { mealsKey } from "./queries.ts";
 
 const KINDS: readonly { value: MealKind; label: string }[] = [
@@ -36,6 +37,9 @@ const KINDS: readonly { value: MealKind; label: string }[] = [
   { value: "TEXT", label: "Texte libre" },
   { value: "SKIPPED", label: "Pas de repas" },
 ];
+
+/** Textes libres courants, en un toucher [D230]. */
+const TEXT_SHORTCUTS = ["Restes", "Resto", "À emporter", "Chez des amis", "Pique-nique"] as const;
 
 const recipePage = pageSchema(recipeSummarySchema);
 
@@ -139,7 +143,15 @@ function RecipeSearch({
   );
 }
 
-function ReadOnlyMeal({ spaceId, meal }: { spaceId: string; meal: Meal | null }) {
+function ReadOnlyMeal({
+  spaceId,
+  meal,
+  defaultServings,
+}: {
+  spaceId: string;
+  meal: Meal | null;
+  defaultServings: number;
+}) {
   if (!meal) return <p className="m-0 text-ink-muted">Rien de prévu pour ce repas.</p>;
   return (
     <div className="fm-stack">
@@ -147,7 +159,10 @@ function ReadOnlyMeal({ spaceId, meal }: { spaceId: string; meal: Meal | null })
       {meal.servings ? <p className="m-0 text-sm">{meal.servings} pers.</p> : null}
       {meal.comment ? <p className="m-0">{meal.comment}</p> : null}
       {meal.recipe ? (
-        <Link to={`/s/${spaceId}/recipes/${meal.recipe.id}`} className="fm-btn fm-btn-secondary">
+        <Link
+          to={recipeHref(spaceId, meal.recipe.id, meal.servings ?? defaultServings)}
+          className="fm-btn fm-btn-secondary"
+        >
           Voir la recette
         </Link>
       ) : null}
@@ -249,6 +264,14 @@ function MealForm({ spaceId, spaceName, cell, meal, defaultServings, onDone, onS
 
   return (
     <div className="fm-stack">
+      {meal?.recipe ? (
+        <Link
+          to={recipeHref(spaceId, meal.recipe.id, meal.servings ?? defaultServings)}
+          className="fm-btn fm-btn-secondary"
+        >
+          Voir la recette
+        </Link>
+      ) : null}
       <FormAlert message={error ? errorMessage(error) : undefined} />
       <SegmentedControl label="Type de repas" options={KINDS} value={kind} onChange={setKind} />
       {kind === "RECIPE" ? (
@@ -268,15 +291,30 @@ function MealForm({ spaceId, spaceName, cell, meal, defaultServings, onDone, onS
         </>
       ) : null}
       {kind === "TEXT" ? (
-        <Field
-          label="Repas"
-          placeholder="Restes, resto, pique-nique…"
-          value={text}
-          maxLength={200}
-          onChange={(event) => {
-            setText(event.target.value);
-          }}
-        />
+        <>
+          <Field
+            label="Repas"
+            placeholder="Restes, resto, pique-nique…"
+            value={text}
+            maxLength={200}
+            onChange={(event) => {
+              setText(event.target.value);
+            }}
+          />
+          <div role="group" aria-label="Raccourcis" className="-mt-2 flex flex-wrap gap-2">
+            {TEXT_SHORTCUTS.map((shortcut) => (
+              <Chip
+                key={shortcut}
+                selected={text === shortcut}
+                onToggle={() => {
+                  setText(shortcut);
+                }}
+              >
+                {shortcut}
+              </Chip>
+            ))}
+          </div>
+        </>
       ) : null}
       {kind !== "SKIPPED" ? (
         <>
@@ -401,7 +439,11 @@ export function MealSheet({
         canEdit ? (
           <MealForm {...form} onDone={onClose} />
         ) : (
-          <ReadOnlyMeal spaceId={form.spaceId} meal={form.meal} />
+          <ReadOnlyMeal
+            spaceId={form.spaceId}
+            meal={form.meal}
+            defaultServings={form.defaultServings}
+          />
         )
       ) : null}
     </Sheet>

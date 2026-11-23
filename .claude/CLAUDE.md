@@ -49,7 +49,7 @@ npm run admin:create           # compte super admin dans la stack de dev (2FA a 
 
 ## Git
 
-- Flux : branche de travail -> PR vers `Developement` (code de preprod) -> PR `Developement` -> `master` (deploy preprod a chaque push sur la PR) -> fusion = prod (deploy auto au push sur `master`). Pendant la preprod V2, travail direct sur `Developement`. Le proprietaire pousse et fusionne.
+- Flux par lot [D229] : on developpe sur `lot/v<X.Y.0>`, jamais sur `Developement` ; lot termine -> PR vers `Developement` (preprod) -> PR `Developement` -> `master` (deploy preprod a chaque push sur la PR) -> fusion = prod (tag auto). Hotfix : `hotfix/<sujet>` depuis `master`, meme flux, puis `Developement` fusionne dans le lot. Commandes : `.claude/docs/Reference/Architecture.md` S13. Le proprietaire pousse et fusionne : lui donner les commandes a chaque etape.
 - Commit uniquement sur demande. **Jamais de Co-Authored-By pour Claude.**
 
 ## Documentation

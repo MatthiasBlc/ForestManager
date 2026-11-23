@@ -348,6 +348,18 @@ export type GenerationProfile = z.infer<typeof generationProfileSchema>;
 
 // --- Generation [D110, D113, D184] ---
 
+/** Case de la grille ponctuelle d'une generation, par date [D230] ; absente = generee. */
+export const datedGridCellBodySchema = z.discriminatedUnion("state", [
+  z.strictObject({ date: planDateSchema, mealTime: mealTimeSchema, state: z.literal("EXCLUDED") }),
+  z.strictObject({
+    date: planDateSchema,
+    mealTime: mealTimeSchema,
+    state: z.literal("PINNED"),
+    tagId: z.uuid(),
+  }),
+]);
+export type DatedGridCellBody = z.infer<typeof datedGridCellBodySchema>;
+
 /** Apercu d'une generation : rien n'est ecrit [D110]. */
 export const generateBodySchema = z
   .strictObject({
@@ -356,11 +368,27 @@ export const generateBodySchema = z
     to: planDateSchema,
     /** Remplacer les repas non verrouilles ; sinon seulement les cases vides. */
     replace: z.boolean().default(false),
+    /**
+     * Grille de la periode pour cette generation seulement : remplace celle du profil,
+     * qui n'est pas modifie [D230]. Absente : la grille du profil.
+     */
+    cells: z
+      .array(datedGridCellBodySchema)
+      .max(MAX_PERIOD_DAYS * MEAL_TIMES.length)
+      .optional(),
   })
   .refine(({ from, to }) => {
     const days = periodDays(from, to);
     return days >= 1 && days <= MAX_PERIOD_DAYS;
-  }, "period must span 1 to 31 days");
+  }, "period must span 1 to 31 days")
+  .refine(
+    ({ from, to, cells }) => (cells ?? []).every((c) => c.date >= from && c.date <= to),
+    "cells must be within the period"
+  )
+  .refine(
+    ({ cells = [] }) => new Set(cells.map((c) => `${c.date}/${c.mealTime}`)).size === cells.length,
+    "one state per cell"
+  );
 export type GenerateBody = z.input<typeof generateBodySchema>;
 
 const namedTagSchema = z.object({ id: z.uuid(), name: z.string() });

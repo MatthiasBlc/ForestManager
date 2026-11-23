@@ -3,6 +3,7 @@
 import type { ApiWidget } from "../../core/home/types.ts";
 import { requiredService } from "../services.ts";
 import { toDbDate, toIsoDate, todayIso } from "./meals.ts";
+import { readSettings } from "./settings.ts";
 
 const UPCOMING_DAYS = 7;
 const UPCOMING_PER_SPACE = 3;
@@ -22,6 +23,7 @@ export const MEAL_PLAN_WIDGETS: Readonly<Record<string, ApiWidget>> = {
       const today = toDbDate(todayIso());
       const spaces = await Promise.all(
         input.spaces.map(async (space) => {
+          const { defaultServings } = await readSettings(ctx.db, space.id);
           const rows = await ctx.db.mealSlot.findMany({
             where: {
               spaceId: space.id,
@@ -36,6 +38,7 @@ export const MEAL_PLAN_WIDGETS: Readonly<Record<string, ApiWidget>> = {
               text: true,
               kind: true,
               recipeId: true,
+              servings: true,
             },
           });
           const ids = rows.flatMap((row) =>
@@ -58,6 +61,7 @@ export const MEAL_PLAN_WIDGETS: Readonly<Record<string, ApiWidget>> = {
                 mealTime: row.mealTime,
                 title: recipe?.title ?? row.text ?? "",
                 recipeId: recipe?.id ?? null,
+                servings: row.servings ?? defaultServings,
               };
             }),
           };

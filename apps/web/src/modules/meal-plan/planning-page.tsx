@@ -1,7 +1,7 @@
 // E-PLANNING [P10, D180] : calendrier continu de l'espace, semaine par semaine.
-// Bureau : grille jours x repas. Mobile : "Jour | Semaine" (D111). Un repas-recette
-// s'ouvre au toucher, F-REPAS par appui long ou clic droit ; un repas se glisse sur un
-// autre pour les echanger, a la souris ou au doigt apres l'appui long [D204] ; "Echanger"
+// Bureau : grille jours x repas. Mobile : "Jour | Semaine" (D111). Toucher un repas ouvre
+// F-REPAS ; appui long ou clic droit ouvrent la recette d'un repas-recette [D230] ; un repas
+// se glisse sur un autre pour les echanger, a la souris ou au doigt apres l'appui long [D204] ; "Echanger"
 // de F-REPAS reste (mode echange, D112). Sans le droit de modifier : lecture seule.
 import {
   type Meal,
@@ -12,7 +12,7 @@ import {
 } from "@fm/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 
 import { spaceQuery } from "../../core/session/queries.ts";
 import { errorMessage } from "../../i18n/index.ts";
@@ -36,7 +36,7 @@ import {
   weekStart,
   whenLabel,
 } from "./dates.ts";
-import { MEAL_TIME_LABELS } from "./format.ts";
+import { MEAL_TIME_LABELS, recipeHref } from "./format.ts";
 import { GenerateSheet } from "./generate-sheet.tsx";
 import { EmptyCell, MealSlot, type SlotKind } from "./meal-slot.tsx";
 import { MealSheet } from "./meal-sheet.tsx";
@@ -72,7 +72,7 @@ interface CalendarProps {
   /** Case dont on cherche la cible d'echange (mode echange). */
   swapFrom: MealCell | null;
   onCell: (cell: MealCell) => void;
-  /** F-REPAS d'un repas-recette (appui long, clic droit, touche Menu). */
+  /** F-REPAS par appui long sans bouger (repas texte, "Pas de repas"). */
   onMenu: (cell: MealCell) => void;
   spaceId: string;
   /** Glisser pour echanger, si l'on peut modifier (sinon `null`). */
@@ -95,12 +95,18 @@ function Cell({
   compact?: boolean;
 }) {
   const { meals, settings, swapFrom, onCell, onMenu, drag, swapped, spaceId } = props;
+  const navigate = useNavigate();
   const id = cellId(cell);
   const meal = meals.get(id);
   const kind = slotKind(meal);
   if (kind === "empty" && !settings.can.edit) return <EmptyCell />;
   const servings =
     meal?.servings && meal.servings !== settings.defaultServings ? meal.servings : null;
+  const recipe = meal?.recipe && !swapFrom ? meal.recipe : null;
+  const openRecipe = recipe
+    ? () =>
+        void navigate(recipeHref(spaceId, recipe.id, meal?.servings ?? settings.defaultServings))
+    : null;
   return (
     <MealSlot
       kind={kind}
@@ -115,23 +121,19 @@ function Cell({
       onOpen={() => {
         onCell(cell);
       }}
-      // Repas-recette visible : toucher ouvre la recette, sauf pendant un echange [D204].
-      {...(meal?.recipe && !swapFrom
-        ? {
-            href: `/s/${spaceId}/recipes/${meal.recipe.id}`,
-            onMenu: () => {
-              onMenu(cell);
-            },
-          }
-        : {})}
+      // Repas-recette visible : toucher ouvre F-REPAS, le geste secondaire la recette aux
+      // portions du repas, sauf pendant un echange [D230].
+      {...(openRecipe ? { onMenu: openRecipe } : {})}
       // Une case vide recoit un repas mais ne se prend pas.
       dropId={drag ? id : undefined}
       dragSource={
         drag && kind !== "empty"
           ? drag.source(id, {
-              onMenu: () => {
-                onMenu(cell);
-              },
+              onMenu:
+                openRecipe ??
+                (() => {
+                  onMenu(cell);
+                }),
             })
           : undefined
       }
@@ -532,8 +534,8 @@ export function PlanningPage() {
       {canEdit ? (
         <p className="m-0 text-sm text-ink-muted">
           {wide
-            ? "Glisse un repas sur un autre pour les échanger."
-            : "Appui long sur un repas, puis glisse-le sur un autre pour les échanger."}{" "}
+            ? "Glisse un repas sur un autre pour les échanger ; clic droit : sa recette."
+            : "Appui long sur un repas, puis glisse-le sur un autre pour les échanger ; sans bouger : sa recette."}{" "}
           Les repas verrouillés ne bougent pas à la génération.
         </p>
       ) : null}

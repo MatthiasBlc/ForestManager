@@ -17,6 +17,7 @@ import { AppError } from "../../core/http/errors.ts";
 import { requiredService, type PoolRecipeInfo } from "../services.ts";
 import {
   generate,
+  type DatedCell,
   type EmptyReason as DomainReason,
   type ExistingMeal,
   type GenerationResult,
@@ -32,7 +33,13 @@ import {
   toIsoDate,
   type MealRow,
 } from "./meals.ts";
-import { defaultProfileId, resolveProfile, tagNames, type ResolvedProfile } from "./profiles.ts";
+import {
+  assertUsableTag,
+  defaultProfileId,
+  resolveProfile,
+  tagNames,
+  type ResolvedProfile,
+} from "./profiles.ts";
 import { readSettings } from "./settings.ts";
 
 const DAY_MS = 86_400_000;
@@ -128,7 +135,13 @@ async function loadSituation(
   };
 }
 
-function run(situation: Situation, from: string, to: string, replace: boolean): GenerationResult {
+function run(
+  situation: Situation,
+  from: string,
+  to: string,
+  replace: boolean,
+  cells?: readonly DatedCell[]
+): GenerationResult {
   const meals = [...situation.inPeriod.entries()].map(([cell, row]): ExistingMeal => {
     const [date = "", mealTime = "LUNCH"] = cell.split("/");
     return {
@@ -152,6 +165,7 @@ function run(situation: Situation, from: string, to: string, replace: boolean): 
     ideas: [...situation.ideas.values()],
     replace,
     random: Math.random,
+    ...(cells ? { cells } : {}),
   });
 }
 
@@ -189,10 +203,21 @@ function reasonView(
 export async function previewGeneration(
   ctx: Context,
   spaceId: string,
-  body: { profileId: string; from: string; to: string; replace: boolean }
+  body: {
+    profileId: string;
+    from: string;
+    to: string;
+    replace: boolean;
+    cells?: readonly DatedCell[] | undefined;
+  }
 ): Promise<GenerationPreview> {
   const situation = await loadSituation(ctx, spaceId, body.profileId, body.from, body.to);
-  const result = run(situation, body.from, body.to, body.replace);
+  for (const tagId of new Set(
+    (body.cells ?? []).flatMap((c) => (c.state === "PINNED" ? [c.tagId] : []))
+  )) {
+    await assertUsableTag(ctx.db, spaceId, tagId);
+  }
+  const result = run(situation, body.from, body.to, body.replace, body.cells);
   const tag = await namesFor(ctx, result);
   return {
     profile: { id: situation.profile.id, name: situation.profile.name },
