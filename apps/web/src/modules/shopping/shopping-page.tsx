@@ -3,7 +3,8 @@
 // toucher le produit ouvre F-ARTICLE ; un article coche se barre et glisse en fin de
 // section ; une section toute cochee se replie seule. Champ d'ajout en bas. Appui long
 // (ou souris) puis glisser range un article, dans sa section ou dans une autre. Hors
-// ligne, la liste se lit et se coche ; les coches partent au retour du reseau.
+// ligne, la liste se lit et se coche ; les coches partent au retour du reseau. Pendant
+// un glisser, les sections vides se montrent comme cibles.
 import type { ShoppingItem, ShoppingSection, SpaceRole, Unit } from "@fm/shared";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
@@ -129,7 +130,9 @@ function SectionBlock({
       >
         <Icon name={collapsed ? "chevron-right" : "chevron-down"} size={18} />
         <span className="flex-1">{name}</span>
-        <span className="fm-shop-count">{left > 0 ? left : "tout est pris"}</span>
+        <span className="fm-shop-count">
+          {left > 0 ? left : items.length > 0 ? "tout est pris" : null}
+        </span>
       </button>
       {collapsed ? null : <ul className="fm-shop-items">{children}</ul>}
     </section>
@@ -163,13 +166,16 @@ export function ShoppingPage() {
       if (sent) void queryClient.invalidateQueries({ queryKey: listQuery(spaceId).queryKey });
     });
   }, [online, waiting, pending, spaceId, queryClient]);
+  // Pendant un glisser, les sections vides se montrent comme cibles.
+  const [dragging, setDragging] = useState(false);
   const drag = usePointerDrag({
+    onDragChange: setDragging,
     onDrop: (source, target) => {
       const next = dropMove(items, source, target);
       if (next) move.mutate(next);
     },
   });
-  const dragging = canEdit && online ? drag : null;
+  const dragSource = canEdit && online ? drag : null;
   // Replie ou deplie a la main ; sinon, repliee quand tout est coche.
   const [folded, setFolded] = useState<Record<string, boolean>>({});
   const [openId, setOpenId] = useState<string | null>(null);
@@ -202,7 +208,7 @@ export function ShoppingPage() {
         <div role="group" aria-label="Sections" className="fm-shop-sections">
           {groups.map(({ key, section, name }) => {
             const inSection = sectionItems(items, section?.id ?? null);
-            if (inSection.length === 0) return null;
+            if (inSection.length === 0 && !dragging) return null;
             const done = inSection.every((item) => item.checkedAt !== null);
             const collapsed = folded[key] ?? done;
             return (
@@ -211,7 +217,7 @@ export function ShoppingPage() {
                 name={name}
                 items={inSection}
                 collapsed={collapsed}
-                dropId={dragging?.target(sectionDropId(section?.id ?? null))}
+                dropId={dragSource?.target(sectionDropId(section?.id ?? null))}
                 onToggle={() => {
                   setFolded((current) => ({ ...current, [key]: !collapsed }));
                 }}
@@ -222,7 +228,7 @@ export function ShoppingPage() {
                     item={item}
                     units={units.data}
                     disabled={!canEdit}
-                    drag={dragging}
+                    drag={dragSource}
                     onCheck={(checked) => {
                       const at = new Date().toISOString();
                       if (online) {
@@ -250,8 +256,6 @@ export function ShoppingPage() {
   if (waiting > 0)
     checksNote =
       waiting > 1 ? `${String(waiting)} coches en attente d'envoi.` : "1 coche en attente d'envoi.";
-  else if (!online && canEdit)
-    checksNote = "Hors ligne : tu peux cocher, l'envoi se fera au retour du réseau.";
 
   return (
     <div className="fm-shop">

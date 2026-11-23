@@ -13,10 +13,11 @@ import { buildItem, buildSection, shoppingServer } from "../../test/shopping-ser
 
 const primeur = buildSection("Primeur");
 const alimentaire = buildSection("Alimentaire");
+const cremerie = buildSection("Crèmerie");
 
 function listServer(options: Parameters<typeof shoppingServer>[0] = {}) {
   return shoppingServer({
-    sections: [primeur, alimentaire],
+    sections: [primeur, alimentaire, cremerie],
     items: [
       buildItem({ sectionId: primeur.id, label: "Avocats", sortOrder: 0 }),
       buildItem({ sectionId: primeur.id, label: "Poireaux", sortOrder: 1 }),
@@ -146,6 +147,43 @@ describe("E-COURSES : glisser pour ranger", () => {
     expect(s.shop.orders).toEqual([]);
   });
 
+  it("une section vide apparait le temps du glisser, comme cible", async () => {
+    const s = listServer();
+    renderWithProviders(<App />, { route: route(s) });
+    await screen.findByRole("checkbox", { name: "Lait" });
+    expect(screen.queryByRole("region", { name: "Crèmerie" })).not.toBeInTheDocument();
+    fireEvent.pointerDown(row("Lait"), { ...mouse, clientX: 10, clientY: 10 });
+    fireEvent.pointerMove(row("Riz"), { ...mouse, clientX: 10, clientY: 60 });
+    const empty = await screen.findByRole("region", { name: "Crèmerie" });
+    const head = within(empty).getByRole("button", { name: /Crèmerie/ });
+    fireEvent.pointerMove(head, { ...mouse, clientX: 10, clientY: 300 });
+    expect(head).toHaveAttribute("data-drop-over");
+    fireEvent.pointerUp(head, { ...mouse, clientX: 10, clientY: 300 });
+    await waitFor(() => {
+      expect(s.shop.patches).toEqual([{ itemId: idOf(s, "Lait"), sectionId: cremerie.id }]);
+    });
+    // Elle a un article : elle reste ; les autres sections vides ne se montrent plus.
+    expect(
+      await within(screen.getByRole("region", { name: "Crèmerie" })).findByRole("checkbox", {
+        name: "Lait",
+      })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Alimentaire" })).toBeInTheDocument();
+  });
+
+  it("glisser annule (Echap) : les sections vides se masquent a nouveau", async () => {
+    const s = listServer();
+    renderWithProviders(<App />, { route: route(s) });
+    await screen.findByRole("checkbox", { name: "Lait" });
+    fireEvent.pointerDown(row("Lait"), { ...mouse, clientX: 10, clientY: 10 });
+    fireEvent.pointerMove(row("Riz"), { ...mouse, clientX: 10, clientY: 60 });
+    expect(await screen.findByRole("region", { name: "Crèmerie" })).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: "Escape" });
+    await waitFor(() => {
+      expect(screen.queryByRole("region", { name: "Crèmerie" })).not.toBeInTheDocument();
+    });
+  });
+
   it("appui long sans bouger : ouvre le detail", async () => {
     const s = listServer();
     renderWithProviders(<App />, { route: route(s) });
@@ -185,9 +223,11 @@ describe("E-COURSES hors ligne : lecture et coches", () => {
     act(() => {
       setOnline(false);
     });
+    // Le bandeau global le dit sur cette page : on coche, le reste attend.
     expect(
-      screen.getByText("Hors ligne : tu peux cocher, l'envoi se fera au retour du réseau.")
+      screen.getByText("Hors ligne. Tu peux cocher la liste ; le reste attend le retour du réseau.")
     ).toBeInTheDocument();
+    expect(screen.queryByText(/pour modifier, attends/)).not.toBeInTheDocument();
     // Le reste attend le reseau : pas de glisser.
     expect(row("Lait")).not.toHaveAttribute("data-drag-id");
 

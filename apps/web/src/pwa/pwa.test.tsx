@@ -1,5 +1,6 @@
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { api } from "../lib/api.ts";
@@ -17,7 +18,11 @@ afterEach(() => {
 
 describe("hors ligne (D35, D106)", () => {
   it("bandeau visible hors ligne, retire au retour du reseau", () => {
-    render(<OfflineBanner />);
+    render(
+      <MemoryRouter>
+        <OfflineBanner />
+      </MemoryRouter>
+    );
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
     act(() => setOnline(false));
     expect(screen.getByRole("status")).toHaveTextContent("Hors ligne");
