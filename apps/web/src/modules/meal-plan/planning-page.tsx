@@ -42,6 +42,9 @@ import { EmptyCell, MealSlot, type SlotKind } from "./meal-slot.tsx";
 import { MealSheet } from "./meal-sheet.tsx";
 import { mealsKey, mealsQuery, settingsQuery } from "./queries.ts";
 import { SettingsSheet } from "./settings-sheet.tsx";
+import { FromPlanSheet } from "../shopping/from-plan-sheet.tsx";
+import { planPeriod } from "../shopping/period.ts";
+import { settingsQuery as shoppingSettingsQuery } from "../shopping/queries.ts";
 import { useUrlFlag } from "../../lib/use-url-flag.ts";
 
 const WIDE = "(min-width: 1024px)";
@@ -276,6 +279,10 @@ export function PlanningPage() {
   const toast = useToast();
   const space = useQuery(spaceQuery(spaceId));
   const settings = useQuery(settingsQuery(spaceId));
+  // "Ajouter a la liste de courses" [D228] : module Courses actif et droit de la modifier.
+  const withShopping = !!space.data?.modules.some((m) => m.code === "shopping");
+  const shopping = useQuery({ ...shoppingSettingsQuery(spaceId), enabled: withShopping });
+  const [shopOpen, setShopOpen] = useState(false);
   const today = todayIso();
   const startsOn = settings.data?.weekStartsOn ?? "MON";
   const day = params.get("day") ?? today;
@@ -485,6 +492,19 @@ export function PlanningPage() {
           <Icon name="lightbulb" />
           <span>Idées</span>
         </Link>
+        {withShopping && shopping.data?.can.edit ? (
+          <button
+            type="button"
+            className="fm-toolbtn"
+            aria-label="Ajouter à la liste de courses"
+            onClick={() => {
+              setShopOpen(true);
+            }}
+          >
+            <Icon name="shopping-basket" />
+            <span>Courses</span>
+          </button>
+        ) : null}
         {settings.data?.can.manage ? (
           <Link to="profiles" className="fm-toolbtn" aria-label="Profils de génération">
             <Icon name="puzzle" />
@@ -565,6 +585,15 @@ export function PlanningPage() {
           }}
           spaceId={spaceId}
           weekStart={start}
+        />
+      ) : null}
+      {shopOpen ? (
+        <FromPlanSheet
+          spaceId={spaceId}
+          period={planPeriod(addDays(today, 1), start)}
+          onClose={() => {
+            setShopOpen(false);
+          }}
         />
       ) : null}
       {settings.data ? (

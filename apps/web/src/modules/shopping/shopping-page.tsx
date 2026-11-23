@@ -7,15 +7,20 @@ import { useQuery } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 import { useParams } from "react-router";
 
+import { spaceQuery } from "../../core/session/queries.ts";
 import { errorMessage } from "../../i18n/index.ts";
 import { useWriteGuard } from "../../pwa/use-write-guard.ts";
 import { cx } from "../../ui/cx.ts";
 import { EmptyState, Skeleton } from "../../ui/display.tsx";
 import { Icon } from "../../ui/icon.tsx";
 import { PullToRefresh } from "../../ui/pull-to-refresh.tsx";
+import { addDays, todayIso, weekStart } from "../meal-plan/dates.ts";
+import { settingsQuery as planSettingsQuery } from "../meal-plan/queries.ts";
 import { unitsQuery } from "../recipes/queries.ts";
 import { AddBar } from "./add-bar.tsx";
 import { formatParts, itemName } from "./entry.ts";
+import { FromPlanSheet } from "./from-plan-sheet.tsx";
+import { planPeriod } from "./period.ts";
 import { ItemSheet } from "./item-sheet.tsx";
 import { listQuery, settingsQuery } from "./queries.ts";
 import { sectionItems, useShopping } from "./use-shopping.ts";
@@ -123,6 +128,11 @@ export function ShoppingPage() {
   // Replie ou deplie a la main ; sinon, repliee quand tout est coche.
   const [folded, setFolded] = useState<Record<string, boolean>>({});
   const [openId, setOpenId] = useState<string | null>(null);
+  const [fromPlan, setFromPlan] = useState(false);
+  // "Depuis le planning" : module planning actif et droit de modifier la liste.
+  const space = useQuery(spaceQuery(spaceId));
+  const withPlan = canEdit && !!space.data?.modules.some((m) => m.code === "meal-plan");
+  const planSettings = useQuery({ ...planSettingsQuery(spaceId), enabled: withPlan });
 
   let content;
   if (list.isError && !list.data) {
@@ -186,6 +196,7 @@ export function ShoppingPage() {
 
   const left = list.data?.items.filter((item) => item.checkedAt === null).length ?? 0;
   const opened = list.data?.items.find((item) => item.id === openId);
+  const tomorrow = addDays(todayIso(), 1);
 
   return (
     <div className="fm-shop">
@@ -196,6 +207,20 @@ export function ShoppingPage() {
             <span className="text-sm text-ink-muted tabular-nums">
               {`${String(left)} à acheter`}
             </span>
+          ) : null}
+          <span className="flex-1" />
+          {withPlan && planSettings.data ? (
+            <button
+              type="button"
+              className="fm-toolbtn"
+              aria-label="Depuis le planning"
+              onClick={() => {
+                setFromPlan(true);
+              }}
+            >
+              <Icon name="calendar" />
+              <span>Planning</span>
+            </button>
           ) : null}
         </header>
         {list.data && !canEdit && settings.data ? (
@@ -208,6 +233,15 @@ export function ShoppingPage() {
           units={units.data}
           onAdd={(body) => {
             create.mutate(body);
+          }}
+        />
+      ) : null}
+      {fromPlan && planSettings.data ? (
+        <FromPlanSheet
+          spaceId={spaceId}
+          period={planPeriod(tomorrow, weekStart(tomorrow, planSettings.data.weekStartsOn))}
+          onClose={() => {
+            setFromPlan(false);
           }}
         />
       ) : null}

@@ -2,8 +2,10 @@
 // module actif, liste (sections, articles, droits), ajout, modification, retrait,
 // ordre, Annuler, catalogue d'ingredients. Garde l'etat et les corps recus.
 import {
+  type ApplyPlanBody,
   type CreateShoppingItemBody,
   type Ingredient,
+  type PlanPreview,
   type RestoreShoppingItemsBody,
   type ShoppingItem,
   type ShoppingRights,
@@ -14,6 +16,7 @@ import {
 import { http, HttpResponse } from "msw";
 
 import { NOW, uuid } from "./fixtures.ts";
+import { mealPlanServer } from "./meal-plan-server.ts";
 import { server } from "./server.ts";
 import { spaceServer } from "./space-server.ts";
 
@@ -49,6 +52,9 @@ export function shoppingServer({
   sections = [],
   items = [],
   catalog = [],
+  mealPlan,
+  preview = { lines: [], addedMeals: [], skippedMeals: [], missingSubRecipes: [] },
+  applyResult,
 }: {
   myRole?: SpaceRole;
   editRole?: SpaceRole;
@@ -56,10 +62,17 @@ export function shoppingServer({
   items?: ShoppingItem[];
   /** Ingredients du catalogue (suggestions du champ d'ajout). */
   catalog?: Ingredient[];
+  /** Module planning actif aussi (faux serveur du planning, meme espace). */
+  mealPlan?: Omit<NonNullable<Parameters<typeof mealPlanServer>[0]>, "myRole">;
+  /** Reponse de l'apercu "Depuis le planning". */
+  preview?: PlanPreview;
+  /** Reponse de l'ajout ; par defaut, une ligne ajoutee par ingredient coche. */
+  applyResult?: { added: number; updated: number };
 } = {}) {
-  const s = spaceServer({ myRole });
+  const s = mealPlan ? mealPlanServer({ ...mealPlan, myRole }) : spaceServer({ myRole });
   s.space.modules = [
     { code: "recipes", sortOrder: 0 },
+    ...(mealPlan ? [{ code: "meal-plan", sortOrder: 1 }] : []),
     { code: "shopping", sortOrder: 2 },
   ];
   const state = {
@@ -71,6 +84,9 @@ export function shoppingServer({
     deleted: [] as string[],
     orders: [] as { sectionId: string | null; ids: string[] }[],
     restored: [] as RestoreShoppingItemsBody[],
+    /** Periodes demandees a l'apercu, et ajouts depuis le planning. */
+    previews: [] as { from: string; to: string }[],
+    applied: [] as ApplyPlanBody[],
   };
   const can = (): ShoppingRights => ({
     edit: RANK[myRole] >= RANK[state.editRole],
@@ -93,6 +109,15 @@ export function shoppingServer({
           .filter((i) => i.name.toLowerCase().includes(q) || q.startsWith(i.name.toLowerCase()))
           .slice(0, 6),
       });
+    }),
+    http.post(`${base}/from-plan/preview`, async ({ request }) => {
+      state.previews.push((await request.json()) as { from: string; to: string });
+      return HttpResponse.json(preview);
+    }),
+    http.post(`${base}/from-plan`, async ({ request }) => {
+      const body = (await request.json()) as ApplyPlanBody;
+      state.applied.push(body);
+      return HttpResponse.json(applyResult ?? { added: body.ingredientIds.length, updated: 0 });
     }),
     http.post(`${base}/items`, async ({ request }) => {
       const body = (await request.json()) as CreateShoppingItemBody;
