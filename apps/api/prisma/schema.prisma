@@ -78,6 +78,8 @@ model User {
   recipeRevisions      RecipeRevision[]
   sharesMade           RecipeShare[]            @relation("ShareSharedBy")
   sharesRemoved        RecipeShare[]            @relation("ShareRemovedBy")
+  shoppingChecked      ShoppingItem[]           @relation("ShoppingItemCheckedBy")
+  shoppingCreated      ShoppingItem[]           @relation("ShoppingItemCreatedBy")
   sharesApproved       RecipeShare[]            @relation("ShareApprovedBy")
   shareRequests        RecipeShareRequest[]     @relation("ShareRequester")
   shareRequestsDecided RecipeShareRequest[]     @relation("ShareRequestDecider")
@@ -179,6 +181,10 @@ model Space {
   moderationAccesses ModerationAccess[]
   mealSettings       MealPlanSettings?
   mealSlots          MealSlot[]
+  shoppingSettings   ShoppingSettings?
+  shoppingSections   ShoppingSection[]
+  shoppingItems      ShoppingItem[]
+  shoppingPlacements ShoppingPlacement[]
   mealIdeas          MealIdea[]
   generationProfiles MealGenerationProfile[]
   notifications      Notification[]
@@ -397,6 +403,7 @@ model Unit {
   recipeYields      Recipe[]               @relation("RecipeYieldUnit")
   blockSubUnits     RecipeBlock[]          @relation("BlockSubUnit")
   recipeIngredients RecipeIngredient[]
+  shoppingParts     ShoppingItemPart[]
 }
 
 model UnitTranslation {
@@ -417,8 +424,9 @@ model Aisle {
   code      String @unique
   sortOrder Int    @default(0)
 
-  translations AisleTranslation[]
-  ingredients  Ingredient[]
+  translations     AisleTranslation[]
+  ingredients      Ingredient[]
+  shoppingSections ShoppingSection[]
 }
 
 model AisleTranslation {
@@ -448,14 +456,15 @@ model Ingredient {
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 
-  defaultUnit  Unit?                   @relation(fields: [defaultUnitId], references: [id])
-  aisle        Aisle?                  @relation(fields: [aisleId], references: [id])
-  mergedInto   Ingredient?             @relation("IngredientMerge", fields: [mergedIntoId], references: [id])
-  mergedFrom   Ingredient[]            @relation("IngredientMerge")
-  createdBy    User?                   @relation(fields: [createdById], references: [id], onDelete: SetNull)
-  translations IngredientTranslation[]
-  unitWeights  IngredientUnitWeight[]
-  usedIn       RecipeIngredient[]
+  defaultUnit   Unit?                   @relation(fields: [defaultUnitId], references: [id])
+  aisle         Aisle?                  @relation(fields: [aisleId], references: [id])
+  mergedInto    Ingredient?             @relation("IngredientMerge", fields: [mergedIntoId], references: [id])
+  mergedFrom    Ingredient[]            @relation("IngredientMerge")
+  createdBy     User?                   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  translations  IngredientTranslation[]
+  unitWeights   IngredientUnitWeight[]
+  usedIn        RecipeIngredient[]
+  shoppingItems ShoppingItem[]
 
   @@index([status])
 }
@@ -606,17 +615,18 @@ model Recipe {
   adaptedFrom Recipe?  @relation("RecipeAdaptation", fields: [adaptedFromId], references: [id])
   adaptations Recipe[] @relation("RecipeAdaptation")
 
-  blocks        RecipeBlock[]        @relation("RecipeBlocks")
-  usedIn        RecipeBlock[]        @relation("BlockSubRecipe")
-  revisions     RecipeRevision[]
-  globalTags    RecipeGlobalTag[]
-  spaceTags     RecipeSpaceTag[]
-  shares        RecipeShare[]        @relation("ShareRecipe")
-  sharedVia     RecipeShare[]        @relation("ShareVia")
-  shareRequests RecipeShareRequest[]
-  suggestions   RecipeSuggestion[]
-  mealSlots     MealSlot[]
-  mealRules     MealGenerationRule[]
+  blocks          RecipeBlock[]        @relation("RecipeBlocks")
+  usedIn          RecipeBlock[]        @relation("BlockSubRecipe")
+  revisions       RecipeRevision[]
+  globalTags      RecipeGlobalTag[]
+  spaceTags       RecipeSpaceTag[]
+  shares          RecipeShare[]        @relation("ShareRecipe")
+  sharedVia       RecipeShare[]        @relation("ShareVia")
+  shareRequests   RecipeShareRequest[]
+  suggestions     RecipeSuggestion[]
+  mealSlots       MealSlot[]
+  shoppingSources ShoppingItemSource[]
+  mealRules       MealGenerationRule[]
 
   @@index([homeSpaceId, deletedAt])
   @@index([authorId, deletedAt])
@@ -974,6 +984,8 @@ model MealSlot {
   recipe    Recipe? @relation(fields: [recipeId], references: [id], onDelete: SetNull)
   updatedBy User?   @relation(fields: [updatedById], references: [id], onDelete: SetNull)
 
+  shoppingSources ShoppingItemSource[]
+
   @@unique([spaceId, date, mealTime])
   @@index([recipeId, date]) // compteurs "fois planifiee", "derniere fois" [D39]
 }
@@ -1035,17 +1047,17 @@ enum FrequencyPer {
 /// Regle de generation : sur un tag (global ou de l'espace) OU sur une recette,
 /// jamais les deux (CHECK SQL).
 model MealGenerationRule {
-  id              String        @id @default(uuid())
-  profileId       String
-  position        Int           @default(0) // ordre de declaration (conflits de minimums)
-  tagId           String?
-  recipeId        String?
-  weight          Float         @default(1) // 0 a 2 : paliers ou mode avance [D184]
-  mealTime        MealTime? // null = tous les repas
-  frequencyMin    Int?
-  frequencyMax    Int?
-  frequencyPer    FrequencyPer?
-  tagCooldownDays Int?
+  id                 String        @id @default(uuid())
+  profileId          String
+  position           Int           @default(0) // ordre de declaration (conflits de minimums)
+  tagId              String?
+  recipeId           String?
+  weight             Float         @default(1) // 0 a 2 : paliers ou mode avance [D184]
+  mealTime           MealTime? // null = tous les repas
+  frequencyMin       Int?
+  frequencyMax       Int?
+  frequencyPer       FrequencyPer?
+  tagCooldownDays    Int?
   /// Delai de recette des recettes du tag, a la place de celui du profil [D214].
   recipeCooldownDays Int?
 
@@ -1209,4 +1221,110 @@ model DataExport {
 
   @@index([spaceId, createdAt])
   @@index([requestedById, createdAt])
+}
+
+// --- Liste de courses [D228, D231] ---
+
+/// Reglages de la liste d'un espace. La ligne marque aussi l'initialisation : a sa
+/// creation (premiere ouverture du module), les sections sont creees depuis les rayons.
+model ShoppingSettings {
+  spaceId   String    @id
+  editRole  SpaceRole @default(MEMBER)
+  updatedAt DateTime  @updatedAt
+
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+}
+
+/// Section de la liste (Primeur, Pharmacie, Ikea...), ordonnee a la main ; "Autres" n'a pas de ligne.
+model ShoppingSection {
+  id        String  @id @default(uuid())
+  spaceId   String
+  name      String
+  sortOrder Int     @default(0)
+  /// Rayon dont elle est issue : y range les produits de ce rayon sans section favorite [D231].
+  aisleId   String?
+
+  space      Space               @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  aisle      Aisle?              @relation(fields: [aisleId], references: [id], onDelete: SetNull)
+  items      ShoppingItem[]
+  placements ShoppingPlacement[]
+
+  @@index([spaceId, sortOrder])
+}
+
+/// Article de la liste : un ingredient ou un texte libre. Ephemere : retirer = supprimer.
+model ShoppingItem {
+  id             String    @id @default(uuid())
+  spaceId        String
+  sectionId      String? // null = "Autres"
+  ingredientId   String?
+  label          String?
+  /// Cle du produit dans l'espace (`productKey` de @fm/shared) : fusion et section favorite.
+  productKey     String
+  sortOrder      Int       @default(0)
+  checkedAt      DateTime?
+  checkedById    String?
+  /// Heure (client) de la derniere coche ou decoche : une coche hors ligne plus ancienne est ignoree.
+  checkChangedAt DateTime?
+  createdById    String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  space      Space                @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  section    ShoppingSection?     @relation(fields: [sectionId], references: [id], onDelete: SetNull)
+  ingredient Ingredient?          @relation(fields: [ingredientId], references: [id], onDelete: Cascade)
+  checkedBy  User?                @relation("ShoppingItemCheckedBy", fields: [checkedById], references: [id], onDelete: SetNull)
+  createdBy  User?                @relation("ShoppingItemCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  parts      ShoppingItemPart[]
+  sources    ShoppingItemSource[]
+
+  @@index([spaceId, sectionId, sortOrder])
+  @@index([ingredientId])
+}
+
+/// Quantite d'un article dans une unite : une ligne par unite non convertible ("500 g + 3").
+model ShoppingItemPart {
+  id       String  @id @default(uuid())
+  itemId   String
+  position Int
+  quantity Float
+  unitId   String?
+
+  item ShoppingItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  unit Unit?        @relation(fields: [unitId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, position])
+}
+
+/// Repas qui a apporte une part de l'article : detail "pour : ..." et repas deja ajoutes.
+model ShoppingItemSource {
+  id          String   @id @default(uuid())
+  itemId      String
+  mealSlotId  String?
+  recipeId    String?
+  recipeTitle String
+  date        DateTime @db.Date
+  mealTime    MealTime
+  /// Parts apportees : [{ quantity, unitId }].
+  parts       Json
+
+  item     ShoppingItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  mealSlot MealSlot?    @relation(fields: [mealSlotId], references: [id], onDelete: SetNull)
+  recipe   Recipe?      @relation(fields: [recipeId], references: [id], onDelete: SetNull)
+
+  @@index([itemId])
+  @@index([mealSlotId])
+}
+
+/// Section favorite d'un produit dans l'espace [D231] : ecrite au premier deplacement, ou par "Toujours ranger ici".
+model ShoppingPlacement {
+  spaceId    String
+  productKey String
+  sectionId  String
+
+  space   Space           @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  section ShoppingSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@id([spaceId, productKey])
+  @@index([sectionId])
 }
