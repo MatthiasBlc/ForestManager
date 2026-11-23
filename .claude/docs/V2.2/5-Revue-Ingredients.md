@@ -4,6 +4,12 @@
 
 Les 152 ingredients de la prod sont au statut NEW (crees par les utilisateurs, surtout a la reprise des recettes) : aucun verifie, aucun traduit, aucun rayon. Les rayons servent a ranger la liste de courses (C9) : a regler avant. Proposition de Claude, validee par le proprietaire au selecteur le 2026-11-23 : D1 fusion puis unite des lignes de recette corrigee ; D2 premier choix, l'alternative va en note de la ligne de recette ; D3 variantes gardees a part, sauf oignon jaune, sucre en poudre et farine T55 fusionnes ; rayons appliques tels quels. Point ouvert pour C9 : une section de liste de courses ne suit qu'un rayon (`aisleId`), alors que les groupes du proprietaire (Alimentaire...) en couvrent plusieurs.
 
+**Complements (2026-11-23, valides au selecteur, appliques par l'admin)** :
+
+- Noms anglais ajoutes : les 16 unites (gram, milliliter, teaspoon, piece, clove, packet, to taste...), les 10 rayons (Produce, Bakery, Butcher, Fishmonger, Dairy, Savory pantry, Baking & sweets, Canned goods, Frozen, Drinks), les 10 tags globaux qui n'en avaient pas (Appetizer, Quick, Gluten-free, Vegan, Vegetarian, Dessert, Breakfast, Starter, Main course, Batch cooking).
+- Deux familles de tags globales creees : "Regime" (Diet : Vegetarien, Vegan, Sans gluten) et "Pratique" (Practical : Rapide, Batch cooking, Congelable, Air fryer) ; plus aucun tag global dans "Autres".
+- Poids a la piece (38 ingredients, poids moyens) pour additionner pieces et grammes dans la liste de courses : piece (oeuf 55 g, oignon 100, echalote 30, citron 120, avocat 200, tomate 120, courgette 250, aubergine 300, poivron 150, carotte 100, pomme de terre 150, patate douce 250, concombre 300, poireau 200, butternut 1200, potimarron 1000, brocoli 400, chou-fleur 800, chou 1000, fenouil 250, salade 300, artichaut 300, champignon 20, tortilla 40, burrata 125, mozzarella 125, camembert 250, reblochon 450, bouillon de legumes en cube 10), gousse (ail 5), tranche (pain de mie 25, jambon 40), botte (basilic 30, persil 50), boite (lait de coco 400, thon 140, mais 285, tomates concassees 400).
+
 Actions : **V** verifier tel quel ; **R** renommer puis verifier ; **F** fusionner dans un autre (les recettes suivent la cible). Doutes : D1 quantite dans le nom ; D2 alternatives dans le nom ; D3 variante ou meme produit ; D4 ingredient sans recette ; D5 rayon discutable.
 
 Noms des ingredients et des rayons sans accents dans ce fichier (regle des docs) ; ils gardent leurs accents en base.
