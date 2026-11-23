@@ -23,7 +23,7 @@ import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { addDays, periodLabel, todayIso, whenLabel } from "./dates.ts";
 import { reasonText, skippedText, warningText } from "./format.ts";
-import { GenerateMeals, type GenerateChoice } from "./generate-meals.tsx";
+import { GenerateMeals, type GenerateChoice, type MealChoices } from "./generate-meals.tsx";
 import { mealsKey, profilesQuery } from "./queries.ts";
 
 type Span = "this" | "next" | "both";
@@ -288,10 +288,12 @@ export function GenerateSheet({
 }) {
   const [choice, setChoice] = useState<{ value: GenerateChoice; span: Span } | null>(null);
   const [atMeals, setAtMeals] = useState(false);
+  const [mealChoices, setMealChoices] = useState<MealChoices | null>(null);
   const [preview, setPreview] = useState<GenerationPreview | null>(null);
   const close = () => {
     setPreview(null);
     setChoice(null);
+    setMealChoices(null);
     setAtMeals(false);
     onClose();
   };
@@ -317,10 +319,14 @@ export function GenerateSheet({
       <GenerateMeals
         spaceId={spaceId}
         choice={choice.value}
+        saved={mealChoices}
         onBack={() => {
           setAtMeals(false);
         }}
-        onPreview={setPreview}
+        onPreview={(next, choices) => {
+          setMealChoices(choices);
+          setPreview(next);
+        }}
       />
     );
   } else {
@@ -338,6 +344,8 @@ export function GenerateSheet({
             : null
         }
         onNext={(value, span) => {
+          // D'autres options : autres repas, les choix repartent de la grille du profil.
+          setMealChoices(null);
           setChoice({ value, span });
           setAtMeals(true);
         }}

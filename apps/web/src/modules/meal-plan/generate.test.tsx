@@ -176,7 +176,16 @@ describe("F-GENERER", () => {
     });
     // Le profil n'est pas modifie.
     expect(s.plan.grids).toEqual([]);
-    expect(await screen.findByRole("dialog", { name: "Planning proposé" })).toBeInTheDocument();
+    // Retour depuis l'apercu : les repas a generer gardent les choix faits.
+    const report = await screen.findByRole("dialog", { name: "Planning proposé" });
+    await user.click(within(report).getByRole("button", { name: "Retour" }));
+    const again = await screen.findByRole("dialog", { name: "Repas à générer" });
+    expect(
+      await within(again).findByRole("checkbox", { name: /^Mardi 10, midi/ })
+    ).not.toBeChecked();
+    expect(
+      within(again).getByRole("button", { name: "Samedi 14, soir : tag Végétarien, changer" })
+    ).toBeInTheDocument();
   });
 
   it("genere la semaine affichee avec le profil par defaut, puis garde le planning", async () => {

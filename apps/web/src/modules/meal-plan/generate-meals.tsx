@@ -43,7 +43,7 @@ interface Row {
   note: string | null;
 }
 
-interface RowState {
+export interface RowState {
   on: boolean;
   tag: { id: string; name: string } | null;
 }
@@ -101,11 +101,15 @@ function cellsOf(rows: readonly Row[], state: ReadonlyMap<string, RowState>): Da
   });
 }
 
+/** Choix des repas a generer, gardes au retour depuis l'apercu. */
+export type MealChoices = ReadonlyMap<string, RowState>;
+
 function MealsForm({
   spaceId,
   choice,
   rows,
   profile,
+  saved,
   onBack,
   onPreview,
 }: {
@@ -113,13 +117,14 @@ function MealsForm({
   choice: GenerateChoice;
   rows: Row[];
   profile: GenerationProfile;
+  saved: MealChoices | null;
   onBack: () => void;
-  onPreview: (preview: GenerationPreview) => void;
+  onPreview: (preview: GenerationPreview, choices: MealChoices) => void;
 }) {
   const guard = useWriteGuard();
   const catalog = useQuery(tagCatalogQuery(spaceId));
   const space = useQuery(spaceQuery(spaceId));
-  const [state, setState] = useState(() => initialState(rows, profile));
+  const [state, setState] = useState<MealChoices>(() => saved ?? initialState(rows, profile));
   const [picking, setPicking] = useState<Row | null>(null);
   const update = (row: Row, change: Partial<RowState>) => {
     setState((current) => {
@@ -137,7 +142,9 @@ function MealsForm({
         { ...choice, cells: cellsOf(rows, state) },
         generationPreviewSchema
       ),
-    onSuccess: onPreview,
+    onSuccess: (preview) => {
+      onPreview(preview, state);
+    },
   });
   const count = rows.filter(
     (row) => !row.fixed && state.get(cellKey(row.date, row.mealTime))?.on
@@ -251,13 +258,16 @@ function MealsForm({
 export function GenerateMeals({
   spaceId,
   choice,
+  saved,
   onBack,
   onPreview,
 }: {
   spaceId: string;
   choice: GenerateChoice;
+  /** Choix deja faits pour ces options (retour depuis l'apercu). */
+  saved: MealChoices | null;
   onBack: () => void;
-  onPreview: (preview: GenerationPreview) => void;
+  onPreview: (preview: GenerationPreview, choices: MealChoices) => void;
 }) {
   const settings = useQuery(settingsQuery(spaceId));
   const profile = useQuery(profileQuery(spaceId, choice.profileId));
@@ -273,6 +283,7 @@ export function GenerateMeals({
       choice={choice}
       rows={rowsOf(choice, settings.data.mealTimes, meals.data)}
       profile={profile.data}
+      saved={saved}
       onBack={onBack}
       onPreview={onPreview}
     />
