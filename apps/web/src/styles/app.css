@@ -227,12 +227,14 @@ body,
   hyphens: auto;
 }
 /* Repas hors grille (accueil) : le moment a droite, discret. */
-/* Repas-recette en lien [D204] : pas de soulignement, pas de bulle native a l'appui long
-   (iOS), pas de selection du texte pendant le geste. */
-a.fm-slot {
-  text-decoration: none;
+/* Repas a appui long (glisser, recette au planning) [D204, D230] : pas de bulle native
+   (iOS), pas de selection du texte pendant le geste ; en lien (accueil), pas de soulignement. */
+.fm-slot {
   -webkit-touch-callout: none;
   user-select: none;
+}
+a.fm-slot {
+  text-decoration: none;
 }
 .fm-slot-when {
   margin-left: auto;

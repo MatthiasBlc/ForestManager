@@ -26,9 +26,8 @@ const RECIPES = [
   "Hachis parmentier",
 ];
 
-/** Cases dont le nom accessible suit `name` : bouton, ou lien pour un repas-recette [D204]. */
-const slots = (page: Page, name: RegExp) =>
-  page.getByRole("button", { name }).or(page.getByRole("link", { name }));
+/** Cases dont le nom accessible suit `name` : toujours des boutons au planning [D230]. */
+const slots = (page: Page, name: RegExp) => page.getByRole("button", { name });
 
 /** Un repas de la semaine affichee, par son nom accessible ("Mardi 9, midi : ..."). */
 const slot = (page: Page, when: string) => slots(page, new RegExp(`^${when} : `));
@@ -183,7 +182,7 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
   await expect(slot(page, "Mercredi 10, midi")).toHaveAccessibleName(
     "Mercredi 10, midi : Pas de repas"
   );
-  const planned = page.getByRole("link", {
+  const planned = page.getByRole("button", {
     name: new RegExp(`^\\S+ \\d+, (midi|soir) : (${RECIPES.join("|")})$`),
   });
   await expect(planned).toHaveCount(10);
@@ -234,10 +233,17 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
     );
   }
 
-  // 10. Toucher un repas-recette ouvre la recette [D204].
+  // 10. Toucher un repas-recette ouvre F-REPAS, "Voir la recette" en tete ; le clic droit
+  // ouvre directement la recette, aux portions du repas [D230].
   const first = planned.first();
   const title = ((await first.getAttribute("aria-label")) ?? "").split(" : ")[1] ?? "";
   await first.click();
-  await expect(page).toHaveURL(new RegExp(`/s/${space.id}/recipes/`));
+  await expect(
+    page.getByRole("dialog").getByRole("link", { name: "Voir la recette" })
+  ).toHaveAttribute("href", /\/recipes\/[^?]+\?servings=\d+$/);
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await first.click({ button: "right" });
+  await expect(page).toHaveURL(new RegExp(`/s/${space.id}/recipes/[^?]+\\?servings=\\d+$`));
   await expect(page.getByRole("heading", { level: 1, name: title })).toBeVisible();
 });

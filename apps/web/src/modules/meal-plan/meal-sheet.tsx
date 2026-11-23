@@ -1,6 +1,7 @@
 // F-REPAS [P10, D181] : recette (espace d'abord, puis mes recettes avec partage
 // propose), texte libre ou "Pas de repas" ; portions, commentaire, verrou ; vider,
-// echanger. Sans le droit de modifier : le repas en lecture seule (F-MPL-3).
+// echanger. "Voir la recette" en tete, aux portions du repas [D230]. Sans le droit de
+// modifier : le repas en lecture seule (F-MPL-3).
 import {
   mealSchema,
   pageSchema,
@@ -260,6 +261,14 @@ function MealForm({ spaceId, spaceName, cell, meal, defaultServings, onDone, onS
 
   return (
     <div className="fm-stack">
+      {meal?.recipe ? (
+        <Link
+          to={recipeHref(spaceId, meal.recipe.id, meal.servings ?? defaultServings)}
+          className="fm-btn fm-btn-secondary"
+        >
+          Voir la recette
+        </Link>
+      ) : null}
       <FormAlert message={error ? errorMessage(error) : undefined} />
       <SegmentedControl label="Type de repas" options={KINDS} value={kind} onChange={setKind} />
       {kind === "RECIPE" ? (

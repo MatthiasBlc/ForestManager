@@ -2,7 +2,7 @@
 // cases vides expliquees [D113], "Garder ce planning" sans ecraser une case
 // modifiee depuis [D110, D184] ; "Proposer un autre repas" depuis F-REPAS.
 import type { GenerationPreview } from "@fm/shared";
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../../app/App.tsx";
@@ -226,8 +226,8 @@ describe("proposer un autre repas", () => {
       reason: null,
     };
     const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/meal-plan` });
-    // Repas-recette : F-REPAS par clic droit, le toucher ouvre la recette [D204].
-    fireEvent.contextMenu(await screen.findByRole("link", { name: /Dahl de lentilles/ }));
+    // Toucher un repas, recette comprise, ouvre F-REPAS [D230].
+    await user.click(await screen.findByRole("button", { name: /Dahl de lentilles/ }));
     const sheet = await screen.findByRole("dialog", { name: "Mardi 10, soir" });
     await user.click(within(sheet).getByRole("button", { name: "Proposer un autre repas" }));
     expect(s.plan.suggestions).toEqual([]);
@@ -242,8 +242,8 @@ describe("proposer un autre repas", () => {
     const s = mealPlanServer({ myRole: "MEMBER", meals: [dahlMeal] });
     s.plan.suggestResult = { meal: null, reason: { code: "COOLDOWN", days: 3 } };
     const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/meal-plan` });
-    // Repas-recette : F-REPAS par clic droit, le toucher ouvre la recette [D204].
-    fireEvent.contextMenu(await screen.findByRole("link", { name: /Dahl de lentilles/ }));
+    // Toucher un repas, recette comprise, ouvre F-REPAS [D230].
+    await user.click(await screen.findByRole("button", { name: /Dahl de lentilles/ }));
     const sheet = await screen.findByRole("dialog", { name: "Mardi 10, soir" });
     await user.click(within(sheet).getByRole("button", { name: "Proposer un autre repas" }));
     await user.click(within(sheet).getByRole("button", { name: "Remplacer" }));
@@ -256,9 +256,9 @@ describe("proposer un autre repas", () => {
 
   it("pas de proposition sur un repas verrouille", async () => {
     const s = mealPlanServer({ myRole: "MEMBER", meals: [{ ...dahlMeal, locked: true }] });
-    renderWithProviders(<App />, { route: `/s/${s.space.id}/meal-plan` });
-    // Repas-recette : F-REPAS par clic droit, le toucher ouvre la recette [D204].
-    fireEvent.contextMenu(await screen.findByRole("link", { name: /Dahl de lentilles/ }));
+    const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/meal-plan` });
+    // Toucher un repas, recette comprise, ouvre F-REPAS [D230].
+    await user.click(await screen.findByRole("button", { name: /Dahl de lentilles/ }));
     const sheet = await screen.findByRole("dialog", { name: "Mardi 10, soir" });
     expect(
       within(sheet).queryByRole("button", { name: "Proposer un autre repas" })

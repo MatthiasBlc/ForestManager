@@ -38,7 +38,7 @@ Retours d'usage du 2026-11-23, choix au selecteur ; plan `4-Plan-Patch-Planning.
 - [x] Etude et choix au selecteur ; D230 au journal, CDC S4.6 et Parcours P10 a jour
 - [x] Ouvrir `hotfix/planning` (2026-11-23) : depuis le commit de `lot/v2.3.0`, dont le code est celui de `master` (`v2.2.0`) et qui n'ajoute que des docs, pour eviter un conflit de docs ; lot laisse en l'etat
 - [x] Etape 1 : recette aux portions du repas (`?servings=`), accueil compris (l API renvoie les portions effectives)
-- [ ] Etape 2 : gestes inverses au planning (clic gauche / toucher : F-REPAS ; clic droit / appui long : la recette)
+- [x] Etape 2 : gestes inverses au planning (clic gauche / toucher : F-REPAS ; clic droit / appui long : la recette)
 - [ ] Etape 3 : raccourcis du texte libre
 - [ ] Etape 4 : grille ponctuelle avant generation (shared, API, web)
 - [ ] Etape 5 : docs (Plan-Tests) et changelog ; verification complete (`npm test`, `npm run e2e`, lint, typecheck)
