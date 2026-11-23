@@ -21,4 +21,8 @@ Retours d'usage du proprietaire le 2026-11-23, avant le lot liste de courses. Ch
 
 ## Ecarts au plan
 
-(a remplir au fil du code)
+- **Branche** : `hotfix/planning` part du commit de `lot/v2.3.0`, dont le code est celui de `master` (`v2.2.0`) et qui n'ajoute que des docs (les commits de docs de D229 ne sont pas sur `master` : partir de `master` faisait des conflits de docs).
+- **Etape 1** : le widget "Prochains repas" ne connaissait pas les portions ; l'API les renvoie (portions du repas, sinon defaut de l'espace).
+- **Etape 2** : aide du planning completee ("clic droit : sa recette", "sans bouger : sa recette") ; la regle CSS qui evite la bulle native et la selection a l'appui long vaut pour toutes les cases, plus seulement les liens.
+- **Etape 4** : F-GENERER passe en deux etapes ("Suivant" puis "Repas a generer" et "Generer") : un toucher de plus quand on ne change rien, mais la vue des repas est visible a chaque generation (le souhait). La grille envoyee remplace toujours celle du profil pour la periode ; le choix du tag se fait dans la feuille de tags (choix unique), avec "Retirer le tag". Retour depuis "Planning propose" : vers "Repas a generer", choix gardes.
+- **Revue dans Chrome** (dev, 390 px) : le compteur "N repas a generer" etait coince a cote du bouton, il passe en tete de la liste. Le retour depuis l'apercu perdait les choix : corrige (choix gardes tant que les options ne changent pas).

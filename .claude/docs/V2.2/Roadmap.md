@@ -41,7 +41,7 @@ Retours d'usage du 2026-11-23, choix au selecteur ; plan `4-Plan-Patch-Planning.
 - [x] Etape 2 : gestes inverses au planning (clic gauche / toucher : F-REPAS ; clic droit / appui long : la recette)
 - [x] Etape 3 : raccourcis du texte libre
 - [x] Etape 4 : grille ponctuelle avant generation (shared, API, web) : etape "Repas a generer" apres "Suivant"
-- [ ] Etape 5 : docs (Plan-Tests) et changelog ; verification complete (`npm test`, `npm run e2e`, lint, typecheck)
+- [x] Etape 5 : docs (Plan-Tests, Parcours, ecarts au plan) ; verification complete (1815 tests, 25 E2E, lint, typecheck) et revue a 390 px dans Chrome sur la dev (compte de test) ; changelog : brouillon genere par la CI depuis les commits `fix:`, a reformuler a la mise en prod
 - [ ] PR `hotfix/planning` -> `Developement`, puis `Developement` -> `master` (preprod, verification pas a pas), fusion (prod, tag `v2.2.1`), changelog
 - [ ] `Developement` fusionne dans `lot/v2.3.0` ; suppression de `hotfix/planning`
 
