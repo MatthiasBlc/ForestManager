@@ -144,7 +144,8 @@ function fieldText(value: FieldValue, units: readonly Unit[]): string {
 
 function lineText(line: RecipeIngredient, units: readonly Unit[]): string {
   const amount = scaledAmount(line, units, 1);
-  return [amount, line.name, line.note ? `(${line.note})` : ""].filter(Boolean).join(" ");
+  const detail = [line.note, line.optional ? "facultatif" : null].filter(Boolean).join(", ");
+  return [amount, line.name, detail ? `(${detail})` : ""].filter(Boolean).join(" ");
 }
 
 function blockText(block: ContentBlock | null, units: readonly Unit[]): string {

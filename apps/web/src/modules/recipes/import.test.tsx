@@ -33,6 +33,7 @@ const CURRY: ImportedRecipe = {
       unitCode: "tbsp",
       name: "huile",
       note: null,
+      optional: false,
       check: false,
     },
     {
@@ -41,9 +42,18 @@ const CURRY: ImportedRecipe = {
       unitCode: null,
       name: "oignon",
       note: "émincé",
+      optional: false,
       check: false,
     },
-    { raw: "Persil", quantity: null, unitCode: null, name: "Persil", note: null, check: true },
+    {
+      raw: "Persil",
+      quantity: null,
+      unitCode: null,
+      name: "Persil",
+      note: null,
+      optional: false,
+      check: true,
+    },
   ],
   steps: ["Couper l'aubergine.", "Cuire 25 min."],
 };

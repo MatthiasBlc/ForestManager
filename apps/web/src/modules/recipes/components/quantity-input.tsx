@@ -4,10 +4,10 @@
 // l'enregistrement (D09).
 import type { Unit } from "@fm/shared";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { cx } from "../../../ui/cx.ts";
-import { IconButton } from "../../../ui/button.tsx";
+import { Button, IconButton } from "../../../ui/button.tsx";
 import { Badge } from "../../../ui/display.tsx";
 import { Icon } from "../../../ui/icon.tsx";
 import { ingredientSearchQuery } from "../queries.ts";
@@ -19,8 +19,10 @@ export interface IngredientLine {
   name: string;
   /** null tant que le nom n'a pas ete choisi dans les propositions. */
   ingredientId: string | null;
-  /** Precision ("emince") : son champ ne s'affiche que si la ligne en a une. */
+  /** Precision ("emince") : son champ s'ouvre par "+ Precision" ou si la ligne en a une [D232]. */
   note?: string | null;
+  /** Ingredient facultatif [D232]. */
+  optional?: boolean;
 }
 
 interface Row {
@@ -64,6 +66,8 @@ export function QuantityInput({
   onRemove?: () => void;
 }) {
   const listId = useId();
+  const noteRef = useRef<HTMLInputElement>(null);
+  const [focusNote, setFocusNote] = useState(false);
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(0);
   const term = useDebounced(open && value.ingredientId === null ? value.name.trim() : "");
@@ -86,6 +90,13 @@ export function QuantityInput({
         ]
       : [];
   const expanded = open && value.ingredientId === null && rows.length > 0;
+  const hasNote = value.note !== undefined && value.note !== null;
+  // Une ligne vide (la derniere de l'editeur) n'a rien de plus a regler [D232].
+  const extras = typed !== "" || hasNote || value.optional === true;
+
+  useEffect(() => {
+    if (focusNote) noteRef.current?.focus();
+  }, [focusNote]);
 
   const choose = (row: Row) => {
     onChange({ ...value, name: row.name, ingredientId: row.ingredientId });
@@ -185,17 +196,45 @@ export function QuantityInput({
         </div>
         {onRemove ? <IconButton icon="x" label={`Retirer ${label}`} onClick={onRemove} /> : null}
       </div>
-      {value.note !== undefined && value.note !== null ? (
+      {hasNote ? (
         <input
+          ref={noteRef}
           className="fm-input fm-qty-note"
           aria-label="Précision"
           placeholder="Précision"
           maxLength={120}
-          value={value.note}
+          value={value.note ?? ""}
           onChange={(event) => {
             onChange({ ...value, note: event.target.value });
           }}
         />
+      ) : null}
+      {extras ? (
+        <div className="fm-qty-extra">
+          {hasNote ? null : (
+            <Button
+              variant="ghost"
+              size="sm"
+              icon="plus"
+              onClick={() => {
+                onChange({ ...value, note: "" });
+                setFocusNote(true);
+              }}
+            >
+              Précision
+            </Button>
+          )}
+          <label className="fm-qty-optional">
+            <input
+              type="checkbox"
+              checked={value.optional === true}
+              onChange={(event) => {
+                onChange({ ...value, optional: event.target.checked });
+              }}
+            />
+            Facultatif
+          </label>
+        </div>
       ) : null}
       {check ? (
         <div className="fm-mark">

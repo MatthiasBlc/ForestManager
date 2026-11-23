@@ -332,6 +332,38 @@ a.fm-slot {
   }
 }
 
+/* Ranger la liste de courses au glisser [D228] : memes reperes que le planning. */
+.fm-shop-item[data-drag-id] {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.fm-shop-item[data-drag-lifted] {
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-md);
+  transform: scale(1.02);
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.fm-shop-item[data-drag-source] {
+  opacity: 0.35;
+}
+.fm-shop-item[data-drop-over],
+.fm-shop-section-head[data-drop-over] {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  background: var(--accent-soft);
+}
+.fm-drag-ghost.fm-shop-item {
+  background: var(--surface-raised);
+  list-style: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fm-shop-item[data-drag-lifted] {
+    transition: none;
+  }
+}
+
 /* Stepper a sa taille dans une colonne flex (champ du formulaire), comme dans l'editeur de
    recette, au lieu de s'etirer sur toute la largeur. */
 .fm-stepper {
@@ -686,4 +718,291 @@ main[tabindex="-1"]:focus-visible {
   flex: 1;
   accent-color: var(--accent);
   min-height: var(--size-touch);
+}
+
+/* Liste de courses (E-COURSES, D228) : sections, lignes a cocher, champ d'ajout en bas. */
+.fm-shop {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+.fm-shop-sections {
+  display: grid;
+  gap: var(--space-3);
+}
+.fm-shop-section {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+.fm-shop-section-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: 600 0.9375rem var(--font-display);
+  text-align: left;
+  cursor: pointer;
+}
+.fm-shop-section-head[aria-expanded="false"] {
+  color: var(--ink-muted);
+}
+.fm-shop-section-head svg {
+  color: var(--ink-muted);
+}
+.fm-shop-count {
+  color: var(--ink-muted);
+  font: 600 0.8125rem var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}
+.fm-shop-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fm-shop-item {
+  display: flex;
+  align-items: stretch;
+  min-height: 52px;
+  border-top: 1px solid var(--line);
+}
+.fm-shop-check {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 52px;
+  cursor: pointer;
+}
+.fm-shop-check input {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+  border: 2px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  cursor: pointer;
+}
+.fm-shop-check input:checked {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.fm-shop-check input:checked::after {
+  content: "";
+  width: 11px;
+  height: 6px;
+  border: solid var(--on-accent);
+  border-width: 0 0 2.5px 2.5px;
+  transform: translateY(-1px) rotate(-45deg);
+}
+.fm-shop-check input:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.fm-shop-check input:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.fm-shop-item-body {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.fm-shop-item-text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+.fm-shop-item-text b {
+  font-weight: 600;
+}
+.fm-shop-item-text small {
+  overflow: hidden;
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fm-shop-qty {
+  color: var(--ink-muted);
+  font: 500 0.8125rem var(--font-mono);
+  white-space: nowrap;
+}
+/* F-SECTIONS : une ligne par section, la confirmation de suppression dessous. */
+.fm-shop-section-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fm-shop-section-list > li {
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.fm-shop-section-list > li:last-child {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  border-bottom: 0;
+}
+.fm-shop-section-list > li:last-child > div {
+  width: 100%;
+}
+.fm-shop-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: 0.875rem;
+}
+/* F-DEPUIS-PLANNING : repas cites a part, puis une liste a cocher par section. */
+.fm-shop-note {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--bg);
+  color: var(--ink-muted);
+  font-size: 0.8125rem;
+}
+.fm-shop-note svg {
+  flex: none;
+  margin-top: 0.0625rem;
+}
+.fm-shop-preview-group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.fm-shop-preview-group legend {
+  padding: 0 0 0.25rem;
+  color: var(--ink-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.fm-shop-item-done .fm-shop-item-text b,
+.fm-shop-item-done .fm-shop-qty {
+  color: var(--ink-muted);
+  font-weight: 500;
+  text-decoration: line-through;
+}
+/* Champ d'ajout colle en bas, au-dessus des onglets (zone du pouce). */
+.fm-shop-add {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+}
+.fm-shop-add-row {
+  display: flex;
+  gap: var(--space-2);
+  max-width: 48rem;
+  margin-inline: auto;
+  padding: var(--space-2) var(--space-3);
+}
+.fm-shop-add-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 46px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface-raised);
+  color: var(--ink);
+  font: 500 1rem var(--font-sans);
+}
+.fm-shop-add-input:disabled {
+  opacity: 0.55;
+}
+.fm-shop-add-btn {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--accent);
+  color: var(--on-accent);
+  cursor: pointer;
+}
+.fm-shop-add-btn:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+.fm-shop-suggest {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+  background: var(--surface-raised);
+}
+.fm-shop-suggest li {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+}
+.fm-shop-suggest li b {
+  font-weight: 600;
+}
+.fm-shop-suggest li span {
+  color: var(--ink-muted);
+}
+.fm-shop-suggest-on {
+  background: var(--accent-soft);
+}
+.fm-shop-sources {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  list-style: none;
+}
+.fm-shop-sources li {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: 0.875rem;
+}
+.fm-chip-radio {
+  cursor: pointer;
+}
+.fm-chip-radio:has(input:checked) {
+  border-color: var(--accent-text);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+.fm-chip-radio:has(input:focus-visible) {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }

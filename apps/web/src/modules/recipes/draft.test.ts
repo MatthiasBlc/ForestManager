@@ -17,7 +17,15 @@ function imported(over: Partial<ImportedRecipe> = {}): ImportedRecipe {
     sourceUrl: "https://exemple.fr/recette",
     imageUrl: null,
     ingredients: [
-      { raw: "200 g de riz", quantity: 200, unitCode: "g", name: "riz", note: null, check: false },
+      {
+        raw: "200 g de riz",
+        quantity: 200,
+        unitCode: "g",
+        name: "riz",
+        note: null,
+        optional: false,
+        check: false,
+      },
     ],
     steps: ["Cuire le riz."],
     ...over,
@@ -67,5 +75,16 @@ describe("mergeImport", () => {
     );
     expect(merged.sourceUrl).toBe("https://ancien.fr");
     expect(merged.yieldQuantity).toBe(4);
+  });
+
+  it("garde le facultatif d'une ligne importee (D232)", () => {
+    const line = imported().ingredients[0];
+    const merged = mergeImport(
+      current(),
+      imported({ ingredients: line ? [{ ...line, optional: true }] : [] }),
+      units
+    );
+    const block = merged.blocks[0] as DraftLocalBlock;
+    expect(block.lines[0]).toMatchObject({ name: "riz", optional: true });
   });
 });

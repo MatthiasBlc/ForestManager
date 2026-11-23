@@ -632,6 +632,7 @@ export const importedRecipeSchema = z.object({
       unitCode: z.string().nullable(),
       name: z.string(),
       note: z.string().nullable(),
+      optional: z.boolean(),
       check: z.boolean(),
     })
   ),

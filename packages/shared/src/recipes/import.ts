@@ -18,6 +18,8 @@ export interface ImportedIngredient {
   unitCode: string | null;
   name: string;
   note: string | null;
+  /** "(facultatif)", "(optionnel)" dans la ligne [D232]. */
+  optional: boolean;
   /** Quantite absente ou approximative : a verifier dans l'editeur. */
   check: boolean;
 }
@@ -171,21 +173,17 @@ function splitNote(text: string): { name: string; note: string | null } {
   };
 }
 
-// "(facultatif)", "(optionnel)" : passe en note, visible et modifiable dans l'editeur.
+// "(facultatif)", "(optionnel)" : regle le flag `optional`, visible et modifiable dans l'editeur [D232].
 const OPTIONAL_MARK = /\s*\((facultati(?:f|ve)|optionnel(?:le)?|en option)\)/iu;
 
 export function parseIngredientLine(line: string): ImportedIngredient {
   const raw = normalizeLine(cleanText(line)).replace(BULLET, "");
-  const optional = OPTIONAL_MARK.exec(raw);
-  if (!optional?.[1]) return parseIngredientText(raw, raw);
-  const parsed = parseIngredientText(raw.replace(OPTIONAL_MARK, "").trim(), raw);
-  const word = optional[1].toLowerCase();
-  const note = clip(parsed.note ? `${parsed.note}, ${word}` : word, RECIPE_INGREDIENT_NOTE_MAX);
-  return { ...parsed, note };
+  if (!OPTIONAL_MARK.test(raw)) return parseIngredientText(raw, raw);
+  return { ...parseIngredientText(raw.replace(OPTIONAL_MARK, "").trim(), raw), optional: true };
 }
 
 function parseIngredientText(text: string, raw: string): ImportedIngredient {
-  const base = { raw, quantity: null, unitCode: null, note: null };
+  const base = { raw, quantity: null, unitCode: null, note: null, optional: false };
 
   const taste = TASTE_PREFIX.exec(text) ?? TASTE_SUFFIX.exec(text);
   if (taste?.[1]) {
@@ -217,6 +215,7 @@ function parseIngredientText(text: string, raw: string): ImportedIngredient {
     unitCode,
     name: name || text,
     note,
+    optional: false,
     check: value === null || range || !name,
   };
 }
@@ -323,6 +322,7 @@ function splitSeasonings(ingredient: ImportedIngredient): ImportedIngredient[] {
     unitCode: "to-taste",
     name,
     note: null,
+    optional: ingredient.optional,
     check: false,
   }));
 }

@@ -111,10 +111,12 @@ describe("tableau de bord (A02, D129)", () => {
     });
 
     // Seuls les modules proposes (disponibles ou beta) ont leur chiffre.
-    const before = await db.module.findUniqueOrThrow({ where: { code: "meal-plan" } });
+    const before = await db.module.findMany({ where: { code: { in: ["meal-plan", "shopping"] } } });
     await db.module.update({ where: { code: "meal-plan" }, data: { status: "BETA" } });
+    await db.module.update({ where: { code: "shopping" }, data: { status: "COMING_SOON" } });
     const res = await client.get("/admin/dashboard");
-    await db.module.update({ where: { code: "meal-plan" }, data: { status: before.status } });
+    for (const { code, status } of before)
+      await db.module.update({ where: { code }, data: { status } });
     expect(res.status).toBe(200);
     expect(res.body.newIngredients.count).toBeGreaterThanOrEqual(1);
     expect(res.body.newIngredients.duplicates).toContain("poireaux");

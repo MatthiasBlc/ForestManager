@@ -149,6 +149,7 @@ Conventions :
   6. Echanger (D69, D204) : glisser un MealSlot sur un autre, a la souris (des quelques pixels) ou au doigt (appui long, la case se souleve, puis glisser) ; Echap ou relacher hors d'une case annule. F-REPAS "Echanger avec un autre repas" reste pour le clavier et les lecteurs d'ecran. Mobile : tirer vers le bas relit la semaine (D186).
   7. Verrouiller : ActionMenu "Verrouiller" (cadenas sur le MealSlot) ; la generation ne le touche pas.
   8. PullToRefresh sur E-PLANNING pour voir les modifications des autres membres.
+  9. Button "Courses" de la barre (module Courses actif et droit de modifier la liste) : F-DEPUIS-PLANNING sur la semaine affichee (P18, D228).
 - **Droits** : modification selon le role minimal regle par l'espace (F-MPL-3, matrice B2) ; sinon lecture seule avec mention.
 - **Notifications** : activite "X a genere le planning" et notification "X a genere le planning de Famille" (ouvre la semaine generee) ; repas modifie par un autre membre : une seule notification regroupee par espace sur 24 h ("X et 2 autres ont modifie le planning"), categorie Planning.
 - **Decisions** : D11, F-MPL-1 a F-MPL-5, D69, D180, D181, D186, D204.
@@ -221,22 +222,40 @@ Conventions :
 - **Etapes** : liste groupee par jour, non lues en premier ; toucher = ouvrir la cible et marquer lu ; "Tout marquer comme lu" ; PullToRefresh. Preferences par categorie et par espace (Switch).
 - **Decisions** : F-NOT-1, F-NOT-2.
 
+## P18 - Liste de courses : remplir depuis le planning, faire les courses, ranger
+
+- **Declencheur** : TabBar / ModuleNav "Courses" (module accorde et actif, perso compris) ; Button "Courses" de la barre du planning (D209).
+- **Ecrans** : E-COURSES -> F-ARTICLE ; F-DEPUIS-PLANNING ; F-SECTIONS ; F-REGLAGES-COURSES.
+- **Etapes** :
+  1. Premiere ouverture : la liste de l'espace, une seule et toujours a jour (F-SHP-0) ; sections de depart creees depuis les rayons de la plateforme, dans l'ordre du parcours (F-REF-5, D231). Vide : "La liste est vide", "Tape un article en bas de l'ecran".
+  2. E-COURSES : compteur "N a acheter" en tete ; articles par section, dans l'ordre de l'espace, "Autres" en fin ; section vide masquee, section toute cochee repliee ; les achetes barres en fin de section. Bureau : meme page, plus large.
+  3. Ajouter a la main : champ "Ajouter un article" toujours en bas (zone du pouce), le clavier reste ouvert apres chaque ajout ; suggestions du catalogue d'ingredients (meme nom ou pluriel en premier), sinon le texte tel quel ; la quantite se tape dans le champ ("2 citrons", "500 g farine"). L'article va dans la section favorite du produit, sinon celle de son rayon, sinon "Autres" ; meme produit non coche dans la meme section : la quantite s'ajoute a sa ligne (D231).
+  4. Depuis le planning : Button "Planning" de l'en-tete (ou "Courses" du planning) -> F-DEPUIS-PLANNING : periode "Du" / "Au" (depuis la liste : de demain a la fin de la semaine du planning ; depuis le planning : la semaine affichee, a partir de demain si elle est en cours ; 31 jours au plus) ; lignes additionnees par section, toutes cochees sauf le facultatif ; "deja X dans la liste" et "+ X" ; note en tete : repas sans recette, repas deja ajoutes, sous-recettes manquantes. Decocher ce qu'on a, Button "Ajouter N articles" ; Toast "N articles ajoutes et M completes" (F-SHP-1).
+  5. Faire les courses : la case coche (barre, en fin de section, sans confirmation) ; toucher le produit ouvre F-ARTICLE : "Pour les repas" (recette, date, part apportee), quantite ("500 g + 3"), section en pastilles, "Toujours ranger dans X", Monter / Descendre, Retirer avec Annuler.
+  6. Ranger : appui long puis glisser (souris : des que le pointeur bouge) dans la section, sur un article ou sur le titre d'une autre section ; pendant le glisser, les sections vides se montrent comme cibles. Premier deplacement d'un produit sans favorite : la section devient sa favorite ; ensuite seule la ligne bouge, "Toujours ranger dans X" change la favorite (D231). Un article achete ne se prend pas.
+  7. Menu "..." ("Menu de la liste") : "Retirer les achetes (N)" (Toast avec Annuler, pas d'historique), "Depuis le planning", "Gerer les sections" -> F-SECTIONS (Renommer, Monter, Descendre, Supprimer avec confirmation dans la feuille "Ses N articles passent dans Autres" ; "Nouvelle section" en bas ; "Autres" fixe en fin), "Reglages" (OWNER, pas dans l'espace perso) -> F-REGLAGES-COURSES : "Qui peut modifier la liste".
+  8. Deux membres en magasin : les changements de l'un arrivent chez l'autre en temps reel, sans recharger.
+- **Hors ligne** (exception a D68, D228) : la liste reste lisible et on coche ; bandeau "Tu peux cocher la liste ; le reste attend le retour du reseau", ligne "N coches en attente d'envoi." ; les coches partent au retour du reseau (la derniere gagne ; article retire entre-temps : coche oubliee). Ajouter, glisser, menu attendent le reseau.
+- **Droits** : lire, tout membre ; modifier (ajouter, cocher, retirer, sections, ordre) selon le role minimal regle par l'OWNER, MEMBER par defaut (F-SHP-4, D141) ; sinon lecture seule : cases desactivees, menu et champ masques, mention "Seuls les moderateurs et le proprietaire modifient la liste." (selon le role).
+- **Notifications** : activite "X a ajoute N articles a la liste depuis le planning" (une ligne par ajout, pas par coche) ; pas de notification.
+- **Decisions** : F-SHP-0 a F-SHP-5, D125, D126, D141, D209, D228, D231.
+
 ---
 
 ## Decisions
 
-| #   | Decision                                                                                                                                                                                                             | Statut  |
-| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| D60 | A l'ouverture, l'app reprend le dernier espace et module visites. L'accueil a widgets (E-ACCUEIL) est l'ecran d'entree de l'espace perso.                                                                            | VALIDEE |
-| D61 | Apres l'inscription, un ecran de bienvenue a 3 choix passables (creer un espace, rejoindre par lien, ajouter une recette). Pas de visite guidee en plusieurs ecrans.                                                 | VALIDEE |
-| D62 | Un lien d'invitation montre l'espace (nom, avatar, membres) avant de rejoindre ; il survit a l'inscription ou la connexion ; rejoindre demande un clic de confirmation. Un lien invalide ne montre rien de l'espace. | VALIDEE |
-| D63 | Une seule porte d'entree pour creer une recette (Saisir, Importer un lien, Coller un texte) ; tout import aboutit au meme editeur pre-rempli, champs douteux marques "A verifier".                                   | VALIDEE |
-| D64 | Une suggestion se redige dans l'editeur de recette en "mode suggestion" ; l'auteur l'accepte ou la refuse en entier en V2.0 (pas d'acceptation partielle).                                                           | VALIDEE |
-| D65 | Le partage se regle dans une seule feuille a cases (espaces ou la recette est visible) : cocher partage, decocher retire.                                                                                            | VALIDEE |
-| D66 | Un espace en suppression reste visible, grise, dans le rail de son OWNER seulement, avec le compte a rebours et "Restaurer".                                                                                         | VALIDEE |
-| D67 | Mode cuisine : une etape a la fois en grand, boutons Precedente / Suivante, ingredients dans une feuille, ecran maintenu allume.                                                                                     | VALIDEE |
-| D68 | Hors ligne : bandeau permanent "Hors ligne", actions d'ecriture desactivees avec la raison, pas de file d'attente de modifications ; brouillon de recette conserve localement.                                       | VALIDEE |
-| D69 | Echanger deux repas : glisser-deposer en desktop ; sur mobile, "Echanger avec un autre repas" (F-REPAS, D186) puis toucher le repas cible (pas de glisser-deposer tactile, conflit avec le defilement).              | VALIDEE |
+| #   | Decision                                                                                                                                                                                                                      | Statut  |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| D60 | A l'ouverture, l'app reprend le dernier espace et module visites. L'accueil a widgets (E-ACCUEIL) est l'ecran d'entree de l'espace perso.                                                                                     | VALIDEE |
+| D61 | Apres l'inscription, un ecran de bienvenue a 3 choix passables (creer un espace, rejoindre par lien, ajouter une recette). Pas de visite guidee en plusieurs ecrans.                                                          | VALIDEE |
+| D62 | Un lien d'invitation montre l'espace (nom, avatar, membres) avant de rejoindre ; il survit a l'inscription ou la connexion ; rejoindre demande un clic de confirmation. Un lien invalide ne montre rien de l'espace.          | VALIDEE |
+| D63 | Une seule porte d'entree pour creer une recette (Saisir, Importer un lien, Coller un texte) ; tout import aboutit au meme editeur pre-rempli, champs douteux marques "A verifier".                                            | VALIDEE |
+| D64 | Une suggestion se redige dans l'editeur de recette en "mode suggestion" ; l'auteur l'accepte ou la refuse en entier en V2.0 (pas d'acceptation partielle).                                                                    | VALIDEE |
+| D65 | Le partage se regle dans une seule feuille a cases (espaces ou la recette est visible) : cocher partage, decocher retire.                                                                                                     | VALIDEE |
+| D66 | Un espace en suppression reste visible, grise, dans le rail de son OWNER seulement, avec le compte a rebours et "Restaurer".                                                                                                  | VALIDEE |
+| D67 | Mode cuisine : une etape a la fois en grand, boutons Precedente / Suivante, ingredients dans une feuille, ecran maintenu allume.                                                                                              | VALIDEE |
+| D68 | Hors ligne : bandeau permanent "Hors ligne", actions d'ecriture desactivees avec la raison, pas de file d'attente de modifications (sauf les coches de la liste de courses, D228) ; brouillon de recette conserve localement. | VALIDEE |
+| D69 | Echanger deux repas : glisser-deposer en desktop ; sur mobile, "Echanger avec un autre repas" (F-REPAS, D186) puis toucher le repas cible (pas de glisser-deposer tactile, conflit avec le defilement).                       | VALIDEE |
 
 ## Questions pour le proprietaire (tranchees)
 
@@ -309,5 +328,10 @@ Toutes tranchees : QP1 par D60, QP2 par D61, QP3 par D64, QP4 par D69, QP5 par D
 | F-RECHERCHE             | Feuille | Recherche globale (Ctrl K)       | P16                |
 | E-NOTIFICATIONS         | Ecran   | Notifications                    | P17                |
 | E-NOTIF-PREFERENCES     | Ecran   | Preferences de notifications     | P17                |
+| E-COURSES               | Ecran   | Liste de courses de l'espace     | P18                |
+| F-ARTICLE               | Feuille | Detail d'un article              | P18                |
+| F-DEPUIS-PLANNING       | Feuille | Ajouter depuis le planning       | P10, P18           |
+| F-SECTIONS              | Feuille | Gerer les sections               | P18                |
+| F-REGLAGES-COURSES      | Feuille | Reglages des courses             | P18                |
 
 Hors parcours mais a maquetter (administration plateforme, reprise V1) : tableau de bord admin, referentiels (ingredients, unites, rayons, tags globaux), catalogue des modules, espaces, moderation des recettes, changelog, journal d'audit, connexion admin 2FA.

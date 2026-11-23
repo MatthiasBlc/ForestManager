@@ -194,6 +194,55 @@ describe("editeur de recette (E-RECETTE-EDITION)", () => {
     expect(drafts()).toEqual([]);
   });
 
+  it("une ligne : + Precision ouvre la precision, la case Facultatif regle le flag (D232)", async () => {
+    const s = recipeServer();
+    const { user } = renderWithProviders(<App />, { route: `/s/${s.space.id}/recipes/new` });
+    await user.type(await screen.findByLabelText("Titre"), "Risotto");
+    const line = screen.getAllByRole("group", { name: "Ingrédient 1" })[0]!;
+    // Ligne vide : rien de plus a regler.
+    expect(within(line).queryByRole("button", { name: "Précision" })).not.toBeInTheDocument();
+    expect(within(line).queryByRole("checkbox", { name: "Facultatif" })).not.toBeInTheDocument();
+
+    await user.type(within(line).getByRole("combobox", { name: "Ingrédient" }), "pât");
+    await user.click(await screen.findByRole("option", { name: "Pâtes" }));
+    expect(within(line).queryByLabelText("Précision")).not.toBeInTheDocument();
+    await user.click(within(line).getByRole("button", { name: "Précision" }));
+    const note = within(line).getByLabelText("Précision");
+    expect(note).toHaveFocus();
+    await user.type(note, "ou riz");
+    expect(within(line).queryByRole("button", { name: "Précision" })).not.toBeInTheDocument();
+    await user.click(within(line).getByRole("checkbox", { name: "Facultatif" }));
+
+    await user.type(screen.getByLabelText("Étape 1"), "Cuire.");
+    await user.click(screen.getByRole("button", { name: "Enregistrer" }));
+    expect(await screen.findByRole("heading", { name: "Risotto" })).toBeInTheDocument();
+    expect(s.recipes.bodies.create).toMatchObject({
+      blocks: [{ ingredients: [{ note: "ou riz", optional: true }] }],
+    });
+  });
+
+  it("une ligne existante : precision et facultatif se relisent et se retirent", async () => {
+    const recipe = buildRecipe();
+    const block = recipe.blocks[0] as Extract<(typeof recipe.blocks)[number], { kind: "LOCAL" }>;
+    block.ingredients[0] = { ...block.ingredients[0]!, note: "fraîches", optional: true };
+    const s = recipeServer({ recipes: [recipe] });
+    const { user } = renderWithProviders(<App />, {
+      route: `/s/${s.space.id}/recipes/${recipe.id}/edit`,
+    });
+    const line = (await screen.findAllByRole("group", { name: "Ingrédient 1" }))[0]!;
+    expect(within(line).getByLabelText("Précision")).toHaveValue("fraîches");
+    const optional = within(line).getByRole("checkbox", { name: "Facultatif" });
+    expect(optional).toBeChecked();
+    await user.click(optional);
+    await user.clear(within(line).getByLabelText("Précision"));
+    await user.click(screen.getByRole("button", { name: /Enregistrer/ }));
+    await waitFor(() => {
+      expect(s.recipes.bodies.update).toMatchObject({
+        blocks: [{ ingredients: [{ note: null, optional: false }, {}] }],
+      });
+    });
+  });
+
   it("nouvelle recette : la photo choisie est rattachee apres l'enregistrement (D167)", async () => {
     const s = recipeServer();
     const { uploadIds } = mockUploads();
@@ -344,6 +393,16 @@ describe("detail d'une recette (E-RECETTE)", () => {
     for (let i = 0; i < 4; i += 1) await user.click(within(portions).getByLabelText("Plus"));
     expect(screen.getByRole("checkbox", { name: /1 kg Pâtes/ })).toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
+  });
+
+  it("une ligne facultative : precision puis facultatif apres le nom (D232)", async () => {
+    const recipe = buildRecipe();
+    const block = recipe.blocks[0] as Extract<(typeof recipe.blocks)[number], { kind: "LOCAL" }>;
+    block.ingredients[0] = { ...block.ingredients[0]!, note: "fraîches", optional: true };
+    const s = recipeServer({ recipes: [recipe] });
+    renderWithProviders(<App />, { route: `/s/${s.space.id}/recipes/${recipe.id}` });
+    const row = await screen.findByRole("checkbox", { name: "500 g Pâtes fraîches facultatif" });
+    expect(row).toHaveTextContent("Pâtes, fraîches · facultatif");
   });
 
   it("compteurs du planning (D39) : seulement quand le planning est actif", async () => {

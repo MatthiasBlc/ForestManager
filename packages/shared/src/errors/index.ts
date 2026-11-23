@@ -158,6 +158,22 @@ const DEFINITIONS = {
   MEAL_008: { status: 409, message: "Nombre maximal de règles atteint pour ce profil." },
   MEAL_009: { status: 409, message: "Ce repas est verrouillé." },
 
+  // --- Liste de courses [D228, D231] ---
+  SHOPPING_001: { status: 404, message: "Article introuvable." },
+  SHOPPING_002: { status: 404, message: "Section introuvable." },
+  SHOPPING_003: { status: 409, message: "Une section porte déjà ce nom dans cet espace." },
+  SHOPPING_004: { status: 422, message: "L'ordre doit contenir chaque section une seule fois." },
+  SHOPPING_005: {
+    status: 422,
+    message: "L'ordre doit contenir chaque article de la section une seule fois.",
+  },
+  SHOPPING_006: { status: 409, message: "Nombre maximal de sections atteint pour cet espace." },
+  SHOPPING_007: {
+    status: 409,
+    message: "La liste est pleine : retirez les articles achetés avant d'en ajouter.",
+  },
+  SHOPPING_008: { status: 422, message: "Ingrédient ou unité introuvable." },
+
   // --- Changelog [D187] ---
   // --- Export [D37, D192] ---
   EXPORT_001: {

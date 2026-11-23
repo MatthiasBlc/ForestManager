@@ -71,6 +71,11 @@ describe("ce qui est garde hors ligne", () => {
     expect(isPersisted(["spaces", SPACE, "meal-plan", "search", "", "dahl"])).toBe(false);
   });
 
+  it("liste de courses : la liste, lisible et cochable hors ligne (D228)", () => {
+    expect(isPersisted(["spaces", SPACE, "shopping", "list"])).toBe(true);
+    expect(isPersisted(["spaces", SPACE, "shopping", "settings"])).toBe(false);
+  });
+
   it("ni les listes, ni l'historique, ni les recherches", () => {
     expect(isPersisted(["spaces", SPACE, "recipes", "list", "space", ""])).toBe(false);
     expect(isPersisted(["spaces", SPACE, "recipes", "detail", RECIPE, "revisions"])).toBe(false);
