@@ -86,16 +86,15 @@ function ItemRow({
           }}
         />
       </label>
-      <button
-        type="button"
-        className="fm-shop-item-body"
-        aria-label={`Détail de ${name}`}
-        onClick={onOpen}
-      >
+      {/* Nom accessible = "Detail de" (masque) + le texte visible, pas un aria-label
+          qui le cacherait (axe label-content-name-mismatch). */}
+      <button type="button" className="fm-shop-item-body" onClick={onOpen}>
         <span className="fm-shop-item-text">
-          <b>{name}</b>
+          <b>
+            <span className="sr-only">Détail de</span> {name}
+          </b>{" "}
           {from ? <small>{from}</small> : null}
-        </span>
+        </span>{" "}
         {amount ? <span className="fm-shop-qty">{amount}</span> : null}
       </button>
     </li>

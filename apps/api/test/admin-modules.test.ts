@@ -167,7 +167,7 @@ describe("catalogue", () => {
     expect(await lastAudit()).toMatchObject({
       action: "module.status-changed",
       targetId: "shopping",
-      data: { from: "COMING_SOON", to: "BETA" },
+      data: { from: "AVAILABLE", to: "BETA" },
     });
     const recipes = await client.patch("/admin/modules/recipes", { status: "BETA" });
     expect(recipes.status).toBe(409);

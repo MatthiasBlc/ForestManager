@@ -308,7 +308,7 @@ describe("synchro du catalogue", () => {
       const back = await db.module.findMany({ where: { code: { in: ["nouveau", "shopping"] } } });
       expect(Object.fromEntries(back.map((r) => [r.code, r.status]))).toEqual({
         nouveau: "RETIRED",
-        shopping: "COMING_SOON",
+        shopping: "AVAILABLE",
       });
     } finally {
       await db.module.deleteMany({ where: { code: "nouveau" } });

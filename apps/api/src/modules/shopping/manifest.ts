@@ -226,7 +226,7 @@ function shoppingRouter(ctx: Context): Router {
 
 export const shoppingModule: ApiModule = {
   code: "shopping",
-  catalog: { status: "COMING_SOON", sortOrder: 3 },
+  catalog: { status: "AVAILABLE", sortOrder: 3 },
   permissions: SHOPPING_PERMISSIONS,
   activityTypes: ["shopping.list.generated"],
   router: shoppingRouter,

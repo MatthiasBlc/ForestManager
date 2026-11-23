@@ -191,10 +191,17 @@ describe("E-COURSES : ajouter", () => {
 });
 
 describe("F-ARTICLE : le detail", () => {
+  it("le bouton du produit garde son texte visible dans son nom (axe label-content-name-mismatch)", async () => {
+    const s = listServer();
+    renderWithProviders(<App />, { route: route(s) });
+    const button = await screen.findByRole("button", { name: /^Détail de oignons\b/ });
+    expect(button).toHaveAccessibleName(/^Détail de oignons pour : Gratin, Curry de légumes /);
+  });
+
   it("toucher le produit ouvre son detail : d'ou vient la quantite", async () => {
     const s = listServer();
     const { user, container } = renderWithProviders(<App />, { route: route(s) });
-    await user.click(await screen.findByRole("button", { name: "Détail de oignons" }));
+    await user.click(await screen.findByRole("button", { name: /^Détail de oignons\b/ }));
     const sheet = await screen.findByRole("dialog", { name: "oignons" });
     expect(within(sheet).getByText(/Gratin/)).toBeInTheDocument();
     expect(within(sheet).getByText(/Curry de légumes/)).toBeInTheDocument();
@@ -204,7 +211,7 @@ describe("F-ARTICLE : le detail", () => {
   it("changer de section deplace la ligne ; Toujours ranger ici la memorise", async () => {
     const s = listServer();
     const { user } = renderWithProviders(<App />, { route: route(s) });
-    await user.click(await screen.findByRole("button", { name: "Détail de Lait" }));
+    await user.click(await screen.findByRole("button", { name: /^Détail de Lait\b/ }));
     const sheet = await screen.findByRole("dialog", { name: "Lait" });
     expect(within(sheet).getByRole("radio", { name: "Alimentaire" })).toBeChecked();
     await user.click(within(sheet).getByRole("radio", { name: "Primeur" }));
@@ -226,7 +233,7 @@ describe("F-ARTICLE : le detail", () => {
   it("modifier la quantite", async () => {
     const s = listServer();
     const { user } = renderWithProviders(<App />, { route: route(s) });
-    await user.click(await screen.findByRole("button", { name: "Détail de Riz" }));
+    await user.click(await screen.findByRole("button", { name: /^Détail de Riz\b/ }));
     const sheet = await screen.findByRole("dialog", { name: "Riz" });
     await user.type(within(sheet).getByRole("textbox", { name: "Quantité" }), "1 kg");
     await user.click(within(sheet).getByRole("button", { name: "Enregistrer la quantité" }));
@@ -241,7 +248,7 @@ describe("F-ARTICLE : le detail", () => {
   it("Monter et Descendre changent l'ordre dans la section", async () => {
     const s = listServer();
     const { user } = renderWithProviders(<App />, { route: route(s) });
-    await user.click(await screen.findByRole("button", { name: "Détail de Riz" }));
+    await user.click(await screen.findByRole("button", { name: /^Détail de Riz\b/ }));
     const sheet = await screen.findByRole("dialog", { name: "Riz" });
     expect(within(sheet).getByRole("button", { name: "Descendre" })).toBeDisabled();
     await user.click(within(sheet).getByRole("button", { name: "Monter" }));
@@ -255,7 +262,7 @@ describe("F-ARTICLE : le detail", () => {
   it("retirer : sans confirmation, Annuler dans le toast", async () => {
     const s = listServer();
     const { user } = renderWithProviders(<App />, { route: route(s) });
-    await user.click(await screen.findByRole("button", { name: "Détail de Lait" }));
+    await user.click(await screen.findByRole("button", { name: /^Détail de Lait\b/ }));
     const sheet = await screen.findByRole("dialog", { name: "Lait" });
     await user.click(within(sheet).getByRole("button", { name: "Retirer de la liste" }));
     await waitFor(() => {
