@@ -50,7 +50,7 @@ Retours d'usage du 2026-11-23, choix au selecteur ; plan `4-Plan-Patch-Planning.
 ## `v2.3.0` - Liste de courses (branche `lot/v2.3.0`)
 
 - [x] Ouvrir la branche `lot/v2.3.0` depuis `Developement` (2026-11-18, poussee)
-- [ ] C9 Module liste de courses (CDC S4.7, F-SHP ; droits [D141] ; conversions et rayons deja en base [D36]) : choix tranches au selecteur le 2026-11-18 [D228], maquette `3-Maquette-C9.html` validee, plan `2-Plan-C9.md` ; sections, doublons et gestes revus a l'ouverture [D231] ; en TDD
+- [x] C9 Module liste de courses (CDC S4.7, F-SHP ; droits [D141] ; conversions et rayons deja en base [D36]) : choix tranches au selecteur le 2026-11-18 [D228], maquette `3-Maquette-C9.html` validee, plan `2-Plan-C9.md` ; sections, doublons et gestes revus a l'ouverture [D231] ; en TDD
 - [ ] Editeur de recette : saisir la note d'une ligne d'ingredient ("ou bouillon de legumes", "une poignee") et la marquer facultative ; aujourd'hui affichees et gardees a l'enregistrement, mais seulement remplies par l'import ou l'API (`draft.ts`). Etude et choix au selecteur, puis TDD (demande du proprietaire, 2026-11-23)
 - [ ] Fermeture du lot : `Developement` fusionne dans le lot, `npm test`, `npm run e2e`, lint et typecheck au vert ; PR `lot/v2.3.0` -> `Developement`
 - [ ] Preprod : PR `Developement` -> `master`, verification pas a pas avec le proprietaire

@@ -56,6 +56,14 @@ Regle : un comportement se teste au niveau **le plus bas** qui le prouve. Les E2
 - Generation : regles par tag et par recette, poids, frequences, cooldowns, exclusions, epinglages ; une recette "base" n'est jamais proposee seule [D24] ; grille ponctuelle par date, qui remplace celle du profil pour une generation, choisie dans l'accordeon "Choisir les repas" (disposition telephone et grand ecran) [D230]. **Tests unitaires deterministes** de l'algorithme (graine aleatoire fixee) en plus de l'integration.
 - Gestes d'un repas [D230] : toucher ouvre F-REPAS, appui long ou clic droit la recette aux portions du repas (parcours 9 et tests du calendrier).
 
+### Module Liste de courses
+
+- Agregation pure (`packages/shared/src/shopping`) : mise a l'echelle des portions, sous-recettes depliees, addition par produit et par section, pieces et grammes par le poids par unite sinon parts jointes ("500 g + 3") [D126, D228, D231].
+- Sections : creees une seule fois depuis les rayons a la premiere ouverture (meme en parallele), ordre, suppression qui renvoie les articles dans "Autres" ; section favorite fixee au premier deplacement puis par "Toujours ranger ici" ; fusion d'ingredients par l'admin qui repointe articles et favorites.
+- Depuis le planning : apercu (repas sans recette, deja ajoutes, sous-recettes manquantes) puis ajout recalcule cote serveur, en une transaction ; une ligne d'activite par ajout.
+- Coches : derniere coche gagnante (`checkedChangedAt`), coche hors ligne mise en file sur l'appareil et envoyee au retour du reseau, coche d'un article retire oubliee ; retirer les achetes et Annuler.
+- Gestes : appui long puis glisser dans la section, vers une autre, sur un titre ; sections vides cibles pendant le glisser.
+
 ### Referentiels
 
 - Conversions d'unites (dans une dimension et via le poids d'une unite pour un ingredient), rayons [D36], noms traduits avec repli sur le francais [D34], fusion de doublons d'ingredients par l'admin [D09].
@@ -90,6 +98,7 @@ Chaque parcours tourne en **mobile** (projet par defaut) ; ceux marques (D) tour
 18. Tags [D216] : l'auteur cree un tag d'espace depuis l'editeur, la moderatrice le range dans une famille, la carte le montre et la feuille de filtres filtre dessus.
 19. Geste retour [D219] : la fleche de retour d'une recette remonte l'historique jusqu'a la page d'origine ; le retour du navigateur part ensuite d'avant l'origine.
 20. Reimport d'un export [D225] : un espace exporte en JSON avec photos, l'archive reimportee dans un autre espace par un autre compte (apercu a cocher, photo reprise), puis un second passage ou tout est "Deja dans l'espace".
+21. Liste de courses [D228] : "Depuis le planning" (de demain a dimanche, un ingredient de deux recettes additionne), un ingredient decoche, article a la main (champ vide, focus garde) ; un second membre, dans un autre navigateur, voit la liste suivre sans recharger et coche ; "Retirer les achetes", Annuler, puis retrait garde au rechargement.
 
 ## 5. Donnees de test [D79]
 
@@ -142,13 +151,14 @@ La matrice des permissions est couverte a **100 % des couples route x role** par
 ## 9. Hors ligne et PWA
 
 - **Composants** : etat "Hors ligne" simule (MSW en erreur reseau + `navigator.onLine` faux) : bandeau visible, mutations desactivees, donnees du cache affichees.
+- **Liste de courses** (exception a D68, D228) : composants avec coche hors ligne simulee (barree, "N coches en attente d'envoi.", envoi au retour du reseau, file effacee a la deconnexion).
 - **E2E** : parcours 12 avec `context.setOffline(true)` de Playwright ; verification que le service worker est enregistre et que la coquille se charge sans reseau.
 - **Mise a jour** : nouveau build -> bandeau "Nouvelle version disponible" -> rechargement.
 - **Persistance** : le cache TanStack Query survit au rechargement et expire apres 14 jours (horloge simulee).
 
 ## 10. Tests manuels
 
-Une **feuille de recette** courte avant chaque mise en prod : installation sur un vrai telephone, gestes tactiles, mode cuisine (ecran allume), photo prise avec l'appareil, notifications temps reel entre deux appareils. Android (Chrome) seulement : pas d'iPhone a disposition, Safari n'est couvert que par les E2E WebKit informatifs [D227].
+Une **feuille de recette** courte avant chaque mise en prod : installation sur un vrai telephone, gestes tactiles, mode cuisine (ecran allume), liste de courses (appui long puis glisser au doigt, coches hors ligne en magasin), photo prise avec l'appareil, notifications temps reel entre deux appareils. Android (Chrome) seulement : pas d'iPhone a disposition, Safari n'est couvert que par les E2E WebKit informatifs [D227].
 
 Feuille en place depuis C7.7 : artefact `25-Recette-Preprod.html` (resultats partages dans sa base, collection `recette`). Chaque fonctionnalite livree apres C7.7 y ajoute ses lignes ; la seconde recette complete, sans echec ni remarque ouverte, conditionne C8 [D205].
 
