@@ -77,6 +77,20 @@ describe("version et items", () => {
     ).toBe("3.0.0");
   });
 
+  it("une etape trop longue pour un item est decoupee, un texte seul trop long est coupe (300 max)", () => {
+    const steps = Array.from(
+      { length: 8 },
+      (_, i) => `feat(web): ${"x".repeat(80)} ${String(i)} (C9)`
+    );
+    const long = `feat: ${"y".repeat(400)}`;
+    const { features } = buildRelease("v2.3.1", parseLog(log(...steps, long))).content;
+    for (const item of features) expect(item.text.length).toBeLessThanOrEqual(300);
+    // Rien de perdu dans le decoupage : chaque texte de l'etape est dans un item.
+    const joined = features.map((item) => item.text.toLowerCase()).join(" ; ");
+    for (let i = 0; i < 8; i++) expect(joined).toContain(`${"x".repeat(80)} ${String(i)}`);
+    expect(features.at(-1)?.text).toMatch(/^Yy+…$/);
+  });
+
   it("aucun commit depuis le tag : la meme version, sans item (rien a publier)", () => {
     expect(buildRelease("v2.3.1", [])).toEqual({
       version: "2.3.1",
