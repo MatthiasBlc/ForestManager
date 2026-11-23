@@ -134,6 +134,29 @@ export function useShopping(spaceId: string) {
     onSettled: refresh,
   });
 
+  // "Retirer les achetes" : sans confirmation, Annuler remet les articles tels quels.
+  const clear = useMutation({
+    mutationFn: () => api.post(`${base}/checked/clear`, {}, listSchema(shoppingItemSchema)),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey });
+      edit((list) => ({ ...list, items: list.items.filter((i) => i.checkedAt === null) }));
+    },
+    onSuccess: ({ data }) => {
+      if (data.length === 0) return;
+      const n = data.length;
+      toast(n > 1 ? `${String(n)} articles retirés` : "1 article retiré", {
+        action: {
+          label: "Annuler",
+          onAction: () => {
+            restore.mutate(data);
+          },
+        },
+      });
+    },
+    onError,
+    onSettled: refresh,
+  });
+
   const reorder = useMutation({
     mutationFn: ({ sectionId, ids }: { sectionId: string | null; ids: string[] }) =>
       api.put(`${base}/items/order`, { sectionId, ids }),
@@ -152,5 +175,5 @@ export function useShopping(spaceId: string) {
     onSettled: refresh,
   });
 
-  return { create, update, remove, restore, reorder };
+  return { create, update, remove, restore, reorder, clear };
 }

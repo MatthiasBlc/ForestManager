@@ -2,6 +2,7 @@
 // module actif, liste (sections, articles, droits), ajout, modification, retrait,
 // ordre, Annuler, catalogue d'ingredients. Garde l'etat et les corps recus.
 import {
+  errorBody,
   type ApplyPlanBody,
   type CreateShoppingItemBody,
   type Ingredient,
@@ -87,6 +88,10 @@ export function shoppingServer({
     /** Periodes demandees a l'apercu, et ajouts depuis le planning. */
     previews: [] as { from: string; to: string }[],
     applied: [] as ApplyPlanBody[],
+    /** Ecritures des sections et des reglages, et retraits des achetes. */
+    sectionWrites: [] as { method: string; sectionId?: string; body?: unknown }[],
+    settingsPuts: [] as { editRole: SpaceRole }[],
+    cleared: 0,
   };
   const can = (): ShoppingRights => ({
     edit: RANK[myRole] >= RANK[state.editRole],
@@ -101,6 +106,51 @@ export function shoppingServer({
       HttpResponse.json({ sections: state.sections, items: state.items, can: can() })
     ),
     http.get(`${base}/settings`, () => HttpResponse.json({ editRole: state.editRole, can: can() })),
+    http.put(`${base}/settings`, async ({ request }) => {
+      const body = (await request.json()) as { editRole: SpaceRole };
+      state.settingsPuts.push(body);
+      state.editRole = body.editRole;
+      return HttpResponse.json({ editRole: state.editRole, can: can() });
+    }),
+    http.post(`${base}/sections`, async ({ request }) => {
+      const body = (await request.json()) as { name: string };
+      state.sectionWrites.push({ method: "POST", body });
+      if (state.sections.some((x) => x.name.toLowerCase() === body.name.toLowerCase())) {
+        return HttpResponse.json(errorBody("SHOPPING_003"), { status: 409 });
+      }
+      const section = buildSection(body.name);
+      state.sections.push(section);
+      return HttpResponse.json(section, { status: 201 });
+    }),
+    http.put(`${base}/sections/order`, async ({ request }) => {
+      const body = (await request.json()) as { ids: string[] };
+      state.sectionWrites.push({ method: "ORDER", body });
+      state.sections = body.ids.flatMap((id) => state.sections.filter((x) => x.id === id));
+      return HttpResponse.json({ data: state.sections });
+    }),
+    http.patch(`${base}/sections/:sectionId`, async ({ params, request }) => {
+      const body = (await request.json()) as { name: string };
+      const sectionId = String(params.sectionId);
+      state.sectionWrites.push({ method: "PATCH", sectionId, body });
+      const section = state.sections.find((x) => x.id === sectionId);
+      if (!section) return HttpResponse.json(errorBody("SHOPPING_002"), { status: 404 });
+      section.name = body.name;
+      return HttpResponse.json(section);
+    }),
+    http.delete(`${base}/sections/:sectionId`, ({ params }) => {
+      const sectionId = String(params.sectionId);
+      state.sectionWrites.push({ method: "DELETE", sectionId });
+      state.sections = state.sections.filter((x) => x.id !== sectionId);
+      // Ses articles vont dans "Autres".
+      for (const item of state.items) if (item.sectionId === sectionId) item.sectionId = null;
+      return new HttpResponse(null, { status: 204 });
+    }),
+    http.post(`${base}/checked/clear`, () => {
+      state.cleared += 1;
+      const gone = state.items.filter((i) => i.checkedAt !== null);
+      state.items = state.items.filter((i) => i.checkedAt === null);
+      return HttpResponse.json({ data: gone });
+    }),
     http.get("/api/v1/ingredients", ({ request }) => {
       const q = (new URL(request.url).searchParams.get("q") ?? "").toLowerCase();
       return HttpResponse.json({
@@ -164,7 +214,7 @@ export function shoppingServer({
       const itemId = String(params.itemId);
       state.patches.push({ ...body, itemId });
       const item = state.items.find((i) => i.id === itemId);
-      if (!item) return HttpResponse.json({ code: "SHOPPING_001" }, { status: 404 });
+      if (!item) return HttpResponse.json(errorBody("SHOPPING_001"), { status: 404 });
       if (body.parts) item.parts = body.parts;
       if (body.checked !== undefined) item.checkedAt = body.checked ? NOW : null;
       if (body.sectionId !== undefined && body.sectionId !== item.sectionId) {

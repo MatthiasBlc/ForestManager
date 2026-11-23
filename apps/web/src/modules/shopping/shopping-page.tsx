@@ -10,6 +10,8 @@ import { useParams } from "react-router";
 import { spaceQuery } from "../../core/session/queries.ts";
 import { errorMessage } from "../../i18n/index.ts";
 import { useWriteGuard } from "../../pwa/use-write-guard.ts";
+import { ActionMenu } from "../../ui/action-menu.tsx";
+import { IconButton } from "../../ui/button.tsx";
 import { cx } from "../../ui/cx.ts";
 import { EmptyState, Skeleton } from "../../ui/display.tsx";
 import { Icon } from "../../ui/icon.tsx";
@@ -22,6 +24,8 @@ import { formatParts, itemName } from "./entry.ts";
 import { FromPlanSheet } from "./from-plan-sheet.tsx";
 import { planPeriod } from "./period.ts";
 import { ItemSheet } from "./item-sheet.tsx";
+import { SectionsSheet } from "./sections-sheet.tsx";
+import { ShoppingSettingsSheet } from "./settings-sheet.tsx";
 import { listQuery, settingsQuery } from "./queries.ts";
 import { sectionItems, useShopping } from "./use-shopping.ts";
 
@@ -124,11 +128,12 @@ export function ShoppingPage() {
     enabled: list.data !== undefined && !canEdit,
   });
   const guard = useWriteGuard();
-  const { create, update } = useShopping(spaceId);
+  const { create, update, clear } = useShopping(spaceId);
   // Replie ou deplie a la main ; sinon, repliee quand tout est coche.
   const [folded, setFolded] = useState<Record<string, boolean>>({});
   const [openId, setOpenId] = useState<string | null>(null);
-  const [fromPlan, setFromPlan] = useState(false);
+  // Feuille ouverte depuis l'en-tete ou le menu du module.
+  const [sheet, setSheet] = useState<"from-plan" | "sections" | "settings" | null>(null);
   // "Depuis le planning" : module planning actif et droit de modifier la liste.
   const space = useQuery(spaceQuery(spaceId));
   const withPlan = canEdit && !!space.data?.modules.some((m) => m.code === "meal-plan");
@@ -197,6 +202,7 @@ export function ShoppingPage() {
   const left = list.data?.items.filter((item) => item.checkedAt === null).length ?? 0;
   const opened = list.data?.items.find((item) => item.id === openId);
   const tomorrow = addDays(todayIso(), 1);
+  const bought = list.data?.items.filter((item) => item.checkedAt !== null).length ?? 0;
 
   return (
     <div className="fm-shop">
@@ -215,12 +221,45 @@ export function ShoppingPage() {
               className="fm-toolbtn"
               aria-label="Depuis le planning"
               onClick={() => {
-                setFromPlan(true);
+                setSheet("from-plan");
               }}
             >
               <Icon name="calendar" />
               <span>Planning</span>
             </button>
+          ) : null}
+          {canEdit && list.data ? (
+            <ActionMenu
+              label="Menu de la liste"
+              disabled={guard.disabled === true}
+              trigger={<IconButton icon="more" label="Menu de la liste" />}
+              items={[
+                {
+                  id: "clear",
+                  label:
+                    bought > 0 ? `Retirer les achetés (${String(bought)})` : "Retirer les achetés",
+                  icon: "check",
+                  disabled: bought === 0,
+                },
+                ...(withPlan && planSettings.data
+                  ? [
+                      {
+                        id: "from-plan" as const,
+                        label: "Depuis le planning",
+                        icon: "calendar" as const,
+                      },
+                    ]
+                  : []),
+                { id: "sections", label: "Gérer les sections", icon: "list" },
+                ...(list.data.can.setEditRole && space.data?.kind !== "PERSONAL"
+                  ? [{ id: "settings" as const, label: "Réglages", icon: "settings" as const }]
+                  : []),
+              ]}
+              onSelect={(id) => {
+                if (id === "clear") clear.mutate();
+                else setSheet(id);
+              }}
+            />
           ) : null}
         </header>
         {list.data && !canEdit && settings.data ? (
@@ -236,12 +275,30 @@ export function ShoppingPage() {
           }}
         />
       ) : null}
-      {fromPlan && planSettings.data ? (
+      {sheet === "from-plan" && planSettings.data ? (
         <FromPlanSheet
           spaceId={spaceId}
           period={planPeriod(tomorrow, weekStart(tomorrow, planSettings.data.weekStartsOn))}
           onClose={() => {
-            setFromPlan(false);
+            setSheet(null);
+          }}
+        />
+      ) : null}
+      {sheet === "sections" && list.data ? (
+        <SectionsSheet
+          spaceId={spaceId}
+          sections={list.data.sections}
+          items={list.data.items}
+          onClose={() => {
+            setSheet(null);
+          }}
+        />
+      ) : null}
+      {sheet === "settings" ? (
+        <ShoppingSettingsSheet
+          spaceId={spaceId}
+          onClose={() => {
+            setSheet(null);
           }}
         />
       ) : null}

@@ -813,6 +813,35 @@ main[tabindex="-1"]:focus-visible {
   font: 500 0.8125rem var(--font-mono);
   white-space: nowrap;
 }
+/* F-SECTIONS : une ligne par section, la confirmation de suppression dessous. */
+.fm-shop-section-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.fm-shop-section-list > li {
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.fm-shop-section-list > li:last-child {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  border-bottom: 0;
+}
+.fm-shop-section-list > li:last-child > div {
+  width: 100%;
+}
+.fm-shop-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: 0.875rem;
+}
 /* F-DEPUIS-PLANNING : repas cites a part, puis une liste a cocher par section. */
 .fm-shop-note {
   display: flex;
