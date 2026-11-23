@@ -161,10 +161,9 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
   sheet = page.getByRole("dialog", { name: "Générer le planning" });
   await expect(sheet.getByRole("radio", { name: /Standard/ })).toBeChecked();
   await expectNoA11yViolations(page);
-  await sheet.getByRole("button", { name: "Suivant", exact: true }).click();
-  // Repas a generer [D230] : les repas deja prevus sont grises.
-  sheet = page.getByRole("dialog", { name: "Repas à générer" });
-  await expect(sheet.getByRole("checkbox", { name: /^Mardi 9, soir/ })).toBeDisabled();
+  // Choisir les repas [D230] : facultatif ; ouvert, les repas deja prevus sont grises.
+  await sheet.getByRole("button", { name: /Choisir les repas/ }).click();
+  await expect(sheet.getByRole("button", { name: /^Mardi 9, soir : / })).toBeDisabled();
   await expect(sheet.getByText("9 repas à générer")).toBeVisible();
   await expectNoA11yViolations(page);
   await sheet.getByRole("button", { name: "Générer", exact: true }).click();
@@ -197,10 +196,13 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
   await page.getByRole("button", { name: "Générer", exact: true }).click();
   sheet = page.getByRole("dialog", { name: "Générer le planning" });
   await sheet.getByRole("switch", { name: /^Remplacer les repas non verrouillés/ }).click();
-  await sheet.getByRole("button", { name: "Suivant", exact: true }).click();
-  // Un repas decoche reste tel quel, pour cette generation seulement [D230].
-  sheet = page.getByRole("dialog", { name: "Repas à générer" });
-  await sheet.getByRole("checkbox", { name: /^Dimanche 14, soir/ }).uncheck();
+  // Un repas exclu reste tel quel, pour cette generation seulement [D230].
+  await sheet.getByRole("button", { name: /Choisir les repas/ }).click();
+  await sheet.getByRole("button", { name: /^Dimanche 14, soir : / }).click();
+  const cell = page.getByRole("dialog", { name: "Dimanche 14, soir" });
+  await cell.getByRole("radio", { name: /^Exclu/ }).click();
+  await cell.getByRole("button", { name: "OK" }).click();
+  await expect(sheet.getByRole("button", { name: "Dimanche 14, soir : exclu" })).toBeVisible();
   await sheet.getByRole("button", { name: "Générer", exact: true }).click();
   sheet = page.getByRole("dialog", { name: "Planning proposé" });
   await expect(sheet.getByText("9 repas proposés sur 9")).toBeVisible();

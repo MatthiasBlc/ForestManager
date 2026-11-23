@@ -12,6 +12,8 @@ export interface SheetProps {
   title: string;
   /** Description lue par les lecteurs d'ecran (facultative). */
   description?: string;
+  /** Grand ecran : fenetre plus large (grille de 7 jours, F-GENERER). */
+  wide?: boolean;
   children: ReactNode;
 }
 
@@ -34,7 +36,7 @@ function returnFocus(opener: HTMLElement | null): void {
 /** Distance de glissement (px) au-dela de laquelle la feuille se ferme. */
 const CLOSE_DISTANCE = 110;
 
-export function Sheet({ open, onClose, title, description, children }: SheetProps) {
+export function Sheet({ open, onClose, title, description, wide, children }: SheetProps) {
   const [dy, setDy] = useState(0);
   const start = useRef<number | null>(null);
   // Element actif a l'ouverture : il reprend le focus a la fermeture (feuille pilotee, sans Dialog.Trigger).
@@ -79,7 +81,7 @@ export function Sheet({ open, onClose, title, description, children }: SheetProp
         <div className="fm-layer fm-root">
           <Dialog.Overlay className="fm-overlay" />
           <Dialog.Content
-            className="fm-sheet"
+            className={wide ? "fm-sheet fm-sheet-wide" : "fm-sheet"}
             onCloseAutoFocus={(event) => {
               event.preventDefault();
               returnFocus(opener.current);
