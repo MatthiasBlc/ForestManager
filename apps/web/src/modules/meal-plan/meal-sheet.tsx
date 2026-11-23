@@ -23,7 +23,7 @@ import { errorMessage } from "../../i18n/index.ts";
 import { api } from "../../lib/api.ts";
 import { useWriteGuard } from "../../pwa/use-write-guard.ts";
 import { Button } from "../../ui/button.tsx";
-import { SegmentedControl, Stepper, Switch } from "../../ui/controls.tsx";
+import { Chip, SegmentedControl, Stepper, Switch } from "../../ui/controls.tsx";
 import { Field } from "../../ui/field.tsx";
 import { OptionList, type OptionItem } from "../../ui/option-list.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
@@ -37,6 +37,9 @@ const KINDS: readonly { value: MealKind; label: string }[] = [
   { value: "TEXT", label: "Texte libre" },
   { value: "SKIPPED", label: "Pas de repas" },
 ];
+
+/** Textes libres courants, en un toucher [D230]. */
+const TEXT_SHORTCUTS = ["Restes", "Resto", "À emporter", "Chez des amis", "Pique-nique"] as const;
 
 const recipePage = pageSchema(recipeSummarySchema);
 
@@ -288,15 +291,30 @@ function MealForm({ spaceId, spaceName, cell, meal, defaultServings, onDone, onS
         </>
       ) : null}
       {kind === "TEXT" ? (
-        <Field
-          label="Repas"
-          placeholder="Restes, resto, pique-nique…"
-          value={text}
-          maxLength={200}
-          onChange={(event) => {
-            setText(event.target.value);
-          }}
-        />
+        <>
+          <Field
+            label="Repas"
+            placeholder="Restes, resto, pique-nique…"
+            value={text}
+            maxLength={200}
+            onChange={(event) => {
+              setText(event.target.value);
+            }}
+          />
+          <div role="group" aria-label="Raccourcis" className="-mt-2 flex flex-wrap gap-2">
+            {TEXT_SHORTCUTS.map((shortcut) => (
+              <Chip
+                key={shortcut}
+                selected={text === shortcut}
+                onToggle={() => {
+                  setText(shortcut);
+                }}
+              >
+                {shortcut}
+              </Chip>
+            ))}
+          </div>
+        </>
       ) : null}
       {kind !== "SKIPPED" ? (
         <>

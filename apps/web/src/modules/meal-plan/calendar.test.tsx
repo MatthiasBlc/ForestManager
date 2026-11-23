@@ -415,6 +415,40 @@ describe("F-REPAS", () => {
     ).toBeInTheDocument();
   });
 
+  it("texte libre : un raccourci remplit le champ, encore modifiable [D230]", async () => {
+    const s = mealPlanServer();
+    const { user } = renderWithProviders(<App />, { route: route(s.space.id) });
+    await user.click(
+      await screen.findByRole("button", { name: "Mardi 10, soir : Ajouter un repas" })
+    );
+    const sheet = await screen.findByRole("dialog", { name: "Mardi 10, soir" });
+    await user.click(within(sheet).getByRole("button", { name: "Texte libre" }));
+    const shortcuts = within(sheet).getByRole("group", { name: "Raccourcis" });
+    expect(
+      within(shortcuts)
+        .getAllByRole("button")
+        .map((b) => b.textContent)
+    ).toEqual(["Restes", "Resto", "À emporter", "Chez des amis", "Pique-nique"]);
+    const field = within(sheet).getByLabelText("Repas");
+    await user.type(field, "Cantine");
+    // Le raccourci remplace le texte saisi et se montre choisi.
+    await user.click(within(shortcuts).getByRole("button", { name: "Restes" }));
+    expect(field).toHaveValue("Restes");
+    expect(within(shortcuts).getByRole("button", { name: "Restes" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+    await user.type(field, " de dahl");
+    expect(within(shortcuts).getByRole("button", { name: "Restes" })).toHaveAttribute(
+      "aria-pressed",
+      "false"
+    );
+    await user.click(within(sheet).getByRole("button", { name: "Enregistrer" }));
+    await waitFor(() => {
+      expect(s.plan.puts).toMatchObject([{ kind: "TEXT", text: "Restes de dahl" }]);
+    });
+  });
+
   it("recette de l'espace trouvee par la recherche ; portions par defaut non envoyees ; verrouille d'office", async () => {
     const dahl = toSummary(buildRecipe({ title: "Dahl de lentilles" }));
     const s = mealPlanServer({ spaceRecipes: [dahl] });
