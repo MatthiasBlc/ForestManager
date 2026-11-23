@@ -6,7 +6,7 @@ Chantier ouvert le 2026-11-18, apres la mise en prod de la `v2.1.0` : module lis
 
 1. Ce README (etat et reprise).
 2. `Roadmap.md` : la premiere case non cochee est le point de reprise.
-3. `4-Plan-Patch-Planning.md` : patch planning `v2.2.1` en cours [D230] ; `2-Plan-C9.md` : plan de la liste de courses [D228] ; `1-Plan-Reimport.md` : reimport (fait).
+3. `5-Revue-Ingredients.md` : revue des ingredients de la prod (faite) ; `4-Plan-Patch-Planning.md` : patch planning `v2.2.1` en cours [D230] ; `2-Plan-C9.md` : plan de la liste de courses [D228] ; `1-Plan-Reimport.md` : reimport (fait).
 4. `../Reference/CDC.md` : S1 a S3 (vision, glossaire, roles), puis la section du module concerne (liste de courses : S4.7).
 5. `../Reference/Journal-des-Decisions.md` : seulement pour le pourquoi d'une regle (chercher le `D##`).
 
@@ -31,3 +31,4 @@ Chantier ouvert le 2026-11-18, apres la mise en prod de la `v2.1.0` : module lis
 - 2026-11-18 (flux git) : flux par lot et hotfix decide [D229], procedure dans `../Reference/Architecture.md` S13. Branche `lot/v2.3.0` ouverte et poussee. Reprise : C9 etape 1 de `2-Plan-C9.md` (shared), en TDD, sur `lot/v2.3.0`.
 - 2026-11-23 (patch planning) : retours d'usage du proprietaire etudies, choix au selecteur [D230] (droits de generation : D58 garde) ; plan `4-Plan-Patch-Planning.md`, hotfix `v2.2.1` avant C9. Branche `hotfix/planning` ouverte (code de `v2.2.0`, non poussee). Etapes 1 a 5 faites et committees (verification complete au vert, revue dans Chrome sur la dev). Reprise : le proprietaire pousse `hotfix/planning`, PR vers `Developement`, puis preprod (Roadmap, section `v2.2.1`).
 - 2026-11-23 (prod `v2.2.1`) : patch planning en prod et tague, changelog publie ; accordeon "Choisir les repas" en grille ajoute apres la revue preprod ; faille `effect` (audit) corrigee par un `overrides`. `Developement` fusionne dans `lot/v2.3.0`, `hotfix/planning` supprimee. Reprise : `/clear`, puis C9 etape 1 de `2-Plan-C9.md` (shared), en TDD, sur `lot/v2.3.0`.
+- 2026-11-23 (ingredients) : revue des 152 ingredients de la prod faite avec le proprietaire (selecteur) : 139 verifies, traduits et ranges, 13 fusions, 7 recettes corrigees (`5-Revue-Ingredients.md`). Point ouvert pour C9 : une section de liste de courses ne suit qu'un rayon (`2-Plan-C9.md`, fin). Reprise : `/clear`, puis C9 en commencant par ce point, puis etape 1 (shared), en TDD.

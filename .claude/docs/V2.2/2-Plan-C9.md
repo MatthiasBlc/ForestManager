@@ -71,3 +71,7 @@ Deux usages, deux moments : **remplir** (a la maison, au fil de la semaine) et *
 ## Points tranches a la maquette (proprietaire, 2026-11-18)
 
 Maquette : `3-Maquette-C9.html`. Unites melangees sur une ligne, ordre manuel des articles, gestes (toucher coche, appui long deplace, "..." detail), onglet "Courses" dans la barre du bas, pas d'ecran allume, "Depuis le planning" dans la liste et dans la barre du planning [D209] ; planning modifie apres l'ajout : rien d'automatique, l'apercu signale les repas deja ajoutes. Maquette validee le 2026-11-18 ; reporte dans D228 et au CDC S4.7.
+
+## Point ouvert (2026-11-23, revue des ingredients de la prod)
+
+Une section ne suit qu'un rayon (`aisleId`). Les groupes du proprietaire (liste Keep : Alimentaire, Marche...) couvrent plusieurs rayons de la plateforme : sans changement, chaque ingredient de ces rayons devrait etre deplace a la main une premiere fois. A trancher a l'ouverture de C9 (piste : une section couvre plusieurs rayons). Les 139 ingredients de la prod ont desormais un rayon (`5-Revue-Ingredients.md`).
