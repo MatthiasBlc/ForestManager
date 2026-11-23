@@ -2,7 +2,12 @@
 // sections de l'espace, articles, ajout depuis le planning. Le statut au catalogue
 // appartient au super admin une fois la ligne creee (accorde a la demande, D33).
 import {
+  createShoppingItemBodySchema,
+  restoreShoppingItemsBodySchema,
   sectionOrderBodySchema,
+  shoppingItemOrderBodySchema,
+  shoppingItemSchema,
+  updateShoppingItemBodySchema,
   shoppingListSchema,
   shoppingSectionBodySchema,
   shoppingSectionSchema,
@@ -21,7 +26,16 @@ import {
   requirePermission,
 } from "../../core/modules/guards.ts";
 import type { ApiModule } from "../../core/modules/registry.ts";
-import { listItems } from "./items.ts";
+import { currentUserId } from "../../core/http/auth.ts";
+import {
+  clearChecked,
+  createItem,
+  deleteItem,
+  listItems,
+  reorderItems,
+  restoreItems,
+  updateItem,
+} from "./items.ts";
 import { SHOPPING_PERMISSIONS } from "./permissions.ts";
 import {
   createSection,
@@ -33,6 +47,7 @@ import {
 import { ensureInitialized, readEditRole, saveEditRole } from "./settings.ts";
 
 const sectionParamsSchema = z.object({ sectionId: z.uuid() });
+const itemParamsSchema = z.object({ itemId: z.uuid() });
 
 function rightsOf(req: Request) {
   return {
@@ -115,6 +130,64 @@ function shoppingRouter(ctx: Context): Router {
       res.status(204).end();
     })
   );
+
+  // --- Articles [D228, D231] ---
+
+  router.post(
+    "/items",
+    requirePermission("shopping.edit"),
+    handle({ body: createShoppingItemBodySchema }, async ({ body }, req, res) => {
+      const spaceId = spaceOf(req);
+      await ensureInitialized(ctx.db, spaceId);
+      const { item, created } = await createItem(ctx, spaceId, currentUserId(req), body);
+      reply(res, shoppingItemSchema, item, created ? 201 : 200);
+    })
+  );
+
+  // Avant `/items/:itemId` : "order" et "restore" ne sont pas des ids.
+  router.put(
+    "/items/order",
+    requirePermission("shopping.edit"),
+    handle({ body: shoppingItemOrderBodySchema }, async ({ body }, req, res) => {
+      await reorderItems(ctx, spaceOf(req), body.sectionId, body.ids);
+      res.status(204).end();
+    })
+  );
+
+  router.post(
+    "/items/restore",
+    requirePermission("shopping.edit"),
+    handle({ body: restoreShoppingItemsBodySchema }, async ({ body }, req, res) => {
+      const data = await restoreItems(ctx, spaceOf(req), currentUserId(req), body);
+      reply(res, listSchema(shoppingItemSchema), { data });
+    })
+  );
+
+  router.patch(
+    "/items/:itemId",
+    requirePermission("shopping.edit"),
+    handle(
+      { params: itemParamsSchema, body: updateShoppingItemBodySchema },
+      async ({ params, body }, req, res) => {
+        const item = await updateItem(ctx, spaceOf(req), currentUserId(req), params.itemId, body);
+        reply(res, shoppingItemSchema, item);
+      }
+    )
+  );
+
+  router.delete(
+    "/items/:itemId",
+    requirePermission("shopping.edit"),
+    handle({ params: itemParamsSchema }, async ({ params }, req, res) => {
+      await deleteItem(ctx, spaceOf(req), params.itemId);
+      res.status(204).end();
+    })
+  );
+
+  router.post("/checked/clear", requirePermission("shopping.edit"), async (req, res) => {
+    const data = await clearChecked(ctx, spaceOf(req));
+    reply(res, listSchema(shoppingItemSchema), { data });
+  });
 
   return router;
 }
