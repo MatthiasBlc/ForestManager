@@ -361,6 +361,24 @@ export async function mergeIngredient(
       where: { ingredientId: id },
       data: { ingredientId: intoId },
     });
+    // Liste de courses [D231] : articles et sections favorites suivent la cible ; un espace
+    // qui range deja la cible garde sa favorite.
+    const [fromKey, intoKey] = [`ingredient:${id}`, `ingredient:${intoId}`];
+    await tx.shoppingItem.updateMany({
+      where: { ingredientId: id },
+      data: { ingredientId: intoId, productKey: intoKey },
+    });
+    const placed = await tx.shoppingPlacement.findMany({
+      where: { productKey: intoKey },
+      select: { spaceId: true },
+    });
+    await tx.shoppingPlacement.deleteMany({
+      where: { productKey: fromKey, spaceId: { in: placed.map((p) => p.spaceId) } },
+    });
+    await tx.shoppingPlacement.updateMany({
+      where: { productKey: fromKey },
+      data: { productKey: intoKey },
+    });
     await tx.ingredient.updateMany({ where: { mergedIntoId: id }, data: { mergedIntoId: intoId } });
     await tx.ingredient.update({ where: { id }, data: { status: "MERGED", mergedIntoId: intoId } });
     await audit(tx, {
