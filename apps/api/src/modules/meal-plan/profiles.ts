@@ -125,7 +125,7 @@ function resolveTag(tags: Map<string, TagRow>, id: string): RuleTag {
 }
 
 /** Tag utilisable par l'espace : global ou de l'espace, ni fusionne ni supprime. */
-async function assertUsableTag(db: Db | Tx, spaceId: string, tagId: string): Promise<void> {
+export async function assertUsableTag(db: Db | Tx, spaceId: string, tagId: string): Promise<void> {
   const tag = await db.tag.findFirst({
     where: {
       id: tagId,

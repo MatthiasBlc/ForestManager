@@ -7,7 +7,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../../app/App.tsx";
 import { axeViolations } from "../../test/axe.ts";
-import { buildMeal, buildProfile, mealPlanServer } from "../../test/meal-plan-server.ts";
+import {
+  FISH as FISH_TAG,
+  VEGETARIAN,
+  buildMeal,
+  buildProfile,
+  mealPlanServer,
+} from "../../test/meal-plan-server.ts";
 import { renderWithProviders } from "../../test/render.tsx";
 
 // Mardi 10 novembre 2026 : semaine du lundi 9 au dimanche 15.
@@ -72,7 +78,107 @@ function previewFor(profileId: string, over: Partial<GenerationPreview> = {}): G
   };
 }
 
+/** Options choisies : "Suivant", puis "Générer" sur les repas a generer [D230]. */
+async function toMeals(
+  user: ReturnType<typeof renderWithProviders>["user"],
+  sheet: HTMLElement
+): Promise<void> {
+  await user.click(within(sheet).getByRole("button", { name: "Suivant" }));
+  const meals = await screen.findByRole("dialog", { name: "Repas à générer" });
+  await within(meals).findAllByRole("checkbox");
+  await user.click(within(meals).getByRole("button", { name: "Générer" }));
+}
+
 describe("F-GENERER", () => {
+  it("repas a generer : la periode pre-remplie par la grille du profil ; decocher et epingler pour cette generation [D230]", async () => {
+    const standard = buildProfile({
+      name: "Standard",
+      isDefault: true,
+      grid: [
+        { weekday: "WED", mealTime: "DINNER", state: "EXCLUDED" },
+        {
+          weekday: "FRI",
+          mealTime: "LUNCH",
+          state: "PINNED",
+          tag: { id: FISH_TAG.id, name: "Poisson", status: "ACTIVE" },
+        },
+      ],
+    });
+    const s = mealPlanServer({
+      myRole: "OWNER",
+      profiles: [standard],
+      meals: [
+        buildMeal({ date: "2026-11-12", mealTime: "LUNCH", title: "Cantine", locked: true }),
+        buildMeal({ date: "2026-11-13", mealTime: "DINNER", title: "Crêpes" }),
+      ],
+    });
+    s.plan.preview = previewFor(standard.id);
+    const { user, container } = renderWithProviders(<App />, {
+      route: `/s/${s.space.id}/meal-plan`,
+    });
+    await user.click(await screen.findByRole("button", { name: "Générer" }));
+    const sheet = await screen.findByRole("dialog", { name: "Générer le planning" });
+    await within(sheet).findByRole("radio", { name: /Standard/ });
+    await user.click(within(sheet).getByRole("button", { name: "Suivant" }));
+    const meals = await screen.findByRole("dialog", { name: "Repas à générer" });
+    // Du mardi 10 (lundi est passe) au dimanche 15, midi et soir.
+    const boxes = await within(meals).findAllByRole("checkbox");
+    expect(boxes).toHaveLength(12);
+    expect(within(meals).getByRole("checkbox", { name: /^Mardi 10, midi/ })).toBeChecked();
+    // Exclu par le profil : decoche ; verrouille ou deja rempli (sans remplacer) : grise.
+    expect(within(meals).getByRole("checkbox", { name: /^Mercredi 11, soir/ })).not.toBeChecked();
+    const locked = within(meals).getByRole("checkbox", { name: /^Jeudi 12, midi/ });
+    expect(locked).toBeDisabled();
+    expect(locked).toHaveAccessibleName("Jeudi 12, midi Cantine, verrouillé");
+    expect(within(meals).getByRole("checkbox", { name: /^Vendredi 13, soir/ })).toBeDisabled();
+    // Epingle par le profil : son tag.
+    expect(
+      within(meals).getByRole("button", { name: "Vendredi 13, midi : tag Poisson, changer" })
+    ).toBeInTheDocument();
+    expect(await axeViolations(container)).toEqual([]);
+
+    await user.click(within(meals).getByRole("checkbox", { name: /^Mardi 10, midi/ }));
+    await user.click(within(meals).getByRole("checkbox", { name: /^Mercredi 11, soir/ }));
+    await user.click(
+      within(meals).getByRole("button", { name: "Samedi 14, soir : épingler un tag" })
+    );
+    const picker = await screen.findByRole("dialog", { name: "Choisir un tag" });
+    await user.click(within(picker).getByRole("button", { name: VEGETARIAN.name }));
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: "Choisir un tag" })).not.toBeInTheDocument();
+    });
+    // Retirer un tag : "Retirer le tag" dans le choix du tag.
+    await user.click(
+      within(meals).getByRole("button", { name: "Vendredi 13, midi : tag Poisson, changer" })
+    );
+    await user.click(
+      within(await screen.findByRole("dialog", { name: "Choisir un tag" })).getByRole("button", {
+        name: "Retirer le tag",
+      })
+    );
+    expect(
+      await within(meals).findByRole("button", { name: "Vendredi 13, midi : épingler un tag" })
+    ).toBeInTheDocument();
+    await user.click(within(meals).getByRole("button", { name: "Générer" }));
+    await waitFor(() => {
+      expect(s.plan.generations).toEqual([
+        {
+          profileId: standard.id,
+          from: "2026-11-10",
+          to: "2026-11-15",
+          replace: false,
+          cells: [
+            { date: "2026-11-10", mealTime: "LUNCH", state: "EXCLUDED" },
+            { date: "2026-11-14", mealTime: "DINNER", state: "PINNED", tagId: VEGETARIAN.id },
+          ],
+        },
+      ]);
+    });
+    // Le profil n'est pas modifie.
+    expect(s.plan.grids).toEqual([]);
+    expect(await screen.findByRole("dialog", { name: "Planning proposé" })).toBeInTheDocument();
+  });
+
   it("genere la semaine affichee avec le profil par defaut, puis garde le planning", async () => {
     const standard = buildProfile({ name: "Standard", isDefault: true });
     const summer = buildProfile({ name: "Été léger" });
@@ -87,11 +193,11 @@ describe("F-GENERER", () => {
     // D8 : on est mardi 10 ; lundi est passe, il n'est pas regenere.
     expect(within(sheet).getByText("Du mardi 10 au dimanche 15 novembre")).toBeInTheDocument();
     expect(await axeViolations(container)).toEqual([]);
-    await user.click(within(sheet).getByRole("button", { name: "Générer" }));
+    await toMeals(user, sheet);
 
     await waitFor(() => {
       expect(s.plan.generations).toEqual([
-        { profileId: standard.id, from: "2026-11-10", to: "2026-11-15", replace: false },
+        { profileId: standard.id, from: "2026-11-10", to: "2026-11-15", replace: false, cells: [] },
       ]);
     });
     const report = await screen.findByRole("dialog", { name: "Planning proposé" });
@@ -147,10 +253,10 @@ describe("F-GENERER", () => {
     await user.click(within(sheet).getByRole("button", { name: "La suivante" }));
     expect(within(sheet).getByText("Du lundi 16 au dimanche 22 novembre")).toBeInTheDocument();
     await user.click(within(sheet).getByRole("switch", { name: /Remplacer les repas/ }));
-    await user.click(within(sheet).getByRole("button", { name: "Générer" }));
+    await toMeals(user, sheet);
     await waitFor(() => {
       expect(s.plan.generations).toEqual([
-        { profileId: summer.id, from: "2026-11-16", to: "2026-11-22", replace: true },
+        { profileId: summer.id, from: "2026-11-16", to: "2026-11-22", replace: true, cells: [] },
       ]);
     });
   });
@@ -176,7 +282,7 @@ describe("F-GENERER", () => {
     await user.click(await screen.findByRole("button", { name: "Générer" }));
     const sheet = await screen.findByRole("dialog", { name: "Générer le planning" });
     await within(sheet).findByRole("radio", { name: /Standard/ });
-    await user.click(within(sheet).getByRole("button", { name: "Générer" }));
+    await toMeals(user, sheet);
     const report = await screen.findByRole("dialog", { name: "Planning proposé" });
     expect(within(report).getByText("Crêpes (gardé)")).toBeInTheDocument();
     expect(within(report).queryByText("Aucune recette")).not.toBeInTheDocument();
@@ -192,7 +298,7 @@ describe("F-GENERER", () => {
     await user.click(await screen.findByRole("button", { name: "Générer" }));
     const sheet = await screen.findByRole("dialog", { name: "Générer le planning" });
     await within(sheet).findByRole("radio", { name: /Standard/ });
-    await user.click(within(sheet).getByRole("button", { name: "Générer" }));
+    await toMeals(user, sheet);
     const report = await screen.findByRole("dialog", { name: "Planning proposé" });
     await user.click(within(report).getByRole("button", { name: "Garder ce planning" }));
     expect(

@@ -161,6 +161,12 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
   sheet = page.getByRole("dialog", { name: "Générer le planning" });
   await expect(sheet.getByRole("radio", { name: /Standard/ })).toBeChecked();
   await expectNoA11yViolations(page);
+  await sheet.getByRole("button", { name: "Suivant", exact: true }).click();
+  // Repas a generer [D230] : les repas deja prevus sont grises.
+  sheet = page.getByRole("dialog", { name: "Repas à générer" });
+  await expect(sheet.getByRole("checkbox", { name: /^Mardi 9, soir/ })).toBeDisabled();
+  await expect(sheet.getByText("9 repas à générer")).toBeVisible();
+  await expectNoA11yViolations(page);
   await sheet.getByRole("button", { name: "Générer", exact: true }).click();
   sheet = page.getByRole("dialog", { name: "Planning proposé" });
   await expect(sheet.getByText("9 repas proposés sur 9")).toBeVisible();
@@ -191,15 +197,19 @@ test("parcours 9 : planning rempli a la main, verrou, generation", async ({ page
   await page.getByRole("button", { name: "Générer", exact: true }).click();
   sheet = page.getByRole("dialog", { name: "Générer le planning" });
   await sheet.getByRole("switch", { name: /^Remplacer les repas non verrouillés/ }).click();
+  await sheet.getByRole("button", { name: "Suivant", exact: true }).click();
+  // Un repas decoche reste tel quel, pour cette generation seulement [D230].
+  sheet = page.getByRole("dialog", { name: "Repas à générer" });
+  await sheet.getByRole("checkbox", { name: /^Dimanche 14, soir/ }).uncheck();
   await sheet.getByRole("button", { name: "Générer", exact: true }).click();
   sheet = page.getByRole("dialog", { name: "Planning proposé" });
-  await expect(sheet.getByText("10 repas proposés sur 10")).toBeVisible();
+  await expect(sheet.getByText("9 repas proposés sur 9")).toBeVisible();
   await expect(
-    sheet.getByText("Laissés tels quels : 1 verrouillé, 1 « Pas de repas ».")
+    sheet.getByText("Laissés tels quels : 1 exclu, 1 verrouillé, 1 « Pas de repas ».")
   ).toBeVisible();
   await sheet.getByRole("button", { name: "Garder ce planning" }).click();
   // Toutes les cases etaient remplies : remplacees, pas ajoutees.
-  await expectToast(page, "10 repas remplacés au planning");
+  await expectToast(page, "9 repas remplacés au planning");
   await expect(tuesdayDinner).toHaveAccessibleName("Mardi 9, soir : Restes, 2 pers., verrouillé");
   await expect(slot(page, "Mercredi 10, midi")).toHaveAccessibleName(
     "Mercredi 10, midi : Pas de repas"
