@@ -31,7 +31,19 @@ Integration et mise en ligne :
 
 Depuis `master` dans `hotfix/<sujet>`, puis fusionnes dans le lot en cours.
 
-- Aucun pour l'instant.
+### `v2.2.1` - Patch planning (branche `hotfix/planning`) [D230]
+
+Retours d'usage du 2026-11-23, choix au selecteur ; plan `4-Plan-Patch-Planning.md`. A faire avant C9.
+
+- [x] Etude et choix au selecteur ; D230 au journal, CDC S4.6 et Parcours P10 a jour
+- [x] Ouvrir `hotfix/planning` (2026-11-23) : depuis le commit de `lot/v2.3.0`, dont le code est celui de `master` (`v2.2.0`) et qui n'ajoute que des docs, pour eviter un conflit de docs ; lot laisse en l'etat
+- [ ] Etape 1 : recette aux portions du repas (`?servings=`)
+- [ ] Etape 2 : gestes inverses au planning (clic gauche / toucher : F-REPAS ; clic droit / appui long : la recette)
+- [ ] Etape 3 : raccourcis du texte libre
+- [ ] Etape 4 : grille ponctuelle avant generation (shared, API, web)
+- [ ] Etape 5 : docs (Plan-Tests) et changelog ; verification complete (`npm test`, `npm run e2e`, lint, typecheck)
+- [ ] PR `hotfix/planning` -> `Developement`, puis `Developement` -> `master` (preprod, verification pas a pas), fusion (prod, tag `v2.2.1`), changelog
+- [ ] `Developement` fusionne dans `lot/v2.3.0` ; suppression de `hotfix/planning`
 
 ## `v2.3.0` - Liste de courses (branche `lot/v2.3.0`)
 

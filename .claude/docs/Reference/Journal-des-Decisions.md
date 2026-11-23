@@ -1012,3 +1012,14 @@ Revue du module avant le plan (CDC S4.6, P10, matrice B2, schema cible, maquette
 - **Choix** : `Developement` ne recoit plus qu'un hotfix ou un lot termine ; chaque lot se developpe sur `lot/v<X.Y.0>` (nommee par le tag vise), creee depuis `Developement` quand il est egal a `master`, poussee pour la CI ; un hotfix part de `master` dans `hotfix/<sujet>`, suit le flux normal (PR -> `Developement` -> `master`), puis `Developement` est fusionne dans le lot. Procedure et commandes : `Architecture.md` S13.
 - **Ecarte** : rebaser le lot sur les hotfixes (reecrit une branche poussee) ; corriger dans le lot puis cherry-pick vers `Developement` (le correctif arrive deux fois, avec deux SHA) ; worktree permanent pour les hotfixes (les deux stacks Docker se disputent les ports 3000 et 3001).
 - **Migrations** : eviter les migrations en hotfix ; sinon regenerer les migrations non deployees du lot apres le merge, pour garder l'ordre des dates.
+
+### D230 - Patch planning : toucher ouvre le repas, recette aux portions du repas, grille ponctuelle a la generation, raccourcis du texte libre - VALIDEE (2026-11-23, retours d'usage du proprietaire, choix au selecteur ; plan `V2.2/4-Plan-Patch-Planning.md`) - AMENDE D204
+
+- **Constat** : a l'usage, depuis le planning on veut d'abord le repas (portions, commentaire), puis la recette ; la recette ouverte depuis un repas repart aux portions par defaut au lieu de celles du repas ; pour une generation ponctuelle (sauter un soir, imposer une soupe lundi), il faut modifier la grille du profil puis la remettre ; le texte libre se retape toujours ("Restes"). Le proprietaire demandait aussi que les membres generent et gerent les profils : il garde finalement D58.
+- **Choix** :
+  - **Planning, gestes inverses** : clic gauche ou toucher sur un repas, recette comprise, ouvre F-REPAS ; clic droit, touche Menu ou appui long sans bouger ouvrent la recette d'un repas-recette ; appui long puis glisser echange toujours ; "Voir la recette" aussi en tete de F-REPAS (clavier). **Accueil** inchange (toucher ouvre la recette). D204 est amende pour le planning seulement.
+  - **Recette aux portions du repas** partout ou un repas y mene (`?servings=`).
+  - **F-GENERER** : apres profil et periode, la grille des repas de la periode, pre-remplie par la grille du profil [D114] ; decocher un repas, poser un tag ; pour cette generation seulement, le profil n'est pas modifie.
+  - **Texte libre** : raccourcis fixes Restes, Resto, A emporter, Chez des amis, Pique-nique ; un toucher remplit le champ.
+- **Ecarte** : planning et accueil ouvrant tous deux le repas (sur l'accueil on vient lire la recette) ; apercu cochable apres generation, ou les deux ; raccourcis tires des textes deja saisis, ou mixtes ; ouvrir generation et profils aux membres (D58 garde).
+- **Version** : hotfix `v2.2.1` depuis `master` [D229], sans migration.

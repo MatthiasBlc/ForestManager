@@ -6,7 +6,7 @@ Chantier ouvert le 2026-11-18, apres la mise en prod de la `v2.1.0` : module lis
 
 1. Ce README (etat et reprise).
 2. `Roadmap.md` : la premiere case non cochee est le point de reprise.
-3. `1-Plan-Reimport.md` : plan du reimport en cours ; `2-Plan-C9.md` : plan de la liste de courses [D228].
+3. `4-Plan-Patch-Planning.md` : patch planning `v2.2.1` en cours [D230] ; `2-Plan-C9.md` : plan de la liste de courses [D228] ; `1-Plan-Reimport.md` : reimport (fait).
 4. `../Reference/CDC.md` : S1 a S3 (vision, glossaire, roles), puis la section du module concerne (liste de courses : S4.7).
 5. `../Reference/Journal-des-Decisions.md` : seulement pour le pourquoi d'une regle (chercher le `D##`).
 
@@ -29,3 +29,4 @@ Chantier ouvert le 2026-11-18, apres la mise en prod de la `v2.1.0` : module lis
 - 2026-11-18 (prod) : PR #37 fusionnee, `v2.2.0` en prod et taguee, `registry-prune` au vert avec son correctif. Reste au proprietaire : changelog `v2.2.0` (relire, "Visible sans connexion", notifier ou non) et ordre des tags de Saison et Palier [D223]. Puis `/clear` et C9 etape 1.
 - 2026-11-18 (fin du lot) : changelog `v2.2.0` publie (visible sans connexion, notification a tous), ordre de Saison et Palier regle en prod. Lot `v2.2.0` termine. Reprise : `/clear`, puis C9 etape 1 de `2-Plan-C9.md` (shared), en TDD.
 - 2026-11-18 (flux git) : flux par lot et hotfix decide [D229], procedure dans `../Reference/Architecture.md` S13. Branche `lot/v2.3.0` ouverte et poussee. Reprise : C9 etape 1 de `2-Plan-C9.md` (shared), en TDD, sur `lot/v2.3.0`.
+- 2026-11-23 (patch planning) : retours d'usage du proprietaire etudies, choix au selecteur [D230] (droits de generation : D58 garde) ; plan `4-Plan-Patch-Planning.md`, hotfix `v2.2.1` avant C9. Branche `hotfix/planning` ouverte (code de `v2.2.0`, non poussee). Reprise : etape 1 du plan, en TDD.
