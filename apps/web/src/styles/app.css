@@ -332,6 +332,38 @@ a.fm-slot {
   }
 }
 
+/* Ranger la liste de courses au glisser [D228] : memes reperes que le planning. */
+.fm-shop-item[data-drag-id] {
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.fm-shop-item[data-drag-lifted] {
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-md);
+  transform: scale(1.02);
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+.fm-shop-item[data-drag-source] {
+  opacity: 0.35;
+}
+.fm-shop-item[data-drop-over],
+.fm-shop-section-head[data-drop-over] {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  background: var(--accent-soft);
+}
+.fm-drag-ghost.fm-shop-item {
+  background: var(--surface-raised);
+  list-style: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .fm-shop-item[data-drag-lifted] {
+    transition: none;
+  }
+}
+
 /* Stepper a sa taille dans une colonne flex (champ du formulaire), comme dans l'editeur de
    recette, au lieu de s'etirer sur toute la largeur. */
 .fm-stepper {

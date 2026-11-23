@@ -1,14 +1,17 @@
 // E-COURSES [D228, D231] : une liste par espace, rangee par sections dans l'ordre du
 // magasin, "Autres" en fin. Un seul compteur en tete. La case coche (cible du pouce),
 // toucher le produit ouvre F-ARTICLE ; un article coche se barre et glisse en fin de
-// section ; une section toute cochee se replie seule. Champ d'ajout en bas.
+// section ; une section toute cochee se replie seule. Champ d'ajout en bas. Appui long
+// (ou souris) puis glisser range un article, dans sa section ou dans une autre. Hors
+// ligne, la liste se lit et se coche ; les coches partent au retour du reseau.
 import type { ShoppingItem, ShoppingSection, SpaceRole, Unit } from "@fm/shared";
-import { useQuery } from "@tanstack/react-query";
-import { useState, type ReactNode } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState, type ReactNode } from "react";
 import { useParams } from "react-router";
 
 import { spaceQuery } from "../../core/session/queries.ts";
 import { errorMessage } from "../../i18n/index.ts";
+import { useOnline } from "../../pwa/use-online.ts";
 import { useWriteGuard } from "../../pwa/use-write-guard.ts";
 import { ActionMenu } from "../../ui/action-menu.tsx";
 import { IconButton } from "../../ui/button.tsx";
@@ -16,18 +19,22 @@ import { cx } from "../../ui/cx.ts";
 import { EmptyState, Skeleton } from "../../ui/display.tsx";
 import { Icon } from "../../ui/icon.tsx";
 import { PullToRefresh } from "../../ui/pull-to-refresh.tsx";
+import { usePointerDrag } from "../../ui/use-pointer-drag.ts";
 import { addDays, todayIso, weekStart } from "../meal-plan/dates.ts";
 import { settingsQuery as planSettingsQuery } from "../meal-plan/queries.ts";
 import { unitsQuery } from "../recipes/queries.ts";
 import { AddBar } from "./add-bar.tsx";
 import { formatParts, itemName } from "./entry.ts";
 import { FromPlanSheet } from "./from-plan-sheet.tsx";
+import { flushChecks, queueCheck, usePendingChecks, withPending } from "./pending-checks.ts";
 import { planPeriod } from "./period.ts";
 import { ItemSheet } from "./item-sheet.tsx";
 import { SectionsSheet } from "./sections-sheet.tsx";
 import { ShoppingSettingsSheet } from "./settings-sheet.tsx";
 import { listQuery, settingsQuery } from "./queries.ts";
-import { sectionItems, useShopping } from "./use-shopping.ts";
+import { dropMove, sectionDropId, sectionItems, useShopping } from "./use-shopping.ts";
+
+type Drag = ReturnType<typeof usePointerDrag>;
 
 const READ_ONLY_NOTE: Record<SpaceRole, string> = {
   MEMBER: "",
@@ -45,12 +52,15 @@ function ItemRow({
   item,
   units,
   disabled,
+  drag,
   onCheck,
   onOpen,
 }: {
   item: ShoppingItem;
   units: readonly Unit[];
   disabled: boolean;
+  /** Glisser possible (droit de modifier, en ligne) ; un article achete ne se prend pas. */
+  drag: Drag | null;
   onCheck: (checked: boolean) => void;
   onOpen: () => void;
 }) {
@@ -59,7 +69,11 @@ function ItemRow({
   const from = sourcesLabel(item);
   const amount = formatParts(item.parts, units);
   return (
-    <li className={cx("fm-shop-item", checked && "fm-shop-item-done")}>
+    <li
+      className={cx("fm-shop-item", checked && "fm-shop-item-done")}
+      {...(drag && !checked ? drag.source(item.id, { onMenu: onOpen }) : {})}
+      {...drag?.target(item.id)}
+    >
       <label className="fm-shop-check">
         <input
           type="checkbox"
@@ -91,10 +105,13 @@ function SectionBlock({
   name,
   items,
   collapsed,
+  dropId,
   onToggle,
   children,
 }: {
   name: string;
+  /** Cible du glisser sur le titre (en fin des articles a acheter). */
+  dropId: Record<string, string> | undefined;
   items: readonly ShoppingItem[];
   collapsed: boolean;
   onToggle: () => void;
@@ -108,6 +125,7 @@ function SectionBlock({
         className="fm-shop-section-head"
         aria-expanded={!collapsed}
         onClick={onToggle}
+        {...dropId}
       >
         <Icon name={collapsed ? "chevron-right" : "chevron-down"} size={18} />
         <span className="flex-1">{name}</span>
@@ -128,7 +146,30 @@ export function ShoppingPage() {
     enabled: list.data !== undefined && !canEdit,
   });
   const guard = useWriteGuard();
-  const { create, update, clear } = useShopping(spaceId);
+  const online = useOnline();
+  const queryClient = useQueryClient();
+  const { create, update, clear, move } = useShopping(spaceId);
+  // Coches faites sans reseau, montrees par-dessus la liste jusqu'a leur envoi.
+  const pending = usePendingChecks(spaceId);
+  const waiting = Object.keys(pending).length;
+  const items = list.data ? withPending(list.data.items, pending) : [];
+  useEffect(() => {
+    if (!online || waiting === 0) return;
+    // Le cache prend les coches avant l'envoi : pas de retour en arriere a l'affichage.
+    queryClient.setQueryData(listQuery(spaceId).queryKey, (data) =>
+      data ? { ...data, items: withPending(data.items, pending) } : data
+    );
+    void flushChecks(spaceId).then((sent) => {
+      if (sent) void queryClient.invalidateQueries({ queryKey: listQuery(spaceId).queryKey });
+    });
+  }, [online, waiting, pending, spaceId, queryClient]);
+  const drag = usePointerDrag({
+    onDrop: (source, target) => {
+      const next = dropMove(items, source, target);
+      if (next) move.mutate(next);
+    },
+  });
+  const dragging = canEdit && online ? drag : null;
   // Replie ou deplie a la main ; sinon, repliee quand tout est coche.
   const [folded, setFolded] = useState<Record<string, boolean>>({});
   const [openId, setOpenId] = useState<string | null>(null);
@@ -144,14 +185,14 @@ export function ShoppingPage() {
     content = <EmptyState title="Liste indisponible">{errorMessage(list.error)}</EmptyState>;
   } else if (!list.data || !units.data) {
     content = <Skeleton kind="card" count={2} label="Chargement de la liste…" />;
-  } else if (list.data.items.length === 0) {
+  } else if (items.length === 0) {
     content = (
       <EmptyState icon="shopping-basket" title="La liste est vide">
         {canEdit ? "Tape un article en bas de l'écran : « lait », « 2 citrons »." : null}
       </EmptyState>
     );
   } else {
-    const { items, sections } = list.data;
+    const { sections } = list.data;
     const groups: { key: string; section: ShoppingSection | null; name: string }[] = [
       ...sections.map((section) => ({ key: section.id, section, name: section.name })),
       { key: "others", section: null, name: "Autres" },
@@ -170,6 +211,7 @@ export function ShoppingPage() {
                 name={name}
                 items={inSection}
                 collapsed={collapsed}
+                dropId={dragging?.target(sectionDropId(section?.id ?? null))}
                 onToggle={() => {
                   setFolded((current) => ({ ...current, [key]: !collapsed }));
                 }}
@@ -179,12 +221,13 @@ export function ShoppingPage() {
                     key={item.id}
                     item={item}
                     units={units.data}
-                    disabled={!canEdit || guard.disabled === true}
+                    disabled={!canEdit}
+                    drag={dragging}
                     onCheck={(checked) => {
-                      update.mutate({
-                        itemId: item.id,
-                        body: { checked, checkedChangedAt: new Date().toISOString() },
-                      });
+                      const at = new Date().toISOString();
+                      if (online) {
+                        update.mutate({ itemId: item.id, body: { checked, checkedChangedAt: at } });
+                      } else queueCheck(spaceId, item.id, checked, at);
                     }}
                     onOpen={() => {
                       setOpenId(item.id);
@@ -199,10 +242,16 @@ export function ShoppingPage() {
     );
   }
 
-  const left = list.data?.items.filter((item) => item.checkedAt === null).length ?? 0;
-  const opened = list.data?.items.find((item) => item.id === openId);
+  const left = items.filter((item) => item.checkedAt === null).length;
+  const opened = items.find((item) => item.id === openId);
   const tomorrow = addDays(todayIso(), 1);
-  const bought = list.data?.items.filter((item) => item.checkedAt !== null).length ?? 0;
+  const bought = items.filter((item) => item.checkedAt !== null).length;
+  let checksNote: string | null = null;
+  if (waiting > 0)
+    checksNote =
+      waiting > 1 ? `${String(waiting)} coches en attente d'envoi.` : "1 coche en attente d'envoi.";
+  else if (!online && canEdit)
+    checksNote = "Hors ligne : tu peux cocher, l'envoi se fera au retour du réseau.";
 
   return (
     <div className="fm-shop">
@@ -265,6 +314,11 @@ export function ShoppingPage() {
         {list.data && !canEdit && settings.data ? (
           <p className="m-0 text-sm text-ink-muted">{READ_ONLY_NOTE[settings.data.editRole]}</p>
         ) : null}
+        {checksNote ? (
+          <p role="status" className="m-0 text-sm text-ink-muted">
+            {checksNote}
+          </p>
+        ) : null}
         {content}
       </div>
       {canEdit && units.data ? (
@@ -306,7 +360,7 @@ export function ShoppingPage() {
         <ItemSheet
           spaceId={spaceId}
           item={opened}
-          items={list.data.items}
+          items={items}
           sections={list.data.sections}
           units={units.data}
           canEdit={canEdit}

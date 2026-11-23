@@ -1,5 +1,5 @@
 // Cache hors ligne (D35, C3.9) : TanStack Query garde dans IndexedDB la session,
-// les espaces, les unites, les recettes ouvertes et le planning deja lu, 14 jours. A la relecture, chaque
+// les espaces, les unites, les recettes ouvertes, le planning deja lu et la liste de courses, 14 jours. A la relecture, chaque
 // donnee repasse par son schema : une forme perimee (nouvelle version) est ecartee.
 // Deconnexion et connexion vident le client (`queryClient.clear()`), donc l'appareil.
 import {
@@ -8,6 +8,7 @@ import {
   mealSchema,
   meSchema,
   recipeSchema,
+  shoppingListSchema,
   spaceDetailSchema,
   spaceSummarySchema,
   unitSchema,
@@ -41,6 +42,8 @@ function schemaOf(key: QueryKey): z.ZodType | null {
   if (key.length === 4 && module === "meal-plan" && kind === "settings")
     return mealPlanSettingsSchema;
   if (key.length === 6 && module === "meal-plan" && kind === "meals") return z.array(mealSchema);
+  // Liste de courses (D228) : lisible et cochable en magasin sans reseau.
+  if (key.length === 4 && module === "shopping" && kind === "list") return shoppingListSchema;
   return null;
 }
 
