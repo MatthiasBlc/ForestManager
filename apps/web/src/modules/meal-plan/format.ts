@@ -124,3 +124,8 @@ export function skippedText(skipped: GenerationPreview["skipped"]): string | nul
   ].filter((part) => part !== null);
   return parts.length > 0 ? `Laissés tels quels : ${parts.join(", ")}.` : null;
 }
+
+/** Recette d'un repas, ouverte aux portions du repas (`?servings=`, lu par E-RECETTE) [D230]. */
+export function recipeHref(spaceId: string, recipeId: string, servings: number): string {
+  return `/s/${spaceId}/recipes/${recipeId}?servings=${String(servings)}`;
+}

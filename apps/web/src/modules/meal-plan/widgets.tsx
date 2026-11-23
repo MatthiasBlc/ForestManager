@@ -4,7 +4,7 @@ import { mostCookedWidgetSchema, upcomingMealsWidgetSchema, type MealTime } from
 import { Link, useNavigate } from "react-router";
 
 import { addDays, todayIso, whenLabel } from "./dates.ts";
-import { MEAL_TIME_WORDS } from "./format.ts";
+import { MEAL_TIME_WORDS, recipeHref } from "./format.ts";
 import { MealSlot } from "./meal-slot.tsx";
 
 /** "Aujourd'hui, midi", "Demain, soir", sinon "Mardi 3, midi". */
@@ -43,9 +43,10 @@ export function Upcoming({ data }: { data: Record<string, unknown> }) {
                 title={meal.title}
                 when={relativeWhen(meal.date, meal.mealTime)}
                 showWhen
-                // Repas-recette : la recette ; repas texte : le planning du jour [D204].
+                // Repas-recette : la recette aux portions du repas ; repas texte : le
+                // planning du jour [D204, D230].
                 {...(meal.recipeId
-                  ? { href: `/s/${space.spaceId}/recipes/${meal.recipeId}` }
+                  ? { href: recipeHref(space.spaceId, meal.recipeId, meal.servings) }
                   : {
                       onOpen: () => void navigate(`/s/${space.spaceId}/meal-plan?day=${meal.date}`),
                     })}

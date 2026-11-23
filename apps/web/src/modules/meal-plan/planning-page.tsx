@@ -36,7 +36,7 @@ import {
   weekStart,
   whenLabel,
 } from "./dates.ts";
-import { MEAL_TIME_LABELS } from "./format.ts";
+import { MEAL_TIME_LABELS, recipeHref } from "./format.ts";
 import { GenerateSheet } from "./generate-sheet.tsx";
 import { EmptyCell, MealSlot, type SlotKind } from "./meal-slot.tsx";
 import { MealSheet } from "./meal-sheet.tsx";
@@ -115,10 +115,11 @@ function Cell({
       onOpen={() => {
         onCell(cell);
       }}
-      // Repas-recette visible : toucher ouvre la recette, sauf pendant un echange [D204].
+      // Repas-recette visible : toucher ouvre la recette, aux portions du repas, sauf
+      // pendant un echange [D204, D230].
       {...(meal?.recipe && !swapFrom
         ? {
-            href: `/s/${spaceId}/recipes/${meal.recipe.id}`,
+            href: recipeHref(spaceId, meal.recipe.id, meal.servings ?? settings.defaultServings),
             onMenu: () => {
               onMenu(cell);
             },

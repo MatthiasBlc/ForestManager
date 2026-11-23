@@ -52,8 +52,14 @@ const WIDGETS: Record<string, Record<string, unknown>> = {
         spaceId: famille.id,
         spaceName: "Famille",
         meals: [
-          { date: isoDay(1), mealTime: "LUNCH", title: "Gratin", recipeId: RECIPE_ID },
-          { date: isoDay(1), mealTime: "DINNER", title: "Restes", recipeId: null },
+          {
+            date: isoDay(1),
+            mealTime: "LUNCH",
+            title: "Gratin",
+            recipeId: RECIPE_ID,
+            servings: 6,
+          },
+          { date: isoDay(1), mealTime: "DINNER", title: "Restes", recipeId: null, servings: 4 },
         ],
       },
     ],
@@ -116,10 +122,11 @@ describe("widgets d'accueil (E-ACCUEIL)", () => {
     ]);
     const meals = screen.getByRole("region", { name: "Prochains repas" });
     expect(within(meals).getByText("Famille")).toBeInTheDocument();
-    // Repas-recette : ouvre la recette ; repas texte : ouvre le planning du jour [D204].
+    // Repas-recette : ouvre la recette aux portions du repas [D204, D230] ; repas texte :
+    // ouvre le planning du jour.
     expect(within(meals).getByRole("link", { name: "Demain, midi : Gratin" })).toHaveAttribute(
       "href",
-      `/s/${famille.id}/recipes/${RECIPE_ID}`
+      `/s/${famille.id}/recipes/${RECIPE_ID}?servings=6`
     );
     expect(
       within(meals).getByRole("button", { name: "Demain, soir : Restes" })

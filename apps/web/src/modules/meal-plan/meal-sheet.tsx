@@ -28,7 +28,7 @@ import { OptionList, type OptionItem } from "../../ui/option-list.tsx";
 import { Sheet, SheetFooter } from "../../ui/sheet.tsx";
 import { useToast } from "../../ui/use-toast.ts";
 import { whenLabel } from "./dates.ts";
-import { reasonText } from "./format.ts";
+import { reasonText, recipeHref } from "./format.ts";
 import { mealsKey } from "./queries.ts";
 
 const KINDS: readonly { value: MealKind; label: string }[] = [
@@ -139,7 +139,15 @@ function RecipeSearch({
   );
 }
 
-function ReadOnlyMeal({ spaceId, meal }: { spaceId: string; meal: Meal | null }) {
+function ReadOnlyMeal({
+  spaceId,
+  meal,
+  defaultServings,
+}: {
+  spaceId: string;
+  meal: Meal | null;
+  defaultServings: number;
+}) {
   if (!meal) return <p className="m-0 text-ink-muted">Rien de prévu pour ce repas.</p>;
   return (
     <div className="fm-stack">
@@ -147,7 +155,10 @@ function ReadOnlyMeal({ spaceId, meal }: { spaceId: string; meal: Meal | null })
       {meal.servings ? <p className="m-0 text-sm">{meal.servings} pers.</p> : null}
       {meal.comment ? <p className="m-0">{meal.comment}</p> : null}
       {meal.recipe ? (
-        <Link to={`/s/${spaceId}/recipes/${meal.recipe.id}`} className="fm-btn fm-btn-secondary">
+        <Link
+          to={recipeHref(spaceId, meal.recipe.id, meal.servings ?? defaultServings)}
+          className="fm-btn fm-btn-secondary"
+        >
           Voir la recette
         </Link>
       ) : null}
@@ -401,7 +412,11 @@ export function MealSheet({
         canEdit ? (
           <MealForm {...form} onDone={onClose} />
         ) : (
-          <ReadOnlyMeal spaceId={form.spaceId} meal={form.meal} />
+          <ReadOnlyMeal
+            spaceId={form.spaceId}
+            meal={form.meal}
+            defaultServings={form.defaultServings}
+          />
         )
       ) : null}
     </Sheet>

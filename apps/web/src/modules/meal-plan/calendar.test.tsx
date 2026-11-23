@@ -161,7 +161,8 @@ describe("repas-recette : toucher ouvre la recette, F-REPAS a part (D204)", () =
     const s = mealPlanServer({ meals: [dahl()] });
     const { container } = renderWithProviders(<App />, { route: route(s.space.id) });
     const slot = await screen.findByRole("link", { name: "Mardi 10, midi : Dahl" });
-    expect(slot).toHaveAttribute("href", `/s/${s.space.id}/recipes/${DAHL_ID}`);
+    // Aux portions du repas, sinon au defaut de l'espace [D230].
+    expect(slot).toHaveAttribute("href", `/s/${s.space.id}/recipes/${DAHL_ID}?servings=4`);
     expect(slot).toHaveAccessibleDescription("Appui long ou clic droit : détails du repas");
     expect(await axeViolations(container)).toEqual([]);
     // Clic droit (et touche Menu / Maj+F10, qui emettent le meme evenement).
@@ -514,6 +515,7 @@ describe("lecture seule (F-MPL-3)", () => {
           kind: "RECIPE",
           title: "Dahl",
           recipe: { id: "00000000-0000-4000-8000-0000000000aa", imageUrl: null },
+          servings: 6,
           comment: "Sans coriandre",
         }),
       ],
@@ -523,12 +525,14 @@ describe("lecture seule (F-MPL-3)", () => {
       await screen.findByText("Seuls les modérateurs et le propriétaire modifient les repas.")
     ).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Ajouter un repas/ })).not.toBeInTheDocument();
-    fireEvent.contextMenu(await screen.findByRole("link", { name: "Mardi 10, midi : Dahl" }));
+    fireEvent.contextMenu(
+      await screen.findByRole("link", { name: "Mardi 10, midi : Dahl, 6 pers." })
+    );
     const sheet = await screen.findByRole("dialog", { name: "Mardi 10, midi" });
     expect(within(sheet).getByText("Sans coriandre")).toBeInTheDocument();
     expect(within(sheet).getByRole("link", { name: "Voir la recette" })).toHaveAttribute(
       "href",
-      `/s/${s.space.id}/recipes/00000000-0000-4000-8000-0000000000aa`
+      `/s/${s.space.id}/recipes/00000000-0000-4000-8000-0000000000aa?servings=6`
     );
     expect(within(sheet).queryByRole("button", { name: "Enregistrer" })).not.toBeInTheDocument();
   });
