@@ -42,6 +42,7 @@ Retours d'usage du 2026-11-23, choix au selecteur ; plan `4-Plan-Patch-Planning.
 - [x] Etape 3 : raccourcis du texte libre
 - [x] Etape 4 : grille ponctuelle avant generation (shared, API, web) : etape "Repas a generer" apres "Suivant"
 - [x] Etape 5 : docs (Plan-Tests, Parcours, ecarts au plan) ; verification complete (1815 tests, 25 E2E, lint, typecheck) et revue a 390 px dans Chrome sur la dev (compte de test) ; changelog : brouillon genere par la CI depuis les commits `fix:`, a reformuler a la mise en prod
+- [x] CI de la PR #39 : `verify` en echec sur `npm audit` (avis GHSA-7589-6fvf-x4pw, ReDoS dans `effect` <= 3.22.0, tire par `@prisma/config` 7.10.1, outil en ligne de commande seulement) ; `overrides` `@prisma/config` -> `effect` 3.22.4 sur `hotfix/planning` (2026-11-23), tests et E2E au vert
 - [ ] PR `hotfix/planning` -> `Developement`, puis `Developement` -> `master` (preprod, verification pas a pas), fusion (prod, tag `v2.2.1`), changelog
 - [ ] `Developement` fusionne dans `lot/v2.3.0` ; suppression de `hotfix/planning`
 
