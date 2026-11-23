@@ -161,7 +161,7 @@ Reprend la V1 (grille jours x repas, repas recette / texte libre / vide, verroui
   - le rapport explique chaque repas laisse vide au lieu de le remplir de force [D113] ;
   - exclusions et epinglages se reglent dans une seule grille jours x repas [D114].
   - un profil "Standard" sans regle existe d'office dans chaque espace [D183] ; poids en cinq paliers, avec un mode avance a jauge 0 a 200 % [D184] ; une regle de tag peut remplacer le delai de recette du profil pour ses recettes (0 a 30 jours, le plus court l'emporte) [D214] ; un repas choisi a la main est verrouille d'office, decochable [D215].
-  - avant de generer, la grille des repas de la periode (pre-remplie par celle du profil) : decocher un repas, y poser un tag, pour cette generation seulement [D230].
+  - avant de generer, un accordeon facultatif "Choisir les repas" : la grille des repas de la periode (pre-remplie par celle du profil), un repas a exclure ou a epingler a un tag, pour cette generation seulement ; telephone : un jour par ligne, grand ecran : la disposition du planning [D230].
 - F-MPL-6 Sur mobile, selecteur "Jour | Semaine" : Jour = vue detaillee, Semaine = liste compacte des 7 jours (une ligne par jour, repas en pastilles, toucher un repas l'ouvre) ; grille semaine complete en bureau [D111].
 - F-MPL-7 Echange de repas sur mobile en mode "echange" : bandeau, cibles en pointilles, Annuler [D112].
 - F-MPL-8 Barre du planning : Idees de repas, Profils de generation et Reglages du planning sont des boutons a icone et mot court ("Idees", "Profils", "Reglages"), sur une ligne des 360 px [D209].

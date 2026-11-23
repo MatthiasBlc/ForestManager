@@ -53,7 +53,7 @@ Regle : un comportement se teste au niveau **le plus bas** qui le prouve. Les E2
 ### Module Planning
 
 - Repas configurables par espace [D11], grille, verrouillage, echange, idees de repas et conversion en recette.
-- Generation : regles par tag et par recette, poids, frequences, cooldowns, exclusions, epinglages ; une recette "base" n'est jamais proposee seule [D24] ; grille ponctuelle par date, qui remplace celle du profil pour une generation [D230]. **Tests unitaires deterministes** de l'algorithme (graine aleatoire fixee) en plus de l'integration.
+- Generation : regles par tag et par recette, poids, frequences, cooldowns, exclusions, epinglages ; une recette "base" n'est jamais proposee seule [D24] ; grille ponctuelle par date, qui remplace celle du profil pour une generation, choisie dans l'accordeon "Choisir les repas" (disposition telephone et grand ecran) [D230]. **Tests unitaires deterministes** de l'algorithme (graine aleatoire fixee) en plus de l'integration.
 - Gestes d'un repas [D230] : toucher ouvre F-REPAS, appui long ou clic droit la recette aux portions du repas (parcours 9 et tests du calendrier).
 
 ### Referentiels
