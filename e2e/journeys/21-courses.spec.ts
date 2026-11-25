@@ -150,4 +150,19 @@ test("parcours 21 : depuis le planning, cocher a deux en direct, retirer les ach
   }
   await expect(article(samPage, "Piles")).toHaveCount(0, LIVE);
   await expect(samPage.getByText("1 à acheter")).toBeVisible();
+
+  // 8. Lea gere les sections : le menu "..." d'une section s'ouvre au-dessus de la
+  // feuille (il passait dessous, v2.3.0) et la renomme.
+  await page.getByRole("button", { name: "Menu de la liste" }).click();
+  await page.getByRole("menuitem", { name: "Gérer les sections" }).click();
+  const sections = page.getByRole("dialog", { name: "Sections" });
+  await sections.getByRole("textbox", { name: "Nouvelle section" }).fill("Bazar");
+  await sections.getByRole("button", { name: "Ajouter" }).click();
+  await sections.getByRole("button", { name: "Actions de la section Bazar" }).click();
+  await page.getByRole("menuitem", { name: "Renommer" }).click();
+  const rename = sections.getByRole("textbox", { name: "Nom de la section" });
+  await rename.fill("Droguerie");
+  await sections.getByRole("button", { name: "OK" }).click();
+  await expect(sections.getByText("Droguerie", { exact: true })).toBeVisible();
+  await expect(sections.getByText("Bazar", { exact: true })).toHaveCount(0);
 });

@@ -140,8 +140,10 @@ body,
   }
 }
 
-/* ActionMenu pose dans une feuille (ActionList) : ni cadre ni ombre. */
+/* ActionMenu pose dans une feuille (ActionList) : ni cadre, ni ombre, ni couche. */
 .fm-menu-flat {
+  position: static;
+  z-index: auto;
   padding: 0;
   border: 0;
   box-shadow: none;
