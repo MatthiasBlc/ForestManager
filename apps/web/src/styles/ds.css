@@ -599,7 +599,11 @@ textarea.fm-input {
 }
 
 /* ---------- ActionMenu ---------- */
+/* Au-dessus d'une feuille : un menu "..." peut s'ouvrir depuis une feuille (F-SECTIONS).
+   Radix reporte ce z-index sur l'enveloppe du menu. */
 .fm-menu {
+  position: relative;
+  z-index: var(--z-menu);
   list-style: none;
   margin: 0;
   padding: var(--space-1);
