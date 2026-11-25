@@ -64,10 +64,16 @@ Retours d'usage du 2026-11-23, choix au selecteur ; plan `4-Plan-Patch-Planning.
 Retour du proprietaire le 2026-11-25 : dans "Gerer les sections", le menu "..." d'une section s'ouvrait sous la feuille (pas de `z-index`), impossible de renommer, deplacer ou supprimer une section. Branche `hotfix/menu-sections`, ouverte depuis `lot/v2.4.0` (code de `master`, seulement des docs en plus).
 
 - [x] Correctif en TDD : etape 8 du parcours E2E 21 (renommer une section par son menu), rouge puis vert ; niveau `--z-menu` entre les feuilles et les toasts. `npm run test:web` 551/551, E2E 26/26, lint et typecheck au vert, revue dans Chrome sur la dev
-- [ ] Le proprietaire pousse `hotfix/menu-sections`, PR -> `Developement`, fusion
-- [ ] Preprod : PR `Developement` -> `master`, verifier le menu d'une section dans "Gerer les sections"
-- [ ] Prod `v2.3.1` : fusion, tag, changelog (relire le brouillon genere depuis le commit `fix:`)
-- [ ] `Developement` fusionne dans `lot/v2.4.0`, `hotfix/menu-sections` supprimee
+- [x] Le proprietaire pousse `hotfix/menu-sections`, PR #45 -> `Developement`, fusion
+- [x] Preprod : PR #46 `Developement` -> `master`, CI verte ; menu d'une section verifie dans Chrome (Testperso), au-dessus de la feuille
+- [x] Prod `v2.3.1` (2026-11-25) : fusion de la PR #46, tag ; correctif present dans la feuille de style servie ; changelog "Liste de courses" (1 correction) publie, visible sans connexion, notification a tous. `registry-prune` en echec (registry injoignable depuis le runner, `curl` 28 apres 134 s), non bloquant, a relancer
+- [x] `Developement` fusionne dans `lot/v2.4.0`, `hotfix/menu-sections` supprimee
+
+## `v2.4.0` (branche `lot/v2.4.0`, contenu a choisir)
+
+- [x] Ouvrir la branche `lot/v2.4.0` depuis `Developement`, y reprendre les docs de `lot/v2.3.0` (2026-11-25, poussee)
+- [ ] `docker/registry-prune.sh` : delai de connexion court et nouvelles tentatives sur les appels au registry (`--connect-timeout`, `--retry`), pour qu'un registry momentanement injoignable ne bloque pas le job plus de 2 minutes (echec du 2026-11-25)
+- [ ] Contenu du lot : a choisir parmi les idees ci-dessous (etude et decision pour chacune)
 
 ## Releases suivantes (version a fixer a l'ouverture du lot)
 

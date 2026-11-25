@@ -12,8 +12,8 @@ Chantier ouvert le 2026-11-18, apres la mise en prod de la `v2.1.0` : module lis
 
 ## Etat
 
-- En prod : `v2.3.0` (2026-11-23, liste de courses [D228, D231], precision et facultatif [D232]). Historique du chantier precedent : `../Archive/Rework-V2/`.
-- En cours : hotfix `v2.3.1` (`hotfix/menu-sections`, Roadmap) ; lot `lot/v2.4.0` ouvert, contenu a choisir dans les idees de la Roadmap.
+- En prod : `v2.3.1` (2026-11-25, menu des sections de la liste de courses) ; `v2.3.0` (2026-11-23, liste de courses [D228, D231], precision et facultatif [D232]). Historique du chantier precedent : `../Archive/Rework-V2/`.
+- En cours : lot `lot/v2.4.0` ouvert (contient `v2.3.1`), contenu a choisir dans les idees de la Roadmap.
 
 ## Reprise
 
@@ -48,3 +48,4 @@ Chantier ouvert le 2026-11-18, apres la mise en prod de la `v2.1.0` : module lis
 - 2026-11-23 (preprod `v2.3.0` verifiee) : deploy vert avec le correctif. Dans Chrome : A04 "Liste de courses" passe a Disponible ; demande d'acces depuis Testperso, accordee dans A11, module active ; ajout, coche, retirer les achetes et Annuler (toast de 4 s) ; sections creees depuis les rayons (articles dans "Autres" : les ingredients de la preprod n'ont pas de rayon) ; editeur "+ Precision" et "Facultatif", fiche "beurre, mou · facultatif" ; brouillon de changelog 2.3.0 present (liste de courses en 4 items) ; aucune erreur en console. Non vu : "Depuis le planning" avec des repas (planning de Testperso vide, couvert par l'E2E 21). Reprise : prod (fusion de la PR `Developement` -> `master`), puis A04, changelog et suppression de la branche du lot.
 - 2026-11-23 (prod `v2.3.0`) : CI #66 verte, API en `2.3.0`. Changelog reformule (titre "Liste de courses", 4 lignes) et publie, visible sans connexion, notification recue ; A04 "Liste de courses" Disponible en prod. Verifie en lecture seule : la migration a converti "amande torrefiee" de One pot pasta en "· facultatif", la precision "ou bouillon de legumes" reste. Module pas encore accorde a Le Nid (demande depuis Reglages > Modules, puis A11). Reprise : ouvrir le lot suivant depuis `Developement` en y fusionnant `lot/v2.3.0` (commits de docs), supprimer `lot/v2.3.0`, puis choisir le chantier suivant dans la Roadmap.
 - 2026-11-25 (hotfix `v2.3.1`) : `lot/v2.4.0` ouvert avec les docs de `lot/v2.3.0`, supprime. Retour du proprietaire : le menu "..." d'une section ("Gerer les sections") s'ouvrait sous la feuille. Corrige en TDD sur `hotfix/menu-sections` (parcours 21, etape 8 ; niveau `--z-menu`), verification au vert. Reprise : le proprietaire pousse le hotfix, PR -> `Developement`, preprod puis prod (Roadmap, section `v2.3.1`) ; ensuite choisir le contenu de `v2.4.0`.
+- 2026-11-25 (prod `v2.3.1`) : PR #45 puis #46, preprod verifiee dans Chrome, prod taguee, changelog publie (visible sans connexion, notification a tous) ; `Developement` fusionne dans `lot/v2.4.0`, hotfix supprime. `registry-prune` en echec ponctuel (registry injoignable depuis le runner), a relancer ; durcissement du script note dans la Roadmap (`v2.4.0`). nodeterm essaye puis mis de cote. Reprise : `/clear`, puis choisir le contenu de `v2.4.0` (Roadmap).
