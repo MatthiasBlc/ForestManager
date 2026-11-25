@@ -52,9 +52,22 @@ Retours d'usage du 2026-11-23, choix au selecteur ; plan `4-Plan-Patch-Planning.
 - [x] Ouvrir la branche `lot/v2.3.0` depuis `Developement` (2026-11-18, poussee)
 - [x] C9 Module liste de courses (CDC S4.7, F-SHP ; droits [D141] ; conversions et rayons deja en base [D36]) : choix tranches au selecteur le 2026-11-18 [D228], maquette `3-Maquette-C9.html` validee, plan `2-Plan-C9.md` ; sections, doublons et gestes revus a l'ouverture [D231] ; en TDD
 - [x] Editeur de recette : saisir la note d'une ligne d'ingredient ("ou bouillon de legumes", "une poignee") et la marquer facultative ; aujourd'hui affichees et gardees a l'enregistrement, mais seulement remplies par l'import ou l'API (`draft.ts`). Etude et choix au selecteur, puis TDD (demande du proprietaire, 2026-11-23) : fait [D232], migration `ingredient_optional` (precisions "facultatif" converties au deploy)
-- [ ] Fermeture du lot : `Developement` fusionne dans le lot, `npm test`, `npm run e2e`, lint et typecheck au vert ; PR `lot/v2.3.0` -> `Developement`
-- [ ] Preprod : PR `Developement` -> `master`, verification pas a pas avec le proprietaire
-- [ ] Prod `v2.3.0` : fusion, tag, changelog ; suppression de la branche du lot
+- [x] Fermeture du lot : `Developement` fusionne dans le lot, `npm test`, `npm run e2e`, lint et typecheck au vert ; PR `lot/v2.3.0` -> `Developement`
+- [x] Preprod : PR `Developement` -> `master`, verification pas a pas avec le proprietaire (premier deploy en echec : notes de version trop longues, corrige par `fix(ci)`)
+- [x] Prod `v2.3.0` : fusion, tag, changelog publie (2026-11-23, visible sans connexion, notification a tous)
+- [x] Suppression de la branche `lot/v2.3.0`, apres avoir repris ses derniers commits de docs dans `lot/v2.4.0` (ouvert et pousse)
+
+## Hotfixes `v2.3.x`
+
+### `v2.3.1` - Menu des sections de la liste de courses
+
+Retour du proprietaire le 2026-11-25 : dans "Gerer les sections", le menu "..." d'une section s'ouvrait sous la feuille (pas de `z-index`), impossible de renommer, deplacer ou supprimer une section. Branche `hotfix/menu-sections`, ouverte depuis `lot/v2.4.0` (code de `master`, seulement des docs en plus).
+
+- [x] Correctif en TDD : etape 8 du parcours E2E 21 (renommer une section par son menu), rouge puis vert ; niveau `--z-menu` entre les feuilles et les toasts. `npm run test:web` 551/551, E2E 26/26, lint et typecheck au vert, revue dans Chrome sur la dev
+- [ ] Le proprietaire pousse `hotfix/menu-sections`, PR -> `Developement`, fusion
+- [ ] Preprod : PR `Developement` -> `master`, verifier le menu d'une section dans "Gerer les sections"
+- [ ] Prod `v2.3.1` : fusion, tag, changelog (relire le brouillon genere depuis le commit `fix:`)
+- [ ] `Developement` fusionne dans `lot/v2.4.0`, `hotfix/menu-sections` supprimee
 
 ## Releases suivantes (version a fixer a l'ouverture du lot)
 
@@ -64,7 +77,7 @@ Retours d'usage du 2026-11-23, choix au selecteur ; plan `4-Plan-Patch-Planning.
 
 - [ ] Menage du registry (a revoir ensemble) : tache planifiee de nuit pour `registry-gc` (ou registry en lecture seule pendant le collect) ; pas de `--delete-untagged` tant que des tags gardes sont d'anciennes images avec index ; `REGISTRY_HTTP_DEBUG_ADDR` a retirer du reseau `proxy` (detail : `../Archive/Rework-V2/31-Mise-en-prod.md` S6)
 - [ ] Vraie IP des clients derriere Cloudflare : `trustedIPs` de Traefik a regler (`TRUST_PROXY=3` deja fait) ; reglage et verification dans `../Reference/Architecture.md` S13
-- [ ] Mise en preprod puis en prod de `v2.3.0` : passer "Liste de courses" a "Disponible" dans A04 (le seed ne change pas le statut d'une ligne existante), puis l'accorder aux espaces qui le demandent
+- [x] Mise en preprod puis en prod de `v2.3.0` : "Liste de courses" passe a "Disponible" dans A04 (preprod et prod, 2026-11-23) ; l'accorder ensuite aux espaces qui le demandent (A11)
 - [ ] Retirer la lecture publique des buckets V1 `forestmanager-images-preprod` / `-prod` (`mc anonymous set none`) [D167]
 
 ## Idees a etudier (pas encore dans un lot)
