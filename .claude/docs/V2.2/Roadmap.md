@@ -55,7 +55,19 @@ Retours d'usage du 2026-11-23, choix au selecteur ; plan `4-Plan-Patch-Planning.
 - [x] Fermeture du lot : `Developement` fusionne dans le lot, `npm test`, `npm run e2e`, lint et typecheck au vert ; PR `lot/v2.3.0` -> `Developement`
 - [x] Preprod : PR `Developement` -> `master`, verification pas a pas avec le proprietaire (premier deploy en echec : notes de version trop longues, corrige par `fix(ci)`)
 - [x] Prod `v2.3.0` : fusion, tag, changelog publie (2026-11-23, visible sans connexion, notification a tous)
-- [ ] Suppression de la branche `lot/v2.3.0`, apres avoir repris ses derniers commits de docs dans le lot suivant
+- [x] Suppression de la branche `lot/v2.3.0`, apres avoir repris ses derniers commits de docs dans `lot/v2.4.0` (ouvert et pousse)
+
+## Hotfixes `v2.3.x`
+
+### `v2.3.1` - Menu des sections de la liste de courses
+
+Retour du proprietaire le 2026-11-25 : dans "Gerer les sections", le menu "..." d'une section s'ouvrait sous la feuille (pas de `z-index`), impossible de renommer, deplacer ou supprimer une section. Branche `hotfix/menu-sections`, ouverte depuis `lot/v2.4.0` (code de `master`, seulement des docs en plus).
+
+- [x] Correctif en TDD : etape 8 du parcours E2E 21 (renommer une section par son menu), rouge puis vert ; niveau `--z-menu` entre les feuilles et les toasts. `npm run test:web` 551/551, E2E 26/26, lint et typecheck au vert, revue dans Chrome sur la dev
+- [ ] Le proprietaire pousse `hotfix/menu-sections`, PR -> `Developement`, fusion
+- [ ] Preprod : PR `Developement` -> `master`, verifier le menu d'une section dans "Gerer les sections"
+- [ ] Prod `v2.3.1` : fusion, tag, changelog (relire le brouillon genere depuis le commit `fix:`)
+- [ ] `Developement` fusionne dans `lot/v2.4.0`, `hotfix/menu-sections` supprimee
 
 ## Releases suivantes (version a fixer a l'ouverture du lot)
 
